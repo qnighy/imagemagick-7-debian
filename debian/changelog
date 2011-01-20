@@ -1,9 +1,10 @@
-imagemagick (8:6.6.0.4-4) unstable; urgency=low
+imagemagick (8:6.6.7.2-1) unstable; urgency=low
 
-  * Switch build architecture to git-buildpackage over svn
-  * Modify rules in order to use git-buildpackage
+  * Switch build architecture to git-buildpackage over svn.
+  * Modify rules in order to use git-buildpackage.
+  * New upstream release.
   
- -- 
+ -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Thu, 20 Jan 2011 10:24:23 +0100
 
 imagemagick (8:6.6.0.4-3) unstable; urgency=medium
 
