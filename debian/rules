@@ -8,7 +8,7 @@
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
-IMAGEMAGICKVERSION=6.6.0
+IMAGEMAGICKVERSION=6.6.7
 
 DESTDIR="$(CURDIR)/debian/tmp"
 
