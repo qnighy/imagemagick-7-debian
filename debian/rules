@@ -115,7 +115,7 @@ install: build
 		$(DESTDIR)/usr/lib/ImageMagick-$(IMAGEMAGICKVERSION)/config/delegates.xml
 
 	# Remove empty directories in debian/tmp
-	-find $(DESTDIR) -type d -empty | xargs rmdir -p
+	-find $(DESTDIR) -type d -empty | xargs -r rmdir -p
 
 	# Remove RPATH from Magick.so
 	chrpath -d $(DESTDIR)/usr/lib/perl5/auto/Image/Magick/Magick.so
