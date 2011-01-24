@@ -1,4 +1,4 @@
-imagemagick (8:6.6.7.2-1) unstable; urgency=low
+imagemagick (8:6.6.7.3-1) unstable; urgency=low
 
   [ Bastien ROUCARIÈS ]
   * Switch build architecture to git-buildpackage over svn.
@@ -10,6 +10,8 @@ imagemagick (8:6.6.7.2-1) unstable; urgency=low
   * Perlmagick: Update build to conform with perl policy
   * Acknowledge NMUs (Closes: #579775)
   * Upstream updated SONAME (Closes: #587227)
+  * Bump standard version to 3.9.1.0
+  * New major version of libraries
 
  -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Fri, 21 Jan 2011 18:01:33 +0100
 

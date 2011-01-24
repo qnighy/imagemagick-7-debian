@@ -5,7 +5,7 @@ Maintainer: ImageMagick Packaging Team <pkg-gmagick-im-team@lists.alioth.debian.
 Uploaders: Luciano Bello <luciano@debian.org>,
  Daniel Kobras <kobras@debian.org>, Nelson A. de Oliveira <naoliv@debian.org>,
  Bastien Roucariès <roucaries.bastien+debian@gmail.com>
-Standards-Version: 3.8.4
+Standards-Version: 3.9.1.0
 Build-Depends: chrpath, debhelper (>= 7), ghostscript, libbz2-dev,
  libdjvulibre-dev, libexif-dev, libfreetype6-dev, libgraphviz-dev,
  libjasper-dev, libjpeg-dev, liblcms-dev, liblqr-1-0-dev, libltdl-dev,
@@ -19,7 +19,7 @@ Homepage: http://www.imagemagick.org/
 Package: imagemagick
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: libmagickcore3-extra, ghostscript, netpbm, ufraw-batch
+Recommends: libmagickcore4-extra, ghostscript, netpbm, ufraw-batch
 Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  ffmpeg, gimp, gnuplot, grads, groff-base, hp2xx, html2ps, libwmf-bin, mplayer,
  povray, radiance, sane-utils, texlive-base-bin, transfig, xdg-utils
@@ -37,8 +37,8 @@ Package: imagemagick-dbg
 Architecture: any
 Section: debug
 Priority: extra
-Depends: imagemagick (= ${binary:Version}), libmagick++3 (= ${binary:Version}),
- libmagickcore3-extra (= ${binary:Version}), perlmagick (= ${binary:Version}),
+Depends: imagemagick (= ${binary:Version}), libmagick++4 (= ${binary:Version}),
+ libmagickcore4-extra (= ${binary:Version}), perlmagick (= ${binary:Version}),
  ${misc:Depends}
 Description: debugging symbols for ImageMagick
  This package contains the debugging symbols for ImageMagick, a software suite
@@ -55,12 +55,12 @@ Description: document files of ImageMagick
  This package contains the document files shipped with ImageMagick, a software
  suite to create, edit, and compose bitmap images.
 
-Package: libmagickcore3
+Package: libmagickcore4
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: ghostscript, gsfonts
-Suggests: libmagickcore3-extra
+Suggests: libmagickcore4-extra
 Description: low-level image manipulation library
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -71,13 +71,12 @@ Description: low-level image manipulation library
  This package contains the C libraries needed to run executables that make
  use of MagickCore.
 
-Package: libmagickcore3-extra
+Package: libmagickcore4-extra
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Provides: libmagickcore-extra
-Conflicts: libmagickcore2 (<= 7:6.5.5.3-1)
-Enhances: libmagickcore3
+Enhances: libmagickcore4
 Description: low-level image manipulation library - extra codecs
  This package adds support for SVG, WMF, OpenEXR, DjVu and Graphviz to
  MagickCore.
@@ -85,8 +84,8 @@ Description: low-level image manipulation library - extra codecs
 Package: libmagickcore-dev
 Architecture: any
 Section: libdevel
-Depends: libmagickcore3 (= ${binary:Version}),
- libmagickcore3-extra (= ${binary:Version}), libbz2-dev, libdjvulibre-dev,
+Depends: libmagickcore4 (= ${binary:Version}),
+ libmagickcore4-extra (= ${binary:Version}), libbz2-dev, libdjvulibre-dev,
  libexif-dev, libfreetype6-dev, libgraphviz-dev, libjasper-dev, libjpeg-dev,
  liblcms-dev, liblqr-1-0-dev, libltdl-dev, libopenexr-dev, libpng-dev,
  librsvg2-dev, libtiff-dev, libwmf-dev, libx11-dev, libxext-dev, libxml2-dev,
@@ -95,7 +94,7 @@ Description: low-level image manipulation library - development files
  This package includes header files and static libraries needed to compile
  programs using MagickCore.
 
-Package: libmagickwand3
+Package: libmagickwand4
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -111,16 +110,14 @@ Description: image manipulation library
 Package: libmagickwand-dev
 Architecture: any
 Section: libdevel
-Depends: libmagickwand3 (= ${binary:Version}),
- libmagickcore3-extra (= ${binary:Version}),
+Depends: libmagickwand4 (= ${binary:Version}),
+ libmagickcore4-extra (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}), ${misc:Depends}
-Provides: libmagick9-dev
-Conflicts: libmagick9-dev
 Description: image manipulation library - development files
  This package includes header files and static libraries needed to compile
  programs using MagickWand.
 
-Package: libmagick++3
+Package: libmagick++4
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -134,11 +131,9 @@ Description: object-oriented C++ interface to ImageMagick
 Package: libmagick++-dev
 Architecture: any
 Section: libdevel
-Depends: libmagick++3 (= ${binary:Version}),
+Depends: libmagick++4 (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}),
  libmagickwand-dev (= ${binary:Version}), ${misc:Depends}
-Provides: libmagick++9-dev
-Conflicts: libmagick++9-dev
 Description: object-oriented C++ interface to ImageMagick - development files
  This package includes header files and static libraries needed to compile
  programs using Magick++.
