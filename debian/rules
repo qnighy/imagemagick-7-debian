@@ -143,8 +143,8 @@ binary-arch: build check install
 	dh_install
 	# Remove extra coders
 	while read FILE; do \
-		rm -f debian/libmagickcore3/$$FILE; \
-	done < debian/libmagickcore3-extra.install
+		rm -f debian/libmagickcore4/$$FILE; \
+	done < debian/libmagickcore4-extra.install
 	dh_installmenu
 	dh_installman
 	dh_installmime
