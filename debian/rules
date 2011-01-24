@@ -98,6 +98,11 @@ install: build
 		DESTDIR="$(CURDIR)/debian/tmp" \
 		pkgdocdir=/usr/share/doc/imagemagick
 
+	cd "$(CURDIR)/PerlMagick" && \
+		$(MAKE) install \
+		DESTDIR="$(CURDIR)/debian/tmp" \
+		pkgdocdir=/usr/share/doc/imagemagick
+
 	mkdir -p $(DESTDIR)/usr/share/pixmaps/
 	install -m 644 "$(CURDIR)/debian/display.xpm" \
 		$(DESTDIR)/usr/share/pixmaps/
