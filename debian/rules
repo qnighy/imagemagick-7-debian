@@ -37,7 +37,7 @@ build-stamp: $(QUILT_STAMPFN)
 	--x-libraries=/usr/lib/X11
 
 	cd "$(CURDIR)/PerlMagick" && \
-		perl Makefile.PL
+		perl Makefile.PL INSTALLDIRS=vendor
 
 	# Patch the generated libtool to avoid passing -rpath when linking,
 	# and to explicitly link libraries against the libraries they
@@ -50,7 +50,7 @@ build-stamp: $(QUILT_STAMPFN)
 	$(MAKE)
 
 	cd "$(CURDIR)/PerlMagick" && \
-		$(MAKE)
+		$(MAKE) OPTIMIZE="-O2 -g -Wall"
 
 	touch build-stamp
 
