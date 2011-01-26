@@ -152,7 +152,8 @@ binary-arch: build check install
 	dh_installchangelogs
 	dh_link
 	dh_strip --dbg-package=imagemagick-dbg
-	dh_compress
+# fix #611125
+	dh_compress -X/usr/share/doc/imagemagick/www
 	dh_fixperms
 	dh_perl
 	dh_makeshlibs -V
