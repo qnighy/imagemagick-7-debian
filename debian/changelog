@@ -12,6 +12,7 @@ imagemagick (8:6.6.7.10-1) unstable; urgency=low
   * Bump standard version to 3.9.1.0
   * New major version of libraries
   * Use DEB_UPSTREAM_VERSION
+  * Add README.Source
 
  -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Thu, 03 Mar 2011 16:45:34 +0100
 
