@@ -7,8 +7,13 @@
 
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+export DEB_SOURCE_PACKAGE ?= $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
+export DEB_VERSION ?= $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
+export DEB_NOEPOCH_VERSION ?= $(shell echo $(DEB_VERSION) | cut -d: -f2-)
+export DEB_UPSTREAM_VERSION ?= $(shell echo $(DEB_NOEPOCH_VERSION) | sed 's/-[^-]*$$//')
+export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -ne 'print if not /^Version:\s*.*-/;')
 
-IMAGEMAGICKVERSION=6.6.7
+export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 
 DESTDIR="$(CURDIR)/debian/tmp"
 
@@ -110,14 +115,14 @@ install: build
 	-find "$(CURDIR)/debian" -type f -name .packlist | xargs rm -f
 
 	# Fix HTML location inside manpages
-	sed -i 's/doc\/ImageMagick-$(IMAGEMAGICKVERSION)/doc\/imagemagick/' \
+	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick/' \
 		$(DESTDIR)/usr/share/man/man*/*
-	sed -i 's/doc\/ImageMagick\\-$(IMAGEMAGICKVERSION)/doc\/imagemagick/' \
+	sed -i 's/doc\/ImageMagick\\-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick/' \
 		$(DESTDIR)/usr/share/man/man*/*
 
 	# Use x-terminal emulator for editing (Bug #132947)
 	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
-		$(DESTDIR)/usr/lib/ImageMagick-$(IMAGEMAGICKVERSION)/config/delegates.xml
+		$(DESTDIR)/usr/lib/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/config/delegates.xml
 
 	# Remove empty directories in debian/tmp
 	-find $(DESTDIR) -type d -empty | xargs -r rmdir -p
