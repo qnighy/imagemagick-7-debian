@@ -1,20 +1,25 @@
 imagemagick (8:6.6.7.10-1) unstable; urgency=low
 
   [ Bastien ROUCARIÈS ]
-  * Switch build architecture to git over svn.
-  * Modify rules in order to use git.
-  * New upstream release. Drop patch for reading config files from current directory, corrected upstream (Closes: #601824).
-  * Fix a build failure: do not try to remove empty directories if list is nil
-  * Perlmagick: Fix a build failure, always run make install.
-  * Perlmagick: Update build to conform with perl policy
+  * Switch build architecture:
+  - to git over svn.
+  - Modify rules in order to use git.
+  - Add README.Source file.
+  * New upstream release (Closes: #612811):
+  - Drop patch for reading config files from current directory, 
+    corrected upstream (Closes: #601824).
+  - Upstream updated SONAME (Closes: #587227).
+  - Fixes -strip adds additional tags to the image (Closes: #594693).
+  - Add example files (Closes: #611125).
+  * Fix a build failure: do not try to remove empty directories if list is nil.
+  * Perlmagick:
+  - Fix a build failure, always run make install.
+  - Perlmagick: Update build to conform with perl policy
   * Acknowledge NMUs (Closes: #579775)
-  * Upstream updated SONAME (Closes: #587227)
   * Bump standard version to 3.9.1.0
-  * New major version of libraries
-  * Use DEB_UPSTREAM_VERSION
-  * Add README.Source
+  * Use DEB_UPSTREAM_VERSION from cdbs
 
- -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Thu, 03 Mar 2011 16:45:34 +0100
+ -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Fri, 04 Mar 2011 20:45:26 +0100
 
 imagemagick (8:6.6.0.4-3) unstable; urgency=medium
 
