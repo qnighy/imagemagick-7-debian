@@ -1,10 +1,4 @@
-imagemagick (8:6.6.8.1-1) unstable; urgency=low
-
-  * New upstream version
-
- -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Mon, 07 Mar 2011 14:29:23 +0100
-
-imagemagick (8:6.6.7.10-1) unstable; urgency=low
+imagemagick (8:6.6.8.6-1) unstable; urgency=low
 
   [ Bastien ROUCARIÈS ]
   * Switch build architecture:
@@ -25,7 +19,7 @@ imagemagick (8:6.6.7.10-1) unstable; urgency=low
   * Bump standard version to 3.9.1.0
   * Use DEB_UPSTREAM_VERSION from cdbs
 
- -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Fri, 04 Mar 2011 20:45:26 +0100
+ -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Fri, 22 Mar 2011 20:45:26 +0100
 
 imagemagick (8:6.6.0.4-3) unstable; urgency=medium
 
