@@ -28,6 +28,7 @@ build-stamp: $(QUILT_STAMPFN)
 
 	MagickDocumentPath="/usr/share/doc/imagemagick" ./configure \
 	--prefix=/usr \
+	--sysconfdir=/etc \
 	--mandir=\$${prefix}/share/man \
 	--infodir=\$${prefix}/share/info \
 	--with-modules \
@@ -122,7 +123,7 @@ install: build
 
 	# Use x-terminal emulator for editing (Bug #132947)
 	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
-		$(DESTDIR)/usr/lib/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/config/delegates.xml
+		$(DESTDIR)/etc/ImageMagick/delegates.xml
 
 	# Remove empty directories in debian/tmp
 	-find $(DESTDIR) -type d -empty | xargs -r rmdir -p
