@@ -1,6 +1,6 @@
 imagemagick (8:6.6.9.3-1) unstable; urgency=low
 
-  [ Bastien ROUCARIÈS ]
+  [ Bastien Roucariès ]
   * Switch build architecture:
   - to git over svn.
   - Modify rules in order to use git.
@@ -20,7 +20,7 @@ imagemagick (8:6.6.9.3-1) unstable; urgency=low
   * Bump standard version to 3.9.1.0
   * Use DEB_UPSTREAM_VERSION from cdbs
 
- -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Fri, 22 Mar 2011 20:45:26 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 22 Mar 2011 20:45:26 +0100
 
 imagemagick (8:6.6.0.4-3) unstable; urgency=medium
 
