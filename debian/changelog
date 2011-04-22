@@ -1,4 +1,4 @@
-imagemagick (8:6.6.9.3-1) unstable; urgency=low
+imagemagick (8:6.6.9.5-1) experimental; urgency=low
 
   [ Bastien Roucariès ]
   * Switch build architecture:
@@ -12,6 +12,7 @@ imagemagick (8:6.6.9.3-1) unstable; urgency=low
   - Fixes -strip adds additional tags to the image (Closes: #594693).
   - Add example files (Closes: #611125).
   - Move configuration file to /etc.
+  - Fix caption error with non break space (Closes: #614117)
   * Fix a build failure: do not try to remove empty directories if list is nil.
   * Perlmagick:
   - Fix a build failure, always run make install.
