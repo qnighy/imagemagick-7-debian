@@ -4,7 +4,7 @@ This package use gitpkg over quilt over git svn
 
 * clone repo
 
-git clone git clone git+ssh://login@git.debian.org/git/collab-maint/
+git clone git+ssh://login@git.debian.org/git/collab-maint/imagemagick.git
 git svn init -s --prefix=origin/  https://www.imagemagick.org/subversion/ImageMagick/
 
 * pull trunk
@@ -61,4 +61,4 @@ debian/patches and applied during the build.
 
 More information: /usr/share/doc/quilt/README.source
 
- -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>, Thu,  3 Mar 2011 20:27:31 +0100
+ -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>, Thu, 28 Apr 2011 15:35:36 +0200

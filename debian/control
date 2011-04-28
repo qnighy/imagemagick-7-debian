@@ -6,7 +6,7 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Daniel Kobras <kobras@debian.org>, Nelson A. de Oliveira <naoliv@debian.org>,
  Bastien Roucariès <roucaries.bastien+debian@gmail.com>
 Standards-Version: 3.9.1.0
-Build-Depends: chrpath, debhelper (>= 7), gitpkg, ghostscript, libbz2-dev,
+Build-Depends: chrpath, debhelper (>= 7), ghostscript, libbz2-dev,
  libdjvulibre-dev, libexif-dev, libfreetype6-dev, libgraphviz-dev,
  libjasper-dev, libjpeg-dev, liblcms-dev, liblqr-1-0-dev, libltdl-dev,
  libopenexr-dev, libperl-dev, libpng-dev, librsvg2-dev, libtiff-dev,
