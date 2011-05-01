@@ -1,8 +1,8 @@
-imagemagick (7:6.6.9.3-1) unstable; urgency=low
-
-  * Imagemagick supply configuration file under /etc
-
- -- Bastien ROUCARI»S <roucaries.bastien+debian@gmail.com>  Mon, 04 Apr 2011 13:38:35 +0200
+imagemagick (7:6.6.9.7-1) experimental; urgency=low
+  
+  Imagemagick supply configuration file under /etc
+  
+ -- Bastien Roucari√®s <roucaries.bastien+debian@gmail.com>  Sun, 01 May 2011 13:43:12 +0200
 
 imagemagick (7:6.5.5.3-1exp1) experimental; urgency=low
 

@@ -1,4 +1,4 @@
-imagemagick (8:6.6.9.5-1) experimental; urgency=low
+imagemagick (8:6.6.9.7-1) experimental; urgency=low
 
   [ Bastien Roucariès ]
   * Switch build architecture:
@@ -21,7 +21,7 @@ imagemagick (8:6.6.9.5-1) experimental; urgency=low
   * Bump standard version to 3.9.1.0
   * Use DEB_UPSTREAM_VERSION from cdbs
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 22 Mar 2011 20:45:26 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 01 May 2011 13:41:34 +0200
 
 imagemagick (8:6.6.0.4-3) unstable; urgency=medium
 
