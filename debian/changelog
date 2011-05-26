@@ -1,6 +1,7 @@
 imagemagick (8:6.6.9.7-3) unstable; urgency=low
 
   * Install config files to /etc really (Closes: #627981)
+  * Fix a FTBFS on hurd-i386. Thanks to Pino Toscano (Closes: #628020)
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 26 May 2011 12:42:17 +0200
 
