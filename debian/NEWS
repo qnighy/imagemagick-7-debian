@@ -1,7 +1,16 @@
-imagemagick (8:6.6.9.7-1) experimental; urgency=low
+imagemagick (8:6.6.9.7-3) unstable; urgency=low
   
-  Imagemagick supply configuration file under /etc
-  
+  Please note that imagemagick version 6.6.9.7 has moved its global 
+  configuration files from /usr/share/imagemagick to /etc/ImageMagick, 
+  following the FHS. See the package imagemagick-doc or 
+  http://www.imagemagick.org/script/resources.php for more information 
+  on configuring ImageMagick.
+  .
+  This will lose any changes you may have made to these files, 
+  in the extremely unlikely case that you have customized them (doing so 
+  was not officially supported by either upstream or Debian versions 
+  before 6.6.9).
+
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 01 May 2011 13:43:12 +0200
 
 imagemagick (7:6.5.5.3-1exp1) experimental; urgency=low
