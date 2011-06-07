@@ -1,3 +1,11 @@
+imagemagick (8:6.6.9.7-3.1) unstable; urgency=low
+
+  * Non-maintainer upload, with permission of Bastien Roucariès
+  * Move configuration file to the libmagickcore4 package where they
+    belong.
+
+ -- Vincent Fourmond <fourmond@debian.org>  Fri, 03 Jun 2011 00:17:27 +0200
+
 imagemagick (8:6.6.9.7-3) unstable; urgency=low
 
   * Install config files to /etc really (Closes: #627981).
