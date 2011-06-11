@@ -69,7 +69,7 @@ Description: document files of ImageMagick
 Package: libmagickcore4
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, imagemagick-common
 Recommends: ghostscript, gsfonts
 Suggests: libmagickcore4-extra
 Description: low-level image manipulation library
@@ -108,7 +108,7 @@ Description: low-level image manipulation library - development files
 Package: libmagickwand4
 Architecture: any
 Section: libs
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, imagemagick-common
 Description: image manipulation library 
  The MagickWand API is the recommended interface between the C programming
  language and the ImageMagick image processing libraries. Unlike the

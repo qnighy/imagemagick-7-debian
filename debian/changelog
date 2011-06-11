@@ -1,4 +1,6 @@
 imagemagick (8:6.6.9.7-4) unstable; urgency=low
+
+  [ Bastien Roucariès ]
   * Acknowledge NMUs. Thanks Vincent Fourmond.
   * Add Vincent Fourmond as comaintainer.
   * Fixed one-off bug in option parser (Closes: #609177).
@@ -6,7 +8,10 @@ imagemagick (8:6.6.9.7-4) unstable; urgency=low
     "non-versioned files in a shared library packages
     is *wrong*", thanks to Julien Cristau (Closes: #629945). 
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 11 Jun 2011 12:39:21 +0200
+  [ Vincent Fourmond ]
+  * Do not forget to depend on that package...
+
+ -- Vincent Fourmond <fourmond@debian.org>  Sat, 11 Jun 2011 20:53:15 +0200
 
 imagemagick (8:6.6.9.7-3.1) unstable; urgency=low
 
