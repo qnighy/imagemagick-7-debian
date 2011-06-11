@@ -4,4 +4,3 @@ usr/lib/ImageMagick-*/modules-Q16/filters/*.la
 usr/lib/ImageMagick-*/modules-Q16/filters/*.so
 usr/lib/libMagickCore.so.*
 usr/share/ImageMagick-*
-etc/

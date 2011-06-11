@@ -3,8 +3,10 @@ Section: graphics
 Priority: optional
 Maintainer: ImageMagick Packaging Team <pkg-gmagick-im-team@lists.alioth.debian.org>
 Uploaders: Luciano Bello <luciano@debian.org>,
- Daniel Kobras <kobras@debian.org>, Nelson A. de Oliveira <naoliv@debian.org>,
- Bastien Roucariès <roucaries.bastien+debian@gmail.com>
+ Daniel Kobras <kobras@debian.org>, 
+ Nelson A. de Oliveira <naoliv@debian.org>,
+ Bastien Roucariès <roucaries.bastien+debian@gmail.com>,
+ Vincent Fourmond <fourmond@debian.org>
 Standards-Version: 3.9.2
 Build-Depends: chrpath, debhelper (>= 7), ghostscript, libbz2-dev,
  libdjvulibre-dev, libexif-dev, libfreetype6-dev, libgraphviz-dev,
@@ -43,6 +45,15 @@ Depends: imagemagick (= ${binary:Version}), libmagick++4 (= ${binary:Version}),
 Description: debugging symbols for ImageMagick
  This package contains the debugging symbols for ImageMagick, a software suite
  to create, edit, and compose bitmap images.
+
+Package: imagemagick-common
+Architecture: all
+Depends: ${misc:Depends}
+Description: image manipulation programs -- infrastructure
+ imagemagick-common contains the filesystem infrastructure required for
+ further installation of imagemagick in any configuration; it does not provide
+ a full installation of binaries, libraries, and utilities
+ required to run imagemagick.
  
 Package: imagemagick-doc
 Architecture: all
