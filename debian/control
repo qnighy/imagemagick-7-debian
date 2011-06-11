@@ -49,6 +49,7 @@ Description: debugging symbols for ImageMagick
 Package: imagemagick-common
 Architecture: all
 Depends: ${misc:Depends}
+Replaces:libmagickcore4 (= 8:6.6.9.7-3.1)  
 Description: image manipulation programs -- infrastructure
  imagemagick-common contains the filesystem infrastructure required for
  further installation of imagemagick in any configuration; it does not provide
