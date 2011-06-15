@@ -94,7 +94,7 @@ clean:
 
 	dh_clean build-stamp
 
-install: build
+install: build check
 	dh_testdir
 	dh_testroot
 	dh_prep

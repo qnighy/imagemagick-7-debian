@@ -1,10 +1,14 @@
 imagemagick (8:6.6.9.7-5) unstable; urgency=low
 
   * Replace a overlapped memcopy by a memmove
-  * Fix a PNG reduction bug "Corrupted (?) icons", thanks to  Torbjörn Andersson <eriknospam@telia.com> 
-  (Closes: #630619).
+  * Fix a PNG reduction bug "Corrupted (?) icons", thanks to  
+    Torbjörn Andersson <eriknospam@telia.com> 
+    (Closes: #630619).
+  * Fix parallel build issue. Make debian/rules install target depend 
+    on check. Thanks Colin Watson <cjwatson@ubuntu.com>
+    (Closes: #593041).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 16 Jun 2011 00:05:16 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 16 Jun 2011 00:18:36 +0200
 
 imagemagick (8:6.6.9.7-4) unstable; urgency=low
 
