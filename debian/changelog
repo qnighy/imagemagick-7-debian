@@ -1,3 +1,10 @@
+imagemagick (8:6.6.0.4-4) unstable; urgency=low
+
+  * Switch build architecture to git-buildpackage over svn
+  * Modify rules in order to use git-buildpackage
+  
+ -- 
+
 imagemagick (8:6.6.0.4-3) unstable; urgency=medium
 
   * Apply fix for reading config files from current directory, found by

@@ -83,8 +83,8 @@ clean:
 	[ ! -f PerlMagick/Makefile ] || (cd PerlMagick && $(MAKE) distclean)
 	[ ! -f Makefile ] || $(MAKE) distclean
 	[ ! -f Magick++/Makefile ] || (cd Magick++ && $(MAKE) distclean)
-	rm -f "$(CURDIR)/utilities/.libs/*" "$(CURDIR)/_configs.sed" \
-		"$(CURDIR)/magick/magick-config.h"
+	rm -f "$(CURDIR)/utilities/.libs/*" "$(CURDIR)/_configs.sed" #\
+#		"$(CURDIR)/magick/magick-config.h"
 
 	dh_clean build-stamp
 
