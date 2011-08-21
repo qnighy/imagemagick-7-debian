@@ -1,0 +1,34 @@
+Description: Do not read configure files in the current directory for
+ the "installed" version of ImageMagick.
+ Patch pulled from upstream svn 
+ https://www.imagemagick.org/subversion/ImageMagick/trunk
+ revision 3022.
+Author: Cristy  <quetzlzacatenango@image...>
+Bug-Debian: http://bugs.debian.org/601824
+Origin: upstream
+Last-Update: 2010-11-06
+
+--- imagemagick-6.6.0.4.orig/magick/configure.c
++++ imagemagick-6.6.0.4/magick/configure.c
+@@ -749,6 +749,10 @@ MagickExport LinkedListInfo *GetConfigur
+       (void) AppendValueToLinkedList(paths,ConstantString(path));
+ #endif
+     }
++  /*
++    Search current directory.
++  */
++  (void) AppendValueToLinkedList(paths,ConstantString(""));
+ #endif
+   {
+     char
+@@ -803,10 +807,6 @@ MagickExport LinkedListInfo *GetConfigur
+       }
+   }
+ #endif
+-  /*
+-    Search current directory.
+-  */
+-  (void) AppendValueToLinkedList(paths,ConstantString(""));
+   return(paths);
+ }
+ 
