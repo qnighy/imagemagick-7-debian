@@ -21,7 +21,7 @@ Homepage: http://www.imagemagick.org/
 Package: imagemagick
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: libmagickcore4-extra, ghostscript, netpbm, ufraw-batch
+Recommends: libmagickcore5-extra, ghostscript, netpbm, ufraw-batch
 Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  ffmpeg, gimp, gnuplot, grads, groff-base, hp2xx, html2ps, libwmf-bin, mplayer,
  povray, radiance, sane-utils, texlive-base-bin, transfig, xdg-utils
@@ -49,7 +49,6 @@ Description: debugging symbols for ImageMagick
 Package: imagemagick-common
 Architecture: all
 Depends: ${misc:Depends}
-Replaces:libmagickcore4 (= 8:6.6.9.7-3.1)  
 Description: image manipulation programs -- infrastructure
  imagemagick-common contains the filesystem infrastructure required for
  further installation of imagemagick in any configuration; it does not provide
@@ -67,12 +66,14 @@ Description: document files of ImageMagick
  This package contains the document files shipped with ImageMagick, a software
  suite to create, edit, and compose bitmap images.
 
-Package: libmagickcore4
+Package: libmagickcore5
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}, imagemagick-common
 Recommends: ghostscript, gsfonts
-Suggests: libmagickcore4-extra
+Suggests: libmagickcore5-extra
+Provides: libmagickcore4
+Conflicts: libmagickcore4
 Description: low-level image manipulation library
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -83,12 +84,13 @@ Description: low-level image manipulation library
  This package contains the C libraries needed to run executables that make
  use of MagickCore.
 
-Package: libmagickcore4-extra
+Package: libmagickcore5-extra
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Provides: libmagickcore-extra
-Enhances: libmagickcore4
+Provides: libmagickcore4-extra
+Conflicts:  libmagickcore4-extra
+Enhances: libmagickcore5
 Description: low-level image manipulation library - extra codecs
  This package adds support for SVG, WMF, OpenEXR, DjVu and Graphviz to
  MagickCore.
@@ -96,8 +98,8 @@ Description: low-level image manipulation library - extra codecs
 Package: libmagickcore-dev
 Architecture: any
 Section: libdevel
-Depends: libmagickcore4 (= ${binary:Version}),
- libmagickcore4-extra (= ${binary:Version}), libbz2-dev, libdjvulibre-dev,
+Depends: libmagickcore5 (= ${binary:Version}),
+ libmagickcore5-extra (= ${binary:Version}), libbz2-dev, libdjvulibre-dev,
  libexif-dev, libfreetype6-dev, libgraphviz-dev, libjasper-dev, libjpeg-dev,
  liblcms-dev, liblqr-1-0-dev, libltdl-dev, libopenexr-dev, libpng-dev,
  librsvg2-dev, libtiff-dev, libwmf-dev, libx11-dev, libxext-dev, libxml2-dev,
@@ -106,7 +108,7 @@ Description: low-level image manipulation library - development files
  This package includes header files and static libraries needed to compile
  programs using MagickCore.
 
-Package: libmagickwand4
+Package: libmagickwand5
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}, imagemagick-common
@@ -122,17 +124,19 @@ Description: image manipulation library
 Package: libmagickwand-dev
 Architecture: any
 Section: libdevel
-Depends: libmagickwand4 (= ${binary:Version}),
- libmagickcore4-extra (= ${binary:Version}),
+Depends: libmagickwand5 (= ${binary:Version}),
+ libmagickcore5-extra (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}), ${misc:Depends}
 Description: image manipulation library - development files
  This package includes header files and static libraries needed to compile
  programs using MagickWand.
 
-Package: libmagick++4
+Package: libmagick++5
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Provides: libmagick++5
+Conflicts:  libmagick++5
 Description: object-oriented C++ interface to ImageMagick
  The Magick++ library is a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
@@ -143,7 +147,7 @@ Description: object-oriented C++ interface to ImageMagick
 Package: libmagick++-dev
 Architecture: any
 Section: libdevel
-Depends: libmagick++4 (= ${binary:Version}),
+Depends: libmagick++5 (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}),
  libmagickwand-dev (= ${binary:Version}), ${misc:Depends}
 Description: object-oriented C++ interface to ImageMagick - development files
