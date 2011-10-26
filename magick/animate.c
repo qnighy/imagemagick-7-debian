@@ -312,6 +312,8 @@ MagickExport MagickBooleanType AnimateImages(const ImageInfo *image_info,
   resource_info.immutable=MagickTrue;
   argv[0]=AcquireString(GetClientName());
   (void) XAnimateImages(display,&resource_info,argv,1,images);
+  SetErrorHandler((ErrorHandler) NULL);
+  SetWarningHandler((WarningHandler) NULL);
   argv[0]=DestroyString(argv[0]);
   (void) XCloseDisplay(display);
   XDestroyResourceInfo(&resource_info);
@@ -538,8 +540,15 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       status=XSaveImage(display,resource_info,windows,*image);
       if (status == MagickFalse)
         {
-          XNoticeWidget(display,windows,"Unable to write X image:",
-            (*image)->filename);
+          char
+            message[MaxTextExtent];
+
+          (void) FormatLocaleString(message,MaxTextExtent,"%s:%s",
+            (*image)->exception.reason != (char *) NULL ?
+            (*image)->exception.reason : "",
+            (*image)->exception.description != (char *) NULL ?
+            (*image)->exception.description : "");
+          XNoticeWidget(display,windows,"Unable to save file:",message);
           break;
         }
       break;

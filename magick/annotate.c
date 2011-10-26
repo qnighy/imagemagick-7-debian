@@ -535,6 +535,9 @@ MagickExport MagickBooleanType AnnotateImage(Image *image,
 MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
   const MagickBooleanType split,TypeMetric *metrics,char **caption)
 {
+  char
+    *text;
+
   MagickBooleanType
     status;
 
@@ -552,13 +555,14 @@ MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
   ssize_t
     n;
 
+  text=AcquireString(draw_info->text);
   q=draw_info->text;
   s=(char *) NULL;
   for (p=(*caption); GetUTFCode(p) != 0; p+=GetUTFOctets(p))
   {
     if (IsUTFSpace(GetUTFCode(p)) != MagickFalse)
       s=p;
-    if (*p == '\n')
+    if (GetUTFCode(p) == '\n')
       q=draw_info->text;
     for (i=0; i < (ssize_t) GetUTFOctets(p); i++)
       *q++=(*(p+i));
@@ -567,8 +571,9 @@ MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
     if (status == MagickFalse)
       break;
     width=(size_t) floor(metrics->width+0.5);
-    if (width <= image->columns)
+    if ((width <= image->columns) || (strcmp(text,draw_info->text) == 0))
       continue;
+    (void) strcpy(text,draw_info->text);
     if ((s != (char *) NULL) && (GetUTFOctets(s) == 1))
       {
         *s='\n';
@@ -595,6 +600,7 @@ MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
     q=draw_info->text;
     s=(char *) NULL;
   }
+  text=DestroyString(text);
   n=0;
   for (p=(*caption); GetUTFCode(p) != 0; p+=GetUTFOctets(p))
     if (GetUTFCode(p) == '\n')
@@ -1197,7 +1203,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
   metrics->bounds.y2=metrics->ascent+metrics->descent;
   metrics->underline_position=face->underline_position/64.0;
   metrics->underline_thickness=face->underline_thickness/64.0;
-  if (*draw_info->text == '\0')
+  if ((draw_info->text == (char *) NULL) || (*draw_info->text == '\0'))
     {
       (void) FT_Done_Face(face);
       (void) FT_Done_FreeType(library);
@@ -1335,11 +1341,15 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
         MagickBooleanType
           status;
 
+        register unsigned char
+          *p;
+
         /*
           Rasterize the glyph.
         */
         status=MagickTrue;
         exception=(&image->exception);
+        p=bitmap->bitmap.buffer;
         image_view=AcquireCacheView(image);
         for (y=0; y < (ssize_t) bitmap->bitmap.rows; y++)
         {
@@ -1359,10 +1369,8 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
           register ssize_t
             x;
 
-          register unsigned char
-            *p;
-
           ssize_t
+            n,
             x_offset,
             y_offset;
 
@@ -1381,18 +1389,21 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
                 bitmap->bitmap.width,1,exception);
               active=q != (PixelPacket *) NULL ? MagickTrue : MagickFalse;
             }
-          p=bitmap->bitmap.buffer+y*bitmap->bitmap.width;
+          n=y*bitmap->bitmap.pitch-1;
           for (x=0; x < (ssize_t) bitmap->bitmap.width; x++)
           {
+            n++;
             x_offset++;
-            if ((*p == 0) || (x_offset < 0) ||
-                (x_offset >= (ssize_t) image->columns))
+            if ((x_offset < 0) || (x_offset >= (ssize_t) image->columns))
               {
-                p++;
                 q++;
                 continue;
               }
-            fill_opacity=(MagickRealType) (*p)/(bitmap->bitmap.num_grays-1);
+            if (bitmap->bitmap.pixel_mode != ft_pixel_mode_mono)
+              fill_opacity=(MagickRealType) (p[n])/(bitmap->bitmap.num_grays-1);
+            else
+              fill_opacity=((p[(x >> 3)+y*bitmap->bitmap.pitch] &
+                (1 << (~x & 0x07)))) == 0 ? 0.0 : 1.0;
             if (draw_info->text_antialias == MagickFalse)
               fill_opacity=fill_opacity >= 0.5 ? 1.0 : 0.0;
             if (active == MagickFalse)
@@ -1400,7 +1411,6 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
                 exception);
             if (q == (PixelPacket *) NULL)
               {
-                p++;
                 q++;
                 continue;
               }
@@ -1414,7 +1424,6 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
                 if (sync == MagickFalse)
                   status=MagickFalse;
               }
-            p++;
             q++;
           }
           sync=SyncCacheViewAuthenticPixels(image_view,exception);

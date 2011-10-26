@@ -10681,6 +10681,8 @@ Mogrify(ref,...)
           if (next && (next != image))
             {
               image->next=next->next;
+              if (image->next != (Image *) NULL)
+                image->next->previous=image;
               DeleteImageFromRegistry(*pv,next);
             }
           sv_setiv(*pv,(IV) image);
@@ -11316,7 +11318,7 @@ Mosaic(ref)
     av_push(av,sv_bless(rv,hv));
     SvREFCNT_dec(sv);
     info=GetPackageInfo(aTHX_ (void *) av,info,exception);
-    (void) CopyMagickString(image->filename,info->image_info->filename,
+    (void) CopyMagickString(info->image_info->filename,image->filename,
       MaxTextExtent);
     SetImageInfo(info->image_info,0,&image->exception);
     exception=DestroyExceptionInfo(exception);

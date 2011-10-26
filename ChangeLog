@@ -1,3 +1,141 @@
+2011-11-01  6.7.3-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.3-2.
+
+2011-11-01  6.7.3-2 Cristy  <quetzlzacatenango@image...>
+  * Support Ghostscript under 64-bit Windows (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19659).
+  * Correct affine translation for certain SVG files (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19664).
+  * -evaluate-sequence multiply no longer hangs (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19549).
+
+2011-10-15  6.7.3-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.3-1.
+
+2011-10-15  6.7.3-1 Cristy  <quetzlzacatenango@image...>
+  * Read TIFF EXIF profile before reading the image data.
+  * Fix "test: no: unexpected operator" in the configure script (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19615).
+  * Off by one error when writing the JPEG XMP profile (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19616).
+  * Revert GetPathComponent() patch.
+
+2011-10-09  6.7.3-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.3-0.
+
+2011-10-09  6.7.3-0 Cristy  <quetzlzacatenango@image...>
+  * Generate output for caption:"[!]" (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=19589.
+
+2011-10-05  6.7.3-0 Glenn Randers-Pehrson <glennrp@image...>
+  * Add "png:format" property with possible values png8, png24, and png32,
+    for use when prepending the format type to the filename is not convenient
+    or is not possible, e.g., when embedding the PNG in a PNG-encoded ICO.
+
+2011-10-04  6.7.2-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.2-10.
+
+2011-10-04  6.7.2-10 Cristy  <quetzlzacatenango@image...>
+  * Remove most of the LLVM compiler warnings.
+  * Fix bug in -evaluate-sequence multiply (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19549).
+  * Upgrade to sRGB V4 ICC profile (reference
+    http://www.color.org/srgbprofiles.xalter).
+  * Distinguish embedded PNG vs BMP within the MicroSoft ICON image format.
+
+2011-09-30  6.7.2-10 Glenn Randers-Pehrson <glennrp@image...>
+  * Recognize the sRGB version 4 ICC profile and write PNG sRGB chunk instead.
+  * Use crc32 instead of "sRGB" string to recognize certain sRGB profiles.
+
+2011-09-26  6.7.2-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.2-9.
+
+2011-09-26  6.7.2-9 Cristy  <quetzlzacatenango@image...>
+  * Fix race condition on image rotate @ 90 degrees.
+
+2011-09-25  6.7.2-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.2-8.
+
+2011-09-20  6.7.2-8 Cristy  <quetzlzacatenango@image...>
+  * Prevent infinite loop when font is too large for specified width (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19502).
+  * Fix LFS cross-compile detection (patch from Mike Frysinger).
+  * Add open_utf8(), fopen_utf8(), access_utf8(), etc. utility methods.
+
+2011-09-15  6.7.2-7 Cristy  <quetzlzacatenango@image...>
+  * Convert empty .htm / .html file no longer removes source file.
+  * -crop 11x2@ now returns 22 images as expected.
+  * Enable reading the EXIF profile in a TIFF image under Windows.
+  * Support drawing text with bitmap font.
+
+2011-09-13  6.7.2-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.2-6.
+
+2011-09-12  6.7.2-6 Cristy  <quetzlzacatenango@image...>
+  * Expand pixel range for 12 bit DCM images stored in 16-bit words.
+  * Gray images not displayed properly when saved as MIFF with sRGB
+    colorspace.
+  * OpenCL's clCreateContextFromType() no longer returns a system default.
+  * Use -enable-zero-configuration for zero configuration ImageMagick
+    (previously -enable-embeddable).
+
+2011-09-10  6.7.2-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.2-5.
+
+2011-09-10  6.7.2-5 Cristy  <quetzlzacatenango@image...>
+  * SO bump.
+
+2011-09-09  6.7.2-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.2-4.
+
+2011-09-05  6.7.2-4 Cristy  <quetzlzacatenango@image...>
+  * Fix cut-n-paste error when reading JPEG profiles.
+
+2011-09-07  6.7.2-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.2-3.
+
+2011-09-05  6.7.2-3 Cristy  <quetzlzacatenango@image...>
+  * A small memory overwrite when reading TIFF with 1-bit alpha (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19417).
+  * Remove a 2 byte memory leak when checking for environment variables.
+
+2011-09-05  6.7.2-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.2-2.
+
+2011-09-03  6.7.2-2 Glenn Randers-Pehrson <glennrp@image...>
+  * Recognize the sRGB ICC profile and write the PNG sRGB profile instead
+    of a full iCCP chunk.
+
+2011-08-31  6.7.2-2 Cristy  <quetzlzacatenango@image...>
+  * Write grayscale MIFF as a single gray pixel component, not RGB (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=19403).
+  * Bail gracefully for corrupt JPEG images.
+  * Bail gracefully for negative montage geometries (references
+    https://bugzilla.redhat.com/show_bug.cgi?id=735599).
+  * Account for DCm bits allocated 16 and significant bits 12 (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19420).
+  * Fix bug when appending JPEG image profiles (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19429).
+
+2011-08-29  6.7.2-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.2-1.
+
+2011-08-29  6.7.2-1 Cristy  <quetzlzacatenango@image...>
+  * The AllChannels defined changed to 0x7ffffff to avoid integer overflow.
+
+2011-08-26  6.7.2-0 Cristy  <quetzlzacatenango@image...>
+  * HDR format 32-bit_rle_xyze implies the XYZ colorspace.
+
+2011-08-22  6.7.1-10 Cristy  <quetzlzacatenango@image...>
+  * Revert FormatImageAttributeList(), FormatImagePropertyList() (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19339).
+
+2011-08-21  6.7.1-10 Glenn Randers-Pehrson <glennrp@image...>
+  * Revised configure.ac (and configure) to look for -lpng15, -lpng14, -lpng12,
+    and -lpng in that order instead of just -lpng.  This should help find
+    a consistent library and headers when users upgrade their libpng delegate
+    from one version to another, incompatible version.
+
 2011-08-20  6.7.1-9 Cristy  <quetzlzacatenango@image...>
   * New version 6.7.1-9.
 

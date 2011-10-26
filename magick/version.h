@@ -27,15 +27,15 @@ extern "C" {
 */
 #define MagickPackageName "ImageMagick"
 #define MagickCopyright  "Copyright (C) 1999-2011 ImageMagick Studio LLC"
-#define MagickSVNRevision  "4982"
-#define MagickLibVersion  0x671
-#define MagickLibVersionText  "6.7.1"
-#define MagickLibVersionNumber  4,0,1
-#define MagickLibAddendum  "-9"
-#define MagickLibInterface  4
-#define MagickLibMinInterface  4
-#define MagickReleaseDate  "2011-08-19"
-#define MagickChangeDate   "20110818"
+#define MagickSVNRevision  "exported"
+#define MagickLibVersion  0x673
+#define MagickLibVersionText  "6.7.3"
+#define MagickLibVersionNumber  5,0,0
+#define MagickLibAddendum  "-2"
+#define MagickLibInterface  5
+#define MagickLibMinInterface  5
+#define MagickReleaseDate  "2011-10-22"
+#define MagickChangeDate   "20111101"
 #define MagickAuthoritativeURL  "http://www.imagemagick.org"
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
 #define MagickOpenMPFeature  "OpenMP "
@@ -52,8 +52,13 @@ extern "C" {
 #else
 #define MagickHDRIFeature  " "
 #endif
-#define MagickFeatures MagickOpenMPFeature MagickOpenCLFeature MagickHDRIFeature
-#define MagickHomeURL  "file:///usr/local/share/doc/ImageMagick-6.7.1//index.html"
+#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#define MagickZeroConfigurationFeature  "Zero-Configuration "
+#else
+#define MagickZeroConfigurationFeature  " "
+#endif
+#define MagickFeatures MagickOpenMPFeature MagickOpenCLFeature MagickHDRIFeature MagickZeroConfigurationFeature
+#define MagickHomeURL  "file:///usr/share/doc/ImageMagick//index.html"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
 #define MagickQuantumDepth  "Q8"
 #define MagickQuantumRange  "255"

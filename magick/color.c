@@ -2340,18 +2340,18 @@ static MagickBooleanType LoadColorLists(const char *filename,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   Q u e r y C o l o r D a t a b a s e                                       %
+%   Q u e r y C o l o r C o m p l i e n c e                                   %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  QueryColorDatabase() returns the red, green, blue, and opacity intensities
+%  QueryColorCompliance() returns the red, green, blue, and opacity intensities
 %  for a given color name.
 %
-%  The format of the QueryColorDatabase method is:
+%  The format of the QueryColorCompliance method is:
 %
-%      MagickBooleanType QueryColorDatabase(const char *name,
+%      MagickBooleanType QueryColorCompliance(const char *name,
 %        const ComplianceType compliance,PixelPacket *color,
 %        ExceptionInfo *exception)
 %
@@ -2501,7 +2501,7 @@ MagickExport MagickBooleanType QueryColorname(const Image *image,
 %
 %  The format of the QueryMagickColor method is:
 %
-%      MagickBooleanType QueryMagickColor(const char *name,
+%      MagickBooleanType QueryMagickColorCompilence(const char *name,
 %        const ComplianceType compliance,MagickPixelPacket *color,
 %        ExceptionInfo *exception)
 %

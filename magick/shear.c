@@ -1081,8 +1081,8 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
         Rotate 90 degrees.
       */
       GetPixelCacheTileSize(image,&tile_width,&tile_height);
-#if defined(MAGICKCORE_OPENMP_SUPPORT) 
-  #pragma omp parallel for schedule(static,1) shared(progress, status) omp_throttle(1)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+      #pragma omp parallel for schedule(dynamic,4) shared(progress, status) omp_throttle(1)
 #endif
       for (tile_y=0; tile_y < (ssize_t) image->rows; tile_y+=(ssize_t) tile_height)
       {
@@ -1105,11 +1105,11 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
           register IndexPacket
             *restrict rotate_indexes;
 
-          register ssize_t
-            y;
-
           register PixelPacket
             *restrict q;
+
+          register ssize_t
+            y;
 
           size_t
             height,
@@ -1117,12 +1117,10 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
 
           width=tile_width;
           if ((tile_x+(ssize_t) tile_width) > (ssize_t) image->columns)
-            width=(size_t) (tile_width-(tile_x+tile_width-
-              image->columns));
+            width=(size_t) (tile_width-(tile_x+tile_width-image->columns));
           height=tile_height;
           if ((tile_y+(ssize_t) tile_height) > (ssize_t) image->rows)
-            height=(size_t) (tile_height-(tile_y+tile_height-
-              image->rows));
+            height=(size_t) (tile_height-(tile_y+tile_height-image->rows));
           p=GetCacheViewVirtualPixels(image_view,tile_x,tile_y,width,height,
             exception);
           if (p == (const PixelPacket *) NULL)
@@ -1139,13 +1137,15 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
             register ssize_t
               x;
 
+            if (status == MagickFalse)
+              continue;
             q=QueueCacheViewAuthenticPixels(rotate_view,(ssize_t)
-              (rotate_image->columns-(tile_y+height)),y+tile_x,height,
-              1,exception);
+              (rotate_image->columns-(tile_y+height)),y+tile_x,height,1,
+              exception);
             if (q == (PixelPacket *) NULL)
               {
                 status=MagickFalse;
-                break;
+                continue;
               }
             tile_pixels=p+(height-1)*width+y;
             for (x=0; x < (ssize_t) height; x++)
@@ -1177,6 +1177,9 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
             MagickBooleanType
               proceed;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+            #pragma omp critical (MagickCore_IntegralRotateImage)
+#endif
             proceed=SetImageProgress(image,RotateImageTag,progress+=tile_height,
               image->rows);
             if (proceed == MagickFalse)
@@ -1196,8 +1199,8 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
       /*
         Rotate 180 degrees.
       */
-#if defined(MAGICKCORE_OPENMP_SUPPORT) 
-  #pragma omp parallel for schedule(static,8) shared(progress,status) omp_throttle(1)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+      #pragma omp parallel for schedule(dynamic,4) shared(progress,status) omp_throttle(1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1213,18 +1216,18 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
         register IndexPacket
           *restrict rotate_indexes;
 
-        register ssize_t
-          x;
-
         register PixelPacket
           *restrict q;
+
+        register ssize_t
+          x;
 
         if (status == MagickFalse)
           continue;
         p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,
           exception);
-        q=QueueCacheViewAuthenticPixels(rotate_view,0,(ssize_t) (image->rows-
-          y-1),image->columns,1,exception);
+        q=QueueCacheViewAuthenticPixels(rotate_view,0,(ssize_t) (image->rows-y-
+          1),image->columns,1,exception);
         if ((p == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))
           {
             status=MagickFalse;
@@ -1248,6 +1251,9 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
             MagickBooleanType
               proceed;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+            #pragma omp critical (MagickCore_IntegralRotateImage)
+#endif
             proceed=SetImageProgress(image,RotateImageTag,progress++,
               image->rows);
             if (proceed == MagickFalse)
@@ -1273,8 +1279,8 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
         Rotate 270 degrees.
       */
       GetPixelCacheTileSize(image,&tile_width,&tile_height);
-#if defined(MAGICKCORE_OPENMP_SUPPORT) 
-  #pragma omp parallel for schedule(static,1) shared(progress,status) omp_throttle(1)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+      #pragma omp parallel for schedule(dynamic,4) shared(progress,status) omp_throttle(1)
 #endif
       for (tile_y=0; tile_y < (ssize_t) image->rows; tile_y+=(ssize_t) tile_height)
       {
@@ -1297,11 +1303,11 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
           register IndexPacket
             *restrict rotate_indexes;
 
-          register ssize_t
-            y;
-
           register PixelPacket
             *restrict q;
+
+          register ssize_t
+            y;
 
           size_t
             height,
@@ -1309,14 +1315,12 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
 
           width=tile_width;
           if ((tile_x+(ssize_t) tile_width) > (ssize_t) image->columns)
-            width=(size_t) (tile_width-(tile_x+tile_width-
-              image->columns));
+            width=(size_t) (tile_width-(tile_x+tile_width-image->columns));
           height=tile_height;
           if ((tile_y+(ssize_t) tile_height) > (ssize_t) image->rows)
-            height=(size_t) (tile_height-(tile_y+tile_height-
-              image->rows));
-          p=GetCacheViewVirtualPixels(image_view,tile_x,tile_y,width,
-            height,exception);
+            height=(size_t) (tile_height-(tile_y+tile_height-image->rows));
+          p=GetCacheViewVirtualPixels(image_view,tile_x,tile_y,width,height,
+            exception);
           if (p == (const PixelPacket *) NULL)
             {
               status=MagickFalse;
@@ -1331,12 +1335,14 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
             register ssize_t
               x;
 
-            q=QueueCacheViewAuthenticPixels(rotate_view,tile_y,(ssize_t)
-              (y+rotate_image->rows-(tile_x+width)),height,1,exception);
+            if (status == MagickFalse)
+              continue;
+            q=QueueCacheViewAuthenticPixels(rotate_view,tile_y,(ssize_t) (y+
+              rotate_image->rows-(tile_x+width)),height,1,exception);
             if (q == (PixelPacket *) NULL)
               {
                 status=MagickFalse;
-                break;
+                continue;
               }
             tile_pixels=p+(width-1)-y;
             for (x=0; x < (ssize_t) height; x++)
@@ -1368,6 +1374,9 @@ static Image *IntegralRotateImage(const Image *image,size_t rotations,
             MagickBooleanType
               proceed;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+            #pragma omp critical (MagickCore_IntegralRotateImage)
+#endif
             proceed=SetImageProgress(image,RotateImageTag,progress+=tile_height,
               image->rows);
             if (proceed == MagickFalse)

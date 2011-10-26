@@ -52,6 +52,7 @@
 #include "magick/resource_.h"
 #include "magick/signature-private.h"
 #include "magick/string_.h"
+#include "magick/utility-private.h"
 
 /*
   Static declarations.
@@ -179,6 +180,50 @@ MagickExport StringInfo *AcquireStringInfo(const size_t length)
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   B l o b T o S t r i n g I n f o                                           %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  BlobToStringInfo() returns the contents of a blob as a string.
+%
+%  The format of the BlobToStringInfo method is:
+%
+%      StringInfo *BlobToStringInfo(const void *blob,const size_t length)
+%
+%  A description of each parameter follows:
+%
+%    o blob: the blob.
+%
+%    o length: the length of the blob.
+%
+*/
+MagickExport StringInfo *BlobToStringInfo(const void *blob,const size_t length)
+{
+  StringInfo
+    *string_info;
+
+  string_info=AcquireStringInfo(0);
+  string_info->length=length;
+  if (~string_info->length >= (MaxTextExtent-1))
+    string_info->datum=(unsigned char *) AcquireQuantumMemory(
+      string_info->length+MaxTextExtent,sizeof(*string_info->datum));
+  if (string_info->datum == (unsigned char *) NULL)
+    {
+      string_info=DestroyStringInfo(string_info);
+      return((StringInfo *) NULL);
+    }
+  if (blob != (const void *) NULL)
+    (void) memcpy(string_info->datum,blob,length);
+  return(string_info);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -540,7 +585,7 @@ MagickExport StringInfo *ConfigureFileToStringInfo(const char *filename)
     *map;
 
   assert(filename != (const char *) NULL);
-  file=open(filename,O_RDONLY | O_BINARY);
+  file=open_utf8(filename,O_RDONLY | O_BINARY,0);
   if (file == -1)
     return((StringInfo *) NULL);
   offset=(MagickOffsetType) lseek(file,0,SEEK_END);
@@ -689,6 +734,8 @@ MagickExport size_t CopyMagickString(char *destination,const char *source,
   register size_t
     n;
 
+  if (source == (const char *) NULL)
+    return(0);
   p=source;
   q=destination;
   for (n=length; n > 4; n-=4)
@@ -1389,6 +1436,8 @@ MagickExport void LocaleLower(char *string)
 */
 MagickExport int LocaleNCompare(const char *p,const char *q,const size_t length)
 {
+  if ((p == (char *) NULL) && (q == (char *) NULL))
+    return(0);
   if (p == (char *) NULL)
     return(-1);
   if (q == (char *) NULL)
@@ -2199,7 +2248,7 @@ MagickExport char **StringToList(const char *text)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  StringToStringInfo() returns the contents of a file as a string.
+%  StringToStringInfo() converts a string to a StringInfo type.
 %
 %  The format of the StringToStringInfo method is:
 %
@@ -2217,7 +2266,7 @@ MagickExport StringInfo *StringToStringInfo(const char *string)
 
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(string != (const char *) NULL);
-  string_info=AcquireStringInfo(strlen(string)+1);
+  string_info=AcquireStringInfo(strlen(string));
   SetStringInfoDatum(string_info,(const unsigned char *) string);
   return(string_info);
 }

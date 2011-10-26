@@ -84,6 +84,7 @@
 #include "magick/transform.h"
 #include "magick/threshold.h"
 #include "magick/utility.h"
+#include "magick/utility-private.h"
 #include "magick/version.h"
 #include "magick/widget.h"
 #include "magick/xwindow-private.h"
@@ -1681,6 +1682,8 @@ MagickExport MagickBooleanType DisplayImages(const ImageInfo *image_info,
     image=GetImageFromList(images,i % GetImageListLength(images));
     (void) XDisplayImage(display,&resource_info,argv,1,&image,&state);
   }
+  SetErrorHandler((ErrorHandler) NULL);
+  SetWarningHandler((WarningHandler) NULL);
   argv[0]=DestroyString(argv[0]);
   (void) XCloseDisplay(display);
   XDestroyResourceInfo(&resource_info);
@@ -3510,7 +3513,7 @@ static MagickBooleanType XColorEditImage(Display *display,
               break;
             if (entry != 5)
               {
-                (*image)->fuzz=SiPrefixToDouble(FuzzMenu[entry],1.0*
+                (*image)->fuzz=SiPrefixToDouble(FuzzMenu[entry],(double)
                   QuantumRange+1.0);
                 break;
               }
@@ -3520,7 +3523,7 @@ static MagickBooleanType XColorEditImage(Display *display,
             if (*fuzz == '\0')
               break;
             (void) ConcatenateMagickString(fuzz,"%",MaxTextExtent);
-            (*image)->fuzz=SiPrefixToDouble(fuzz,1.0*QuantumRange+1.0);
+            (*image)->fuzz=SiPrefixToDouble(fuzz,(double) QuantumRange+1.0);
             break;
           }
           case ColorEditUndoCommand:
@@ -7159,8 +7162,15 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       status=XSaveImage(display,resource_info,windows,*image);
       if (status == MagickFalse)
         {
-          XNoticeWidget(display,windows,"Unable to write X image:",
-            (*image)->filename);
+          char
+            message[MaxTextExtent];
+
+          (void) FormatLocaleString(message,MaxTextExtent,"%s:%s",
+            (*image)->exception.reason != (char *) NULL ?
+            (*image)->exception.reason : "",
+            (*image)->exception.description != (char *) NULL ?
+            (*image)->exception.description : "");
+          XNoticeWidget(display,windows,"Unable to save file:",message);
           break;
         }
       break;
@@ -7173,8 +7183,15 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       status=XPrintImage(display,resource_info,windows,*image);
       if (status == MagickFalse)
         {
-          XNoticeWidget(display,windows,"Unable to print X image:",
-            (*image)->filename);
+          char
+            message[MaxTextExtent];
+
+          (void) FormatLocaleString(message,MaxTextExtent,"%s:%s",
+            (*image)->exception.reason != (char *) NULL ?
+            (*image)->exception.reason : "",
+            (*image)->exception.description != (char *) NULL ?
+            (*image)->exception.description : "");
+          XNoticeWidget(display,windows,"Unable to print file:",message);
           break;
         }
       break;
@@ -7190,7 +7207,7 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       XFileBrowserWidget(display,windows,"Delete",filename);
       if (*filename == '\0')
         break;
-      status=remove(filename) != 0 ? MagickTrue : MagickFalse;
+      status=remove_utf8(filename) != 0 ? MagickTrue : MagickFalse;
       if (status != MagickFalse)
         XNoticeWidget(display,windows,"Unable to delete image file:",filename);
       break;
@@ -9750,8 +9767,8 @@ static MagickBooleanType XMatteEditImage(Display *display,
               break;
             if (entry != 5)
               {
-                (*image)->fuzz=SiPrefixToDouble(FuzzMenu[entry],1.0*QuantumRange+
-                  1.0);
+                (*image)->fuzz=SiPrefixToDouble(FuzzMenu[entry],(double)
+                  QuantumRange+1.0);
                 break;
               }
             (void) CopyMagickString(fuzz,"20%",MaxTextExtent);
@@ -9760,7 +9777,7 @@ static MagickBooleanType XMatteEditImage(Display *display,
             if (*fuzz == '\0')
               break;
             (void) ConcatenateMagickString(fuzz,"%",MaxTextExtent);
-            (*image)->fuzz=SiPrefixToDouble(fuzz,1.0*QuantumRange+1.0);
+            (*image)->fuzz=SiPrefixToDouble(fuzz,(double) QuantumRange+1.0);
             break;
           }
           case MatteEditValueCommand:
@@ -12414,10 +12431,13 @@ static MagickBooleanType XSaveImage(Display *display,
 
       GetPathComponent(image->filename,HeadPath,path);
       GetPathComponent(image->filename,TailPath,filename);
-      status=chdir(path);
-      if (status == -1)
-        (void) ThrowMagickException(&image->exception,GetMagickModule(),
-          FileOpenError,"UnableToOpenFile","%s",path);
+      if (*path != '\0')
+        {
+          status=chdir(path);
+          if (status == -1)
+            (void) ThrowMagickException(&image->exception,GetMagickModule(),
+              FileOpenError,"UnableToOpenFile","%s",path);
+        }
     }
   XFileBrowserWidget(display,windows,"Save",filename);
   if (*filename == '\0')
@@ -13065,7 +13085,7 @@ static Image *XTileImage(Display *display,XResourceInfo *resource_info,
       status=XConfirmWidget(display,windows,"Really delete tile",filename);
       if (status <= 0)
         break;
-      status=remove(filename) != 0 ? MagickTrue : MagickFalse;
+      status=remove_utf8(filename) != 0 ? MagickTrue : MagickFalse;
       if (status != MagickFalse)
         {
           XNoticeWidget(display,windows,"Unable to delete image file:",
@@ -14559,7 +14579,7 @@ MagickExport Image *XDisplayImage(Display *display,XResourceInfo *resource_info,
         Window name is the base of the filename.
       */
       GetPathComponent(display_image->magick_filename,TailPath,filename);
-      if (GetImageListLength(display_image) == 1)
+      if (display_image->scene == 0)
         (void) FormatLocaleString(windows->image.name,MaxTextExtent,
           "%s: %s",MagickPackageName,filename);
       else

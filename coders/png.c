@@ -127,7 +127,7 @@
 #endif
 
 /* Macros for left-bit-replication to ensure that pixels
- * and PixelPackets all have the image->depth, and for use
+ * and PixelPackets all have the same image->depth, and for use
  * in PNG8 quantization.
  */
 
@@ -1843,7 +1843,7 @@ Magick_png_read_raw_profile(Image *image, const ImageInfo *image_info,
     return(MagickFalse);
   }
 
-  profile=AcquireStringInfo(length);
+  profile=BlobToStringInfo((const void *) NULL,length);
 
   if (profile == (StringInfo *) NULL)
   {
@@ -2293,8 +2293,14 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
           if (logging != MagickFalse)
             (void) LogMagickEvent(CoderEvent,GetMagickModule(),
               "    Reading PNG iCCP chunk.");
-          profile=AcquireStringInfo(profile_length);
-          SetStringInfoDatum(profile,(const unsigned char *) info);
+          profile=BlobToStringInfo(info,profile_length);
+          if (profile == (StringInfo *) NULL)
+          {
+            (void) ThrowMagickException(&image->exception,GetMagickModule(),
+              ResourceLimitError,"MemoryAllocationFailed","`%s'",
+              "unable to copy profile");
+            return(MagickFalse);
+          }
           (void) SetImageProfile(image,"icc",profile);
           profile=DestroyStringInfo(profile);
       }
@@ -7562,6 +7568,95 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   ping_preserve_colormap = mng_info->ping_preserve_colormap;
   ping_need_colortype_warning = MagickFalse;
 
+  /* Recognize the ICC sRGB profile and convert it to the sRGB chunk,
+   * i.e., eliminate the ICC profile and set image->rendering_intent.
+   * Note that this will not involve any changes to the actual pixels
+   * but merely passes information to applications that read the resulting
+   * PNG image.
+   *
+   * To do: recognize other variants of the sRGB profile, using the CRC to
+   * verify all recognized variants including the 3 already known.
+   *
+   * Use something other than image->rendering_intent to record the fact
+   * that the sRGB profile was found.
+   *
+   * Record the ICC version (currently v2 or v4) of the incoming sRGB ICC
+   * profile.  Record the Blackpoint Compensation, if any.
+   */
+   if (ping_exclude_sRGB == MagickFalse)
+   {
+      char
+        *name;
+
+      const StringInfo
+        *profile;
+
+      ResetImageProfileIterator(image);
+      for (name=GetNextImageProfile(image); name != (const char *) NULL; )
+      {
+        profile=GetImageProfile(image,name);
+
+        if (profile != (StringInfo *) NULL)
+          {
+            if ((LocaleCompare(name,"ICC") == 0) ||
+                (LocaleCompare(name,"ICM") == 0))
+
+             {
+                 int
+                   icheck;
+
+                 /* 0: not a known sRGB profile
+                  * 1: HP-Microsoft sRGB v2
+                  * 2: ICC sRGB v4 perceptual
+                  * 3: ICC sRGB v2 perceptual no black-compensation
+                  */
+                 png_uint_32
+                   check_crc[4] = {0, 0xf29e526dUL, 0xbbef7812UL, 0x427ebb21UL},
+                   check_len[4] = {0, 3144, 60960, 3052};
+
+                 png_uint_32
+                   length,
+                   profile_crc;
+
+                 unsigned char
+                   *data;
+
+                 length=(png_uint_32) GetStringInfoLength(profile);
+
+                 for (icheck=3; icheck > 0; icheck--)
+                 {
+                   if (length == check_len[icheck])
+                   {
+                     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+                         "    Got a %lu-byte ICC profile (potentially sRGB)",
+                         (unsigned long) length);
+
+                     data=GetStringInfoDatum(profile);
+                     profile_crc=crc32(0,data,length);
+
+                     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+                         "      with crc=%8x",(unsigned int) profile_crc);
+
+                     if (profile_crc == check_crc[icheck])
+                     {
+                        (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+                            "      It is sRGB.");
+                        if (image->rendering_intent==UndefinedIntent)
+                          image->rendering_intent=PerceptualIntent;
+                        break;
+                     }
+                   }
+                 }
+                 if (icheck == 0)
+                    (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+                        "    Got a %lu-byte ICC profile",
+                        (unsigned long) length);
+              }
+          }
+        name=GetNextImageProfile(image);
+      }
+  }
+
   number_opaque = 0;
   number_semitransparent = 0;
   number_transparent = 0;
@@ -7596,7 +7691,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
            if (logging != MagickFalse)
               (void) LogMagickEvent(CoderEvent,GetMagickModule(),
               "    Freeing bogus colormap");
-           (void *) RelinquishMagickMemory(image->colormap);
+           (void) RelinquishMagickMemory(image->colormap);
            image->colormap=NULL;
         }
     }
@@ -9757,8 +9852,13 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
     png_set_compression_strategy(ping,
        mng_info->write_png_compression_strategy-1);
 
-  if ((ping_exclude_tEXt == MagickFalse || ping_exclude_zTXt == MagickFalse) &&
-     (ping_exclude_iCCP == MagickFalse || ping_exclude_zCCP == MagickFalse))
+  /* Only write the iCCP chunk if we are not writing the sRGB chunk. */
+  if (ping_exclude_sRGB != MagickFalse ||
+     (image->rendering_intent == UndefinedIntent))
+  {
+    if ((ping_exclude_tEXt == MagickFalse ||
+       ping_exclude_zTXt == MagickFalse) &&
+       (ping_exclude_iCCP == MagickFalse || ping_exclude_zCCP == MagickFalse))
     {
       ResetImageProfileIterator(image);
       for (name=GetNextImageProfile(image); name != (const char *) NULL; )
@@ -9801,6 +9901,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
         name=GetNextImageProfile(image);
       }
+    }
   }
 
 #if defined(PNG_WRITE_sRGB_SUPPORTED)
@@ -9820,9 +9921,6 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
           (void) png_set_sRGB(ping,ping_info,(
             Magick_RenderingIntent_to_PNG_RenderingIntent(
               image->rendering_intent)));
-
-          if (ping_exclude_gAMA == MagickFalse)
-            png_set_gAMA(ping,ping_info,0.45455);
         }
     }
 
@@ -10852,6 +10950,32 @@ static MagickBooleanType WritePNGImage(const ImageInfo *image_info,
   mng_info->write_png8=LocaleCompare(image_info->magick,"PNG8") == 0;
   mng_info->write_png24=LocaleCompare(image_info->magick,"PNG24") == 0;
   mng_info->write_png32=LocaleCompare(image_info->magick,"PNG32") == 0;
+
+  value=GetImageOption(image_info,"png:format");
+
+  if (value != (char *) NULL)
+    {
+      if (LocaleCompare(value,"png8") == 0)
+        {
+        mng_info->write_png8 = MagickTrue;
+        mng_info->write_png24 = MagickFalse;
+        mng_info->write_png32 = MagickFalse;
+        }
+
+      else if (LocaleCompare(value,"png24") == 0)
+        {
+        mng_info->write_png8 = MagickFalse;
+        mng_info->write_png24 = MagickTrue;
+        mng_info->write_png32 = MagickFalse;
+        }
+
+      else if (LocaleCompare(value,"png32") == 0)
+        {
+        mng_info->write_png8 = MagickFalse;
+        mng_info->write_png24 = MagickFalse;
+        mng_info->write_png32 = MagickTrue;
+        }
+    }
 
   if (mng_info->write_png8)
     {

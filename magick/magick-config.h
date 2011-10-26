@@ -20,9 +20,7 @@
 #endif
 
 /* Define if you have CAIRO library */
-#ifndef MAGICKCORE_CAIRO_DELEGATE
-#define MAGICKCORE_CAIRO_DELEGATE 1
-#endif
+/* #undef CAIRO_DELEGATE */
 
 /* permit enciphering and deciphering image pixels */
 #ifndef MAGICKCORE_CIPHER_SUPPORT
@@ -34,17 +32,17 @@
 
 /* Location of coder modules */
 #ifndef MAGICKCORE_CODER_PATH
-#define MAGICKCORE_CODER_PATH "/usr/local/lib/ImageMagick-6.7.1/modules-Q16/coders/"
+#define MAGICKCORE_CODER_PATH "/usr/lib/ImageMagick-6.7.3/modules-Q16/coders/"
 #endif
 
 /* Subdirectory of lib where coder modules are installed */
 #ifndef MAGICKCORE_CODER_RELATIVE_PATH
-#define MAGICKCORE_CODER_RELATIVE_PATH "ImageMagick-6.7.1/modules-Q16/coders"
+#define MAGICKCORE_CODER_RELATIVE_PATH "ImageMagick-6.7.3/modules-Q16/coders"
 #endif
 
 /* Directory where architecture-dependent configuration files live. */
 #ifndef MAGICKCORE_CONFIGURE_PATH
-#define MAGICKCORE_CONFIGURE_PATH "/usr/local/etc/ImageMagick/"
+#define MAGICKCORE_CONFIGURE_PATH "/usr/etc/ImageMagick/"
 #endif
 
 /* Subdirectory of lib where architecture-dependent configuration files live.
@@ -60,21 +58,18 @@
 
 /* Directory where ImageMagick documents live. */
 #ifndef MAGICKCORE_DOCUMENTATION_PATH
-#define MAGICKCORE_DOCUMENTATION_PATH "/usr/local/share/doc/ImageMagick-6.7.1//"
+#define MAGICKCORE_DOCUMENTATION_PATH "/usr/share/doc/ImageMagick//"
 #endif
 
 /* Define if you have Display Postscript */
 /* #undef DPS_DELEGATE */
-
-/* Build self-contained, embeddable, zero-configuration ImageMagick */
-/* #undef EMBEDDABLE_SUPPORT */
 
 /* exclude deprecated methods in MagickCore API */
 /* #undef EXCLUDE_DEPRECATED */
 
 /* Directory where executables are installed. */
 #ifndef MAGICKCORE_EXECUTABLE_PATH
-#define MAGICKCORE_EXECUTABLE_PATH "/usr/local/bin/"
+#define MAGICKCORE_EXECUTABLE_PATH "/usr/bin/"
 #endif
 
 /* Define if you have FFTW library */
@@ -82,12 +77,12 @@
 
 /* Location of filter modules */
 #ifndef MAGICKCORE_FILTER_PATH
-#define MAGICKCORE_FILTER_PATH "/usr/local/lib/ImageMagick-6.7.1/modules-Q16/filters/"
+#define MAGICKCORE_FILTER_PATH "/usr/lib/ImageMagick-6.7.3/modules-Q16/filters/"
 #endif
 
 /* Subdirectory of lib where filter modules are installed */
 #ifndef MAGICKCORE_FILTER_RELATIVE_PATH
-#define MAGICKCORE_FILTER_RELATIVE_PATH "ImageMagick-6.7.1/modules-Q16/filters"
+#define MAGICKCORE_FILTER_RELATIVE_PATH "ImageMagick-6.7.3/modules-Q16/filters"
 #endif
 
 /* Define if you have FONTCONFIG library */
@@ -251,6 +246,12 @@
    */
 #ifndef MAGICKCORE_HAVE_DECL_PWRITE
 #define MAGICKCORE_HAVE_DECL_PWRITE 1
+#endif
+
+/* Define to 1 if you have the declaration of `strerror_r', and to 0 if you
+   don't. */
+#ifndef MAGICKCORE_HAVE_DECL_STRERROR_R
+#define MAGICKCORE_HAVE_DECL_STRERROR_R 1
 #endif
 
 /* Define to 1 if you have the declaration of `strlcpy', and to 0 if you
@@ -1182,13 +1183,13 @@
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/usr/local/lib/ImageMagick-6.7.1/"
+#define MAGICKCORE_LIBRARY_PATH "/usr/lib/ImageMagick-6.7.3/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
    installed */
 #ifndef MAGICKCORE_LIBRARY_RELATIVE_PATH
-#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.7.1"
+#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.7.3"
 #endif
 
 /* Define if you have LQR library */
@@ -1204,7 +1205,7 @@
 
 /* Define to the system default library search path. */
 #ifndef MAGICKCORE_LT_DLSEARCH_PATH
-#define MAGICKCORE_LT_DLSEARCH_PATH "/lib64:/usr/lib64:/lib:/usr/lib:/usr/lib64/atlas:/usr/lib/llvm:/usr/lib64/llvm:/usr/lib64/mysql:/usr/lib64/qt-3.3/lib:/usr/lib64/tcl8.5/tclx8.4:/usr/lib64/tcl8.5:/usr/lib/wine/:/usr/lib64/wine/:/usr/lib64/xulrunner-2"
+#define MAGICKCORE_LT_DLSEARCH_PATH "/lib64:/usr/lib64:/lib:/usr/lib:/usr/lib64/atlas:/usr/lib/llvm:/usr/lib64/llvm:/usr/lib64/mysql:/usr/lib64/qt-3.3/lib:/usr/lib64/tcl8.5/tclx8.4:/usr/lib64/tcl8.5:/usr/lib64/tracker-0.12:/usr/lib/wine/:/usr/lib64/wine/:/usr/lib64/xulrunner-2"
 #endif
 
 /* The archive extension */
@@ -1257,6 +1258,11 @@
 /* Define if you have OPENEXR library */
 /* #undef OPENEXR_DELEGATE */
 
+/* Name of package */
+#ifndef MAGICKCORE_PACKAGE
+#define MAGICKCORE_PACKAGE "ImageMagick"
+#endif
+
 /* Define to the address where bug reports for this package should be sent. */
 #ifndef MAGICKCORE_PACKAGE_BUGREPORT
 #define MAGICKCORE_PACKAGE_BUGREPORT "http://www.imagemagick.org"
@@ -1269,12 +1275,12 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.1"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.3-2"
 #endif
 
 /* Define to the one symbol short name of this package. */
 #ifndef MAGICKCORE_PACKAGE_TARNAME
-#define MAGICKCORE_PACKAGE_TARNAME "ImageMagick-6.7.1"
+#define MAGICKCORE_PACKAGE_TARNAME "ImageMagick"
 #endif
 
 /* Define to the home page for this package. */
@@ -1284,7 +1290,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.7.1"
+#define MAGICKCORE_PACKAGE_VERSION "6.7.3-2"
 #endif
 
 /* Define if you have PNG library */
@@ -1329,13 +1335,13 @@
 
 /* Directory where architecture-independent configuration files live. */
 #ifndef MAGICKCORE_SHARE_PATH
-#define MAGICKCORE_SHARE_PATH "/usr/local/share/ImageMagick-6.7.1/"
+#define MAGICKCORE_SHARE_PATH "/usr/share/ImageMagick-6.7.3/"
 #endif
 
 /* Subdirectory of lib where architecture-independent configuration files
    live. */
 #ifndef MAGICKCORE_SHARE_RELATIVE_PATH
-#define MAGICKCORE_SHARE_RELATIVE_PATH "ImageMagick-6.7.1"
+#define MAGICKCORE_SHARE_RELATIVE_PATH "ImageMagick-6.7.3"
 #endif
 
 /* The size of `off_t', as computed by sizeof. */
@@ -1406,6 +1412,11 @@
 #define MAGICKCORE_STDC_HEADERS 1
 #endif
 
+/* Define to 1 if strerror_r returns char *. */
+#ifndef MAGICKCORE_STRERROR_R_CHAR_P
+#define MAGICKCORE_STRERROR_R_CHAR_P 1
+#endif
+
 /* Define if you have POSIX threads libraries and header files. */
 #ifndef MAGICKCORE_THREAD_SUPPORT
 #define MAGICKCORE_THREAD_SUPPORT 1
@@ -1445,6 +1456,11 @@
 # define __EXTENSIONS__ 1
 #endif
 
+
+/* Version number of package */
+#ifndef MAGICKCORE_VERSION
+#define MAGICKCORE_VERSION "6.7.3-2"
+#endif
 
 /* Define if you have WEBP library */
 /* #undef WEBP_DELEGATE */
@@ -1487,6 +1503,9 @@
 
 /* Define to 1 if the X Window System is missing or not being used. */
 /* #undef X_DISPLAY_MISSING */
+
+/* Build self-contained, embeddable, zero-configuration ImageMagick */
+/* #undef ZERO_CONFIGURATION_SUPPORT */
 
 /* Define if you have zlib compression library */
 #ifndef MAGICKCORE_ZLIB_DELEGATE

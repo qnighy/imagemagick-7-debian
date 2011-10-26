@@ -616,20 +616,26 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
     cin.origination.reserve);
   if ((cin.file.image_offset > 2048) && (cin.file.user_length != 0))
     {
+      int
+        c;
+
       /*
         Image film information.
       */
       cin.film.id=ReadBlobByte(image);
       offset++;
-      if (((size_t) cin.film.id) != ~0UL)
+      c=cin.film.id;
+      if (c != ~0U)
         (void) FormatImageProperty(image,"dpx:film.id","%d",cin.film.id);
       cin.film.type=ReadBlobByte(image);
       offset++;
-      if (((size_t) cin.film.type) != ~0UL)
+      c=cin.film.type;
+      if (c != ~0U)
         (void) FormatImageProperty(image,"dpx:film.type","%d",cin.film.type);
       cin.film.offset=ReadBlobByte(image);
       offset++;
-      if (((size_t) cin.film.offset) != ~0UL)
+      c=cin.film.offset;
+      if (c != ~0U)
         (void) FormatImageProperty(image,"dpx:film.offset","%d",
           cin.film.offset);
       cin.film.reserve1=ReadBlobByte(image);
@@ -671,7 +677,9 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
       /*
         User defined data.
       */
-      profile=AcquireStringInfo(cin.file.user_length);
+      profile=BlobToStringInfo((const void *) NULL,cin.file.user_length);
+      if (profile == (StringInfo *) NULL)
+        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
       offset+=ReadBlob(image,GetStringInfoLength(profile),
         GetStringInfoDatum(profile));
       (void) SetImageProfile(image,"dpx:user.data",profile);

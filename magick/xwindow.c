@@ -342,8 +342,8 @@ MagickExport void DestroyXResources(void)
               segment_info[0].shmid=(-1);
             }
 #endif
-        magick_windows[i]->segment_info=(void *)
-          RelinquishMagickMemory(magick_windows[i]->segment_info);
+        magick_windows[i]->segment_info=(void *) RelinquishMagickMemory(
+          magick_windows[i]->segment_info);
       }
   }
   windows->icon_resources=(XResourceInfo *)
@@ -380,9 +380,11 @@ MagickExport void DestroyXResources(void)
   if (windows->class_hints != (XClassHint *) NULL)
     {
       if (windows->class_hints->res_name != (char *) NULL)
-        XFree(windows->class_hints->res_name);
+        windows->class_hints->res_name=DestroyString(
+          windows->class_hints->res_name);
       if (windows->class_hints->res_class != (char *) NULL)
-        XFree(windows->class_hints->res_class);
+        windows->class_hints->res_class=DestroyString(
+          windows->class_hints->res_class);
       XFree(windows->class_hints);
       windows->class_hints=(XClassHint *) NULL;
     }

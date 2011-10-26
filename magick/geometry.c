@@ -93,6 +93,9 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
   double
     value;
 
+  int
+    c;
+
   MagickStatusType
     flags;
 
@@ -112,7 +115,8 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
         (void) CopyMagickString(p,p+1,MaxTextExtent);
         continue;
       }
-    switch ((int) *p)
+    c=(int) ((unsigned char) *p);
+    switch (c)
     {
       case '%':
       {
@@ -170,9 +174,9 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
       case '7':
       case '8':
       case '9':
-      case -41:
       case 'x':
       case 'X':
+      case 215:
       {
         p++;
         break;
@@ -192,7 +196,8 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
   (void) value;
   if (LocaleNCompare(p,"0x",2) == 0)
     value=(double) strtol(p,&q,10);
-  if ((((int) *q) == -41) || (*q == 'x') || (*q == 'X') || (*q == '\0'))
+  c=(int) ((unsigned char) *q);
+  if ((c == 215) || (*q == 'x') || (*q == 'X') || (*q == '\0'))
     {
       /*
         Parse width.
@@ -205,7 +210,8 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
       if (p != q)
         flags|=WidthValue;
     }
-  if ((((int) *p) == -41) || (*p == 'x') || (*p == 'X'))
+  c=(int) ((unsigned char) *p);
+  if ((c == 215) || (*p == 'x') || (*p == 'X'))
     {
       p++;
       if ((*p != '+') && (*p != '-'))
@@ -747,6 +753,9 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
   double
     value;
 
+  int
+    c;
+
   MagickStatusType
     flags;
 
@@ -767,7 +776,8 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
         (void) CopyMagickString(p,p+1,MaxTextExtent);
         continue;
       }
-    switch ((int) *p)
+    c=(int) ((unsigned char) *p);
+    switch (c)
     {
       case '%':
       {
@@ -824,11 +834,11 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
       case '7':
       case '8':
       case '9':
-      case -41:
       case 'x':
       case 'X':
       case '/':
       case ':':
+      case 215:
       {
         p++;
         break;
@@ -853,7 +863,8 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
   value=InterpretLocaleValue(p,&q);
   if (LocaleNCompare(p,"0x",2) == 0)
     value=(double) strtol(p,&q,10);
-  if ((((int) *q) == -41) || (*q == 'x') || (*q == 'X') || (*q == ',') ||
+  c=(int) ((unsigned char) *q);
+  if ((c == 215) || (*q == 'x') || (*q == 'X') || (*q == ',') ||
       (*q == '/') || (*q == ':') || (*q =='\0'))
     {
       /*
@@ -871,8 +882,9 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
         }
     }
   q=p;
-  if ((((int) *p) == -41) || (*p == 'x') || (*p == 'X') || (*p == ',') ||
-      (*p == '/') || (*p == ':'))
+  c=(int) ((unsigned char) *p);
+  if ((c == 215) || (*p == 'x') || (*p == 'X') || (*p == ',') || (*p == '/') ||
+      (*p == ':'))
     {
       /*
         Parse sigma.
@@ -880,8 +892,9 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
       p++;
       while (isspace((int) ((unsigned char) *p)) != 0)
         p++;
-      if (((((int) *q) != -41) && (*q != 'x') && (*q != 'X')) ||
-          ((*p != '+') && (*p != '-')))
+      c=(int) ((unsigned char) *q);
+      if (((c != 215) && (*q != 'x') && (*q != 'X')) || ((*p != '+') &&
+          (*p != '-')))
         {
           q=p;
           value=InterpretLocaleValue(p,&p);

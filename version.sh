@@ -10,11 +10,11 @@ PACKAGE_NAME='ImageMagick'
 #
 # Package version.  This is is the numeric version suffix applied to
 # PACKAGE_NAME (e.g. "1.0.0").
-PACKAGE_VERSION='6.7.1'
-PACKAGE_PERL_VERSION='6.71'
-PACKAGE_LIB_VERSION="0x671"
-PACKAGE_RELEASE="9"
-PACKAGE_LIB_VERSION_NUMBER="6,7,1,${PACKAGE_RELEASE}"
+PACKAGE_VERSION='6.7.3'
+PACKAGE_PERL_VERSION='6.73'
+PACKAGE_LIB_VERSION="0x673"
+PACKAGE_RELEASE="2"
+PACKAGE_LIB_VERSION_NUMBER="6,7,3,${PACKAGE_RELEASE}"
 PACKAGE_RELEASE_DATE=`date +%F`
 PACKAGE_STRING="$PACKAGE_NAME $PACKAGE_VERSION"
 
@@ -29,19 +29,12 @@ PACKAGE_CHANGE_DATE=`awk '/^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ { print 
 PACKAGE_VERSION_ADDENDUM="-${PACKAGE_RELEASE}"
 
 #
-# Libtool library revision control info: See the libtool documentation under
-# the heading "Libtool's versioning system" in order to understand the meaning
-# of these fields.
-#
-# Here are a set of rules to help you update your library version
-# information:
-#
-#   If there is any interface change, increment CURRENT (major).  If that
-#   interface change does not break upward compatibility (i.e. it is an
-#   addition), increment AGE (micro), Otherwise AGE is reset to 0. If CURRENT
-#   has changed, REVISION (minor) is set to 0, otherwise REVISION is
-#   incremented.
-
-MAGICK_LIBRARY_CURRENT=4
-MAGICK_LIBRARY_REVISION=1
+# Versions are denoted using a standard triplet of integers:
+# MAJOR.MINOR.PATCH. The basic intent is that MAJOR versions are
+# incompatible, large-scale upgrades of the API. MINOR versions retain
+# source and binary compatibility with older minor versions, and changes
+# in the PATCH level are perfectly compatible, forwards and backwards.
+# See http://apr.apache.org/versioning.html.
+MAGICK_LIBRARY_CURRENT=5
+MAGICK_LIBRARY_REVISION=0
 MAGICK_LIBRARY_AGE=0

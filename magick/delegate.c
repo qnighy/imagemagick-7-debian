@@ -63,6 +63,7 @@
 #include "magick/string_.h"
 #include "magick/token.h"
 #include "magick/utility.h"
+#include "magick/utility-private.h"
 #include "magick/xml-tree.h"
 
 /*
@@ -94,8 +95,8 @@ static const char
     "  <delegate decode=\"https\" command=\"&quot;wget&quot; -q -O &quot;%o&quot; &quot;https:%M&quot;\"/>"
     "  <delegate decode=\"ilbm\" command=\"&quot;ilbmtoppm&quot; &quot;%i&quot; &gt; &quot;%o&quot;\"/>"
     "  <delegate decode=\"man\" command=\"&quot;groff&quot; -man -Tps &quot;%i&quot; &gt; &quot;%o&quot;\"/>"
-    "  <delegate decode=\"mpeg:decode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; --i &quot;%i&quot; -vcodec pam -an -f rawvideo -y &quot;%u0.pam&quot; 2;&gt; &quot;%Z&quot;\"/>"
-    "  <delegate decode=\"null\" encode=\"mpeg:encode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; &quot;%M%%d.jpg&quot; &quot;%u.%m&quot; 2;&gt; &quot;%Z&quot;\"/>"
+    "  <delegate decode=\"mpeg:decode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; -v -1 -vframes %S -i &quot;%i&quot; -vcodec pam -an -f rawvideo -y &quot;%u.pam&quot; 2&gt; &quot;%Z&quot;\"/>"
+    "  <delegate decode=\"null\" encode=\"mpeg:encode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; -v -1 -mbd rd -trellis 2 -cmp 2 -subcmp 2 -g 300 -i &quot;%M%%d.jpg&quot; &quot;%u.%m&quot; 2&gt; &quot;%Z&quot;\"/>"
     "  <delegate decode=\"pcl:color\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=ppmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
     "  <delegate decode=\"pcl:cmyk\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=bmpsep8&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
     "  <delegate decode=\"pcl:mono\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pbmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
@@ -782,20 +783,20 @@ static MagickBooleanType CopyDelegateFile(const char *source,
     *buffer;
 
   /*
-    Return if destination file already exists and is not empty.
+    Return if destination file already exists.
   */
   assert(source != (const char *) NULL);
   assert(destination != (char *) NULL);
   status=GetPathAttributes(destination,&attributes);
-  if ((status != MagickFalse) && (attributes.st_size != 0))
+  if (status != MagickFalse)
     return(MagickTrue);
   /*
     Copy source file to destination.
   */
-  destination_file=open(destination,O_WRONLY | O_BINARY | O_CREAT,S_MODE);
+  destination_file=open_utf8(destination,O_WRONLY | O_BINARY | O_CREAT,S_MODE);
   if (destination_file == -1)
     return(MagickFalse);
-  source_file=open(source,O_RDONLY | O_BINARY);
+  source_file=open_utf8(source,O_RDONLY | O_BINARY,0);
   if (source_file == -1)
     {
       (void) close(destination_file);
@@ -903,8 +904,7 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
         }
       image_info->temporary=MagickTrue;
     }
-  if ((delegate_info->mode != 0) &&
-      (((decode != (const char *) NULL) &&
+  if ((delegate_info->mode != 0) && (((decode != (const char *) NULL) &&
         (delegate_info->encode != (char *) NULL)) ||
        ((encode != (const char *) NULL) &&
         (delegate_info->decode != (char *) NULL))))
@@ -1465,7 +1465,7 @@ static MagickBooleanType LoadDelegateList(const char *xml,const char *filename,
 static MagickBooleanType LoadDelegateLists(const char *filename,
   ExceptionInfo *exception)
 {
-#if defined(MAGICKCORE_EMBEDDABLE_SUPPORT)
+#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
   return(LoadDelegateList(DelegateMap,"built-in",0,exception));
 #else
   const StringInfo

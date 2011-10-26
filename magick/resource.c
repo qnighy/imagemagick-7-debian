@@ -61,6 +61,7 @@
 #include "magick/thread-private.h"
 #include "magick/token.h"
 #include "magick/utility.h"
+#include "magick/utility-private.h"
 
 /*
   Typedef declarations.
@@ -102,7 +103,7 @@ static ResourceInfo
     MagickULLConstant(0),
     MagickULLConstant(0),
     MagickULLConstant(0),
-    MagickULLConstant(3072)*1024*1024/sizeof(PixelPacket),
+    MagickULLConstant(3072)*1024*1024,
     MagickULLConstant(1536)*1024*1024,
     MagickULLConstant(3072)*1024*1024,
     MagickResourceInfinity,
@@ -299,7 +300,7 @@ MagickExport void AsynchronousResourceComponentTerminus(void)
   path=(const char *) GetNextKeyInSplayTree(temporary_resources);
   while (path != (const char *) NULL)
   {
-    (void) remove(path);
+    (void) remove_utf8(path);
     path=(const char *) GetNextKeyInSplayTree(temporary_resources);
   }
 }
@@ -331,7 +332,7 @@ MagickExport void AsynchronousResourceComponentTerminus(void)
 
 static void *DestroyTemporaryResources(void *temporary_resource)
 {
-  (void) remove((char *) temporary_resource);
+  (void) remove_utf8((char *) temporary_resource);
   temporary_resource=DestroyString((char *) temporary_resource);
   return((void *) NULL);
 }
@@ -472,7 +473,7 @@ MagickExport int AcquireUniqueFileResource(char *path)
       *p++=portable_filename[c];
     }
     key=DestroyStringInfo(key);
-    file=open(path,O_RDWR | O_CREAT | O_EXCL | O_BINARY | O_NOFOLLOW,S_MODE);
+    file=open_utf8(path,O_RDWR | O_CREAT | O_EXCL | O_BINARY | O_NOFOLLOW,S_MODE);
     if ((file >= 0) || (errno != EEXIST))
       break;
   }
@@ -861,8 +862,8 @@ MagickExport MagickBooleanType RelinquishUniqueFileResource(const char *path)
     }
   (void) CopyMagickString(cache_path,path,MaxTextExtent);
   AppendImageFormat("cache",cache_path);
-  (void) remove(cache_path);
-  return(remove(path) == 0 ? MagickTrue : MagickFalse);
+  (void) remove_utf8(cache_path);
+  return(remove_utf8(path) == 0 ? MagickTrue : MagickFalse);
 }
 
 /*
@@ -931,7 +932,7 @@ MagickExport MagickBooleanType ResourceComponentGenesis(void)
 #if defined(PixelCacheThreshold)
   memory=PixelCacheThreshold;
 #endif
-  (void) SetMagickResourceLimit(AreaResource,2*memory/sizeof(PixelPacket));
+  (void) SetMagickResourceLimit(AreaResource,2*memory);
   (void) SetMagickResourceLimit(MemoryResource,memory);
   (void) SetMagickResourceLimit(MapResource,2*memory);
   limit=GetEnvironmentValue("MAGICK_AREA_LIMIT");
@@ -1092,6 +1093,7 @@ MagickExport MagickBooleanType SetMagickResourceLimit(const ResourceType type,
   if (resource_semaphore == (SemaphoreInfo *) NULL)
     AcquireSemaphoreInfo(&resource_semaphore);
   LockSemaphoreInfo(resource_semaphore);
+  value=(char *) NULL;
   switch (type)
   {
     case AreaResource:
@@ -1156,6 +1158,8 @@ MagickExport MagickBooleanType SetMagickResourceLimit(const ResourceType type,
     default:
       break;
   }
+  if (value != (char *) NULL)
+    value=DestroyString(value);
   UnlockSemaphoreInfo(resource_semaphore);
   return(MagickTrue);
 }

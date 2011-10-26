@@ -66,6 +66,7 @@
 #include "magick/string-private.h"
 #include "magick/thread-private.h"
 #include "magick/utility.h"
+#include "magick/utility-private.h"
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
 #include "zlib.h"
 #endif
@@ -647,24 +648,24 @@ static MagickBooleanType OpenPixelCacheOnDisk(CacheInfo *cache_info,
     {
       case ReadMode:
       {
-        file=open(cache_info->cache_filename,O_RDONLY | O_BINARY);
+        file=open_utf8(cache_info->cache_filename,O_RDONLY | O_BINARY,0);
         break;
       }
       case WriteMode:
       {
-        file=open(cache_info->cache_filename,O_WRONLY | O_CREAT | O_BINARY |
-          O_EXCL,S_MODE);
+        file=open_utf8(cache_info->cache_filename,O_WRONLY | O_CREAT |
+          O_BINARY | O_EXCL,S_MODE);
         if (file == -1)
-          file=open(cache_info->cache_filename,O_WRONLY | O_BINARY,S_MODE);
+          file=open_utf8(cache_info->cache_filename,O_WRONLY | O_BINARY,S_MODE);
         break;
       }
       case IOMode:
       default:
       {
-        file=open(cache_info->cache_filename,O_RDWR | O_CREAT | O_BINARY |
+        file=open_utf8(cache_info->cache_filename,O_RDWR | O_CREAT | O_BINARY |
           O_EXCL,S_MODE);
         if (file == -1)
-          file=open(cache_info->cache_filename,O_RDWR | O_BINARY,S_MODE);
+          file=open_utf8(cache_info->cache_filename,O_RDWR | O_BINARY,S_MODE);
         break;
       }
     }
@@ -1733,7 +1734,8 @@ MagickExport PixelPacket *GetAuthenticPixelCacheNexus(Image *image,
   */
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
-  pixels=QueueAuthenticNexus(image,x,y,columns,rows,nexus_info,exception);
+  pixels=QueueAuthenticNexus(image,x,y,columns,rows,MagickTrue,nexus_info,
+    exception);
   if (pixels == (PixelPacket *) NULL)
     return((PixelPacket *) NULL);
   cache_info=(CacheInfo *) image->cache;
@@ -4144,8 +4146,7 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
   cache_info->storage_class=image->storage_class;
   cache_info->colorspace=image->colorspace;
   length=number_pixels*(sizeof(PixelPacket)+sizeof(IndexPacket));
-  status=AcquireMagickResource(AreaResource,cache_info->length);
-  if ((status == MagickFalse) || (length != (MagickSizeType) ((size_t) length)))
+  if (length != (MagickSizeType) ((size_t) length))
     cache_info->type=DiskCache;
   else
     {
@@ -4309,7 +4310,7 @@ MagickExport MagickBooleanType PersistPixelCache(Image *image,
           /*
             Usurp existing persistent pixel cache.
           */
-          status=rename(cache_info->cache_filename,filename);
+          status=rename_utf8(cache_info->cache_filename,filename);
           if (status == 0)
             {
               (void) CopyMagickString(cache_info->cache_filename,filename,
@@ -4366,7 +4367,8 @@ MagickExport MagickBooleanType PersistPixelCache(Image *image,
 %
 %      PixelPacket *QueueAuthenticNexus(Image *image,const ssize_t x,
 %        const ssize_t y,const size_t columns,const size_t rows,
-%        NexusInfo *nexus_info,ExceptionInfo *exception)
+%        const MagickBooleanType clone,NexusInfo *nexus_info,
+%        ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -4377,12 +4379,14 @@ MagickExport MagickBooleanType PersistPixelCache(Image *image,
 %
 %    o nexus_info: the cache nexus to set.
 %
+%    o clone: clone the pixel cache.
+%
 %    o exception: return any errors or warnings in this structure.
 %
 */
 MagickExport PixelPacket *QueueAuthenticNexus(Image *image,const ssize_t x,
-  const ssize_t y,const size_t columns,const size_t rows,NexusInfo *nexus_info,
-  ExceptionInfo *exception)
+  const ssize_t y,const size_t columns,const size_t rows,
+  const MagickBooleanType clone,NexusInfo *nexus_info,ExceptionInfo *exception)
 {
   CacheInfo
     *cache_info;
@@ -4402,10 +4406,10 @@ MagickExport PixelPacket *QueueAuthenticNexus(Image *image,const ssize_t x,
   assert(image != (const Image *) NULL);
   assert(image->signature == MagickSignature);
   assert(image->cache != (Cache) NULL);
-  cache_info=(CacheInfo *) GetImagePixelCache(image,MagickTrue,exception);
-  assert(cache_info->signature == MagickSignature);
+  cache_info=(CacheInfo *) GetImagePixelCache(image,clone,exception);
   if (cache_info == (Cache) NULL)
     return((PixelPacket *) NULL);
+  assert(cache_info->signature == MagickSignature);
   if ((cache_info->columns == 0) && (cache_info->rows == 0))
     {
       (void) ThrowMagickException(exception,GetMagickModule(),CacheError,
@@ -4485,8 +4489,8 @@ static PixelPacket *QueueAuthenticPixelsCache(Image *image,const ssize_t x,
   cache_info=(CacheInfo *) image->cache;
   assert(cache_info->signature == MagickSignature);
   assert(id < (int) cache_info->number_threads);
-  return(QueueAuthenticNexus(image,x,y,columns,rows,cache_info->nexus_info[id],
-    exception));
+  return(QueueAuthenticNexus(image,x,y,columns,rows,MagickFalse,
+    cache_info->nexus_info[id],exception));
 }
 
 /*
@@ -4565,8 +4569,8 @@ MagickExport PixelPacket *QueueAuthenticPixels(Image *image,const ssize_t x,
     return(cache_info->methods.queue_authentic_pixels_handler(image,x,y,columns,
       rows,exception));
   assert(id < (int) cache_info->number_threads);
-  return(QueueAuthenticNexus(image,x,y,columns,rows,cache_info->nexus_info[id],
-    exception));
+  return(QueueAuthenticNexus(image,x,y,columns,rows,MagickFalse,
+    cache_info->nexus_info[id],exception));
 }
 
 /*

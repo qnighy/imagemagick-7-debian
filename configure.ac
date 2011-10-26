@@ -14,16 +14,17 @@
 #
 #  Copyright (C) 2003 - 2008 GraphicsMagick Group
 
-AC_PREREQ(2.64)
+AC_PREREQ(2.67)
 
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [7])
-m4_define([magick_micro_version], [1])
+m4_define([magick_micro_version], [3])
+m4_define([magick_patchlevel_version], [2])
 m4_define([magick_version],
-          [magick_major_version.magick_minor_version.magick_micro_version])
+          [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "svnversion | sed -r 's/([0-9]+).*/\1/'"]))
 
-AC_INIT([ImageMagick],[magick_version],[http://www.imagemagick.org],[ImageMagick-magick_version])
+AC_INIT([ImageMagick],[magick_version],[http://www.imagemagick.org],[ImageMagick])
 AC_CONFIG_SRCDIR([magick/MagickCore.h])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
@@ -127,7 +128,7 @@ AC_SUBST(PACKAGE_VERSION_ADDENDUM)dnl
 # Ensure that make can run correctly
 AM_SANITY_CHECK
 
-AM_INIT_AUTOMAKE($PACKAGE_NAME,"${PACKAGE_VERSION}${PACKAGE_VERSION_ADDENDUM}", ' ')
+AM_INIT_AUTOMAKE([1.11 color-tests foreign parallel-tests silent-rules subdir-objects dist-zip dist-bzip2 dist-xz])
 
 # Enable support for silent build rules
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -420,7 +421,7 @@ CFLAGS="$CL_CFLAGS $CFLAGS"
 LIBS="$CL_LIBS $LIBS"
 AC_SUBST(CL_CFLAGS)
 if test "$enable_opencl" != no; then
-  if test "_OPENCL" = '1'; then
+  if test "X$ax_cv_check_cl_libcl" != Xno; then :
     MAGICK_FEATURES="OpenCL $MAGICK_FEATURES"
   fi
 fi
@@ -434,9 +435,11 @@ AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 LFS_CPPFLAGS=''
 if test "$enable_largefile" != no; then
-    if test "$ac_cv_sys_file_offset_bits" != 'no'; then
-        LFS_CPPFLAGS="$LFS_CPPFLAGS -D_FILE_OFFSET_BITS=$ac_cv_sys_file_offset_bits"
-    else
+    case $ac_cv_sys_file_offset_bits in
+    no)
+        # nothing to do here as the host supports LFS fine
+        ;;
+    unknown)
         AC_MSG_CHECKING([for native large file support])
         AC_RUN_IFELSE([AC_LANG_PROGRAM([#include <unistd.h>
           main () {
@@ -445,7 +448,11 @@ if test "$enable_largefile" != no; then
         [ac_cv_sys_file_offset_bits=64; AC_DEFINE(_FILE_OFFSET_BITS,64)
          AC_MSG_RESULT([yes])],
         [AC_MSG_RESULT([no])])
-    fi
+        ;;
+    *)
+        LFS_CPPFLAGS="$LFS_CPPFLAGS -D_FILE_OFFSET_BITS=$ac_cv_sys_file_offset_bits"
+        ;;
+    esac
     if test "$ac_cv_sys_large_files" != 'no'; then
         LFS_CPPFLAGS="$LFS_CPPFLAGS -D_LARGE_FILES=1"
     fi
@@ -565,15 +572,16 @@ if test "$enable_cipher" = 'yes'; then
     AC_DEFINE(CIPHER_SUPPORT,1,[permit enciphering and deciphering image pixels])
 fi
 
-# Build an embeddable version of ImageMagick.
-AC_ARG_ENABLE([embeddable],
-    [AC_HELP_STRING([--enable-embeddable],
+# Build an zero-configuration version of ImageMagick.
+AC_ARG_ENABLE([zero-configuration],
+    [AC_HELP_STRING([--enable-zero-configuration],
                     [enable self-contained, embeddable, zero-configuration ImageMagick])],
-    [enable_embeddable=$enableval],
-    [enable_embeddable='no'])
+    [enable_zero_configuration=$enableval],
+    [enable_zero_configuration='no'])
 
-if test "$enable_embeddable" = 'yes'; then
-    AC_DEFINE(EMBEDDABLE_SUPPORT,1,[Build self-contained, embeddable, zero-configuration ImageMagick])
+if test "$enable_zero_configuration" = 'yes'; then
+    AC_DEFINE(ZERO_CONFIGURATION_SUPPORT,1,[Build self-contained, embeddable, zero-configuration ImageMagick])
+    MAGICK_FEATURES="Zero-Configuration $MAGICK_FEATURES"
 fi
 
 # Build a high dynamic range version of ImageMagick.
@@ -1044,6 +1052,7 @@ AC_FUNC_MEMCMP
 AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_SETVBUF_REVERSED
 AC_TYPE_SIGNAL
+AC_FUNC_STRERROR_R
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 
@@ -1817,69 +1826,73 @@ have_freetype='no'
 FREETYPE_LIBS=''
 if test "$with_freetype" != 'no'; then
     AC_MSG_RESULT([-------------------------------------------------------------])
-    AC_MSG_CHECKING([for FreeType 2.0])
-    AC_MSG_RESULT([])
+    AC_MSG_CHECKING(for FreeType 2.0 )
+    AC_MSG_RESULT()
     failed=0
     passed=0
-    PERSIST_LIBS="$LIBS"
+    PERSIST_LDFLAGS="$LDFLAGS"
     PERSIST_CPPFLAGS="$CPPFLAGS"
-    if test "$enable_delegate_build" != 'no' && test -d "$builddir/freetype/include"; then
-        :
-    else
-        freetype_config=''
-        AC_CHECK_PROGS(freetype_config,freetype-config,)dnl
-        if test -n "$freetype_config"; then
-            freetype_cflags=`$freetype_config --cflags`
-            freetype_libs=`$freetype_config --libs`
-            LIBS="$LIBS $freetype_libs"
-            CPPFLAGS="$freetype_cflags $CPPFLAGS"
-        fi
+    freetype_config=''
+    # Allow the user to specify the location of freetype.
+    if test "$with_freetype" != 'yes'; then
+      if test -x "${with_freetype}/bin/freetype-config"; then
+        freetype_config="${with_freetype}/bin/freetype-config"
+      elif test -x "${with_freetype}"; then
+        freetype_config=${with_freetype}
+      fi
+    fi
+    if test -z "$freetype_config"; then
+      AC_PATH_PROG(freetype_config,freetype-config,)dnl
+    fi
+    if test -n "$freetype_config"; then
+      freetype_prefix=`${freetype_config} --prefix`
+      freetype_exec_prefix=`${freetype_config} --exec-prefix`
+      LDFLAGS="$LDFLAGS -L${freetype_exec_prefix}/lib"
+      CPPFLAGS="$CPPFLAGS -I${freetype_prefix}/include/freetype2"
     fi
 
 dnl First see if there is a library
     if test "$FREETYPE_LIBS" = ''; then
-        AC_CHECK_LIB(freetype,FT_Init_FreeType,FREETYPE_LIBS='-lfreetype',,)
-        if test "$FREETYPE_LIBS" != ''; then
-            passed=`expr $passed + 1`
-        else
-            failed=`expr $failed + 1`
-            LIBS="$PERSIST_LIBS"
-        fi
+      AC_CHECK_LIB(freetype,FT_Init_FreeType,FREETYPE_LIBS='-lfreetype',,)
+      if test "$FREETYPE_LIBS" != ''; then
+        passed=`expr $passed + 1`
+      else
+        failed=`expr $failed + 1`
+        LDFLAGS="$PERSIST_LDFLAGS"
+      fi
     fi
 
 dnl Now test for the headers
     AC_CHECK_HEADER([ft2build.h],[FT2BUILD_H='#include <ft2build.h>'],[ft2build=''],[])
     AC_CHECK_HEADER(freetype/freetype.h,[have_freetype_h='yes'],[have_freetype_h='no'],[$FT2BUILD_H])
-    if test "$ac_cv_header_ft2build_h" = 'yes' || test "$have_freetype_h" = 'yes'; then
-        passed=`expr $passed + 1`
+    if test "$have_freetype_h" = 'yes'; then
+      passed=`expr $passed + 1`
     else
-        failed=`expr $failed + 1`
-        CPPFLAGS="$PERSIST_CPPFLAGS"
+      failed=`expr $failed + 1`
+      CPPFLAGS="$PERSIST_CPPFLAGS"
     fi
 
-    AC_MSG_CHECKING([if FreeType package is complete])
+    AC_MSG_CHECKING(if FreeType package is complete)
     if test $passed -gt 0; then
-        if test $failed -gt 0; then
-            FREETYPE_LIBS=''
-            AC_MSG_RESULT([no -- some components failed test])
-            have_freetype='no (failed tests)'
-        else
-            LIBS="$FREETYPE_LIBS $LIBS"
-            AC_DEFINE(FREETYPE_DELEGATE,1,Define if you have FreeType (TrueType font) library)
-            if test "$ac_cv_header_ft2build_h" = 'yes'; then
-                AC_DEFINE([HAVE_FT2BUILD_H],[1],[Define to 1 if you have the <ft2build.h> header file.])
-            fi
-            AC_MSG_RESULT([yes])
-            have_freetype='yes'
+      if test $failed -gt 0; then
+        FREETYPE_LIBS=''
+        AC_MSG_RESULT(no -- some components failed test)
+        have_freetype='no (failed tests)'
+      else
+        LIBS="$FREETYPE_LIBS $LIBS"
+        AC_DEFINE(FREETYPE_DELEGATE,1,Define if you have FreeType (TrueType font) library)
+        if test "$ac_cv_header_ft2build_h" = 'yes'; then
+          AC_DEFINE([HAVE_FT2BUILD_H],[1],[Define to 1 if you have the <ft2build.h> header file.])
         fi
+        AC_MSG_RESULT(yes)
+        have_freetype='yes'
+      fi
     else
-        AC_MSG_RESULT([no])
+      AC_MSG_RESULT(no)
     fi
 fi
-AM_CONDITIONAL(FREETYPE_DELEGATE,test "$have_freetype" = 'yes')
+AM_CONDITIONAL(FREETYPE_DELEGATE, test "$have_freetype" = 'yes')
 AC_SUBST(FREETYPE_LIBS)
-
-dnl ===========================================================================
 
 dnl ===========================================================================
 
@@ -2416,30 +2429,102 @@ fi
 
 have_png='no'
 PNG_LIBS=''
-if test "$with_png" != 'no'; then
-    AC_MSG_RESULT([-------------------------------------------------------------])
-    AC_MSG_CHECKING([for PNG])
-    AC_MSG_RESULT([])
-    failed=0
-    passed=0
-    AC_CHECK_HEADER(png.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-    AC_CHECK_LIB(png,png_get_io_ptr,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-    AC_MSG_CHECKING([if PNG package is complete])
-    if test $passed -gt 0; then
-        if test $failed -gt 0; then
-            AC_MSG_RESULT([no -- some components failed test])
-            have_png='no (failed tests)'
+
+if test "$with_png" != 'no' -a  "$have_zlib" != 'no' ; then
+  AC_MSG_RESULT([-------------------------------------------------------------])
+  AC_MSG_CHECKING(for PNG support )
+  AC_MSG_RESULT()
+  failed=0
+  passed=0
+  AC_CHECK_HEADER(png.h,passed=`expr $passed + 1`,
+     failed=`expr $failed + 1`,)
+
+  if test $passed -gt 0; then
+    for var in 5 4 2 '' ; do
+      if test "$have_png" = 'no' ; then
+        if test "x${var}" = 'x' ; then
+          pnglib='png'
         else
-            PNG_LIBS='-lpng'
-            LIBS="$PNG_LIBS $LIBS"
-            AC_DEFINE(PNG_DELEGATE,1,Define if you have PNG library)
-            AC_MSG_RESULT([yes])
-            have_png='yes'
+          pnglib="png1${var}"
         fi
-    else
-        AC_MSG_RESULT([no])
-    fi
+
+#       Test for compatible LIBPNG library
+        failed=0
+        passed=0
+        if test "$with_png" = 'yes' -o "$with_png" = "libpng1${var}" ; then
+          if test "${pnglib}" != 'png' ; then
+            AC_MSG_CHECKING(for LIBPNG1${var} support )
+            AC_TRY_COMPILE(
+#include <stdio.h>
+#include <stdlib.h>
+#include <png.h>
+,
+changequote(<<, >>)dnl
+<<
+#if PNG_LIBPNG_VER_MINOR != ${var}
+#error LIBPNG library must be version 1${var}!
+Kaboom, Kaboom
+#endif
+return 0;
+>>,
+            changequote([, ])dnl
+            ac_cv_libpng_ok='yes',
+            ac_cv_libpng_ok='no')
+            if test "$ac_cv_libpng_ok" = 'yes' ; then
+              passed=`expr $passed + 1`
+              AC_MSG_RESULT(yes)
+            else
+              failed=`expr $failed + 1`
+              AC_MSG_RESULT(no)
+            fi
+          else
+            passed=`expr $passed + 1`
+            AC_MSG_RESULT(yes)
+          fi
+        fi
+
+        if test $passed -gt 0 -a $failed -le 0; then
+          if test "1${var}" = '15' ; then
+            AC_CHECK_LIB(png15,png_get_io_ptr,passed=`expr $passed + 1`,
+               failed=`expr $failed + 1`,)
+            AC_CHECK_LIB(png15,png_longjmp,passed=`expr $passed + 1`,
+               failed=`expr $failed + 1`,)
+          fi
+          if test "1${var}" = '14' ; then
+            AC_CHECK_LIB(png14,png_get_io_ptr,passed=`expr $passed + 1`,
+               failed=`expr $failed + 1`,)
+            AC_CHECK_LIB(png14,png_get_io_state,passed=`expr $passed + 1`,
+               failed=`expr $failed + 1`,)
+          fi
+          if test "1${var}" = '12' ; then
+            AC_CHECK_LIB(png12,png_get_io_ptr,passed=`expr $passed + 1`,
+               failed=`expr $failed + 1`,)
+          fi
+          if test "1${var}" = '1' ; then
+              AC_CHECK_LIB(png,png_get_io_ptr,passed=`expr $passed + 1`,
+                 failed=`expr $failed + 1`,)
+          fi
+          if test $passed -gt 0 -a $failed -le 0 ; then
+            AC_MSG_CHECKING(if ${pnglib} package is complete)
+            if test $passed -gt 0 ; then
+              if test $failed -gt 0 ; then
+                  AC_MSG_RESULT(no -- some components failed test)
+                  have_png='no (failed tests)'
+              else
+                  PNG_LIBS="-l${pnglib}"
+                  LIBS="$PNG_LIBS $LIBS"
+                  AC_DEFINE(PNG_DELEGATE,1,Define if you have PNG library)
+                  AC_MSG_RESULT(yes)
+                  have_png='yes'
+              fi
+            fi
+          fi
+        fi
+      fi
+    done
+  fi
 fi
+
 AM_CONDITIONAL(PNG_DELEGATE,test "$have_png" = 'yes')
 AC_SUBST(PNG_LIBS)
 
@@ -2673,7 +2758,7 @@ if test "$with_xml" != 'no'; then
     PERSIST_LDFLAGS=$LDFLAGS
     PERSIST_CPPFLAGS=$CPPFLAGS
     xml2_config=''
-    AC_CHECK_PROGS(xml2_config,xml2-config,)dnl
+    AC_PATH_PROG(xml2_config,xml2-config,)dnl
     if test -n "$xml2_config"; then
         # Debian installs libxml headers under /usr/include/libxml2/libxml with
         # the shared library installed under /usr/lib, whereas the package
@@ -2689,7 +2774,10 @@ if test "$with_xml" != 'no'; then
     failed=0
     passed=0
     AC_CHECK_HEADER(libxml/parser.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
-    AC_CHECK_LIB(xml2,xmlParseExternalEntity,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
+    AC_CHECK_LIB(xml2,xmlSAXVersion,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
+    # Next two require --with-push to be enabled
+    AC_CHECK_LIB(xml2,xmlParseChunk,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
+    AC_CHECK_LIB(xml2,xmlCreatePushParserCtxt,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_MSG_CHECKING([if XML package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
@@ -3165,7 +3253,7 @@ AM_CONDITIONAL(ZIP_DELEGATE, test "x$ZIP" != "x" )
 # GhostPCL related configuration.
 #
 PCLColorDevice=ppmraw
-PCLCMYKDevice=bmpsep8
+PCLCMYKDevice=pamcmyk32
 PCLMonoDevice=pbmraw
 if test -z "$PCLVersion"; then
     PCLVersion='unknown'

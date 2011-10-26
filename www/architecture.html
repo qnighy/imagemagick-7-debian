@@ -35,7 +35,7 @@
     @import url("../www/magick.css");
   </style>
   <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
   <script type="text/javascript" src="http://www.imagemagick.org/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
@@ -161,16 +161,22 @@
   style="margin-top: 4px; margin-left: 4px; border: 0px; float: left;" /></a>
 <div class="sponsbox">
 <div  class="sponsor">
-  <a rel="follow" title="Sponsor: Autoteile" href="http://www.q11-shop.de">Autoteile</a><!-- 201205010540s suvalj -->
+   <a rel="follow" title="Sponsor: Got Stripes" href="http://www.stripeslawncare.org">Got Stripes?</a><!-- 2012010100150 brooks@stripes...-->
+</div>
+<div  class="sponsor">
+   <a rel="follow" title="Sponsor: Best Local Services" href="http://www.openchime.com">Best Local Services</a><!-- 2012010100150 joey@openc...-->
+</div>
+<div  class="sponsor">
+  <a rel="follow" title="Sponsor: Managed Server" href="http://www.robhost.de">Managed Server</a><!-- 201210010720 klikics... -->
+</div>
+<div  class="sponsor">
+  <a rel="follow" title="Sponsor: VPS" href="http://www.interdominios.com/vps">VPS</a><!-- 201201010090 barsh@inter... -->
+</div>
+<div  class="sponsor">
+  <a rel="follow" title="Sponsor: Autoteile" href="http://www.q11-shop.de">Autoteile</a><!-- 201205010540 suvalj -->
 </div>
 <div  class="sponsor">
   <a rel="follow" title="Sponsor: Web Hosting" href="http://www.micfo.com">Web Hosting</a><!-- 209901010090s golestan -->
-</div>
-<div  class="sponsor">
-  <a rel="follow" title="Sponsor: Search engine optimisation" href="http://www.seomoves.com.au">Search engine optimisation</a><!-- 201110010090s jen@seo lowprofilelinks -->
-</div>
-<div  class="sponsor">
-  <a rel="follow" title="Sponsor: Druckerei" href="http://print24.com/de/">Druckerei</a><!-- 201110010720 -->
 </div>
 <div  class="sponsor">
   <a rel="follow" title="Sponsor: Web Hosting Deals" href="http://www.webhostingdeals.org">Web Hosting Deals</a><!-- 201111010270 chee.hoa darin -->
@@ -182,28 +188,13 @@
   <a rel="follow" title="Sponsor: Web Hosting Reviews" href="http://www.webhostingsecretrevealed.com">Web Hosting Secret Revealed</a><!-- 201204010540 iamchee jerry -->
 </div>
 <div  class="sponsor">
-  <a rel="follow" title="Sponsor: Web Hosting Break" href="http://www.webhostingbreak.com">Web Hosting Break</a><!-- 201109010090 ian@ian-m... -->
-</div>
-<div  class="sponsor">
   <a rel="follow" title="Sponsor: Druckerei" href="http://www.allesdruck.de">Druckerei</a><!-- 201303011500 r.leo -->
-</div>
-<div  class="sponsor">
-  <a rel="follow" title="Sponsor: Website Hosting" href="http://www.hostreviewgeeks.com">Website Hosting</a><!-- 201110010090 alexanian media -->
 </div>
 <div  class="sponsor">
   <a rel="follow" title="Sponsor: Hotel München" href="http://www.messehotel-erb-muenchen.de">Hotel München</a><!-- 201111010450 cerb -->
 </div>
 <div  class="sponsor">
-  <a rel="follow" title="Sponsor: Best Web Hosting" href="http://webhostinggeeks.com">Best Web Hosting</a><!-- 201110010720 -->
-</div>
-<div  class="sponsor">
-  <a rel="follow" title="Sponsor: Flyer drucken" href="http://www.online-druck.biz">Flyer drucken</a><!-- 201109010900 Floeter-->
-</div>
-<div  class="sponsor">
-  <a rel="follow" title="Sponsor: Web Hosting Ratings" href="http://webhostingrating.com">Web Hosting Ratings</a><!-- 201110010720 -->
-</div>
-<div  class="sponsor">
-   <a rel="follow" title="Sponsor: Webdesign" href="http://www.renehornig.com/">Webdesign</a><!-- 20111001000240 -->
+   <a rel="follow" title="Sponsor: Günstige Turbolader" href="http://www.autoteile-carparts.de/">Günstige Turbolader</a><!-- 20111101000030 -->
 </div>
 </div>
 </div>
@@ -307,7 +298,7 @@
 
 <p>When the pixel cache is initialized, pixels are scaled from whatever bit depth they originated from to that required by the pixel cache.  For example, a 1-channel 1-bit monochrome PBM image is scaled to a 4 channel 8-bit RGBA image, if you are using the Q8 version of ImageMagick, and 16-bit RGBA for the Q16 version.  You can determine which version you have with the <a href="../www/command-line-options.html#version">&#x2011;version</a> option: </p>
 
-<p class='crt'><span class="crtprompt"> $magick&gt; </span><span class='crtin'>identify -version</span><span class='crtout'>Version: ImageMagick 6.7.1-8 2011-07-01 Q16 http://www.imagemagick.org</span></p>
+<p class='crt'><span class="crtprompt"> $magick&gt; </span><span class='crtin'>identify -version</span><span class='crtout'>Version: ImageMagick 6.7.2-9 2011-09-01 Q16 http://www.imagemagick.org</span></p>
 <p>As you can see, the convenience of the pixel cache sometimes comes with a trade-off in storage (e.g. storing a 1-bit monochrome image as 16-bit RGBA is wasteful) and speed (i.e. storing the entire image in memory is generally slower than accessing one scanline of pixels at a time).  In most cases, the benefits of the pixel cache typically outweigh any disadvantages.</p>
 </div>
 
@@ -762,7 +753,7 @@ void ConvertBMPToImage(const BITMAPINFOHEADER *bmp_info,
 <p class='crt'><span class="crtprompt"> $magick&gt; </span><span class='crtin'>identify -version</span><span class='crtout'>Features: OpenMP OpenCL</span></p>
 <p>If so, run this command to realize a significant speed-up for image convolution:</p>
 
-<p class='crt'><span class="crtprompt"> $magick&gt; </span><span class='crtin'>convert image.png convolve '-1, -1, -1, -1, 9, -1, -1, -1, -1'  \ <br/> convolve.png</span></p>
+<p class='crt'><span class="crtprompt"> $magick&gt; </span><span class='crtin'>convert image.png -convolve '-1, -1, -1, -1, 9, -1, -1, -1, -1'  \ <br/> convolve.png</span></p>
 <p>If an accelerator is not available or if the accelerator fails to respond, ImageMagick reverts to the non-accelerated convolution algorithm.</p>
 
 <p>Here is an example OpenCL kernel that convolves an image:</p>
@@ -777,16 +768,16 @@ static inline long ClampToCanvas(const long offset,const ulong range)
   return(offset);
 }
 
-static inline CLQuantum ClampToQuantum(const double value)
+static inline CLQuantum ClampToQuantum(const float value)
 {
   if (value &lt; 0.0)
     return((CLQuantum) 0);
-  if (value >= (double) QuantumRange)
+  if (value >= (float) QuantumRange)
     return((CLQuantum) QuantumRange);
   return((CLQuantum) (value+0.5));
 }
 
-__kernel void Convolve(const __global CLPixelType *source,__constant double *filter,
+__kernel void Convolve(const __global CLPixelType *source,__constant float *filter,
   const ulong width,const ulong height,__global CLPixelType *destination)
 {
   const ulong columns = get_global_size(0);
@@ -795,11 +786,11 @@ __kernel void Convolve(const __global CLPixelType *source,__constant double *fil
   const long x = get_global_id(0);
   const long y = get_global_id(1);
 
-  const double scale = (1.0/QuantumRange);
+  const float scale = (1.0/QuantumRange);
   const long mid_width = (width-1)/2;
   const long mid_height = (height-1)/2;
-  double4 sum = { 0.0, 0.0, 0.0, 0.0 };
-  double gamma = 0.0;
+  float4 sum = { 0.0, 0.0, 0.0, 0.0 };
+  float gamma = 0.0;
   register ulong i = 0;
 
   for (long v=(-mid_height); v &lt;= mid_height; v++)
@@ -808,7 +799,7 @@ __kernel void Convolve(const __global CLPixelType *source,__constant double *fil
     {
       register const ulong index=ClampToCanvas(y+v,rows)*columns+ClampToCanvas(x+u,
         columns);
-      const double alpha=scale*(QuantumRange-source[index].w);
+      const float alpha=scale*(QuantumRange-source[index].w);
       sum.x+=alpha*filter[i]*source[index].x;
       sum.y+=alpha*filter[i]*source[index].y;
       sum.z+=alpha*filter[i]*source[index].z;

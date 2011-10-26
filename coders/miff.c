@@ -873,7 +873,11 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
                       profiles=NewLinkedList(0);
                     (void) AppendValueToLinkedList(profiles,
                       AcquireString(keyword+8));
-                    profile=AcquireStringInfo((size_t) StringToLong(options));
+                    profile=BlobToStringInfo((const void *) NULL,(size_t)
+                      StringToLong(options));
+                    if (profile == (StringInfo *) NULL)
+                      ThrowReaderException(ResourceLimitError,
+                        "MemoryAllocationFailed");
                     (void) SetImageProfile(image,keyword+8,profile);
                     profile=DestroyStringInfo(profile);
                     break;
@@ -1218,6 +1222,9 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
     packet_size=(size_t) (quantum_info->depth/8);
     if (image->storage_class == DirectClass)
       packet_size=(size_t) (3*quantum_info->depth/8);
+    if ((image->type == BilevelType) || (image->type == GrayscaleType) ||
+        (image->type == GrayscaleMatteType))
+      packet_size=quantum_info->depth/8;
     if (image->matte != MagickFalse)
       packet_size+=quantum_info->depth/8;
     if (image->colorspace == CMYKColorspace)
@@ -1250,7 +1257,8 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
         if (image->matte != MagickFalse)
           quantum_type=IndexAlphaQuantum;
       }
-    if (image->colorspace == GRAYColorspace)
+    if ((image->type == BilevelType) || (image->type == GrayscaleType) ||
+        (image->type == GrayscaleMatteType))
       {
         quantum_type=GrayQuantum;
         if (image->matte != MagickFalse)
@@ -1900,8 +1908,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
     if ((image->storage_class == PseudoClass) &&
         (image->colors > (size_t) (GetQuantumRange(image->depth)+1)))
       (void) SetImageStorageClass(image,DirectClass);
-    if ((image->colorspace != sRGBColorspace) &&
-        (IsGrayImage(image,&image->exception) != MagickFalse))
+    if (IsGrayImage(image,&image->exception) != MagickFalse)
       {
         image->storage_class=DirectClass;
         (void) SetImageColorspace(image,GRAYColorspace);
@@ -1933,6 +1940,8 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
     packet_size=(size_t) (quantum_info->depth/8);
     if (image->storage_class == DirectClass)
       packet_size=(size_t) (3*quantum_info->depth/8);
+    if (IsGrayImage(image,&image->exception) != MagickFalse)
+      packet_size=(size_t) (quantum_info->depth/8);
     if (image->matte != MagickFalse)
       packet_size+=quantum_info->depth/8;
     if (image->colorspace == CMYKColorspace)

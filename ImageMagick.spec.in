@@ -181,7 +181,7 @@ make
 rm -rf $RPM_BUILD_ROOT
 
 make install DESTDIR=$RPM_BUILD_ROOT INSTALL="install -p"
-cp -a www/source $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{VERSION}
+cp -a www/source $RPM_BUILD_ROOT%{_datadir}/doc/%{name}
 rm $RPM_BUILD_ROOT%{_libdir}/*.la
 
 # fix weird perl Magick.so permissions
@@ -252,8 +252,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc QuickStart.txt ChangeLog Platforms.txt
 %doc README.txt LICENSE NOTICE AUTHORS.txt NEWS.txt
-%{_libdir}/libMagickCore.so.4*
-%{_libdir}/libMagickWand.so.4*
+%{_libdir}/libMagickCore.so*
+%{_libdir}/libMagickWand.so*
 %{_bindir}/[a-z]*
 %{_sysconfdir}/%{name}
 %{_libdir}/%{name}-%{VERSION}
@@ -269,8 +269,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/Magick-config
 %{_bindir}/MagickWand-config
 %{_bindir}/Wand-config
-%{_libdir}/libMagickCore.so
-%{_libdir}/libMagickWand.so
+%{_libdir}/libMagickCore.so*
+%{_libdir}/libMagickWand.so*
 %{_libdir}/pkgconfig/MagickCore.pc
 %{_libdir}/pkgconfig/ImageMagick.pc
 %{_libdir}/pkgconfig/MagickWand.pc
@@ -289,14 +289,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %files doc
 %defattr(-,root,root,-)
-%doc %{_datadir}/doc/%{name}-%{VERSION}
+%doc %{_datadir}/doc/%{name}
 %doc LICENSE
 
 %files c++
 %defattr(-,root,root,-)
 %doc Magick++/AUTHORS Magick++/ChangeLog Magick++/NEWS Magick++/README
 %doc www/Magick++/COPYING
-%{_libdir}/libMagick++.so.4*
+%{_libdir}/libMagick++.so*
 
 %files c++-devel
 %defattr(-,root,root,-)
@@ -304,7 +304,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/Magick++-config
 %{_includedir}/%{name}/Magick++
 %{_includedir}/%{name}/Magick++.h
-%{_libdir}/libMagick++.so
+%{_libdir}/libMagick++.so*
 %{_libdir}/pkgconfig/Magick++.pc
 %{_libdir}/pkgconfig/ImageMagick++.pc
 %{_mandir}/man1/Magick++-config.*

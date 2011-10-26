@@ -3880,8 +3880,8 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
                   pixel.green+=(*k)*GetPixelGreen(p+u+j);
                   pixel.blue+=(*k)*GetPixelBlue(p+u+j);
                   gamma+=(*k);
-                  k++;
                 }
+              k++;
             }
             j+=(ssize_t) (image->columns+width);
           }
@@ -3907,8 +3907,8 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
                     {
                       pixel.opacity+=(*k)*(p+u+j)->opacity;
                       gamma+=(*k);
-                      k++;
                     }
+                  k++;
                 }
                 j+=(ssize_t) (image->columns+width);
               }
@@ -3932,8 +3932,8 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
                     {
                       pixel.index+=(*k)*GetPixelIndex(indexes+x+u+j);
                       gamma+=(*k);
-                      k++;
                     }
+                  k++;
                 }
                 j+=(ssize_t) (image->columns+width);
               }
@@ -3963,8 +3963,8 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
                   pixel.blue+=(*k)*alpha*GetPixelBlue(p+u+j);
                   pixel.opacity+=(*k)*GetPixelOpacity(p+u+j);
                   gamma+=(*k)*alpha;
-                  k++;
                 }
+              k++;
             }
             j+=(ssize_t) (image->columns+width);
           }
@@ -3990,8 +3990,8 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
                     {
                       pixel.opacity+=(*k)*GetPixelOpacity(p+u+j);
                       gamma+=(*k);
-                      k++;
                     }
+                  k++;
                 }
                 j+=(ssize_t) (image->columns+width);
               }
@@ -4017,8 +4017,8 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
                         GetPixelAlpha(p+u+j));
                       pixel.index+=(*k)*alpha*GetPixelIndex(indexes+x+u+j);
                       gamma+=(*k);
-                      k++;
                     }
+                  k++;
                 }
                 j+=(ssize_t) (image->columns+width);
               }
@@ -5346,8 +5346,7 @@ MagickExport Image *StatisticImageChannel(const Image *image,
         SetPixelGreen(q,ClampToQuantum(pixel.green));
       if ((channel & BlueChannel) != 0)
         SetPixelBlue(q,ClampToQuantum(pixel.blue));
-      if (((channel & OpacityChannel) != 0) &&
-          (image->matte != MagickFalse))
+      if (((channel & OpacityChannel) != 0) && (image->matte != MagickFalse))
         SetPixelOpacity(q,ClampToQuantum(pixel.opacity));
       if (((channel & IndexChannel) != 0) &&
           (image->colorspace == CMYKColorspace))

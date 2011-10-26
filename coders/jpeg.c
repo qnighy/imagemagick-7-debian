@@ -272,7 +272,7 @@ static MagickBooleanType IsITUFaxImage(const Image *image)
   return(MagickFalse);
 }
 
-static MagickBooleanType JPEGErrorHandler(j_common_ptr jpeg_info)
+static void JPEGErrorHandler(j_common_ptr jpeg_info)
 {
   char
     message[JMSG_LENGTH_MAX];
@@ -292,10 +292,10 @@ static MagickBooleanType JPEGErrorHandler(j_common_ptr jpeg_info)
       "[%s] JPEG Trace: \"%s\"",image->filename,message);
   if (error_manager->finished != MagickFalse)
     (void) ThrowMagickException(&image->exception,GetMagickModule(),
-      CorruptImageWarning,(char *) message,image->filename);
+      CorruptImageWarning,(char *) message,"`%s'",image->filename);
   else
     (void) ThrowMagickException(&image->exception,GetMagickModule(),
-      CorruptImageError,(char *) message,image->filename);
+      CorruptImageError,(char *) message,"`%s'",image->filename);
   longjmp(error_manager->error_recovery,1);
 }
 
@@ -443,7 +443,7 @@ static boolean ReadICCProfile(j_decompress_ptr jpeg_info)
   length-=14;
   error_manager=(ErrorManager *) jpeg_info->client_data;
   image=error_manager->image;
-  profile=AcquireStringInfo(length);
+  profile=BlobToStringInfo((const void *) NULL,length);
   if (profile == (StringInfo *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
@@ -539,7 +539,7 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
     return(MagickTrue);
   error_manager=(ErrorManager *) jpeg_info->client_data;
   image=error_manager->image;
-  profile=AcquireStringInfo(length);
+  profile=BlobToStringInfo((const void *) NULL,length);
   if (profile == (StringInfo *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
@@ -610,7 +610,7 @@ static boolean ReadProfile(j_decompress_ptr jpeg_info)
   (void) FormatLocaleString(name,MaxTextExtent,"APP%d",marker);
   error_manager=(ErrorManager *) jpeg_info->client_data;
   image=error_manager->image;
-  profile=AcquireStringInfo(length);
+  profile=BlobToStringInfo((const void *) NULL,length);
   if (profile == (StringInfo *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
@@ -645,10 +645,15 @@ static boolean ReadProfile(j_decompress_ptr jpeg_info)
   previous_profile=GetImageProfile(image,name);
   if (previous_profile != (const StringInfo *) NULL)
     {
+      ssize_t
+        length;
+
+      length=GetStringInfoLength(profile);
       SetStringInfoLength(profile,GetStringInfoLength(profile)+
         GetStringInfoLength(previous_profile));
-      (void) memcpy(GetStringInfoDatum(profile),GetStringInfoDatum(profile)+
-        GetStringInfoLength(previous_profile),GetStringInfoLength(profile));
+      (void) memmove(GetStringInfoDatum(profile)+
+        GetStringInfoLength(previous_profile),GetStringInfoDatum(profile),
+        length);
       (void) memcpy(GetStringInfoDatum(profile),
         GetStringInfoDatum(previous_profile),
         GetStringInfoLength(previous_profile));
@@ -1641,7 +1646,7 @@ static void WriteProfile(j_compress_ptr jpeg_info,Image *image)
         /*
           Add namespace to XMP profile.
         */
-        xmp_profile=StringToStringInfo("http://ns.adobe.com/xap/1.0/");
+        xmp_profile=StringToStringInfo("http://ns.adobe.com/xap/1.0/ ");
         ConcatenateStringInfo(xmp_profile,profile);
         GetStringInfoDatum(xmp_profile)[28]='\0';
         for (i=0; i < (ssize_t) GetStringInfoLength(xmp_profile); i+=65533L)
