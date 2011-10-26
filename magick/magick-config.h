@@ -20,9 +20,7 @@
 #endif
 
 /* Define if you have CAIRO library */
-#ifndef MAGICKCORE_CAIRO_DELEGATE
-#define MAGICKCORE_CAIRO_DELEGATE 1
-#endif
+/* #undef CAIRO_DELEGATE */
 
 /* permit enciphering and deciphering image pixels */
 #ifndef MAGICKCORE_CIPHER_SUPPORT
@@ -34,7 +32,7 @@
 
 /* Location of coder modules */
 #ifndef MAGICKCORE_CODER_PATH
-#define MAGICKCORE_CODER_PATH "/usr/local/lib/ImageMagick-6.7.3/modules-Q16/coders/"
+#define MAGICKCORE_CODER_PATH "/usr/lib/ImageMagick-6.7.3/modules-Q16/coders/"
 #endif
 
 /* Subdirectory of lib where coder modules are installed */
@@ -44,7 +42,7 @@
 
 /* Directory where architecture-dependent configuration files live. */
 #ifndef MAGICKCORE_CONFIGURE_PATH
-#define MAGICKCORE_CONFIGURE_PATH "/usr/local/etc/ImageMagick/"
+#define MAGICKCORE_CONFIGURE_PATH "/usr/etc/ImageMagick/"
 #endif
 
 /* Subdirectory of lib where architecture-dependent configuration files live.
@@ -60,7 +58,7 @@
 
 /* Directory where ImageMagick documents live. */
 #ifndef MAGICKCORE_DOCUMENTATION_PATH
-#define MAGICKCORE_DOCUMENTATION_PATH "/usr/local/share/doc/ImageMagick//"
+#define MAGICKCORE_DOCUMENTATION_PATH "/usr/share/doc/ImageMagick//"
 #endif
 
 /* Define if you have Display Postscript */
@@ -71,7 +69,7 @@
 
 /* Directory where executables are installed. */
 #ifndef MAGICKCORE_EXECUTABLE_PATH
-#define MAGICKCORE_EXECUTABLE_PATH "/usr/local/bin/"
+#define MAGICKCORE_EXECUTABLE_PATH "/usr/bin/"
 #endif
 
 /* Define if you have FFTW library */
@@ -79,7 +77,7 @@
 
 /* Location of filter modules */
 #ifndef MAGICKCORE_FILTER_PATH
-#define MAGICKCORE_FILTER_PATH "/usr/local/lib/ImageMagick-6.7.3/modules-Q16/filters/"
+#define MAGICKCORE_FILTER_PATH "/usr/lib/ImageMagick-6.7.3/modules-Q16/filters/"
 #endif
 
 /* Subdirectory of lib where filter modules are installed */
@@ -1185,7 +1183,7 @@
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/usr/local/lib/ImageMagick-6.7.3/"
+#define MAGICKCORE_LIBRARY_PATH "/usr/lib/ImageMagick-6.7.3/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
@@ -1337,7 +1335,7 @@
 
 /* Directory where architecture-independent configuration files live. */
 #ifndef MAGICKCORE_SHARE_PATH
-#define MAGICKCORE_SHARE_PATH "/usr/local/share/ImageMagick-6.7.3/"
+#define MAGICKCORE_SHARE_PATH "/usr/share/ImageMagick-6.7.3/"
 #endif
 
 /* Subdirectory of lib where architecture-independent configuration files
