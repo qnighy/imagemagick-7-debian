@@ -6,6 +6,7 @@
 # export DH_VERBOSE=1
 
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 export DEB_SOURCE_PACKAGE ?= $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
 export DEB_VERSION ?= $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
@@ -26,8 +27,10 @@ build: build-stamp
 build-stamp: $(QUILT_STAMPFN)
 	dh_testdir
 
+# multiarch is not so clean
 	MagickDocumentPath="/usr/share/doc/imagemagick" ./configure \
 	--prefix=/usr \
+        --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
 	--sysconfdir=/etc \
 	--mandir=\$${prefix}/share/man \
 	--infodir=\$${prefix}/share/info \
@@ -149,8 +152,8 @@ binary-arch: build check install
 	dh_install
 	# Remove extra coders
 	while read FILE; do \
-		rm -f debian/libmagickcore4/$$FILE; \
-	done < debian/libmagickcore4-extra.install
+		rm -f debian/libmagickcore5/$$FILE; \
+	done < debian/libmagickcore5-extra.install
 	dh_installmenu
 	dh_installman
 	dh_installmime
