@@ -19,7 +19,7 @@ AC_PREREQ(2.67)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [7])
 m4_define([magick_micro_version], [3])
-m4_define([magick_patchlevel_version], [2])
+m4_define([magick_patchlevel_version], [3])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "svnversion | sed -r 's/([0-9]+).*/\1/'"]))
@@ -379,6 +379,30 @@ Please re-run configure with these options:
   ;;
 esac
 
+#
+# ARCH specific include directory
+#
+AC_ARG_WITH([includedir-arch],
+    [AC_HELP_STRING([--includedir-arch=DIR],
+                    [ARCH specific include directory])],
+                    [includedir_arch=$withval],
+                    [includedir_arch=$INCLUDE_DIR])
+
+eval "eval INCLUDEDIR_ARCH=$includedir_arch"
+AC_SUBST(INCLUDEDIR_ARCH)
+
+#
+# ARCH specific configuration directory
+#
+AC_ARG_WITH([sharedir-arch],
+    [AC_HELP_STRING([--sharedir-arch=DIR],
+                    [ARCH specific config directory])],
+                    [sharedir_arch=$withval],
+                    [sharedir_arch="${DATA_DIR}"])
+
+eval "eval SHAREDIR_ARCH=$sharedir_arch"
+AC_SUBST(SHAREDIR_ARCH)
+
 # Enable support for threads
 AC_ARG_WITH([threads],
     [AC_HELP_STRING([--without-threads], [disable threads support])],
@@ -462,9 +486,6 @@ if test "$enable_largefile" != no; then
 fi
 AC_SUBST(LFS_CPPFLAGS)
 
-#
-# Configure libtool & libltdl
-#
 # Configure libtool
 AC_LIBTOOL_DLOPEN
 LT_INIT([win32-dll])
@@ -2415,6 +2436,54 @@ AC_SUBST(OPENEXR_LIBS)
 dnl ===========================================================================
 
 #
+# Check for PANGO delegate library.
+#
+AC_ARG_WITH([pango],
+    [AC_HELP_STRING([--without-pango],
+                    [disable PANGO support])],
+    [with_pango=$withval],
+    [with_pango=$have_x])
+
+if test "$with_pango" != 'yes'; then
+    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-pango=$with_pango "
+fi
+
+have_pango='no'
+have_pangoft2='no'
+PANGO_CFLAGS=""
+PANGO_LIBS=""
+PANGO_PKG=""
+if test "x$with_pango" = "xyes"; then
+    AC_MSG_RESULT([-------------------------------------------------------------])
+    AC_MSG_CHECKING(for PANGO support )
+    PKG_CHECK_MODULES(PANGO, [pangoft2 >= 1.15.1], have_pangoft2=yes, have_pangoft2=no)
+    AC_MSG_RESULT([])
+    PKG_CHECK_MODULES(PANGO, [pango >= 1.15.1], have_pango=yes, have_pango=no)
+    AC_MSG_RESULT([])
+fi
+
+if test "$have_pango" = 'yes'; then
+    AC_DEFINE(PANGO_DELEGATE,1,Define if you have PANGO library)
+    if test "$with_modules" = 'no'; then
+        CPPFLAGS="$PANGO_CFLAGS $CPPFLAGS"
+    fi
+fi
+
+if test "$have_pangoft2" = 'yes'; then
+    AC_DEFINE(PANGOFT2_DELEGATE,1,Define if you have PANGOFT2 library)
+    if test "$with_modules" = 'no'; then
+        CPPFLAGS="$PANGOFT2_CFLAGS $CPPFLAGS"
+    fi
+fi
+
+AM_CONDITIONAL(PANGO_DELEGATE, test "$have_pango" = 'yes')
+AM_CONDITIONAL(PANGOFT2_DELEGATE, test "$have_pangoft2" = 'yes')
+AC_SUBST(PANGO_CFLAGS)
+AC_SUBST(PANGO_LIBS)
+
+dnl ===========================================================================
+
+#
 # Check for PNG delegate library.
 #
 AC_ARG_WITH(png,
@@ -2678,7 +2747,7 @@ dnl ===========================================================================
 #
 # Set Windows font directory.
 #
-AC_ARG_WITH(windows-font-dir,
+AC_ARG_WITH([windows-font-dir],
     [AC_HELP_STRING([--with-windows-font-dir=DIR],
                     [directory containing MS-Windows fonts])],
                     [with_windows_font_dir=$withval],
@@ -2809,6 +2878,18 @@ AC_SUBST(PERLMAINCC)
 # Configure install Paths
 #
 
+# Path to ImageMagick header files
+INCLUDE_RELATIVE_PATH="ImageMagick"
+INCLUDE_PATH="${INCLUDEDIR_ARCH}/${INCLUDE_RELATIVE_PATH}"
+DEFINE_INCLUDE_PATH="${INCLUDEDIR_ARCH}/${INCLUDE_RELATIVE_PATH}/"
+case "${build_os}" in
+  mingw* )
+    DEFINE_INCLUDE_PATH=`$WinPathScript "$DEFINE_INCLUDE_PATH" 1`
+    ;;
+esac
+AC_DEFINE_UNQUOTED(INCLUDE_PATH,"$DEFINE_INCLUDE_PATH",Directory where ImageMagick headers live.)
+AC_SUBST(INCLUDE_PATH)
+
 # Subdirectory under lib to place ImageMagick lib files
 LIBRARY_RELATIVE_PATH="${PACKAGE_NAME}-${PACKAGE_VERSION}"
 AC_DEFINE_UNQUOTED(LIBRARY_RELATIVE_PATH,"$LIBRARY_RELATIVE_PATH",Subdirectory of lib where ImageMagick architecture dependent files are installed)
@@ -2876,7 +2957,7 @@ esac
 AC_DEFINE_UNQUOTED(DOCUMENTATION_PATH,"$DEFINE_DOCUMENTATION_PATH",Directory where ImageMagick documents live.)
 AC_SUBST(DOCUMENTATION_PATH)
 
-# Subdirectory to place ImageMagick configuration files
+# Subdirectory to place architecture-dependent configuration files
 CONFIGURE_RELATIVE_PATH="${PACKAGE_NAME}"
 AC_DEFINE_UNQUOTED(CONFIGURE_RELATIVE_PATH,"$CONFIGURE_RELATIVE_PATH",Subdirectory of lib where architecture-dependent configuration files live.)
 CONFIGURE_PATH="${SYSCONF_DIR}/${CONFIGURE_RELATIVE_PATH}/"
@@ -2889,10 +2970,10 @@ esac
 AC_DEFINE_UNQUOTED(CONFIGURE_PATH,"$DEFINE_CONFIGURE_PATH",Directory where architecture-dependent configuration files live.)
 AC_SUBST(CONFIGURE_PATH)
 
-# Subdirectory to place ImageMagick configuration files
+# Subdirectory to place architecture-independent configuration files
 SHARE_RELATIVE_PATH="${LIBRARY_RELATIVE_PATH}"
 AC_DEFINE_UNQUOTED(SHARE_RELATIVE_PATH,"$SHARE_RELATIVE_PATH",Subdirectory of lib where architecture-independent configuration files live.)
-SHARE_PATH="${DATA_DIR}/${SHARE_RELATIVE_PATH}"
+SHARE_PATH="${SHAREDIR_ARCH}/${SHARE_RELATIVE_PATH}"
 DEFINE_SHARE_PATH="${DATA_DIR}/${SHARE_RELATIVE_PATH}/"
 case "${build_os}" in
   mingw* )
@@ -3587,7 +3668,7 @@ AC_SUBST(MAGICK_LTDLDEPS)
 if test "$with_modules" != 'no'; then
     MAGICK_DEP_LIBS="$LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JPEG_LIBS $LQR_LIBS $FFTW_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $CCMALLOC_LIBS $EFENCE_LIBS $UMEM_LIBS $GOMP_LIBS $CL_LIBS $THREAD_LIBS"
 else
-    MAGICK_DEP_LIBS="$JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JP2_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $CCMALLOC_LIBS $EFENCE_LIBS $UMEM_LIBS $GOMP_LIBS $CL_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JP2_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $CCMALLOC_LIBS $EFENCE_LIBS $UMEM_LIBS $GOMP_LIBS $CL_LIBS $THREAD_LIBS"
 fi
 AC_SUBST(MAGICK_DEP_LIBS)
 
@@ -3708,6 +3789,7 @@ LZMA              --with-lzma=$with_lzma		$have_lzma
 Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
 OpenEXR           --with-openexr=$with_openexr		$have_openexr
 PERL              --with-perl=$with_perl		$have_perl
+PANGO             --with-pango=$with_pango		$have_pango
 PNG               --with-png=$with_png		$have_png
 RSVG              --with-rsvg=$with_rsvg		$have_rsvg
 TIFF              --with-tiff=$with_tiff		$have_tiff

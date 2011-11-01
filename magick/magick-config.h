@@ -651,6 +651,11 @@
 #define MAGICKCORE_HAVE_PTHREAD 1
 #endif
 
+/* Have PTHREAD_PRIO_INHERIT. */
+#ifndef MAGICKCORE_HAVE_PTHREAD_PRIO_INHERIT
+#define MAGICKCORE_HAVE_PTHREAD_PRIO_INHERIT 1
+#endif
+
 /* Define to 1 if you have the `pwrite' function. */
 #ifndef MAGICKCORE_HAVE_PWRITE
 #define MAGICKCORE_HAVE_PWRITE 1
@@ -1158,6 +1163,11 @@
 /* Define if you have umem memory allocation library */
 /* #undef HasUMEM */
 
+/* Directory where ImageMagick headers live. */
+#ifndef MAGICKCORE_INCLUDE_PATH
+#define MAGICKCORE_INCLUDE_PATH "/usr/include/ImageMagick/"
+#endif
+
 /* ImageMagick is formally installed under prefix */
 #ifndef MAGICKCORE_INSTALLED_SUPPORT
 #define MAGICKCORE_INSTALLED_SUPPORT 1
@@ -1275,7 +1285,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.3-2"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.3-3"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1290,7 +1300,17 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.7.3-2"
+#define MAGICKCORE_PACKAGE_VERSION "6.7.3-3"
+#endif
+
+/* Define if you have PANGOFT2 library */
+#ifndef MAGICKCORE_PANGOFT2_DELEGATE
+#define MAGICKCORE_PANGOFT2_DELEGATE 1
+#endif
+
+/* Define if you have PANGO library */
+#ifndef MAGICKCORE_PANGO_DELEGATE
+#define MAGICKCORE_PANGO_DELEGATE 1
 #endif
 
 /* Define if you have PNG library */
@@ -1459,7 +1479,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.7.3-2"
+#define MAGICKCORE_VERSION "6.7.3-3"
 #endif
 
 /* Define if you have WEBP library */

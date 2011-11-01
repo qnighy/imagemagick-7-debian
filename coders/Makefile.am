@@ -362,9 +362,9 @@ coders_cals_la_LIBADD   = $(MAGICKCORE_LIBS)
 
 # CAPTION coder module
 coders_caption_la_SOURCES  = coders/caption.c
-coders_caption_la_CPPFLAGS = $(MODULE_EXTRA_CPPFLAGS)
+coders_caption_la_CPPFLAGS = $(MODULE_EXTRA_CPPFLAGS) $(PANGO_CFLAGS)
 coders_caption_la_LDFLAGS  = $(MODULECOMMONFLAGS)
-coders_caption_la_LIBADD   = $(MAGICKCORE_LIBS)
+coders_caption_la_LIBADD   = $(MAGICKCORE_LIBS) $(PANGO_LIBS)
 
 # CINEON coder module
 coders_cin_la_SOURCES      = coders/cin.c

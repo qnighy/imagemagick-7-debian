@@ -607,7 +607,11 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
   tdir_t
     directory;
 
+#if defined(TIFF_VERSION_BIG)
+  uint64
+#else
   uint32
+#endif
     offset;
 
   void
@@ -656,6 +660,17 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           (void) FormatLocaleString(value,MaxTextExtent,"%d",longy);
         break;
       }
+#if defined(TIFF_VERSION_BIG)
+      case TIFF_LONG8:
+      {
+        uint64
+          longy;
+
+        if (TIFFGetField(tiff,exif_info[i].tag,&longy,&sans) != 0)
+          (void) FormatLocaleString(value,MaxTextExtent,"%ld",longy);
+        break;
+      }
+#endif
       case TIFF_RATIONAL:
       case TIFF_SRATIONAL:
       {
@@ -1648,6 +1663,7 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
     }
     SetQuantumImageType(image,quantum_type);
   next_tiff_frame:
+    quantum_info=DestroyQuantumInfo(quantum_info);
     if ((photometric == PHOTOMETRIC_LOGL) ||
         (photometric == PHOTOMETRIC_MINISBLACK) ||
         (photometric == PHOTOMETRIC_MINISWHITE))
@@ -1693,7 +1709,6 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
         if (status == MagickFalse)
           break;
       }
-    quantum_info=DestroyQuantumInfo(quantum_info);
   } while (status == MagickTrue);
   (void) TIFFSetWarningHandler(warning_handler);
   (void) TIFFSetErrorHandler(error_handler);

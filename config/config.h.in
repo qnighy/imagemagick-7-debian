@@ -430,6 +430,9 @@
 /* Define if you have POSIX threads libraries and header files. */
 #undef HAVE_PTHREAD
 
+/* Have PTHREAD_PRIO_INHERIT. */
+#undef HAVE_PTHREAD_PRIO_INHERIT
+
 /* Define to 1 if you have the `pwrite' function. */
 #undef HAVE_PWRITE
 
@@ -761,6 +764,9 @@
 /* Define if you have umem memory allocation library */
 #undef HasUMEM
 
+/* Directory where ImageMagick headers live. */
+#undef INCLUDE_PATH
+
 /* ImageMagick is formally installed under prefix */
 #undef INSTALLED_SUPPORT
 
@@ -853,6 +859,12 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Define if you have PANGOFT2 library */
+#undef PANGOFT2_DELEGATE
+
+/* Define if you have PANGO library */
+#undef PANGO_DELEGATE
 
 /* Define if you have PNG library */
 #undef PNG_DELEGATE
