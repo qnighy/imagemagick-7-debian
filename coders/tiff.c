@@ -506,6 +506,11 @@ static void TIFFErrors(const char *module,const char *format,va_list error)
       "`%s'",module);
 }
 
+static toff_t TIFFGetBlobSize(thandle_t image)
+{
+  return((toff_t) GetBlobSize((Image *) image));
+}
+
 static void TIFFGetProfiles(TIFF *tiff,Image *image)
 {
   uint32
@@ -667,7 +672,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           longy;
 
         if (TIFFGetField(tiff,exif_info[i].tag,&longy,&sans) != 0)
-          (void) FormatLocaleString(value,MaxTextExtent,"%ld",longy);
+          (void) FormatLocaleString(value,MaxTextExtent,"%lld",longy);
         break;
       }
 #endif
@@ -728,11 +733,6 @@ static int32 TIFFReadPixels(TIFF *tiff,size_t bits_per_sample,
 static toff_t TIFFSeekBlob(thandle_t image,toff_t offset,int whence)
 {
   return((toff_t) SeekBlob((Image *) image,(MagickOffsetType) offset,whence));
-}
-
-static toff_t TIFFGetBlobSize(thandle_t image)
-{
-  return((toff_t) GetBlobSize((Image *) image));
 }
 
 static void TIFFUnmapBlob(thandle_t image,tdata_t base,toff_t size)
@@ -918,8 +918,10 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
     TIFFGetEXIFProperties(tiff,image);
     TIFFGetProfiles(tiff,image);
     TIFFGetProperties(tiff,image);
+#if defined(MAGICKCORE_HAVE_TIFFISBIGENDIAN)
     (void) SetImageProperty(image,"tiff:endian",TIFFIsBigEndian(tiff) == 0 ?
       "lsb" : "msb");
+#endif
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_COMPRESSION,&compress_tag);
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_ORIENTATION,&orientation);
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_IMAGEWIDTH,&width);
@@ -1740,6 +1742,26 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
 %      size_t RegisterTIFFImage(void)
 %
 */
+
+#if defined(MAGICKCORE_HAVE_TIFFMERGEFIELDINFO) && defined(MAGICKCORE_HAVE_TIFFSETTAGEXTENDER)
+static TIFFExtendProc
+  tag_extender = (TIFFExtendProc) NULL;
+
+static void TIFFTagExtender(TIFF *tiff)
+{
+  static const TIFFFieldInfo
+    TIFFExtensions[] =
+    {
+      { 37724, -3, -3, TIFF_UNDEFINED, FIELD_CUSTOM, 1, 1, "PhotoshopLayerData" }
+    };
+
+  TIFFMergeFieldInfo(tiff,TIFFExtensions,sizeof(TIFFExtensions)/
+    sizeof(*TIFFExtensions));
+  if (tag_extender != (TIFFExtendProc) NULL)
+    (*tag_extender)(tiff);
+}
+#endif
+
 ModuleExport size_t RegisterTIFFImage(void)
 {
 #define TIFFDescription  "Tagged Image File Format"
@@ -1757,6 +1779,10 @@ ModuleExport size_t RegisterTIFFImage(void)
     {
       if (MagickCreateThreadKey(&tiff_exception) == MagickFalse)
         ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+#if defined(MAGICKCORE_HAVE_TIFFMERGEFIELDINFO) && defined(MAGICKCORE_HAVE_TIFFSETTAGEXTENDER)
+      if (tag_extender == (TIFFExtendProc) NULL)
+        tag_extender=TIFFSetTagExtender(TIFFTagExtender);
+#endif
       instantiate_key=MagickTrue;
     }
   UnlockSemaphoreInfo(tiff_semaphore);
@@ -1835,7 +1861,7 @@ ModuleExport size_t RegisterTIFFImage(void)
   entry=SetMagickInfo("TIFF64");
 #if defined(TIFF_VERSION_BIG)
   entry->decoder=(DecodeImageHandler *) ReadTIFFImage;
-  entry->encoder=(EncodeImageHandler *) WritePTIFImage;
+  entry->encoder=(EncodeImageHandler *) WriteTIFFImage;
 #endif
   entry->adjoin=MagickFalse;
   entry->endian_support=MagickTrue;
@@ -1870,18 +1896,23 @@ ModuleExport size_t RegisterTIFFImage(void)
 */
 ModuleExport void UnregisterTIFFImage(void)
 {
-  (void) UnregisterMagickInfo("RAWGROUP4");
-  (void) UnregisterMagickInfo("PTIF");
-  (void) UnregisterMagickInfo("TIF");
-  (void) UnregisterMagickInfo("TIFF");
   (void) UnregisterMagickInfo("TIFF64");
+  (void) UnregisterMagickInfo("TIFF");
+  (void) UnregisterMagickInfo("TIF");
+  (void) UnregisterMagickInfo("PTIF");
   if (tiff_semaphore == (SemaphoreInfo *) NULL)
     tiff_semaphore=AllocateSemaphoreInfo();
   LockSemaphoreInfo(tiff_semaphore);
   if (instantiate_key != MagickFalse)
-    if (MagickDeleteThreadKey(tiff_exception) == MagickFalse)
-      ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  instantiate_key=MagickFalse;
+    {
+      if (MagickDeleteThreadKey(tiff_exception) == MagickFalse)
+        ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+#if defined(MAGICKCORE_HAVE_TIFFMERGEFIELDINFO) && defined(MAGICKCORE_HAVE_TIFFSETTAGEXTENDER)
+      if (tag_extender == (TIFFExtendProc) NULL)
+        (void) TIFFSetTagExtender(tag_extender);
+#endif
+      instantiate_key=MagickFalse;
+    }
   UnlockSemaphoreInfo(tiff_semaphore);
   DestroySemaphoreInfo(&tiff_semaphore);
 }
@@ -2342,7 +2373,7 @@ static void TIFFSetProfiles(TIFF *tiff,Image *image)
         GetStringInfoLength(profile),GetStringInfoDatum(profile));
 #endif
     if (LocaleCompare(name,"tiff:37724") == 0)
-      (void) TIFFSetField(tiff,37724,(uint32)GetStringInfoLength(profile),
+      (void) TIFFSetField(tiff,37724,(uint32) GetStringInfoLength(profile),
         GetStringInfoDatum(profile));
     name=GetNextImageProfile(image);
   }
@@ -2442,7 +2473,7 @@ static void TIFFSetEXIFProperties(TIFF *tiff,Image *image)
         float
           rational;
 
-        rational=InterpretLocaleValue(value,(char **) NULL);
+        rational=StringToDouble(value,(char **) NULL);
         (void) TIFFSetField(tiff,exif_info[i].tag,rational);
         break;
       }

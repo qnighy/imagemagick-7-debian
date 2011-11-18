@@ -422,6 +422,11 @@
 #define MAGICKCORE_HAVE_INTTYPES_H 1
 #endif
 
+/* Define to 1 if you have the `isnan' function. */
+#ifndef MAGICKCORE_HAVE_ISNAN
+#define MAGICKCORE_HAVE_ISNAN 1
+#endif
+
 /* Define to 1 if you have the `j0' function. */
 #ifndef MAGICKCORE_HAVE_J0
 #define MAGICKCORE_HAVE_J0 1
@@ -972,6 +977,11 @@
 #define MAGICKCORE_HAVE_TIFFCONF_H 1
 #endif
 
+/* Define to 1 if you have the `TIFFIsBigEndian' function. */
+#ifndef MAGICKCORE_HAVE_TIFFISBIGENDIAN
+#define MAGICKCORE_HAVE_TIFFISBIGENDIAN 1
+#endif
+
 /* Define to 1 if you have the `TIFFIsCODECConfigured' function. */
 #ifndef MAGICKCORE_HAVE_TIFFISCODECCONFIGURED
 #define MAGICKCORE_HAVE_TIFFISCODECCONFIGURED 1
@@ -1245,7 +1255,7 @@
 #define MAGICKCORE_LT_OBJDIR ".libs/"
 #endif
 
-/* Define if you have lzma compression library */
+/* Define if you have LZMA library */
 #ifndef MAGICKCORE_LZMA_DELEGATE
 #define MAGICKCORE_LZMA_DELEGATE 1
 #endif
@@ -1285,7 +1295,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.3-3"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.3-6"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1300,7 +1310,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.7.3-3"
+#define MAGICKCORE_PACKAGE_VERSION "6.7.3-6"
 #endif
 
 /* Define if you have PANGOFT2 library */
@@ -1351,6 +1361,17 @@
 /* Define to the type of arg 5 for `select'. */
 #ifndef MAGICKCORE_SELECT_TYPE_ARG5
 #define MAGICKCORE_SELECT_TYPE_ARG5 (struct timeval *)
+#endif
+
+/* Directory where architecture-independent configuration files live. */
+#ifndef MAGICKCORE_SHAREARCH_PATH
+#define MAGICKCORE_SHAREARCH_PATH "/usr/lib/ImageMagick-6.7.3/config/"
+#endif
+
+/* Subdirectory of lib where architecture-independent configuration files
+   live. */
+#ifndef MAGICKCORE_SHAREARCH_RELATIVE_PATH
+#define MAGICKCORE_SHAREARCH_RELATIVE_PATH "ImageMagick-6.7.3/config"
 #endif
 
 /* Directory where architecture-independent configuration files live. */
@@ -1479,7 +1500,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.7.3-3"
+#define MAGICKCORE_VERSION "6.7.3-6"
 #endif
 
 /* Define if you have WEBP library */

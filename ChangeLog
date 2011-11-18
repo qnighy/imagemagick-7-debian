@@ -1,10 +1,34 @@
+2011-11-14  6.7.3-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.3-6, SVN revision 5972.
+
+2011-11-11  6.7.3-6 Cristy  <quetzlzacatenango@image...>
+  * Prefer the hires bounding box for Postscript rendering (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19807).
+  * Default configure.xml destination folder to /usr/lib/ImageMagick-ver/config.
+
+2011-11-09  6.7.3-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.3-5, SVN revision 5936
+
+2011-11-07  6.7.3-4 Cristy  <quetzlzacatenango@image...>
+  * Add ShearRotateImage() method.  RotateImage() now uses distorts rather
+    than shears.
+  * MagickCoreGenesis() path must be accessible to use (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19795).
+
+2011-11-06  6.7.3-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.3-4, SVN revision 5876
+
+2011-11-02  6.7.3-4 Glenn Randers-Pehrson <glennrp@image...>
+  * Ensure that the GIF encoder writes a large enough logical screen (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19734).
+
 2011-11-02  6.7.3-3 Cristy  <quetzlzacatenango@image...>
-  * New version 6.7.3-3, SVN revision 5822
+  * New version 6.7.3-3, SVN revision 5825
 
 2011-11-02  6.7.3-3 Cristy  <quetzlzacatenango@image...>
   * Fix small memory leak in the TIFF coder.
   * Support -debug accelerate option.
-  * Support -includedir-arch and -sharedir-arch configure option (reference
+  * Support -includearch-dir and -sharearch-dir configure option (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19720).
   * Use Pango to improve the caption coder.
 

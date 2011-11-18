@@ -19,7 +19,7 @@ AC_PREREQ(2.67)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [7])
 m4_define([magick_micro_version], [3])
-m4_define([magick_patchlevel_version], [3])
+m4_define([magick_patchlevel_version], [6])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "svnversion | sed -r 's/([0-9]+).*/\1/'"]))
@@ -382,26 +382,26 @@ esac
 #
 # ARCH specific include directory
 #
-AC_ARG_WITH([includedir-arch],
-    [AC_HELP_STRING([--includedir-arch=DIR],
+AC_ARG_WITH([includearch-dir],
+    [AC_HELP_STRING([--includearch-dir=DIR],
                     [ARCH specific include directory])],
-                    [includedir_arch=$withval],
-                    [includedir_arch=$INCLUDE_DIR])
+                    [includearch_dir=$withval],
+                    [includearch_dir=$INCLUDE_DIR])
 
-eval "eval INCLUDEDIR_ARCH=$includedir_arch"
-AC_SUBST(INCLUDEDIR_ARCH)
+eval "eval INCLUDEARCH_DIR=$includearch_dir"
+AC_SUBST(INCLUDEARCH_DIR)
 
 #
 # ARCH specific configuration directory
 #
-AC_ARG_WITH([sharedir-arch],
-    [AC_HELP_STRING([--sharedir-arch=DIR],
+AC_ARG_WITH([sharearch-dir],
+    [AC_HELP_STRING([--sharearch-dir=DIR],
                     [ARCH specific config directory])],
-                    [sharedir_arch=$withval],
-                    [sharedir_arch="${DATA_DIR}"])
+                    [sharearch_dir=$withval],
+                    [sharearch_dir="${LIB_DIR}"])
 
-eval "eval SHAREDIR_ARCH=$sharedir_arch"
-AC_SUBST(SHAREDIR_ARCH)
+eval "eval SHAREARCH_DIR=$sharearch_dir"
+AC_SUBST(SHAREARCH_DIR)
 
 # Enable support for threads
 AC_ARG_WITH([threads],
@@ -1085,7 +1085,7 @@ AC_CHECK_LIB(m,sqrt,MATH_LIBS="-lm",,)
 LIBS="$MATH_LIBS $LIBS"
 AC_SUBST(MATH_LIBS)
 
-AC_CHECK_FUNCS([acosh asinh atanh atoll atexit cabs carg cimag creal clock ctime_r directio _exit execvp fchmod floor fork ftime ftruncate getc_unlocked getcwd getpid getexecname getdtablesize getpagesize getrlimit getrusage gettimeofday gmtime_r j0 j1 lltostr localtime_r lstat memmove memset mkstemp munmap nanosleep newlocale _NSGetExecutablePath pclose _pclose poll popen _popen posix_fadvise posix_fallocate posix_madvise posix_memalign posix_spawnp pow pread pwrite qsort_r raise rand_r readlink readdir_r realpath select seekdir setlocale sqrt setvbuf stat strchr strerror_r strrchr strcspn strdup strpbrk strspn strstr strtod strtod_l strtol strtoul symlink sysconf sigemptyset sigaction spawnvp strerror strlcat strlcpy strcasecmp strncasecmp telldir tempnam times ulltostr uselocale usleep utime vfprintf vfprintf_l vsprintf vsnprintf vsnprintf_l waitpid _wfopen _wstat])
+AC_CHECK_FUNCS([acosh asinh atanh atoll atexit cabs carg cimag creal clock ctime_r directio _exit execvp fchmod floor fork ftime ftruncate getc_unlocked getcwd getpid getexecname getdtablesize getpagesize getrlimit getrusage gettimeofday gmtime_r isnan j0 j1 lltostr localtime_r lstat memmove memset mkstemp munmap nanosleep newlocale _NSGetExecutablePath pclose _pclose poll popen _popen posix_fadvise posix_fallocate posix_madvise posix_memalign posix_spawnp pow pread pwrite qsort_r raise rand_r readlink readdir_r realpath select seekdir setlocale sqrt setvbuf stat strchr strerror_r strrchr strcspn strdup strpbrk strspn strstr strtod strtod_l strtol strtoul symlink sysconf sigemptyset sigaction spawnvp strerror strlcat strlcpy strcasecmp strncasecmp telldir tempnam times ulltostr uselocale usleep utime vfprintf vfprintf_l vsprintf vsnprintf vsnprintf_l waitpid _wfopen _wstat])
 
 #
 # Check for clock_gettime().
@@ -2365,36 +2365,22 @@ if test "$with_lzma" != 'yes' ; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-lzma=$with_lzma "
 fi
 
-#
-# Check for LZMA
-#
-have_lzma='no'
-LZMA_LIBS=''
-if test "$with_lzma" != 'no' || test "$with_tiff" != 'no'; then
-    AC_MSG_RESULT([-------------------------------------------------------------])
-  AC_MSG_CHECKING(for LZMA)
-  AC_MSG_RESULT()
-  failed=0
-  passed=0
-  AC_CHECK_HEADER(lzma.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
-  AC_CHECK_LIB(lzma,lzma_code,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-  AC_MSG_CHECKING(if LZMA package is complete)
-  if test $passed -gt 0; then
-    if test $failed -gt 0; then
-      AC_MSG_RESULT(no -- some components failed test)
-      have_lzma='no (failed tests)'
-    else
-      LZMA_LIBS='-llzma'
-      LIBS="$LZMA_LIBS $LIBS"
-      AC_DEFINE(LZMA_DELEGATE,1,Define if you have lzma compression library)
-      AC_MSG_RESULT(yes)
-      have_lzma='yes'
-    fi
-  else
-    AC_MSG_RESULT(no)
-  fi
+LZMA_PKG=""
+if test "x$with_lzma" = "xyes"; then
+    AC_MSG_NOTICE([-------------------------------------------------------------])
+    PKG_CHECK_MODULES(LZMA,[liblzma >= 2.9.0], have_lzma=yes, have_lzma=no)
+    AC_MSG_NOTICE([])
 fi
+
+if test "$have_lzma" = 'yes'; then
+    AC_DEFINE(LZMA_DELEGATE,1,Define if you have LZMA library)
+    if test "$with_modules" = 'no'; then
+        CPPFLAGS="$LZMA_CFLAGS $CPPFLAGS"
+    fi
+fi
+
 AM_CONDITIONAL(LZMA_DELEGATE, test "$have_lzma" = 'yes')
+AC_SUBST(LZMA_CFLAGS)
 AC_SUBST(LZMA_LIBS)
 
 dnl ===========================================================================
@@ -2455,7 +2441,6 @@ PANGO_LIBS=""
 PANGO_PKG=""
 if test "x$with_pango" = "xyes"; then
     AC_MSG_RESULT([-------------------------------------------------------------])
-    AC_MSG_CHECKING(for PANGO support )
     PKG_CHECK_MODULES(PANGO, [pangoft2 >= 1.15.1], have_pangoft2=yes, have_pangoft2=no)
     AC_MSG_RESULT([])
     PKG_CHECK_MODULES(PANGO, [pango >= 1.15.1], have_pango=yes, have_pango=no)
@@ -2671,7 +2656,6 @@ if test "$with_tiff" != 'no'; then
     AC_CHECK_HEADER(tiffio.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
     AC_CHECK_LIB(tiff,TIFFOpen,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_CHECK_LIB(tiff,TIFFClientOpen,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-    AC_CHECK_LIB(tiff,TIFFIsBigEndian,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_CHECK_LIB(tiff,TIFFIsByteSwapped,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_CHECK_LIB(tiff,TIFFReadRGBATile,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_CHECK_LIB(tiff,TIFFReadRGBAStrip,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
@@ -2688,8 +2672,9 @@ if test "$with_tiff" != 'no'; then
             have_tiff='yes'
             AC_CHECK_HEADERS(tiffconf.h)
             AC_CHECK_FUNCS([TIFFIsCODECConfigured TIFFMergeFieldInfo \
-              TIFFReadEXIFDirectory TIFFSetErrorHandlerExt TIFFSetTagExtender \
-              TIFFSetWarningHandlerExt TIFFSwabArrayOfTriples])
+              TIFFIsBigEndian TIFFReadEXIFDirectory TIFFSetErrorHandlerExt \
+              TIFFSetTagExtender TIFFSetWarningHandlerExt \
+              TIFFSwabArrayOfTriples])
         fi
     else
         AC_MSG_RESULT([no])
@@ -2880,8 +2865,8 @@ AC_SUBST(PERLMAINCC)
 
 # Path to ImageMagick header files
 INCLUDE_RELATIVE_PATH="ImageMagick"
-INCLUDE_PATH="${INCLUDEDIR_ARCH}/${INCLUDE_RELATIVE_PATH}"
-DEFINE_INCLUDE_PATH="${INCLUDEDIR_ARCH}/${INCLUDE_RELATIVE_PATH}/"
+INCLUDE_PATH="${INCLUDEARCH_DIR}/${INCLUDE_RELATIVE_PATH}"
+DEFINE_INCLUDE_PATH="${INCLUDEARCH_DIR}/${INCLUDE_RELATIVE_PATH}/"
 case "${build_os}" in
   mingw* )
     DEFINE_INCLUDE_PATH=`$WinPathScript "$DEFINE_INCLUDE_PATH" 1`
@@ -2973,7 +2958,7 @@ AC_SUBST(CONFIGURE_PATH)
 # Subdirectory to place architecture-independent configuration files
 SHARE_RELATIVE_PATH="${LIBRARY_RELATIVE_PATH}"
 AC_DEFINE_UNQUOTED(SHARE_RELATIVE_PATH,"$SHARE_RELATIVE_PATH",Subdirectory of lib where architecture-independent configuration files live.)
-SHARE_PATH="${SHAREDIR_ARCH}/${SHARE_RELATIVE_PATH}"
+SHARE_PATH="${DATA_DIR}/${SHARE_RELATIVE_PATH}"
 DEFINE_SHARE_PATH="${DATA_DIR}/${SHARE_RELATIVE_PATH}/"
 case "${build_os}" in
   mingw* )
@@ -2982,6 +2967,19 @@ case "${build_os}" in
 esac
 AC_DEFINE_UNQUOTED(SHARE_PATH,"$DEFINE_SHARE_PATH",Directory where architecture-independent configuration files live.)
 AC_SUBST(SHARE_PATH)
+
+# Subdirectory to place architecture-independent configuration files
+SHAREARCH_RELATIVE_PATH="${LIBRARY_RELATIVE_PATH}/config"
+AC_DEFINE_UNQUOTED(SHAREARCH_RELATIVE_PATH,"$SHAREARCH_RELATIVE_PATH",Subdirectory of lib where architecture-independent configuration files live.)
+SHAREARCH_PATH="${SHAREARCH_DIR}/${SHAREARCH_RELATIVE_PATH}"
+DEFINE_SHAREARCH_PATH="${SHAREARCH_DIR}/${SHAREARCH_RELATIVE_PATH}/"
+case "${build_os}" in
+  mingw* )
+    DEFINE_SHAREARCH_PATH=`$WinPathScript "$DEFINE_SHAREARCH_PATH" 1`
+    ;;
+esac
+AC_DEFINE_UNQUOTED(SHAREARCH_PATH,"$DEFINE_SHAREARCH_PATH",Directory where architecture-independent configuration files live.)
+AC_SUBST(SHAREARCH_PATH)
 
 #
 # program_transform_name is formed for use in a Makefile, so create a

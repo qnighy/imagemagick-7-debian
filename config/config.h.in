@@ -279,6 +279,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `isnan' function. */
+#undef HAVE_ISNAN
+
 /* Define to 1 if you have the `j0' function. */
 #undef HAVE_J0
 
@@ -633,6 +636,9 @@
 /* Define to 1 if you have the <tiffconf.h> header file. */
 #undef HAVE_TIFFCONF_H
 
+/* Define to 1 if you have the `TIFFIsBigEndian' function. */
+#undef HAVE_TIFFISBIGENDIAN
+
 /* Define to 1 if you have the `TIFFIsCODECConfigured' function. */
 #undef HAVE_TIFFISCODECCONFIGURED
 
@@ -818,7 +824,7 @@
    */
 #undef LT_OBJDIR
 
-/* Define if you have lzma compression library */
+/* Define if you have LZMA library */
 #undef LZMA_DELEGATE
 
 /* Define to prepend to default font search path. */
@@ -893,6 +899,13 @@
 
 /* Define to the type of arg 5 for `select'. */
 #undef SELECT_TYPE_ARG5
+
+/* Directory where architecture-independent configuration files live. */
+#undef SHAREARCH_PATH
+
+/* Subdirectory of lib where architecture-independent configuration files
+   live. */
+#undef SHAREARCH_RELATIVE_PATH
 
 /* Directory where architecture-independent configuration files live. */
 #undef SHARE_PATH

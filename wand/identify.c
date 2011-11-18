@@ -50,6 +50,7 @@
 #include "wand/studio.h"
 #include "wand/MagickWand.h"
 #include "wand/mogrify-private.h"
+#include "magick/string-private.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -639,7 +640,7 @@ WandExport MagickBooleanType IdentifyImageCommand(ImageInfo *image_info,
             i++;
             if (i == (ssize_t) argc)
               ThrowIdentifyException(OptionError,"MissingArgument",option);
-            value=InterpretLocaleValue(argv[i],&p);
+            value=StringToDouble(argv[i],&p);
             (void) value;
             if ((p == argv[i]) && (LocaleCompare("unlimited",argv[i]) != 0))
               ThrowIdentifyInvalidArgumentException(option,argv[i]);

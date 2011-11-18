@@ -62,6 +62,7 @@
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
+#include "magick/string-private.h"
 #include "magick/module.h"
 #if defined(MAGICKCORE_JBIG_DELEGATE)
 #include "jbig.h"
@@ -442,7 +443,7 @@ static MagickBooleanType WriteJBIGImage(const ImageInfo *image_info,
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  version=InterpretLocaleValue(JBG_VERSION,(char **) NULL);
+  version=StringToDouble(JBG_VERSION,(char **) NULL);
   scene=0;
   do
   {
