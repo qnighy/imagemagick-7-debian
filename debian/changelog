@@ -1,4 +1,4 @@
-imagemagick (8:6.7.3.3-1) experimental; urgency=low
+imagemagick (8:6.7.3.6-1) experimental; urgency=low
 
   * Drop previous quilt patches: merged upstream
   * New upstream version:
@@ -6,6 +6,7 @@ imagemagick (8:6.7.3.3-1) experimental; urgency=low
   - Defend against corrupt PSD resource block (LP: #302454)
   - Bug fix: "-depth busted", thanks to jidanni (Closes: #618435).
   * Upstream break ABI keeping API. Bump soname
+  * Multiarch aware
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 22 Aug 2011 13:46:34 +0200
 
