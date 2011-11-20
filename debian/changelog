@@ -1,14 +1,17 @@
-imagemagick (8:6.7.3.6-1) experimental; urgency=low
+imagemagick (8:6.7.3.6-1) unstable; urgency=low
 
+  [ Bastien Roucariès ]
   * Drop previous quilt patches: merged upstream
   * New upstream version:
   - Fix incorrect readding of PGM header (LP: #346474)
   - Defend against corrupt PSD resource block (LP: #302454)
   - Bug fix: "-depth busted", thanks to jidanni (Closes: #618435).
+  - Bug fix: "delegate ffmpeg fails", thanks to Francisco Munoz
+    (Closes: #644170).
   * Upstream break ABI keeping API. Bump soname
-  * Multiarch aware
+  * Multiarch aware , thanks to Riku Voipio (Closes: #640680).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 22 Aug 2011 13:46:34 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 20 Nov 2011 19:14:35 +0100
 
 imagemagick (8:6.6.9.7-5) unstable; urgency=low
 
