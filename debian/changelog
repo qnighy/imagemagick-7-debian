@@ -1,4 +1,4 @@
-imagemagick (8:6.7.3.6-1) unstable; urgency=low
+imagemagick (8:6.7.3.6-1) experimental; urgency=low
 
   [ Bastien Roucariès ]
   * Drop previous quilt patches: merged upstream
@@ -10,8 +10,10 @@ imagemagick (8:6.7.3.6-1) unstable; urgency=low
     (Closes: #644170).
   * Upstream break ABI keeping API. Bump soname
   * Multiarch aware , thanks to Riku Voipio (Closes: #640680).
+  * Fix perlmagick fails at runtime with symbol lookup error, 
+    thanks to Michael Terry (Closes: #650417).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 20 Nov 2011 19:14:35 +0100
+ --
 
 imagemagick (8:6.6.9.7-5) unstable; urgency=low
 

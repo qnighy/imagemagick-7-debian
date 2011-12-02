@@ -44,9 +44,6 @@ build-stamp: $(QUILT_STAMPFN)
 	--x-includes=/usr/include/X11 \
 	--x-libraries=/usr/lib/X11
 
-	cd "$(CURDIR)/PerlMagick" && \
-		perl Makefile.PL INSTALLDIRS=vendor
-
 	# Patch the generated libtool to avoid passing -rpath when linking,
 	# and to explicitly link libraries against the libraries they
 	# depend on.
@@ -56,6 +53,10 @@ build-stamp: $(QUILT_STAMPFN)
 		-e '/^archive_cmds="/s/"$$/ \\$$deplibs"/'
 
 	$(MAKE)
+
+	# Create Makefile after building main library, so it finds -lMagickCore (see #650417)
+	cd "$(CURDIR)/PerlMagick" && \
+		perl Makefile.PL INSTALLDIRS=vendor
 
 	cd "$(CURDIR)/PerlMagick" && \
 		$(MAKE) OPTIMIZE="-O2 -g -Wall"
