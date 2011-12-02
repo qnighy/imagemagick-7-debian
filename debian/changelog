@@ -14,8 +14,10 @@ imagemagick (8:6.7.3.10-1) experimental; urgency=low
     thanks to Michael Terry (Closes: #650417).
   * Prepare new major version transition: build version suffixed 
   binaries.
+  * Switch to lcms v2.X support 
+  * Add libfftw support (Closes: #598693).
 
- --
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 02 Dec 2011 23:02:10 +0100
 
 imagemagick (8:6.6.9.7-5) unstable; urgency=low
 
