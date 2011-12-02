@@ -476,13 +476,28 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if ((flags & SigmaValue) == 0)
         image->y_resolution=image->x_resolution;
     }
+  if (image_info->density != (char *) NULL)
+    {
+      flags=ParseGeometry(image_info->density,&geometry_info);
+      image->x_resolution=geometry_info.rho;
+      image->y_resolution=geometry_info.sigma;
+      if ((flags & SigmaValue) == 0)
+        image->y_resolution=image->x_resolution;
+    }
+  (void) ParseAbsoluteGeometry(PSPageGeometry,&page);
+  if (image_info->page != (char *) NULL)
+    (void) ParseAbsoluteGeometry(image_info->page,&page);
+  page.width=(size_t) ceil((double) (page.width*image->x_resolution/delta.x)-
+    0.5);
+  page.height=(size_t) ceil((double) (page.height*image->y_resolution/delta.y)-
+    0.5);
   /*
     Determine page geometry from the Postscript bounding box.
   */
   (void) ResetMagickMemory(&bounds,0,sizeof(bounds));
-  (void) ResetMagickMemory(&hires_bounds,0,sizeof(hires_bounds));
-  (void) ResetMagickMemory(&page,0,sizeof(page));
   (void) ResetMagickMemory(command,0,sizeof(command));
+  cmyk=image_info->colorspace == CMYKColorspace ? MagickTrue : MagickFalse;
+  (void) ResetMagickMemory(&hires_bounds,0,sizeof(hires_bounds));
   priority=0;
   columns=0;
   rows=0;
@@ -490,7 +505,6 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   spotcolor=0;
   language_level=1;
   skip=MagickFalse;
-  cmyk=image_info->colorspace == CMYKColorspace ? MagickTrue : MagickFalse;
   pages=(~0UL);
   p=command;
   for (c=ReadBlobByte(image); c != EOF; c=ReadBlobByte(image))
@@ -636,6 +650,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         value=DestroyString(value);
         continue;
       }
+    if (image_info->page != (char *) NULL)
+      continue;
     /*
       Note region defined by bounding box.
     */
@@ -671,12 +687,13 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
           &bounds.x1,&bounds.y1,&bounds.x2,&bounds.y2);
         i=1;
       }
-    if ((count != 4) || (i < priority))
+    if ((count != 4) || (i < (ssize_t) priority))
       continue;
     hires_bounds=bounds;
     priority=i;
   }
-  if (priority != 0)
+  if ((fabs(hires_bounds.x2-hires_bounds.x1) >= MagickEpsilon) && 
+      (fabs(hires_bounds.y2-hires_bounds.y1) >= MagickEpsilon))
     {
       /*
         Set Postscript render geometry.
@@ -685,8 +702,10 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         hires_bounds.x2-hires_bounds.x1,hires_bounds.y2-hires_bounds.y1,
         hires_bounds.x1,hires_bounds.y1);
       (void) SetImageProperty(image,"ps:HiResBoundingBox",geometry);
-      page.width=(size_t) floor(hires_bounds.x2-hires_bounds.x1+0.5);
-      page.height=(size_t) floor(hires_bounds.y2-hires_bounds.y1+0.5);
+      page.width=(size_t) ceil((double) ((hires_bounds.x2-hires_bounds.x1)*
+        image->x_resolution/delta.x)-0.5);
+      page.height=(size_t) ceil((double) ((hires_bounds.y2-hires_bounds.y1)*
+        image->y_resolution/delta.y)-0.5);
     }
   (void) CloseBlob(image);
   if (IsRGBColorspace(image_info->colorspace) != MagickFalse)
@@ -712,7 +731,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         translate_geometry[MaxTextExtent];
 
       (void) FormatLocaleString(translate_geometry,MaxTextExtent,
-        "%g %g translate\n",-bounds.x1,-bounds.y1);
+        "%g %g translate\n",-hires_bounds.x1,-hires_bounds.y1);
       count=write(file,translate_geometry,(unsigned int)
         strlen(translate_geometry));
     }
@@ -734,24 +753,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return((Image *) NULL);
     }
   *options='\0';
-  if ((page.width == 0) || (page.height == 0))
-    (void) ParseAbsoluteGeometry(PSPageGeometry,&page);
-  if (image_info->density != (char *) NULL)
-    {
-      flags=ParseGeometry(image_info->density,&geometry_info);
-      image->x_resolution=geometry_info.rho;
-      image->y_resolution=geometry_info.sigma;
-      if ((flags & SigmaValue) == 0)
-        image->y_resolution=image->x_resolution;
-    }
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",
     image->x_resolution,image->y_resolution);
-  if (image_info->page != (char *) NULL)
-    (void) ParseAbsoluteGeometry(image_info->page,&page);
-  page.width=(size_t) floor((double) (page.width*image->x_resolution/delta.x)+
-    0.5);
-  page.height=(size_t) floor((double) (page.height*image->y_resolution/delta.y)+
-    0.5);
   (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
     page.width,(double) page.height);
   read_info=CloneImageInfo(image_info);
@@ -1863,7 +1866,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
                 };
               if (image->previous == (Image *) NULL)
                 {
-                  status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) 
+                  status=SetImageProgress(image,SaveImageTag,(MagickOffsetType)
                     y,image->rows);
                   if (status == MagickFalse)
                     break;

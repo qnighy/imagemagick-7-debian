@@ -625,17 +625,17 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
       cin.film.id=ReadBlobByte(image);
       offset++;
       c=cin.film.id;
-      if (c != ~0U)
+      if (c != ~0)
         (void) FormatImageProperty(image,"dpx:film.id","%d",cin.film.id);
       cin.film.type=ReadBlobByte(image);
       offset++;
       c=cin.film.type;
-      if (c != ~0U)
+      if (c != ~0)
         (void) FormatImageProperty(image,"dpx:film.type","%d",cin.film.type);
       cin.film.offset=ReadBlobByte(image);
       offset++;
       c=cin.film.offset;
-      if (c != ~0U)
+      if (c != ~0)
         (void) FormatImageProperty(image,"dpx:film.offset","%d",
           cin.film.offset);
       cin.film.reserve1=ReadBlobByte(image);
@@ -1152,7 +1152,7 @@ static MagickBooleanType WriteCINImage(const ImageInfo *image_info,Image *image)
   if (0)
     {
       quantum_type=GrayQuantum;
-      length=GetBytesPerRow(image->columns,3,image->depth,MagickTrue);
+      length=GetBytesPerRow(image->columns,1UL,image->depth,MagickTrue);
     }
   for (y=0; y < (ssize_t) image->rows; y++)
   {

@@ -915,9 +915,6 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
   {
     if (0 && (image_info->verbose != MagickFalse))
       TIFFPrintDirectory(tiff,stdout,MagickFalse);
-    TIFFGetEXIFProperties(tiff,image);
-    TIFFGetProfiles(tiff,image);
-    TIFFGetProperties(tiff,image);
 #if defined(MAGICKCORE_HAVE_TIFFISBIGENDIAN)
     (void) SetImageProperty(image,"tiff:endian",TIFFIsBigEndian(tiff) == 0 ?
       "lsb" : "msb");
@@ -1041,9 +1038,6 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
         image->chromaticity.blue_primary.x=chromaticity[4];
         image->chromaticity.blue_primary.y=chromaticity[5];
       }
-    /*
-      Allocate memory for the image and pixel buffer.
-    */
 #if defined(MAGICKCORE_HAVE_TIFFISCODECCONFIGURED) || (TIFFLIB_VERSION > 20040919)
     if ((compress_tag != COMPRESSION_NONE) &&
         (TIFFIsCODECConfigured(compress_tag) == 0))
@@ -1096,6 +1090,12 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
       case COMPRESSION_ADOBE_DEFLATE: image->compression=ZipCompression; break;
       default: image->compression=RLECompression; break;
     }
+    TIFFGetProfiles(tiff,image);
+    TIFFGetProperties(tiff,image);
+    TIFFGetEXIFProperties(tiff,image);
+    /*
+      Allocate memory for the image and pixel buffer.
+    */
     quantum_info=AcquireQuantumInfo(image_info,image);
     if (quantum_info == (QuantumInfo *) NULL)
       {
@@ -1752,7 +1752,10 @@ static void TIFFTagExtender(TIFF *tiff)
   static const TIFFFieldInfo
     TIFFExtensions[] =
     {
-      { 37724, -3, -3, TIFF_UNDEFINED, FIELD_CUSTOM, 1, 1, "PhotoshopLayerData" }
+      {
+        37724, -3, -3, TIFF_UNDEFINED, FIELD_CUSTOM, 1, 1,
+          (char *) "PhotoshopLayerData"
+      }
     };
 
   TIFFMergeFieldInfo(tiff,TIFFExtensions,sizeof(TIFFExtensions)/
@@ -2151,7 +2154,6 @@ static MagickBooleanType WritePTIFImage(const ImageInfo *image_info,
     Write pyramid-encoded TIFF image.
   */
   write_info=CloneImageInfo(image_info);
-  *write_info->magick='\0';
   write_info->adjoin=MagickTrue;
   status=WriteTIFFImage(write_info,GetFirstImageInList(images));
   images=DestroyImageList(images);
@@ -3078,7 +3080,8 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
         chromaticity[1]=(float) image->chromaticity.white_point.y;
         (void) TIFFSetField(tiff,TIFFTAG_WHITEPOINT,chromaticity);
       }
-    if ((image_info->adjoin != MagickFalse) && (GetImageListLength(image) > 1))
+    if ((LocaleCompare(image_info->magick,"PTIF") != 0) &&
+        (image_info->adjoin != MagickFalse) && (GetImageListLength(image) > 1))
       {
         (void) TIFFSetField(tiff,TIFFTAG_SUBFILETYPE,FILETYPE_PAGE);
         if (image->scene != 0)
@@ -3095,7 +3098,8 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
 
       page=(uint16) scene;
       pages=(uint16) GetImageListLength(image);
-      if ((image_info->adjoin != MagickFalse) && (pages > 1))
+      if ((LocaleCompare(image_info->magick,"PTIF") != 0) &&
+          (image_info->adjoin != MagickFalse) && (pages > 1))
         (void) TIFFSetField(tiff,TIFFTAG_SUBFILETYPE,FILETYPE_PAGE);
       (void) TIFFSetField(tiff,TIFFTAG_PAGENUMBER,page,pages);
     }
