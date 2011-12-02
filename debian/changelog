@@ -1,4 +1,4 @@
-imagemagick (8:6.7.3.6-1) experimental; urgency=low
+imagemagick (8:6.7.3.10-1) experimental; urgency=low
 
   [ Bastien Roucariès ]
   * Drop previous quilt patches: merged upstream
@@ -12,6 +12,8 @@ imagemagick (8:6.7.3.6-1) experimental; urgency=low
   * Multiarch aware , thanks to Riku Voipio (Closes: #640680).
   * Fix perlmagick fails at runtime with symbol lookup error, 
     thanks to Michael Terry (Closes: #650417).
+  * Prepare new major version transition: build version suffixed 
+  binaries.
 
  --
 

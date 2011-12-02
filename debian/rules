@@ -15,6 +15,7 @@ export DEB_UPSTREAM_VERSION ?= $(shell echo $(DEB_NOEPOCH_VERSION) | sed 's/-[^-
 export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -ne 'print if not /^Version:\s*.*-/;')
 
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
+export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g"
 
 DESTDIR="$(CURDIR)/debian/tmp"
 
@@ -42,7 +43,8 @@ build-stamp: $(QUILT_STAMPFN)
 	--without-fpx \
 	--with-perl-options='INSTALLDIRS=vendor' \
 	--x-includes=/usr/include/X11 \
-	--x-libraries=/usr/lib/X11
+	--x-libraries=/usr/lib/X11 \
+	--program-suffix=im$(DEB_UPSTREAM_VERSION_MAJOR)
 
 	# Patch the generated libtool to avoid passing -rpath when linking,
 	# and to explicitly link libraries against the libraries they
