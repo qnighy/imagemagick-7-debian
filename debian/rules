@@ -43,8 +43,7 @@ build-stamp: $(QUILT_STAMPFN)
 	--without-fpx \
 	--with-perl-options='INSTALLDIRS=vendor' \
 	--x-includes=/usr/include/X11 \
-	--x-libraries=/usr/lib/X11 \
-	--program-suffix=im$(DEB_UPSTREAM_VERSION_MAJOR)
+	--x-libraries=/usr/lib/X11 
 
 	# Patch the generated libtool to avoid passing -rpath when linking,
 	# and to explicitly link libraries against the libraries they
@@ -133,6 +132,15 @@ install: build check
 	# Use x-terminal emulator for editing (Bug #132947)
 	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
 		$(DESTDIR)/etc/ImageMagick/delegates.xml
+
+        # Move file in order to use alternative
+	while read FILE; do \
+		if echo $$FILE | grep usr/bin > /dev/null; then \
+	    		mv  $(CURDIR)/debian/tmp/$$FILE $(CURDIR)/debian/tmp/`echo $$FILE|sed s/*//g`.im$(DEB_UPSTREAM_VERSION_MAJOR); \
+		else \
+			true; \
+		fi \
+	done < debian/imagemagick.install
 
 	# Remove empty directories in debian/tmp
 	-find $(DESTDIR) -type d -empty | xargs -r rmdir -p
