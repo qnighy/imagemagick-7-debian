@@ -18,8 +18,8 @@ AC_PREREQ(2.67)
 
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [7])
-m4_define([magick_micro_version], [3])
-m4_define([magick_patchlevel_version], [10])
+m4_define([magick_micro_version], [4])
+m4_define([magick_patchlevel_version], [0])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "svnversion | sed -r 's/([0-9]+).*/\1/'"]))
@@ -2441,9 +2441,9 @@ PANGO_LIBS=""
 PANGO_PKG=""
 if test "x$with_pango" = "xyes"; then
     AC_MSG_RESULT([-------------------------------------------------------------])
-    PKG_CHECK_MODULES(PANGO, [pangoft2 >= 1.15.1], have_pangoft2=yes, have_pangoft2=no)
+    PKG_CHECK_MODULES(PANGO, [pangoft2 >= 1.28.1], have_pangoft2=yes, have_pangoft2=no)
     AC_MSG_RESULT([])
-    PKG_CHECK_MODULES(PANGO, [pango >= 1.15.1], have_pango=yes, have_pango=no)
+    PKG_CHECK_MODULES(PANGO, [pango >= 1.28.1], have_pango=yes, have_pango=no)
     AC_MSG_RESULT([])
 fi
 

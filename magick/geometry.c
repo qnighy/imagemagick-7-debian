@@ -1196,10 +1196,17 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
       former_width=(*width);
       former_height=(*height);
     }
-  if (((flags & AspectValue) == 0) && ((*width != former_width) ||
-      (*height != former_height)))
+  if (((flags & AspectValue) != 0) || ((*width == former_width) &&
+      (*height == former_height)))
     {
-      MagickRealType
+      if ((flags & RhoValue) == 0)
+        *width=former_width;
+      if ((flags & SigmaValue) == 0)
+        *height=former_height;
+    }
+  else
+    {
+      double
         scale_factor;
 
       /*
@@ -1210,40 +1217,30 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
       else
         if (((flags & RhoValue) != 0) && (flags & SigmaValue) != 0)
           {
-            scale_factor=(MagickRealType) *width/(MagickRealType) former_width;
+            scale_factor=(double) *width/(double) former_width;
             if ((flags & MinimumValue) == 0)
               {
-                if (scale_factor > ((MagickRealType) *height/(MagickRealType)
-                    former_height))
-                  scale_factor=(MagickRealType) *height/(MagickRealType)
-                    former_height;
+                if (scale_factor > ((double) *height/(double) former_height))
+                  scale_factor=(double) *height/(double) former_height;
               }
             else
-              if (scale_factor < ((MagickRealType) *height/(MagickRealType)
-                  former_height))
-                scale_factor=(MagickRealType) *height/(MagickRealType)
-                  former_height;
+              if (scale_factor < ((double) *height/(double) former_height))
+                scale_factor=(double) *height/(double) former_height;
           }
         else
           if ((flags & RhoValue) != 0)
             {
-              scale_factor=(MagickRealType) *width/(MagickRealType)
-                former_width;
+              scale_factor=(double) *width/(double) former_width;
               if (((flags & MinimumValue) != 0) &&
-                  (scale_factor < ((MagickRealType) *width/(MagickRealType)
-                   former_height)))
-                scale_factor=(MagickRealType) *width/(MagickRealType)
-                  former_height;
+                  (scale_factor < ((double) *width/(double) former_height)))
+                scale_factor=(double) *width/(double) former_height;
             }
           else
             {
-              scale_factor=(MagickRealType) *height/(MagickRealType)
-                former_height;
+              scale_factor=(double) *height/(double) former_height;
               if (((flags & MinimumValue) != 0) &&
-                  (scale_factor < ((MagickRealType) *height/(MagickRealType)
-                   former_width)))
-                scale_factor=(MagickRealType) *height/(MagickRealType)
-                  former_width;
+                  (scale_factor < ((double) *height/(double) former_width)))
+                scale_factor=(double) *height/(double) former_width;
             }
       *width=MagickMax((size_t) floor(scale_factor*former_width+0.5),1UL);
       *height=MagickMax((size_t) floor(scale_factor*former_height+0.5),1UL);
@@ -1264,7 +1261,7 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
     }
   if ((flags & AreaValue) != 0)
     {
-      MagickRealType
+      double
         area,
         distance;
 
@@ -1277,12 +1274,12 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
       (void) ParseGeometry(geometry,&geometry_info);
       area=geometry_info.rho;
       distance=sqrt((double) former_width*former_height);
-      scale.x=(double) former_width/(double) (distance/sqrt((double) area));
-      scale.y=(double) former_height/(double) (distance/sqrt((double) area));
+      scale.x=former_width/(distance/sqrt(area));
+      scale.y=former_height/(distance/sqrt(area));
       if ((scale.x < (double) *width) || (scale.y < (double) *height))
         {
-          *width=(size_t) (former_width/(distance/sqrt((double) area)));
-          *height=(size_t) (former_height/(distance/sqrt((double) area)));
+          *width=(size_t) (former_width/(distance/sqrt(area)));
+          *height=(size_t) (former_height/(distance/sqrt(area)));
         }
       former_width=(*width);
       former_height=(*height);

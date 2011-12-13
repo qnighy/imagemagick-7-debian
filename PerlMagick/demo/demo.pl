@@ -272,7 +272,7 @@ push(@$images,$example);
 print "Morphology...\n";
 $example=$model->Clone();
 $example->Label('Morphology');
-$example->Morphology(method=>'Dilate',kernel=>'Diamond',iterations=>3);
+$example->Morphology(method=>'Dilate',kernel=>'Diamond',iterations=>2);
 push(@$images,$example);
 
 print "Motion Blur...\n";
@@ -310,7 +310,7 @@ push(@$images,$plasma);
 print "Polaroid...\n";
 $example=$model->Clone();
 $example->Label('Polaroid');
-$example->Polaroid(caption=>'Magick',rotate=>-5.0,gravity=>'center');
+$example->Polaroid(caption=>'Magick',angle=>-5.0,gravity=>'center');
 push(@$images,$example);
 
 print "Posterize...\n";
