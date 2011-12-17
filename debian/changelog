@@ -17,7 +17,11 @@ imagemagick (8:6.7.4.0-1) experimental; urgency=low
   * Switch to lcms v2.X support 
   * Add libfftw support (Closes: #598693).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 02 Dec 2011 23:02:10 +0100
+  [ Vincent Fourmond ]
+  * Also add a suffix to manual pages
+  * Provide the unsuffixed binaries through alternatives
+
+ -- Vincent Fourmond <fourmond@debian.org>  Sat, 17 Dec 2011 21:21:46 +0100
 
 imagemagick (8:6.6.9.7-5) unstable; urgency=low
 
