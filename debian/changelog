@@ -2,8 +2,12 @@ imagemagick (8:6.7.4.0-2) experimental; urgency=low
 
   * Bug fix: "Please enable hardened build flags", thanks to Moritz
     Muehlenhoff (Closes: #657833).
+  * Bug fix: "Invalid validation DoS CVE-2012-0247/CVE-2012-02478", 
+    thanks to Henri Salo (Closes: #659339).
+  * Bug Fix: Convert delegate from removed /usr/bin/rsvg to
+    /usr/bin/rsvg-convert, thanks to Scott Howard (Closes: #659259)
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 20 Feb 2011 12:18:36 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 20 Feb 2012 15:30:00 +0100
 
 imagemagick (8:6.7.4.0-1) experimental; urgency=low
 
