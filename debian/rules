@@ -34,6 +34,7 @@ build-stamp: $(QUILT_STAMPFN)
 	--sysconfdir=/etc \
 	--mandir=\$${prefix}/share/man \
 	--infodir=\$${prefix}/share/info \
+	$(shell dpkg-buildflags --export=configure) \
 	--with-modules \
 	--with-gs-font-dir=/usr/share/fonts/type1/gsfonts \
 	--with-magick-plus-plus \
