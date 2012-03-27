@@ -1,3 +1,10 @@
+imagemagick (8:6.7.4.0-3) experimental; urgency=low
+
+  * Fix "Invalid validation DoS CVE-2012-1185 / CVE-2012-1186" 
+  (Closes: #665007)
+  
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 27 Mar 2012 15:18:49 +0200
+
 imagemagick (8:6.7.4.0-2) experimental; urgency=low
 
   [ Bastien Roucariès ]
