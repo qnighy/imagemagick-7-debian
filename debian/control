@@ -7,7 +7,7 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Nelson A. de Oliveira <naoliv@debian.org>,
  Bastien Roucariès <roucaries.bastien+debian@gmail.com>,
  Vincent Fourmond <fourmond@debian.org>
-Standards-Version: 3.9.2
+Standards-Version: 3.9.3
 Build-Depends: chrpath, debhelper (>= 8.1.3~), ghostscript, libbz2-dev,
  libdjvulibre-dev, libexif-dev, fftw-dev, libfreetype6-dev, libgraphviz-dev,
  libjasper-dev, libjpeg-dev, liblcms2-dev, liblqr-1-0-dev, libltdl-dev,

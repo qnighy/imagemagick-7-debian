@@ -1,9 +1,15 @@
-imagemagick (8:6.7.4.0-3) experimental; urgency=low
+imagemagick (8:6.7.4.0-3) unstable; urgency=low
 
+  [ Bastien Roucariès ]
   * Fix "Invalid validation DoS CVE-2012-1185 / CVE-2012-1186" 
   (Closes: #665007)
   
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 27 Mar 2012 15:18:49 +0200
+  [ Vincent Fourmond ]
+  * Uploading to unstable, opening the way for the transition (see bug
+    #652650)
+  * Hurray, it seems the package conforms to standards 3.9.3 !
+
+ -- Vincent Fourmond <fourmond@debian.org>  Sun, 01 Apr 2012 20:51:53 +0200
 
 imagemagick (8:6.7.4.0-2) experimental; urgency=low
 
