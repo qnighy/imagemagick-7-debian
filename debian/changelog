@@ -1,3 +1,18 @@
+imagemagick (8:6.7.4.0-4) unstable; urgency=high
+
+  * Fix CVE-2012-0259 / CVE-2012-0260 / CVE-2012-1798 /
+  CVE-2012-1610 (Closes: #667635)
+  - Vulnerability CVE-2012-0259 can cause a DoS in a system
+    via handing JPEG files with invalid EXIF XResolution tag.
+  - Vulnerability CVE-2012-0260 can lead to excessive use of
+    memory in target system, when processing a malicious JPEG file.
+    Excessive use of memory can lead to denial of service.
+  - Vulnerability CVE-2012-1798 can cause program to crash when
+    reading invalid memory, while parsing EXIF IFD in a TIFF file.
+  - Vulnerability CVE-2012-1610 Fix a Potential EXIF Integer Overflow
+  
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 10 Apr 2012 17:24:02 +0200
+ 
 imagemagick (8:6.7.4.0-3) unstable; urgency=low
 
   [ Bastien Roucariès ]
