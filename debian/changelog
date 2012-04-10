@@ -10,6 +10,7 @@ imagemagick (8:6.7.4.0-4) unstable; urgency=high
   - Vulnerability CVE-2012-1798 can cause program to crash when
     reading invalid memory, while parsing EXIF IFD in a TIFF file.
   - Vulnerability CVE-2012-1610 Fix a Potential EXIF Integer Overflow
+  * Fix menu file to run display.im6 instead of display (fix lintian warning)
   
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 10 Apr 2012 17:24:02 +0200
  
