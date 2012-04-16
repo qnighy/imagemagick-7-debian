@@ -3,7 +3,8 @@ imagemagick (8:6.7.4.0-5) unstable; urgency=high
   * Bug fix when converting from pdf to png, thanks to Thomas
     Preud'homme (Closes: #668214).
   * Provides: libmagickcore-extra in order to avoid broken depends. Thanks
-  to Julien Cristau.
+    to Julien Cristau (closes: #667826). Urgency high to make sure the
+    FTBS-inducing bug is closed fast...
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 16 Apr 2012 11:18:10 +0200
 
