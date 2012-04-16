@@ -1,3 +1,12 @@
+imagemagick (8:6.7.4.0-5) unstable; urgency=high
+
+  * Bug fix when converting from pdf to png, thanks to Thomas
+    Preud'homme (Closes: #668214).
+  * Provides: libmagickcore-extra in order to avoid broken depends. Thanks
+  to Julien Cristau.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 16 Apr 2012 11:18:10 +0200
+
 imagemagick (8:6.7.4.0-4) unstable; urgency=high
 
   * Fix CVE-2012-0259 / CVE-2012-0260 / CVE-2012-1798 /
