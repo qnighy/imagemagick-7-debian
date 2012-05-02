@@ -18,7 +18,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1114,6 +1114,8 @@ MagickExport MagickBooleanType DrawAffineImage(Image *image,
     edge;
 
   ssize_t
+    start,
+    stop,
     y;
 
   /*
@@ -1166,12 +1168,14 @@ MagickExport MagickBooleanType DrawAffineImage(Image *image,
   inverse_affine=InverseAffineMatrix(affine);
   GetMagickPixelPacket(image,&zero);
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
-  source_view=AcquireCacheView(source);
+  start=(ssize_t) ceil(edge.y1-0.5);
+  stop=(ssize_t) floor(edge.y2+0.5);
+  source_view=AcquireVirtualCacheView(source,exception);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+  #pragma omp parallel for schedule(static) shared(status)
 #endif
-  for (y=(ssize_t) ceil(edge.y1-0.5); y <= (ssize_t) floor(edge.y2+0.5); y++)
+  for (y=start; y <= stop; y++)
   {
     MagickPixelPacket
       composite,
@@ -3273,9 +3277,9 @@ MagickExport MagickBooleanType DrawGradientImage(Image *image,
   status=MagickTrue;
   exception=(&image->exception);
   GetMagickPixelPacket(image,&zero);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+  #pragma omp parallel for schedule(static) shared(status)
 #endif
   for (y=bounding_box.y; y < (ssize_t) bounding_box.height; y++)
   {
@@ -3874,18 +3878,18 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
     image->rows ? (double) image->rows-1.0 : bounds.y2;
   status=MagickTrue;
   exception=(&image->exception);
-  start=(ssize_t) ceil(bounds.x1-0.5);
-  stop=(ssize_t) floor(bounds.x2+0.5);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
   if (primitive_info->coordinates == 1)
     {
       /*
         Draw point.
       */
+      start=(ssize_t) ceil(bounds.y1-0.5);
+      stop=(ssize_t) floor(bounds.y2+0.5);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+      #pragma omp parallel for schedule(static) shared(status)
 #endif
-      for (y=(ssize_t) ceil(bounds.y1-0.5); y <= (ssize_t) floor(bounds.y2+0.5); y++)
+      for (y=start; y <= stop; y++)
       {
         MagickBooleanType
           sync;
@@ -3896,11 +3900,17 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
         register PixelPacket
           *restrict q;
 
+        ssize_t
+          start,
+          stop;
+
         if (status == MagickFalse)
           continue;
+        start=(ssize_t) ceil(bounds.x1-0.5);
+        stop=(ssize_t) floor(bounds.x2+0.5);
         x=start;
-        q=GetCacheViewAuthenticPixels(image_view,x,y,(size_t) (stop-x+1),
-          1,exception);
+        q=GetCacheViewAuthenticPixels(image_view,x,y,(size_t) (stop-x+1),1,
+          exception);
         if (q == (PixelPacket *) NULL)
           {
             status=MagickFalse;
@@ -3929,10 +3939,12 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
   */
   if (image->matte == MagickFalse)
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
+  start=(ssize_t) ceil(bounds.y1-0.5);
+  stop=(ssize_t) floor(bounds.y2+0.5);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+  #pragma omp parallel for schedule(static) shared(status)
 #endif
-  for (y=(ssize_t) ceil(bounds.y1-0.5); y <= (ssize_t) floor(bounds.y2+0.5); y++)
+  for (y=start; y <= stop; y++)
   {
     const int
       id = GetOpenMPThreadId();
@@ -3951,8 +3963,14 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
     register ssize_t
       x;
 
+    ssize_t
+      start,
+      stop;
+
     if (status == MagickFalse)
       continue;
+    start=(ssize_t) ceil(bounds.x1-0.5);
+    stop=(ssize_t) floor(bounds.x2+0.5);
     q=GetCacheViewAuthenticPixels(image_view,start,y,(size_t) (stop-
       start+1),1,exception);
     if (q == (PixelPacket *) NULL)
@@ -4156,7 +4174,7 @@ MagickExport MagickBooleanType DrawPrimitive(Image *image,
   exception=(&image->exception);
   x=(ssize_t) ceil(primitive_info->point.x-0.5);
   y=(ssize_t) ceil(primitive_info->point.y-0.5);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
   switch (primitive_info->primitive)
   {
     case PointPrimitive:
@@ -4638,6 +4656,11 @@ static MagickBooleanType DrawStrokePolygon(Image *image,
       "    begin draw-stroke-polygon");
   clone_info=CloneDrawInfo((ImageInfo *) NULL,draw_info);
   clone_info->fill=draw_info->stroke;
+  if (clone_info->fill_pattern != (Image *) NULL)
+    clone_info->fill_pattern=DestroyImage(clone_info->fill_pattern);
+  if (clone_info->stroke_pattern != (Image *) NULL)
+    clone_info->fill_pattern=CloneImage(clone_info->stroke_pattern,0,0,
+      MagickTrue,&clone_info->stroke_pattern->exception);
   clone_info->stroke.opacity=(Quantum) TransparentOpacity;
   clone_info->stroke_width=0.0;
   clone_info->fill_rule=NonZeroRule;
@@ -5296,6 +5319,10 @@ static size_t TracePath(PrimitiveInfo *primitive_info,const char *path)
           TraceArcPath(q,point,end,arc,angle,large_arc,sweep);
           q+=q->coordinates;
           point=end;
+          while (isspace((int) ((unsigned char) *p)) != 0)
+            p++;
+          if (*p == ',')
+            p++;
         } while (IsPoint(p) != MagickFalse);
         break;
       }

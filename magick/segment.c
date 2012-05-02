@@ -17,7 +17,7 @@
 %                                April 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -352,7 +352,7 @@ static MagickBooleanType Classify(Image *image,short **extrema,
   count=0;
   progress=0;
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const PixelPacket
@@ -527,9 +527,9 @@ static MagickBooleanType Classify(Image *image,short **extrema,
     Do course grain classes.
   */
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1825,7 +1825,7 @@ MagickExport MagickBooleanType SegmentImage(Image *image,
           image->filename)
       }
   }
-  if (IsRGBColorspace(colorspace) == MagickFalse)
+  if (IssRGBColorspace(colorspace) == MagickFalse)
     (void) TransformImageColorspace(image,colorspace);
   /*
     Initialize histogram.
@@ -1841,7 +1841,7 @@ MagickExport MagickBooleanType SegmentImage(Image *image,
     Classify using the fuzzy c-Means technique.
   */
   status=Classify(image,extrema,cluster_threshold,WeightingExponent,verbose);
-  if (IsRGBColorspace(colorspace) == MagickFalse)
+  if (IssRGBColorspace(colorspace) == MagickFalse)
     (void) TransformImageColorspace(image,colorspace);
   /*
     Relinquish resources.

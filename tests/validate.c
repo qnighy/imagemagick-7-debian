@@ -18,7 +18,7 @@
 %                               March 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -123,7 +123,7 @@ static size_t ValidateCompareCommand(ImageInfo *image_info,
       }
     status=CompareImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -215,7 +215,7 @@ static size_t ValidateCompositeCommand(ImageInfo *image_info,
       }
     status=CompositeImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -306,7 +306,7 @@ static size_t ValidateConvertCommand(ImageInfo *image_info,
       }
     status=ConvertImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -398,7 +398,7 @@ static size_t ValidateIdentifyCommand(ImageInfo *image_info,
       }
     status=IdentifyImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -610,7 +610,7 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
 #if defined(MAGICKCORE_HDRI_SUPPORT)
       fuzz+=0.003;
 #endif
-      if (IsRGBColorspace(reference_image->colorspace) == MagickFalse)
+      if (IssRGBColorspace(reference_image->colorspace) == MagickFalse)
         fuzz+=0.3;
       fuzz+=MagickEpsilon;
       difference_image=CompareImageChannels(reference_image,reconstruct_image,
@@ -826,7 +826,7 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
 #if defined(MAGICKCORE_HDRI_SUPPORT)
       fuzz+=0.003;
 #endif
-      if (IsRGBColorspace(reference_image->colorspace) == MagickFalse)
+      if (IssRGBColorspace(reference_image->colorspace) == MagickFalse)
         fuzz+=0.3;
       fuzz+=MagickEpsilon;
       difference_image=CompareImageChannels(reference_image,reconstruct_image,
@@ -1109,7 +1109,7 @@ static size_t ValidateMontageCommand(ImageInfo *image_info,
       }
     status=MontageImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -1200,7 +1200,7 @@ static size_t ValidateStreamCommand(ImageInfo *image_info,
       }
     status=StreamImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)

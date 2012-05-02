@@ -17,7 +17,7 @@
 %                                 August 1996                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -286,7 +286,7 @@ MagickExport void ConvertHWBToRGB(const double hue,const double whiteness,
   assert(green != (Quantum *) NULL);
   assert(blue != (Quantum *) NULL);
   v=1.0-blackness;
-  if (hue == 0.0)
+  if (hue == -1.0)
     {
       *red=ClampToQuantum((MagickRealType) QuantumRange*v);
       *green=ClampToQuantum((MagickRealType) QuantumRange*v);
@@ -530,7 +530,7 @@ MagickExport void ConvertRGBToHWB(const Quantum red,const Quantum green,
   *whiteness=QuantumScale*w;
   if (v == w)
     {
-      *hue=0.0;
+      *hue=(-1.0);
       return;
     }
   f=((MagickRealType) red == w) ? green-(MagickRealType) blue :
@@ -698,7 +698,7 @@ MagickExport double GenerateDifferentialNoise(RandomInfo *random_info,
         beta=GetPseudoRandomValue(random_info);
         alpha*=beta;
       }
-      noise=(double) QuantumRange*i/SigmaPoisson;
+      noise=(double) (QuantumRange*i/SigmaPoisson);
       break;
     }
     case RandomNoise:

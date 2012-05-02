@@ -17,7 +17,7 @@
 %                                September 2002                               %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1178,7 +1178,7 @@ MagickBooleanType LogMagickEventList(const LogEventType type,const char *module,
       file_info.st_size=0;
       if (log_info->file != (FILE *) NULL)
         (void) fstat(fileno(log_info->file),&file_info);
-      if (file_info.st_size > (1024*1024*log_info->limit))
+      if (file_info.st_size > (ssize_t) (1024*1024*log_info->limit))
         {
           (void) FormatLocaleFile(log_info->file,"</log>\n");
           (void) fclose(log_info->file);

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -63,26 +63,20 @@ static inline void MagickCompositeOver(const PixelPacket *p,
   composite->opacity=(Quantum) (QuantumRange*(1.0-gamma)+0.5);
   gamma=1.0/(gamma <= MagickEpsilon ? 1.0 : gamma);
   SetPixelRed(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelRed(p),alpha,(MagickRealType)
-    GetPixelRed(q),beta)+0.5);
+    GetPixelRed(p),alpha,(MagickRealType) GetPixelRed(q),beta)+0.5);
   SetPixelGreen(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelGreen(p),alpha,(MagickRealType)
-    GetPixelGreen(q),beta)+0.5);
+    GetPixelGreen(p),alpha,(MagickRealType) GetPixelGreen(q),beta)+0.5);
   SetPixelBlue(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelBlue(p),alpha,(MagickRealType)
-    GetPixelBlue(q),beta)+0.5);
+    GetPixelBlue(p),alpha,(MagickRealType) GetPixelBlue(q),beta)+0.5);
 #else
   SetPixelOpacity(composite,QuantumRange*(1.0-gamma));
   gamma=1.0/(gamma <= MagickEpsilon ? 1.0 : gamma);
   SetPixelRed(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelRed(p),alpha,(MagickRealType)
-    GetPixelRed(q),beta));
+    GetPixelRed(p),alpha,(MagickRealType) GetPixelRed(q),beta));
   SetPixelGreen(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelGreen(p),alpha,(MagickRealType)
-    GetPixelGreen(q),beta));
+    GetPixelGreen(p),alpha,(MagickRealType) GetPixelGreen(q),beta));
   SetPixelBlue(composite,gamma*MagickOver_((MagickRealType)
-    GetPixelBlue(p),alpha,(MagickRealType)
-    GetPixelBlue(q),beta));
+    GetPixelBlue(p),alpha,(MagickRealType) GetPixelBlue(q),beta));
 #endif
 }
 

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -838,7 +838,7 @@ extern "C" {
 #define QueryColorname  PrependMagickMethod(QueryColorname)
 #define QueryMagickColorname  PrependMagickMethod(QueryMagickColorname)
 #define QueryMagickColor  PrependMagickMethod(QueryMagickColor)
-#define QueueAuthenticNexus  PrependMagickMethod(QueueAuthenticNexus)
+#define QueueAuthenticPixelCacheNexus  PrependMagickMethod(QueueAuthenticPixelCacheNexus)
 #define QueueAuthenticPixels  PrependMagickMethod(QueueAuthenticPixels)
 #define QueueCacheViewAuthenticPixels  PrependMagickMethod(QueueCacheViewAuthenticPixels)
 #define RadialBlurImageChannel  PrependMagickMethod(RadialBlurImageChannel)
@@ -1035,7 +1035,7 @@ extern "C" {
 #define SampleImage  PrependMagickMethod(SampleImage)
 #define ScaleImage  PrependMagickMethod(ScaleImage)
 #define ScaleResampleFilter  PrependMagickMethod(ScaleResampleFilter)
-#define SeedPseudoRandomGenerator  PrependMagickMethod(SeedPseudoRandomGenerator)
+#define SetRandomSecretKey  PrependMagickMethod(SetRandomSecretKey)
 #define SeekBlob  PrependMagickMethod(SeekBlob)
 #define SegmentImage  PrependMagickMethod(SegmentImage)
 #define SelectiveBlurImageChannel  PrependMagickMethod(SelectiveBlurImageChannel)

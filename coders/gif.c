@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1449,9 +1449,6 @@ ModuleExport void UnregisterGIFImage(void)
 */
 static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
 {
-  Image
-    *next_image;
-
   int
     c;
 
@@ -1535,17 +1532,6 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
     page.height=image->page.height;
   page.x=image->page.x;
   page.y=image->page.y;
-  if (write_info->adjoin != MagickFalse)
-    for (next_image=image; next_image != (Image *) NULL; )
-    {
-      page.x=next_image->page.x;
-      page.y=next_image->page.y;
-      if ((next_image->page.width+page.x) > page.width)
-        page.width=next_image->page.width+page.x;
-      if ((next_image->page.height+page.y) > page.height)
-        page.height=next_image->page.height+page.y;
-      next_image=GetNextImageInList(next_image);
-    }
   (void) WriteBlobLSBShort(image,(unsigned short) page.width);
   (void) WriteBlobLSBShort(image,(unsigned short) page.height);
   /*
@@ -1559,8 +1545,8 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
   one=1;
   do
   {
-    if (IsRGBColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,RGBColorspace);
+    if (IssRGBColorspace(image->colorspace) == MagickFalse)
+      (void) TransformImageColorspace(image,sRGBColorspace);
     opacity=(-1);
     if (IsOpaqueImage(image,&image->exception) != MagickFalse)
       {

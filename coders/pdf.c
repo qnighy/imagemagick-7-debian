@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -71,6 +71,7 @@
 #include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/module.h"
+#include "magick/token.h"
 #include "magick/transform.h"
 #include "magick/utility.h"
 #include "magick/module.h"
@@ -435,7 +436,6 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   (void) ResetMagickMemory(&bounding_box,0,sizeof(bounding_box));
   (void) ResetMagickMemory(&bounds,0,sizeof(bounds));
   (void) ResetMagickMemory(&hires_bounds,0,sizeof(hires_bounds));
-  (void) ResetMagickMemory(&page,0,sizeof(page));
   (void) ResetMagickMemory(command,0,sizeof(command));
   angle=0.0;
   p=command;
@@ -536,6 +536,9 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
           }
     if (count != 4)
       continue;
+    if ((fabs(bounds.x2-bounds.x1) <= fabs(hires_bounds.x2-hires_bounds.x1)) ||
+        (fabs(bounds.y2-bounds.y1) <= fabs(hires_bounds.y2-hires_bounds.y1)))
+      continue;
     hires_bounds=bounds;
   }
   if ((fabs(hires_bounds.x2-hires_bounds.x1) >= MagickEpsilon) && 
@@ -563,7 +566,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       page.width=page.height;
       page.height=swap;
     }
-  if (IsRGBColorspace(image_info->colorspace) != MagickFalse)
+  if (IssRGBColorspace(image_info->colorspace) != MagickFalse)
     cmyk=MagickFalse;
   /*
     Create Ghostscript control file.
@@ -598,8 +601,9 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   *options='\0';
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",image->x_resolution,
     image->y_resolution);
-  (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
-    page.width,(double) page.height);
+  if (image_info->page != (char *) NULL)
+    (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
+      page.width,(double) page.height);
   if (cmyk != MagickFalse)
     (void) ConcatenateMagickString(options,"-dUseCIEColor ",MaxTextExtent);
   if (cropbox != MagickFalse)
@@ -1249,8 +1253,8 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
     }
     if (compression == JPEG2000Compression)
       {
-        if (IsRGBColorspace(image->colorspace) == MagickFalse)
-          (void) TransformImageColorspace(image,RGBColorspace);
+        if (IssRGBColorspace(image->colorspace) == MagickFalse)
+          (void) TransformImageColorspace(image,sRGBColorspace);
       }
     /*
       Scale relative to dots-per-inch.

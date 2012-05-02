@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -129,7 +129,6 @@ static Image *ReadJBIGImage(const ImageInfo *image_info,
     *p;
 
   ssize_t
-    count,
     length,
     y;
 
@@ -183,7 +182,6 @@ static Image *ReadJBIGImage(const ImageInfo *image_info,
     if (length == 0)
       break;
     p=buffer;
-    count=0;
     while ((length > 0) && ((status == JBG_EAGAIN) || (status == JBG_EOK)))
     {
       size_t
@@ -405,9 +403,6 @@ static MagickBooleanType WriteJBIGImage(const ImageInfo *image_info,
   MagickOffsetType
     scene;
 
-  register const IndexPacket
-    *indexes;
-
   register const PixelPacket
     *p;
 
@@ -450,8 +445,8 @@ static MagickBooleanType WriteJBIGImage(const ImageInfo *image_info,
     /*
       Allocate pixel data.
     */
-    if (IsRGBColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,RGBColorspace);
+    if (IssRGBColorspace(image->colorspace) == MagickFalse)
+      (void) TransformImageColorspace(image,sRGBColorspace);
     number_packets=(image->columns+7)/8;
     pixels=(unsigned char *) AcquireQuantumMemory(number_packets,
       image->rows*sizeof(*pixels));
@@ -467,7 +462,6 @@ static MagickBooleanType WriteJBIGImage(const ImageInfo *image_info,
       p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
       if (p == (const PixelPacket *) NULL)
         break;
-      indexes=GetVirtualIndexQueue(image);
       bit=0;
       byte=0;
       for (x=0; x < (ssize_t) image->columns; x++)
@@ -508,12 +502,8 @@ static MagickBooleanType WriteJBIGImage(const ImageInfo *image_info,
           x_resolution,
           y_resolution;
 
-        ssize_t
-          sans_offset;
-
         x_resolution=640;
         y_resolution=480;
-        sans_offset=0;
         if (image_info->density != (char *) NULL)
           {
             GeometryInfo

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -42,7 +42,11 @@ extern "C" {
 #define MaxColormapSize  256UL
 #define MaxMap  255UL
 
+#if defined __arm__ || defined __thumb__
+typedef float MagickRealType;
+#else
 typedef double MagickRealType;
+#endif
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
 #define QuantumRange  255.0
@@ -58,7 +62,11 @@ typedef unsigned char Quantum;
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
+#if defined __arm__ || defined __thumb__
+typedef float MagickRealType;
+#else
 typedef double MagickRealType;
+#endif
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
 #define QuantumRange  65535.0
@@ -121,6 +129,12 @@ typedef __int64 MagickOffsetType;
 typedef unsigned __int64 MagickSizeType;
 #define MagickOffsetFormat  "I64i"
 #define MagickSizeFormat  "I64u"
+#endif
+
+#if QuantumDepth > 16
+  typedef double SignedQuantum;
+#else
+  typedef ssize_t SignedQuantum;
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER == 1200)

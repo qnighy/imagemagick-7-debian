@@ -22,7 +22,7 @@
 %                                March 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -243,7 +243,7 @@ MagickExport MagickBooleanType DuplexTransferImageViewIterator(
   progress=0;
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status) num_threads(source->number_threads)
+  #pragma omp parallel for schedule(static) shared(progress,status) num_threads(source->number_threads)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
   {
@@ -549,7 +549,7 @@ MagickExport MagickBooleanType GetImageViewIterator(ImageView *source,
   status=MagickTrue;
   progress=0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status) num_threads(source->number_threads)
+  #pragma omp parallel for schedule(static) shared(progress,status) num_threads(source->number_threads)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
   {
@@ -716,13 +716,14 @@ MagickExport ImageView *NewImageView(Image *image)
   (void) ResetMagickMemory(image_view,0,sizeof(*image_view));
   image_view->description=ConstantString("ImageView");
   image_view->image=image;
-  image_view->view=AcquireCacheView(image_view->image);
+  image_view->exception=AcquireExceptionInfo();
+  image_view->view=AcquireVirtualCacheView(image_view->image,
+    image_view->exception);
   image_view->extent.width=image->columns;
   image_view->extent.height=image->rows;
   image_view->extent.x=0;
   image_view->extent.y=0;
   image_view->number_threads=GetOpenMPMaximumThreads();
-  image_view->exception=AcquireExceptionInfo();
   image_view->debug=IsEventLogging();
   image_view->signature=MagickSignature;
   return(image_view);
@@ -768,14 +769,15 @@ MagickExport ImageView *NewImageViewRegion(Image *image,const ssize_t x,
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) ResetMagickMemory(image_view,0,sizeof(*image_view));
   image_view->description=ConstantString("ImageView");
-  image_view->view=AcquireCacheView(image_view->image);
+  image_view->exception=AcquireExceptionInfo();
+  image_view->view=AcquireVirtualCacheView(image_view->image,
+    image_view->exception);
   image_view->image=image;
   image_view->extent.width=width;
   image_view->extent.height=height;
   image_view->extent.x=x;
   image_view->extent.y=y;
   image_view->number_threads=GetOpenMPMaximumThreads();
-  image_view->exception=AcquireExceptionInfo();
   image_view->debug=IsEventLogging();
   image_view->signature=MagickSignature;
   return(image_view);
@@ -887,7 +889,7 @@ MagickExport MagickBooleanType SetImageViewIterator(ImageView *destination,
   progress=0;
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status) num_threads(destination->number_threads)
+  #pragma omp parallel for schedule(static) shared(progress,status) num_threads(destination->number_threads)
 #endif
   for (y=destination->extent.y; y < (ssize_t) destination->extent.height; y++)
   {
@@ -1051,7 +1053,7 @@ MagickExport MagickBooleanType TransferImageViewIterator(ImageView *source,
   progress=0;
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status) num_threads(source->number_threads)
+  #pragma omp parallel for schedule(static) shared(progress,status) num_threads(source->number_threads)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
   {
@@ -1181,7 +1183,7 @@ MagickExport MagickBooleanType UpdateImageViewIterator(ImageView *source,
   progress=0;
   exception=source->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status) num_threads(source->number_threads)
+  #pragma omp parallel for schedule(static) shared(progress,status) num_threads(source->number_threads)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
   {

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -371,6 +371,11 @@ static MagickRealType ApplyEvaluateOperator(RandomInfo *random_info,
       result=(MagickRealType) (pixel-value);
       break;
     }
+    case SumEvaluateOperator:
+    {
+      result=(MagickRealType) (pixel+value);
+      break;
+    }
     case ThresholdEvaluateOperator:
     {
       result=(MagickRealType) (((MagickRealType) pixel <= value) ? 0 :
@@ -428,6 +433,7 @@ MagickExport Image *EvaluateImages(const Image *images,
     *evaluate_image;
 
   MagickBooleanType
+    concurrent,
     status;
 
   MagickOffsetType
@@ -491,11 +497,13 @@ MagickExport Image *EvaluateImages(const Image *images,
   progress=0;
   GetMagickPixelPacket(images,&zero);
   random_info=AcquireRandomInfoThreadSet();
-  evaluate_view=AcquireCacheView(evaluate_image);
+  concurrent=GetRandomSecretKey(random_info[0]) == ~0UL ? MagickTrue :
+    MagickFalse;
+  evaluate_view=AcquireAuthenticCacheView(evaluate_image,exception);
   if (op == MedianEvaluateOperator)
     {
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(dynamic) shared(progress,status)
+      #pragma omp parallel for schedule(static) shared(progress,status) omp_concurrent(concurrent)
 #endif
       for (y=0; y < (ssize_t) evaluate_image->rows; y++)
       {
@@ -547,7 +555,7 @@ MagickExport Image *EvaluateImages(const Image *images,
             register const PixelPacket
               *p;
 
-            image_view=AcquireCacheView(next);
+            image_view=AcquireVirtualCacheView(next,exception);
             p=GetCacheViewVirtualPixels(image_view,x,y,1,1,exception);
             if (p == (const PixelPacket *) NULL)
               {
@@ -604,7 +612,7 @@ MagickExport Image *EvaluateImages(const Image *images,
   else
     {
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(dynamic) shared(progress,status)
+      #pragma omp parallel for schedule(static) shared(progress,status) omp_concurrent(concurrent)
 #endif
       for (y=0; y < (ssize_t) evaluate_image->rows; y++)
       {
@@ -652,7 +660,7 @@ MagickExport Image *EvaluateImages(const Image *images,
           register const PixelPacket
             *p;
 
-          image_view=AcquireCacheView(next);
+          image_view=AcquireVirtualCacheView(next,exception);
           p=GetCacheViewVirtualPixels(image_view,0,y,next->columns,1,exception);
           if (p == (const PixelPacket *) NULL)
             {
@@ -754,6 +762,7 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
     *image_view;
 
   MagickBooleanType
+    concurrent,
     status;
 
   MagickOffsetType
@@ -779,9 +788,11 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
   status=MagickTrue;
   progress=0;
   random_info=AcquireRandomInfoThreadSet();
-  image_view=AcquireCacheView(image);
+  concurrent=GetRandomSecretKey(random_info[0]) == ~0UL ? MagickTrue : 
+    MagickFalse;
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) omp_concurrent(concurrent)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1017,9 +1028,9 @@ MagickExport MagickBooleanType FunctionImageChannel(Image *image,
     }
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2487,10 +2498,6 @@ MagickExport Image *StatisticImageChannel(const Image *image,
   const ChannelType channel,const StatisticType type,const size_t width,
   const size_t height,ExceptionInfo *exception)
 {
-#define StatisticWidth \
-  (width == 0 ? GetOptimalKernelWidth2D((double) width,0.5) : width)
-#define StatisticHeight \
-  (height == 0 ? GetOptimalKernelWidth2D((double) height,0.5) : height)
 #define StatisticImageTag  "Statistic/Image"
 
   CacheView
@@ -2508,6 +2515,10 @@ MagickExport Image *StatisticImageChannel(const Image *image,
 
   PixelList
     **restrict pixel_list;
+
+  size_t
+    neighbor_height,
+    neighbor_width;
 
   ssize_t
     y;
@@ -2531,7 +2542,11 @@ MagickExport Image *StatisticImageChannel(const Image *image,
       statistic_image=DestroyImage(statistic_image);
       return((Image *) NULL);
     }
-  pixel_list=AcquirePixelListThreadSet(StatisticWidth,StatisticHeight);
+  neighbor_width=width == 0 ? GetOptimalKernelWidth2D((double) width,0.5) :
+    width;
+  neighbor_height=height == 0 ? GetOptimalKernelWidth2D((double) height,0.5) :
+    height;
+  pixel_list=AcquirePixelListThreadSet(neighbor_width,neighbor_height);
   if (pixel_list == (PixelList **) NULL)
     {
       statistic_image=DestroyImage(statistic_image);
@@ -2542,10 +2557,10 @@ MagickExport Image *StatisticImageChannel(const Image *image,
   */
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
-  statistic_view=AcquireCacheView(statistic_image);
+  image_view=AcquireVirtualCacheView(image,exception);
+  statistic_view=AcquireAuthenticCacheView(statistic_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) statistic_image->rows; y++)
   {
@@ -2569,9 +2584,9 @@ MagickExport Image *StatisticImageChannel(const Image *image,
 
     if (status == MagickFalse)
       continue;
-    p=GetCacheViewVirtualPixels(image_view,-((ssize_t) StatisticWidth/2L),y-
-      (ssize_t) (StatisticHeight/2L),image->columns+StatisticWidth,
-      StatisticHeight,exception);
+    p=GetCacheViewVirtualPixels(image_view,-((ssize_t) neighbor_width/2L),y-
+      (ssize_t) (neighbor_height/2L),image->columns+neighbor_width,
+      neighbor_height,exception);
     q=QueueCacheViewAuthenticPixels(statistic_view,0,y,statistic_image->columns,      1,exception);
     if ((p == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))
       {
@@ -2598,16 +2613,16 @@ MagickExport Image *StatisticImageChannel(const Image *image,
       r=p;
       s=indexes+x;
       ResetPixelList(pixel_list[id]);
-      for (v=0; v < (ssize_t) StatisticHeight; v++)
+      for (v=0; v < (ssize_t) neighbor_height; v++)
       {
-        for (u=0; u < (ssize_t) StatisticWidth; u++)
+        for (u=0; u < (ssize_t) neighbor_width; u++)
           InsertPixelList(image,r+u,s+u,pixel_list[id]);
-        r+=image->columns+StatisticWidth;
-        s+=image->columns+StatisticWidth;
+        r+=image->columns+neighbor_width;
+        s+=image->columns+neighbor_width;
       }
       GetMagickPixelPacket(image,&pixel);
-      SetMagickPixelPacket(image,p+StatisticWidth*StatisticHeight/2,indexes+
-        StatisticWidth*StatisticHeight/2+x,&pixel);
+      SetMagickPixelPacket(image,p+neighbor_width*neighbor_height/2,indexes+
+        neighbor_width*neighbor_height/2+x,&pixel);
       switch (type)
       {
         case GradientStatistic:

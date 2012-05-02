@@ -17,7 +17,7 @@
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -450,6 +450,7 @@ WandExport MagickBooleanType AnimateImageCommand(ImageInfo *image_info,
             option=argv[++i];
             filename=option;
           }
+        (void) SetImageOption(image_info,"filename",filename);
         (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
         if (image_info->ping != MagickFalse)
           images=PingImages(image_info,exception);

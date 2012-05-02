@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -136,6 +136,7 @@ static Image *ReadINLINEImage(const ImageInfo *image_info,
   quantum=MagickMin((size_t) GetBlobSize(image),MagickMaxBufferExtent);
   inline_image=(unsigned char *) AcquireQuantumMemory(quantum,
     sizeof(*inline_image));
+  count=0;
   for (i=0; inline_image != (unsigned char *) NULL; i+=count)
   {
     count=(ssize_t) ReadBlob(image,quantum,inline_image+i);

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -193,8 +193,11 @@ static size_t PNMInteger(Image *image,const unsigned int base)
               p=comment+strlen(comment);
             }
           c=ReadBlobByte(image);
-          *p=(char) c;
-          *(p+1)='\0';
+          if (c != (int) '\n')
+            {
+              *p=(char) c;
+              *(p+1)='\0';
+            }
         }
         if (comment == (char *) NULL)
           return(0);
@@ -1251,8 +1254,11 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     }
     if (EOFBlob(image) != MagickFalse)
-      (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageError,
-        "UnexpectedEndOfFile","`%s'",image->filename);
+      {
+        (void) ThrowMagickException(exception,GetMagickModule(),
+          CorruptImageError,"UnexpectedEndOfFile","`%s'",image->filename);
+        break;
+      }
     /*
       Proceed to next image.
     */
@@ -1558,8 +1564,8 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
       }
     if (format != '7')
       {
-        if (IsRGBColorspace(image->colorspace) == MagickFalse)
-          (void) TransformImageColorspace(image,RGBColorspace);
+        if (IssRGBColorspace(image->colorspace) == MagickFalse)
+          (void) TransformImageColorspace(image,sRGBColorspace);
         (void) FormatLocaleString(buffer,MaxTextExtent,"%.20g %.20g\n",
           (double) image->columns,(double) image->rows);
         (void) WriteBlobString(image,buffer);

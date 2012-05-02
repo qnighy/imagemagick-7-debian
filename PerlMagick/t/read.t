@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -70,7 +70,7 @@ testReadCompare('input_gray_lsb_08bit.mat', 'reference/read/input_gray_lsb_08bit
 
 print("MAT (MatLab gray 8-bit MSB integer) ...\n");
 ++$test;
-testReadCompare('input_gray_msb_08bit.mat', 'reference/read/input_gray_msb_08bit_mat.miff', q//, 0.0, 0.0);
+testReadCompare('input_gray_msb_08bit.mat', 'reference/read/input_gray_msb_08bit_mat.miff', q//, 0.2, 1.02);
 
 print("MAT (MatLab gray 64-bit LSB double) ...\n");
 ++$test;

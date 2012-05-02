@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -63,6 +63,7 @@
 #include "magick/statistic.h"
 #include "magick/string_.h"
 #include "magick/module.h"
+#include "magick/token.h"
 #include "magick/utility.h"
 
 /*
@@ -294,7 +295,7 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
     Initialize histogram image.
   */
   exception=(&image->exception);
-  (void) QueryColorDatabase("#000000",&histogram_image->background_color,
+  (void) QueryColorDatabase("#000",&histogram_image->background_color,
     &image->exception);
   (void) SetImageBackgroundColor(histogram_image);
   for (x=0; x < (ssize_t) histogram_image->columns; x++)

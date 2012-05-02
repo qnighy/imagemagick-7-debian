@@ -91,6 +91,7 @@
 #include "magick/string_.h"
 #include "magick/string-private.h"
 #include "magick/timer.h"
+#include "magick/token.h"
 #include "magick/utility.h"
 #include "magick/version.h"
 #if defined(MAGICKCORE_LCMS_DELEGATE)
@@ -435,6 +436,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
   channel_statistics=(ChannelStatistics *) NULL;
   channel_features=(ChannelFeatures *) NULL;
   colorspace=image->colorspace;
+  scale=1;
   if (ping == MagickFalse)
     {
       size_t
@@ -1078,6 +1080,8 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
   (void) FormatLocaleFile(file,"  Filesize: %s\n",format);
   (void) FormatMagickSize((MagickSizeType) image->columns*image->rows,
      MagickFalse,format);
+  if (strlen(format) > 1)
+    format[strlen(format)-1]='\0';
   (void) FormatLocaleFile(file,"  Number pixels: %s\n",format);
   (void) FormatMagickSize((MagickSizeType) ((double) image->columns*image->rows/
     elapsed_time+0.5),MagickFalse,format);

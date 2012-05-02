@@ -19,7 +19,7 @@ int main( int /*argc*/, char ** argv)
   // Initialize ImageMagick install location for Windows
   InitializeMagick(*argv);
 
-  int failures=0;
+  volatile int failures=0;
 
   try {
 
@@ -350,7 +350,7 @@ int main( int /*argc*/, char ** argv)
       // Test default setting
       double x, y;
       image.chromaBluePrimary( &x, &y );
-      if ( x != 0 || y != 0 )
+      if ( x != 0.1500 || y != 0.0600 )
 	{
 	  ++failures;
 	  cout << "Line: " << __LINE__
@@ -376,7 +376,7 @@ int main( int /*argc*/, char ** argv)
       // Test default setting
       double x, y;
       image.chromaGreenPrimary( &x, &y );
-      if ( x != 0 || y != 0 )
+      if ( x != 0.3000 || y != 0.6000 )
 	{
 	  ++failures;
 	  cout << "Line: " << __LINE__
@@ -401,7 +401,7 @@ int main( int /*argc*/, char ** argv)
       // Test default setting
       double x, y;
       image.chromaRedPrimary( &x, &y );
-      if ( x != 0 || y != 0 )
+      if ( x != 0.6400 || y != 0.3300 )
 	{
 	  ++failures;
 	  cout << "Line: " << __LINE__
@@ -426,7 +426,7 @@ int main( int /*argc*/, char ** argv)
       // Test default setting
       double x, y;
       image.chromaWhitePoint( &x, &y );
-      if ( x != 0 || y != 0 )
+      if ( x != 0.3127 || y != 0.3290 )
 	{
 	  ++failures;
 	  cout << "Line: " << __LINE__
@@ -773,7 +773,7 @@ int main( int /*argc*/, char ** argv)
     //
     // gamma
     //
-    if ( image.gamma() != 0 )
+    if ( image.gamma() != 0.45455 )
       {
 	++failures;
 	cout << "Line: " << __LINE__
@@ -1212,11 +1212,11 @@ int main( int /*argc*/, char ** argv)
     //
     // renderingIntent
     //
-    if ( image.renderingIntent() != UndefinedIntent )
+    if ( image.renderingIntent() != PerceptualIntent )
       {
 	++failures;
 	cout << "Line: " << __LINE__
-             << ", renderingIntent default is not UndefinedIntent as expected"
+             << ", renderingIntent default is not PerceptualIntent as expected"
              << endl;
       }
 
@@ -1285,7 +1285,9 @@ int main( int /*argc*/, char ** argv)
     if ( image.signature() != "c7ac1ef7b47015c6ea6c1fb1d736eba4f8c3fe81dbfe511fbce104cedfce7588" &&
 	 image.signature() != "d9464cd4d0c02f25166909726d6548db51d25fa91bd3cff642813f8a464bcfc7" &&
 	 image.signature() != "e073572dfa4ad28f2f8dd3c6d37dfb14585e60c94cfae910149e97eff2fd895f" &&
+	 image.signature() != "ed06047a79b5b298515538db3fb8186d79e94758ed07a9b411637ba3a79fb4a0" &&
 	 image.signature() != "e12b9781b3a5025628567a4eabf970d16d42560e1b86189caceb03ec358dd8e6" &&
+	 image.signature() != "ea9aaf29023c4c1c801e05483423a4a4266918e3a464b6a5155f11a0c581dedb" &&
 	 image.signature() != "6a989010d8ea958934ff8be44a42e0848f7c5e7e46cd53e04c4a90452c15d34c" &&
 	 image.signature() != "7e5977b8bce5c40b858c84344803dae61feae0ef7a21739b2d068c9cdb72f95b" &&
 	 image.signature() != "c8aed4b60d666e449f5c29d0fb32f089e3257422a1f11a4712451c5340362df0" &&

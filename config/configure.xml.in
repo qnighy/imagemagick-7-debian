@@ -10,7 +10,7 @@
   <configure name="VERSION" value="@PACKAGE_VERSION@"/>
   <configure name="LIB_VERSION" value="@PACKAGE_LIB_VERSION@"/>
   <configure name="LIB_VERSION_NUMBER" value="@PACKAGE_LIB_VERSION_NUMBER@"/>
-  <configure name="SVN_REVISION" value="6163" />
+  <configure name="SVN_REVISION" value="7710" />
   <configure name="RELEASE_DATE" value="@PACKAGE_RELEASE_DATE@"/>
   <configure name="CONFIGURE" value="@CONFIGURE_ARGS@"/>
   <configure name="PREFIX" value="@PREFIX_DIR@"/>
@@ -39,7 +39,7 @@
   <configure name="HOST" value="@host@"/>
   <configure name="FEATURES" value="@MAGICK_FEATURES@"/>
   <configure name="DELEGATES" value="@DELEGATES@"/>
-  <configure name="COPYRIGHT" value="Copyright (C) 1999-2011 ImageMagick Studio LLC"/>
+  <configure name="COPYRIGHT" value="Copyright (C) 1999-2012 ImageMagick Studio LLC"/>
   <configure name="WEBSITE" value="http://www.imagemagick.org"/>
   <configure name="QuantumDepth" value="@QUANTUM_DEPTH@"/>
 </configuremap>

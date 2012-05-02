@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -853,8 +853,8 @@ static MagickBooleanType WriteFPXImage(const ImageInfo *image_info,Image *image)
     Initialize FPX toolkit.
   */
   image->depth=8;
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   memory_limit=20000000;
   fpx_status=FPX_SetToolkitMemoryLimit(&memory_limit);
   if (fpx_status != FPX_OK)

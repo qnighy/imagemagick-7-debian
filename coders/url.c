@@ -18,7 +18,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -228,8 +228,11 @@ static Image *ReadURLImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (image != (Image *) NULL)
     GetPathComponent(image_info->filename,TailPath,image->filename);
   else
-    (void) ThrowMagickException(exception,GetMagickModule(),CoderError,
-      "NoDataReturned","`%s'",filename);
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),CoderError,
+        "NoDataReturned","`%s'",filename);
+      return((Image *) NULL);
+    }
   return(GetFirstImageInList(image));
 }
 

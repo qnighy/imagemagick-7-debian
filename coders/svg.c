@@ -18,7 +18,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1656,15 +1656,15 @@ static void SVGStartElement(void *context,const xmlChar *name,
                          if (LocaleCompare(value,"currentColor") == 0)
                            {
                              (void) FormatLocaleFile(svg_info->file,
-                          "fill '%s'\n",color);
+                               "fill '%s'\n",color);
                              break;
                            }
                         if (LocaleCompare(value,"#00000000") == 0)
                           (void) FormatLocaleFile(svg_info->file,
-                          "fill '#000000'\n");
+                            "fill '#000000'\n");
                         else
                           (void) FormatLocaleFile(svg_info->file,"fill '%s'\n",
-                          value);
+                            value);
                         break;
                       }
                     if (LocaleCompare(keyword,"fillcolor") == 0)
@@ -1746,18 +1746,18 @@ static void SVGStartElement(void *context,const xmlChar *name,
                       }
                     if (LocaleCompare(keyword,"stroke") == 0)
                       {
-                         if (LocaleCompare(value,"currentColor") == 0)
-                           {
-                             (void) FormatLocaleFile(svg_info->file,
-                          "stroke '%s'\n",color);
-                             break;
-                           }
+                        if (LocaleCompare(value,"currentColor") == 0)
+                          {
+                            (void) FormatLocaleFile(svg_info->file,
+                              "stroke '%s'\n",color);
+                            break;
+                          }
                         if (LocaleCompare(value,"#00000000") == 0)
                           (void) FormatLocaleFile(svg_info->file,
-                          "fill '#000000'\n");
+                            "fill '#000000'\n");
                         else
                           (void) FormatLocaleFile(svg_info->file,
-                          "stroke '%s'\n",value);
+                            "stroke '%s'\n",value);
                         break;
                       }
                     if (LocaleCompare(keyword,"stroke-antialiasing") == 0)
@@ -2732,18 +2732,6 @@ static void SVGExternalSubset(void *context,const xmlChar *name,
   parser->inputTab=parser_context.inputTab;
 }
 
-#if defined(MAGICKCORE_RSVG_DELEGATE)
-static void SVGSetImageSize(int *width,int *height,gpointer context)
-{
-  Image
-    *image;
-
-  image=(Image *) context;
-  *width=(int) (*width*image->x_resolution/72.0);
-  *height=(int) (*height*image->y_resolution/72.0);
-}
-#endif
-
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
@@ -2803,7 +2791,7 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         *cairo_surface;
 
       cairo_t
-        *cairo_info;
+        *cairo_image;
 
       register unsigned char
         *p;
@@ -2845,7 +2833,6 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (svg_handle == (RsvgHandle *) NULL)
         ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
       rsvg_handle_set_base_uri(svg_handle,image_info->filename);
-      rsvg_handle_set_size_callback(svg_handle,SVGSetImageSize,image,NULL);
       if ((image->x_resolution != 72.0) && (image->y_resolution != 72.0))
         rsvg_handle_set_dpi_x_y(svg_handle,image->x_resolution,
           image->y_resolution);
@@ -2874,9 +2861,6 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image->matte=MagickTrue;
       SetImageProperty(image,"svg:base-uri",
         rsvg_handle_get_base_uri(svg_handle));
-      SetImageProperty(image,"svg:title",rsvg_handle_get_title(svg_handle));
-      SetImageProperty(image,"svg:description",
-        rsvg_handle_get_desc(svg_handle));
       if ((image->columns == 0) || (image->rows == 0))
         {
 #if !defined(MAGICKCORE_CAIRO_DELEGATE)
@@ -2907,12 +2891,12 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
               g_object_unref(svg_handle);
               ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
             }
-          cairo_info=cairo_create(cairo_surface);
-          cairo_set_operator(cairo_info,CAIRO_OPERATOR_CLEAR);
-          cairo_paint(cairo_info);
-          cairo_set_operator(cairo_info,CAIRO_OPERATOR_OVER);
-          rsvg_handle_render_cairo(svg_handle,cairo_info);
-          cairo_destroy(cairo_info);
+          cairo_image=cairo_create(cairo_surface);
+          cairo_set_operator(cairo_image,CAIRO_OPERATOR_CLEAR);
+          cairo_paint(cairo_image);
+          cairo_set_operator(cairo_image,CAIRO_OPERATOR_OVER);
+          rsvg_handle_render_cairo(svg_handle,cairo_image);
+          cairo_destroy(cairo_image);
           cairo_surface_destroy(cairo_surface);
           g_object_unref(svg_handle);
           p=pixels;
@@ -3135,7 +3119,7 @@ ModuleExport size_t RegisterSVGImage(void)
   (void) CopyMagickString(version,"XML " LIBXML_DOTTED_VERSION,MaxTextExtent);
 #endif
 #if defined(MAGICKCORE_RSVG_DELEGATE)
-  rsvg_init();
+  g_type_init();
   (void) FormatLocaleString(version,MaxTextExtent,"RSVG %d.%d.%d",
     LIBRSVG_MAJOR_VERSION,LIBRSVG_MINOR_VERSION,LIBRSVG_MICRO_VERSION);
 #endif

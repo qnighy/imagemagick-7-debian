@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -171,6 +171,9 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
     pixels[4],
     runlength;
 
+  unsigned int
+    alpha_bits;
+
   /*
     Open image file.
   */
@@ -224,7 +227,9 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   image->columns=tga_info.width;
   image->rows=tga_info.height;
-  image->matte=(tga_info.attributes & 0x0FU) != 0 ? MagickTrue : MagickFalse;
+  alpha_bits=(tga_info.attributes & 0x0FU);
+  image->matte=(alpha_bits > 0) || (tga_info.bits_per_pixel == 32) ?
+    MagickTrue : MagickFalse;
   if ((tga_info.image_type != TGAColormap) &&
       (tga_info.image_type != TGARLEColormap))
     image->depth=(size_t) ((tga_info.bits_per_pixel <= 8) ? 8 :
@@ -695,8 +700,8 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
   */
   if ((image->columns > 65535L) || (image->rows > 65535L))
     ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   targa_info.id_length=0;
   value=GetImageProperty(image,"comment");
   if (value != (const char *) NULL)

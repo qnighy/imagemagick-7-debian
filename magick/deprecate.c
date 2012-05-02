@@ -17,7 +17,7 @@
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1805,8 +1805,8 @@ static double GetSimilarityMetric(const Image *image,const Image *reference,
   if ((image->colorspace == CMYKColorspace) &&
       (reference->colorspace == CMYKColorspace))
     channels++;
-  image_view=AcquireCacheView(image);
-  reference_view=AcquireCacheView(reference);
+  image_view=AcquireVirtualCacheView(image,exception);
+  reference_view=AcquireVirtualCacheView(reference,exception);
   for (y=0; y < (ssize_t) reference->rows; y++)
   {
     register const IndexPacket
@@ -1888,7 +1888,7 @@ MagickExport Image *ExtractSubimageFromImage(Image *image,
   similarity_threshold=(double) image->columns*image->rows;
   SetGeometry(reference,&offset);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4)
+  #pragma omp parallel for schedule(static,4)
 #endif
   for (y=0; y < (ssize_t) (image->rows-reference->rows); y++)
   {
@@ -4918,7 +4918,7 @@ MagickExport MagickBooleanType OpaqueImage(Image *image,
 %
 %  Deprecated, replace with:
 %
-%    AcquireCacheView(image);
+%    AcquireVirtualCacheView(image,&image->exception);
 %
 %  The format of the OpenCacheView method is:
 %
@@ -4931,7 +4931,7 @@ MagickExport MagickBooleanType OpaqueImage(Image *image,
 */
 MagickExport CacheView *OpenCacheView(const Image *image)
 {
-  return(AcquireCacheView(image));
+  return(AcquireVirtualCacheView(image,&((Image *) image)->exception));
 }
 
 /*

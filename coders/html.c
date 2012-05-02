@@ -18,7 +18,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -246,8 +246,8 @@ static MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,
   if (status == MagickFalse)
     return(status);
   (void) CloseBlob(image);
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   *url='\0';
   if ((LocaleCompare(image_info->magick,"FTP") == 0) ||
       (LocaleCompare(image_info->magick,"HTTP") == 0))
@@ -335,8 +335,7 @@ static MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,
       (void) FormatLocaleString(buffer,MaxTextExtent,
         "<map id=\"%s\" name=\"%s\">\n",mapname,mapname);
       (void) WriteBlobString(image,buffer);
-      (void) FormatLocaleString(buffer,MaxTextExtent,"  <area href=\"%s",
-        url);
+      (void) FormatLocaleString(buffer,MaxTextExtent,"  <area href=\"%s",url);
       (void) WriteBlobString(image,buffer);
       if (image->directory == (char *) NULL)
         {

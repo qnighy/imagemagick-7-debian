@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -26,16 +26,16 @@ extern "C" {
   Define declarations.
 */
 #define MagickPackageName "ImageMagick"
-#define MagickCopyright  "Copyright (C) 1999-2011 ImageMagick Studio LLC"
-#define MagickSVNRevision  "6163"
-#define MagickLibVersion  0x674
-#define MagickLibVersionText  "6.7.4"
+#define MagickCopyright  "Copyright (C) 1999-2012 ImageMagick Studio LLC"
+#define MagickSVNRevision  "7710"
+#define MagickLibVersion  0x676
+#define MagickLibVersionText  "6.7.6"
 #define MagickLibVersionNumber  5,0,0
-#define MagickLibAddendum  "-0"
+#define MagickLibAddendum  "-8"
 #define MagickLibInterface  5
 #define MagickLibMinInterface  5
-#define MagickReleaseDate  "2011-12-09"
-#define MagickChangeDate   "20111209"
+#define MagickReleaseDate  "2012-04-29"
+#define MagickChangeDate   "20120429"
 #define MagickAuthoritativeURL  "http://www.imagemagick.org"
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
 #define MagickOpenMPFeature  "OpenMP "
@@ -58,7 +58,7 @@ extern "C" {
 #define MagickZeroConfigurationFeature  " "
 #endif
 #define MagickFeatures MagickOpenMPFeature MagickOpenCLFeature MagickHDRIFeature MagickZeroConfigurationFeature
-#define MagickHomeURL  "file:///usr/share/doc/ImageMagick//index.html"
+#define MagickHomeURL  "file:///usr/share/doc/ImageMagick-6.7.6/index.html"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
 #define MagickQuantumDepth  "Q8"
 #define MagickQuantumRange  "255"

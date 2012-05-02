@@ -17,7 +17,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -70,6 +70,7 @@
 #include "magick/string_.h"
 #include "magick/string-private.h"
 #include "magick/timer.h"
+#include "magick/token.h"
 #include "magick/transform.h"
 #include "magick/utility.h"
 
@@ -514,6 +515,17 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
   image=NewImageList();
   if (constitute_semaphore == (SemaphoreInfo *) NULL)
     AcquireSemaphoreInfo(&constitute_semaphore);
+  if ((magick_info == (const MagickInfo *) NULL) ||
+      (GetImageDecoder(magick_info) == (DecodeImageHandler *) NULL))
+    {
+      delegate_info=GetDelegateInfo(read_info->magick,(char *) NULL,exception);
+      if (delegate_info == (const DelegateInfo *) NULL)
+        {
+          (void) SetImageInfo(read_info,0,exception);
+          (void) CopyMagickString(read_info->filename,filename,MaxTextExtent);
+          magick_info=GetMagickInfo(read_info->magick,exception);
+        }
+    }
   if ((magick_info != (const MagickInfo *) NULL) &&
       (GetImageDecoder(magick_info) != (DecodeImageHandler *) NULL))
     {
@@ -646,6 +658,8 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
       next->magick_columns=next->columns;
     if (next->magick_rows == 0)
       next->magick_rows=next->rows;
+    if ((next->colorspace == sRGBColorspace) && (next->gamma == 1.0))
+      next->colorspace=RGBColorspace;
     value=GetImageProperty(next,"tiff:Orientation");
     if (value == (char *) NULL)
       value=GetImageProperty(next,"exif:Orientation");
@@ -1190,10 +1204,20 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
             }
           if ((magick_info == (const MagickInfo *) NULL) ||
               (GetImageEncoder(magick_info) == (EncodeImageHandler *) NULL))
-            (void) ThrowMagickException(&image->exception,GetMagickModule(),
-              MissingDelegateError,"NoEncodeDelegateForThisImageFormat","`%s'",
-              image->filename);
-          else
+            {
+              magick_info=GetMagickInfo(image->magick,&image->exception);
+              if ((magick_info == (const MagickInfo *) NULL) ||
+                  (GetImageEncoder(magick_info) == (EncodeImageHandler *) NULL))
+                (void) ThrowMagickException(&image->exception,GetMagickModule(),
+                  MissingDelegateError,"NoEncodeDelegateForThisImageFormat",
+                  "'%s'",image->filename);
+              else
+                (void) ThrowMagickException(&image->exception,GetMagickModule(),
+                  MissingDelegateWarning,"NoEncodeDelegateForThisImageFormat",
+                  "'%s'",image->filename);
+            }
+          if ((magick_info != (const MagickInfo *) NULL) &&
+              (GetImageEncoder(magick_info) != (EncodeImageHandler *) NULL))
             {
               /*
                 Call appropriate image writer based on image type.
@@ -1217,7 +1241,10 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
       */
       status=OpenBlob(write_info,image,ReadBinaryBlobMode,&image->exception);
       if (status != MagickFalse)
-        status=ImageToFile(image,write_info->filename,&image->exception);
+        {
+          (void) RelinquishUniqueFileResource(write_info->filename);
+          status=ImageToFile(image,write_info->filename,&image->exception);
+        }
       (void) CloseBlob(image);
       (void) RelinquishUniqueFileResource(image->filename);
       (void) CopyMagickString(image->filename,write_info->filename,

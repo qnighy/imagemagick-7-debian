@@ -19,7 +19,7 @@
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1931,11 +1931,12 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                                             "compose:args",value);
                       if (composite_image->matte != MagickTrue)
                         (void) SetImageOpacity(composite_image,OpaqueOpacity);
-                      composite_view=AcquireCacheView(composite_image);
+                      composite_view=AcquireAuthenticCacheView(composite_image,
+                        &exception);
                       for (y=0; y < (ssize_t) composite_image->rows ; y++)
                       {
-                        q=GetCacheViewAuthenticPixels(composite_view,0,y,(ssize_t)
-                          composite_image->columns,1,&exception);
+                        q=GetCacheViewAuthenticPixels(composite_view,0,y,
+                          (ssize_t) composite_image->columns,1,&exception);
                         for (x=0; x < (ssize_t) composite_image->columns; x++)
                         {
                           if (q->opacity == OpaqueOpacity)
@@ -5871,7 +5872,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
             }
           geometry_info.rho=1.0;
           geometry_info.sigma=1.5;
-          colorspace=RGBColorspace;
+          colorspace=sRGBColorspace;
           verbose=MagickFalse;
           if (attributes != (const xmlChar **) NULL)
             for (i=0; (attributes[i] != (const xmlChar *) NULL); i++)

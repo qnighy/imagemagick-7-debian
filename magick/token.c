@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -603,6 +603,47 @@ MagickExport MagickBooleanType IsGlob(const char *path)
     (strchr(path,'[') != (char *) NULL) ||
     (strchr(path,']') != (char *) NULL) ? MagickTrue : MagickFalse;
   return(status);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   I s M a g i c k T r u e                                                   %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  IsMagickTrue() returns MagickTrue if the value is "true", "on", "yes" or
+%  "1".
+%
+%  The format of the IsMagickTrue method is:
+%
+%      MagickBooleanType IsMagickTrue(const char *value)
+%
+%  A description of each parameter follows:
+%
+%    o option: either MagickTrue or MagickFalse depending on the value
+%      parameter.
+%
+%    o value: Specifies a pointer to a character array.
+%
+*/
+MagickExport MagickBooleanType IsMagickTrue(const char *value)
+{
+  if (value == (const char *) NULL)
+    return(MagickFalse);
+  if (LocaleCompare(value,"true") == 0)
+    return(MagickTrue);
+  if (LocaleCompare(value,"on") == 0)
+    return(MagickTrue);
+  if (LocaleCompare(value,"yes") == 0)
+    return(MagickTrue);
+  if (LocaleCompare(value,"1") == 0)
+    return(MagickTrue);
+  return(MagickFalse);
 }
 
 /*

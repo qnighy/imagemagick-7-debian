@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -176,7 +176,9 @@ static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     count=ReadBlob(image,(size_t) (-(ssize_t) length) & 0x01,pixels);
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
-    if (SetImageProgress(image,LoadImageTag,y,image->rows) == MagickFalse)
+    status=SetImageProgress(image,LoadImageTag,(MagickOffsetType) y,
+      image->rows);
+    if (status == MagickFalse)
       break;
   }
   SetQuantumImageType(image,quantum_type);
@@ -286,11 +288,11 @@ static MagickBooleanType WriteARTImage(const ImageInfo *image_info,Image *image)
   register const PixelPacket
     *p;
 
-  ssize_t
-    count;
-
   size_t
-    length,
+    length;
+
+  ssize_t
+    count,
     y;
 
   unsigned char
@@ -316,8 +318,8 @@ static MagickBooleanType WriteARTImage(const ImageInfo *image_info,Image *image)
   (void) WriteBlobLSBShort(image,(unsigned short) image->columns);
   (void) WriteBlobLSBShort(image,0);
   (void) WriteBlobLSBShort(image,(unsigned short) image->rows);
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   length=(image->columns+7)/8;
   pixels=(unsigned char *) AcquireQuantumMemory(length,sizeof(*pixels));
   if (pixels == (unsigned char *) NULL)

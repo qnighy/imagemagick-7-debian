@@ -23,7 +23,7 @@
 %                                 August 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -740,7 +740,7 @@ WandExport unsigned char *MagickGetImageProfile(MagickWand *wand,
 %
 %  The format of the MagickGetImageProfiles method is:
 %
-%      char *MagickGetImageProfiles(MagickWand *wand,
+%      char *MagickGetImageProfiles(MagickWand *wand,const char *pattern,
 %        size_t *number_profiles)
 %
 %  A description of each parameter follows:
@@ -1066,7 +1066,7 @@ WandExport char *MagickGetOption(MagickWand *wand,const char *key)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   M a g i c k G e t O p t i o n                                             %
+%   M a g i c k G e t O p t i o n s                                           %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -1079,7 +1079,8 @@ WandExport char *MagickGetOption(MagickWand *wand,const char *key)
 %
 %  The format of the MagickGetOptions method is:
 %
-%      char *MagickGetOptions(MagickWand *wand,size_t *number_options)
+%      char *MagickGetOptions(MagickWand *wand,const char *pattern,,
+%        size_t *number_options)
 %
 %  A description of each parameter follows:
 %
@@ -2735,7 +2736,7 @@ WandExport MagickBooleanType MagickSetResourceLimit(const ResourceType type,
 %  The format of the MagickSetResolution method is:
 %
 %      MagickBooleanType MagickSetResolution(MagickWand *wand,
-%        const double x_resolution,const doubtl y_resolution)
+%        const double x_resolution,const double y_resolution)
 %
 %  A description of each parameter follows:
 %

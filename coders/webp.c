@@ -17,7 +17,7 @@
 %                                 March 2011                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -334,6 +334,8 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if ((image->columns > 16383) || (image->rows > 16383))
+    ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
@@ -375,9 +377,7 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
       *q++=ScaleQuantumToChar(GetPixelGreen(p));
       *q++=ScaleQuantumToChar(GetPixelBlue(p));
       if (image->matte != MagickFalse)
-        *q++=ScaleQuantumToChar((Quantum) (QuantumRange-
-          (image->matte != MagickFalse ? GetPixelOpacity(p) :
-          OpaqueOpacity)));
+        *q++=ScaleQuantumToChar(GetPixelOpacity(p));
       p++;
     }
     status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) y,

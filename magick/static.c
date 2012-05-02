@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -204,6 +204,7 @@ MagickExport void RegisterStaticModules(void)
   (void) RegisterEXRImage();
 #endif
   (void) RegisterFAXImage();
+  (void) RegisterFDImage();
   (void) RegisterFITSImage();
 #if defined(MAGICKCORE_FPX_DELEGATE)
   (void) RegisterFPXImage();
@@ -247,6 +248,7 @@ MagickExport void RegisterStaticModules(void)
   (void) RegisterNULLImage();
   (void) RegisterOTBImage();
   (void) RegisterPALMImage();
+  (void) RegisterPANGOImage();
   (void) RegisterPATTERNImage();
   (void) RegisterPCDImage();
   (void) RegisterPCLImage();
@@ -379,6 +381,7 @@ MagickExport void UnregisterStaticModules(void)
   UnregisterEXRImage();
 #endif
   UnregisterFAXImage();
+  UnregisterFDImage();
   UnregisterFITSImage();
 #if defined(MAGICKCORE_FPX_DELEGATE)
   UnregisterFPXImage();
@@ -422,6 +425,7 @@ MagickExport void UnregisterStaticModules(void)
   UnregisterNULLImage();
   UnregisterOTBImage();
   UnregisterPALMImage();
+  UnregisterPANGOImage();
   UnregisterPATTERNImage();
   UnregisterPCDImage();
   UnregisterPCLImage();

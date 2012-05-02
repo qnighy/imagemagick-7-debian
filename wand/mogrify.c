@@ -17,7 +17,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -114,8 +114,7 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
 
   double
     duration,
-    elapsed_time,
-    user_time;
+    serial;
 
   MagickBooleanType
     concurrent,
@@ -125,11 +124,12 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
   register ssize_t
     i;
 
-  TimerInfo
-    *timer;
-
   size_t
-    iterations;
+    iterations,
+    number_threads;
+
+  ssize_t
+    n;
 
   (void) setlocale(LC_ALL,"");
   (void) setlocale(LC_NUMERIC,"C");
@@ -154,56 +154,51 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
     if (LocaleCompare("regard-warnings",option+1) == 0)
       regard_warnings=MagickTrue;
   }
-  timer=AcquireTimerInfo();
-  if (concurrent == MagickFalse)
+  if (iterations == 1)
     {
-      for (i=0; i < (ssize_t) iterations; i++)
-      {
-        if (status != MagickFalse)
-          continue;
-        if (duration > 0)
-          {
-            if (GetElapsedTime(timer) > duration)
-              continue;
-            (void) ContinueTimer(timer);
-          }
-        status=command(image_info,argc,argv,metadata,exception);
-        if (exception->severity != UndefinedException)
-          {
-            if ((exception->severity > ErrorException) ||
-                (regard_warnings != MagickFalse))
-              status=MagickTrue;
-            CatchException(exception);
-          }
+      status=command(image_info,argc,argv,metadata,exception);
+      if (exception->severity != UndefinedException)
+        {
+          if ((exception->severity > ErrorException) ||
+              (regard_warnings != MagickFalse))
+            status=MagickTrue;
+          CatchException(exception);
+        }
         if ((metadata != (char **) NULL) && (*metadata != (char *) NULL))
           {
             (void) fputs(*metadata,stdout);
             (void) fputc('\n',stdout);
             *metadata=DestroyString(*metadata);
           }
-      }
+      return(status);
     }
-  else
-    {
-      SetOpenMPNested(1);
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  # pragma omp parallel for shared(status)
-#endif
-      for (i=0; i < (ssize_t) iterations; i++)
+  number_threads=GetOpenMPMaximumThreads();
+  serial=0.0;
+  for (n=1; n <= (ssize_t) number_threads; n++)
+  {
+    double
+      e,
+      parallel,
+      user_time;
+
+    TimerInfo
+      *timer;
+
+    SetOpenMPMaximumThreads((int) n);
+    timer=AcquireTimerInfo();
+    if (concurrent == MagickFalse)
       {
-        if (status != MagickFalse)
-          continue;
-        if (duration > 0)
-          {
-            if (GetElapsedTime(timer) > duration)
-              continue;
-            (void) ContinueTimer(timer);
-          }
-        status=command(image_info,argc,argv,metadata,exception);
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  # pragma omp critical (MagickCore_CommandGenesis)
-#endif
+        for (i=0; i < (ssize_t) iterations; i++)
         {
+          if (status != MagickFalse)
+            continue;
+          if (duration > 0)
+            {
+              if (GetElapsedTime(timer) > duration)
+                continue;
+              (void) ContinueTimer(timer);
+            }
+          status=command(image_info,argc,argv,metadata,exception);
           if (exception->severity != UndefinedException)
             {
               if ((exception->severity > ErrorException) ||
@@ -219,20 +214,59 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
             }
         }
       }
-    }
-  if (iterations > 1)
-    {
-      elapsed_time=GetElapsedTime(timer);
-      user_time=GetUserTime(timer);
-      (void) FormatLocaleFile(stderr,
-        "Performance[%.20g]: %.20gi %gips %0.3fu %lu:%02lu.%03lu\n",
-        (double) GetOpenMPMaximumThreads(),(double) iterations,(double)
-        iterations/elapsed_time,user_time,(unsigned long) (elapsed_time/60.0),
-        (unsigned long) floor(fmod(elapsed_time,60.0)),(unsigned long) 
-        (1000.0*(elapsed_time-floor(elapsed_time))+0.5));
-      (void) fflush(stderr);
-    }
-  timer=DestroyTimerInfo(timer);
+    else
+      {
+        SetOpenMPNested(1);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+        # pragma omp parallel for shared(status)
+#endif
+        for (i=0; i < (ssize_t) iterations; i++)
+        {
+          if (status != MagickFalse)
+            continue;
+          if (duration > 0)
+            {
+              if (GetElapsedTime(timer) > duration)
+                continue;
+              (void) ContinueTimer(timer);
+            }
+          status=command(image_info,argc,argv,metadata,exception);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+           # pragma omp critical (MagickCore_CommandGenesis)
+#endif
+          {
+            if (exception->severity != UndefinedException)
+              {
+                if ((exception->severity > ErrorException) ||
+                    (regard_warnings != MagickFalse))
+                  status=MagickTrue;
+                CatchException(exception);
+              }
+            if ((metadata != (char **) NULL) && (*metadata != (char *) NULL))
+              {
+                (void) fputs(*metadata,stdout);
+                (void) fputc('\n',stdout);
+                *metadata=DestroyString(*metadata);
+              }
+          }
+        }
+      }
+    user_time=GetUserTime(timer);
+    parallel=GetElapsedTime(timer);
+    e=1.0;
+    if (n == 1)
+      serial=parallel;
+    else
+      e=((1.0/(1.0/((serial/(serial+parallel))+(1.0-(serial/(serial+parallel)))/
+        (double) n)))-(1.0/(double) n))/(1.0-1.0/(double) n);
+    (void) FormatLocaleFile(stderr,
+      "Performance[%.20g]: %.20gi %0.3fips %0.3fe %0.3fu %lu:%02lu.%03lu\n",
+      (double) n,(double) iterations,(double) iterations/parallel,e,
+      user_time,(unsigned long) (parallel/60.0),(unsigned long)
+      floor(fmod(parallel,60.0)),(unsigned long)
+      (1000.0*(parallel-floor(parallel))+0.5));
+    timer=DestroyTimerInfo(timer);
+  }
   return(status);
 }
 
@@ -1069,7 +1103,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               break;
             if (SetImageStorageClass(mask_image,DirectClass) == MagickFalse)
               return(MagickFalse);
-            mask_view=AcquireCacheView(mask_image);
+            mask_view=AcquireAuthenticCacheView(mask_image,exception);
             for (y=0; y < (ssize_t) mask_image->rows; y++)
             {
               q=GetCacheViewAuthenticPixels(mask_view,0,y,mask_image->columns,1,
@@ -1151,7 +1185,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             (void) SyncImageSettings(mogrify_info,*image);
             if (*option == '+')
               {
-                (void) TransformImageColorspace(*image,RGBColorspace);
+                (void) TransformImageColorspace(*image,sRGBColorspace);
                 InheritException(exception,&(*image)->exception);
                 break;
               }
@@ -2171,10 +2205,12 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             (void) SyncImageSettings(mogrify_info,*image);
             if (*option == '-')
               {
-                (void) ParseGeometry(argv[i+1],&geometry_info);
+                flags=ParseGeometry(argv[i+1],&geometry_info);
+                if ((flags & SigmaValue) == 0)
+                  geometry_info.sigma=geometry_info.rho;
                 mogrify_image=StatisticImageChannel(*image,channel,
                   NonpeakStatistic,(size_t) geometry_info.rho,(size_t)
-                  geometry_info.rho,exception);
+                  geometry_info.sigma,exception);
               }
             else
               {
@@ -3701,6 +3737,7 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
         filename=argv[i];
         if ((LocaleCompare(filename,"--") == 0) && (i < (ssize_t) (argc-1)))
           filename=argv[++i];
+        (void) SetImageOption(image_info,"filename",filename);
         (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
         images=ReadImages(image_info,exception);
         status&=(images != (Image *) NULL) &&
@@ -7014,11 +7051,11 @@ WandExport MagickBooleanType MogrifyImageInfo(ImageInfo *image_info,
             if (*option == '+')
               {
                 seed=(size_t) time((time_t *) NULL);
-                SeedPseudoRandomGenerator(seed);
+                SetRandomSecretKey(seed);
                 break;
               }
             seed=StringToUnsignedLong(argv[i+1]);
-            SeedPseudoRandomGenerator(seed);
+            SetRandomSecretKey(seed);
             break;
           }
         if (LocaleCompare("size",option+1) == 0)

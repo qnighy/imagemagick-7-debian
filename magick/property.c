@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -443,6 +443,13 @@ static inline ssize_t MagickMax(const ssize_t x,const ssize_t y)
   return(y);
 }
 
+static inline ssize_t MagickMin(const ssize_t x,const ssize_t y)
+{
+  if (x < y)
+    return(x);
+  return(y);
+}
+
 static inline int ReadPropertyByte(const unsigned char **p,size_t *length)
 {
   int
@@ -577,7 +584,7 @@ static MagickBooleanType Get8BIMProperty(const Image *image,const char *key)
       continue;
     if (ReadPropertyByte(&info,&length) != (unsigned char) 'M')
       continue;
-    id=(ssize_t) ReadPropertyMSBShort(&info,&length);
+    id=(ssize_t) ((int) ReadPropertyMSBShort(&info,&length));
     if (id < (ssize_t) start)
       continue;
     if (id > (ssize_t) stop)
@@ -608,7 +615,7 @@ static MagickBooleanType Get8BIMProperty(const Image *image,const char *key)
             No name match, scroll forward and try next.
           */
           info+=count;
-          length-=count;
+          length-=MagickMin(count,(ssize_t) length);
           continue;
         }
     if ((*name == '#') && (sub_number != 1))
@@ -618,7 +625,7 @@ static MagickBooleanType Get8BIMProperty(const Image *image,const char *key)
         */
         sub_number--;
         info+=count;
-        length-=count;
+        length-=MagickMin(count,(ssize_t) length);
         continue;
       }
     /*
@@ -633,7 +640,7 @@ static MagickBooleanType Get8BIMProperty(const Image *image,const char *key)
         (void) CopyMagickMemory(attribute,(char *) info,(size_t) count);
         attribute[count]='\0';
         info+=count;
-        length-=count;
+        length-=MagickMin(count,(ssize_t) length);
         if ((id <= 1999) || (id >= 2999))
           (void) SetImageProperty((Image *) image,key,(const char *)
             attribute);
@@ -773,7 +780,9 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
       *directory;
 
     size_t
-      entry,
+      entry;
+
+    ssize_t
       offset;
   } DirectoryInfo;
 
@@ -1085,14 +1094,17 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
     entry,
     length,
     number_entries,
-    tag_offset,
     tag;
+
+  SplayTreeInfo
+    *exif_resources;
 
   ssize_t
     all,
     id,
     level,
     offset,
+    tag_offset,
     tag_value;
 
   static int
@@ -1208,7 +1220,7 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
   }
   if (length < 16)
     return(MagickFalse);
-  id=(ssize_t) ReadPropertyShort(LSBEndian,exif);
+  id=(ssize_t) ((int) ReadPropertyShort(LSBEndian,exif));
   endian=LSBEndian;
   if (id == 0x4949)
     endian=LSBEndian;
@@ -1223,7 +1235,7 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
     This the offset to the first IFD.
   */
   offset=(ssize_t) ((int) ReadPropertyLong(endian,exif+4));
-  if ((size_t) offset >= length)
+  if ((offset < 0) || (size_t) offset >= length)
     return(MagickFalse);
   /*
     Set the pointer to the first IFD and follow it were it leads.
@@ -1233,6 +1245,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
   level=0;
   entry=0;
   tag_offset=0;
+  exif_resources=NewSplayTree((int (*)(const void *,const void *)) NULL,
+    (void *(*)(void *)) NULL,(void *(*)(void *)) NULL);
   do
   {
     /*
@@ -1248,7 +1262,7 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
     /*
       Determine how many entries there are in the current IFD.
     */
-    number_entries=ReadPropertyShort(endian,directory);
+    number_entries=(size_t) ((int) ReadPropertyShort(endian,directory));
     for ( ; entry < number_entries; entry++)
     {
       register unsigned char
@@ -1256,19 +1270,24 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
         *q;
 
       size_t
-        format,
-        number_bytes;
+        format;
 
       ssize_t
+        number_bytes,
         components;
 
-      q=(unsigned char *) (directory+2+(12*entry));
-      tag_value=(ssize_t) (ReadPropertyShort(endian,q)+tag_offset);
-      format=(size_t) ReadPropertyShort(endian,q+2);
+      q=(unsigned char *) (directory+(12*entry)+2);
+      if (GetValueFromSplayTree(exif_resources,q) == q)
+        break;
+      (void) AddValueToSplayTree(exif_resources,q,q);
+      tag_value=(ssize_t) ((int) ReadPropertyShort(endian,q)+tag_offset);
+      format=(size_t) ((int) ReadPropertyShort(endian,q+2));
       if (format >= (sizeof(tag_bytes)/sizeof(*tag_bytes)))
         break;
       components=(ssize_t) ((int) ReadPropertyLong(endian,q+4));
       number_bytes=(size_t) components*tag_bytes[format];
+      if (number_bytes < components)
+        break;  /* prevent overflow */
       if (number_bytes <= 4)
         p=q+8;
       else
@@ -1280,6 +1299,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
             The directory entry contains an offset.
           */
           offset=(ssize_t) ((int) ReadPropertyLong(endian,q+8));
+          if ((ssize_t) (offset+number_bytes) < offset)
+            continue;  /* prevent overflow */
           if ((size_t) (offset+number_bytes) > length)
             continue;
           p=(unsigned char *) (exif+offset);
@@ -1290,6 +1311,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
             buffer[MaxTextExtent],
             *value;
 
+          value=(char *) NULL;
+          *buffer='\0';
           switch (format)
           {
             case EXIF_FMT_BYTE:
@@ -1316,7 +1339,7 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
             case EXIF_FMT_ULONG:
             {
               EXIFMultipleValues(4,"%.20g",(double)
-                ReadPropertyLong(endian,p1));
+                ((int) ReadPropertyLong(endian,p1)));
               break;
             }
             case EXIF_FMT_SLONG:
@@ -1328,8 +1351,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
             case EXIF_FMT_URATIONAL:
             {
               EXIFMultipleFractions(8,"%.20g/%.20g",(double)
-                ReadPropertyLong(endian,p1),(double)
-                ReadPropertyLong(endian,p1+4));
+                ((int) ReadPropertyLong(endian,p1)),(double)
+                ((int) ReadPropertyLong(endian,p1+4)));
               break;
             }
             case EXIF_FMT_SRATIONAL:
@@ -1430,19 +1453,19 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
             }
         }
         if ((tag_value == TAG_EXIF_OFFSET) ||
-            (tag_value == TAG_INTEROP_OFFSET) ||
-            (tag_value == TAG_GPS_OFFSET))
+            (tag_value == TAG_INTEROP_OFFSET) || (tag_value == TAG_GPS_OFFSET))
           {
-            size_t
+            ssize_t
               offset;
 
-            offset=(size_t) ReadPropertyLong(endian,p);
-            if ((offset < length) && (level < (MaxDirectoryStack-2)))
+            offset=(ssize_t) ((int) ReadPropertyLong(endian,p));
+            if (((size_t) offset < length) && (level < (MaxDirectoryStack-2)))
               {
-                size_t
+                ssize_t
                   tag_offset1;
 
-                tag_offset1=(tag_value == TAG_GPS_OFFSET) ? 0x10000UL : 0UL;
+                tag_offset1=(ssize_t) ((tag_value == TAG_GPS_OFFSET) ? 0x10000 :
+                  0);
                 directory_stack[level].directory=directory;
                 entry++;
                 directory_stack[level].entry=entry;
@@ -1454,9 +1477,9 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
                 level++;
                 if ((directory+2+(12*number_entries)) > (exif+length))
                   break;
-                offset=(size_t) ReadPropertyLong(endian,directory+2+(12*
-                  number_entries));
-                if ((offset != 0) && (offset < length) &&
+                offset=(ssize_t) ((int) ReadPropertyLong(endian,directory+2+(12*
+                  number_entries)));
+                if ((offset != 0) && ((size_t) offset < length) &&
                     (level < (MaxDirectoryStack-2)))
                   {
                     directory_stack[level].directory=exif+offset;
@@ -1469,6 +1492,7 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
           }
     }
   } while (level > 0);
+  exif_resources=DestroySplayTree(exif_resources);
   return(status);
 }
 
@@ -1549,8 +1573,7 @@ static MagickBooleanType GetXMPProperty(const Image *image,const char *property)
 }
 
 static char *TracePSClippath(const unsigned char *blob,size_t length,
-  const size_t magick_unused(columns),
-  const size_t magick_unused(rows))
+  const size_t magick_unused(columns),const size_t magick_unused(rows))
 {
   char
     *path,
@@ -1609,7 +1632,7 @@ static char *TracePSClippath(const unsigned char *blob,size_t length,
   in_subpath=MagickFalse;
   while (length > 0)
   {
-    selector=(ssize_t) ReadPropertyMSBShort(&blob,&length);
+    selector=(ssize_t) ((int) ReadPropertyMSBShort(&blob,&length));
     switch (selector)
     {
       case 0:
@@ -1618,15 +1641,15 @@ static char *TracePSClippath(const unsigned char *blob,size_t length,
         if (knot_count != 0)
           {
             blob+=24;
-            length-=24;
+            length-=MagickMin(24,(ssize_t) length);
             break;
           }
         /*
           Expected subpath length record.
         */
-        knot_count=(ssize_t) ReadPropertyMSBShort(&blob,&length);
+        knot_count=(ssize_t) ((int) ReadPropertyMSBShort(&blob,&length));
         blob+=22;
-        length-=22;
+        length-=MagickMin(22,(ssize_t) length);
         break;
       }
       case 1:
@@ -1640,7 +1663,7 @@ static char *TracePSClippath(const unsigned char *blob,size_t length,
               Unexpected subpath knot
             */
             blob+=24;
-            length-=24;
+            length-=MagickMin(24,(ssize_t) length);
             break;
           }
         /*
@@ -1652,8 +1675,8 @@ static char *TracePSClippath(const unsigned char *blob,size_t length,
             xx,
             yy;
 
-          yy=ReadPropertyMSBLong(&blob,&length);
-          xx=ReadPropertyMSBLong(&blob,&length);
+          yy=(size_t) ((int) ReadPropertyMSBLong(&blob,&length));
+          xx=(size_t) ((int) ReadPropertyMSBLong(&blob,&length));
           x=(ssize_t) xx;
           if (xx > 2147483647)
             x=(ssize_t) xx-4294967295U-1;
@@ -1741,7 +1764,7 @@ static char *TracePSClippath(const unsigned char *blob,size_t length,
       default:
       {
         blob+=24;
-        length-=24;
+        length-=MagickMin(24,(ssize_t) length);
         break;
       }
     }
@@ -1806,7 +1829,7 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
   in_subpath=MagickFalse;
   while (length != 0)
   {
-    selector=(ssize_t) ReadPropertyMSBShort(&blob,&length);
+    selector=(ssize_t) ((int) ReadPropertyMSBShort(&blob,&length));
     switch (selector)
     {
       case 0:
@@ -1815,15 +1838,15 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
         if (knot_count != 0)
           {
             blob+=24;
-            length-=24;
+            length-=MagickMin(24,(ssize_t) length);
             break;
           }
         /*
           Expected subpath length record.
         */
-        knot_count=(ssize_t) ReadPropertyMSBShort(&blob,&length);
+        knot_count=(ssize_t) ((int) ReadPropertyMSBShort(&blob,&length));
         blob+=22;
-        length-=22;
+        length-=MagickMin(22,(ssize_t) length);
         break;
       }
       case 1:
@@ -1837,7 +1860,7 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
               Unexpected subpath knot.
             */
             blob+=24;
-            length-=24;
+            length-=MagickMin(24,(ssize_t) length);
             break;
           }
         /*
@@ -1849,8 +1872,8 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
             xx,
             yy;
 
-          yy=ReadPropertyMSBLong(&blob,&length);
-          xx=ReadPropertyMSBLong(&blob,&length);
+          yy=(size_t) ((int) ReadPropertyMSBLong(&blob,&length));
+          xx=(size_t) ((int) ReadPropertyMSBLong(&blob,&length));
           x=(ssize_t) xx;
           if (xx > 2147483647)
             x=(ssize_t) xx-4294967295U-1;
@@ -1912,7 +1935,7 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
       default:
       {
         blob+=24;
-        length-=24;
+        length-=MagickMin(24,(ssize_t) length);
         break;
       }
     }
@@ -2121,12 +2144,19 @@ MagickExport const char *GetImageProperty(const Image *image,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  GetMagickProperty() gets a value associated with an image property.
+%  GetMagickProperty() gets attributes or calculated values that is associated
+%  with a fixed known property name.
+%
+%  This does not return single character properity names, special profile or
+%  calculated properity substitutions. Nor does it return free-form properity
+%  strings, unless such a name is also associated with a specific attribute.
+%
+%  The returned string should be freed using DestoryString() when finished.
 %
 %  The format of the GetMagickProperty method is:
 %
 %      const char *GetMagickProperty(const ImageInfo *image_info,Image *image,
-%        const char *key)
+%        const char *properity)
 %
 %  A description of each parameter follows:
 %
@@ -2149,7 +2179,8 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
   {
     case 'b':
     {
-      if (LocaleNCompare("base",property,4) == 0)
+      if ((LocaleNCompare("base",property,4) == 0) ||
+          (LocaleNCompare("basename",property,8) == 0) )
         {
           GetPathComponent(image->magick_filename,BasePath,filename);
           (void) CopyMagickString(value,filename,MaxTextExtent);
@@ -2332,6 +2363,13 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
             "true",MaxTextExtent);
           break;
         }
+      if (LocaleNCompare("orientation",property,11) == 0)
+        {
+          (void) FormatLocaleString(value,MaxTextExtent,"%s",
+            CommandOptionToMnemonic(MagickOrientationOptions,(ssize_t)
+            image->orientation));
+          break;
+        }
       if (LocaleNCompare("output",property,6) == 0)
         {
           (void) CopyMagickString(value,image_info->filename,MaxTextExtent);
@@ -2345,6 +2383,22 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
         {
           (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
             GetImageIndexInList(image)+1);
+          break;
+        }
+      break;
+    }
+    case 'r':
+    {
+      if (LocaleNCompare("resolution.x",property,11) == 0)
+        {
+          (void) FormatLocaleString(value,MaxTextExtent,"%g",
+            image->x_resolution);
+          break;
+        }
+      if (LocaleNCompare("resolution.y",property,11) == 0)
+        {
+          (void) FormatLocaleString(value,MaxTextExtent,"%g",
+            image->y_resolution);
           break;
         }
       break;
@@ -2368,11 +2422,12 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
         }
       if (LocaleNCompare("scene",property,5) == 0)
         {
-          (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
-            image->scene);
           if (image_info->number_scenes != 0)
             (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
-              image_info->scene);
+                image_info->scene);
+          else
+            (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
+                image->scene);
           break;
         }
       if (LocaleNCompare("skewness",property,8) == 0)
@@ -2463,15 +2518,9 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
       break;
     }
   }
-  if (*value != '\0')
-   {
-     if (image->properties == (void *) NULL)
-       image->properties=NewSplayTree(CompareSplayTreeString,
-         RelinquishMagickMemory,RelinquishMagickMemory);
-     (void) AddValueToSplayTree((SplayTreeInfo *) image->properties,
-       ConstantString(property),ConstantString(value));
-   }
-  return(GetImageProperty(image,property));
+  if (*value == '\0')
+    return(NULL);
+  return(ConstantString(value));
 }
 
 /*
@@ -2485,7 +2534,7 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  GetNextImageProperty() gets the next image property value.
+%  GetNextImageProperty() gets the next free-form string properity name.
 %
 %  The format of the GetNextImageProperty method is:
 %
@@ -2520,7 +2569,23 @@ MagickExport char *GetNextImageProperty(const Image *image)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  InterpretImageProperties() replaces any embedded formatting characters with
-%  the appropriate image property and returns the interpretted text.
+%  the appropriate image property and returns the interpreted text.
+%
+%  This searches for and replaces
+%     %x           where 'x' is a single letter, case sensitive).
+%     %[type:...]  where 'type' is specifically known prefix.
+%     %[name]      where 'name' is a specifically known attribute, calculated
+%                  value, or free-form properity string name, or a free-form
+%                  global option string setting.
+%     \n \r        replaced by newline, return
+%     &lt; &lt;    replaced by '<', '>' resp.
+%
+%  If 'name' is a 'glob-expresion' (containing '*' or '?' characters) it is used
+%  as a search pattern to print "name=value\n" pairs of free-form string
+%  properities. Some 'type' properities may also allow 'glob-expressions'.
+%
+%  The returned string must be freeds using DestoryString() or
+%  RelinquishMagickMemory().
 %
 %  The format of the InterpretImageProperties method is:
 %
@@ -2616,376 +2681,10 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
         continue;
       }
     p++;
+    /* Handle percent escape */
     switch (*p)
     {
-      case 'b':
-      {
-        char
-          format[MaxTextExtent];
-
-        /*
-          File size.
-        */
-        (void) FormatLocaleString(format,MaxTextExtent,"%.20g",(double)
-          ((MagickOffsetType) image->extent));
-        if (image->extent != (MagickSizeType) ((size_t) image->extent))
-          (void) FormatMagickSize(image->extent,MagickFalse,format);
-        q+=ConcatenateMagickString(q,format,extent);
-        q+=ConcatenateMagickString(q,"B",extent);
-        break;
-      }
-      case 'c':
-      {
-        /*
-          Image comment.
-        */
-        value=GetImageProperty(image,"comment");
-        if (value == (const char *) NULL)
-          break;
-        length=strlen(value);
-        if ((size_t) (q-interpret_text+length+1) >= extent)
-          {
-            extent+=length;
-            interpret_text=(char *) ResizeQuantumMemory(interpret_text,extent+
-              MaxTextExtent,sizeof(*interpret_text));
-            if (interpret_text == (char *) NULL)
-              break;
-            q=interpret_text+strlen(interpret_text);
-          }
-        (void) CopyMagickString(q,value,extent);
-        q+=length;
-        break;
-      }
-      case 'd':
-      case 'e':
-      case 'f':
-      case 't':
-      {
-        /*
-          Label segment is the base of the filename.
-        */
-        if (*image->magick_filename == '\0')
-          break;
-        switch (*p)
-        {
-          case 'd':
-          {
-            /*
-              Directory.
-            */
-            GetPathComponent(image->magick_filename,HeadPath,filename);
-            q+=CopyMagickString(q,filename,extent);
-            break;
-          }
-          case 'e':
-          {
-            /*
-              Filename extension.
-            */
-            GetPathComponent(image->magick_filename,ExtensionPath,filename);
-            q+=CopyMagickString(q,filename,extent);
-            break;
-          }
-          case 'f':
-          {
-            /*
-              Filename.
-            */
-            GetPathComponent(image->magick_filename,TailPath,filename);
-            q+=CopyMagickString(q,filename,extent);
-            break;
-          }
-          case 't':
-          {
-            /*
-              Base filename.
-            */
-            GetPathComponent(image->magick_filename,BasePath,filename);
-            q+=CopyMagickString(q,filename,extent);
-            break;
-          }
-        }
-        break;
-      }
-      case 'g':
-      {
-        /*
-          Image geometry.
-        */
-        q+=FormatLocaleString(q,extent,"%.20gx%.20g%+.20g%+.20g",(double)
-          image->page.width,(double) image->page.height,(double) image->page.x,
-          (double) image->page.y);
-        break;
-      }
-      case 'h':
-      {
-        /*
-          Image height.
-        */
-        q+=FormatLocaleString(q,extent,"%.20g",(double) (image->rows != 0 ?
-          image->rows : image->magick_rows));
-        break;
-      }
-      case 'i':
-      {
-        /*
-          Image filename.
-        */
-        q+=CopyMagickString(q,image->filename,extent);
-        break;
-      }
-      case 'k':
-      {
-        /*
-          Number of unique colors.
-        */
-        q+=FormatLocaleString(q,extent,"%.20g",(double) GetNumberColors(image,
-          (FILE *) NULL,&image->exception));
-        break;
-      }
-      case 'l':
-      {
-        /*
-          Image label.
-        */
-        value=GetImageProperty(image,"label");
-        if (value == (const char *) NULL)
-          break;
-        length=strlen(value);
-        if ((size_t) (q-interpret_text+length+1) >= extent)
-          {
-            extent+=length;
-            interpret_text=(char *) ResizeQuantumMemory(interpret_text,extent+
-              MaxTextExtent,sizeof(*interpret_text));
-            if (interpret_text == (char *) NULL)
-              break;
-            q=interpret_text+strlen(interpret_text);
-          }
-        q+=CopyMagickString(q,value,extent);
-        break;
-      }
-      case 'm':
-      {
-        /*
-          Image format.
-        */
-        q+=CopyMagickString(q,image->magick,extent);
-        break;
-      }
-      case 'M':
-      {
-        /*
-          Image magick filename.
-        */
-        q+=CopyMagickString(q,image->magick_filename,extent);
-        break;
-      }
-      case 'n':
-      {
-        /*
-          Number of images in the list.
-        */
-        q+=FormatLocaleString(q,extent,"%.20g",(double)
-          GetImageListLength(image));
-        break;
-      }
-      case 'o':
-      {
-        /*
-          Image output filename.
-        */
-        q+=CopyMagickString(q,image_info->filename,extent);
-        break;
-      }
-      case 'p':
-      {
-        /*
-          Image index in list.
-        */
-        q+=FormatLocaleString(q,extent,"%.20g",(double)
-            GetImageIndexInList(image));
-        break;
-      }
-      case 'q':
-      {
-        /*
-          Image depth.
-        */
-        q+=FormatLocaleString(q,extent,"%.20g",(double)
-          MAGICKCORE_QUANTUM_DEPTH);
-        break;
-      }
-      case 'r':
-      {
-        ColorspaceType
-          colorspace;
-
-        /*
-          Image storage class and colorspace.
-        */
-        colorspace=image->colorspace;
-        if (IsGrayImage(image,&image->exception) != MagickFalse)
-          colorspace=GRAYColorspace;
-        q+=FormatLocaleString(q,extent,"%s%s%s",CommandOptionToMnemonic(
-          MagickClassOptions,(ssize_t) image->storage_class),
-          CommandOptionToMnemonic(MagickColorspaceOptions,(ssize_t) colorspace),
-          image->matte != MagickFalse ? "Matte" : "");
-        break;
-      }
-      case 's':
-      {
-        /*
-          Image scene number.
-        */
-        if (image_info->number_scenes == 0)
-          q+=FormatLocaleString(q,extent,"%.20g",(double) image->scene);
-        else
-          q+=FormatLocaleString(q,extent,"%.20g",(double) image_info->scene);
-        break;
-      }
-      case 'u':
-      {
-        /*
-          Unique filename.
-        */
-        (void) CopyMagickString(filename,image_info->unique,extent);
-        q+=CopyMagickString(q,filename,extent);
-        break;
-      }
-      case 'w':
-      {
-        /*
-          Image width.
-        */
-        q+=FormatLocaleString(q,extent,"%.20g",(double) (image->columns != 0 ?
-          image->columns : image->magick_columns));
-        break;
-      }
-      case 'x':
-      {
-        /*
-          Image horizontal resolution.
-        */
-        q+=FormatLocaleString(q,extent,"%g %s",image->x_resolution,
-          CommandOptionToMnemonic(MagickResolutionOptions,(ssize_t)
-            image->units));
-        break;
-      }
-      case 'y':
-      {
-        /*
-          Image vertical resolution.
-        */
-        q+=FormatLocaleString(q,extent,"%g %s",image->y_resolution,
-          CommandOptionToMnemonic(MagickResolutionOptions,(ssize_t)
-          image->units));
-        break;
-      }
-      case 'z':
-      {
-        /*
-          Image depth.
-        */
-        q+=FormatLocaleString(q,extent,"%.20g",(double) image->depth);
-        break;
-      }
-      case 'A':
-      {
-        /*
-          Image alpha channel.
-        */
-        q+=FormatLocaleString(q,extent,"%s",CommandOptionToMnemonic(
-          MagickBooleanOptions,(ssize_t) image->matte));
-        break;
-      }
-      case 'C':
-      {
-        /*
-          Image compression method.
-        */
-        q+=FormatLocaleString(q,extent,"%s",CommandOptionToMnemonic(
-          MagickCompressOptions,(ssize_t) image->compression));
-        break;
-      }
-      case 'D':
-      {
-        /*
-          Image dispose method.
-        */
-        q+=FormatLocaleString(q,extent,"%s",CommandOptionToMnemonic(
-          MagickDisposeOptions,(ssize_t) image->dispose));
-        break;
-      }
-      case 'G':
-      {
-        q+=FormatLocaleString(q,extent,"%.20gx%.20g",(double)
-          image->magick_columns,(double) image->magick_rows);
-        break;
-      }
-      case 'H':
-      {
-        q+=FormatLocaleString(q,extent,"%.20g",(double) image->page.height);
-        break;
-      }
-      case 'O':
-      {
-        q+=FormatLocaleString(q,extent,"%+ld%+ld",(long) image->page.x,(long)
-          image->page.y);
-        break;
-      }
-      case 'P':
-      {
-        q+=FormatLocaleString(q,extent,"%.20gx%.20g",(double) image->page.width,
-          (double) image->page.height);
-        break;
-      }
-      case 'Q':
-      {
-        q+=FormatLocaleString(q,extent,"%.20g",(double) image->quality);
-        break;
-      }
-      case 'S':
-      {
-        /*
-          Image scenes.
-        */
-        if (image_info->number_scenes == 0)
-          q+=CopyMagickString(q,"2147483647",extent);
-        else
-          q+=FormatLocaleString(q,extent,"%.20g",(double) (image_info->scene+
-            image_info->number_scenes));
-        break;
-      }
-      case 'T':
-      {
-        q+=FormatLocaleString(q,extent,"%.20g",(double) image->delay);
-        break;
-      }
-      case 'W':
-      {
-        q+=FormatLocaleString(q,extent,"%.20g",(double) image->page.width);
-        break;
-      }
-      case 'X':
-      {
-        q+=FormatLocaleString(q,extent,"%+.20g",(double) image->page.x);
-        break;
-      }
-      case 'Y':
-      {
-        q+=FormatLocaleString(q,extent,"%+.20g",(double) image->page.y);
-        break;
-      }
-      case 'Z':
-      {
-        /*
-          Unique filename.
-        */
-        (void) CopyMagickString(filename,image_info->zero,extent);
-        q+=CopyMagickString(q,filename,extent);
-        break;
-      }
-      case '[':
+      case '[':  /* multi-character percent escape  %[....] */
       {
         char
           pattern[MaxTextExtent];
@@ -2997,13 +2696,12 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
         ssize_t
           depth;
 
-        /*
-          Image value.
-        */
+        /* get the string from parenthesis */
         if (strchr(p,']') == (char *) NULL)
           break;
         depth=1;
         p++;
+        /* FUTURE: refactor into sub-routine looking for 'break' character */
         for (i=0; (i < (MaxTextExtent-1L)) && (*p != '\0'); i++)
         {
           if (*p == '[')
@@ -3015,6 +2713,7 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
           pattern[i]=(*p++);
         }
         pattern[i]='\0';
+        /* Try a Special Image Properity - including fx: and pixel: */
         value=GetImageProperty(image,pattern);
         if (value != (const char *) NULL)
           {
@@ -3032,38 +2731,36 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
             q+=length;
             break;
           }
-        else
-          if (IsGlob(pattern) != MagickFalse)
+        /* Handle properity 'glob' patterns - by iteration */
+        if (IsGlob(pattern) != MagickFalse)
+          {
+            ResetImagePropertyIterator(image);
+            key=GetNextImageProperty(image);
+            while (key != (const char *) NULL)
             {
-              /*
-                Iterate over image properties.
-              */
-              ResetImagePropertyIterator(image);
+              if (GlobExpression(key,pattern,MagickTrue) != MagickFalse)
+                {
+                  value=GetImageProperty(image,key);
+                  if (value != (const char *) NULL)
+                    {
+                      length=strlen(key)+strlen(value)+2;
+                      if ((size_t) (q-interpret_text+length+1) >= extent)
+                        {
+                          extent+=length;
+                          interpret_text=(char *) ResizeQuantumMemory(
+                            interpret_text,extent+MaxTextExtent,
+                            sizeof(*interpret_text));
+                          if (interpret_text == (char *) NULL)
+                            break;
+                          q=interpret_text+strlen(interpret_text);
+                        }
+                      q+=FormatLocaleString(q,extent,"%s=%s\n",key,value);
+                    }
+                }
               key=GetNextImageProperty(image);
-              while (key != (const char *) NULL)
-              {
-                if (GlobExpression(key,pattern,MagickTrue) != MagickFalse)
-                  {
-                    value=GetImageProperty(image,key);
-                    if (value != (const char *) NULL)
-                      {
-                        length=strlen(key)+strlen(value)+2;
-                        if ((size_t) (q-interpret_text+length+1) >= extent)
-                          {
-                            extent+=length;
-                            interpret_text=(char *) ResizeQuantumMemory(
-                              interpret_text,extent+MaxTextExtent,
-                              sizeof(*interpret_text));
-                            if (interpret_text == (char *) NULL)
-                              break;
-                            q=interpret_text+strlen(interpret_text);
-                          }
-                        q+=FormatLocaleString(q,extent,"%s=%s\n",key,value);
-                      }
-                  }
-                key=GetNextImageProperty(image);
-              }
             }
+            break;
+          }
         value=GetMagickProperty(image_info,image,pattern);
         if (value != (const char *) NULL)
           {
@@ -3079,6 +2776,7 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
               }
             (void) CopyMagickString(q,value,extent);
             q+=length;
+            value=DestroyString((char *)value); /* must be destoryed */
             break;
           }
         if (image_info == (ImageInfo *) NULL)
@@ -3102,25 +2800,284 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
           }
         break;
       }
-      case '@':
+      case 'b':  /* image size read in - in bytes */
+      {
+        char
+          format[MaxTextExtent];
+
+        (void) FormatLocaleString(format,MaxTextExtent,"%.20g",(double)
+          ((MagickOffsetType) image->extent));
+        if (image->extent != (MagickSizeType) ((size_t) image->extent))
+          (void) FormatMagickSize(image->extent,MagickFalse,format);
+        q+=ConcatenateMagickString(q,format,extent);
+        q+=ConcatenateMagickString(q,"B",extent);
+        break;
+      }
+      case 'c':  /* image comment properity */
+      {
+        value=GetImageProperty(image,"comment");
+        if (value == (const char *) NULL)
+          break;
+        length=strlen(value);
+        if ((size_t) (q-interpret_text+length+1) >= extent)
+          {
+            extent+=length;
+            interpret_text=(char *) ResizeQuantumMemory(interpret_text,extent+
+              MaxTextExtent,sizeof(*interpret_text));
+            if (interpret_text == (char *) NULL)
+              break;
+            q=interpret_text+strlen(interpret_text);
+          }
+        (void) CopyMagickString(q,value,extent);
+        q+=length;
+        break;
+      }
+      case 'd':  /* Directory component of filename */
+      {
+        GetPathComponent(image->magick_filename,HeadPath,filename);
+        q+=CopyMagickString(q,filename,extent);
+        break;
+      }
+      case 'e': /* Filename extension (suffix) of image file */
+      {
+        GetPathComponent(image->magick_filename,ExtensionPath,filename);
+        q+=CopyMagickString(q,filename,extent);
+        break;
+      }
+      case 'f': /* Filename without directory component */
+      {
+        GetPathComponent(image->magick_filename,TailPath,filename);
+        q+=CopyMagickString(q,filename,extent);
+        break;
+      }
+      case 'g': /* Image geometry, canvas and offset */
+      {
+        q+=FormatLocaleString(q,extent,"%.20gx%.20g%+.20g%+.20g",(double)
+          image->page.width,(double) image->page.height,(double) image->page.x,
+          (double) image->page.y);
+        break;
+      }
+      case 'h': /* Image height (current) */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double) (image->rows != 0 ?
+          image->rows : image->magick_rows));
+        break;
+      }
+      case 'i': /* Input Filename - for delegate use only */
+      {
+        q+=CopyMagickString(q,image->filename,extent);
+        break;
+      }
+      case 'k': /* Number of unique colors  */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double) GetNumberColors(image,
+          (FILE *) NULL,&image->exception));
+        break;
+      }
+      case 'l': /* Image label  */
+      {
+        value=GetImageProperty(image,"label");
+        if (value == (const char *) NULL)
+          break;
+        length=strlen(value);
+        if ((size_t) (q-interpret_text+length+1) >= extent)
+          {
+            extent+=length;
+            interpret_text=(char *) ResizeQuantumMemory(interpret_text,extent+
+              MaxTextExtent,sizeof(*interpret_text));
+            if (interpret_text == (char *) NULL)
+              break;
+            q=interpret_text+strlen(interpret_text);
+          }
+        q+=CopyMagickString(q,value,extent);
+        break;
+      }
+      case 'm': /* Image format (file magick) */
+      {
+        q+=CopyMagickString(q,image->magick,extent);
+        break;
+      }
+      case 'n': /* Number of images in the list.  */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double)
+          GetImageListLength(image));
+        break;
+      }
+      case 'o': /* Output Filename - for delegate use only */
+      {
+        q+=CopyMagickString(q,image_info->filename,extent);
+        break;
+      }
+      case 'p': /* Image index in current image list  */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double)
+          GetImageIndexInList(image));
+        break;
+      }
+      case 'q': /* Quantum depth of image in memory */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double)
+          MAGICKCORE_QUANTUM_DEPTH);
+        break;
+      }
+      case 'r': /* Image storage class and colorspace.  */
+      {
+        ColorspaceType
+          colorspace;
+
+        colorspace=image->colorspace;
+        if (IsGrayImage(image,&image->exception) != MagickFalse)
+          colorspace=GRAYColorspace;
+        q+=FormatLocaleString(q,extent,"%s%s%s",CommandOptionToMnemonic(
+          MagickClassOptions,(ssize_t) image->storage_class),
+          CommandOptionToMnemonic(MagickColorspaceOptions,(ssize_t) colorspace),
+          image->matte != MagickFalse ? "Matte" : "");
+        break;
+      }
+      case 's': /* Image scene number  */
+      {
+        if (image_info->number_scenes != 0)
+          q+=FormatLocaleString(q,extent,"%.20g",(double) image_info->scene);
+        else
+          q+=FormatLocaleString(q,extent,"%.20g",(double) image->scene);
+        break;
+      }
+      case 't': /* Base filename without directory or extention */
+      {
+        GetPathComponent(image->magick_filename,BasePath,filename);
+        q+=CopyMagickString(q,filename,extent);
+        break;
+      }
+      case 'u': /* Unique filename */
+      {
+        (void) CopyMagickString(filename,image_info->unique,extent);
+        q+=CopyMagickString(q,filename,extent);
+        break;
+      }
+      case 'w': /* Image width (current) */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double) (image->columns != 0 ?
+          image->columns : image->magick_columns));
+        break;
+      }
+      case 'x': /* Image horizontal resolution (density).  */
+      {
+        q+=FormatLocaleString(q,extent,"%g %s",image->x_resolution,
+          CommandOptionToMnemonic(MagickResolutionOptions,(ssize_t)
+            image->units));
+        break;
+      }
+      case 'y': /* Image vertical resolution (density)  */
+      {
+        q+=FormatLocaleString(q,extent,"%g %s",image->y_resolution,
+          CommandOptionToMnemonic(MagickResolutionOptions,(ssize_t)
+          image->units));
+        break;
+      }
+      case 'z': /* Image depth as read in */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double) image->depth);
+        break;
+      }
+      case 'A': /* Image alpha channel  */
+      {
+        q+=FormatLocaleString(q,extent,"%s",CommandOptionToMnemonic(
+          MagickBooleanOptions,(ssize_t) image->matte));
+        break;
+      }
+      case 'C': /* Image compression method.  */
+      {
+        q+=FormatLocaleString(q,extent,"%s",CommandOptionToMnemonic(
+          MagickCompressOptions,(ssize_t) image->compression));
+        break;
+      }
+      case 'D': /* Image dispose method.  */
+      {
+        q+=FormatLocaleString(q,extent,"%s",CommandOptionToMnemonic(
+          MagickDisposeOptions,(ssize_t) image->dispose));
+        break;
+      }
+      case 'G': /* Image size as geometry = "%wx%h" */
+      {
+        q+=FormatLocaleString(q,extent,"%.20gx%.20g",(double)
+          image->magick_columns,(double) image->magick_rows);
+        break;
+      }
+      case 'H': /* layer canvas height */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double) image->page.height);
+        break;
+      }
+      case 'M': /* Magick filename - filename given incl. coder & read mods */
+      {
+        q+=CopyMagickString(q,image->magick_filename,extent);
+        break;
+      }
+      case 'O': /* layer canvas offset with sign = "+%X+%Y" */
+      {
+        q+=FormatLocaleString(q,extent,"%+ld%+ld",(long) image->page.x,(long)
+          image->page.y);
+        break;
+      }
+      case 'P': /* layer canvas page size = "%Wx%H" */
+      {
+        q+=FormatLocaleString(q,extent,"%.20gx%.20g",(double) image->page.width,
+          (double) image->page.height);
+        break;
+      }
+      case 'Q': /* image compression quality */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double) image->quality);
+        break;
+      }
+      case 'S': /* Image scenes  */
+      {
+        if (image_info->number_scenes == 0)
+          q+=CopyMagickString(q,"2147483647",extent);
+        else
+          q+=FormatLocaleString(q,extent,"%.20g",(double) (image_info->scene+
+            image_info->number_scenes));
+        break;
+      }
+      case 'T': /* image time delay for animations */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double) image->delay);
+        break;
+      }
+      case 'W': /* layer canvas width */
+      {
+        q+=FormatLocaleString(q,extent,"%.20g",(double) image->page.width);
+        break;
+      }
+      case 'X': /* layer canvas X offset */
+      {
+        q+=FormatLocaleString(q,extent,"%+.20g",(double) image->page.x);
+        break;
+      }
+      case 'Y': /* layer canvas Y offset */
+      {
+        q+=FormatLocaleString(q,extent,"%+.20g",(double) image->page.y);
+        break;
+      }
+      case 'Z': /* Unique filename. */
+      {
+        (void) CopyMagickString(filename,image_info->zero,extent);
+        q+=CopyMagickString(q,filename,extent);
+        break;
+      }
+      case '@': /* Image bounding box.  */
       {
         RectangleInfo
           page;
 
-        /*
-          Image bounding box.
-        */
         page=GetImageBoundingBox(image,&image->exception);
         q+=FormatLocaleString(q,MaxTextExtent,"%.20gx%.20g%+.20g%+.20g",
           (double) page.width,(double) page.height,(double) page.x,(double)
           page.y);
         break;
       }
-      case '#':
+      case '#': /* Image signature */
       {
-        /*
-          Image signature.
-        */
         (void) SignatureImage(image);
         value=GetImageProperty(image,"signature");
         if (value == (const char *) NULL)
@@ -3128,12 +3085,12 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
         q+=CopyMagickString(q,value,extent);
         break;
       }
-      case '%':
+      case '%': /* percent escaped */
       {
         *q++=(*p);
         break;
       }
-      default:
+      default: /* percent not expanded */
       {
         *q++='%';
         *q++=(*p);

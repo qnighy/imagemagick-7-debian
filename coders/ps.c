@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -375,7 +375,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     flags;
 
   PointInfo
-    delta;
+    delta,
+    resolution;
 
   RectangleInfo
     page;
@@ -487,10 +488,10 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   (void) ParseAbsoluteGeometry(PSPageGeometry,&page);
   if (image_info->page != (char *) NULL)
     (void) ParseAbsoluteGeometry(image_info->page,&page);
-  page.width=(size_t) ceil((double) (page.width*image->x_resolution/delta.x)-
-    0.5);
-  page.height=(size_t) ceil((double) (page.height*image->y_resolution/delta.y)-
-    0.5);
+  resolution.x=image->x_resolution;
+  resolution.y=image->y_resolution;
+  page.width=(size_t) ceil((double) (page.width*resolution.x/delta.x)-0.5);
+  page.height=(size_t) ceil((double) (page.height*resolution.y/delta.y)-0.5);
   /*
     Determine page geometry from the Postscript bounding box.
   */
@@ -689,6 +690,9 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
     if ((count != 4) || (i < (ssize_t) priority))
       continue;
+    if ((fabs(bounds.x2-bounds.x1) <= fabs(hires_bounds.x2-hires_bounds.x1)) ||
+        (fabs(bounds.y2-bounds.y1) <= fabs(hires_bounds.y2-hires_bounds.y1)))
+      continue;
     hires_bounds=bounds;
     priority=i;
   }
@@ -703,12 +707,12 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         hires_bounds.x1,hires_bounds.y1);
       (void) SetImageProperty(image,"ps:HiResBoundingBox",geometry);
       page.width=(size_t) ceil((double) ((hires_bounds.x2-hires_bounds.x1)*
-        image->x_resolution/delta.x)-0.5);
+        resolution.x/delta.x)-0.5);
       page.height=(size_t) ceil((double) ((hires_bounds.y2-hires_bounds.y1)*
-        image->y_resolution/delta.y)-0.5);
+        resolution.y/delta.y)-0.5);
     }
   (void) CloseBlob(image);
-  if (IsRGBColorspace(image_info->colorspace) != MagickFalse)
+  if (IssRGBColorspace(image_info->colorspace) != MagickFalse)
     cmyk=MagickFalse;
   /*
     Create Ghostscript control file.
@@ -753,8 +757,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return((Image *) NULL);
     }
   *options='\0';
-  (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",
-    image->x_resolution,image->y_resolution);
+  (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",resolution.x,
+     resolution.y);
   (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
     page.width,(double) page.height);
   read_info=CloneImageInfo(image_info);
@@ -1340,6 +1344,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
       "  currentfile buffer readline pop",
       "  token pop /compression exch def pop",
       "  class 0 gt { PseudoClassImage } { DirectClassImage } ifelse",
+      "  grestore",
       (char *) NULL
     };
 
@@ -1440,9 +1445,9 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
     /*
       Scale relative to dots-per-inch.
     */
-    if ((IsRGBColorspace(image->colorspace) == MagickFalse) &&
+    if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
         (image->colorspace != CMYKColorspace))
-      (void) TransformImageColorspace(image,RGBColorspace);
+      (void) TransformImageColorspace(image,sRGBColorspace);
     delta.x=DefaultResolution;
     delta.y=DefaultResolution;
     resolution.x=image->x_resolution;

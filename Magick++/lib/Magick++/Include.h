@@ -28,10 +28,6 @@
 # include <sys/types.h>
 #endif
 
-#if defined(macintosh)
-#  include <stat.mac.h>  /* Needed for off_t */
-#endif
-
 #if defined(__BORLANDC__)
 # include <vcl.h> /* Borland C++ Builder 4.0 requirement */
 #endif // defined(__BORLANDC__)
@@ -72,40 +68,55 @@ namespace MagickCore
 // using code is dynamic, STATIC_MAGICK may be defined in the project to
 // override triggering dynamic library behavior.
 //
-#    define MagickDLLBuild
 #    if defined(_VISUALC_)
+#      define MagickDLLExplicitTemplate
 #      pragma warning( disable: 4273 )  /* Disable the stupid dll linkage warnings */
 #      pragma warning( disable: 4251 )
 #    endif
 #    if !defined(MAGICKCORE_IMPLEMENTATION)
-#      define MagickDLLDecl __declspec(dllimport)
-#      define MagickDLLDeclExtern extern __declspec(dllimport)
+#      if defined(__GNUC__)
+#       define MagickPPExport __attribute__ ((dllimport))
+#      else
+#       define MagickPPExport __declspec(dllimport)
+#      endif
+#      define MagickPPPrivate extern __declspec(dllimport)
 #      if defined(_VISUALC_)
 #        pragma message( "Magick++ lib DLL import" )
 #      endif
 #    else
-#      if defined(__BORLANDC__)
-#        define MagickDLLDecl __declspec(dllexport)
-#        define MagickDLLDeclExtern __declspec(dllexport)
-#        pragma message( "BCBMagick++ lib DLL export" )
+#      if defined(__BORLANDC__) || defined(__MINGW32__)
+#        define MagickPPExport __declspec(dllexport)
+#        define MagickPPPrivate __declspec(dllexport)
+#        if defined(__BORLANDC__)
+#          pragma message( "BCBMagick++ lib DLL export" )
+#        endif
 #      else
-#        define MagickDLLDecl __declspec(dllexport)
-#        define MagickDLLDeclExtern extern __declspec(dllexport)
+#        if defined(__GNUC__)
+#         define MagickPPExport __attribute__ ((dllexport))
+#        else
+#         define MagickPPExport __declspec(dllexport)
+#        endif
+#        define MagickPPPrivate extern __declspec(dllexport)
 #      endif
 #      if defined(_VISUALC_)
 #        pragma message( "Magick++ lib DLL export" )
 #      endif
 #    endif
 #  else
-#    define MagickDLLDecl
-#    define MagickDLLDeclExtern
+#    define MagickPPExport
+#    define MagickPPPrivate
 #    if defined(_VISUALC_)
 #      pragma message( "Magick++ lib static interface" )
 #    endif
 #  endif
 #else
-#  define MagickDLLDecl
-#  define MagickDLLDeclExtern
+# if __GNUC__ >= 4
+#  define MagickPPExport __attribute__ ((visibility ("default")))
+#  define MagickPPPrivate  __attribute__ ((visibility ("hidden")))
+# else
+#   define MagickPPExport
+#   define MagickPPPrivate
+# endif
 #endif
 
 #if defined(WIN32) && defined(_VISUALC_)
@@ -120,6 +131,7 @@ namespace Magick
 {
   // The datatype for an RGB component
   using MagickCore::Quantum;
+  using MagickCore::MagickRealType;
   using MagickCore::MagickSizeType;
 
   // Boolean types
@@ -294,9 +306,21 @@ namespace Magick
   using MagickCore::CubicFilter;
   using MagickCore::CatromFilter;
   using MagickCore::MitchellFilter;
-  using MagickCore::LanczosFilter;
-  using MagickCore::BesselFilter;
+  using MagickCore::JincFilter;
   using MagickCore::SincFilter;
+  using MagickCore::SincFastFilter;
+  using MagickCore::KaiserFilter;
+  using MagickCore::WelshFilter;
+  using MagickCore::ParzenFilter;
+  using MagickCore::BohmanFilter;
+  using MagickCore::BartlettFilter;
+  using MagickCore::LagrangeFilter;
+  using MagickCore::LanczosFilter;
+  using MagickCore::LanczosSharpFilter;
+  using MagickCore::Lanczos2Filter;
+  using MagickCore::Lanczos2SharpFilter;
+  using MagickCore::RobidouxFilter;
+  using MagickCore::SentinelFilter;
 
   // Bit gravity
   using MagickCore::GravityType;
@@ -843,7 +867,6 @@ namespace Magick
   using MagickCore::ResourceLimitError;
   using MagickCore::ResourceLimitFatalError;
   using MagickCore::ResourceLimitWarning;
-  using MagickCore::RGBTransformImage;
   using MagickCore::RollImage;
   using MagickCore::RotateImage;
   using MagickCore::SampleImage;
@@ -896,7 +919,7 @@ namespace Magick
   using MagickCore::TextureImage;
   using MagickCore::ThrowException;
   using MagickCore::TransformImage;
-  using MagickCore::TransformRGBImage;
+  using MagickCore::TransformImageColorspace;
   using MagickCore::TransparentPaintImage;
   using MagickCore::TransparentPaintImageChroma;
   using MagickCore::TrimImage;

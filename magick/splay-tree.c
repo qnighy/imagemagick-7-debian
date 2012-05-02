@@ -23,7 +23,7 @@
 %                               December 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -131,7 +131,8 @@ static void
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  AddValueToSplayTree() adds a value to the splay-tree.
+%  AddValueToSplayTree() adds the given key and value to the splay-tree.
+%  Both key and value are used as is, without coping or cloning.
 %
 %  The format of the AddValueToSplayTree method is:
 %
@@ -580,7 +581,9 @@ MagickExport MagickBooleanType DeleteNodeByValueFromSplayTree(
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  DeleteNodeFromSplayTree() deletes a node from the splay-tree.
+%  DeleteNodeFromSplayTree() deletes a node from the splay-tree.  It returns
+%  MagickTrue if the option is found and successfully deleted from the
+%  splay-tree.
 %
 %  The format of the DeleteNodeFromSplayTree method is:
 %

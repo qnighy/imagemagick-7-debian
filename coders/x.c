@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -56,6 +56,7 @@
 #include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/module.h"
+#include "magick/token.h"
 #include "magick/utility.h"
 #include "magick/xwindow.h"
 #include "magick/xwindow-private.h"

@@ -17,7 +17,7 @@
 %                                 June 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -858,8 +858,8 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   /*
     Initialize JPEG 2000 API.
   */
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   jp2_stream=JP2StreamManager(image);
   if (jp2_stream == (jas_stream_t *) NULL)
     ThrowWriterException(DelegateError,"UnableToManageJP2Stream");
@@ -1011,6 +1011,8 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
     }
   status=jas_image_encode(jp2_image,jp2_stream,format,options) != 0 ?
     MagickTrue : MagickFalse;
+  if (options != (char *) NULL)
+    options=DestroyString(options);
   (void) jas_stream_close(jp2_stream);
   for (i=0; i < (ssize_t) number_components; i++)
     jas_matrix_destroy(pixels[i]);

@@ -1,4 +1,4 @@
-#  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -18,8 +18,8 @@ AC_PREREQ(2.67)
 
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [7])
-m4_define([magick_micro_version], [4])
-m4_define([magick_patchlevel_version], [0])
+m4_define([magick_micro_version], [6])
+m4_define([magick_patchlevel_version], [8])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "svnversion | sed -r 's/([0-9]+).*/\1/'"]))
@@ -128,7 +128,7 @@ AC_SUBST(PACKAGE_VERSION_ADDENDUM)dnl
 # Ensure that make can run correctly
 AM_SANITY_CHECK
 
-AM_INIT_AUTOMAKE([1.11 color-tests foreign parallel-tests silent-rules subdir-objects dist-zip dist-bzip2 dist-xz])
+AM_INIT_AUTOMAKE([1.11 color-tests foreign parallel-tests silent-rules subdir-objects dist-bzip2 dist-lzip dist-xz dist-zip])
 
 # Enable support for silent build rules
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -192,7 +192,7 @@ eval "eval LIBEXEC_DIR=$libexecdir"
 AC_SUBST(LIBEXEC_DIR)
 eval "eval DATA_DIR=$datadir"
 AC_SUBST(DATA_DIR)
-eval "eval DOC_DIR=$docdir"
+eval "eval DOC_DIR=$datadir/doc"
 AC_SUBST(DOC_DIR)
 eval "eval SYSCONF_DIR=$sysconfdir"
 AC_SUBST(SYSCONF_DIR)
@@ -264,13 +264,14 @@ AC_PROG_MAKE_SET
 AC_PROG_LN_S
 AM_WITH_DMALLOC
 AX_C___ATTRIBUTE__
+AX_GCC_ARCHFLAG([no])
 PKG_PROG_PKG_CONFIG
 
 #
 # Enable run-time checking.
 #
 AC_ARG_ENABLE([bounds-checking],
-    [AC_HELP_STRING([--bounds-checking],
+    [AC_HELP_STRING([--enable-bounds-checking],
                     [enable run-time bounds-checking])],
     [enable_bounds_checking=$enableval],
     [enable_bounds_checking='no'])
@@ -684,11 +685,12 @@ fi
 AC_ARG_WITH([method-prefix],
     [AC_HELP_STRING([--with-method-prefix=PREFIX],
                     [prefix MagickCore API methods])],
-    [with_method_prefix=$enableval],
-    [with_method_prefix=''])
+    [with_method_prefix=$withval],
+    [with_method_prefix='no'])
 
-if test "$with_method_prefix" != ''; then
+if test "$with_method_prefix" != 'no'; then
     AC_DEFINE_UNQUOTED(NAMESPACE_PREFIX,$with_method_prefix,[Magick API method prefix])
+  DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-method-prefix "
 fi
 
 # Number of bits in a Quantum
@@ -749,7 +751,7 @@ AC_ARG_WITH([perl],
 # Options to pass when configuring PerlMagick
 AC_ARG_WITH([perl-options],
     [AC_HELP_STRING([--with-perl-options=OPTIONS],
-                    [options to pass on command-line when generating PerlMagick's build file])],
+                    [options to pass on command-line when generating PerlMagick build file])],
 PERL_MAKE_OPTIONS=$withval)
 AC_SUBST(PERL_MAKE_OPTIONS)
 
@@ -989,7 +991,7 @@ elif test $ac_cv_sizeof_signed_long_long -eq 8; then
   INT64_T='signed long long'
   INT64_F='"ll"'
 fi
-case "${build_os}" in
+case "${host_os}" in
   mingw* )
     INT64_F='"I64"'
     ;;
@@ -1008,7 +1010,7 @@ elif test $ac_cv_sizeof_unsigned_long_long -eq 8; then
   UINT64_T='unsigned long long'
   UINT64_F='"ll"'
 fi
-case "${build_os}" in
+case "${host_os}" in
   mingw* )
     UINT64_F='"I64"'
     ;;
@@ -1272,11 +1274,29 @@ AC_DEFINE_UNQUOTED(X11_CONFIGURE_PATH,"$X11ConfigurePath",Location of X11 config
 GOMP_LIBS=''
 if test "$enable_openmp" != 'no'; then
   if test "${GCC}" = "yes"; then
-    AC_CHECK_LIB(gomp,GOMP_parallel_start,GOMP_LIBS="-lgomp",,)  # gcc
+    # Open64 (passes for GCC but uses different OpenMP implementation)
+    if test "x$GOMP_LIBS" = x ; then
+      if $CC --version 2>&1 | grep Open64 > /dev/null ; then
+        AC_CHECK_LIB(openmp,omp_get_num_procs,GOMP_LIBS="-lopenmp",,)
+      fi
+    fi
+    # GCC
+    if test "x$GOMP_LIBS" = x ; then
+      AC_CHECK_LIB(gomp,GOMP_parallel_start,GOMP_LIBS="-lgomp",,)
+    fi
   else
-    AC_CHECK_LIB(mtsk,sunw_mp_register_warn,GOMP_LIBS="-lmtsk",,)  # solaris cc
-    AC_CHECK_LIB(xlsmp,_xlsmpFlush,GOMP_LIBS="-lxlsmp",,)  # AIX xlc
-    AC_CHECK_LIB(mp,mp_destroy,GOMP_LIBS="-lmp",,)  # SGI IRIX 6.5 MIPSpro C/C++
+    # Sun CC
+    if test "x$GOMP_LIBS" = x ; then
+      AC_CHECK_LIB(mtsk,sunw_mp_register_warn,GOMP_LIBS="-lmtsk",,)
+    fi
+    # AIX xlc
+    if test "x$GOMP_LIBS" = x ; then
+    AC_CHECK_LIB(xlsmp,_xlsmpFlush,GOMP_LIBS="-lxlsmp",,)
+    fi
+    # SGI IRIX 6.5 MIPSpro C/C++
+    if test "x$GOMP_LIBS" = x ; then
+    AC_CHECK_LIB(mp,mp_destroy,GOMP_LIBS="-lmp",,)
+    fi
   fi
   LIBS="$GOMP_LIBS $LIBS"
 fi
@@ -1800,7 +1820,7 @@ AC_ARG_WITH([fontconfig],
     [AC_HELP_STRING([--without-fontconfig],
                     [disable fontconfig support])],
         [with_fontconfig=$withval],
-        [with_fontconfig=$have_x])
+        [with_fontconfig='yes'])
 
 if test "$with_fontconfig" != 'yes'; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-fontconfig=$with_fontconfig "
@@ -2428,20 +2448,20 @@ AC_ARG_WITH([pango],
     [AC_HELP_STRING([--without-pango],
                     [disable PANGO support])],
     [with_pango=$withval],
-    [with_pango=$have_x])
+    [with_pango='yes'])
 
 if test "$with_pango" != 'yes'; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-pango=$with_pango "
 fi
 
 have_pango='no'
-have_pangoft2='no'
+have_pangocairo='no'
 PANGO_CFLAGS=""
 PANGO_LIBS=""
 PANGO_PKG=""
 if test "x$with_pango" = "xyes"; then
     AC_MSG_RESULT([-------------------------------------------------------------])
-    PKG_CHECK_MODULES(PANGO, [pangoft2 >= 1.28.1], have_pangoft2=yes, have_pangoft2=no)
+    PKG_CHECK_MODULES(PANGO, [pangocairo >= 1.28.1], have_pangocairo=yes, have_pangocairo=no)
     AC_MSG_RESULT([])
     PKG_CHECK_MODULES(PANGO, [pango >= 1.28.1], have_pango=yes, have_pango=no)
     AC_MSG_RESULT([])
@@ -2454,15 +2474,15 @@ if test "$have_pango" = 'yes'; then
     fi
 fi
 
-if test "$have_pangoft2" = 'yes'; then
-    AC_DEFINE(PANGOFT2_DELEGATE,1,Define if you have PANGOFT2 library)
+if test "$have_pangocairo" = 'yes'; then
+    AC_DEFINE(PANGOCAIRO_DELEGATE,1,Define if you have PANGOCAIRO library)
     if test "$with_modules" = 'no'; then
-        CPPFLAGS="$PANGOFT2_CFLAGS $CPPFLAGS"
+        CPPFLAGS="$PANGOCAIRO_CFLAGS $CPPFLAGS"
     fi
 fi
 
 AM_CONDITIONAL(PANGO_DELEGATE, test "$have_pango" = 'yes')
-AM_CONDITIONAL(PANGOFT2_DELEGATE, test "$have_pangoft2" = 'yes')
+AM_CONDITIONAL(PANGOCAIRO_DELEGATE, test "$have_pangocairo" = 'yes')
 AC_SUBST(PANGO_CFLAGS)
 AC_SUBST(PANGO_LIBS)
 
@@ -2591,7 +2611,7 @@ AC_ARG_WITH([rsvg],
     [AC_HELP_STRING([--without-rsvg],
                     [disable RSVG support])],
     [with_rsvg=$withval],
-    [with_rsvg=$have_x])
+    [with_rsvg='yes'])
 
 if test "$with_rsvg" != 'yes'; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-rsvg=$with_rsvg "
@@ -2747,10 +2767,10 @@ dnl ===========================================================================
 # Check for WMF delegate library.
 #
 AC_ARG_WITH([wmf],
-    [AC_HELP_STRING([--without-wmf],
-                    [disable WMF support])],
+    [AC_HELP_STRING([--with-wmf],
+                    [enable WMF support])],
     [with_wmf=$withval],
-    [with_wmf='yes'])
+    [with_wmf='no'])
 
 if test "$with_wmf" != 'yes'; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-wmf=$with_wmf "
@@ -2758,34 +2778,56 @@ fi
 
 have_wmf='no'
 WMF_LIBS=''
+WMF_LIBS_DEPS=''
+OLIBS="$LIBS"
 if test "$with_wmf" != 'no'; then
     AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for WMF])
     AC_MSG_RESULT([])
-    failed=0
-    passed=0
-    AC_CHECK_HEADER(libwmf/eps.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-    AC_CHECK_LIB(wmf,wmf_eps_function,passed=`expr $passed + 1`,failed=`expr $failed + 1`,"-lwmflite")
-    AC_MSG_CHECKING([if WMF package is complete])
-    if test $passed -gt 0; then
-        if test $failed -gt 0; then
-            AC_MSG_RESULT([no -- some components failed test])
-            have_wmf='no (failed tests)'
-        else
-            WMF_LIBS='-lwmf -lwmflite'
+    have_libwmf='no'
+    have_libwmflite='no'
+    have_libwmf_ipa_h='no'
+
+    AC_CHECK_HEADER([libwmf/ipa.h],[have_libwmf_ipa_h='yes'],,[$FT2BUILD_H])
+    if test "$have_libwmf_ipa_h" = 'yes'; then
+        AC_CHECK_LIB(wmflite,wmf_lite_create,have_libwmflite='yes',,)
+        if test "$have_libwmflite" = 'yes'; then
+            AC_DEFINE(WMFLITE_DELEGATE,1,Define if you have wmflite library)
+            WMF_LIBS='-lwmflite'
             LIBS="$WMF_LIBS $LIBS"
-            AC_DEFINE(WMF_DELEGATE,1,Define if you have WMF library)
-            AC_MSG_RESULT([yes])
             have_wmf='yes'
+        else
+            WMF_LIBS_DEPS=''
+            WMF_CONFIG_LIBS=`libwmf-config --libs`
+            for lib in xml2 expat freetype jpeg png z; do
+                testlib="-l${lib}"
+                echo "$WMF_CONFIG_LIBS" | grep -- "$testlib" > /dev/null && WMF_LIBS_DEPS="$WMF_LIBS_DEPS $testlib"
+            done
+            AC_CHECK_LIB(wmf,wmf_api_create,have_libwmf='yes',,$WMF_LIBS_DEPS)
+            if test "$have_libwmf" = 'yes'; then
+                AC_DEFINE(WMF_DELEGATE,1,Define if you have wmf library)
+                WMF_LIBS='-lwmf'
+                LIBS="$WMF_LIBS $LIBS"
+                have_wmf='yes'
+            else
+                AC_MSG_RESULT([no -- some components failed test])
+                have_wmf='no (failed tests)'
+                have_wmflite='no (failed tests)'
+                LIBS="$OLIBS"
+                WMF_LIBS=''
+            fi
         fi
+    fi
+    AC_MSG_CHECKING([if WMF package is complete])
+    if test "$have_wmf" = 'yes'; then
+        AC_MSG_RESULT([yes])
     else
         AC_MSG_RESULT([no])
     fi
 fi
-AM_CONDITIONAL(WMF_DELEGATE,test "$have_wmf" = 'yes')
+AM_CONDITIONAL(WMF_DELEGATE, test "$have_wmf" = 'yes')
 AC_SUBST(WMF_LIBS)
-
-dnl ===========================================================================
+AC_SUBST(WMF_LIBS_DEPS)
 
 
 dnl ===========================================================================
@@ -2797,7 +2839,7 @@ AC_ARG_WITH([xml],
     [AC_HELP_STRING([--without-xml],
                     [disable XML support])],
     [with_xml=$withval],
-    [with_xml=$have_x])
+    [with_xml='yes'])
 
 if test "$with_xml" != 'yes' ; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-xml=$with_xml "
@@ -2931,7 +2973,7 @@ AC_SUBST(FILTER_PATH)
 
 #
 # Path to ImageMagick documentation files
-DOCUMENTATION_RELATIVE_PATH=""
+DOCUMENTATION_RELATIVE_PATH="${PACKAGE_NAME}-${PACKAGE_VERSION}"
 DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}"
 DEFINE_DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}/"
 case "${build_os}" in
@@ -3032,7 +3074,7 @@ else
 fi
 RLEEncodeDelegateDefault='rawtorle'
 RMDelegateDefault='rm'
-RSVGDecodeDelegateDefault='rsvg'
+RSVGDecodeDelegateDefault='rsvg-convert'
 SCANDecodeDelegateDefault='scanimage'
 TXTDelegateDefault='enscript'
 UniconvertorDelegateDefault='uniconvertor'
@@ -3598,6 +3640,7 @@ if test "$have_lqr"        = 'yes'; then DELEGATES="$DELEGATES lqr"; fi
 if test "$have_lzma"       = 'yes'; then DELEGATES="$DELEGATES lzma"; fi
 if test "$have_ffmpeg"     = 'yes'; then DELEGATES="$DELEGATES mpeg"; fi
 if test "$have_openexr"    = 'yes'; then DELEGATES="$DELEGATES openexr"; fi
+if test "$have_pango"      = 'yes'; then DELEGATES="$DELEGATES pango"; fi
 if test "$have_png"        = 'yes'; then DELEGATES="$DELEGATES png"; fi
 if test "$have_rsvg"       = 'yes'; then DELEGATES="$DELEGATES rsvg"; fi
 if test "$have_tiff"       = 'yes'; then DELEGATES="$DELEGATES tiff"; fi

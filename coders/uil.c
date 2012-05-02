@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -213,8 +213,8 @@ static MagickBooleanType WriteUILImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   exception=(&image->exception);
   transparent=MagickFalse;
   i=0;
@@ -308,7 +308,7 @@ static MagickBooleanType WriteUILImage(const ImageInfo *image_info,Image *image)
       Define UIL color.
     */
     SetMagickPixelPacket(image,image->colormap+i,(IndexPacket *) NULL,&pixel);
-    pixel.colorspace=RGBColorspace;
+    pixel.colorspace=sRGBColorspace;
     pixel.depth=8;
     pixel.opacity=(MagickRealType) OpaqueOpacity;
     GetColorTuple(&pixel,MagickTrue,name);

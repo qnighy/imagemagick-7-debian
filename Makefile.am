@@ -1,4 +1,4 @@
-#  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -109,7 +109,6 @@ TOP_EXTRA_DIST = \
 	Install-windows.txt \
 	magick.sh.in \
 	Magickshr.opt \
-	Make.com \
 	NEWS.txt \
 	Platforms.txt \
 	README.txt \
@@ -321,7 +320,7 @@ if RPM_DELEGATE
 
 DIST_ARCHIVE_SRPM=$(distdir)-1.src.rpm
 .PHONY: srpm
-$(DIST_ARCHIVE_SRPM) srpm: dist
+$(DIST_ARCHIVE_SRPM) srpm: dist-bzip2
 	rm -f $(DIST_ARCHIVE_SRPM)
 	$(RPM) --define="_sourcedir `pwd`" --define="_srcrpmdir `pwd`" --nodeps --bs ImageMagick.spec
 	@echo ==============================================================

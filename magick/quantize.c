@@ -17,7 +17,7 @@
 %                              July 1992                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -504,9 +504,9 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
       cube_info->quantize_info->colorspace);
   else
     if ((image->colorspace != GRAYColorspace) &&
-        (IsRGBColorspace(image->colorspace) == MagickFalse) &&
+        (IssRGBColorspace(image->colorspace) == MagickFalse) &&
         (image->colorspace != CMYColorspace))
-      (void) TransformImageColorspace((Image *) image,RGBColorspace);
+      (void) TransformImageColorspace((Image *) image,sRGBColorspace);
   if (AcquireImageColormap(image,cube_info->colors) == MagickFalse)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
@@ -533,9 +533,9 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
 
       status=MagickTrue;
       exception=(&image->exception);
-      image_view=AcquireCacheView(image);
+      image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(dynamic,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -665,7 +665,7 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
   (void) SyncImage(image);
   if ((cube_info->quantize_info->colorspace != UndefinedColorspace) &&
       (cube_info->quantize_info->colorspace != CMYKColorspace))
-    (void) TransformImageColorspace((Image *) image,RGBColorspace);
+    (void) TransformImageColorspace((Image *) image,sRGBColorspace);
   return(MagickTrue);
 }
 
@@ -787,14 +787,14 @@ static MagickBooleanType ClassifyImageColors(CubeInfo *cube_info,
   else
     if ((image->colorspace != GRAYColorspace) &&
         (image->colorspace != CMYColorspace) &&
-        (IsRGBColorspace(image->colorspace) == MagickFalse))
-      (void) TransformImageColorspace((Image *) image,RGBColorspace);
+        (IssRGBColorspace(image->colorspace) == MagickFalse))
+      (void) TransformImageColorspace((Image *) image,sRGBColorspace);
   midpoint.red=(MagickRealType) QuantumRange/2.0;
   midpoint.green=(MagickRealType) QuantumRange/2.0;
   midpoint.blue=(MagickRealType) QuantumRange/2.0;
   midpoint.opacity=(MagickRealType) QuantumRange/2.0;
   error.opacity=0.0;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const PixelPacket
@@ -971,7 +971,7 @@ static MagickBooleanType ClassifyImageColors(CubeInfo *cube_info,
   image_view=DestroyCacheView(image_view);
   if ((cube_info->quantize_info->colorspace != UndefinedColorspace) &&
       (cube_info->quantize_info->colorspace != CMYKColorspace))
-    (void) TransformImageColorspace((Image *) image,RGBColorspace);
+    (void) TransformImageColorspace((Image *) image,sRGBColorspace);
   return(MagickTrue);
 }
 
@@ -1467,7 +1467,7 @@ static MagickBooleanType FloydSteinbergDither(Image *image,CubeInfo *cube_info)
     return(MagickFalse);
   exception=(&image->exception);
   status=MagickTrue;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     const int
@@ -1893,7 +1893,7 @@ static MagickBooleanType DitherImage(Image *image,CubeInfo *cube_info)
     depth++;
   cube_info->offset=0;
   cube_info->span=(MagickSizeType) image->columns*image->rows;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,&image->exception);
   if (depth > 1)
     Riemersma(image,image_view,cube_info,depth-1,NorthGravity);
   status=RiemersmaDither(image,image_view,cube_info,ForgetGravity);
@@ -2156,7 +2156,7 @@ MagickExport MagickBooleanType GetImageQuantizeError(Image *image)
   mean_error_per_pixel=0.0;
   mean_error=0.0;
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const PixelPacket
@@ -2327,7 +2327,7 @@ MagickExport MagickBooleanType PosterizeImageChannel(Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->storage_class == PseudoClass)
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+    #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
     for (i=0; i < (ssize_t) image->colors; i++)
     {
@@ -2349,9 +2349,9 @@ MagickExport MagickBooleanType PosterizeImageChannel(Image *image,
   status=MagickTrue;
   progress=0;
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2626,7 +2626,7 @@ static MagickBooleanType DirectToColormapImage(Image *image,
   if (image->colors != number_colors)
     return(MagickFalse);
   i=0;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     MagickBooleanType
@@ -3249,9 +3249,9 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
       image->colors=0;
       status=MagickTrue;
       exception=(&image->exception);
-      image_view=AcquireCacheView(image);
+      image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(dynamic,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -3327,9 +3327,9 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
   image->colormap=colormap;
   status=MagickTrue;
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

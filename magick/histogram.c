@@ -18,7 +18,7 @@
 %                                August 2009                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -227,7 +227,7 @@ static CubeInfo *ClassifyImageColors(const Image *image,
     }
   GetMagickPixelPacket(image,&pixel);
   GetMagickPixelPacket(image,&target);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
@@ -693,7 +693,7 @@ MagickExport MagickBooleanType IsHistogramImage(const Image *image,
     }
   GetMagickPixelPacket(image,&pixel);
   GetMagickPixelPacket(image,&target);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
@@ -856,7 +856,7 @@ MagickExport MagickBooleanType IsPaletteImage(const Image *image,
     }
   GetMagickPixelPacket(image,&pixel);
   GetMagickPixelPacket(image,&target);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
@@ -1184,7 +1184,8 @@ MagickExport size_t GetNumberColors(const Image *image,FILE *file,
     (void) ConcatenateMagickString(tuple,")",MaxTextExtent);
     (void) QueryMagickColorname(image,&pixel,SVGCompliance,color,exception);
     GetColorTuple(&pixel,MagickTrue,hex);
-    (void) FormatLocaleFile(file,"%10" MagickSizeFormat,p->count);
+    (void) FormatLocaleFile(file,"%10.20g",(double) ((MagickOffsetType)
+      p->count));
     (void) FormatLocaleFile(file,": %s %s %s\n",tuple,hex,color);
     if (image->progress_monitor != (MagickProgressMonitor) NULL)
       {
@@ -1320,7 +1321,7 @@ MagickExport Image *UniqueImageColors(const Image *image,
       unique_image=DestroyImage(unique_image);
       return((Image *) NULL);
     }
-  unique_view=AcquireCacheView(unique_image);
+  unique_view=AcquireVirtualCacheView(unique_image,exception);
   UniqueColorsToImage(unique_image,unique_view,cube_info,cube_info->root,
     exception);
   unique_view=DestroyCacheView(unique_view);

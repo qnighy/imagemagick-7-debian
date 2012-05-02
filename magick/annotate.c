@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1220,6 +1220,16 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       draw_info->encoding != (char *) NULL ? draw_info->encoding : "none",
       draw_info->pointsize);
   flags=FT_LOAD_NO_BITMAP;
+  if (draw_info->text_antialias == MagickFalse)
+     flags|=FT_LOAD_TARGET_MONO;
+  else
+    {
+#if defined(FT_LOAD_TARGET_LIGHT)
+      flags|=FT_LOAD_TARGET_LIGHT;
+#elif defined(FT_LOAD_TARGET_LCD)
+      flags|=FT_LOAD_TARGET_LCD;
+#endif
+    }
   value=GetImageProperty(image,"type:hinting");
   if ((value != (const char *) NULL) && (LocaleCompare(value,"off") == 0))
     flags|=FT_LOAD_NO_HINTING;
@@ -1350,7 +1360,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
         status=MagickTrue;
         exception=(&image->exception);
         p=bitmap->bitmap.buffer;
-        image_view=AcquireCacheView(image);
+        image_view=AcquireAuthenticCacheView(image,exception);
         for (y=0; y < (ssize_t) bitmap->bitmap.rows; y++)
         {
           MagickBooleanType
@@ -1475,8 +1485,8 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       status=FT_Get_Glyph(face->glyph,&glyph.image);
       if (status == 0)
         {
-          status=FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph.image)->
-            outline,&bounds);
+          status=FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph.image)->outline,
+            &bounds);
           if (status == 0)
             {
               FT_Vector_Transform(&glyph.origin,&affine);
@@ -1778,7 +1788,7 @@ static MagickBooleanType RenderPostscript(Image *image,
         (void) SetImageAlphaChannel(annotate_image,OpaqueAlphaChannel);
       fill_color=draw_info->fill;
       exception=(&image->exception);
-      annotate_view=AcquireCacheView(annotate_image);
+      annotate_view=AcquireAuthenticCacheView(annotate_image,exception);
       for (y=0; y < (ssize_t) annotate_image->rows; y++)
       {
         register ssize_t

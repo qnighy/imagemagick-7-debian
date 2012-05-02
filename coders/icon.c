@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -849,7 +850,8 @@ static MagickBooleanType WriteICONImage(const ImageInfo *image_info,
   next=image;
   do
   {
-    if (next->compression == ZipCompression)
+    if ((next->columns > 256L) && (next->rows > 256L) &&
+        (next->compression == ZipCompression))
       {
         Image
           *write_image;
@@ -871,6 +873,11 @@ static MagickBooleanType WriteICONImage(const ImageInfo *image_info,
           return(MagickFalse);
         write_info=CloneImageInfo(image_info);
         (void) CopyMagickString(write_info->filename,"PNG:",MaxTextExtent);
+        /*
+          Don't write any ancillary chunks except for gAMA and tRNS
+        */
+        (void) SetImageArtifact(write_image,"png:include-chunk",
+           "none,trns,gama");
         png=(unsigned char *) ImageToBlob(write_info,write_image,&length,
           &image->exception);
         write_image=DestroyImage(write_image);
@@ -894,7 +901,7 @@ static MagickBooleanType WriteICONImage(const ImageInfo *image_info,
           Initialize ICON raster file header.
         */
         if (next->colorspace != RGBColorspace)
-          (void) TransformImageColorspace(next,RGBColorspace);
+          (void) TransformImageColorspace(next,sRGBColorspace);
         icon_info.file_size=14+12+28;
         icon_info.offset_bits=icon_info.file_size;
         icon_info.compression=BI_RGB;

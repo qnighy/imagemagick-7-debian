@@ -17,7 +17,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -174,7 +174,8 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
     return(MagickFalse);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  if (image->matte == MagickFalse)
+  if ((image->matte == MagickFalse) &&
+      (draw_info->fill.opacity != OpaqueOpacity))
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
   /*
     Set floodfill state.
@@ -203,8 +204,8 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
   PushSegmentStack(y+1,x,x,-1);
   GetMagickPixelPacket(image,&fill);
   GetMagickPixelPacket(image,&pixel);
-  image_view=AcquireCacheView(image);
-  floodplane_view=AcquireCacheView(floodplane_image);
+  image_view=AcquireVirtualCacheView(image,exception);
+  floodplane_view=AcquireAuthenticCacheView(floodplane_image,exception);
   while (s > segment_stack)
   {
     register const IndexPacket
@@ -611,10 +612,10 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
   */
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
-  paint_view=AcquireCacheView(paint_image);
+  image_view=AcquireVirtualCacheView(image,exception);
+  paint_view=AcquireAuthenticCacheView(paint_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -797,6 +798,8 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
+  if ((fill->opacity != OpaqueOpacity) && (image->matte == MagickFalse))
+    (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
   /*
     Make image color opaque.
   */
@@ -804,9 +807,9 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
   progress=0;
   exception=(&image->exception);
   GetMagickPixelPacket(image,&zero);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -948,9 +951,9 @@ MagickExport MagickBooleanType TransparentPaintImage(Image *image,
   progress=0;
   exception=(&image->exception);
   GetMagickPixelPacket(image,&zero);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1080,9 +1083,9 @@ MagickExport MagickBooleanType TransparentPaintImageChroma(Image *image,
   status=MagickTrue;
   progress=0;
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

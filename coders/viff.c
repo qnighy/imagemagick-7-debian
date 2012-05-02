@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -970,8 +970,8 @@ static MagickBooleanType WriteVIFFImage(const ImageInfo *image_info,
     /*
       Initialize VIFF image structure.
     */
-    if (IsRGBColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,RGBColorspace);
+    if (IssRGBColorspace(image->colorspace) == MagickFalse)
+      (void) TransformImageColorspace(image,sRGBColorspace);
     if (IsGrayImage(image,&image->exception) != MagickFalse)
       (void) SetImageStorageClass(image,DirectClass);
     viff_info.identifier=(char) 0xab;

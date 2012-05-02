@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -70,6 +70,7 @@
 #include "magick/resource_.h"
 #include "magick/string_.h"
 #include "magick/thread-private.h"
+#include "magick/token.h"
 #include "magick/utility.h"
 #include "magick/version.h"
 
@@ -1598,9 +1599,6 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   const char
     *value;
 
-  double
-    sans;
-
   ExceptionInfo
     *exception;
 
@@ -1611,7 +1609,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     *destination_image;
 
   MagickBooleanType
-    modify_outside_overlay,
+    clip_to_self,
     status;
 
   MagickOffsetType
@@ -1647,10 +1645,11 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
   GetMagickPixelPacket(image,&zero);
+  exception=(&image->exception);
   destination_image=(Image *) NULL;
   amount=0.5;
   destination_dissolve=1.0;
-  modify_outside_overlay=MagickFalse;
+  clip_to_self=MagickTrue;
   percent_brightness=100.0;
   percent_saturation=100.0;
   source_dissolve=1.0;
@@ -1669,7 +1668,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       /*
         Modify destination outside the overlaid region.
       */
-      modify_outside_overlay=MagickTrue;
+      clip_to_self=MagickFalse;
       break;
     }
     case OverCompositeOp:
@@ -1688,11 +1687,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       if ((y_offset+(ssize_t) composite_image->rows) >= (ssize_t) image->rows)
         break;
       status=MagickTrue;
-      exception=(&image->exception);
-      image_view=AcquireCacheView(image);
-      composite_view=AcquireCacheView(composite_image);
+      composite_view=AcquireVirtualCacheView(composite_image,exception);
+      image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-#pragma omp parallel for schedule(dynamic,4) shared(status)
+#pragma omp parallel for schedule(static,4) shared(status)
 #endif
       for (y=0; y < (ssize_t) composite_image->rows; y++)
       {
@@ -1759,7 +1757,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       */
       if (image->matte == MagickFalse)
         (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
-      modify_outside_overlay=MagickTrue;
+      clip_to_self=MagickFalse;
       break;
     }
     case BlurCompositeOp:
@@ -1784,36 +1782,45 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         blur;
 
       /*
+        Blur Image by resampling.
+
         Blur Image dictated by an overlay gradient map: X = red_channel;
           Y = green_channel; compose:args =  x_scale[,y_scale[,angle]].
       */
       destination_image=CloneImage(image,image->columns,image->rows,MagickTrue,
-        &image->exception);
+        exception);
       if (destination_image == (Image *) NULL)
         return(MagickFalse);
       /*
-        Determine the horizontal and vertical maximim blur.
+        Gather the maximum blur sigma values from user.
       */
       SetGeometryInfo(&geometry_info);
       flags=NoValue;
       value=GetImageArtifact(composite_image,"compose:args");
       if (value != (char *) NULL)
         flags=ParseGeometry(value,&geometry_info);
-      if ((flags & WidthValue) == 0 )
-        {
+      if ((flags & WidthValue) == 0 ) {
+          (void) ThrowMagickException(exception,GetMagickModule(),
+               OptionWarning,"InvalidGeometry","'%s' '%s'",
+               "compose:args",value);
           destination_image=DestroyImage(destination_image);
           return(MagickFalse);
         }
-      width=geometry_info.rho;
-      height=geometry_info.sigma;
-      blur.x1=geometry_info.rho;
+      /*
+        Users input sigma now needs to be converted to the EWA ellipse size.
+        The filter defaults to a sigma of 0.5 so to make this match the
+        users input the ellipse size needs to be doubled.
+      */
+      width=height=geometry_info.rho*2.0;
+      if ((flags & HeightValue) != 0 )
+        height=geometry_info.sigma*2.0;
+
+      /* default the unrotated ellipse width and height axis vectors */
+      blur.x1=width;
       blur.x2=0.0;
       blur.y1=0.0;
-      blur.y2=geometry_info.sigma;
-      angle_start=0.0;
-      angle_range=0.0;
-      if ((flags & HeightValue) == 0)
-        blur.y2=blur.x1;
+      blur.y2=height;
+      /* rotate vectors if a rotation angle is given */
       if ((flags & XValue) != 0 )
         {
           MagickRealType
@@ -1825,20 +1832,32 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           blur.y1=(-height*sin(angle));
           blur.y2=height*cos(angle);
         }
+      /* Otherwise lets set a angle range and calculate in the loop */
+      angle_start=0.0;
+      angle_range=0.0;
       if ((flags & YValue) != 0 )
         {
           angle_start=DegreesToRadians(geometry_info.xi);
           angle_range=DegreesToRadians(geometry_info.psi)-angle_start;
         }
       /*
-        Blur Image by resampling.
+        Set up a gaussian cylindrical filter for EWA Bluring.
+
+        As the minimum ellipse radius of support*1.0 the EWA algorithm
+        can only produce a minimum blur of 0.5 for Gaussian (support=2.0)
+        This means that even 'No Blur' will be still a little blurry!
+
+        The solution (as well as the problem of preventing any user
+        expert filter settings, is to set our own user settings, then
+        restore them afterwards.
       */
+      resample_filter=AcquireResampleFilter(image,exception);
+      SetResampleFilter(resample_filter,GaussianFilter,1.0);
+
+      /* do the variable blurring of each pixel in image */
       pixel=zero;
-      exception=(&image->exception);
-      resample_filter=AcquireResampleFilter(image,&image->exception);
-      SetResampleFilter(resample_filter,CubicFilter,2.0);
-      destination_view=AcquireCacheView(destination_image);
-      composite_view=AcquireCacheView(composite_image);
+      composite_view=AcquireVirtualCacheView(composite_image,exception);
+      destination_view=AcquireAuthenticCacheView(destination_image,exception);
       for (y=0; y < (ssize_t) composite_image->rows; y++)
       {
         MagickBooleanType
@@ -1861,7 +1880,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         p=GetCacheViewVirtualPixels(composite_view,0,y,composite_image->columns,
           1,exception);
         r=QueueCacheViewAuthenticPixels(destination_view,0,y,
-          destination_image->columns,1,&image->exception);
+          destination_image->columns,1,exception);
         if ((p == (const PixelPacket *) NULL) || (r == (PixelPacket *) NULL))
           break;
         destination_indexes=GetCacheViewAuthenticIndexQueue(destination_view);
@@ -1884,11 +1903,20 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
               blur.y1=(-height*sin(angle));
               blur.y2=height*cos(angle);
             }
-          ScaleResampleFilter(resample_filter,blur.x1*QuantumScale*
-            GetPixelRed(p),blur.y1*QuantumScale*
-            GetPixelGreen(p),blur.x2*QuantumScale*
-            GetPixelRed(p),blur.y2*QuantumScale*
-            GetPixelGreen(p));
+#if 0
+          if ( x == 10 && y == 60 ) {
+            fprintf(stderr, "blur.x=%lf,%lf, blur.y=%lf,%lf\n",
+                blur.x1, blur.x2, blur.y1, blur.y2);
+            fprintf(stderr, "scaled by=%lf,%lf\n",
+                QuantumScale*GetPixelRed(p), QuantumScale*GetPixelGreen(p));
+          }
+#endif
+          ScaleResampleFilter(resample_filter,
+              blur.x1*QuantumScale*GetPixelRed(p),
+              blur.y1*QuantumScale*GetPixelGreen(p),
+              blur.x2*QuantumScale*GetPixelRed(p),
+              blur.y2*QuantumScale*GetPixelGreen(p) );
+
           (void) ResamplePixelColor(resample_filter,(double) x_offset+x,
             (double) y_offset+y,&pixel);
           SetPixelPacket(destination_image,&pixel,r,destination_indexes+x);
@@ -1936,7 +1964,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           compose:args = x_scale[,y_scale[,center.x,center.y]]
       */
       destination_image=CloneImage(image,image->columns,image->rows,MagickTrue,
-        &image->exception);
+        exception);
       if (destination_image == (Image *) NULL)
         return(MagickFalse);
       SetGeometryInfo(&geometry_info);
@@ -2017,10 +2045,9 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         displacement/distortion map.  -- Like a lens...
       */
       pixel=zero;
-      exception=(&image->exception);
-      image_view=AcquireCacheView(image);
-      destination_view=AcquireCacheView(destination_image);
-      composite_view=AcquireCacheView(composite_image);
+      image_view=AcquireVirtualCacheView(image,exception);
+      composite_view=AcquireVirtualCacheView(composite_image,exception);
+      destination_view=AcquireAuthenticCacheView(destination_image,exception);
       for (y=0; y < (ssize_t) composite_image->rows; y++)
       {
         MagickBooleanType
@@ -2037,7 +2064,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         p=GetCacheViewVirtualPixels(composite_view,0,y,composite_image->columns,
           1,exception);
         r=QueueCacheViewAuthenticPixels(destination_view,0,y,
-          destination_image->columns,1,&image->exception);
+          destination_image->columns,1,exception);
         if ((p == (const PixelPacket *) NULL) || (r == (PixelPacket *) NULL))
           break;
         destination_indexes=GetCacheViewAuthenticIndexQueue(destination_view);
@@ -2103,11 +2130,11 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
             destination_dissolve=geometry_info.sigma/100.0;
           if ((destination_dissolve-MagickEpsilon) < 0.0)
             destination_dissolve=0.0;
-          modify_outside_overlay=MagickTrue;
+          clip_to_self=MagickFalse;
           if ((destination_dissolve+MagickEpsilon) > 1.0 )
             {
               destination_dissolve=1.0;
-              modify_outside_overlay=MagickFalse;
+              clip_to_self=MagickTrue;
             }
         }
       break;
@@ -2122,9 +2149,9 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           destination_dissolve=1.0-source_dissolve;
           if ((flags & SigmaValue) != 0)
             destination_dissolve=geometry_info.sigma/100.0;
-          modify_outside_overlay=MagickTrue;
+          clip_to_self=MagickFalse;
           if ((destination_dissolve+MagickEpsilon) > 1.0)
-            modify_outside_overlay=MagickFalse;
+            clip_to_self=MagickTrue;
         }
       break;
     }
@@ -2182,7 +2209,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   }
   value=GetImageArtifact(composite_image,"compose:outside-overlay");
   if (value != (const char *) NULL)
-    modify_outside_overlay=IsMagickTrue(value);
+    clip_to_self=IsMagickTrue(value) == MagickFalse ? MagickTrue : MagickFalse;
   /*
     Composite image.
   */
@@ -2190,11 +2217,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   progress=0;
   midpoint=((MagickRealType) QuantumRange+1.0)/2;
   GetMagickPixelPacket(composite_image,&zero);
-  exception=(&image->exception);
-  image_view=AcquireCacheView(image);
-  composite_view=AcquireCacheView(composite_image);
+  composite_view=AcquireVirtualCacheView(composite_image,exception);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2204,7 +2230,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     double
       brightness,
       hue,
-      saturation;
+      saturation,
+      sans;
 
     MagickPixelPacket
       composite,
@@ -2228,7 +2255,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
 
     if (status == MagickFalse)
       continue;
-    if (modify_outside_overlay == MagickFalse)
+    if (clip_to_self != MagickFalse)
       {
         if (y < y_offset)
           continue;
@@ -2268,7 +2295,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     brightness=0.0;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if (modify_outside_overlay == MagickFalse)
+      if (clip_to_self != MagickFalse)
         {
           if (x < x_offset)
             {
@@ -2853,7 +2880,7 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
         Tile texture onto the image background.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(dynamic,4) shared(status) omp_throttle(1)
+      #pragma omp parallel for schedule(static) shared(status)
 #endif
       for (y=0; y < (ssize_t) image->rows; y+=(ssize_t) texture->rows)
       {
@@ -2898,10 +2925,10 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
   */
   status=MagickTrue;
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
-  texture_view=AcquireCacheView(texture);
+  texture_view=AcquireVirtualCacheView(texture,exception);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status) omp_throttle(1)
+  #pragma omp parallel for schedule(static) shared(status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

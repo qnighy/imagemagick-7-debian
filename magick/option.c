@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -98,9 +98,11 @@ static const OptionInfo
     { "Copy", CopyAlphaChannel, UndefinedOptionFlag, MagickFalse },
     { "Deactivate", DeactivateAlphaChannel, UndefinedOptionFlag, MagickFalse },
     { "Extract", ExtractAlphaChannel, UndefinedOptionFlag, MagickFalse },
+    { "Flatten", FlattenAlphaChannel, UndefinedOptionFlag, MagickFalse },
     { "Off", DeactivateAlphaChannel, UndefinedOptionFlag, MagickFalse },
     { "On", ActivateAlphaChannel, UndefinedOptionFlag, MagickFalse },
     { "Opaque", OpaqueAlphaChannel, UndefinedOptionFlag, MagickFalse },
+    { "Remove", RemoveAlphaChannel, UndefinedOptionFlag, MagickFalse },
     { "Set", SetAlphaChannel, UndefinedOptionFlag, MagickFalse },
     { "Shape", ShapeAlphaChannel, UndefinedOptionFlag, MagickFalse },
     { "Reset", SetAlphaChannel, DeprecateOptionFlag, MagickTrue },
@@ -757,7 +759,6 @@ static const OptionInfo
     { "DstIn", DstInCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "DstOut", DstOutCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "DstOver", DstOverCompositeOp, UndefinedOptionFlag, MagickFalse },
-    { "Dst", DstCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "Exclusion", ExclusionCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "HardLight", HardLightCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "Hue", HueCompositeOp, UndefinedOptionFlag, MagickFalse },
@@ -791,7 +792,6 @@ static const OptionInfo
     { "SrcIn", SrcInCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "SrcOut", SrcOutCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "SrcOver", SrcOverCompositeOp, UndefinedOptionFlag, MagickFalse },
-    { "Src", SrcCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "VividLight", VividLightCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "Xor", XorCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "Add", AddCompositeOp, DeprecateOptionFlag, MagickTrue },
@@ -964,6 +964,7 @@ static const OptionInfo
     { "Sin", SineEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "Sine", SineEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "Subtract", SubtractEvaluateOperator, UndefinedOptionFlag, MagickFalse },
+    { "Sum", SumEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "Threshold", ThresholdEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "ThresholdBlack", ThresholdBlackEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "ThresholdWhite", ThresholdWhiteEvaluateOperator, UndefinedOptionFlag, MagickFalse },
@@ -1003,6 +1004,7 @@ static const OptionInfo
     { "Point", PointFilter, UndefinedOptionFlag, MagickFalse },
     { "Quadratic", QuadraticFilter, UndefinedOptionFlag, MagickFalse },
     { "Robidoux", RobidouxFilter, UndefinedOptionFlag, MagickFalse },
+    { "RobidouxSharp", RobidouxSharpFilter, UndefinedOptionFlag, MagickFalse },
     { "Sinc", SincFilter, UndefinedOptionFlag, MagickFalse },
     { "SincFast", SincFastFilter, UndefinedOptionFlag, MagickFalse },
     { "Triangle", TriangleFilter, UndefinedOptionFlag, MagickFalse },
@@ -1034,7 +1036,7 @@ static const OptionInfo
     { "South", SouthGravity, UndefinedOptionFlag, MagickFalse },
     { "SouthWest", SouthWestGravity, UndefinedOptionFlag, MagickFalse },
     { "West", WestGravity, UndefinedOptionFlag, MagickFalse },
-    { "Static", StaticGravity, UndefinedOptionFlag, MagickFalse },
+    { "Static", StaticGravity, UndefinedOptionFlag, MagickTrue },
     { (char *) NULL, UndefinedGravity, UndefinedOptionFlag, MagickFalse }
   },
   IntentOptions[] =
@@ -1067,6 +1069,7 @@ static const OptionInfo
     { "filter", FilterInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Integer", IntegerInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Mesh", MeshInterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    { "Nearest", NearestNeighborInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "NearestNeighbor", NearestNeighborInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Spline", SplineInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedInterpolatePixel, UndefinedOptionFlag, MagickFalse }
@@ -1301,12 +1304,13 @@ static const OptionInfo
     { "Edge", EdgeMorphology, UndefinedOptionFlag, MagickFalse },
     { "TopHat", TopHatMorphology, UndefinedOptionFlag, MagickFalse },
     { "BottomHat", BottomHatMorphology, UndefinedOptionFlag, MagickFalse },
-    { "Distance", DistanceMorphology, UndefinedOptionFlag, MagickFalse },
     { "Hmt", HitAndMissMorphology, UndefinedOptionFlag, MagickFalse },
     { "HitNMiss", HitAndMissMorphology, UndefinedOptionFlag, MagickFalse },
     { "HitAndMiss", HitAndMissMorphology, UndefinedOptionFlag, MagickFalse },
     { "Thinning", ThinningMorphology, UndefinedOptionFlag, MagickFalse },
     { "Thicken", ThickenMorphology, UndefinedOptionFlag, MagickFalse },
+    { "Distance", DistanceMorphology, UndefinedOptionFlag, MagickFalse },
+    { "IterativeDistance", IterativeDistanceMorphology, UndefinedOptionFlag, MagickFalse },
     { "Voronoi", VoronoiMorphology, UndefinedOptionFlag, MagickTrue },
     { (char *) NULL, UndefinedMorphology, UndefinedOptionFlag, MagickFalse }
   },

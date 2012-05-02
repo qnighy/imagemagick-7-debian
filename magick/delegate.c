@@ -16,7 +16,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -783,16 +783,13 @@ static MagickBooleanType CopyDelegateFile(const char *source,
     *buffer;
 
   /*
-    Return if destination file already exists.
+    Copy source file to destination.
   */
   assert(source != (const char *) NULL);
   assert(destination != (char *) NULL);
   status=GetPathAttributes(destination,&attributes);
-  if (status != MagickFalse)
+  if ((status != MagickFalse) && (attributes.st_size != 0))
     return(MagickTrue);
-  /*
-    Copy source file to destination.
-  */
   destination_file=open_utf8(destination,O_WRONLY | O_BINARY | O_CREAT,S_MODE);
   if (destination_file == -1)
     return(MagickFalse);

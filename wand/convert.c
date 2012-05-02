@@ -17,7 +17,7 @@
 %                                April 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -587,6 +587,7 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
         filename=argv[i];
         if ((LocaleCompare(filename,"--") == 0) && (i < (ssize_t) (argc-1)))
           filename=argv[++i];
+        (void) SetImageOption(image_info,"filename",filename);
         (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
         if (image_info->ping != MagickFalse)
           images=PingImages(image_info,exception);
@@ -1157,6 +1158,17 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
               ThrowConvertInvalidArgumentException(option,argv[i]);
             break;
           }
+        if (LocaleCompare("delete",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowConvertException(OptionError,"MissingArgument",option);
+            if (IsSceneGeometry(argv[i],MagickFalse) == MagickFalse)
+              ThrowConvertInvalidArgumentException(option,argv[i]);
+            break;
+          }
         if (LocaleCompare("density",option+1) == 0)
           {
             if (*option == '+')
@@ -1176,17 +1188,6 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
             if (i == (ssize_t) (argc-1))
               ThrowConvertException(OptionError,"MissingArgument",option);
             if (IsGeometry(argv[i]) == MagickFalse)
-              ThrowConvertInvalidArgumentException(option,argv[i]);
-            break;
-          }
-        if (LocaleCompare("delete",option+1) == 0)
-          {
-            if (*option == '+')
-              break;
-            i++;
-            if (i == (ssize_t) (argc-1))
-              ThrowConvertException(OptionError,"MissingArgument",option);
-            if (IsSceneGeometry(argv[i],MagickFalse) == MagickFalse)
               ThrowConvertInvalidArgumentException(option,argv[i]);
             break;
           }
@@ -3012,10 +3013,12 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
     ThrowConvertException(OptionError,"UnbalancedParenthesis",argv[i]);
   if (i-- != (ssize_t) (argc-1))
     ThrowConvertException(OptionError,"MissingAnImageFilename",argv[argc-1]);
-  if (image == (Image *) NULL)
-    ThrowConvertException(OptionError,"MissingAnImageFilename",argv[argc-1]);
   FinalizeImageSettings(image_info,image,MagickTrue);
   if (image == (Image *) NULL)
+    ThrowConvertException(OptionError,"NoImagesDefined",argv[argc-1]);
+  if (IsCommandOption(argv[argc-1]))
+    ThrowConvertException(OptionError,"MissingAnImageFilename",argv[argc-1]);
+  if (LocaleCompare(" ",argv[argc-1]) == 0) /* common line continuation error */
     ThrowConvertException(OptionError,"MissingAnImageFilename",argv[argc-1]);
   status&=WriteImages(image_info,image,argv[argc-1],exception);
   if (metadata != (char **) NULL)

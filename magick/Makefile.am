@@ -1,4 +1,4 @@
-#  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -163,7 +163,9 @@ MAGICK_BASE_SRCS = \
 	magick/matrix.h \
 	magick/memory.c \
 	magick/memory_.h \
+	magick/memory-private.h \
 	magick/methods.h \
+	magick/method-attribute.h \
 	magick/mime.c \
 	magick/mime.h \
 	magick/module.c \
@@ -335,6 +337,7 @@ MAGICK_INCLUDE_HDRS = \
 	magick/matrix.h \
 	magick/memory_.h \
 	magick/methods.h \
+	magick/method-attribute.h \
 	magick/mime.h \
 	magick/module.h \
 	magick/monitor.h \
@@ -388,6 +391,7 @@ MAGICK_NOINST_HDRS = \
 	magick/fx-private.h \
 	magick/image-private.h \
 	magick/mac.h \
+	magick/memory-private.h \
 	magick/mime-private.h \
 	magick/monitor-private.h \
 	magick/morphology-private.h \
@@ -417,7 +421,6 @@ MAGICK_EXTRA_DIST = \
 	$(MAGICK_MANS) \
 	magick/ImageMagick.pc.in \
 	magick/MagickCore.pc.in \
-	magick/Make.com \
 	magick/config.h_vms \
 	magick/mac.c \
 	magick/nt-base.c \

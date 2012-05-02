@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -215,14 +215,14 @@ extern MagickExport const IndexPacket
 extern MagickExport const PixelPacket
   *GetVirtualPixelsFromNexus(const Image *,const VirtualPixelMethod,
     const ssize_t,const ssize_t,const size_t,const size_t,NexusInfo *,
-    ExceptionInfo *),
+    ExceptionInfo *) magick_hot_spot,
   *GetVirtualPixelsNexus(const Cache,NexusInfo *);
 
 extern MagickExport IndexPacket
   *GetPixelCacheNexusIndexes(const Cache,NexusInfo *);
 
 extern MagickExport MagickBooleanType
-  SyncAuthenticPixelCacheNexus(Image *,NexusInfo *,ExceptionInfo *);
+  SyncAuthenticPixelCacheNexus(Image *,NexusInfo *,ExceptionInfo *) magick_hot_spot;
 
 extern MagickExport MagickSizeType
   GetPixelCacheNexusExtent(const Cache,NexusInfo *);
@@ -233,10 +233,13 @@ extern MagickExport NexusInfo
 
 extern MagickExport PixelPacket
   *GetAuthenticPixelCacheNexus(Image *,const ssize_t,const ssize_t,
-    const size_t,const size_t,NexusInfo *,ExceptionInfo *),
+    const size_t,const size_t,NexusInfo *,ExceptionInfo *) magick_hot_spot,
   *GetPixelCacheNexusPixels(const Cache,NexusInfo *),
-  *QueueAuthenticNexus(Image *,const ssize_t,const ssize_t,const size_t,
-    const size_t,const MagickBooleanType,NexusInfo *,ExceptionInfo *);
+  *QueueAuthenticPixel(Image *,const ssize_t,const ssize_t,const size_t,
+    const size_t,const MagickBooleanType,NexusInfo *,ExceptionInfo *),
+  *QueueAuthenticPixelCacheNexus(Image *,const ssize_t,const ssize_t,
+    const size_t,const size_t,const MagickBooleanType,NexusInfo *,
+    ExceptionInfo *) magick_hot_spot;
 
 extern MagickExport size_t
   GetPixelCacheChannels(const Cache);
@@ -246,6 +249,9 @@ extern MagickExport void
   GetPixelCacheTileSize(const Image *,size_t *,size_t *),
   GetPixelCacheMethods(CacheMethods *),
   SetPixelCacheMethods(Cache,CacheMethods *);
+
+extern MagickPrivate MagickBooleanType
+  SyncImagePixelCache(Image *,ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

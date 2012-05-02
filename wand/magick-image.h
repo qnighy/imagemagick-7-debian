@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -114,6 +114,8 @@ extern WandExport MagickBooleanType
   MagickColorMatrixImage(MagickWand *,const KernelInfo *),
   MagickCommentImage(MagickWand *,const char *),
   MagickCompositeImage(MagickWand *,const MagickWand *,const CompositeOperator,
+    const ssize_t,const ssize_t),
+  MagickCompositeLayers(MagickWand *,const MagickWand *,const CompositeOperator,
     const ssize_t,const ssize_t),
   MagickCompositeImageChannel(MagickWand *,const ChannelType,const MagickWand *,    const CompositeOperator,const ssize_t,const ssize_t),
   MagickConstituteImage(MagickWand *,const size_t,const size_t,const char *,

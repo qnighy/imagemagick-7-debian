@@ -17,7 +17,7 @@
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -46,6 +46,7 @@
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
 #include "magick/constitute.h"
 #include "magick/delegate.h"
 #include "magick/exception.h"
@@ -312,8 +313,8 @@ MagickExport MagickBooleanType AnimateImages(const ImageInfo *image_info,
   resource_info.immutable=MagickTrue;
   argv[0]=AcquireString(GetClientName());
   (void) XAnimateImages(display,&resource_info,argv,1,images);
-  SetErrorHandler((ErrorHandler) NULL);
-  SetWarningHandler((WarningHandler) NULL);
+  (void) SetErrorHandler((ErrorHandler) NULL);
+  (void) SetWarningHandler((WarningHandler) NULL);
   argv[0]=DestroyString(argv[0]);
   (void) XCloseDisplay(display);
   XDestroyResourceInfo(&resource_info);
@@ -1921,7 +1922,8 @@ MagickExport Image *XAnimateImages(Display *display,
     /*
       Create X image.
     */
-    (void) TransformImageColorspace(image_list[scene],RGBColorspace);
+    if (IssRGBColorspace(image_list[scene]->colorspace) == MagickFalse)
+      (void) TransformImageColorspace(image_list[scene],sRGBColorspace);
     windows->image.pixmap=(Pixmap) NULL;
     windows->image.matte_pixmap=(Pixmap) NULL;
     if ((resource_info->map_type != (char *) NULL) ||

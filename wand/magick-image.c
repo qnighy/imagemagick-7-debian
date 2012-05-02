@@ -23,7 +23,7 @@
 %                                 August 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -400,7 +400,21 @@ WandExport MagickBooleanType MagickAdaptiveThresholdImage(MagickWand *wand,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  MagickAddImage() adds the specified images at the current image location.
+%  MagickAddImage() adds a clone of the images from the second wand and
+%  inserts them into the first wand.
+%
+%  Use MagickSetLastIterator(), to append new images into an existing wand,
+%  current image will be set to last image so later adds with also be
+%  appened to end of wand.
+%
+%  Use MagickSetFirstIterator() to prepend new images into wand, any more
+%  images added will also be prepended before other images in the wand.
+%  However the order of a list of new images will not change.
+%
+%  Otherwise the new images will be inserted just after the current image,
+%  and any later image will also be added after this current image but
+%  before the previously added images.  Caution is advised when multiple
+%  image adds are inserted into the middle of the wand image list.
 %
 %  The format of the MagickAddImage method is:
 %
@@ -411,46 +425,43 @@ WandExport MagickBooleanType MagickAdaptiveThresholdImage(MagickWand *wand,
 %
 %    o wand: the magick wand.
 %
-%    o add_wand: A wand that contains images to add at the current image
-%      location.
+%    o add_wand: A wand that contains the image list to be added
 %
 */
-
 static inline MagickBooleanType InsertImageInWand(MagickWand *wand,
   Image *images)
 {
-  Image
-    *sentinel;
-
-  sentinel=wand->images;
-  if (sentinel == (Image *) NULL)
+  /* if no images in wand, just add them, set current as appropriate */
+  if (wand->images == (Image *) NULL)
     {
+      if (wand->insert_before != MagickFalse)
+        wand->images=GetFirstImageInList(images);
+      else
+        wand->images=GetLastImageInList(images);
+      return(MagickTrue);
+    }
+
+  /* user jumped to first image, so prepend new images - remain active */
+  if ((wand->insert_before != MagickFalse) &&
+       (wand->images->previous == (Image *) NULL) )
+    {
+      PrependImageToList(&wand->images,images);
       wand->images=GetFirstImageInList(images);
       return(MagickTrue);
     }
-  if (wand->active == MagickFalse)
+  /* Note you should never have 'insert_before' true when current image
+     is not the first image in the wand!  That is no insert before
+     current image, only after current image */
+
+  /* if at last image append new images */
+  if (wand->images->next == (Image *) NULL)
     {
-      if ((wand->pend != MagickFalse) && (sentinel->next == (Image *) NULL))
-        {
-          AppendImageToList(&sentinel,images);
-          wand->images=GetLastImageInList(images);
-          return(MagickTrue);
-        }
-      if ((wand->pend != MagickFalse) && (sentinel->previous == (Image *) NULL))
-        {
-          PrependImageToList(&sentinel,images);
-          wand->images=GetFirstImageInList(images);
-          return(MagickTrue);
-        }
-    }
-  if (sentinel->next == (Image *) NULL)
-    {
-      InsertImageInList(&sentinel,images);
+      InsertImageInList(&wand->images,images);
       wand->images=GetLastImageInList(images);
       return(MagickTrue);
     }
-  InsertImageInList(&sentinel,images);
-  wand->images=GetFirstImageInList(images);
+  /* otherwise insert new images, just after the current image */
+  InsertImageInList(&wand->images,images);
   return(MagickTrue);
 }
 
@@ -468,6 +479,8 @@ WandExport MagickBooleanType MagickAddImage(MagickWand *wand,
   assert(add_wand->signature == WandSignature);
   if (add_wand->images == (Image *) NULL)
     ThrowWandException(WandError,"ContainsNoImages",add_wand->name);
+
+  /* clone images in second wand, and insert into first */
   images=CloneImageList(add_wand->images,wand->exception);
   if (images == (Image *) NULL)
     return(MagickFalse);
@@ -711,7 +724,13 @@ WandExport MagickBooleanType MagickAnimateImages(MagickWand *wand,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  MagickAppendImages() append a set of images.
+%  MagickAppendImages() append the images in a wand from the current image
+%  onwards, creating a new wand with the single image result.  This is
+%  affected by the gravity and background settings of the first image.
+%
+%  Typically you would call either MagickResetIterator() or
+%  MagickSetFirstImage() before calling this function to ensure that all
+%  the images in the wand's image list will be appended together.
 %
 %  The format of the MagickAppendImages method is:
 %
@@ -1527,7 +1546,7 @@ WandExport MagickWand *MagickCoalesceImages(MagickWand *wand)
 %  The format of the MagickColorDecisionListImage method is:
 %
 %      MagickBooleanType MagickColorDecisionListImage(MagickWand *wand,
-%        const double gamma)
+%        const char *color_correction_collection)
 %
 %  A description of each parameter follows:
 %
@@ -1929,7 +1948,7 @@ WandExport MagickWand *MagickCompareImages(MagickWand *wand,
 %  The format of the MagickCompositeImage method is:
 %
 %      MagickBooleanType MagickCompositeImage(MagickWand *wand,
-%        const MagickWand *composite_wand,const CompositeOperator compose,
+%        const MagickWand *source_wand,const CompositeOperator compose,
 %        const ssize_t x,const ssize_t y)
 %      MagickBooleanType MagickCompositeImageChannel(MagickWand *wand,
 %        const ChannelType channel,const MagickWand *composite_wand,
@@ -1937,12 +1956,13 @@ WandExport MagickWand *MagickCompareImages(MagickWand *wand,
 %
 %  A description of each parameter follows:
 %
-%    o wand: the magick wand.
+%    o wand: the magick wand holding the destination images
 %
-%    o composite_image: the composite image.
+%    o source_image: the magick wand holding source image.
 %
 %    o compose: This operator affects how the composite is applied to the
-%      image.  The default is Over.  Choose from these operators:
+%      image.  The default is Over.  These are some of the compose methods
+%      availble.
 %
 %        OverCompositeOp       InCompositeOp         OutCompositeOp
 %        AtopCompositeOp       XorCompositeOp        PlusCompositeOp
@@ -1955,21 +1975,20 @@ WandExport MagickWand *MagickCompareImages(MagickWand *wand,
 %    o y: the row offset of the composited image.
 %
 */
-
 WandExport MagickBooleanType MagickCompositeImage(MagickWand *wand,
-  const MagickWand *composite_wand,const CompositeOperator compose,const ssize_t x,
-  const ssize_t y)
+  const MagickWand *source_wand,const CompositeOperator compose,
+  const ssize_t x,const ssize_t y)
 {
   MagickBooleanType
     status;
 
-  status=MagickCompositeImageChannel(wand,DefaultChannels,composite_wand,
+  status=MagickCompositeImageChannel(wand,DefaultChannels,source_wand,
     compose,x,y);
   return(status);
 }
 
 WandExport MagickBooleanType MagickCompositeImageChannel(MagickWand *wand,
-  const ChannelType channel,const MagickWand *composite_wand,
+  const ChannelType channel,const MagickWand *source_wand,
   const CompositeOperator compose,const ssize_t x,const ssize_t y)
 {
   MagickBooleanType
@@ -1980,12 +1999,85 @@ WandExport MagickBooleanType MagickCompositeImageChannel(MagickWand *wand,
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   if ((wand->images == (Image *) NULL) ||
-      (composite_wand->images == (Image *) NULL))
+      (source_wand->images == (Image *) NULL))
     ThrowWandException(WandError,"ContainsNoImages",wand->name);
   status=CompositeImageChannel(wand->images,channel,compose,
-    composite_wand->images,x,y);
+    source_wand->images,x,y);
   if (status == MagickFalse)
     InheritException(wand->exception,&wand->images->exception);
+  return(status);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   M a g i c k C o m p o s i t e L a y e r s                                 %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  MagickCompositeLayers() composite the images in the source wand over the
+%  images in the destination wand in sequence, starting with the current
+%  image in both lists.
+%
+%  Each layer from the two image lists are composted together until the end of
+%  one of the image lists is reached.  The offset of each composition is also
+%  adjusted to match the virtual canvas offsets of each layer. As such the
+%  given offset is relative to the virtual canvas, and not the actual image.
+%
+%  Composition uses given x and y offsets, as the 'origin' location of the
+%  source images virtual canvas (not the real image) allowing you to compose a
+%  list of 'layer images' into the destiantioni images.  This makes it well
+%  sutiable for directly composing 'Clears Frame Animations' or 'Coaleased
+%  Animations' onto a static or other 'Coaleased Animation' destination image
+%  list.  GIF disposal handling is not looked at.
+%
+%  Special case:- If one of the image sequences is the last image (just a
+%  single image remaining), that image is repeatally composed with all the
+%  images in the other image list.  Either the source or destination lists may
+%  be the single image, for this situation.
+%
+%  In the case of a single destination image (or last image given), that image
+%  will ve cloned to match the number of images remaining in the source image
+%  list.
+%
+%  This is equivelent to the "-layer Composite" Shell API operator.
+%
+%  The format of the MagickCompositeLayers method is:
+%
+%      MagickBooleanType MagickCompositeLayers(MagickWand *wand,
+%        const MagickWand *source_wand, const CompositeOperator compose,
+%        const ssize_t x,const ssize_t y)
+%
+%  A description of each parameter follows:
+%
+%    o wand: the magick wand holding destaintion images
+%
+%    o source_wand: the wand holding the source images
+%
+%    o compose, x, y:  composition arguments
+%
+*/
+WandExport MagickBooleanType MagickCompositeLayers(MagickWand *wand,
+  const MagickWand *source_wand,const CompositeOperator compose,
+  const ssize_t x,const ssize_t y)
+{
+  MagickBooleanType
+    status;
+
+  assert(wand != (MagickWand *) NULL);
+  assert(wand->signature == WandSignature);
+  if (wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  if ((wand->images == (Image *) NULL) ||
+      (source_wand->images == (Image *) NULL))
+    ThrowWandException(WandError,"ContainsNoImages",wand->name);
+  CompositeLayers(wand->images,compose,source_wand->images,x,y,
+    &wand->images->exception);
+  status=MagickTrue;  /* FUTURE: determine status from exceptions */
   return(status);
 }
 
@@ -3171,9 +3263,8 @@ WandExport MagickBooleanType MagickExportImagePixels(MagickWand *wand,
 %
 %  The format of the MagickExtentImage method is:
 %
-%      MagickBooleanType MagickExtentImage(MagickWand *wand,
-%        const size_t width,const size_t height,const ssize_t x,
-%        const ssize_t y)
+%      MagickBooleanType MagickExtentImage(MagickWand *wand,const size_t width,
+%        const size_t height,const ssize_t x,const ssize_t y)
 %
 %  A description of each parameter follows:
 %
@@ -3189,8 +3280,7 @@ WandExport MagickBooleanType MagickExportImagePixels(MagickWand *wand,
 %
 */
 WandExport MagickBooleanType MagickExtentImage(MagickWand *wand,
-  const size_t width,const size_t height,const ssize_t x,
-  const ssize_t y)
+  const size_t width,const size_t height,const ssize_t x,const ssize_t y)
 {
   Image
     *extent_image;
@@ -4745,11 +4835,11 @@ WandExport CompressionType MagickGetImageCompression(MagickWand *wand)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  MagickGetImageCompression() gets the image compression quality.
+%  MagickGetImageCompressionQuality() gets the image compression quality.
 %
-%  The format of the MagickGetImageCompression method is:
+%  The format of the MagickGetImageCompressionQuality method is:
 %
-%      size_t MagickGetImageCompression(MagickWand *wand)
+%      size_t MagickGetImageCompressionQuality(MagickWand *wand)
 %
 %  A description of each parameter follows:
 %
@@ -4834,7 +4924,7 @@ WandExport size_t MagickGetImageDepth(MagickWand *wand)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   if (wand->images == (Image *) NULL)
     ThrowWandException(WandError,"ContainsNoImages",wand->name);
-  return(GetImageDepth(wand->images,wand->exception));
+  return(wand->images->depth);
 }
 
 /*
@@ -5561,7 +5651,7 @@ WandExport MagickBooleanType MagickGetImagePixelColor(MagickWand *wand,
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   if (wand->images == (Image *) NULL)
     ThrowWandException(WandError,"ContainsNoImages",wand->name);
-  image_view=AcquireCacheView(wand->images);
+  image_view=AcquireVirtualCacheView(wand->images,wand->exception);
   p=GetCacheViewVirtualPixels(image_view,x,y,1,1,wand->exception);
   if (p == (const PixelPacket *) NULL)
     {
@@ -5849,7 +5939,7 @@ WandExport size_t MagickGetImageScene(MagickWand *wand)
 %
 %  The format of the MagickGetImageSignature method is:
 %
-%      const char MagickGetImageSignature(MagickWand *wand)
+%      char *MagickGetImageSignature(MagickWand *wand)
 %
 %  A description of each parameter follows:
 %
@@ -7291,7 +7381,7 @@ WandExport MagickBooleanType MagickMotionBlurImageChannel(MagickWand *wand,
 %
 %      MagickBooleanType MagickNegateImage(MagickWand *wand,
 %        const MagickBooleanType gray)
-%      MagickBooleanType MagickNegateImage(MagickWand *wand,
+%      MagickBooleanType MagickNegateImageChannel(MagickWand *wand,
 %        const ChannelType channel,const MagickBooleanType gray)
 %
 %  A description of each parameter follows:
@@ -7397,8 +7487,20 @@ WandExport MagickBooleanType MagickNewImage(MagickWand *wand,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  MagickNextImage() associates the next image in the image list with a magick
-%  wand.
+%  MagickNextImage() sets the next image in the wand as the current image.
+%
+%  It is typically used after MagickResetIterator(), after which its first use
+%  will set the first image as the current image (unless the wand is empty).
+%
+%  It will return MagickFalse when no more images are left to be returned
+%  which happens when the wand is empty, or the current image is the last
+%  image.
+%
+%  When the above condition (end of image list) is reached, the iterator is
+%  automaticall set so that you can start using MagickPreviousImage() to
+%  again iterate over the images in the reverse direction, starting with the
+%  last image (again).  You can jump to this condition immeditally using
+%  MagickSetLastIterator().
 %
 %  The format of the MagickNextImage method is:
 %
@@ -7417,14 +7519,15 @@ WandExport MagickBooleanType MagickNextImage(MagickWand *wand)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   if (wand->images == (Image *) NULL)
     ThrowWandException(WandError,"ContainsNoImages",wand->name);
-  if (wand->pend != MagickFalse)
+  wand->insert_before=MagickFalse; /* Inserts is now appended */
+  if (wand->image_pending != MagickFalse)
     {
-      wand->pend=MagickFalse;
+      wand->image_pending=MagickFalse;
       return(MagickTrue);
     }
   if (GetNextImageInList(wand->images) == (Image *) NULL)
     {
-      wand->pend=MagickTrue;
+      wand->image_pending=MagickTrue; /* No image, PreviousImage re-gets */
       return(MagickFalse);
     }
   wand->images=GetNextImageInList(wand->images);
@@ -7951,7 +8054,7 @@ WandExport MagickBooleanType MagickPolaroidImage(MagickWand *wand,
 %  The format of the MagickPosterizeImage method is:
 %
 %      MagickBooleanType MagickPosterizeImage(MagickWand *wand,
-%        const unsigned levels,const MagickBooleanType dither)
+%        const size_t levels,const MagickBooleanType dither)
 %
 %  A description of each parameter follows:
 %
@@ -8039,8 +8142,21 @@ WandExport MagickWand *MagickPreviewImages(MagickWand *wand,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  MagickPreviousImage() assocates the previous image in an image list with
-%  the magick wand.
+%  MagickPreviousImage() sets the previous image in the wand as the current
+%  image.
+%
+%  It is typically used after MagickSetLastIterator(), after which its first
+%  use will set the last image as the current image (unless the wand is empty).
+%
+%  It will return MagickFalse when no more images are left to be returned
+%  which happens when the wand is empty, or the current image is the first
+%  image.  At that point the iterator is than reset to again process images in
+%  the forward direction, again starting with the first image in list. Images
+%  added at this point are prepended.
+%
+%  Also at that point any images added to the wand using MagickAddImages() or
+%  MagickReadImages() will be prepended before the first image. In this sense
+%  the condition is not quite exactly the same as MagickResetIterator().
 %
 %  The format of the MagickPreviousImage method is:
 %
@@ -8059,14 +8175,15 @@ WandExport MagickBooleanType MagickPreviousImage(MagickWand *wand)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   if (wand->images == (Image *) NULL)
     ThrowWandException(WandError,"ContainsNoImages",wand->name);
-  if (wand->pend != MagickFalse)
+  if (wand->image_pending != MagickFalse)
     {
-      wand->pend=MagickFalse;
+      wand->image_pending=MagickFalse;  /* image returned no longer pending */
       return(MagickTrue);
     }
   if (GetPreviousImageInList(wand->images) == (Image *) NULL)
     {
-      wand->pend=MagickTrue;
+      wand->image_pending=MagickTrue;   /* Next now re-gets first image */
+      wand->insert_before=MagickTrue;   /* insert/add prepends new images */
       return(MagickFalse);
     }
   wand->images=GetPreviousImageInList(wand->images);
@@ -10690,7 +10807,7 @@ WandExport MagickBooleanType MagickSetImageRenderingIntent(MagickWand *wand,
 %  The format of the MagickSetImageResolution method is:
 %
 %      MagickBooleanType MagickSetImageResolution(MagickWand *wand,
-%        const double x_resolution,const doubtl y_resolution)
+%        const double x_resolution,const double y_resolution)
 %
 %  A description of each parameter follows:
 %
@@ -11194,7 +11311,7 @@ WandExport MagickBooleanType MagickShaveImage(MagickWand *wand,
 %  The format of the MagickShearImage method is:
 %
 %      MagickBooleanType MagickShearImage(MagickWand *wand,
-%        const PixelWand *background,const double x_shear,onst double y_shear)
+%        const PixelWand *background,const double x_shear,const double y_shear)
 %
 %  A description of each parameter follows:
 %
@@ -12220,7 +12337,9 @@ WandExport MagickWand *MagickTransformImage(MagickWand *wand,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  MagickTransformImageColorspace() transform the image colorspace.
+%  MagickTransformImageColorspace() transform the image colorspace, setting
+%  the images colorspace while transforming the images data to that
+%  colorspace.
 %
 %  The format of the MagickTransformImageColorspace method is:
 %
@@ -12231,11 +12350,12 @@ WandExport MagickWand *MagickTransformImage(MagickWand *wand,
 %
 %    o wand: the magick wand.
 %
-%    o colorspace: the image colorspace:   UndefinedColorspace, RGBColorspace,
-%      GRAYColorspace, TransparentColorspace, OHTAColorspace, XYZColorspace,
-%      YCbCrColorspace, YCCColorspace, YIQColorspace, YPbPrColorspace,
-%      YPbPrColorspace, YUVColorspace, CMYKColorspace, sRGBColorspace,
-%      HSLColorspace, or HWBColorspace.
+%    o colorspace: the image colorspace:   UndefinedColorspace,
+%      sRGBColorspace, RGBColorspace, GRAYColorspace,
+%      OHTAColorspace, XYZColorspace, YCbCrColorspace,
+%      YCCColorspace, YIQColorspace, YPbPrColorspace,
+%      YPbPrColorspace, YUVColorspace, CMYKColorspace,
+%      HSLColorspace, HWBColorspace.
 %
 */
 WandExport MagickBooleanType MagickTransformImageColorspace(MagickWand *wand,

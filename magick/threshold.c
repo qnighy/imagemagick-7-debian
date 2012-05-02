@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -192,10 +192,10 @@ MagickExport Image *AdaptiveThresholdImage(const Image *image,
   progress=0;
   GetMagickPixelPacket(image,&zero);
   number_pixels=(MagickRealType) width*height;
-  image_view=AcquireCacheView(image);
-  threshold_view=AcquireCacheView(threshold_image);
+  image_view=AcquireVirtualCacheView(image,exception);
+  threshold_view=AcquireAuthenticCacheView(threshold_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -257,8 +257,7 @@ MagickExport Image *AdaptiveThresholdImage(const Image *image,
           pixel.blue+=r[u].blue;
           pixel.opacity+=r[u].opacity;
           if (image->colorspace == CMYKColorspace)
-            pixel.index=(MagickRealType) GetPixelIndex(
-              indexes+x+(r-p)+u);
+            pixel.index=(MagickRealType) GetPixelIndex(indexes+x+(r-p)+u);
         }
         r+=image->columns+width;
       }
@@ -268,18 +267,18 @@ MagickExport Image *AdaptiveThresholdImage(const Image *image,
       mean.opacity=(MagickRealType) (pixel.opacity/number_pixels+offset);
       if (image->colorspace == CMYKColorspace)
         mean.index=(MagickRealType) (pixel.index/number_pixels+offset);
-      SetPixelRed(q,((MagickRealType) GetPixelRed(q) <=
-        mean.red) ? 0 : QuantumRange);
-      SetPixelGreen(q,((MagickRealType) GetPixelGreen(q) <=
-        mean.green) ? 0 : QuantumRange);
-      SetPixelBlue(q,((MagickRealType) GetPixelBlue(q) <=
-        mean.blue) ? 0 : QuantumRange);
-      SetPixelOpacity(q,((MagickRealType) GetPixelOpacity(q)
-        <= mean.opacity) ? 0 : QuantumRange);
+      SetPixelRed(q,((MagickRealType) GetPixelRed(q) <= mean.red) ?
+        0 : QuantumRange);
+      SetPixelGreen(q,((MagickRealType) GetPixelGreen(q) <= mean.green) ?
+        0 : QuantumRange);
+      SetPixelBlue(q,((MagickRealType) GetPixelBlue(q) <= mean.blue) ?
+        0 : QuantumRange);
+      SetPixelOpacity(q,((MagickRealType) GetPixelOpacity(q) <= mean.opacity) ?
+         0 : QuantumRange);
       if (image->colorspace == CMYKColorspace)
         SetPixelIndex(threshold_indexes+x,(((MagickRealType)
-          GetPixelIndex(threshold_indexes+x) <= mean.index) ? 0 :
-          QuantumRange));
+          GetPixelIndex(threshold_indexes+x) <= mean.index) ?
+          0 : QuantumRange));
       p++;
       q++;
     }
@@ -391,9 +390,9 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
   status=MagickTrue;
   progress=0;
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,8) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -580,9 +579,9 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
   */
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,8) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -606,7 +605,7 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if (channel != DefaultChannels)
+      if (channel == DefaultChannels)
         {
           if (PixelIntensity(q) < MagickPixelIntensity(&threshold))
             {
@@ -761,9 +760,9 @@ MagickExport MagickBooleanType ClampImageChannel(Image *image,
   status=MagickTrue;
   progress=0;
   exception=(&image->exception);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,8) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1501,9 +1500,9 @@ printf("DEBUG levels  r=%u g=%u b=%u a=%u i=%u\n",
       }
     status=MagickTrue;
     progress=0;
-    image_view=AcquireCacheView(image);
+    image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,8) shared(progress,status)
 #endif
     for (y=0; y < (ssize_t) image->rows; y++)
     {
@@ -1670,6 +1669,7 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
     flags;
 
   MagickBooleanType
+    concurrent,
     status;
 
   MagickOffsetType
@@ -1730,9 +1730,11 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
         ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename);
       random_info=AcquireRandomInfoThreadSet();
-      image_view=AcquireCacheView(image);
+      concurrent=GetRandomSecretKey(random_info[0]) == ~0UL ? MagickTrue :
+        MagickFalse;
+      image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+      #pragma omp parallel for schedule(static,8) shared(progress,status) omp_concurrent(concurrent)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1809,9 +1811,11 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
       return(MagickFalse);
     }
   random_info=AcquireRandomInfoThreadSet();
-  image_view=AcquireCacheView(image);
+  concurrent=GetRandomSecretKey(random_info[0]) == ~0UL ? MagickTrue :
+    MagickFalse;
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,8) shared(progress,status) omp_concurrent(concurrent)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2040,9 +2044,9 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
   */
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,8) shared(progress,status)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2066,7 +2070,7 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if (channel != DefaultChannels)
+      if (channel == DefaultChannels)
         {
           if (PixelIntensity(q) > MagickPixelIntensity(&threshold))
             {

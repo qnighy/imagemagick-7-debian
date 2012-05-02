@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -301,8 +301,8 @@ static MagickBooleanType WriteHRZImage(const ImageInfo *image_info,Image *image)
     &image->exception);
   if (hrz_image == (Image *) NULL)
     return(MagickFalse);
-  if (IsRGBColorspace(hrz_image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(hrz_image,RGBColorspace);
+  if (IssRGBColorspace(hrz_image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(hrz_image,sRGBColorspace);
   /*
     Allocate memory for pixels.
   */

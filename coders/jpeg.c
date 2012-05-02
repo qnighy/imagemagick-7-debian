@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -75,7 +75,9 @@
 #include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/string-private.h"
+#include "magick/token.h"
 #include "magick/utility.h"
+#include "magick/xml-tree.h"
 #include <setjmp.h>
 #if defined(MAGICKCORE_JPEG_DELEGATE)
 #define JPEG_INTERNAL_OPTIONS
@@ -141,6 +143,23 @@ typedef struct _SourceManager
     start_of_blob;
 } SourceManager;
 #endif
+
+typedef struct _QuantizationTable
+{
+  char
+    *slot,
+    *description;
+
+  size_t
+    width,
+    height;
+
+  double
+    divisor;
+
+  unsigned int
+    *levels;
+} QuantizationTable;
 
 /*
   Forward declarations.
@@ -301,6 +320,8 @@ static void JPEGErrorHandler(j_common_ptr jpeg_info)
 
 static MagickBooleanType JPEGWarningHandler(j_common_ptr jpeg_info,int level)
 {
+#define JPEGExcessiveWarnings  1000
+
   char
     message[JMSG_LENGTH_MAX];
 
@@ -319,11 +340,12 @@ static MagickBooleanType JPEGWarningHandler(j_common_ptr jpeg_info,int level)
         Process warning message.
       */
       (jpeg_info->err->format_message)(jpeg_info,message);
+      if (jpeg_info->err->num_warnings++ > JPEGExcessiveWarnings)
+        JPEGErrorHandler(jpeg_info);
       if ((jpeg_info->err->num_warnings == 0) ||
           (jpeg_info->err->trace_level >= 3))
         ThrowBinaryException(CorruptImageWarning,(char *) message,
           image->filename);
-      jpeg_info->err->num_warnings++;
     }
   else
     if ((image->debug != MagickFalse) &&
@@ -645,7 +667,7 @@ static boolean ReadProfile(j_decompress_ptr jpeg_info)
   previous_profile=GetImageProfile(image,name);
   if (previous_profile != (const StringInfo *) NULL)
     {
-      ssize_t
+      size_t
         length;
 
       length=GetStringInfoLength(profile);
@@ -688,7 +710,7 @@ static void SkipInputData(j_decompress_ptr cinfo,long number_bytes)
 
 static void TerminateSource(j_decompress_ptr cinfo)
 {
-  cinfo=cinfo;
+  (void) cinfo;
 }
 
 static void JPEGSourceManager(j_decompress_ptr cinfo,Image *image)
@@ -1109,6 +1131,7 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
       if (IsMagickTrue(option) != MagickFalse)
         jpeg_info.do_block_smoothing=MagickTrue;
     }
+  jpeg_info.dct_method=JDCT_FLOAT;
   option=GetImageOption(image_info,"jpeg:dct-method");
   if (option != (const char *) NULL)
     switch (*option)
@@ -1495,6 +1518,19 @@ ModuleExport void UnregisterJPEGImage(void)
 %
 */
 
+static QuantizationTable *DestroyQuantizationTable(QuantizationTable *table)
+{
+  assert(table != (QuantizationTable *) NULL);
+  if (table->slot != (char *) NULL)
+    table->slot=DestroyString(table->slot);
+  if (table->description != (char *) NULL)
+    table->description=DestroyString(table->description);
+  if (table->levels != (unsigned int *) NULL)
+    table->levels=(unsigned int *) RelinquishMagickMemory(table->levels);
+  table=(QuantizationTable *) RelinquishMagickMemory(table);
+  return(table);
+}
+
 static boolean EmptyOutputBuffer(j_compress_ptr cinfo)
 {
   DestinationManager
@@ -1507,6 +1543,203 @@ static boolean EmptyOutputBuffer(j_compress_ptr cinfo)
     ERREXIT(cinfo,JERR_FILE_WRITE);
   destination->manager.next_output_byte=destination->buffer;
   return(TRUE);
+}
+
+static QuantizationTable *GetQuantizationTable(const char *filename,
+  const char *slot,ExceptionInfo *exception)
+{
+  char
+    *p,
+    *xml;
+
+  const char
+    *attribute,
+    *content;
+
+  double
+    value;
+
+  register ssize_t
+    i;
+
+  QuantizationTable
+    *table;
+
+  size_t
+    length;
+
+  ssize_t
+    j;
+
+  XMLTreeInfo
+    *description,
+    *levels,
+    *quantization_tables,
+    *table_iterator;
+
+  (void) LogMagickEvent(ConfigureEvent,GetMagickModule(),
+    "Loading quantization tables \"%s\" ...",filename);
+  table=(QuantizationTable *) NULL;
+  xml=FileToString(filename,~0,exception);
+  if (xml == (char *) NULL)
+    return(table);
+  quantization_tables=NewXMLTree(xml,exception);
+  if (quantization_tables == (XMLTreeInfo *) NULL)
+    {
+      xml=DestroyString(xml);
+      return(table);
+    }
+  for (table_iterator=GetXMLTreeChild(quantization_tables,"table");
+       table_iterator != (XMLTreeInfo *) NULL;
+       table_iterator=GetNextXMLTreeTag(table_iterator))
+  {
+    attribute=GetXMLTreeAttribute(table_iterator,"slot");
+    if ((attribute != (char *) NULL) && (LocaleCompare(slot,attribute) == 0))
+      break;
+    attribute=GetXMLTreeAttribute(table_iterator,"alias");
+    if ((attribute != (char *) NULL) && (LocaleCompare(slot,attribute) == 0))
+      break;
+  }
+  if (table_iterator == (XMLTreeInfo *) NULL)
+    {
+      xml=DestroyString(xml);
+      return(table);
+    }
+  description=GetXMLTreeChild(table_iterator,"description");
+  if (description == (XMLTreeInfo *) NULL)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+        "XmlMissingElement", "<description>, slot \"%s\"",slot);
+      quantization_tables=DestroyXMLTree(quantization_tables);
+      xml=DestroyString(xml);
+      return(table);
+    }
+  levels=GetXMLTreeChild(table_iterator,"levels");
+  if (levels == (XMLTreeInfo *) NULL)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+        "XmlMissingElement", "<levels>, slot \"%s\"", slot);
+      quantization_tables=DestroyXMLTree(quantization_tables);
+      xml=DestroyString(xml);
+      return(table);
+    }
+  table=(QuantizationTable *) AcquireMagickMemory(sizeof(*table));
+  if (table == (QuantizationTable *) NULL)
+    ThrowFatalException(ResourceLimitFatalError,
+      "UnableToAcquireQuantizationTable");
+  table->slot=(char *) NULL;
+  table->description=(char *) NULL;
+  table->levels=(unsigned int *) NULL;
+  attribute=GetXMLTreeAttribute(table_iterator,"slot");
+  if (attribute != (char *) NULL)
+    table->slot=ConstantString(attribute);
+  content=GetXMLTreeContent(description);
+  if (content != (char *) NULL)
+    table->description=ConstantString(content);
+  attribute=GetXMLTreeAttribute(levels,"width");
+  if (attribute == (char *) NULL)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+        "XmlMissingAttribute", "<levels width>, slot \"%s\"",slot);
+      quantization_tables=DestroyXMLTree(quantization_tables);
+      table=DestroyQuantizationTable(table);
+      xml=DestroyString(xml);
+      return(table);
+    }
+  table->width=StringToUnsignedLong(attribute);
+  if (table->width == 0)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+       "XmlInvalidAttribute", "<levels width>, table \"%s\"",slot);
+      quantization_tables=DestroyXMLTree(quantization_tables);
+      table=DestroyQuantizationTable(table);
+      xml=DestroyString(xml);
+      return(table);
+    }
+  attribute=GetXMLTreeAttribute(levels,"height");
+  if (attribute == (char *) NULL)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+        "XmlMissingAttribute", "<levels height>, table \"%s\"",slot);
+      quantization_tables=DestroyXMLTree(quantization_tables);
+      table=DestroyQuantizationTable(table);
+      xml=DestroyString(xml);
+      return(table);
+    }
+  table->height=StringToUnsignedLong(attribute);
+  if (table->height == 0)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+        "XmlInvalidAttribute", "<levels height>, table \"%s\"",slot);
+      quantization_tables=DestroyXMLTree(quantization_tables);
+      table=DestroyQuantizationTable(table);
+      xml=DestroyString(xml);
+      return(table);
+    }
+  attribute=GetXMLTreeAttribute(levels,"divisor");
+  if (attribute == (char *) NULL)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+        "XmlMissingAttribute", "<levels divisor>, table \"%s\"",slot);
+      quantization_tables=DestroyXMLTree(quantization_tables);
+      table=DestroyQuantizationTable(table);
+      xml=DestroyString(xml);
+      return(table);
+    }
+  table->divisor=InterpretLocaleValue(attribute,(char **) NULL);
+  if (table->divisor == 0.0)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+        "XmlInvalidAttribute", "<levels divisor>, table \"%s\"",slot);
+      quantization_tables=DestroyXMLTree(quantization_tables);
+      table=DestroyQuantizationTable(table);
+      xml=DestroyString(xml);
+      return(table);
+    }
+  content=GetXMLTreeContent(levels);
+  if (content == (char *) NULL)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+        "XmlMissingContent", "<levels>, table \"%s\"",slot);
+      quantization_tables=DestroyXMLTree(quantization_tables);
+      table=DestroyQuantizationTable(table);
+      xml=DestroyString(xml);
+      return(table);
+    }
+  length=(size_t) table->width*table->height;
+  if (length < 64)
+    length=64;
+  table->levels=(unsigned int *) AcquireQuantumMemory(length,
+    sizeof(*table->levels));
+  if (table->levels == (unsigned int *) NULL)
+    ThrowFatalException(ResourceLimitFatalError,
+      "UnableToAcquireQuantizationTable");
+  for (i=0; i < (ssize_t) (table->width*table->height); i++)
+  {
+    table->levels[i]=(unsigned int) (InterpretLocaleValue(content,&p)/
+      table->divisor+0.5);
+    while (isspace((int) ((unsigned char) *p)) != 0)
+      p++;
+    if (*p == ',')
+      p++;
+    content=p;
+  }
+  value=InterpretLocaleValue(content,&p);
+  (void) value;
+  if (p != content)
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+        "XmlInvalidContent", "<level> too many values, table \"%s\"",slot);
+     quantization_tables=DestroyXMLTree(quantization_tables);
+     table=DestroyQuantizationTable(table);
+     xml=DestroyString(xml);
+     return(table);
+   }
+  for (j=i; j < 64; j++)
+    table->levels[j]=table->levels[j-1];
+  quantization_tables=DestroyXMLTree(quantization_tables);
+  xml=DestroyString(xml);
+  return(table);
 }
 
 static void InitializeDestination(j_compress_ptr cinfo)
@@ -1738,6 +1971,9 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
   ErrorManager
     error_manager;
 
+  int
+    quality;
+
   JSAMPLE
     *jpeg_pixels;
 
@@ -1828,8 +2064,8 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     }
     default:
     {
-      if (IsRGBColorspace(image->colorspace) == MagickFalse)
-        (void) TransformImageColorspace(image,RGBColorspace);
+      if (IssRGBColorspace(image->colorspace) == MagickFalse)
+        (void) TransformImageColorspace(image,sRGBColorspace);
       break;
     }
   }
@@ -1863,6 +2099,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
       if (image->units == PixelsPerCentimeterResolution)
         jpeg_info.density_unit=(UINT8) 2;
     }
+  jpeg_info.dct_method=JDCT_FLOAT;
   option=GetImageOption(image_info,"jpeg:dct-method");
   if (option != (const char *) NULL)
     switch (*option)
@@ -1979,13 +2216,12 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
         }
       jpeg_info=DestroyImageInfo(jpeg_info);
     }
+  quality=92;
   if ((image_info->compression != LosslessJPEGCompression) &&
       (image->quality <= 100))
     {
-      if (image->quality == UndefinedCompressionQuality)
-        jpeg_set_quality(&jpeg_info,92,MagickTrue);
-      else
-        jpeg_set_quality(&jpeg_info,(int) image->quality,MagickTrue);
+      if (image->quality != UndefinedCompressionQuality)
+        quality=(int) image->quality;
       if (image->debug != MagickFalse)
         (void) LogMagickEvent(CoderEvent,GetMagickModule(),"Quality: %.20g",
           (double) image->quality);
@@ -1993,7 +2229,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
   else
     {
 #if !defined(C_LOSSLESS_SUPPORTED)
-      jpeg_set_quality(&jpeg_info,100,MagickTrue);
+      quality=100;
       if (image->debug != MagickFalse)
         (void) LogMagickEvent(CoderEvent,GetMagickModule(),"Quality: 100");
 #else
@@ -2021,6 +2257,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
         }
 #endif
     }
+  jpeg_set_quality(&jpeg_info,quality,MagickTrue);
   sampling_factor=(const char *) NULL;
   value=GetImageProperty(image,"jpeg:sampling-factor");
   if (value != (char *) NULL)
@@ -2083,6 +2320,44 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     {
       jpeg_info.comp_info[i].h_samp_factor=1;
       jpeg_info.comp_info[i].v_samp_factor=1;
+    }
+  option=GetImageOption(image_info,"jpeg:q-table");
+  if (option != (const char *) NULL)
+    {
+      QuantizationTable
+        *table;
+
+      /*
+        Custom quantization tables.
+      */
+      table=GetQuantizationTable(option,"0",&image->exception);
+      if (table != (QuantizationTable *) NULL)
+        {
+          jpeg_add_quant_table(&jpeg_info,0,table->levels,jpeg_quality_scaling(
+            quality),0);
+          table=DestroyQuantizationTable(table);
+        }
+      table=GetQuantizationTable(option,"1",&image->exception);
+      if (table != (QuantizationTable *) NULL)
+        {
+          jpeg_add_quant_table(&jpeg_info,1,table->levels,jpeg_quality_scaling(
+            quality),0);
+          table=DestroyQuantizationTable(table);
+        }
+      table=GetQuantizationTable(option,"2",&image->exception);
+      if (table != (QuantizationTable *) NULL)
+        {
+          jpeg_add_quant_table(&jpeg_info,2,table->levels,jpeg_quality_scaling(
+            quality),0);
+          table=DestroyQuantizationTable(table);
+        }
+      table=GetQuantizationTable(option,"3",&image->exception);
+      if (table != (QuantizationTable *) NULL)
+        {
+          jpeg_add_quant_table(&jpeg_info,3,table->levels,jpeg_quality_scaling(
+            quality),0);
+          table=DestroyQuantizationTable(table);
+        }
     }
   jpeg_start_compress(&jpeg_info,MagickTrue);
   if (image->debug != MagickFalse)
@@ -2363,12 +2638,9 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
           q=jpeg_pixels;
           for (x=0; x < (ssize_t) image->columns; x++)
           {
-            *q++=(JSAMPLE) (ScaleQuantumToShort(GetPixelRed(p)) >>
-              4);
-            *q++=(JSAMPLE) (ScaleQuantumToShort(GetPixelGreen(p)) >>
-              4);
-            *q++=(JSAMPLE) (ScaleQuantumToShort(GetPixelBlue(p)) >>
-              4);
+            *q++=(JSAMPLE) (ScaleQuantumToShort(GetPixelRed(p)) >> 4);
+            *q++=(JSAMPLE) (ScaleQuantumToShort(GetPixelGreen(p)) >> 4);
+            *q++=(JSAMPLE) (ScaleQuantumToShort(GetPixelBlue(p)) >> 4);
             p++;
           }
           (void) jpeg_write_scanlines(&jpeg_info,scanline,1);

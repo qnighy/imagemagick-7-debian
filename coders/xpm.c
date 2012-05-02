@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -636,8 +636,8 @@ static MagickBooleanType WritePICONImage(const ImageInfo *image_info,
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   SetGeometry(image,&geometry);
   (void) ParseMetaGeometry(PiconGeometry,&geometry.x,&geometry.y,
     &geometry.width,&geometry.height);
@@ -750,7 +750,7 @@ static MagickBooleanType WritePICONImage(const ImageInfo *image_info,
       Define XPM color.
     */
     SetMagickPixelPacket(image,picon->colormap+i,(IndexPacket *) NULL,&pixel);
-    pixel.colorspace=RGBColorspace;
+    pixel.colorspace=sRGBColorspace;
     pixel.depth=8;
     pixel.opacity=(MagickRealType) OpaqueOpacity;
     (void) QueryMagickColorname(image,&pixel,XPMCompliance,name,
@@ -888,8 +888,8 @@ static MagickBooleanType WriteXPMImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   opacity=(-1);
   if (image->matte == MagickFalse)
     {
@@ -984,7 +984,7 @@ static MagickBooleanType WriteXPMImage(const ImageInfo *image_info,Image *image)
       Define XPM color.
     */
     SetMagickPixelPacket(image,image->colormap+i,(IndexPacket *) NULL,&pixel);
-    pixel.colorspace=RGBColorspace;
+    pixel.colorspace=sRGBColorspace;
     pixel.depth=8;
     pixel.opacity=(MagickRealType) OpaqueOpacity;
     (void) QueryMagickColorname(image,&pixel,XPMCompliance,name,

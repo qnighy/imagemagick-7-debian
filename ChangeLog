@@ -1,11 +1,334 @@
+2012-04-29  6.7.6-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.6-8, SVN revision 7705.
+
+2012-04-25  6.7.6-8 Anthony Thyssen <A.Thyssen@griffith...>
+  * Gaussian Filter Fixed.
+    For some strange reason it was half the width it should be with an
+    effective sigma of 0.25 (not 0.5).  This was the real reason "variable
+    blur" was not blurring enough.
+
+2012-04-24  6.7.6-8 Cristy  <quetzlzacatenango@image...>
+  * Colorspace round-trip unit tests now work for Q32.
+
+2012-04-23  6.7.6-8 Anthony Thyssen <A.Thyssen@griffith...>
+  * Added the RobidouxSharp filter (originally defined Dec 2011)
+  * Fixed Variable Blur - bad blur area calculation
+    Also Gaussian is sampling properly. Substitute the faster Cubic for now.
+  * Convert no longer will do an implicit write to a single space image
+
+2012-04-21  6.7.6-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.6-7, SVN revision 7587.
+
+2012-04-21  6.7.6-7 Anthony Thyssen <A.Thyssen@griffith...>
+  * Error when doing an implicit (final) write to a single space filename.
+    This is typically a failed line continuation and is very common.
+    Using an explicit "-write" will let you do this.
+
+2012-04-20  6.7.6-7 Anthony Thyssen <A.Thyssen@griffith...>
+  * Allow +-X+-Y as geometry arguments.
+
+2012-04-17  6.7.6-7 Cristy  <quetzlzacatenango@image...>
+  * Distinquish grayscale as sRGB not linear RGB.
+
+2012-04-16  6.7.6-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.6-6, SVN revision 7536.
+
+2012-04-11  6.7.6-6 Glenn Randers-Pehrson <glennrp@image...>
+  * Always unlock the semaphore before returning from the png codec, either
+    by a "return" or png_error(); changed all Magick*Exception() calls
+    after setjmp() to png_error() to ensure proper cleanup (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=16883).
+
+2012-04-10  6.7.6-6 Anthony Thyssen <A.Thyssen@griffith...>
+  * Fixed log known alpha*kernel normalization bug in morphology convolve.
+
+    Convolve kernel weights have been separated from alpha blend handling.
+    Un-normalized kernels applied to images with active alpha will no longer
+    be auto-normalized due to the effect of alpha blending.
+
+    The bug causes images using the default channel setting and having an
+    alpha channel to automatically 'normalize' the results of a convolve
+    during the handling of alpha blending.  This probably would cause severe
+    effects when a zero-summing kernel is being used on an image containing
+    an active (though likely fully-opaque) alpha channel, as division by near
+    zero weights would cause extreme color values in results.
+
+    This bug is not normally seen as convolution, which is normally applied only
+    to fully-opaque images. And using a zero-summing kernel on an image with
+    alpha also results in a transparent image!  This is why it was not fixed
+    up until now.
+
+2012-04-08  6.7.6-6 Cristy  <quetzlzacatenango@image...>
+  * Pixel allocation for Pango is stride*rows not stride*columns.
+  * Set the image resolution for Postscript files with an embedded Photoshop
+    profile.
+  * Ensure proper round trips to / from sRGB (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20751).
+
+2012-04-07  6.7.6-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.6-5, SVN revision 7483.
+
+2012-04-06  6.7.6-5 Cristy  <quetzlzacatenango@image...>
+  * Avoid fault in SetCacheAlphaChannel() (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20681).
+  * Don't assume EXIF orientation tag is 2 bytes.
+
+2012-04-04  6.7.6-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.6-4, SVN revision 7356.
+
+2012-04-01  6.7.6-4 Cristy  <quetzlzacatenango@image...>
+  * Properly set the XCF alpha channel values (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20642).
+  * Support 'orientation' property (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=20650).
+  * The default RGB colorspace transform is now linear (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?p=82839#p82839).
+  * Prevent EXIF integer overflow (CVE-2012-1610).
+
+2012-03-30  6.7.6-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.6-3, SVN revision 7290.
+
+2012-03-29  6.7.6-3 Cristy  <quetzlzacatenango@image...>
+  * Don't copy invalid memory when reading TIFF EXIF IFD (CERT-FI case 634116,
+    CVE-2012-1798).
+  * Bail if we receive excessive JPEG warnings (CERT-FI case 634117,
+    CVE-2012-0260).
+  * Properly initialize EXIF buffers to prevent JPEG EXIF tag crash (CERT-FI
+    case 634118, CVE-2012-0259).
+
+2012-03-28  6.7.6-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.6-2, SVN revision 7245.
+
+2012-03-26  6.7.6-2 Anthony Thyssen <A.Thyssen@griffith...>
+  * Added "Nearest" as a synonym for "Nearest-Neighbor" interpolate setting
+
+2012-03-21  6.7.6-2 Glenn Randers-Pehrson <glennrp@image...>
+  * coders/png.c: stored "file_gamma" for later use by identify.
+
+2012-03-19  6.7.6-2 Cristy  <quetzlzacatenango@image...>
+  * Add full support for Pango markup.
+  * Pango namespace is 'pango:', not 'caption:'.
+  * Correct for EXR images with broken display windows.
+
+2012-03-18  6.7.6-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.6-1, SVN revision 7145.
+
+2012-03-16  6.7.6-1 Glenn Randers-Pehrson <glennrp@image...>
+  * Reduce the scope of quantum_info in the PNG decoder to avoid a possible
+    memory leak (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20522).
+
+2012-03-13  6.7.6-1 Cristy  <quetzlzacatenango@image...>
+  * Use uint32 pointer for ReadStripMethod in coders/tiff.c (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20526).
+  * Ghostscript 32/64 bit detection patch (contributed by
+    axeld@pinc-...).
+  * Honor center gravity for caption: with Pango support (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20517).
+  * Add support for pango: coder to render captions with Pango.
+
+2012-03-10  6.7.6-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.6-0, SVN revision 7090.
+
+2012-03-06  6.7.6-0 Cristy  <quetzlzacatenango@image...>
+  * Importing from the X11 root windows no longer leaks memory (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20470).
+  * Check to see if delegate file exists before copying.
+
+2012-03-05  6.7.5-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-10, SVN revision 7056.
+
+2012-03-05  6.7.5-10 Cristy  <quetzlzacatenango@image...>
+  * Fix too many arguments to AnnotateImage() (copy/paste bug).
+
+2012-03-02  6.7.5-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-9, SVN revision 7046.
+
+2012-02-29  6.7.5-9 Cristy  <quetzlzacatenango@image...>
+  * Caption no longer includes the prefix "caption:" in the rendered text.
+  * Auto scale pointsize for -size 100x100 caption:
+
+2012-03-02  6.7.5-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-8, SVN revision 7027.
+
+2012-03-02  6.7.5-8 Glenn Randers-Pehrson <glennrp@image...>
+  * non-verbose identify now reports DirectClass for transparent PNG images 
+    to agree with the report by identify -verbose.  (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20448 and
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=15482).
+
+2012-02-29  6.7.5-8 Cristy  <quetzlzacatenango@image...>
+  * Support infinite caption lengths.
+  * Permit custome JPEG quantization tables (e.g.
+	  -define jpeg:q-table=quantization-table.xml).
+  * Missing grestore from ps2.c (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20445).
+
+2012-02-29  6.7.5-8 Anthony Thyssen <A.Thyssen@griffith...>
+  * Added Image list options (like "-delete" and "-swap") to "montage".
+
+2012-02-25  6.7.5-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-7, SVN revision 6965.
+
+2012-02-23  6.7.5-7 Cristy  <quetzlzacatenango@image...>
+  * Add support for the EMFPlus delegate program.
+
+2012-02-22  6.7.5-7 Anthony Thyssen <A.Thyssen@griffith...>
+  * Re-added the Iterative Distance function in morphology (as opposed to the
+    faster more direct 2-pass Distance Function that replaced it) so it can be
+    used in the special situation of Constrained Distance Morphology.
+    http://www.imagemagick.org/discourse-server/viewtopic.php??f=2&t=18032
+
+2012-02-13  6.7.5-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-6, SVN revision 6851.
+
+2012-02-13  6.7.5-6 Cristy  <quetzlzacatenango@image...>
+  * Only set PDF & PS page size when explicitly requested (e.g. -page).
+
+2012-02-12  6.7.5-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-5, SVN revision 6840.
+
+2012-02-12  6.7.5-5 Cristy  <quetzlzacatenango@image...>
+  * Only use the canvas size of the very first frame of a GIF image sequence.
+
+2012-02-11  6.7.5-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-4, SVN revision 6824.
+
+2012-02-08  6.7.5-4 Cristy  <quetzlzacatenango@image...>
+  * Set image alpha channel for -virtual-pixel background and transparent.
+  * Get tiff:fill-order as an image artifact, not an image option.
+
+2012-02-06  6.7.5-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-3, SVN revision 6732.
+
+2012-02-06  6.7.5-3 Cristy  <quetzlzacatenango@image...>
+  * TIFF no longer writes the incorrect fill order.
+
+2012-02-05  6.7.5-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-2, SVN revision 6718.
+
+2012-02-03  6.7.5-2 Cristy  <quetzlzacatenango@image...>
+  * Add SyncImagePixelCache() to ensure cache morphology is consistent.
+  * Patch so two -colorspace options return correct results for round-trip.
+
+2012-02-02  6.7.5-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-1, SVN revision 6684.
+
+2012-01-30  6.7.5-1 Cristy  <quetzlzacatenango@image...>
+  * Support the -alpha remove option (use it to remove transparency from PDF,
+    convert -density 200 apple.pdf -alpha remove x:).
+  * Use union instead of casting gzFile and BZFILE.
+  * Don't treat PSD user channel as alpha (patch from Dominic Benson).
+  * Prevent overflow when casting short int to size_t when parsing a
+    maliciously crafted image with an IFD whose all IOP tags' value offsets
+    point to the beginning of the IFD itself [CVE-2012-0247].
+  * Prevent DES when parsing a maliciously crafted image with an IFD whose
+    all IOP tags' value offsets point to the beginning of the IFD itself
+    [CVE-2012-0248].
+  * Caption with Pango support no longer return a blank canvas.
+  * Correct sRGB colorspace conversion equations.
+
+2012-01-30  6.7.5-1 Glenn Randers-Pehrson <glennrp@image...>
+  * Fix bug in png coder (spurious warning, reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=20257).
+
+2012-01-28  6.7.5-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.5-0, SVN revision 6606.
+
+2012-01-25  6.7.5-0 Cristy  <quetzlzacatenango@image...>
+  * Zlib-1.2.5.2 requires gzFile cast (bug report from John Bowler).
+
+2012-01-25  6.7.4-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-10, SVN revision 6592.
+
+2012-01-25  6.7.4-10 Cristy  <quetzlzacatenango@image...>
+  * Update PerlMagick TIFF regression signatures to match endian order.
+
+2012-01-24  6.7.4-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-9, SVN revision 6589.
+
+2012-01-24  6.7.4-9 Cristy  <quetzlzacatenango@image...>
+  * Fix rare file link in the pixel cache.
+
+2012-01-20  6.7.4-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-8, SVN revision 6551.
+
+2012-01-19  6.7.4-8 Cristy  <quetzlzacatenango@image...>
+  * Although MagickRealType is a double, use double for KernelInfo values in
+    the rare event of problems with C++ name mangling.
+  * Get strokes with patterns (e.g. -stroke xc:red) working again.
+  * Revert KernelInfo values from MagickRealType to double.
+
+2012-01-17  6.7.4-8 Glenn Randers-Pehrson <glennrp@image...>
+  * Don't write ancillary chunks (except for tRNS and gAMA) in PNG-encoded
+    ICO files.
+
+2012-01-14  6.7.4-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-7, SVN revision 6471.
+
+2012-01-13  6.7.4-7 Cristy  <quetzlzacatenango@image...>
+  * Default to a lighter hinting algorithm for non-monochrome font rendering.
+
+2012-01-12  6.7.4-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-6, SVN revision 6434.
+
+2012-01-12  6.7.4-6 Cristy  <quetzlzacatenango@image...>
+  * Eliminate preprocessor exception for the HDRI build.
+
+2012-01-10  6.7.4-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-5, SVN revision 6422.
+
+2012-01-02  6.7.4-5 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed -black-threshold and -white-threshold so they work properly with
+    the -channels option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20096).
+
+2012-01-02  6.7.4-5 Glenn Randers-Pehrson <glennrp@image...>
+  * Removed PNG_USE_CLONE cruft from the PNG encoder (see 2011-11-19 entry)
+  * Promote image depths 9-15 to 16 to avoid crashing in the PNG
+    encoder (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20098).
+
+2012-01-01  6.7.4-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-4, SVN revision 6318.
+
+2011-12-30  6.7.4-4 Glenn Randers-Pehrson <glennrp@image...>
+  * Fix problems with JNG encoder "quality" (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20076).
+
+2011-12-30  6.7.4-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-3, SVN revision 6310.
+
+2011-12-28  6.7.4-3 Cristy  <quetzlzacatenango@image...>
+  * Fix memory leak in JP2 coder (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20071).
+  * Use maximum bounds when rendering PDF (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20078).
+
+2011-12-25  6.7.4-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-2, SVN revision 6254.
+
+2011-12-24  6.7.4-2 Cristy  <quetzlzacatenango@image...>
+  * Export new Windows binaries.
+
+2011-12-21  6.7.4-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.4-1, SVN revision 6236.
+
+2011-12-12  6.7.4-0 Cristy  <quetzlzacatenango@image...>
+  * Sped up -noise option when radius is 0.
+  * Read concatentated arcs correctly in a SVG path (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19992).
+  * PDF's now convert properly with -define pdf:use-cropbox=true (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20033).
+
 2011-12-09  6.7.4-0 Cristy  <quetzlzacatenango@image...>
   * New version 6.7.4-0, SVN revision 6162.
 
-2010-12-06  6.7.4-1 Glenn Randers-Pehrson <glennrp@image...>
+2010-12-06  6.7.4-0 Glenn Randers-Pehrson <glennrp@image...>
   * Eliminated use of FARDATA in coders/png.c; it won't be supported in
     libpng-1.6.0 and is not needed now.
 
-2011-11-29  6.7.4-1 Cristy  <quetzlzacatenango@image...>
+2011-11-29  6.7.4-0 Cristy  <quetzlzacatenango@image...>
   * Add GetQuantumFormat() method to return the quantum format (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=19961).
   * Allow unspecified width/height in geometries with the aspect flag (reference
@@ -13,7 +336,7 @@
   * MagickGetImageDepth() no longer returns the depth setting but instead
     computes the depth of the image.
    
-2011-12-02  6.7.4-1 Anthony  <quetzlzacatenango@image...>
+2011-12-02  6.7.4-0 Anthony  <quetzlzacatenango@image...>
   * Fixed Equal-Area Cropping (size and minimum of delta increments)
 
 2011-12-01  6.7.3-10 Cristy  <quetzlzacatenango@image...>
@@ -48,7 +371,7 @@
   * Correct image geometry for Postscript for hi-res bounding box (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=19807).
 
-2010-11-19  6.7.3-8 Glenn Randers-Pehrson <glennrp@image...>
+2011-11-19  6.7.3-8 Glenn Randers-Pehrson <glennrp@image...>
   * Fixed bug with scaling Q16 background to PNG sub-8-bit bKGD and
     again disabled PNG_USE_CLONE in coders/png.c.
 
@@ -66,8 +389,8 @@
 2010-11-15  6.7.3-7 Glenn Randers-Pehrson <glennrp@image...>
   * Reverted the change of 6.6.6-7 that creates an image clone for use
     by the PNG encoder.  This was not useful and was somewhat wasteful.
-  * After finding out that writing the bKGD chunk in sub-8-bit PNG files,
-    enabled PNG_USE_CLONE (To create an image clone again)
+  * After finding out that writing the bKGD chunk in sub-8-bit PNG fails,
+    enabled PNG_USE_CLONE (to create an image clone again)
 
 2011-11-14  6.7.3-6 Cristy  <quetzlzacatenango@image...>
   * New version 6.7.3-6, SVN revision 5972.

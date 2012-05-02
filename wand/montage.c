@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -213,8 +213,12 @@ static MagickBooleanType MontageUsage(void)
     *stack_operators[]=
     {
       "-clone indexes       clone an image",
+      "-delete indexes      delete the image from the image sequence",
       "-duplicate count,indexes",
       "                     duplicate an image one or more times",
+      "-insert index        insert last image into the image sequence",
+      "-reverse             reverse image sequence",
+      "-swap indexes        swap two images in the image sequence",
       (char *) NULL
     };
 
@@ -404,6 +408,7 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
           filename=argv[i];
           if ((LocaleCompare(filename,"--") == 0) && (i < (ssize_t) (argc-1)))
             filename=argv[++i];
+          (void) SetImageOption(image_info,"filename",filename);
           (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
           if (first_scene != last_scene)
             {
@@ -770,6 +775,17 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
               }
             break;
           }
+        if (LocaleCompare("delete",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowMontageException(OptionError,"MissingArgument",option);
+            if (IsSceneGeometry(argv[i],MagickFalse) == MagickFalse)
+              ThrowMontageInvalidArgumentException(option,argv[i]);
+            break;
+          }
         if (LocaleCompare("density",option+1) == 0)
           {
             if (*option == '+')
@@ -1050,6 +1066,17 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
       {
         if (LocaleCompare("identify",option+1) == 0)
           break;
+        if (LocaleCompare("insert",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowMontageException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMontageInvalidArgumentException(option,argv[i]);
+            break;
+          }
         if (LocaleCompare("interlace",option+1) == 0)
           {
             ssize_t
@@ -1382,6 +1409,8 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
             respect_parenthesis=(*option == '-') ? MagickTrue : MagickFalse;
             break;
           }
+        if (LocaleCompare("reverse",option+1) == 0)
+          break;
         if (LocaleCompare("rotate",option+1) == 0)
           {
             i++;
@@ -1511,6 +1540,17 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
         if (LocaleCompare("support",option+1) == 0)
           {
             i++;  /* deprecated */
+            break;
+          }
+        if (LocaleCompare("swap",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowMontageException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMontageInvalidArgumentException(option,argv[i]);
             break;
           }
         if (LocaleCompare("synchronize",option+1) == 0)

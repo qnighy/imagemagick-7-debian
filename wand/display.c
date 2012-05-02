@@ -17,7 +17,7 @@
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -502,6 +502,7 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
 
         Image
           *display_image,
+          *image_list,
           *images;
 
         /*
@@ -526,10 +527,11 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
         iterations=0;
         if (i == (ssize_t) (argc-1))
           iterations=image->iterations;
-        display_image=CloneImageList(image,exception);
-        if (display_image == (Image *) NULL)
+        image_list=CloneImageList(image,exception);
+        if (image_list == (Image *) NULL)
           ThrowDisplayException(ResourceLimitError,"MemoryAllocationFailed",
             GetExceptionMessage(errno));
+        display_image=image_list;
         do
         {
           /*
@@ -626,6 +628,9 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
         /*
           Free image resources.
         */
+        display_image=GetFirstImageInList(display_image);
+        if (image_list != display_image)
+          image_list=DestroyImageList(image_list);
         display_image=DestroyImageList(display_image);
         if ((state & FormerImageState) == 0)
           {

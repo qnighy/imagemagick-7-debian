@@ -32,12 +32,12 @@
 
 /* Location of coder modules */
 #ifndef MAGICKCORE_CODER_PATH
-#define MAGICKCORE_CODER_PATH "/usr/lib/ImageMagick-6.7.4/modules-Q16/coders/"
+#define MAGICKCORE_CODER_PATH "/usr/lib/ImageMagick-6.7.6/modules-Q16/coders/"
 #endif
 
 /* Subdirectory of lib where coder modules are installed */
 #ifndef MAGICKCORE_CODER_RELATIVE_PATH
-#define MAGICKCORE_CODER_RELATIVE_PATH "ImageMagick-6.7.4/modules-Q16/coders"
+#define MAGICKCORE_CODER_RELATIVE_PATH "ImageMagick-6.7.6/modules-Q16/coders"
 #endif
 
 /* Directory where architecture-dependent configuration files live. */
@@ -58,7 +58,7 @@
 
 /* Directory where ImageMagick documents live. */
 #ifndef MAGICKCORE_DOCUMENTATION_PATH
-#define MAGICKCORE_DOCUMENTATION_PATH "/usr/share/doc/ImageMagick//"
+#define MAGICKCORE_DOCUMENTATION_PATH "/usr/share/doc/ImageMagick-6.7.6/"
 #endif
 
 /* Define if you have Display Postscript */
@@ -73,16 +73,18 @@
 #endif
 
 /* Define if you have FFTW library */
-/* #undef FFTW_DELEGATE */
+#ifndef MAGICKCORE_FFTW_DELEGATE
+#define MAGICKCORE_FFTW_DELEGATE 1
+#endif
 
 /* Location of filter modules */
 #ifndef MAGICKCORE_FILTER_PATH
-#define MAGICKCORE_FILTER_PATH "/usr/lib/ImageMagick-6.7.4/modules-Q16/filters/"
+#define MAGICKCORE_FILTER_PATH "/usr/lib/ImageMagick-6.7.6/modules-Q16/filters/"
 #endif
 
 /* Subdirectory of lib where filter modules are installed */
 #ifndef MAGICKCORE_FILTER_RELATIVE_PATH
-#define MAGICKCORE_FILTER_RELATIVE_PATH "ImageMagick-6.7.4/modules-Q16/filters"
+#define MAGICKCORE_FILTER_RELATIVE_PATH "ImageMagick-6.7.6/modules-Q16/filters"
 #endif
 
 /* Define if you have FONTCONFIG library */
@@ -1203,13 +1205,13 @@
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/usr/lib/ImageMagick-6.7.4/"
+#define MAGICKCORE_LIBRARY_PATH "/usr/lib/ImageMagick-6.7.6/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
    installed */
 #ifndef MAGICKCORE_LIBRARY_RELATIVE_PATH
-#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.7.4"
+#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.7.6"
 #endif
 
 /* Define if you have LQR library */
@@ -1225,7 +1227,7 @@
 
 /* Define to the system default library search path. */
 #ifndef MAGICKCORE_LT_DLSEARCH_PATH
-#define MAGICKCORE_LT_DLSEARCH_PATH "/lib64:/usr/lib64:/lib:/usr/lib:/usr/lib64/atlas:/usr/lib/llvm:/usr/lib64/llvm:/usr/local/lib:/usr/lib64/mysql:/usr/lib64/qt-3.3/lib:/usr/lib64/tcl8.5/tclx8.4:/usr/lib64/tcl8.5:/usr/lib64/tracker-0.12:/usr/lib/wine/:/usr/lib64/wine/:/usr/lib64/xulrunner-2"
+#define MAGICKCORE_LT_DLSEARCH_PATH "/lib64:/usr/lib64:/lib:/usr/lib:/usr/lib64/atlas:/usr/lib/llvm:/usr/lib64/llvm:/usr/local/lib:/usr/lib64/mysql:/usr/lib64/nvidia:/usr/lib64/qt-3.3/lib:/usr/lib64/tcl8.5/tclx8.4:/usr/lib64/tcl8.5:/usr/lib64/tracker-0.14:/usr/lib/wine/:/usr/lib64/wine/:/usr/lib64/xulrunner-2"
 #endif
 
 /* The archive extension */
@@ -1298,7 +1300,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.4-0"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.6-8"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1313,12 +1315,12 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.7.4-0"
+#define MAGICKCORE_PACKAGE_VERSION "6.7.6-8"
 #endif
 
-/* Define if you have PANGOFT2 library */
-#ifndef MAGICKCORE_PANGOFT2_DELEGATE
-#define MAGICKCORE_PANGOFT2_DELEGATE 1
+/* Define if you have PANGOCAIRO library */
+#ifndef MAGICKCORE_PANGOCAIRO_DELEGATE
+#define MAGICKCORE_PANGOCAIRO_DELEGATE 1
 #endif
 
 /* Define if you have PANGO library */
@@ -1368,24 +1370,24 @@
 
 /* Directory where architecture-independent configuration files live. */
 #ifndef MAGICKCORE_SHAREARCH_PATH
-#define MAGICKCORE_SHAREARCH_PATH "/usr/lib/ImageMagick-6.7.4/config/"
+#define MAGICKCORE_SHAREARCH_PATH "/usr/lib/ImageMagick-6.7.6/config/"
 #endif
 
 /* Subdirectory of lib where architecture-independent configuration files
    live. */
 #ifndef MAGICKCORE_SHAREARCH_RELATIVE_PATH
-#define MAGICKCORE_SHAREARCH_RELATIVE_PATH "ImageMagick-6.7.4/config"
+#define MAGICKCORE_SHAREARCH_RELATIVE_PATH "ImageMagick-6.7.6/config"
 #endif
 
 /* Directory where architecture-independent configuration files live. */
 #ifndef MAGICKCORE_SHARE_PATH
-#define MAGICKCORE_SHARE_PATH "/usr/share/ImageMagick-6.7.4/"
+#define MAGICKCORE_SHARE_PATH "/usr/share/ImageMagick-6.7.6/"
 #endif
 
 /* Subdirectory of lib where architecture-independent configuration files
    live. */
 #ifndef MAGICKCORE_SHARE_RELATIVE_PATH
-#define MAGICKCORE_SHARE_RELATIVE_PATH "ImageMagick-6.7.4"
+#define MAGICKCORE_SHARE_RELATIVE_PATH "ImageMagick-6.7.6"
 #endif
 
 /* The size of `off_t', as computed by sizeof. */
@@ -1503,7 +1505,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.7.4-0"
+#define MAGICKCORE_VERSION "6.7.6-8"
 #endif
 
 /* Define if you have WEBP library */
@@ -1515,7 +1517,10 @@
 /* Define if using the dmalloc debugging malloc package */
 /* #undef WITH_DMALLOC */
 
-/* Define if you have WMF library */
+/* Define if you have wmflite library */
+/* #undef WMFLITE_DELEGATE */
+
+/* Define if you have wmf library */
 /* #undef WMF_DELEGATE */
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most

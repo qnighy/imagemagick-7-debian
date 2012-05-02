@@ -16,7 +16,7 @@
 %                              December 2001                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -90,6 +90,9 @@ struct _RandomInfo
   double
     normalize;
 
+  unsigned long
+    secret_key;
+
   unsigned short
     protocol_major,
     protocol_minor;
@@ -122,7 +125,7 @@ static SemaphoreInfo
   *random_semaphore = (SemaphoreInfo *) NULL;
 
 static unsigned long
-  random_seed = ~0UL;
+  secret_key = ~0UL;
 
 static MagickBooleanType
   gather_true_random = MagickFalse;
@@ -184,9 +187,10 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
     random_info->signature_info));
   ResetStringInfo(random_info->reservoir);
   random_info->normalize=1.0/(~0UL);
-  random_info->semaphore=AllocateSemaphoreInfo();
+  random_info->secret_key=secret_key;
   random_info->protocol_major=RandomProtocolMajorVersion;
   random_info->protocol_minor=RandomProtocolMinorVersion;
+  random_info->semaphore=AllocateSemaphoreInfo();
   random_info->timestamp=(ssize_t) time(0);
   random_info->signature=MagickSignature;
   /*
@@ -217,9 +221,9 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
   /*
     Seed pseudo random number generator.
   */
-  if (random_seed == ~0UL)
+  if (random_info->secret_key == ~0UL)
     {
-      key=GetRandomKey(random_info,sizeof(random_seed));
+      key=GetRandomKey(random_info,sizeof(random_info->secret_key));
       (void) CopyMagickMemory(random_info->seed,GetStringInfoDatum(key),
         GetStringInfoLength(key));
       key=DestroyStringInfo(key);
@@ -230,8 +234,8 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
         *signature_info;
 
       signature_info=AcquireSignatureInfo();
-      key=AcquireStringInfo(sizeof(random_seed));
-      SetStringInfoDatum(key,(unsigned char *) &random_seed);
+      key=AcquireStringInfo(sizeof(random_info->secret_key));
+      SetStringInfoDatum(key,(unsigned char *) &random_info->secret_key);
       UpdateSignature(signature_info,key);
       key=DestroyStringInfo(key);
       FinalizeSignature(signature_info);
@@ -490,6 +494,7 @@ static StringInfo *GenerateEntropicChaos(RandomInfo *random_info)
     */
     SetStringInfoLength(chaos,MaxEntropyExtent);
     status=NTGatherRandomData(MaxEntropyExtent,GetStringInfoDatum(chaos));
+    (void) status;
     ConcatenateStringInfo(entropy,chaos);
   }
 #else
@@ -655,6 +660,32 @@ MagickExport StringInfo *GetRandomKey(RandomInfo *random_info,
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%   G e t R a n d o m S e c r e t K e y                                       %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetRandomSecretKey() returns the random secet key.
+%
+%  The format of the GetRandomSecretKey method is:
+%
+%      unsigned long GetRandomSecretKey(const RandomInfo *random_info)
+%
+%  A description of each parameter follows:
+%
+%    o random_info: the random info.
+*/
+MagickExport unsigned long GetRandomSecretKey(const RandomInfo *random_info)
+{
+  return(random_info->secret_key);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   G e t R a n d o m V a l u e                                               %
 %                                                                             %
 %                                                                             %
@@ -731,34 +762,6 @@ MagickExport void RandomComponentTerminus(void)
   if (random_semaphore == (SemaphoreInfo *) NULL)
     AcquireSemaphoreInfo(&random_semaphore);
   DestroySemaphoreInfo(&random_semaphore);
-}
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%   S e e d P s e u d o R a n d o m G e n e r a t o r                         %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  SeedPseudoRandomGenerator() initializes the pseudo-random number generator
-%  with a random seed.
-%
-%  The format of the SeedPseudoRandomGenerator method is:
-%
-%      void SeedPseudoRandomGenerator(const unsigned long seed)
-%
-%  A description of each parameter follows:
-%
-%    o seed: the seed.
-%
-*/
-MagickExport void SeedPseudoRandomGenerator(const unsigned long seed)
-{
-  random_seed=seed;
 }
 
 /*
@@ -860,6 +863,39 @@ MagickExport void SetRandomKey(RandomInfo *random_info,const size_t length,
         p[i]=datum[i];
     }
   UnlockSemaphoreInfo(random_info->semaphore);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   S e t R a n d o m S e c r e t K e y                                       %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  SetRandomSecretKey() sets the pseudo-random number generator secret key.
+%
+%  The format of the SetRandomSecretKey method is:
+%
+%      void SetRandomSecretKey(const unsigned long key)
+%
+%  A description of each parameter follows:
+%
+%    o key: the secret key.
+%
+*/
+
+MagickExport void SeedPseudoRandomGenerator(const unsigned long seed)
+{
+  SetRandomSecretKey(seed);
+}
+
+MagickExport void SetRandomSecretKey(const unsigned long key)
+{
+  secret_key=key;
 }
 
 /*

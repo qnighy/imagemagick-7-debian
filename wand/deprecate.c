@@ -17,7 +17,7 @@
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -361,7 +361,7 @@ WandExport MagickBooleanType DuplexTransferPixelViewIterator(
   progress=0;
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status)
+  #pragma omp parallel for schedule(static) shared(progress,status)
 #endif
   for (y=source->region.y; y < (ssize_t) source->region.height; y++)
   {
@@ -629,7 +629,7 @@ WandExport MagickBooleanType GetPixelViewIterator(PixelView *source,
   status=MagickTrue;
   progress=0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status)
+  #pragma omp parallel for schedule(static) shared(progress,status)
 #endif
   for (y=source->region.y; y < (ssize_t) source->region.height; y++)
   {
@@ -2509,7 +2509,8 @@ WandExport PixelView *NewPixelView(MagickWand *wand)
     PixelViewId,(double) pixel_view->id);
   pixel_view->exception=AcquireExceptionInfo();
   pixel_view->wand=wand;
-  pixel_view->view=AcquireCacheView(pixel_view->wand->images);
+  pixel_view->view=AcquireVirtualCacheView(pixel_view->wand->images,
+    pixel_view->exception);
   pixel_view->region.width=wand->images->columns;
   pixel_view->region.height=wand->images->rows;
   pixel_view->number_threads=GetOpenMPMaximumThreads();
@@ -2567,7 +2568,8 @@ WandExport PixelView *NewPixelViewRegion(MagickWand *wand,const ssize_t x,
   (void) FormatLocaleString(pixel_view->name,MaxTextExtent,"%s-%.20g",
     PixelViewId,(double) pixel_view->id);
   pixel_view->exception=AcquireExceptionInfo();
-  pixel_view->view=AcquireCacheView(pixel_view->wand->images);
+  pixel_view->view=AcquireVirtualCacheView(pixel_view->wand->images,
+    pixel_view->exception);
   pixel_view->wand=wand;
   pixel_view->region.width=width;
   pixel_view->region.height=height;
@@ -2720,7 +2722,7 @@ WandExport MagickBooleanType SetPixelViewIterator(PixelView *destination,
   progress=0;
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status)
+  #pragma omp parallel for schedule(static) shared(progress,status)
 #endif
   for (y=destination->region.y; y < (ssize_t) destination->region.height; y++)
   {
@@ -2858,7 +2860,7 @@ WandExport MagickBooleanType TransferPixelViewIterator(PixelView *source,
   progress=0;
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status)
+  #pragma omp parallel for schedule(static) shared(progress,status)
 #endif
   for (y=source->region.y; y < (ssize_t) source->region.height; y++)
   {
@@ -3023,7 +3025,7 @@ WandExport MagickBooleanType UpdatePixelViewIterator(PixelView *source,
   progress=0;
   exception=source->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,1) shared(progress,status)
+  #pragma omp parallel for schedule(static) shared(progress,status)
 #endif
   for (y=source->region.y; y < (ssize_t) source->region.height; y++)
   {

@@ -23,7 +23,7 @@
 %                                March 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -113,7 +113,7 @@ WandExport void ClearPixelWand(PixelWand *wand)
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   ClearMagickException(wand->exception);
-  wand->pixel.colorspace=RGBColorspace;
+  wand->pixel.colorspace=sRGBColorspace;
   wand->debug=IsEventLogging();
 }
 
@@ -1728,7 +1728,7 @@ WandExport void PixelSetColorCount(PixelWand *wand,const size_t count)
 %
 %  The format of the PixelSetColorFromWand method is:
 %
-%      PixelSetColorFromWand(PixelWand *wand,const PixelWand *color)
+%      void PixelSetColorFromWand(PixelWand *wand,const PixelWand *color)
 %
 %  A description of each parameter follows:
 %
@@ -2074,7 +2074,7 @@ WandExport void PixelSetMagentaQuantum(PixelWand *wand,const Quantum magenta)
 %
 %  The format of the PixelSetMagickColor method is:
 %
-%      PixelSetMagickColor(PixelWand *wand,const MagickPixelPacket *color)
+%      void PixelSetMagickColor(PixelWand *wand,const MagickPixelPacket *color)
 %
 %  A description of each parameter follows:
 %
@@ -2178,7 +2178,7 @@ WandExport void PixelSetOpacityQuantum(PixelWand *wand,const Quantum opacity)
 %
 %  The format of the PixelSetQuantumColor method is:
 %
-%      PixelSetQuantumColor(PixelWand *wand,const PixelPacket *color)
+%      void PixelSetQuantumColor(PixelWand *wand,const PixelPacket *color)
 %
 %  A description of each parameter follows:
 %
