@@ -1,3 +1,21 @@
+imagemagick (8:6.7.6.8-1) unstable; urgency=low
+
+  * New upstream version:
+  - Drop previous patches: merged upstream.
+  - Bug fix: "identify -verbose reports incorrect Class (correct w/o
+    -verbose)", thanks to Jason Woofenden (Closes: #656942).
+  - Bug fix: "conversion to postscript is missing grestore in DisplayImage
+    definition", thanks to Daniel Kahn Gillmor (Closes: #655762).
+  * Bug fix: "mailcap still broken (as #589887)", thanks to Felix
+    Salfelder (Closes: #619667):
+  - revert bug fix #562959.
+  - replace display by display.im6
+  * Bug fix: "Please add imagemagick.desktop", thanks to Sérgio Cipolla
+    (Closes: #621799).
+  * Add xz support.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 16 Apr 2012 13:33:51 +0200
+
 imagemagick (8:6.7.4.0-5) unstable; urgency=high
 
   * Bug fix when converting from pdf to png, thanks to Thomas

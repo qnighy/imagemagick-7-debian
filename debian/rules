@@ -39,6 +39,7 @@ build-stamp: $(QUILT_STAMPFN)
 	--with-gs-font-dir=/usr/share/fonts/type1/gsfonts \
 	--with-magick-plus-plus \
 	--with-djvu \
+        --with-wmf \
 	--enable-shared \
 	--without-dps \
 	--without-fpx \
@@ -119,8 +120,11 @@ install: build check
 		pkgdocdir=/usr/share/doc/imagemagick
 
 	mkdir -p $(DESTDIR)/usr/share/pixmaps/
-	install -m 644 "$(CURDIR)/debian/display.xpm" \
+	install -m 644 "$(CURDIR)/debian/display.im6.xpm" \
 		$(DESTDIR)/usr/share/pixmaps/
+	mkdir -p $(DESTDIR)/usr/share/applications/
+	install -m 644 "$(CURDIR)/debian/display.im6.desktop" \
+		$(DESTDIR)/usr/share/applications/
 
 	-find "$(CURDIR)/debian" -type f -name .packlist | xargs rm -f
 
