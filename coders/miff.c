@@ -441,6 +441,9 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
   int
     c;
 
+  LinkedListInfo
+    *profiles;
+
 #if defined(MAGICKCORE_LZMA_DELEGATE)
   lzma_stream
     initialize_lzma = LZMA_STREAM_INIT,
@@ -449,9 +452,6 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
   lzma_allocator
     allocator;
 #endif
-
-  LinkedListInfo
-    *profiles;
 
   MagickBooleanType
     status;
@@ -1055,7 +1055,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
                   {
                     flags=ParseGeometry(options,&geometry_info);
                     image->chromaticity.white_point.x=geometry_info.rho;
-                    image->chromaticity.white_point.y=geometry_info.rho;
+                    image->chromaticity.white_point.y=geometry_info.sigma;
                     if ((flags & SigmaValue) != 0)
                       image->chromaticity.white_point.y=
                         image->chromaticity.white_point.x;
@@ -1274,17 +1274,17 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
         if (image->matte != MagickFalse)
           quantum_type=CMYKAQuantum;
       }
-    if (image->storage_class == PseudoClass)
-      {
-        quantum_type=IndexQuantum;
-        if (image->matte != MagickFalse)
-          quantum_type=IndexAlphaQuantum;
-      }
     if (IsGrayColorspace(image->colorspace) != MagickFalse)
       {
         quantum_type=GrayQuantum;
         if (image->matte != MagickFalse)
           quantum_type=GrayAlphaQuantum;
+      }
+    if (image->storage_class == PseudoClass)
+      {
+        quantum_type=IndexQuantum;
+        if (image->matte != MagickFalse)
+          quantum_type=IndexAlphaQuantum;
       }
     status=MagickTrue;
     switch (image->compression)
@@ -2213,12 +2213,16 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
           else
             {
               (void) WriteBlobByte(image,'{');
-              for (i=0; i < (ssize_t) strlen(value); i++)
-              {
-                if (value[i] == (int) '}')
-                  (void) WriteBlobByte(image,'\\');
-                (void) WriteBlobByte(image,value[i]);
-              }
+              if (strchr(value,'}') == (char *) NULL)
+                (void) WriteBlob(image,strlen(value),(const unsigned char *)
+                  value);
+              else
+                for (i=0; i < (ssize_t) strlen(value); i++)
+                {
+                  if (value[i] == (int) '}')
+                    (void) WriteBlobByte(image,'\\');
+                  (void) WriteBlobByte(image,value[i]);
+                }
               (void) WriteBlobByte(image,'}');
             }
         }

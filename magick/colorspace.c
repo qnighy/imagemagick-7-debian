@@ -59,6 +59,7 @@
 #include "magick/pixel-private.h"
 #include "magick/quantize.h"
 #include "magick/quantum.h"
+#include "magick/resource_.h"
 #include "magick/string_.h"
 #include "magick/string-private.h"
 #include "magick/utility.h"
@@ -237,7 +238,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -296,7 +298,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       GetMagickPixelPacket(image,&zero);
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -356,7 +359,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -419,7 +423,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -482,7 +487,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -545,7 +551,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -651,7 +658,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       black=pow(10.0,(reference_black-reference_white)*(gamma/density)*
         0.002/film_gamma);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
         logmap[i]=ScaleMapToQuantum((MagickRealType) (MaxMap*(reference_white+
@@ -659,7 +667,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
           0.002/film_gamma))/1024.0));
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -734,7 +743,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       primary_info.y=(double) (MaxMap+1.0)/2.0;
       primary_info.z=(double) (MaxMap+1.0)/2.0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -759,7 +769,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
           G = 0.29900*R+0.58700*G+0.11400*B
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -792,7 +803,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       primary_info.y=(double) (MaxMap+1.0)/2.0;
       primary_info.z=(double) (MaxMap+1.0)/2.0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -847,7 +859,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       primary_info.y=(double) (MaxMap+1.0)/2.0;
       primary_info.z=(double) (MaxMap+1.0)/2.0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -870,7 +883,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
         Mostly removal of a gamma function, but with a linear component
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -904,7 +918,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
           Z = 0.0193339*R+0.1191920*G+0.9503041*B
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -974,7 +989,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       primary_info.y=(double) (MaxMap+1.0)/2.0;
       primary_info.z=(double) (MaxMap+1.0)/2.0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -1005,7 +1021,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       primary_info.y=(double) (MaxMap+1.0)/2.0;
       primary_info.z=(double) (MaxMap+1.0)/2.0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -1036,7 +1053,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       primary_info.y=(double) (MaxMap+1.0)/2.0;
       primary_info.z=(double) (MaxMap+1.0)/2.0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -1058,7 +1076,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
         Linear conversion tables.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -1088,7 +1107,8 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       */
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1223,6 +1243,26 @@ MagickExport MagickBooleanType SetImageColorspace(Image *image,
   const ColorspaceType colorspace)
 {
   image->colorspace=colorspace;
+  image->rendering_intent=UndefinedIntent;
+  image->gamma=1.000f;
+  ResetMagickMemory(&image->chromaticity,0,sizeof(image->chromaticity));
+  if (IssRGBColorspace(colorspace) != MagickFalse)
+    {
+      image->rendering_intent=PerceptualIntent;
+      image->gamma=1.000f/2.200f;
+      image->chromaticity.red_primary.x=0.6400f;
+      image->chromaticity.red_primary.y=0.3300f;
+      image->chromaticity.red_primary.z=0.0300f;
+      image->chromaticity.green_primary.x=0.3000f;
+      image->chromaticity.green_primary.y=0.6000f;
+      image->chromaticity.green_primary.z=0.1000f;
+      image->chromaticity.blue_primary.x=0.1500f;
+      image->chromaticity.blue_primary.y=0.0600f;
+      image->chromaticity.blue_primary.z=0.7900f;
+      image->chromaticity.white_point.x=0.3127f;
+      image->chromaticity.white_point.y=0.3290f;
+      image->chromaticity.white_point.z=0.3583f;
+    }
   return(SyncImagePixelCache(image,&image->exception));
 }
 
@@ -1268,11 +1308,18 @@ MagickExport MagickBooleanType TransformImageColorspace(Image *image,
   /*
     Convert the reference image from an alternate colorspace to sRGB.
   */
-  if ((colorspace == sRGBColorspace) || (colorspace == TransparentColorspace))
+  if (IssRGBColorspace(colorspace) != MagickFalse)
     return(TransformRGBImage(image,colorspace));
   status=MagickTrue;
+  if ((IsRGBColorspace(image->colorspace) != MagickFalse) ||
+      (IsGrayColorspace(image->colorspace) != MagickFalse))
+    status=TransformRGBImage(image,sRGBColorspace);
+  if (status == MagickFalse)
+    return(status);
   if (IssRGBColorspace(image->colorspace) == MagickFalse)
     status=TransformRGBImage(image,image->colorspace);
+  if (status == MagickFalse)
+    return(status);
   /*
     Convert the reference image from sRGB to an alternate colorspace.
   */
@@ -1694,7 +1741,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1753,7 +1801,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       GetMagickPixelPacket(image,&zero);
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1813,7 +1862,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1879,7 +1929,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1945,7 +1996,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2011,7 +2063,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         }
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2126,7 +2179,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         return(MagickFalse);
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2208,7 +2262,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         through QuantumRange.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2243,7 +2298,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         through QuantumRange.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2276,7 +2332,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         through QuantumRange.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2306,7 +2363,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
           B = 0.0*R+0.0*G+1.0*B
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2340,7 +2398,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
           B =  0.0556434*X-0.2040259*Y+1.057225*Z
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2368,7 +2427,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         YCC is scaled by 1.3584.  C1 zero is 156 and C2 is at 137.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2401,7 +2461,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         through QuantumRange.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2436,7 +2497,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         through QuantumRange.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2469,7 +2531,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         through QuantumRange.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2495,7 +2558,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         Linear conversion tables.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static)
+      #pragma omp parallel for schedule(static) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2525,7 +2589,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       */
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2629,7 +2694,8 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         Convert PseudoClass image.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i < (ssize_t) image->colors; i++)
       {

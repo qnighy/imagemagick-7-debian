@@ -56,6 +56,7 @@
 #include "magick/property.h"
 #include "magick/quantum.h"
 #include "magick/quantum-private.h"
+#include "magick/resource_.h"
 #include "magick/splay-tree.h"
 #include "magick/string_.h"
 #include "magick/thread-private.h"
@@ -347,7 +348,7 @@ static unsigned short **DestroyPixelThreadSet(unsigned short **pixels)
     i;
 
   assert(pixels != (unsigned short **) NULL);
-  for (i=0; i < (ssize_t) GetOpenMPMaximumThreads(); i++)
+  for (i=0; i < (ssize_t) GetMagickResourceLimit(ThreadResource); i++)
     if (pixels[i] != (unsigned short *) NULL)
       pixels[i]=(unsigned short *) RelinquishMagickMemory(pixels[i]);
   pixels=(unsigned short **) RelinquishMagickMemory(pixels);
@@ -388,7 +389,7 @@ static cmsHTRANSFORM *DestroyTransformThreadSet(cmsHTRANSFORM *transform)
     i;
 
   assert(transform != (cmsHTRANSFORM *) NULL);
-  for (i=0; i < (ssize_t) GetOpenMPMaximumThreads(); i++)
+  for (i=0; i < (ssize_t) GetMagickResourceLimit(ThreadResource); i++)
     if (transform[i] != (cmsHTRANSFORM) NULL)
       cmsDeleteTransform(transform[i]);
   transform=(cmsHTRANSFORM *) RelinquishMagickMemory(transform);
@@ -6014,7 +6015,8 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
             progress=0;
             image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp parallel for schedule(static,4) shared(status)
+            #pragma omp parallel for schedule(static,4) shared(status) \
+              dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
             for (y=0; y < (ssize_t) image->rows; y++)
             {
@@ -6092,7 +6094,7 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
                     proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-#pragma omp critical (MagickCore_ProfileImage)
+                  #pragma omp critical (MagickCore_ProfileImage)
 #endif
                   proceed=SetImageProgress(image,ProfileImageTag,progress++,
                     image->rows);
@@ -6708,9 +6710,6 @@ MagickExport MagickBooleanType SyncImageProfiles(Image *image)
     number_entries=ReadProfileShort(endian,directory);
     for ( ; entry < number_entries; entry++)
     {
-      int
-        components;
-
       register unsigned char
         *p,
         *q;
@@ -6719,6 +6718,7 @@ MagickExport MagickBooleanType SyncImageProfiles(Image *image)
         number_bytes;
 
       ssize_t
+        components,
         format,
         tag_value;
 
@@ -6732,7 +6732,7 @@ MagickExport MagickBooleanType SyncImageProfiles(Image *image)
         break;
       components=(ssize_t) ((int) ReadProfileLong(endian,q+4));
       number_bytes=(size_t) components*format_bytes[format];
-      if (number_bytes < components)
+      if ((ssize_t) number_bytes < components)
         break;  /* prevent overflow */
       if (number_bytes <= 4)
         p=q+8;

@@ -44,6 +44,7 @@
 #include "magick/artifact.h"
 #include "magick/cache.h"
 #include "magick/cache-view.h"
+#include "magick/colorspace.h"
 #include "magick/colorspace-private.h"
 #include "magick/composite-private.h"
 #include "magick/distort.h"
@@ -62,6 +63,7 @@
 #include "magick/resample.h"
 #include "magick/resample-private.h"
 #include "magick/registry.h"
+#include "magick/resource_.h"
 #include "magick/semaphore.h"
 #include "magick/shear.h"
 #include "magick/string_.h"
@@ -1531,7 +1533,7 @@ MagickExport Image *DistortResizeImage(const Image *image,
       (void) SeparateImageChannel(tmp_image,TrueAlphaChannel);
       (void) SetImageAlphaChannel(tmp_image,OpaqueAlphaChannel);
       resize_alpha=DistortImage(tmp_image,AffineDistortion,12,distort_args,
-            MagickTrue,exception),
+        MagickTrue,exception),
       tmp_image=DestroyImage(tmp_image);
       if ( resize_alpha == (Image *) NULL )
         return((Image *) NULL);
@@ -2314,7 +2316,8 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
       UndefinedVirtualPixelMethod,MagickFalse,exception);
     distort_view=AcquireAuthenticCacheView(distort_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status)
+    #pragma omp parallel for schedule(static,4) shared(progress,status) \
+      dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
     for (j=0; j < (ssize_t) distort_image->rows; j++)
     {
@@ -2741,7 +2744,7 @@ if ( d.x == 0.5 && d.y == 0.5 ) {
             proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_DistortImage)
+          #pragma omp critical (MagickCore_DistortImage)
 #endif
           proceed=SetImageProgress(image,DistortImageTag,progress++,
             image->rows);
@@ -2805,6 +2808,7 @@ MagickExport Image *RotateImage(const Image *image,const double degrees,
   ExceptionInfo *exception)
 {
   Image
+    *distort_image,
     *rotate_image;
 
   MagickRealType
@@ -2815,9 +2819,6 @@ MagickExport Image *RotateImage(const Image *image,const double degrees,
 
   size_t
     rotations;
-
-  VirtualPixelMethod
-    method;
 
   /*
     Adjust rotation angle.
@@ -2838,10 +2839,15 @@ MagickExport Image *RotateImage(const Image *image,const double degrees,
   shear.y=sin((double) DegreesToRadians(angle));
   if ((fabs(shear.x) < MagickEpsilon) && (fabs(shear.y) < MagickEpsilon))
     return(IntegralRotateImage(image,rotations,exception));
-  method=SetImageVirtualPixelMethod(image,BackgroundVirtualPixelMethod);
-  rotate_image=DistortImage(image,ScaleRotateTranslateDistortion,1,&degrees,
-    MagickTrue,exception);
-  method=SetImageVirtualPixelMethod(image,method);
+  distort_image=CloneImage(image,0,0,MagickTrue,exception);
+  if (distort_image == (Image *) NULL)
+    return((Image *) NULL);
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+    (void) TransformImageColorspace(distort_image,sRGBColorspace);
+  (void) SetImageVirtualPixelMethod(distort_image,BackgroundVirtualPixelMethod);
+  rotate_image=DistortImage(distort_image,ScaleRotateTranslateDistortion,1,
+    &degrees,MagickTrue,exception);
+  distort_image=DestroyImage(distort_image);
   return(rotate_image);
 }
 
@@ -3035,7 +3041,8 @@ MagickExport Image *SparseColorImage(const Image *image,
     progress=0;
     sparse_view=AcquireAuthenticCacheView(sparse_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status)
+    #pragma omp parallel for schedule(static,4) shared(progress,status) \
+      dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
     for (j=0; j < (ssize_t) sparse_image->rows; j++)
     {
@@ -3193,7 +3200,7 @@ MagickExport Image *SparseColorImage(const Image *image,
             proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_SparseColorImage)
+          #pragma omp critical (MagickCore_SparseColorImage)
 #endif
           proceed=SetImageProgress(image,SparseColorTag,progress++,image->rows);
           if (proceed == MagickFalse)

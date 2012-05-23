@@ -987,6 +987,7 @@ static const OptionInfo
     { "Bohman", BohmanFilter, UndefinedOptionFlag, MagickFalse },
     { "Box", BoxFilter, UndefinedOptionFlag, MagickFalse },
     { "Catrom", CatromFilter, UndefinedOptionFlag, MagickFalse },
+    { "Cosine", CosineFilter, UndefinedOptionFlag, MagickFalse },
     { "Cubic", CubicFilter, UndefinedOptionFlag, MagickFalse },
     { "Gaussian", GaussianFilter, UndefinedOptionFlag, MagickFalse },
     { "Hamming", HammingFilter, UndefinedOptionFlag, MagickFalse },
@@ -1504,13 +1505,18 @@ static const OptionInfo
     { "Undefined", UndefinedType, UndefinedOptionFlag, MagickTrue },
     { "Bilevel", BilevelType, UndefinedOptionFlag, MagickFalse },
     { "ColorSeparation", ColorSeparationType, UndefinedOptionFlag, MagickFalse },
+    { "ColorSeparationAlpha", ColorSeparationMatteType, UndefinedOptionFlag, MagickFalse },
     { "ColorSeparationMatte", ColorSeparationMatteType, UndefinedOptionFlag, MagickFalse },
     { "Grayscale", GrayscaleType, UndefinedOptionFlag, MagickFalse },
+    { "GrayscaleAlpha", GrayscaleMatteType, UndefinedOptionFlag, MagickFalse },
     { "GrayscaleMatte", GrayscaleMatteType, UndefinedOptionFlag, MagickFalse },
     { "Optimize", OptimizeType, UndefinedOptionFlag, MagickFalse },
     { "Palette", PaletteType, UndefinedOptionFlag, MagickFalse },
+    { "PaletteBilevelAlpha", PaletteBilevelMatteType, UndefinedOptionFlag, MagickFalse },
     { "PaletteBilevelMatte", PaletteBilevelMatteType, UndefinedOptionFlag, MagickFalse },
+    { "PaletteAlpha", PaletteMatteType, UndefinedOptionFlag, MagickFalse },
     { "PaletteMatte", PaletteMatteType, UndefinedOptionFlag, MagickFalse },
+    { "TrueColorAlpha", TrueColorMatteType, UndefinedOptionFlag, MagickFalse },
     { "TrueColorMatte", TrueColorMatteType, UndefinedOptionFlag, MagickFalse },
     { "TrueColor", TrueColorType, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedType, UndefinedOptionFlag, MagickFalse }
@@ -2523,20 +2529,26 @@ MagickExport void ResetImageOptionIterator(const ImageInfo *image_info)
 MagickExport MagickBooleanType SetImageOption(ImageInfo *image_info,
   const char *option,const char *value)
 {
-  MagickBooleanType
-    status;
-
   assert(image_info != (ImageInfo *) NULL);
   assert(image_info->signature == MagickSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
+
+  /* FUTURE: This should not be here! */
   if (LocaleCompare(option,"size") == 0)
     (void) CloneString(&image_info->size,value);
+
+  /* create tree if needed - specify how key,values are to be freed */
   if (image_info->options == (void *) NULL)
     image_info->options=NewSplayTree(CompareSplayTreeString,
       RelinquishMagickMemory,RelinquishMagickMemory);
-  status=AddValueToSplayTree((SplayTreeInfo *) image_info->options,
-    ConstantString(option),ConstantString(value));
-  return(status);
+
+  /* Delete Option if NULL */
+  if (value == (const char *) NULL)
+    return(DeleteImageOption(image_info,option));
+
+  /* Add option to splay-tree */
+  return(AddValueToSplayTree((SplayTreeInfo *) image_info->options,
+    ConstantString(option),ConstantString(value)));
 }

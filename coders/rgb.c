@@ -96,8 +96,7 @@ static MagickBooleanType
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static Image *ReadRGBImage(const ImageInfo *image_info,
-  ExceptionInfo *exception)
+static Image *ReadRGBImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   Image
     *canvas_image,
@@ -141,7 +140,7 @@ static Image *ReadRGBImage(const ImageInfo *image_info,
   image=AcquireImage(image_info);
   if ((image->columns == 0) || (image->rows == 0))
     ThrowReaderException(OptionError,"MustSpecifyImageSize");
-  image->colorspace=sRGBColorspace;
+  SetImageColorspace(image,sRGBColorspace);
   if (image_info->interlace != PartitionInterlace)
     {
       status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
@@ -201,7 +200,7 @@ static Image *ReadRGBImage(const ImageInfo *image_info,
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
-    image->colorspace=sRGBColorspace;
+    SetImageColorspace(image,sRGBColorspace);
     switch (image_info->interlace)
     {
       case NoInterlace:
@@ -1064,8 +1063,7 @@ ModuleExport void UnregisterRGBImage(void)
 %    o image:  The image.
 %
 */
-static MagickBooleanType WriteRGBImage(const ImageInfo *image_info,
-  Image *image)
+static MagickBooleanType WriteRGBImage(const ImageInfo *image_info,Image *image)
 {
   MagickBooleanType
     status;
@@ -1109,15 +1107,9 @@ static MagickBooleanType WriteRGBImage(const ImageInfo *image_info,
     }
   quantum_type=RGBQuantum;
   if (LocaleCompare(image_info->magick,"RGBA") == 0)
-    {
-      quantum_type=RGBAQuantum;
-      image->matte=MagickTrue;
-    }
+    quantum_type=RGBAQuantum;
   if (LocaleCompare(image_info->magick,"RGBO") == 0)
-    {
-      quantum_type=RGBOQuantum;
-      image->matte=MagickTrue;
-    }
+    quantum_type=RGBOQuantum;
   scene=0;
   do
   {

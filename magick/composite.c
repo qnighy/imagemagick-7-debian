@@ -1644,6 +1644,9 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   assert(composite_image->signature == MagickSignature);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
+  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
+      (IsGrayColorspace(composite_image->colorspace) == MagickFalse))
+    (void) TransformImageColorspace(image,sRGBColorspace);
   GetMagickPixelPacket(image,&zero);
   exception=(&image->exception);
   destination_image=(Image *) NULL;
@@ -1690,7 +1693,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       composite_view=AcquireVirtualCacheView(composite_image,exception);
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-#pragma omp parallel for schedule(static,4) shared(status)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) composite_image->rows; y++)
       {
@@ -1736,7 +1740,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
               proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-#pragma omp critical (MagickCore_CompositeImage)
+            #pragma omp critical (MagickCore_CompositeImage)
 #endif
             proceed=SetImageProgress(image,CompositeImageTag,
               (MagickOffsetType) y,image->rows);
@@ -2220,7 +2224,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   composite_view=AcquireVirtualCacheView(composite_image,exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2288,8 +2293,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       }
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     composite_indexes=GetCacheViewVirtualIndexQueue(composite_view);
-    source=zero;
-    destination=zero;
+    GetMagickPixelPacket(composite_image,&source);
+    GetMagickPixelPacket(image,&destination);
     hue=0.0;
     saturation=0.0;
     brightness=0.0;
@@ -2805,7 +2810,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_CompositeImageChannel)
+        #pragma omp critical (MagickCore_CompositeImageChannel)
 #endif
         proceed=SetImageProgress(image,CompositeImageTag,progress++,
           image->rows);
@@ -2880,7 +2885,8 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
         Tile texture onto the image background.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static) shared(status)
+      #pragma omp parallel for schedule(static) shared(status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y+=(ssize_t) texture->rows)
       {
@@ -2908,7 +2914,7 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
               proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_TextureImage)
+            #pragma omp critical (MagickCore_TextureImage)
 #endif
             proceed=SetImageProgress(image,TextureImageTag,(MagickOffsetType)
               y,image->rows);
@@ -2928,7 +2934,8 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
   texture_view=AcquireVirtualCacheView(texture,exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static) shared(status)
+  #pragma omp parallel for schedule(static) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

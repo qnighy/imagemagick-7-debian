@@ -1811,8 +1811,8 @@ MagickExport MagickBooleanType IsMagickColorSimilar(const MagickPixelPacket *p,
       /*
         Transparencies are involved - set alpha distance.
       */
-      pixel=(p->matte != MagickFalse ? GetPixelOpacity(p) :
-        OpaqueOpacity)-(q->matte != MagickFalse ? q->opacity : OpaqueOpacity);
+      pixel=(p->matte != MagickFalse ? GetPixelOpacity(p) : OpaqueOpacity)-
+        (q->matte != MagickFalse ? q->opacity : OpaqueOpacity);
       distance=pixel*pixel;
       if (distance > fuzz)
         return(MagickFalse);
@@ -2628,7 +2628,7 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
           } while (isxdigit((int) ((unsigned char) *name)) != MagickFalse);
           depth=4*(n/4);
         }
-      color->colorspace=sRGBColorspace;
+      color->colorspace=UndefinedColorspace;
       color->matte=MagickFalse;
       range=GetQuantumRange(depth);
       color->red=(MagickRealType) ScaleAnyToQuantum(pixel.red,range);
@@ -2672,6 +2672,8 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
           return(MagickFalse);
         }
       color->colorspace=(ColorspaceType) type;
+      if (color->colorspace == RGBColorspace)
+        color->colorspace=sRGBColorspace;  /* as required by SVG standard */
       SetGeometryInfo(&geometry_info);
       flags=ParseGeometry(name+i+1,&geometry_info);
       scale=(MagickRealType) ScaleCharToQuantum(1);

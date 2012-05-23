@@ -24,6 +24,18 @@ extern "C" {
 
 #include "magick/blob.h"
 
+typedef enum
+{
+  UndefinedCache,
+  MemoryCache,
+  MapCache,
+  DiskCache,
+  PingCache
+} CacheType;
+
+extern MagickExport CacheType
+  GetImagePixelCacheType(const Image *);
+
 extern MagickExport const IndexPacket
   *GetVirtualIndexQueue(const Image *);
 

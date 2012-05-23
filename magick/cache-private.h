@@ -23,18 +23,10 @@ extern "C" {
 #endif
 
 #include <time.h>
+#include "magick/cache.h"
 #include "magick/random_.h"
 #include "magick/thread-private.h"
 #include "magick/semaphore.h"
-
-typedef enum
-{
-  UndefinedCache,
-  MemoryCache,
-  MapCache,
-  DiskCache,
-  PingCache
-} CacheType;
 
 typedef void
   *Cache;
@@ -222,7 +214,8 @@ extern MagickExport IndexPacket
   *GetPixelCacheNexusIndexes(const Cache,NexusInfo *);
 
 extern MagickExport MagickBooleanType
-  SyncAuthenticPixelCacheNexus(Image *,NexusInfo *,ExceptionInfo *) magick_hot_spot;
+  SyncAuthenticPixelCacheNexus(Image *,NexusInfo *,ExceptionInfo *)
+    magick_hot_spot;
 
 extern MagickExport MagickSizeType
   GetPixelCacheNexusExtent(const Cache,NexusInfo *);

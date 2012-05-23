@@ -71,11 +71,13 @@
 #include "magick/prepress.h"
 #include "magick/quantize.h"
 #include "magick/registry.h"
+#include "magick/resource_.h"
 #include "magick/semaphore.h"
 #include "magick/splay-tree.h"
 #include "magick/statistic.h"
 #include "magick/string_.h"
 #include "magick/string-private.h"
+#include "magick/thread-private.h"
 #include "magick/token.h"
 #include "magick/utility.h"
 
@@ -258,7 +260,9 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
   /* clear flags - for Expanding kernel lists thorugh rotations */
    flags = NoValue;
 
-  /* Has a ':' in argument - New user kernel specification */
+  /* Has a ':' in argument - New user kernel specification
+     FUTURE: this split on ':' could be done by StringToken()
+   */
   p = strchr(kernel_string, ':');
   if ( p != (char *) NULL && p < end)
     {
@@ -1178,7 +1182,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
         else /* special case - generate a unity kernel */
           kernel->values[kernel->x+kernel->y*kernel->width] = 1.0;
 #else
-        /* Direct calculation without curve averaging */
+        /* Direct calculation without curve averaging
+           This is equivelent to a KernelRank of 1 */
 
         /* Calculate a Positive Gaussian */
         if ( sigma > MagickEpsilon )
@@ -1195,10 +1200,11 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
 #endif
         /* Note the above kernel may have been 'clipped' by a user defined
         ** radius, producing a smaller (darker) kernel.  Also for very small
-        ** sigma's (> 0.1) the central value becomes larger than one, and thus
-        ** producing a very bright kernel.
+        ** sigma's (> 0.1) the central value becomes larger than one, as a
+        ** result of not generating a actual 'discrete' kernel, and thus
+        ** producing a very bright 'impulse'.
         **
-        ** Normalization will still be needed.
+        ** Becuase of these two factors Normalization is required!
         */
 
         /* Normalize the 1D Gaussian Kernel
@@ -1379,8 +1385,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
             if (kernel == (KernelInfo *) NULL)
               return(kernel);
             kernel->type = type;
-            kernel->values[3] = +MagickSQ2;
-            kernel->values[5] = -MagickSQ2;
+            kernel->values[3] = +(MagickRealType) MagickSQ2;
+            kernel->values[5] = -(MagickRealType) MagickSQ2;
             CalcKernelMetaData(kernel);     /* recalculate meta-data */
             break;
           case 2:
@@ -1388,8 +1394,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
             if (kernel == (KernelInfo *) NULL)
               return(kernel);
             kernel->type = type;
-            kernel->values[1] = kernel->values[3] = +MagickSQ2;
-            kernel->values[5] = kernel->values[7] = -MagickSQ2;
+            kernel->values[1] = kernel->values[3]= +(MagickRealType) MagickSQ2;
+            kernel->values[5] = kernel->values[7]= -(MagickRealType) MagickSQ2;
             CalcKernelMetaData(kernel);     /* recalculate meta-data */
             ScaleKernelInfo(kernel, (double) (1.0/2.0*MagickSQ2), NoValue);
             break;
@@ -1404,8 +1410,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
             if (kernel == (KernelInfo *) NULL)
               return(kernel);
             kernel->type = type;
-            kernel->values[3] = +MagickSQ2;
-            kernel->values[5] = -MagickSQ2;
+            kernel->values[3] = +(MagickRealType) MagickSQ2;
+            kernel->values[5] = -(MagickRealType) MagickSQ2;
             CalcKernelMetaData(kernel);     /* recalculate meta-data */
             ScaleKernelInfo(kernel, (double) (1.0/2.0*MagickSQ2), NoValue);
             break;
@@ -1414,8 +1420,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
             if (kernel == (KernelInfo *) NULL)
               return(kernel);
             kernel->type = type;
-            kernel->values[1] = +MagickSQ2;
-            kernel->values[7] = +MagickSQ2;
+            kernel->values[1] = +(MagickRealType) MagickSQ2;
+            kernel->values[7] = +(MagickRealType) MagickSQ2;
             CalcKernelMetaData(kernel);
             ScaleKernelInfo(kernel, (double) (1.0/2.0*MagickSQ2), NoValue);
             break;
@@ -1424,8 +1430,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
             if (kernel == (KernelInfo *) NULL)
               return(kernel);
             kernel->type = type;
-            kernel->values[0] = +MagickSQ2;
-            kernel->values[8] = -MagickSQ2;
+            kernel->values[0] = +(MagickRealType) MagickSQ2;
+            kernel->values[8] = -(MagickRealType) MagickSQ2;
             CalcKernelMetaData(kernel);
             ScaleKernelInfo(kernel, (double) (1.0/2.0*MagickSQ2), NoValue);
             break;
@@ -1434,8 +1440,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
             if (kernel == (KernelInfo *) NULL)
               return(kernel);
             kernel->type = type;
-            kernel->values[2] = -MagickSQ2;
-            kernel->values[6] = +MagickSQ2;
+            kernel->values[2] = -(MagickRealType) MagickSQ2;
+            kernel->values[6] = +(MagickRealType) MagickSQ2;
             CalcKernelMetaData(kernel);
             ScaleKernelInfo(kernel, (double) (1.0/2.0*MagickSQ2), NoValue);
             break;
@@ -2212,7 +2218,7 @@ MagickExport KernelInfo *DestroyKernelInfo(KernelInfo *kernel)
   assert(kernel != (KernelInfo *) NULL);
   if ( kernel->next != (KernelInfo *) NULL )
     kernel->next=DestroyKernelInfo(kernel->next);
-  kernel->values=(double *)RelinquishAlignedMemory(kernel->values);
+  kernel->values=(double *) RelinquishAlignedMemory(kernel->values);
   kernel=(KernelInfo *) RelinquishMagickMemory(kernel);
   return(kernel);
 }
@@ -2441,7 +2447,9 @@ static void CalcKernelMetaData(KernelInfo *kernel)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  MorphologyApply() applies a morphological method, multiple times using
-%  a list of multiple kernels.
+%  a list of multiple kernels.  This is the method that should be called by
+%  other 'operators' that internally use morphology operations as part of
+%  their processing.
 %
 %  It is basically equivalent to as MorphologyImage() (see below) but
 %  without any user controls.  This allows internel programs to use this
@@ -2451,10 +2459,9 @@ static void CalcKernelMetaData(KernelInfo *kernel)
 %  It is MorphologyImage() task to extract any such user controls, and
 %  pass them to this function for processing.
 %
-%  More specifically kernels are not normalized/scaled/blended by the
-%  'convolve:scale' Image Artifact (setting), nor is the convolve bias
-%  ('convolve:bias' artifact) looked at, but must be supplied from the
-%  function arguments.
+%  More specifically all given kernels should already be scaled, normalised,
+%  and blended appropriatally before being parred to this routine. The
+%  appropriate bias, and compose (typically 'UndefinedComposeOp') given.
 %
 %  The format of the MorphologyApply method is:
 %
@@ -2584,7 +2591,8 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
       x;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-#pragma omp parallel for schedule(static,4) shared(progress,status)
+    #pragma omp parallel for schedule(static,4) shared(progress,status) \
+      dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
     for (x=0; x < (ssize_t) image->columns; x++)
     {
@@ -2753,7 +2761,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
             proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_MorphologyImage)
+          #pragma omp critical (MagickCore_MorphologyImage)
 #endif
           proceed=SetImageProgress(image,MorphologyTag,progress++,image->rows);
           if (proceed == MagickFalse)
@@ -2770,7 +2778,8 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
   ** Normal handling of horizontal or rectangular kernels (row by row)
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -3269,7 +3278,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_MorphologyImage)
+        #pragma omp critical (MagickCore_MorphologyImage)
 #endif
         proceed=SetImageProgress(image,MorphologyTag,progress++,image->rows);
         if (proceed == MagickFalse)

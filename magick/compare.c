@@ -64,6 +64,7 @@
 #include "magick/resource_.h"
 #include "magick/string_.h"
 #include "magick/statistic.h"
+#include "magick/thread-private.h"
 #include "magick/transform.h"
 #include "magick/utility.h"
 #include "magick/version.h"
@@ -200,7 +201,8 @@ MagickExport Image *CompareImageChannels(Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
   highlight_view=AcquireAuthenticCacheView(highlight_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -377,7 +379,8 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -440,7 +443,7 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
       q++;
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_GetAbsoluteError)
+    #pragma omp critical (MagickCore_GetAbsoluteError)
 #endif
     for (i=0; i <= (ssize_t) CompositeChannels; i++)
       distortion[i]+=channel_distortion[i];
@@ -493,7 +496,8 @@ static MagickBooleanType GetFuzzDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -574,7 +578,7 @@ static MagickBooleanType GetFuzzDistortion(const Image *image,
       q++;
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_GetMeanSquaredError)
+    #pragma omp critical (MagickCore_GetFuzzDistortion)
 #endif
     for (i=0; i <= (ssize_t) CompositeChannels; i++)
       distortion[i]+=channel_distortion[i];
@@ -613,7 +617,8 @@ static MagickBooleanType GetMeanAbsoluteDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -691,7 +696,7 @@ static MagickBooleanType GetMeanAbsoluteDistortion(const Image *image,
       q++;
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_GetMeanAbsoluteError)
+    #pragma omp critical (MagickCore_GetMeanAbsoluteError)
 #endif
     for (i=0; i <= (ssize_t) CompositeChannels; i++)
       distortion[i]+=channel_distortion[i];
@@ -859,7 +864,8 @@ static MagickBooleanType GetMeanSquaredDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -938,7 +944,7 @@ static MagickBooleanType GetMeanSquaredDistortion(const Image *image,
       q++;
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_GetMeanSquaredError)
+    #pragma omp critical (MagickCore_GetMeanSquaredError)
 #endif
     for (i=0; i <= (ssize_t) CompositeChannels; i++)
       distortion[i]+=channel_distortion[i];
@@ -1121,7 +1127,8 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1210,7 +1217,7 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
       q++;
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_GetPeakAbsoluteError)
+    #pragma omp critical (MagickCore_GetPeakAbsoluteError) 
 #endif
     for (i=0; i <= (ssize_t) CompositeChannels; i++)
       if (channel_distortion[i] > distortion[i])
@@ -1802,7 +1809,8 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
   progress=0;
   similarity_view=AcquireVirtualCacheView(similarity_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) (image->rows-reference->rows+1); y++)
   {
@@ -1828,7 +1836,7 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
     {
       similarity=GetSimilarityMetric(image,reference,metric,x,y,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_SimilarityImage)
+      #pragma omp critical (MagickCore_SimilarityImage)
 #endif
       if (similarity < *similarity_metric)
         {
@@ -1850,7 +1858,7 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_SimilarityImage)
+        #pragma omp critical (MagickCore_SimilarityImage)
 #endif
         proceed=SetImageProgress(image,SimilarityImageTag,progress++,
           image->rows);

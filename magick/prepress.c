@@ -49,9 +49,11 @@
 #include "magick/memory_.h"
 #include "magick/prepress.h"
 #include "magick/registry.h"
+#include "magick/resource_.h"
 #include "magick/semaphore.h"
 #include "magick/splay-tree.h"
 #include "magick/string_.h"
+#include "magick/thread-private.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,7 +111,8 @@ MagickExport double GetImageTotalInkDensity(Image *image)
   exception=(&image->exception);
   image_view=AcquireVirtualCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -138,7 +141,7 @@ MagickExport double GetImageTotalInkDensity(Image *image)
         GetPixelBlue(p)+GetPixelIndex(indexes+x);
       if (density > total_ink_density)
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_GetImageTotalInkDensity)
+        #pragma omp critical (MagickCore_GetImageTotalInkDensity)
 #endif
         {
           if (density > total_ink_density)

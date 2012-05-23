@@ -98,8 +98,10 @@
 #include "magick/quantize.h"
 #include "magick/quantum.h"
 #include "magick/quantum-private.h"
+#include "magick/resource_.h"
 #include "magick/segment.h"
 #include "magick/string_.h"
+#include "magick/thread-private.h"
 
 /*
   Define declarations.
@@ -529,7 +531,8 @@ static MagickBooleanType Classify(Image *image,short **extrema,
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

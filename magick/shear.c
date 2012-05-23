@@ -510,7 +510,7 @@ static inline MagickBooleanType SetRadonCell(const RadonInfo *radon_info,
   return(MagickTrue);
 }
 
-static void RadonProjection(RadonInfo *source_cells,
+static void RadonProjection(const Image *image,RadonInfo *source_cells,
   RadonInfo *destination_cells,const ssize_t sign,size_t *projection)
 {
   RadonInfo
@@ -571,7 +571,8 @@ static void RadonProjection(RadonInfo *source_cells,
     q=swap;
   }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4)
+  #pragma omp parallel for schedule(static,4) \
+    dynamic_number_threads(image,p->width,p->height,1)
 #endif
   for (x=0; x < (ssize_t) p->width; x++)
   {
@@ -651,7 +652,8 @@ static MagickBooleanType RadonTransform(const Image *image,
   status=MagickTrue;
   image_view=AcquireVirtualCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -699,10 +701,11 @@ static MagickBooleanType RadonTransform(const Image *image,
         (void) SetRadonCell(source_cells,--i,y,bits[byte]);
       }
   }
-  RadonProjection(source_cells,destination_cells,-1,projection);
+  RadonProjection(image,source_cells,destination_cells,-1,projection);
   (void) ResetRadonCells(source_cells);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -750,7 +753,7 @@ static MagickBooleanType RadonTransform(const Image *image,
         (void) SetRadonCell(source_cells,i++,y,bits[byte]);
       }
   }
-  RadonProjection(source_cells,destination_cells,1,projection);
+  RadonProjection(image,source_cells,destination_cells,1,projection);
   image_view=DestroyCacheView(image_view);
   destination_cells=DestroyRadonInfo(destination_cells);
   source_cells=DestroyRadonInfo(source_cells);
@@ -1023,7 +1026,8 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
       */
       GetPixelCacheTileSize(image,&tile_width,&tile_height);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static) shared(progress,status)
+      #pragma omp parallel for schedule(static) shared(progress,status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (tile_y=0; tile_y < (ssize_t) image->rows; tile_y+=(ssize_t) tile_height)
       {
@@ -1141,7 +1145,8 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
         Rotate 180 degrees.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static) shared(progress,status)
+      #pragma omp parallel for schedule(static) shared(progress,status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1221,7 +1226,8 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
       */
       GetPixelCacheTileSize(image,&tile_width,&tile_height);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static) shared(progress,status)
+      #pragma omp parallel for schedule(static) shared(progress,status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (tile_y=0; tile_y < (ssize_t) image->rows; tile_y+=(ssize_t) tile_height)
       {
@@ -1421,7 +1427,8 @@ static MagickBooleanType XShearImage(Image *image,const MagickRealType degrees,
   progress=0;
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,width,height,1)
 #endif
   for (y=0; y < (ssize_t) height; y++)
   {
@@ -1551,7 +1558,7 @@ static MagickBooleanType XShearImage(Image *image,const MagickRealType degrees,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_XShearImage)
+        #pragma omp critical (MagickCore_XShearImage)
 #endif
         proceed=SetImageProgress(image,XShearImageTag,progress++,height);
         if (proceed == MagickFalse)
@@ -1641,7 +1648,8 @@ static MagickBooleanType YShearImage(Image *image,const MagickRealType degrees,
   progress=0;
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,width,height,1)
 #endif
   for (x=0; x < (ssize_t) width; x++)
   {
@@ -1771,7 +1779,7 @@ static MagickBooleanType YShearImage(Image *image,const MagickRealType degrees,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_YShearImage)
+        #pragma omp critical (MagickCore_YShearImage)
 #endif
         proceed=SetImageProgress(image,YShearImageTag,progress++,image->rows);
         if (proceed == MagickFalse)

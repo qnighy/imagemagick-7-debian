@@ -2394,8 +2394,8 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
       png_set_sRGB(ping,ping_info,
          Magick_RenderingIntent_to_PNG_RenderingIntent
          (image->rendering_intent));
-      png_set_gAMA(ping,ping_info,0.45455f);
-      file_gamma=0.45455;
+      png_set_gAMA(ping,ping_info,1.000f/2.200f);
+      file_gamma=1.000f/2.200f;
       png_set_cHRM(ping,ping_info,
                   0.6400f, 0.3300f, 0.3000f, 0.6000f,
                   0.1500f, 0.0600f, 0.3127f, 0.3290f);
@@ -2885,7 +2885,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
             row_offset=0;
 
           png_read_row(ping,ping_pixels+row_offset,NULL);
-          q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
+          q=GetAuthenticPixels(image,0,y,image->columns,1,exception);
 
           if (q == (PixelPacket *) NULL)
             break;
@@ -3331,7 +3331,23 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
   if ((ping_color_type == PNG_COLOR_TYPE_GRAY) ||
       (ping_color_type == PNG_COLOR_TYPE_GRAY_ALPHA))
-    image->colorspace=GRAYColorspace;
+    {
+      if (!png_get_valid(ping,ping_info,PNG_INFO_gAMA) &&
+          !png_get_valid(ping,ping_info,PNG_INFO_cHRM) &&
+          !png_get_valid(ping,ping_info,PNG_INFO_sRGB))
+        {
+          /* Set image->gamma to 1.0, image->rendering_intent to Undefined,
+           * and reset image->chromaticity.
+           */
+          SetImageColorspace(image,GRAYColorspace);
+        }
+    
+      else
+        {
+          /* Use colorspace data from PNG ancillary chunks */
+          image->colorspace=GRAYColorspace;
+        }
+    }
 
   for (j = 0; j < 2; j++)
   {
@@ -4197,7 +4213,7 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
           {
             image->rendering_intent=
               Magick_RenderingIntent_from_PNG_RenderingIntent(p[0]);
-            image->gamma=0.45455f;
+            image->gamma=1.000f/2.200f;
             image->chromaticity.red_primary.x=0.6400f;
             image->chromaticity.red_primary.y=0.3300f;
             image->chromaticity.green_primary.x=0.3000f;
@@ -9923,8 +9939,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
 #if defined(PNG_WRITE_sRGB_SUPPORTED)
   if ((mng_info->have_write_global_srgb == 0) &&
-      ((image->rendering_intent != UndefinedIntent) ||
-      (image->colorspace == sRGBColorspace)))
+      (image->rendering_intent != UndefinedIntent))
     {
       if (ping_exclude_sRGB == MagickFalse)
         {

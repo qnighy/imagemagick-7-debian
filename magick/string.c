@@ -99,14 +99,13 @@ static const unsigned char
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  AcquireString() allocates memory for a string and copies the source string
-%  to that memory location (and returns it).
+%  AcquireString() returns an new extented string, containing a clone of the
+%  given string.
 %
-%  The allocated space for the new string is the source string length
-%  plus MaxTextExtent, allowing room for the string to grow.
+%  An extended string is the string length, plus an extra MaxTextExtent space
+%  to allow for the string to be activally worked on.
 %
-%  The returned string shoud be freed using DestoryString() or
-%  RelinquishMagickMemory() when finished.
+%  The returned string shoud be freed using DestoryString().
 %
 %  The format of the AcquireString method is:
 %
@@ -197,7 +196,8 @@ MagickExport StringInfo *AcquireStringInfo(const size_t length)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  BlobToStringInfo() returns the contents of a blob as a string.
+%  BlobToStringInfo() returns the contents of a blob as a StringInfo structure
+%  with MaxTextExtent extra space.
 %
 %  The format of the BlobToStringInfo method is:
 %
@@ -241,17 +241,15 @@ MagickExport StringInfo *BlobToStringInfo(const void *blob,const size_t length)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  CloneString() allocates memory for the destination string and copies
-%  the source string to that memory location.  Extra space of MaxTextExtent
-%  is also included in the resulting memory allocation.
+%  CloneString() replaces or frees the destination string to make it
+%  a clone of the input string plus MaxTextExtent more space so the string may
+%  be worked on on.
 %
 %  If source is a NULL pointer the destination string will be freed and set to
-%  a NULL pointer.  The value stored in the destination is also returned.
+%  a NULL pointer.  A pointer to the stored in the destination is also returned.
 %
 %  When finished the non-NULL string should be freed using DestoryString()
-%
-%  See also ConstantString(), below.
-%
+%  or using CloneString() with a NULL pointed for the source.
 %
 %  The format of the CloneString method is:
 %
@@ -677,9 +675,6 @@ MagickExport StringInfo *ConfigureFileToStringInfo(const char *filename)
 %  copies the source string to that memory location.  A NULL string pointer
 %  will allocate an empty string containing just the NUL character.
 %
-%  You should use CloneString() if you expect that the sting may be modified
-%  or may grow in size at a later date.
-%
 %  When finished the string should be freed using DestoryString()
 %
 %  The format of the ConstantString method is:
@@ -725,10 +720,12 @@ MagickExport char *ConstantString(const char *source)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  CopyMagickString() copies the source string to the destination string.  The
-%  destination buffer is always null-terminated even if the string must be
-%  truncated.  The return value is the minimum of the source string length
-%  or the length parameter.
+%  CopyMagickString() copies the source string to the destination string, with
+%  out exceeding the given pre-declared length.
+%
+%  The destination buffer is always null-terminated even if the string must be
+%  truncated.  The return value is the minimum of the source string length or
+%  the length parameter.
 %
 %  The format of the CopyMagickString method is:
 %
@@ -1605,16 +1602,18 @@ MagickExport void LocaleLower(char *string)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  LocaleNCompare() performs a case-insensitive comparison of two
-%  strings byte-by-byte, according to the ordering of the current locale
-%  encoding. LocaleNCompare returns an integer greater than, equal to, or
-%  less than 0, if the string pointed to by p is greater than, equal to, or
-%  less than the string pointed to by q respectively.  The sign of a non-zero
-%  return value is determined by the sign of the difference between the
-%  values of the first pair of bytes that differ in the strings being
-%  compared.  The LocaleNCompare method makes the same comparison as
-%  LocaleCompare but looks at a maximum of n bytes.  Bytes following a
-%  null byte are not compared.
+%  LocaleNCompare() performs a case-insensitive comparison of two strings
+%  byte-by-byte, according to the ordering of the current locale encoding.
+%
+%  LocaleNCompare returns an integer greater than, equal to, or less than 0,
+%  if the string pointed to by p is greater than, equal to, or less than the
+%  string pointed to by q respectively.  The sign of a non-zero return value
+%  is determined by the sign of the difference between the values of the first
+%  pair of bytes that differ in the strings being compared.
+%
+%  The LocaleNCompare method makes the same comparison as LocaleCompare but
+%  looks at a maximum of n bytes.  Bytes following a null byte are not
+%  compared.
 %
 %  The format of the LocaleNCompare method is:
 %

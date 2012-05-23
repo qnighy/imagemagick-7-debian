@@ -895,7 +895,7 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
         scene;
 
       scene=inDocInfo->number_layers-layer-1;
-      if (scene > (image_info->scene+image_info->number_scenes-1))
+      if (scene > (ssize_t) (image_info->scene+image_info->number_scenes-1))
         {
           outLayer->image=CloneImage(image,0,0,MagickTrue,&image->exception);
           if (outLayer->image == (Image *) NULL)
@@ -1071,10 +1071,10 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->compression=NoCompression;
   image->depth=8;
   if (image_type == GIMP_RGB)
-    image->colorspace=sRGBColorspace;
+    SetImageColorspace(image,sRGBColorspace);
   else
     if (image_type == GIMP_GRAY)
-      image->colorspace=GRAYColorspace;
+      SetImageColorspace(image,GRAYColorspace);
     else
       if (image_type == GIMP_INDEXED)
         ThrowReaderException(CoderError,"ColormapTypeNotSupported");

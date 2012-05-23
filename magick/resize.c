@@ -65,6 +65,7 @@
 #include "magick/resample-private.h"
 #include "magick/resize.h"
 #include "magick/resize-private.h"
+#include "magick/resource_.h"
 #include "magick/string_.h"
 #include "magick/string-private.h"
 #include "magick/thread-private.h"
@@ -135,8 +136,6 @@ static MagickRealType
 %
 */
 
-#define MagickPIL ((MagickRealType) 3.14159265358979323846264338327950288420L)
-
 static MagickRealType Blackman(const MagickRealType x,
   const ResizeFilter *magick_unused(resize_filter))
 {
@@ -147,7 +146,7 @@ static MagickRealType Blackman(const MagickRealType x,
     Refactored by Chantal Racette and Nicolas Robidoux to one trig call and
     five flops.
   */
-  const MagickRealType cosine=cos((double) (MagickPIL*x));
+  const MagickRealType cosine=cos((double) (MagickPI*x));
   return(0.34+cosine*(0.5+cosine*0.16));
 }
 
@@ -162,9 +161,9 @@ static MagickRealType Bohman(const MagickRealType x,
     taking advantage of the fact that the support of Bohman is 1.0 (so that we
     know that sin(pi x) >= 0).
   */
-  const MagickRealType cosine=cos((double) (MagickPIL*x));
+  const MagickRealType cosine=cos((double) (MagickPI*x));
   const MagickRealType sine=sqrt(1.0-cosine*cosine);
-  return((1.0-x)*cosine+(1.0/MagickPIL)*sine);
+  return((1.0-x)*cosine+(1.0/MagickPI)*sine);
 }
 
 static MagickRealType Box(const MagickRealType magick_unused(x),
@@ -176,6 +175,16 @@ static MagickRealType Box(const MagickRealType magick_unused(x),
     as it requests points beyond its normal 0.0 support size.
   */
   return(1.0);
+}
+
+static MagickRealType Cosine(const MagickRealType x,
+  const ResizeFilter *magick_unused(resize_filter))
+{
+  /*
+    Cosine window function:
+      cos((pi/2)*x).
+  */
+  return((MagickRealType)cos((double) (MagickPI2*x)));
 }
 
 static MagickRealType CubicBC(const MagickRealType x,
@@ -245,7 +254,7 @@ static MagickRealType Gaussian(const MagickRealType x,
 
         exp( -coeff[1]*(x^2)) ) * coeff[2];
 
-    However the multiplier coeff[1] is not needed and not used.
+    However the multiplier coeff[1] is need, the others are informative only.
 
     This separates the gaussian 'sigma' value from the 'blur/support'
     settings allowing for its use in special 'small sigma' gaussians,
@@ -262,7 +271,7 @@ static MagickRealType Hanning(const MagickRealType x,
     Cosine window function:
       0.5+0.5*cos(pi*x).
   */
-  const MagickRealType cosine=cos((double) (MagickPIL*x));
+  const MagickRealType cosine=cos((double) (MagickPI*x));
   return(0.5+0.5*cosine);
 }
 
@@ -273,7 +282,7 @@ static MagickRealType Hamming(const MagickRealType x,
     Offset cosine window function:
      .54 + .46 cos(pi x).
   */
-  const MagickRealType cosine=cos((double) (MagickPIL*x));
+  const MagickRealType cosine=cos((double) (MagickPI*x));
   return(0.54+0.46*cosine);
 }
 
@@ -289,8 +298,8 @@ static MagickRealType Jinc(const MagickRealType x,
     really it is more accurately named "Jinc".
   */
   if (x == 0.0)
-    return(0.5*MagickPIL);
-  return(BesselOrderOne(MagickPIL*x)/x);
+    return(0.5*MagickPI);
+  return(BesselOrderOne(MagickPI*x)/x);
 }
 
 static MagickRealType Kaiser(const MagickRealType x,
@@ -303,7 +312,7 @@ static MagickRealType Kaiser(const MagickRealType x,
     automatically be normalized.
   */
   return(resize_filter->coefficient[1]*
-              I0(resize_filter->coefficient[0]*sqrt((double) (1.0-x*x))));
+            I0(resize_filter->coefficient[0]*sqrt((double) (1.0-x*x))));
 }
 
 static MagickRealType Lagrange(const MagickRealType x,
@@ -362,7 +371,7 @@ static MagickRealType Sinc(const MagickRealType x,
   */
   if (x != 0.0)
     {
-      const MagickRealType alpha=(MagickRealType) (MagickPIL*x);
+      const MagickRealType alpha=(MagickRealType) (MagickPI*x);
       return(sin((double) alpha)/alpha);
     }
   return((MagickRealType) 1.0);
@@ -397,7 +406,7 @@ static MagickRealType SincFast(const MagickRealType x,
   */
   if (x > 4.0)
     {
-      const MagickRealType alpha=(MagickRealType) (MagickPIL*x);
+      const MagickRealType alpha=(MagickRealType) (MagickPI*x);
       return(sin((double) alpha)/alpha);
     }
   {
@@ -737,6 +746,7 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
     { Lanczos2SharpFilter, Lanczos2SharpFilter },
     { RobidouxFilter,      BoxFilter      },  /* Cubic Keys tuned for EWA     */
     { RobidouxSharpFilter, BoxFilter      },  /* Sharper Cubic Keys for EWA   */
+    { SincFastFilter,      CosineFilter   },  /* low level cosine window      */
   };
   /*
     Table mapping the filter/window from the above table to an actual function.
@@ -795,7 +805,8 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
                             0.37821575509399867, 0.31089212245300067 },
     /* RobidouxSharp: Sharper version of Robidoux */
     { CubicBC,   2.0, 1.105822933719019,
-                            0.2620145123990142,  0.3689927438004929  }
+                            0.2620145123990142,  0.3689927438004929  },
+    { Cosine,    1.0, 1.0, 0.0, 0.0 }  /* Low level cosine window     */
   };
   /*
     The known zero crossings of the Jinc() or more accurately the Jinc(x*PI)
@@ -940,7 +951,8 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
   */
 
   /* User Gaussian Sigma Override - no support change */
-  if (resize_filter->filter == Gaussian) {
+  if ((resize_filter->filter == Gaussian) ||
+      (resize_filter->window == Gaussian) ) {
     value=0.5;    /* guassian sigma default, half pixel */
     artifact=GetImageArtifact(image,"filter:sigma");
     if (artifact != (const char *) NULL)
@@ -948,18 +960,25 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
     /* Define coefficents for Gaussian */
     resize_filter->coefficient[0]=value;                 /* note sigma too */
     resize_filter->coefficient[1]=1.0/(2.0*value*value); /* sigma scaling */
-    resize_filter->coefficient[2]=1.0/(Magick2PI*value*value);
+    resize_filter->coefficient[2]=(MagickRealType) (1.0/(Magick2PI*value*value));
        /* normalization - not actually needed or used! */
     if ( value > 0.5 )
       resize_filter->support *= value/0.5;  /* increase support */
   }
 
   /* User Kaiser Alpha Override - no support change */
-  if (resize_filter->filter == Kaiser) {
+  if ((resize_filter->filter == Kaiser) ||
+      (resize_filter->window == Kaiser) ) {
     value=6.5; /* default alpha value for Kaiser bessel windowing function */
     artifact=GetImageArtifact(image,"filter:alpha");
     if (artifact != (const char *) NULL)
       value=StringToDouble(artifact,(char **) NULL);
+    artifact=GetImageArtifact(image,"filter:kaiser-beta");
+    if (artifact != (const char *) NULL)
+      value=StringToDouble(artifact,(char **) NULL);
+    artifact=GetImageArtifact(image,"filter:kaiser-alpha");
+    if (artifact != (const char *) NULL)
+      value=StringToDouble(artifact,(char **) NULL)*MagickPI;
     /* Define coefficents for Kaiser Windowing Function */
     resize_filter->coefficient[0]=value;         /* alpha */
     resize_filter->coefficient[1]=1.0/I0(value); /* normalization */
@@ -1016,8 +1035,8 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
   */
   B=0.0;
   C=0.0;
-  if ((filters[filter_type].function == CubicBC) ||
-      (filters[window_type].function == CubicBC))
+  if ((resize_filter->filter == CubicBC) ||
+      (resize_filter->window == CubicBC) )
     {
       B=filters[filter_type].B;
       C=filters[filter_type].C;
@@ -1095,20 +1114,21 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
         (void) FormatLocaleFile(stdout,"# filter = %s\n",
              CommandOptionToMnemonic(MagickFilterOptions,filter_type));
         (void) FormatLocaleFile(stdout,"# window = %s\n",
-             CommandOptionToMnemonic(MagickFilterOptions, window_type));
+             CommandOptionToMnemonic(MagickFilterOptions,window_type));
         (void) FormatLocaleFile(stdout,"# support = %.*g\n",
              GetMagickPrecision(),(double) resize_filter->support);
-        (void) FormatLocaleFile(stdout,"# win-support = %.*g\n",
+        (void) FormatLocaleFile(stdout,"# window-support = %.*g\n",
              GetMagickPrecision(),(double) resize_filter->window_support);
-        (void) FormatLocaleFile(stdout,"# scale_blur = %.*g\n",
+        (void) FormatLocaleFile(stdout,"# scale-blur = %.*g\n",
              GetMagickPrecision(), (double)resize_filter->blur);
-        if ( filter_type == GaussianFilter )
-          (void) FormatLocaleFile(stdout,"# gaussian_sigma = %.*g\n",
+        if ( filter_type == GaussianFilter || window_type == GaussianFilter )
+          (void) FormatLocaleFile(stdout,"# gaussian-sigma = %.*g\n",
                GetMagickPrecision(), (double)resize_filter->coefficient[0]);
-        if ( filter_type == KaiserFilter )
-          (void) FormatLocaleFile(stdout,"# kaiser_alpha = %.*g\n",
-               GetMagickPrecision(), (double)resize_filter->coefficient[0]);
-        (void) FormatLocaleFile(stdout,"# practical_support = %.*g\n",
+        if ( filter_type == KaiserFilter || window_type == KaiserFilter )
+          (void) FormatLocaleFile(stdout,"# kaiser-beta = %.*g\n",
+               GetMagickPrecision(),
+               (double)resize_filter->coefficient[0]);
+        (void) FormatLocaleFile(stdout,"# practical-support = %.*g\n",
              GetMagickPrecision(), (double)support);
         if ( filter_type == CubicFilter || window_type == CubicFilter )
           (void) FormatLocaleFile(stdout,"# B,C = %.*g,%.*g\n",
@@ -1210,7 +1230,8 @@ MagickExport Image *AdaptiveResizeImage(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   resize_view=AcquireAuthenticCacheView(resize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static) shared(progress,status)
+  #pragma omp parallel for schedule(static) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) resize_image->rows; y++)
   {
@@ -1254,7 +1275,7 @@ MagickExport Image *AdaptiveResizeImage(const Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT) 
-  #pragma omp critical (MagickCore_AdaptiveResizeImage)
+        #pragma omp critical (MagickCore_AdaptiveResizeImage)
 #endif
         proceed=SetImageProgress(image,AdaptiveResizeImageTag,progress++,
           image->rows);
@@ -2015,7 +2036,7 @@ static ContributionInfo **DestroyContributionThreadSet(
     i;
 
   assert(contribution != (ContributionInfo **) NULL);
-  for (i=0; i < (ssize_t) GetOpenMPMaximumThreads(); i++)
+  for (i=0; i < (ssize_t) GetMagickResourceLimit(ThreadResource); i++)
     if (contribution[i] != (ContributionInfo *) NULL)
       contribution[i]=(ContributionInfo *) RelinquishAlignedMemory(
         contribution[i]);
@@ -2126,7 +2147,8 @@ static MagickBooleanType HorizontalFilter(const ResizeFilter *resize_filter,
   image_view=AcquireVirtualCacheView(image,exception);
   resize_view=AcquireAuthenticCacheView(resize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (x=0; x < (ssize_t) resize_image->columns; x++)
   {
@@ -2292,7 +2314,7 @@ static MagickBooleanType HorizontalFilter(const ResizeFilter *resize_filter,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_HorizontalFilter)
+        #pragma omp critical (MagickCore_HorizontalFilter)
 #endif
         proceed=SetImageProgress(image,ResizeImageTag,(*offset)++,span);
         if (proceed == MagickFalse)
@@ -2365,7 +2387,8 @@ static MagickBooleanType VerticalFilter(const ResizeFilter *resize_filter,
   image_view=AcquireVirtualCacheView(image,exception);
   resize_view=AcquireAuthenticCacheView(resize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) resize_image->rows; y++)
   {
@@ -2532,7 +2555,7 @@ static MagickBooleanType VerticalFilter(const ResizeFilter *resize_filter,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_VerticalFilter)
+        #pragma omp critical (MagickCore_VerticalFilter)
 #endif
         proceed=SetImageProgress(image,ResizeImageTag,(*offset)++,span);
         if (proceed == MagickFalse)
@@ -2741,7 +2764,8 @@ MagickExport Image *SampleImage(const Image *image,const size_t columns,
   image_view=AcquireVirtualCacheView(image,exception);
   sample_view=AcquireAuthenticCacheView(sample_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) sample_image->rows; y++)
   {

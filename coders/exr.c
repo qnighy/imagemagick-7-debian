@@ -199,6 +199,7 @@ static Image *ReadEXRImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->columns=max_x-min_x+1UL;
   image->rows=max_y-min_y+1UL;
   image->matte=MagickTrue;
+  SetImageColorspace(image,RGBColorspace);
   if (image_info->ping != MagickFalse)
     {
       (void) ImfCloseInputFile(file);
@@ -383,6 +384,7 @@ static MagickBooleanType WriteEXRImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
+  (void) SetImageColorspace(image,RGBColorspace);
   write_info=CloneImageInfo(image_info);
   (void) AcquireUniqueFilename(write_info->filename);
   hdr_info=ImfNewHeader();

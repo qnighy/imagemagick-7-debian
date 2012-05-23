@@ -57,6 +57,14 @@ static inline void ConvertRGBToCMYK(MagickPixelPacket *pixel)
   pixel->index=QuantumRange*black;
 }
 
+static inline MagickBooleanType IsCMYKColorspace(
+  const ColorspaceType colorspace)
+{
+  if (colorspace == CMYKColorspace)
+    return(MagickTrue);
+  return(MagickFalse);
+}
+
 static inline MagickBooleanType IsGrayColorspace(
   const ColorspaceType colorspace)
 {
@@ -67,9 +75,8 @@ static inline MagickBooleanType IsGrayColorspace(
 }
 
 static inline MagickBooleanType IsRGBColorspace(const ColorspaceType colorspace)
-{  /* deprecated */
-  if ((IsGrayColorspace(colorspace) != MagickFalse) ||
-      (colorspace == sRGBColorspace) || (colorspace == TransparentColorspace))
+{
+  if (colorspace == RGBColorspace)
     return(MagickTrue);
   return(MagickFalse);
 }
@@ -77,8 +84,7 @@ static inline MagickBooleanType IsRGBColorspace(const ColorspaceType colorspace)
 static inline MagickBooleanType IssRGBColorspace(
   const ColorspaceType colorspace)
 {
-  if ((IsGrayColorspace(colorspace) != MagickFalse) ||
-      (colorspace == sRGBColorspace) || (colorspace == TransparentColorspace))
+  if ((colorspace == sRGBColorspace) || (colorspace == TransparentColorspace))
     return(MagickTrue);
   return(MagickFalse);
 }

@@ -53,6 +53,7 @@
 #include "magick/memory_.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
+#include "magick/resource_.h"
 #include "magick/string_.h"
 #include "magick/thread-private.h"
 
