@@ -1,4 +1,4 @@
-imagemagick (8:6.7.6.8-1) unstable; urgency=low
+imagemagick (8:6.7.7.0-1) unstable; urgency=low
 
   * New upstream version:
   - Drop previous patches: merged upstream.
@@ -13,8 +13,10 @@ imagemagick (8:6.7.6.8-1) unstable; urgency=low
   * Bug fix: "Please add imagemagick.desktop", thanks to Sérgio Cipolla
     (Closes: #621799).
   * Add xz support.
+  * Bug fix: "Obsolete conffile /etc/ImageMagick/sRGB.icm not cleaned up
+    on upgrade", thanks to Josh Triplett (Closes: #669964).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 16 Apr 2012 13:33:51 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 23 May 2012 15:47:27 +0200
 
 imagemagick (8:6.7.4.0-5) unstable; urgency=high
 

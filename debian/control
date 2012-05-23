@@ -50,6 +50,7 @@ Description: debugging symbols for ImageMagick
 Package: imagemagick-common
 Architecture: all
 Multi-Arch: foreign
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}
 Description: image manipulation programs -- infrastructure
  imagemagick-common contains the filesystem infrastructure required for
