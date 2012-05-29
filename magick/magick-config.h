@@ -1300,7 +1300,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.7-0"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.7-2"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1315,7 +1315,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.7.7-0"
+#define MAGICKCORE_PACKAGE_VERSION "6.7.7-2"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1505,7 +1505,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.7.7-0"
+#define MAGICKCORE_VERSION "6.7.7-2"
 #endif
 
 /* Define if you have WEBP library */
@@ -1559,6 +1559,11 @@
 /* Define if you have zlib compression library */
 #ifndef MAGICKCORE_ZLIB_DELEGATE
 #define MAGICKCORE_ZLIB_DELEGATE 1
+#endif
+
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
 #endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */

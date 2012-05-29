@@ -1084,17 +1084,25 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
             char
               *comments;
 
+            size_t
+              length;
+
             /*
               Read comment extension.
             */
             comments=AcquireString((char *) NULL);
-            for ( ; ; )
+            for (length=0; ; length+=count)
             {
               count=(ssize_t) ReadBlobBlock(image,header);
               if (count == 0)
                 break;
               header[count]='\0';
-              (void) ConcatenateString(&comments,(const char *) header);
+              comments=(char *) ResizeQuantumMemory(comments,length+count,
+                sizeof(*comments));
+              if (comments == (char *) NULL)
+                ThrowReaderException(ResourceLimitError,
+                  "MemoryAllocationFailed");
+              (void) CopyMagickMemory(comments+length,header,(size_t) count);
             }
             (void) SetImageProperty(image,"comment",comments);
             comments=DestroyString(comments);
@@ -1102,8 +1110,6 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
           }
           case 0xff:
           {
-            /* Read GIF application extension */
-
             MagickBooleanType
               loop;
 
@@ -1680,8 +1686,7 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
             (void) WriteBlobByte(image,(unsigned char) 0x21);
             (void) WriteBlobByte(image,(unsigned char) 0xfe);
             value=GetImageProperty(image,"comment");
-            p=value;
-            while (strlen(p) != 0)
+            for (p=value; strlen(p) != 0; )
             {
               count=MagickMin(strlen(p),255);
               (void) WriteBlobByte(image,(unsigned char) count);
