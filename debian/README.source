@@ -10,13 +10,28 @@ git svn init -s --prefix=origin/  https://www.imagemagick.org/subversion/ImageMa
 * pull trunk
 
 git checkout -f trunk
-git svn rebase
+git svn fetch
 
-* merge trunk to upstream
+* new upstream version
 
-git tag $commitid upstream/$version
-git checkout upstream
-git merge -X theirs trunk
+git svn fetch #retrieve recent svn commit
+git checkout 9682bf563240ad971717554bab3f69f7252767f5 # git revision for svn commit 7980 aka version 6.7.7.0
+git checkout -b upstream/6.7.7.0 # create an upstream branch for revision 6.7.7.0
+rm -rf * # clean up directory tree
+tar --strip 1 -xaf ../imagemagick_6.7.7.0.orig.tar.bz2 # extract origin
+git add . # add everything
+git commit -a -m "add uptream tar.bz2"
+pristine-tar commit ../imagemagick_6.7.7.0.orig.tar.bz2
+upstream/6.7.7.0 # use pristine tar
+git checkout -b debian-patches/6.7.7.0-1
+git checkout debian/6.7.6.8-1 # checkout previous debian tree
+git checkout -b  debian/6.7.7.0-1 # create new debian branch
+git checkout debian/6.7.6.8-1 # checkout previous debian tree
+git merge  --no-commit upstream/6.7.7.0 # merge but without commiting
+find ./* -path './debian' -prune -o -path './.git' -prune -o -exec rm -rf '{}' + # remove all except debian and git
+tar --strip 1 -xaf ../imagemagick_6.7.7.0.orig.tar.bz2 # use upstream
+git add .
+git commit -a -m 'merge with upstream' # emulate git theirs but safer
 
 * use patch from debian branches and rebase
 
@@ -61,4 +76,4 @@ debian/patches and applied during the build.
 
 More information: /usr/share/doc/quilt/README.source
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>, Sat, 11 Jun 2011 12:46:15 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>, Tue, 29 May 2012 11:28:21 +0200

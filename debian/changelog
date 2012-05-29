@@ -1,4 +1,4 @@
-imagemagick (8:6.7.7.0-1) unstable; urgency=low
+imagemagick (8:6.7.7.2-1) unstable; urgency=low
 
   * New upstream version:
   - Drop previous patches: merged upstream.
@@ -16,7 +16,7 @@ imagemagick (8:6.7.7.0-1) unstable; urgency=low
   * Bug fix: "Obsolete conffile /etc/ImageMagick/sRGB.icm not cleaned up
     on upgrade", thanks to Josh Triplett (Closes: #669964).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 23 May 2012 15:47:27 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 29 May 2012 11:23:50 +0200
 
 imagemagick (8:6.7.4.0-5) unstable; urgency=high
 
