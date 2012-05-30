@@ -81,7 +81,7 @@ Description: low-level image manipulation library
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
  wizard-level programmers only. Unlike the MagickWand C API which uses only a
- few opaque types and accessors, with MagickCore you almost exlusively access
+ few opaque types and accessors, with MagickCore you almost exclusively access
  the structure members directly.
  .
  This package contains the C libraries needed to run executables that make

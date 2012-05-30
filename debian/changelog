@@ -1,5 +1,6 @@
 imagemagick (8:6.7.7.2-1) unstable; urgency=low
 
+  [ Bastien Roucariès ]
   * New upstream version:
   - Drop previous patches: merged upstream.
   - Bug fix: "identify -verbose reports incorrect Class (correct w/o
@@ -15,6 +16,10 @@ imagemagick (8:6.7.7.2-1) unstable; urgency=low
   * Add xz support.
   * Bug fix: "Obsolete conffile /etc/ImageMagick/sRGB.icm not cleaned up
     on upgrade", thanks to Josh Triplett (Closes: #669964).
+
+  [ Vincent Fourmond ]
+  * Improve the new hook scripts
+  * Fix (very) minor typo in package description (closes: #675011)
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 29 May 2012 11:23:50 +0200
 
