@@ -12,3 +12,4 @@ usr/bin/mogrify*
 usr/share/pixmaps/
 usr/share/applications/
 usr/lib/ImageMagick-*/
+debian/icons/* usr/share/icons/hicolor/

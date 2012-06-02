@@ -27,7 +27,6 @@ endif
 build: build-stamp
 build-stamp: $(QUILT_STAMPFN)
 	dh_testdir
-
 	MagickDocumentPath="/usr/share/doc/imagemagick" ./configure \
 	--prefix=/usr \
         --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
@@ -63,6 +62,14 @@ build-stamp: $(QUILT_STAMPFN)
 
 	cd "$(CURDIR)/PerlMagick" && \
 		$(MAKE) OPTIMIZE="-O2 -g -Wall"
+
+	# build icons cache
+	while read SIZE; do \
+		mkdir -p $(CURDIR)/debian/icons/$$SIZE/apps/ ;\
+		$(CURDIR)/utilities/convert $(CURDIR)/debian/display.im6.svg -resize $$SIZE $(CURDIR)/debian/icons/$$SIZE/apps/display.im6.png; \
+	done < $(CURDIR)/debian/display.im6.iconssize
+	mkdir -p $(CURDIR)/debian/icons/scalable/apps/
+	gzip -c -n -9 $(CURDIR)/debian/display.im6.svg > $(CURDIR)/debian/icons/scalable/apps/display.im6.svgz
 
 	touch build-stamp
 
@@ -101,6 +108,9 @@ clean:
 	[ ! -f Magick++/Makefile ] || (cd Magick++ && $(MAKE) distclean)
 	rm -f "$(CURDIR)/utilities/.libs/*" "$(CURDIR)/_configs.sed" #\
 #		"$(CURDIR)/magick/magick-config.h"
+
+	# remove icons cache
+	[ ! -d $(CURDIR)/debian/icons ] || rm -rf $(CURDIR)/debian/icons
 
 	dh_clean build-stamp
 
