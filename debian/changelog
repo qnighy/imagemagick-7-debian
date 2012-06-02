@@ -1,3 +1,10 @@
+imagemagick (8:6.7.7.2-2) unstable; urgency=low
+
+  * Bug fix: "Menu entry of imagemagick does not lauch it", thanks to
+    Michael Biebl (Closes: #675453). Use a wrapper script.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 02 Jun 2012 20:31:54 +0200
+
 imagemagick (8:6.7.7.2-1) unstable; urgency=low
 
   [ Bastien Roucariès ]

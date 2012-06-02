@@ -119,12 +119,16 @@ install: build check
 		DESTDIR="$(CURDIR)/debian/tmp" \
 		pkgdocdir=/usr/share/doc/imagemagick
 
+	# install desktop and menu file
 	mkdir -p $(DESTDIR)/usr/share/pixmaps/
-	install -m 644 "$(CURDIR)/debian/display.im6.xpm" \
+	install -m 644 "$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm" \
 		$(DESTDIR)/usr/share/pixmaps/
 	mkdir -p $(DESTDIR)/usr/share/applications/
-	install -m 644 "$(CURDIR)/debian/display.im6.desktop" \
+	install -m 644 "$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).desktop" \
 		$(DESTDIR)/usr/share/applications/
+	mkdir -p "$(DESTDIR)/usr/lib/ImageMagick-$(DEB_UPSTREAM_VERSION_MAJOR)"
+	install -m 755 "$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR)-desktop-wrapper" \
+		"$(DESTDIR)/usr/lib/ImageMagick-$(DEB_UPSTREAM_VERSION_MAJOR)/"
 
 	-find "$(CURDIR)/debian" -type f -name .packlist | xargs rm -f
 

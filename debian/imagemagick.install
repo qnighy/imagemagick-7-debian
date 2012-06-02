@@ -11,3 +11,4 @@ usr/bin/montage*
 usr/bin/mogrify*
 usr/share/pixmaps/
 usr/share/applications/
+usr/lib/ImageMagick-*/
