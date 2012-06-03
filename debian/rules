@@ -66,10 +66,15 @@ build-stamp: $(QUILT_STAMPFN)
 	# build icons cache
 	while read SIZE; do \
 		mkdir -p $(CURDIR)/debian/icons/$$SIZE/apps/ ;\
-		$(CURDIR)/utilities/convert $(CURDIR)/debian/display.im6.svg -resize $$SIZE $(CURDIR)/debian/icons/$$SIZE/apps/display.im6.png; \
-	done < $(CURDIR)/debian/display.im6.iconssize
+		$(CURDIR)/utilities/convert $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize $$SIZE \
+			$(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
+	done < $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
+	# make xpm
+	$(CURDIR)/utilities/convert $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize 32x32 \
+		$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
 	mkdir -p $(CURDIR)/debian/icons/scalable/apps/
-	gzip -c -n -9 $(CURDIR)/debian/display.im6.svg > $(CURDIR)/debian/icons/scalable/apps/display.im6.svgz
+	gzip -c -n -9 $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
+		> $(CURDIR)/debian/icons/scalable/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svgz
 
 	touch build-stamp
 
@@ -111,6 +116,7 @@ clean:
 
 	# remove icons cache
 	[ ! -d $(CURDIR)/debian/icons ] || rm -rf $(CURDIR)/debian/icons
+	[ ! -f $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm ] || rm -rf $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
 
 	dh_clean build-stamp
 
@@ -129,13 +135,7 @@ install: build check
 		DESTDIR="$(CURDIR)/debian/tmp" \
 		pkgdocdir=/usr/share/doc/imagemagick
 
-	# install desktop and menu file
-	mkdir -p $(DESTDIR)/usr/share/pixmaps/
-	install -m 644 "$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm" \
-		$(DESTDIR)/usr/share/pixmaps/
-	mkdir -p $(DESTDIR)/usr/share/applications/
-	install -m 644 "$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).desktop" \
-		$(DESTDIR)/usr/share/applications/
+	# install desktop wrapper
 	mkdir -p "$(DESTDIR)/usr/lib/ImageMagick-$(DEB_UPSTREAM_VERSION_MAJOR)"
 	install -m 755 "$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR)-desktop-wrapper" \
 		"$(DESTDIR)/usr/lib/ImageMagick-$(DEB_UPSTREAM_VERSION_MAJOR)/"
