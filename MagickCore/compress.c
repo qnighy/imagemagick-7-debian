@@ -17,7 +17,7 @@
 %                              May  1993                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -508,7 +508,7 @@ MagickExport MagickBooleanType HuffmanDecodeImage(Image *image,
   image->resolution.x=204.0;
   image->resolution.y=196.0;
   image->units=PixelsPerInchResolution;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
   for (y=0; ((y < (ssize_t) image->rows) && (null_lines < 3)); )
   {
     register Quantum
@@ -1297,15 +1297,15 @@ MagickExport MagickBooleanType ZLIBEncodeImage(Image *image,const size_t length,
 }
 #else
 MagickExport MagickBooleanType ZLIBEncodeImage(Image *image,
-  const size_t magick_unused(length),unsigned char *magick_unused(pixels))
+  const size_t magick_unused(length),unsigned char *magick_unused(pixels),
+  ExceptionInfo *exception)
 {
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  (void) ThrowMagickException(&image->exception,GetMagickModule(),
-    MissingDelegateError,"DelegateLibrarySupportNotBuiltIn","`%s' (ZIP)",
-    image->filename);
+  (void) ThrowMagickException(exception,GetMagickModule(),MissingDelegateError,
+    "DelegateLibrarySupportNotBuiltIn","'%s' (ZIP)",image->filename);
   return(MagickFalse);
 }
 #endif

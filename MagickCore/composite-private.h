@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ extern "C" {
 #include "MagickCore/image.h"
 #include "MagickCore/image-private.h"
 #include "MagickCore/pixel-accessor.h"
+#include "MagickCore/pixel-private.h"
 
 static inline MagickRealType MagickOver_(const MagickRealType p,
   const MagickRealType alpha,const MagickRealType q,const MagickRealType beta)
@@ -56,12 +57,12 @@ static inline void CompositePixelOver(const Image *image,const PixelInfo *p,
     i;
 
   /*
-    Compose pixel p over pixel q with the given opacities.
+    Compose pixel p over pixel q with the given alpha.
   */
   Sa=QuantumScale*alpha;
   Da=QuantumScale*beta,
   gamma=Sa*(-Da)+Sa+Da;
-  gamma=1.0/(gamma <= MagickEpsilon ? 1.0 : gamma);
+  gamma=MagickEpsilonReciprocal(gamma);
   for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
   {
     PixelChannel
@@ -70,8 +71,8 @@ static inline void CompositePixelOver(const Image *image,const PixelInfo *p,
     PixelTrait
       traits;
 
-    traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-    channel=GetPixelChannelMapChannel(image,(PixelChannel) i);
+    channel=GetPixelChannelMapChannel(image,i);
+    traits=GetPixelChannelMapTraits(image,channel);
     if (traits == UndefinedPixelTrait)
       continue;
     switch (channel)
@@ -102,7 +103,7 @@ static inline void CompositePixelOver(const Image *image,const PixelInfo *p,
       }
       case AlphaPixelChannel:
       {
-        composite[i]=ClampToQuantum(QuantumRange*gamma);
+        composite[i]=ClampToQuantum(QuantumRange*(Sa*(-Da)+Sa+Da));
         break;
       }
       default:
@@ -132,7 +133,7 @@ static inline void CompositePixelInfoOver(const PixelInfo *p,
   Da=QuantumScale*beta,
   gamma=Sa*(-Da)+Sa+Da;
   composite->alpha=(MagickRealType) QuantumRange*gamma;
-  gamma=1.0/(fabs(gamma) <= MagickEpsilon ? 1.0 : gamma);
+  gamma=MagickEpsilonReciprocal(gamma);
   composite->red=gamma*MagickOver_(p->red,alpha,q->red,beta);
   composite->green=gamma*MagickOver_(p->green,alpha,q->green,beta);
   composite->blue=gamma*MagickOver_(p->blue,alpha,q->blue,beta);
@@ -161,7 +162,7 @@ static inline void CompositePixelInfoPlus(const PixelInfo *p,
   Da=QuantumScale*beta;
   gamma=RoundToUnity(Sa+Da);  /* 'Plus' blending -- not 'Over' blending */
   composite->alpha=(MagickRealType) QuantumRange*gamma;
-  gamma=1.0/(fabs(gamma) <= MagickEpsilon ? 1.0 : gamma);
+  gamma=MagickEpsilonReciprocal(gamma);
   composite->red=gamma*(Sa*p->red+Da*q->red);
   composite->green=gamma*(Sa*p->green+Da*q->green);
   composite->blue=gamma*(Sa*p->blue+Da*q->blue);

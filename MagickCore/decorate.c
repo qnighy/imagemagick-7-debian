@@ -17,7 +17,7 @@
 %                                   July 1992                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -55,6 +55,7 @@
 #include "MagickCore/pixel-accessor.h"
 #include "MagickCore/quantum.h"
 #include "MagickCore/quantum-private.h"
+#include "MagickCore/resource_.h"
 #include "MagickCore/thread-private.h"
 #include "MagickCore/transform.h"
 
@@ -229,8 +230,12 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
       frame_image=DestroyImage(frame_image);
       return((Image *) NULL);
     }
-  if (frame_image->matte_color.alpha != OpaqueAlpha)
-    frame_image->matte=MagickTrue;
+  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
+      (IsPixelInfoGray(&image->matte_color) == MagickFalse))
+    (void) SetImageColorspace(frame_image,sRGBColorspace,exception);
+  if ((frame_image->border_color.matte != MagickFalse) &&
+      (frame_image->matte == MagickFalse))
+    (void) SetImageAlpha(frame_image,OpaqueAlpha,exception);
   frame_image->page=image->page;
   if ((image->page.width != 0) && (image->page.height != 0))
     {
@@ -276,8 +281,8 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
   trough.alpha=matte.alpha;
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
-  frame_view=AcquireCacheView(frame_image);
+  image_view=AcquireVirtualCacheView(image,exception);
+  frame_view=AcquireAuthenticCacheView(frame_image,exception);
   height=(size_t) (frame_info->outer_bevel+(frame_info->y-bevel_width)+
     frame_info->inner_bevel);
   if (height != 0)
@@ -379,7 +384,8 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
     Draw sides of ornamental border.
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT) 
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status) omp_throttle(1)
+  #pragma omp parallel for schedule(static) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -388,6 +394,9 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
 
     register Quantum
       *restrict q;
+
+    size_t
+      width;
 
     /*
       Initialize scanline with matte color.
@@ -477,7 +486,7 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT) 
-  #pragma omp critical (MagickCore_FrameImage)
+        #pragma omp critical (MagickCore_FrameImage)
 #endif
         proceed=SetImageProgress(image,FrameImageTag,progress++,image->rows);
         if (proceed == MagickFalse)
@@ -589,7 +598,8 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
         frame_info->inner_bevel);
       y=(ssize_t) (frame_info->outer_bevel+(frame_info->y-bevel_width)+
         frame_info->inner_bevel);
-      (void) CompositeImage(frame_image,compose,image,x,y,exception);
+      (void) CompositeImage(frame_image,image,compose,MagickTrue,x,y,
+        exception);
     }
   return(frame_image);
 }
@@ -677,15 +687,13 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
   */
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT) 
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status) omp_throttle(1)
+  #pragma omp parallel for schedule(static) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) raise_info->height; y++)
   {
-    PixelTrait
-      traits;
-
     register ssize_t
       i,
       x;
@@ -703,37 +711,74 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
       }
     for (x=0; x < y; x++)
     {
+      if (GetPixelMask(image,q) != 0)
+        {
+          q+=GetPixelChannels(image);
+          continue;
+        }
       for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
       {
-        traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-        if ((traits & UpdatePixelTrait) != 0)
-          q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*
-            HighlightFactor+(MagickRealType) foreground*(QuantumRange-
-            HighlightFactor)));
+        PixelChannel
+          channel;
+
+        PixelTrait
+          traits;
+
+        channel=GetPixelChannelMapChannel(image,i);
+        traits=GetPixelChannelMapTraits(image,channel);
+        if ((traits & UpdatePixelTrait) == 0)
+          continue;
+        q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*HighlightFactor+
+          (MagickRealType) foreground*(QuantumRange-HighlightFactor)));
       }
       q+=GetPixelChannels(image);
     }
     for ( ; x < (ssize_t) (image->columns-y); x++)
     {
+      if (GetPixelMask(image,q) != 0)
+        {
+          q+=GetPixelChannels(image);
+          continue;
+        }
       for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
       {
-        traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-        if ((traits & UpdatePixelTrait) != 0)
-          q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*
-            AccentuateFactor+(MagickRealType) foreground*(QuantumRange-
-            AccentuateFactor)));
+        PixelChannel
+          channel;
+
+        PixelTrait
+          traits;
+
+        channel=GetPixelChannelMapChannel(image,i);
+        traits=GetPixelChannelMapTraits(image,channel);
+        if ((traits & UpdatePixelTrait) == 0)
+          continue;
+        q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*
+          AccentuateFactor+(MagickRealType) foreground*(QuantumRange-
+          AccentuateFactor)));
       }
       q+=GetPixelChannels(image);
     }
     for ( ; x < (ssize_t) image->columns; x++)
     {
+      if (GetPixelMask(image,q) != 0)
+        {
+          q+=GetPixelChannels(image);
+          continue;
+        }
       for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
       {
-        traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-        if ((traits & UpdatePixelTrait) != 0)
-          q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*
-            ShadowFactor+(MagickRealType) background*(QuantumRange-
-            ShadowFactor)));
+        PixelChannel
+          channel;
+
+        PixelTrait
+          traits;
+
+        channel=GetPixelChannelMapChannel(image,i);
+        traits=GetPixelChannelMapTraits(image,channel);
+        if ((traits & UpdatePixelTrait) == 0)
+          continue;
+        q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*ShadowFactor+
+          (MagickRealType) background*(QuantumRange-ShadowFactor)));
       }
       q+=GetPixelChannels(image);
     }
@@ -750,13 +795,11 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
       }
   }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status) omp_throttle(1)
+  #pragma omp parallel for schedule(static) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=(ssize_t) raise_info->height; y < (ssize_t) (image->rows-raise_info->height); y++)
   {
-    PixelTrait
-      traits;
-
     register ssize_t
       i,
       x;
@@ -774,13 +817,25 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
       }
     for (x=0; x < (ssize_t) raise_info->width; x++)
     {
+      if (GetPixelMask(image,q) != 0)
+        {
+          q+=GetPixelChannels(image);
+          continue;
+        }
       for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
       {
-        traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-        if ((traits & UpdatePixelTrait) != 0)
-          q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*
-            HighlightFactor+(MagickRealType) foreground*(QuantumRange-
-            HighlightFactor)));
+        PixelChannel
+          channel;
+
+        PixelTrait
+          traits;
+
+        channel=GetPixelChannelMapChannel(image,i);
+        traits=GetPixelChannelMapTraits(image,channel);
+        if ((traits & UpdatePixelTrait) == 0)
+          continue;
+        q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*HighlightFactor+
+          (MagickRealType) foreground*(QuantumRange-HighlightFactor)));
       }
       q+=GetPixelChannels(image);
     }
@@ -788,13 +843,25 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
       q+=GetPixelChannels(image);
     for ( ; x < (ssize_t) image->columns; x++)
     {
+      if (GetPixelMask(image,q) != 0)
+        {
+          q+=GetPixelChannels(image);
+          continue;
+        }
       for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
       {
-        traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-        if ((traits & UpdatePixelTrait) != 0)
-          q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*
-            ShadowFactor+(MagickRealType) background*(QuantumRange-
-            ShadowFactor)));
+        PixelChannel
+          channel;
+
+        PixelTrait
+          traits;
+
+        channel=GetPixelChannelMapChannel(image,i);
+        traits=GetPixelChannelMapTraits(image,channel);
+        if ((traits & UpdatePixelTrait) == 0)
+          continue;
+        q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*ShadowFactor+
+          (MagickRealType) background*(QuantumRange-ShadowFactor)));
       }
       q+=GetPixelChannels(image);
     }
@@ -811,13 +878,11 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
       }
   }
 #if defined(MAGICKCORE_OPENMP_SUPPORT) 
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status) omp_throttle(1)
+  #pragma omp parallel for schedule(static) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=(ssize_t) (image->rows-raise_info->height); y < (ssize_t) image->rows; y++)
   {
-    PixelTrait
-      traits;
-
     register ssize_t
       i,
       x;
@@ -835,13 +900,25 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
       }
     for (x=0; x < (ssize_t) (image->rows-y); x++)
     {
+      if (GetPixelMask(image,q) != 0)
+        {
+          q+=GetPixelChannels(image);
+          continue;
+        }
       for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
       {
-        traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-        if ((traits & UpdatePixelTrait) != 0)
-          q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*
-            HighlightFactor+(MagickRealType) foreground*(QuantumRange-
-            HighlightFactor)));
+        PixelChannel
+          channel;
+
+        PixelTrait
+          traits;
+
+        channel=GetPixelChannelMapChannel(image,i);
+        traits=GetPixelChannelMapTraits(image,channel);
+        if ((traits & UpdatePixelTrait) == 0)
+          continue;
+        q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*HighlightFactor+
+          (MagickRealType) foreground*(QuantumRange-HighlightFactor)));
       }
       q+=GetPixelChannels(image);
     }
@@ -849,23 +926,42 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
     {
       for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
       {
-        traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-        if ((traits & UpdatePixelTrait) != 0)
-          q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*
-            TroughFactor+(MagickRealType) background*(QuantumRange-
-            TroughFactor)));
+        PixelChannel
+          channel;
+
+        PixelTrait
+          traits;
+
+        channel=GetPixelChannelMapChannel(image,i);
+        traits=GetPixelChannelMapTraits(image,channel);
+        if ((traits & UpdatePixelTrait) == 0)
+          continue;
+        q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*TroughFactor+
+          (MagickRealType) background*(QuantumRange-TroughFactor)));
       }
       q+=GetPixelChannels(image);
     }
     for ( ; x < (ssize_t) image->columns; x++)
     {
+      if (GetPixelMask(image,q) != 0)
+        {
+          q+=GetPixelChannels(image);
+          continue;
+        }
       for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
       {
-        traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-        if ((traits & UpdatePixelTrait) != 0)
-          q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*
-            ShadowFactor+(MagickRealType) background*(QuantumRange-
-            ShadowFactor)));
+        PixelChannel
+          channel;
+
+        PixelTrait
+          traits;
+
+        channel=GetPixelChannelMapChannel(image,i);
+        traits=GetPixelChannelMapTraits(image,channel);
+        if ((traits & UpdatePixelTrait) == 0)
+          continue;
+        q[i]=ClampToQuantum(QuantumScale*((MagickRealType) q[i]*ShadowFactor+
+          (MagickRealType) background*(QuantumRange-ShadowFactor)));
       }
       q+=GetPixelChannels(image);
     }
@@ -877,7 +973,7 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_RaiseImage)
+        #pragma omp critical (MagickCore_RaiseImage)
 #endif
         proceed=SetImageProgress(image,RaiseImageTag,progress++,image->rows);
         if (proceed == MagickFalse)

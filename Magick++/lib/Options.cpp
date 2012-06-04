@@ -435,7 +435,8 @@ Magick::ColorspaceType Magick::Options::quantizeColorSpace ( void ) const
 void Magick::Options::quantizeDither ( bool ditherFlag_ )
 {
   _imageInfo->dither = (MagickBooleanType) ditherFlag_;
-  _quantizeInfo->dither = (MagickBooleanType) ditherFlag_;
+  _quantizeInfo->dither_method = ditherFlag_ ? RiemersmaDitherMethod :
+    NoDitherMethod;
 }
 bool Magick::Options::quantizeDither ( void ) const
 {
@@ -790,15 +791,6 @@ void Magick::Options::verbose ( bool verboseFlag_ )
 bool Magick::Options::verbose ( void ) const
 {
   return static_cast<bool>(_imageInfo->verbose);
-}
-
-void Magick::Options::virtualPixelMethod ( VirtualPixelMethod virtual_pixel_method_ )
-{
-  _imageInfo->virtual_pixel_method = virtual_pixel_method_;
-}
-Magick::VirtualPixelMethod Magick::Options::virtualPixelMethod ( void ) const
-{
-  return static_cast<Magick::VirtualPixelMethod>(_imageInfo->virtual_pixel_method);
 }
 
 void Magick::Options::view ( const std::string &view_ )

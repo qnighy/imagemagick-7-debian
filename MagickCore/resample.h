@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -58,6 +58,8 @@ typedef enum
   Lanczos2Filter,
   Lanczos2SharpFilter,
   RobidouxFilter,
+  RobidouxSharpFilter,
+  CosineFilter,
   SentinelFilter  /* a count of all the filters, not a real filter */
 } FilterTypes;
 
@@ -73,7 +75,7 @@ typedef struct _ResampleFilter
 
 extern MagickExport MagickBooleanType
   ResamplePixelColor(ResampleFilter *,const double,const double,
-    PixelInfo *),
+    PixelInfo *,ExceptionInfo *),
   SetResampleFilterInterpolateMethod(ResampleFilter *,
     const PixelInterpolateMethod),
   SetResampleFilterVirtualPixelMethod(ResampleFilter *,
@@ -86,7 +88,7 @@ extern MagickExport ResampleFilter
 extern MagickExport void
   ScaleResampleFilter(ResampleFilter *,const double,const double,const double,
     const double),
-  SetResampleFilter(ResampleFilter *,const FilterTypes,const double);
+  SetResampleFilter(ResampleFilter *,const FilterTypes);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

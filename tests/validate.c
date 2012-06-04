@@ -18,7 +18,7 @@
 %                               March 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -123,7 +123,7 @@ static size_t ValidateCompareCommand(ImageInfo *image_info,
       }
     status=CompareImagesCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -215,7 +215,7 @@ static size_t ValidateCompositeCommand(ImageInfo *image_info,
       }
     status=CompositeImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -306,7 +306,7 @@ static size_t ValidateConvertCommand(ImageInfo *image_info,
       }
     status=ConvertImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -398,7 +398,7 @@ static size_t ValidateIdentifyCommand(ImageInfo *image_info,
       }
     status=IdentifyImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -465,8 +465,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
 
   Image
     *difference_image,
-    *reference_image,
-    *reconstruct_image;
+    *reconstruct_image,
+    *reference_image;
 
   MagickBooleanType
     status;
@@ -476,13 +476,11 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
     j;
 
   size_t
-    length;
+    length,
+    test;
 
   unsigned char
     *blob;
-
-  size_t
-    test;
 
   test=0;
   (void) FormatLocaleFile(stdout,"validate image formats in memory:\n");
@@ -607,7 +605,7 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
 #if defined(MAGICKCORE_HDRI_SUPPORT)
       fuzz+=0.003;
 #endif
-      if (IsRGBColorspace(reference_image->colorspace) == MagickFalse)
+      if (IssRGBColorspace(reference_image->colorspace) == MagickFalse)
         fuzz+=0.3;
       fuzz+=MagickEpsilon;
       difference_image=CompareImages(reference_image,reconstruct_image,
@@ -819,7 +817,7 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
 #if defined(MAGICKCORE_HDRI_SUPPORT)
       fuzz+=0.003;
 #endif
-      if (IsRGBColorspace(reference_image->colorspace) == MagickFalse)
+      if (IssRGBColorspace(reference_image->colorspace) == MagickFalse)
         fuzz+=0.3;
       fuzz+=MagickEpsilon;
       difference_image=CompareImages(reference_image,reconstruct_image,
@@ -937,8 +935,7 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
           continue;
         }
       if (LocaleNCompare(reference_map[i],"cmy",3) == 0)
-        (void) TransformImageColorspace(reference_image,CMYKColorspace,
-          exception);
+        SetImageColorspace(reference_image,CMYKColorspace,exception);
       length=strlen(reference_map[i])*reference_image->columns*
         reference_image->rows*reference_storage[j].quantum;
       pixels=(unsigned char *) AcquireQuantumMemory(length,sizeof(*pixels));
@@ -1102,7 +1099,7 @@ static size_t ValidateMontageCommand(ImageInfo *image_info,
       }
     status=MontageImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)
@@ -1193,7 +1190,7 @@ static size_t ValidateStreamCommand(ImageInfo *image_info,
       }
     status=StreamImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
-    for (j=0; j < number_arguments; j++)
+    for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
     if (status != MagickFalse)

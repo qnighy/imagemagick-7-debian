@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ extern "C" {
 
 typedef enum
 {
+  AlphaCompositeOp,
   AtopCompositeOp,
   BlendCompositeOp,
   BlurCompositeOp,
@@ -39,7 +40,7 @@ typedef enum
   CopyCyanCompositeOp,
   CopyGreenCompositeOp,
   CopyMagentaCompositeOp,
-  CopyOpacityCompositeOp,
+  CopyAlphaCompositeOp,
   CopyRedCompositeOp,
   CopyYellowCompositeOp,
   DarkenCompositeOp,
@@ -59,6 +60,7 @@ typedef enum
   HardLightCompositeOp,
   HueCompositeOp,
   InCompositeOp,
+  IntensityCompositeOp,
   LightenCompositeOp,
   LightenIntensityCompositeOp,
   LinearBurnCompositeOp,
@@ -95,8 +97,8 @@ typedef enum
 } CompositeOperator;
 
 extern MagickExport MagickBooleanType
-  CompositeImage(Image *,const CompositeOperator,const Image *,const ssize_t,
-    const ssize_t,ExceptionInfo *),
+  CompositeImage(Image *,const Image *,const CompositeOperator,
+    const MagickBooleanType,const ssize_t,const ssize_t,ExceptionInfo *),
   TextureImage(Image *,const Image *,ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)

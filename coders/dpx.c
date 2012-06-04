@@ -57,6 +57,7 @@
 #include "MagickCore/monitor.h"
 #include "MagickCore/monitor-private.h"
 #include "MagickCore/option.h"
+#include "MagickCore/pixel-accessor.h"
 #include "MagickCore/profile.h"
 #include "MagickCore/property.h"
 #include "MagickCore/quantum-private.h"
@@ -728,6 +729,7 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     offset+=ReadBlob(image,sizeof(dpx.image.image_element[i].description),
       (unsigned char *) dpx.image.image_element[i].description);
   }
+  SetImageColorspace(image,RGBColorspace,exception);
   SetPrimaryChromaticity((DPXColorimetric)
     dpx.image.image_element[0].colorimetric,&image->chromaticity);
   offset+=ReadBlob(image,sizeof(dpx.image.reserve),(unsigned char *)
@@ -1045,21 +1047,21 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     case CbYACrYA4224ComponentType:
     case CbYCr444ComponentType:
     {
-      image->colorspace=Rec709YCbCrColorspace;
+      SetImageColorspace(image,Rec709YCbCrColorspace,exception);
       break;
     }
     case LumaComponentType:
     {
-      image->colorspace=RGBColorspace;
+      SetImageColorspace(image,sRGBColorspace,exception);
       break;
     }
     default:
     {
-      image->colorspace=RGBColorspace;
+      SetImageColorspace(image,sRGBColorspace,exception);
       if (dpx.image.image_element[0].transfer == LogarithmicColorimetric)
-        image->colorspace=LogColorspace;
+        SetImageColorspace(image,LogColorspace,exception);
       if (dpx.image.image_element[0].transfer == PrintingDensityColorimetric)
-        image->colorspace=LogColorspace;
+        SetImageColorspace(image,LogColorspace,exception);
       break;
     }
   }
@@ -1290,6 +1292,9 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,Image *image,
   DPXInfo
     dpx;
 
+  GeometryInfo
+    geometry_info;
+
   MagickBooleanType
     status;
 
@@ -1298,9 +1303,6 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,Image *image,
 
   MagickStatusType
     flags;
-
-  GeometryInfo
-    geometry_info;
 
   QuantumInfo
     *quantum_info;
@@ -1704,7 +1706,8 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,Image *image,
     dpx.television.field_number=(unsigned char) StringToLong(value);
   offset+=WriteBlobByte(image,dpx.television.field_number);
   dpx.television.video_signal=0;
-  value=GetDPXProperty(image_info,image,"dpx:television.video_signal",exception);
+  value=GetDPXProperty(image_info,image,"dpx:television.video_signal",
+    exception);
   if (value != (const char *) NULL)
     dpx.television.video_signal=(unsigned char) StringToLong(value);
   offset+=WriteBlobByte(image,dpx.television.video_signal);
@@ -1714,18 +1717,15 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,Image *image,
     dpx.television.padding=(unsigned char) StringToLong(value);
   offset+=WriteBlobByte(image,dpx.television.padding);
   dpx.television.horizontal_sample_rate=0.0f;
-  value=GetDPXProperty(image_info,image,
-    "dpx:television.horizontal_sample_rate",exception);
+  value=GetDPXProperty(image_info,image,"dpx:television.horizontal_sample_rate",    exception);
   if (value != (const char *) NULL)
-    dpx.television.horizontal_sample_rate=StringToDouble(value,
-      (char **) NULL);
+    dpx.television.horizontal_sample_rate=StringToDouble(value,(char **) NULL);
   offset+=WriteBlobFloat(image,dpx.television.horizontal_sample_rate);
   dpx.television.vertical_sample_rate=0.0f;
   value=GetDPXProperty(image_info,image,"dpx:television.vertical_sample_rate",
     exception);
   if (value != (const char *) NULL)
-    dpx.television.vertical_sample_rate=StringToDouble(value,
-      (char **) NULL);
+    dpx.television.vertical_sample_rate=StringToDouble(value,(char **) NULL);
   offset+=WriteBlobFloat(image,dpx.television.vertical_sample_rate);
   dpx.television.frame_rate=0.0f;
   value=GetDPXProperty(image_info,image,"dpx:television.frame_rate",exception);
@@ -1811,8 +1811,7 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,Image *image,
     }
   extent=GetBytesPerRow(image->columns,image->matte != MagickFalse ? 4UL : 3UL,
     image->depth,MagickTrue);
-  if ((image_info->type != UndefinedType) &&
-      (image_info->type != TrueColorType) && (image->matte == MagickFalse) &&
+  if ((image_info->type != TrueColorType) && (image->matte == MagickFalse) &&
       (IsImageGray(image,exception) != MagickFalse))
     {
       quantum_type=GrayQuantum;

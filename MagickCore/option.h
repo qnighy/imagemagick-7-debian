@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -112,6 +112,41 @@ typedef enum
   AllValidate = 0x7fffffff
 } ValidateType;
 
+/*
+  Flags to describe classes of image processing options.
+  These are used to determine how a option should be processed, and
+  allow use to avoid attempting to process each option in every way posible.
+*/
+typedef enum
+{
+  UndefinedOptionFlag       = 0x0000,  /* option flag is not in use */
+
+  ImageInfoOptionFlag       = 0x0001,  /* Setting stored in ImageInfo */
+  DrawInfoOptionFlag        = 0x0002,  /* Setting stored in DrawInfo */
+  QuantizeInfoOptionFlag    = 0x0004,  /* Setting stored in QuantizeInfo */
+  GlobalOptionFlag          = 0x0008,  /* Global Setting or Control */
+  SettingOptionFlags        = 0x000F,  /* mask any setting option */
+
+  NoImageOperatorFlag       = 0x0010,  /* Images not required operator */
+  SimpleOperatorFlag        = 0x0020,  /* Simple Image processing operator */
+  ListOperatorFlag          = 0x0040,  /* Multi-Image processing operator */
+  GenesisOptionFlag         = 0x0080,  /* MagickCommandGenesis() Only Option */
+
+  SpecialOptionFlag         = 0x0100,  /* Operator with Special Requirements */
+                                       /* EG: for specific CLI commands */
+
+  AlwaysInterpretArgsFlag   = 0x0400,  /* Always Interpret escapes in Args */
+                                       /* CF: "convert" compatibility mode */
+  NeverInterpretArgsFlag    = 0x0800,  /* Never Interpret escapes in Args */
+                                       /* Typical because it's a filename */
+
+  NonMagickOptionFlag       = 0x1000,  /* Option not used by Magick Command */
+  FireOptionFlag            = 0x2000,  /* Convert operation seq firing point */
+  DeprecateOptionFlag       = 0x4000,  /* Deprecate option (no code) */
+  ReplacedOptionFlag        = 0x8800   /* Replaced Option (but still works) */
+
+} CommandOptionFlags;
+
 typedef struct _OptionInfo
 {
   const char
@@ -125,24 +160,6 @@ typedef struct _OptionInfo
     stealth;
 } OptionInfo;
 
-/*
-  Flags to describe classes of image processing options.
-*/
-typedef enum
-{
-  UndefinedOptionFlag       = 0x0000,
-  FireOptionFlag            = 0x0001,  /* Option sequence firing point */
-  ImageInfoOptionFlag       = 0x0002,  /* Sets ImageInfo, no image needed */
-  DrawInfoOptionFlag        = 0x0004,  /* Sets DrawInfo, no image needed */
-  QuantizeInfoOptionFlag    = 0x0008,  /* Sets QuantizeInfo, no image needed */
-  GlobalOptionFlag          = 0x0010,  /* Sets Global Option, no image needed */
-  SimpleOperatorOptionFlag  = 0x0100,  /* Simple Image processing operator */
-  ListOperatorOptionFlag    = 0x0200,  /* Multi-Image List processing operator */
-  SpecialOperatorOptionFlag = 0x0400,  /* Specially handled Operator Option */
-  GenesisOptionFlag         = 0x0400,  /* Genesis Command Wrapper Option  */
-  NonConvertOptionFlag      = 0x4000,  /* Option not used by Convert */
-  DeprecateOptionFlag       = 0x8000   /* Deprecate option, give warning */
-} CommandOptionFlags;
 
 extern MagickExport char
   **GetCommandOptions(const CommandOption),
@@ -165,12 +182,16 @@ extern MagickExport ssize_t
   GetCommandOptionFlags(const CommandOption,const MagickBooleanType,
     const char *),
   ParseChannelOption(const char *),
+  ParsePixelChannelOption(const char *),
   ParseCommandOption(const CommandOption,const MagickBooleanType,const char *);
 
 extern MagickExport void
   DestroyImageOptions(ImageInfo *),
   ResetImageOptions(const ImageInfo *),
   ResetImageOptionIterator(const ImageInfo *);
+
+extern MagickExport const OptionInfo
+  *GetCommandOptionInfo(const char *value);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

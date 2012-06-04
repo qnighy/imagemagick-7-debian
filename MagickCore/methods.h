@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -543,7 +543,7 @@ extern "C" {
 #define GetOneCacheViewVirtualMethodPixel  PrependMagickMethod(GetOneCacheViewVirtualMethodPixel)
 #define GetOneCacheViewVirtualPixel  PrependMagickMethod(GetOneCacheViewVirtualPixel)
 #define GetOnePixel  PrependMagickMethod(GetOnePixel)
-#define GetOneVirtualMagickPixel  PrependMagickMethod(GetOneVirtualMagickPixel)
+#define GetOneVirtualPixelInfo  PrependMagickMethod(GetOneVirtualPixelInfo)
 #define GetOneVirtualMethodPixel  PrependMagickMethod(GetOneVirtualMethodPixel)
 #define GetOneVirtualPixel  PrependMagickMethod(GetOneVirtualPixel)
 #define GetOptimalKernelWidth1D  PrependMagickMethod(GetOptimalKernelWidth1D)
@@ -838,7 +838,7 @@ extern "C" {
 #define QueryColorname  PrependMagickMethod(QueryColorname)
 #define QueryColorname  PrependMagickMethod(QueryColorname)
 #define QueryMagickColor  PrependMagickMethod(QueryMagickColor)
-#define QueueAuthenticNexus  PrependMagickMethod(QueueAuthenticNexus)
+#define QueueAuthenticPixelCacheNexus  PrependMagickMethod(QueueAuthenticPixelCacheNexus)
 #define QueueAuthenticPixels  PrependMagickMethod(QueueAuthenticPixels)
 #define QueueCacheViewAuthenticPixels  PrependMagickMethod(QueueCacheViewAuthenticPixels)
 #define RadialBlurImage  PrependMagickMethod(RadialBlurImage)
@@ -1029,13 +1029,13 @@ extern "C" {
 #define ResourceComponentGenesis  PrependMagickMethod(ResourceComponentGenesis)
 #define ResourceComponentTerminus  PrependMagickMethod(ResourceComponentTerminus)
 #define ReverseImageList  PrependMagickMethod(ReverseImageList)
-#define RGBTransformImage  PrependMagickMethod(RGBTransformImage)
+#define sRGBTransformImage  PrependMagickMethod(sRGBTransformImage)
 #define RollImage  PrependMagickMethod(RollImage)
 #define RotateImage  PrependMagickMethod(RotateImage)
 #define SampleImage  PrependMagickMethod(SampleImage)
 #define ScaleImage  PrependMagickMethod(ScaleImage)
 #define ScaleResampleFilter  PrependMagickMethod(ScaleResampleFilter)
-#define SeedPseudoRandomGenerator  PrependMagickMethod(SeedPseudoRandomGenerator)
+#define SetRandomSecretKey  PrependMagickMethod(SetRandomSecretKey)
 #define SeekBlob  PrependMagickMethod(SeekBlob)
 #define SegmentImage  PrependMagickMethod(SegmentImage)
 #define SelectiveBlurImage  PrependMagickMethod(SelectiveBlurImage)
@@ -1188,7 +1188,7 @@ extern "C" {
 #define TransformImageColorspace  PrependMagickMethod(TransformImageColorspace)
 #define TransformImage  PrependMagickMethod(TransformImage)
 #define TransformImages  PrependMagickMethod(TransformImages)
-#define TransformRGBImage  PrependMagickMethod(TransformRGBImage)
+#define TransformsRGBImage  PrependMagickMethod(TransformsRGBImage)
 #define TranslateText  PrependMagickMethod(TranslateText)
 #define TransparentImage  PrependMagickMethod(TransparentImage)
 #define TransparentPaintImageChroma  PrependMagickMethod(TransparentPaintImageChroma)

@@ -17,7 +17,7 @@
 %                                  July 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -49,6 +49,7 @@
 #include "MagickCore/color-private.h"
 #include "MagickCore/colormap.h"
 #include "MagickCore/composite.h"
+#include "MagickCore/constitute.h"
 #include "MagickCore/display.h"
 #include "MagickCore/distort.h"
 #include "MagickCore/exception.h"
@@ -76,6 +77,7 @@
 #include "MagickCore/string_.h"
 #include "MagickCore/string-private.h"
 #include "MagickCore/transform.h"
+#include "MagickCore/token.h"
 #include "MagickCore/utility.h"
 #include "MagickCore/utility-private.h"
 #include "MagickCore/widget.h"
@@ -483,9 +485,6 @@ MagickPrivate MagickBooleanType XAnnotateImage(Display *display,
   Pixmap
     annotate_pixmap;
 
-  Quantum
-    virtual_pixel[CompositePixelChannel];
-
   unsigned int
     depth,
     height,
@@ -558,15 +557,11 @@ MagickPrivate MagickBooleanType XAnnotateImage(Display *display,
   x=0;
   y=0;
   (void) XParseGeometry(annotate_info->geometry,&x,&y,&width,&height);
-  (void) GetOneVirtualPixel(image,(ssize_t) x,(ssize_t) y,virtual_pixel,
-    exception);
-  annotate_image->background_color.red=virtual_pixel[RedPixelChannel];
-  annotate_image->background_color.green=virtual_pixel[GreenPixelChannel];
-  annotate_image->background_color.blue=virtual_pixel[BluePixelChannel];
-  annotate_image->background_color.alpha=virtual_pixel[AlphaPixelChannel];
+  (void) GetOneVirtualPixelInfo(image,UndefinedVirtualPixelMethod,(ssize_t) x,
+    (ssize_t) y,&annotate_image->background_color,exception);
   if (annotate_info->stencil == ForegroundStencil)
     annotate_image->matte=MagickTrue;
-  annotate_view=AcquireCacheView(annotate_image);
+  annotate_view=AcquireAuthenticCacheView(annotate_image,exception);
   for (y=0; y < (int) annotate_image->rows; y++)
   {
     register int
@@ -701,9 +696,9 @@ MagickPrivate MagickBooleanType XAnnotateImage(Display *display,
   */
   (void) XParseGeometry(annotate_info->geometry,&x,&y,&width,&height);
   matte=image->matte;
-  (void) CompositeImage(image,annotate_image->matte != MagickFalse ?
-    OverCompositeOp : CopyCompositeOp,annotate_image,(ssize_t) x,(ssize_t) y,
-    exception);
+  (void) CompositeImage(image,annotate_image,
+    annotate_image->matte != MagickFalse ? OverCompositeOp : CopyCompositeOp,
+    MagickTrue,(ssize_t) x,(ssize_t) y,exception);
   image->matte=matte;
   annotate_image=DestroyImage(annotate_image);
   return(MagickTrue);
@@ -2232,7 +2227,7 @@ static void XDitherImage(Image *image,XImage *ximage,ExceptionInfo *exception)
   i=0;
   j=0;
   q=ximage->data;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (int) image->rows; y++)
   {
     p=GetCacheViewVirtualPixels(image_view,0,(ssize_t) y,image->columns,1,
@@ -2241,12 +2236,12 @@ static void XDitherImage(Image *image,XImage *ximage,ExceptionInfo *exception)
       break;
     for (x=0; x < (int) image->columns; x++)
     {
-      color.red=ClampToQuantum((MagickRealType) (red_map[i][j][(int)
-        ScaleQuantumToChar(GetPixelRed(image,p))] << 8));
-      color.green=ClampToQuantum((MagickRealType) (green_map[i][j][(int)
-        ScaleQuantumToChar(GetPixelGreen(image,p))] << 8));
-      color.blue=ClampToQuantum((MagickRealType) (blue_map[i][j][(int)
-        ScaleQuantumToChar(GetPixelBlue(image,p))] << 8));
+      color.red=(double) ClampToQuantum((MagickRealType) (red_map[i][j][
+        (int) ScaleQuantumToChar(GetPixelRed(image,p))] << 8));
+      color.green=(double) ClampToQuantum((MagickRealType) (green_map[i][j][
+        (int) ScaleQuantumToChar(GetPixelGreen(image,p))] << 8));
+      color.blue=(double) ClampToQuantum((MagickRealType) (blue_map[i][j][
+        (int) ScaleQuantumToChar(GetPixelBlue(image,p))] << 8));
       pixel=(size_t) (((size_t) color.red & 0xe0) |
         (((size_t) color.green & 0xe0) >> 3) |
         (((size_t) color.blue & 0xc0) >> 6));
@@ -2325,9 +2320,6 @@ MagickPrivate MagickBooleanType XDrawImage(Display *display,
 
   MagickBooleanType
     matte;
-
-  Quantum
-    virtual_pixel[CompositePixelChannel];
 
   Pixmap
     draw_pixmap;
@@ -2487,16 +2479,12 @@ MagickPrivate MagickBooleanType XDrawImage(Display *display,
   x=0;
   y=0;
   (void) XParseGeometry(draw_info->geometry,&x,&y,&width,&height);
-  (void) GetOneVirtualPixel(image,(ssize_t) x,(ssize_t) y,virtual_pixel,
-    exception);
-  draw_image->background_color.red=virtual_pixel[RedPixelChannel];
-  draw_image->background_color.green=virtual_pixel[GreenPixelChannel];
-  draw_image->background_color.blue=virtual_pixel[BluePixelChannel];
-  draw_image->background_color.alpha=virtual_pixel[AlphaPixelChannel];
+  (void) GetOneVirtualPixelInfo(image,UndefinedVirtualPixelMethod,(ssize_t) x,
+    (ssize_t) y,&draw_image->background_color,exception);
   if (SetImageStorageClass(draw_image,DirectClass,exception) == MagickFalse)
     return(MagickFalse);
   draw_image->matte=MagickTrue;
-  draw_view=AcquireCacheView(draw_image);
+  draw_view=AcquireAuthenticCacheView(draw_image,exception);
   for (y=0; y < (int) draw_image->rows; y++)
   {
     register int
@@ -2622,7 +2610,7 @@ MagickPrivate MagickBooleanType XDrawImage(Display *display,
   /*
     Composite text onto the image.
   */
-  draw_view=AcquireCacheView(draw_image);
+  draw_view=AcquireAuthenticCacheView(draw_image,exception);
   for (y=0; y < (int) draw_image->rows; y++)
   {
     register int
@@ -2647,13 +2635,13 @@ MagickPrivate MagickBooleanType XDrawImage(Display *display,
   draw_view=DestroyCacheView(draw_view);
   (void) XParseGeometry(draw_info->geometry,&x,&y,&width,&height);
   if (draw_info->stencil == TransparentStencil)
-    (void) CompositeImage(image,CopyOpacityCompositeOp,draw_image,(ssize_t) x,
-      (ssize_t) y,exception);
+    (void) CompositeImage(image,draw_image,CopyAlphaCompositeOp,MagickTrue,
+      (ssize_t) x,(ssize_t) y,exception);
   else
     {
       matte=image->matte;
-      (void) CompositeImage(image,OverCompositeOp,draw_image,(ssize_t) x,
-        (ssize_t) y,exception);
+      (void) CompositeImage(image,draw_image,OverCompositeOp,MagickTrue,
+        (ssize_t) x,(ssize_t) y,exception);
       image->matte=matte;
     }
   draw_image=DestroyImage(draw_image);
@@ -3062,6 +3050,10 @@ MagickPrivate void XGetPixelInfo(Display *display,
 
   Colormap
     colormap;
+
+  extern const char
+    BorderColor[],
+    ForegroundColor[];
 
   register ssize_t
     i;
@@ -3490,6 +3482,10 @@ MagickExport void XGetResourceInfo(const ImageInfo *image_info,
     *directory,
     *resource_value;
 
+  extern const char
+    BorderColor[],
+    ForegroundColor[];
+
   /*
     Initialize resource info fields.
   */
@@ -3505,7 +3501,7 @@ MagickExport void XGetResourceInfo(const ImageInfo *image_info,
   resource_info->client_name=AcquireString(client_name);
   resource_value=XGetResourceClass(database,client_name,"backdrop",
     (char *) "False");
-  resource_info->backdrop=IsMagickTrue(resource_value);
+  resource_info->backdrop=IsStringTrue(resource_value);
   resource_info->background_color=XGetResourceInstance(database,client_name,
     "background",(char *) "#d6d6d6d6d6d6");
   resource_info->border_color=XGetResourceInstance(database,client_name,
@@ -3526,20 +3522,20 @@ MagickExport void XGetResourceInfo(const ImageInfo *image_info,
       resource_value);
   resource_value=XGetResourceClass(database,client_name,
     "colorRecovery",(char *) "False");
-  resource_info->color_recovery=IsMagickTrue(resource_value);
+  resource_info->color_recovery=IsStringTrue(resource_value);
   resource_value=XGetResourceClass(database,client_name,"confirmExit",
     (char *) "False");
-  resource_info->confirm_exit=IsMagickTrue(resource_value);
+  resource_info->confirm_exit=IsStringTrue(resource_value);
   resource_value=XGetResourceClass(database,client_name,"confirmEdit",
     (char *) "False");
-  resource_info->confirm_edit=IsMagickTrue(resource_value);
+  resource_info->confirm_edit=IsStringTrue(resource_value);
   resource_value=XGetResourceClass(database,client_name,"delay",(char *) "1");
   resource_info->delay=(unsigned int) StringToUnsignedLong(resource_value);
   resource_info->display_gamma=XGetResourceClass(database,client_name,
     "displayGamma",(char *) "2.2");
   resource_value=XGetResourceClass(database,client_name,"displayWarnings",
     (char *) "True");
-  resource_info->display_warnings=IsMagickTrue(resource_value);
+  resource_info->display_warnings=IsStringTrue(resource_value);
   resource_info->font=XGetResourceClass(database,client_name,"font",
     (char *) NULL);
   resource_info->font=XGetResourceClass(database,client_name,"fontList",
@@ -3570,7 +3566,7 @@ MagickExport void XGetResourceInfo(const ImageInfo *image_info,
     "foreground",ForegroundColor);
   resource_value=XGetResourceClass(database,client_name,"gammaCorrect",
     (char *) "True");
-  resource_info->gamma_correct=IsMagickTrue(resource_value);
+  resource_info->gamma_correct=IsStringTrue(resource_value);
   resource_info->image_geometry=ConstantString(XGetResourceClass(database,
     client_name,"geometry",(char *) NULL));
   resource_value=XGetResourceClass(database,client_name,"gravity",
@@ -3583,11 +3579,11 @@ MagickExport void XGetResourceInfo(const ImageInfo *image_info,
     "iconGeometry",(char *) NULL);
   resource_value=XGetResourceClass(database,client_name,"iconic",
     (char *) "False");
-  resource_info->iconic=IsMagickTrue(resource_value);
+  resource_info->iconic=IsStringTrue(resource_value);
   resource_value=XGetResourceClass(database,client_name,"immutable",
     LocaleCompare(client_name,"PerlMagick") == 0 ? (char *) "True" :
     (char *) "False");
-  resource_info->immutable=IsMagickTrue(resource_value);
+  resource_info->immutable=IsStringTrue(resource_value);
   resource_value=XGetResourceClass(database,client_name,"magnify",
     (char *) "3");
   resource_info->magnify=(unsigned int) StringToUnsignedLong(resource_value);
@@ -3634,13 +3630,13 @@ MagickExport void XGetResourceInfo(const ImageInfo *image_info,
   resource_info->undo_cache=(unsigned int) StringToUnsignedLong(resource_value);
   resource_value=XGetResourceClass(database,client_name,"update",
     (char *) "False");
-  resource_info->update=IsMagickTrue(resource_value);
+  resource_info->update=IsStringTrue(resource_value);
   resource_value=XGetResourceClass(database,client_name,"usePixmap",
     (char *) "True");
-  resource_info->use_pixmap=IsMagickTrue(resource_value);
+  resource_info->use_pixmap=IsStringTrue(resource_value);
   resource_value=XGetResourceClass(database,client_name,"sharedMemory",
     (char *) "True");
-  resource_info->use_shared_memory=IsMagickTrue(resource_value);
+  resource_info->use_shared_memory=IsStringTrue(resource_value);
   resource_info->visual_type=XGetResourceClass(database,client_name,"visual",
     (char *) NULL);
   resource_info->window_group=XGetResourceClass(database,client_name,
@@ -3940,9 +3936,9 @@ MagickPrivate MagickBooleanType XGetWindowColor(Display *display,
     Match color against the color database.
   */
   (void) XQueryColor(display,window_attributes.colormap,&color);
-  pixel.red=ScaleShortToQuantum(color.red);
-  pixel.green=ScaleShortToQuantum(color.green);
-  pixel.blue=ScaleShortToQuantum(color.blue);
+  pixel.red=(double) ScaleShortToQuantum(color.red);
+  pixel.green=(double) ScaleShortToQuantum(color.green);
+  pixel.blue=(double) ScaleShortToQuantum(color.blue);
   pixel.alpha=OpaqueAlpha;
   (void) QueryColorname(windows->image.image,&pixel,X11Compliance,name,
     exception);
@@ -4370,7 +4366,7 @@ static Image *XGetWindowImage(Display *display,const Window window,
           composite_image->storage_class=PseudoClass;
         composite_image->columns=(size_t) ximage->width;
         composite_image->rows=(size_t) ximage->height;
-        composite_view=AcquireCacheView(composite_image);
+        composite_view=AcquireAuthenticCacheView(composite_image,exception);
         switch (composite_image->storage_class)
         {
           case DirectClass:
@@ -4486,11 +4482,11 @@ static Image *XGetWindowImage(Display *display,const Window window,
               }
             for (i=0; i < (int) composite_image->colors; i++)
             {
-              composite_image->colormap[colors[i].pixel].red=
+              composite_image->colormap[colors[i].pixel].red=(double)
                 ScaleShortToQuantum(colors[i].red);
-              composite_image->colormap[colors[i].pixel].green=
+              composite_image->colormap[colors[i].pixel].green=(double)
                 ScaleShortToQuantum(colors[i].green);
-              composite_image->colormap[colors[i].pixel].blue=
+              composite_image->colormap[colors[i].pixel].blue=(double)
                 ScaleShortToQuantum(colors[i].blue);
             }
             /*
@@ -4535,8 +4531,9 @@ static Image *XGetWindowImage(Display *display,const Window window,
         y_offset-=(int) crop_info.y;
         if (y_offset < 0)
           y_offset=0;
-        (void) CompositeImage(image,CopyCompositeOp,composite_image,(ssize_t)
-          x_offset,(ssize_t) y_offset,exception);
+        (void) CompositeImage(image,composite_image,CopyCompositeOp,MagickTrue,
+          (ssize_t) x_offset,(ssize_t) y_offset,exception);
+        composite_image=DestroyImage(composite_image);
       }
       /*
         Relinquish resources.
@@ -5013,7 +5010,6 @@ MagickExport Image *XImportImage(const ImageInfo *image_info,
           if ((ximage_info->frame == MagickFalse) &&
               (prior_target != MagickFalse))
             target=prior_target;
-          XDelay(display,SuspendTime << 4);
         }
     }
   if (ximage_info->screen)
@@ -5947,8 +5943,8 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
         {
           canvas=CloneImage(image,0,0,MagickTrue,exception);
           if (canvas != (Image *) NULL)
-            (void) CompositeImage(canvas,DstOverCompositeOp,pattern,0,0,
-              exception);
+            (void) CompositeImage(canvas,pattern,DstOverCompositeOp,MagickTrue,
+              0,0,exception);
           pattern=DestroyImage(pattern);
         }
     }
@@ -5958,7 +5954,7 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
   pixels=window->pixel_info->pixels;
   q=(unsigned char *) ximage->data;
   x=0;
-  canvas_view=AcquireCacheView(canvas);
+  canvas_view=AcquireVirtualCacheView(canvas,exception);
   if (ximage->format == XYBitmap)
     {
       register unsigned short
@@ -6114,7 +6110,7 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
             Convert to 8 bit color-mapped X canvas.
           */
           if (resource_info->color_recovery &&
-              resource_info->quantize_info->dither)
+              resource_info->quantize_info->dither_method != NoDitherMethod)
             {
               XDitherImage(canvas,ximage,exception);
               break;
@@ -6277,7 +6273,7 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
             Convert to contiguous 8 bit continuous-tone X canvas.
           */
           if (resource_info->color_recovery &&
-              resource_info->quantize_info->dither)
+              resource_info->quantize_info->dither_method != NoDitherMethod)
             {
               XDitherImage(canvas,ximage,exception);
               break;
@@ -6579,8 +6575,8 @@ static void XMakeImageMSBFirst(const XResourceInfo *resource_info,
         {
           canvas=CloneImage(image,0,0,MagickTrue,exception);
           if (canvas != (Image *) NULL)
-            (void) CompositeImage(canvas,DstOverCompositeOp,pattern,0,0,
-              exception);
+            (void) CompositeImage(canvas,pattern,DstOverCompositeOp,MagickFalse,
+              0,0,exception);
           pattern=DestroyImage(pattern);
         }
     }
@@ -6590,7 +6586,7 @@ static void XMakeImageMSBFirst(const XResourceInfo *resource_info,
   pixels=window->pixel_info->pixels;
   q=(unsigned char *) ximage->data;
   x=0;
-  canvas_view=AcquireCacheView(canvas);
+  canvas_view=AcquireVirtualCacheView(canvas,exception);
   if (ximage->format == XYBitmap)
     {
       register unsigned short
@@ -6748,7 +6744,7 @@ static void XMakeImageMSBFirst(const XResourceInfo *resource_info,
             Convert to 8 bit color-mapped X canvas.
           */
           if (resource_info->color_recovery &&
-              resource_info->quantize_info->dither)
+              resource_info->quantize_info->dither_method != NoDitherMethod)
             {
               XDitherImage(canvas,ximage,exception);
               break;
@@ -6912,7 +6908,7 @@ static void XMakeImageMSBFirst(const XResourceInfo *resource_info,
             Convert to 8 bit continuous-tone X canvas.
           */
           if (resource_info->color_recovery &&
-              resource_info->quantize_info->dither)
+              resource_info->quantize_info->dither_method != NoDitherMethod)
             {
               XDitherImage(canvas,ximage,exception);
               break;
@@ -7527,7 +7523,7 @@ MagickPrivate void XMakeMagnifyImage(Display *display,XWindows *windows,
   /*
     Show center pixel color.
   */
-  (void) GetOneVirtualMagickPixel(windows->image.image,TileVirtualPixelMethod,
+  (void) GetOneVirtualPixelInfo(windows->image.image,TileVirtualPixelMethod,
     (ssize_t) windows->magnify.x,(ssize_t) windows->magnify.y,&pixel,exception);
   (void) FormatLocaleString(tuple,MaxTextExtent,"%d,%d: ",
     windows->magnify.x,windows->magnify.y);
@@ -7801,7 +7797,7 @@ MagickPrivate void XMakeStandardColormap(Display *display,
       if ((map_info->red_max*map_info->green_max*map_info->blue_max) != 0)
         if ((image->matte == MagickFalse) &&
             (resource_info->color_recovery == MagickFalse) &&
-            resource_info->quantize_info->dither &&
+            (resource_info->quantize_info->dither_method != NoDitherMethod) &&
             (number_colors < MaxColormapSize))
           {
             Image
@@ -8011,13 +8007,13 @@ MagickPrivate void XMakeStandardColormap(Display *display,
               "UnableToCreateColormap",image->filename);
           for (i=0; i < (ssize_t) image->colors; i++)
           {
-            diversity[i].red=image->colormap[i].red;
-            diversity[i].green=image->colormap[i].green;
-            diversity[i].blue=image->colormap[i].blue;
+            diversity[i].red=ClampToQuantum(image->colormap[i].red);
+            diversity[i].green=ClampToQuantum(image->colormap[i].green);
+            diversity[i].blue=ClampToQuantum(image->colormap[i].blue);
             diversity[i].index=(unsigned short) i;
             diversity[i].count=0;
           }
-          image_view=AcquireCacheView(image);
+          image_view=AcquireAuthenticCacheView(image,exception);
           for (y=0; y < (int) image->rows; y++)
           {
             register int
@@ -9381,7 +9377,8 @@ MagickPrivate void XUserPreferences(XResourceInfo *resource_info)
   value=resource_info->display_warnings ? "True" : "False";
   XrmPutStringResource(&preferences_database,specifier,(char *) value);
   (void) FormatLocaleString(specifier,MaxTextExtent,"%s.dither",client_name);
-  value=resource_info->quantize_info->dither ? "True" : "False";
+  value=resource_info->quantize_info->dither_method != NoDitherMethod ?
+    "True" : "False";
   XrmPutStringResource(&preferences_database,specifier,(char *) value);
   (void) FormatLocaleString(specifier,MaxTextExtent,"%s.gammaCorrect",
     client_name);
@@ -9740,7 +9737,8 @@ MagickPrivate Window XWindowByProperty(Display *display,const Window window,
 %
 %  The format of the XImportImage method is:
 %
-%      Image *XImportImage(const ImageInfo *image_info,XImportInfo *ximage_info)
+%      Image *XImportImage(const ImageInfo *image_info,XImportInfo *ximage_info,
+%        ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -9748,9 +9746,11 @@ MagickPrivate Window XWindowByProperty(Display *display,const Window window,
 %
 %    o ximage_info: Specifies a pointer to an XImportInfo structure.
 %
+%    o exception: return any errors or warnings in this structure.
+%
 */
 MagickPrivate Image *XImportImage(const ImageInfo *image_info,
-  XImportInfo *ximage_info)
+  XImportInfo *ximage_info,ExceptionInfo *exception)
 {
   assert(image_info != (const ImageInfo *) NULL);
   assert(image_info->signature == MagickSignature);
@@ -9758,6 +9758,8 @@ MagickPrivate Image *XImportImage(const ImageInfo *image_info,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(ximage_info != (XImportInfo *) NULL);
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickSignature);
   return((Image *) NULL);
 }
 #endif

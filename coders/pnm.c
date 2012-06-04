@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -195,8 +195,11 @@ static size_t PNMInteger(Image *image,const unsigned int base,
               p=comment+strlen(comment);
             }
           c=ReadBlobByte(image);
-          *p=(char) c;
-          *(p+1)='\0';
+          if (c != (int) '\n')
+            {
+              *p=(char) c;
+              *(p+1)='\0';
+            }
         }
         if (comment == (char *) NULL)
           return(0);
@@ -369,38 +372,42 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           if (LocaleCompare(keyword,"TUPLTYPE") == 0)
             {
               if (LocaleCompare(value,"BLACKANDWHITE") == 0)
-                quantum_type=GrayQuantum;
+                {
+                  SetImageColorspace(image,GRAYColorspace,exception);
+                  quantum_type=GrayQuantum;
+                }
               if (LocaleCompare(value,"BLACKANDWHITE_ALPHA") == 0)
                 {
-                  quantum_type=GrayAlphaQuantum;
+                  SetImageColorspace(image,GRAYColorspace,exception);
                   image->matte=MagickTrue;
+                  quantum_type=GrayAlphaQuantum;
                 }
               if (LocaleCompare(value,"GRAYSCALE") == 0)
                 {
-                  image->colorspace=GRAYColorspace;
                   quantum_type=GrayQuantum;
+                  SetImageColorspace(image,GRAYColorspace,exception);
                 }
               if (LocaleCompare(value,"GRAYSCALE_ALPHA") == 0)
                 {
-                  image->colorspace=GRAYColorspace;
+                  SetImageColorspace(image,GRAYColorspace,exception);
                   image->matte=MagickTrue;
                   quantum_type=GrayAlphaQuantum;
                 }
               if (LocaleCompare(value,"RGB_ALPHA") == 0)
                 {
-                  quantum_type=RGBAQuantum;
                   image->matte=MagickTrue;
+                  quantum_type=RGBAQuantum;
                 }
               if (LocaleCompare(value,"CMYK") == 0)
                 {
+                  SetImageColorspace(image,CMYKColorspace,exception);
                   quantum_type=CMYKQuantum;
-                  image->colorspace=CMYKColorspace;
                 }
               if (LocaleCompare(value,"CMYK_ALPHA") == 0)
                 {
-                  quantum_type=CMYKAQuantum;
-                  image->colorspace=CMYKColorspace;
+                  SetImageColorspace(image,CMYKColorspace,exception);
                   image->matte=MagickTrue;
+                  quantum_type=CMYKAQuantum;
                 }
             }
           if (LocaleCompare(keyword,"width") == 0)
@@ -428,7 +435,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Convert PBM image to pixel packets.
         */
-        image->colorspace=GRAYColorspace;
+        SetImageColorspace(image,GRAYColorspace,exception);
         for (y=0; y < (ssize_t) image->rows; y++)
         {
           register ssize_t
@@ -442,10 +449,8 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             break;
           for (x=0; x < (ssize_t) image->columns; x++)
           {
-            SetPixelRed(image,PNMInteger(image,2,exception) == 0 ?
+            SetPixelGray(image,PNMInteger(image,2,exception) == 0 ?
               QuantumRange : 0,q);
-            SetPixelGreen(image,GetPixelRed(image,q),q);
-            SetPixelBlue(image,GetPixelRed(image,q),q);
             q+=GetPixelChannels(image);
           }
           if (SyncAuthenticPixels(image,exception) == MagickFalse)
@@ -469,7 +474,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Convert PGM image to pixel packets.
         */
-        image->colorspace=GRAYColorspace;
+        SetImageColorspace(image,GRAYColorspace,exception);
         scale=(Quantum *) NULL;
         if (max_value != (1U*QuantumRange))
           {
@@ -497,12 +502,10 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           for (x=0; x < (ssize_t) image->columns; x++)
           {
             intensity=PNMInteger(image,10,exception);
-            SetPixelRed(image,intensity,q);
+            SetPixelGray(image,intensity,q);
             if (scale != (Quantum *) NULL)
-              SetPixelRed(image,scale[ConstrainPixel(image,(ssize_t) intensity,
+              SetPixelGray(image,scale[ConstrainPixel(image,(ssize_t) intensity,
                 max_value,exception)],q);
-            SetPixelGreen(image,GetPixelRed(image,q),q);
-            SetPixelBlue(image,GetPixelRed(image,q),q);
             q+=GetPixelChannels(image);
           }
           if (SyncAuthenticPixels(image,exception) == MagickFalse)
@@ -590,7 +593,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Convert PBM raw image to pixel packets.
         */
-        image->colorspace=GRAYColorspace;
+        SetImageColorspace(image,GRAYColorspace,exception);
         quantum_type=GrayQuantum;
         if (image->storage_class == PseudoClass)
           quantum_type=IndexQuantum;
@@ -665,7 +668,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Convert PGM raw image to pixel packets.
         */
-        image->colorspace=GRAYColorspace;
+        SetImageColorspace(image,GRAYColorspace,exception);
         range=GetQuantumRange(image->depth);
         quantum_type=GrayQuantum;
         extent=(image->depth <= 8 ? 1 : 2)*image->columns;
@@ -732,9 +735,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 for (x=0; x < (ssize_t) image->columns; x++)
                 {
                   p=PushCharPixel(p,&pixel);
-                  SetPixelRed(image,ScaleAnyToQuantum(pixel,range),q);
-                  SetPixelGreen(image,GetPixelRed(image,q),q);
-                  SetPixelBlue(image,GetPixelRed(image,q),q);
+                  SetPixelGray(image,ScaleAnyToQuantum(pixel,range),q);
                   q+=GetPixelChannels(image);
                 }
               }
@@ -746,9 +747,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 for (x=0; x < (ssize_t) image->columns; x++)
                 {
                   p=PushShortPixel(MSBEndian,p,&pixel);
-                  SetPixelRed(image,ScaleAnyToQuantum(pixel,range),q);
-                  SetPixelGreen(image,GetPixelRed(image,q),q);
-                  SetPixelBlue(image,GetPixelRed(image,q),q);
+                  SetPixelGray(image,ScaleAnyToQuantum(pixel,range),q);
                   q+=GetPixelChannels(image);
                 }
               }
@@ -1021,9 +1020,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     for (x=0; x < (ssize_t) image->columns; x++)
                     {
                       p=PushCharPixel(p,&pixel);
-                      SetPixelRed(image,ScaleAnyToQuantum(pixel,range),q);
-                      SetPixelGreen(image,GetPixelRed(image,q),q);
-                      SetPixelBlue(image,GetPixelRed(image,q),q);
+                      SetPixelGray(image,ScaleAnyToQuantum(pixel,range),q);
                       SetPixelAlpha(image,OpaqueAlpha,q);
                       if (image->matte != MagickFalse)
                         {
@@ -1041,9 +1038,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     for (x=0; x < (ssize_t) image->columns; x++)
                     {
                       p=PushShortPixel(MSBEndian,p,&pixel);
-                      SetPixelRed(image,ScaleAnyToQuantum(pixel,range),q);
-                      SetPixelGreen(image,GetPixelRed(image,q),q);
-                      SetPixelBlue(image,GetPixelRed(image,q),q);
+                      SetPixelGray(image,ScaleAnyToQuantum(pixel,range),q);
                       SetPixelAlpha(image,OpaqueAlpha,q);
                       if (image->matte != MagickFalse)
                         {
@@ -1173,6 +1168,8 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Convert PFM raster image to pixel packets.
         */
+        if (format == 'f')
+          SetImageColorspace(image,GRAYColorspace,exception);
         quantum_type=format == 'f' ? GrayQuantum : RGBQuantum;
         image->endian=quantum_scale < 0.0 ? LSBEndian : MSBEndian;
         image->depth=32;
@@ -1251,8 +1248,11 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     }
     if (EOFBlob(image) != MagickFalse)
-      (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageError,
-        "UnexpectedEndOfFile","`%s'",image->filename);
+      {
+        (void) ThrowMagickException(exception,GetMagickModule(),
+          CorruptImageError,"UnexpectedEndOfFile","`%s'",image->filename);
+        break;
+      }
     /*
       Proceed to next image.
     */
@@ -1564,8 +1564,8 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image,
       }
     if (format != '7')
       {
-        if (IsRGBColorspace(image->colorspace) == MagickFalse)
-          (void) TransformImageColorspace(image,RGBColorspace,exception);
+        if (IssRGBColorspace(image->colorspace) == MagickFalse)
+          (void) TransformImageColorspace(image,sRGBColorspace,exception);
         (void) FormatLocaleString(buffer,MaxTextExtent,"%.20g %.20g\n",
           (double) image->columns,(double) image->rows);
         (void) WriteBlobString(image,buffer);

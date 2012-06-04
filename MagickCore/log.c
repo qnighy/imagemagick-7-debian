@@ -17,7 +17,7 @@
 %                                September 2002                               %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1354,7 +1354,7 @@ static MagickBooleanType LoadLogList(const char *xml,const char *filename,
             {
               if (depth > 200)
                 (void) ThrowMagickException(exception,GetMagickModule(),
-                  ConfigureError,"IncludeElementNestedTooDeeply","`%s'",token);
+                  ConfigureError,"IncludeElementNestedTooDeeply","'%s'",token);
               else
                 {
                   char
@@ -1402,7 +1402,7 @@ static MagickBooleanType LoadLogList(const char *xml,const char *filename,
         status=AppendValueToLinkedList(log_list,log_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
-            ResourceLimitError,"MemoryAllocationFailed","`%s'",filename);
+            ResourceLimitError,"MemoryAllocationFailed","'%s'",filename);
         log_info=(LogInfo *) NULL;
       }
     GetMagickToken(q,(const char **) NULL,token);
@@ -1563,7 +1563,7 @@ static MagickBooleanType LoadLogLists(const char *filename,
     if (log_info == (LogInfo *) NULL)
       {
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",log_info->name);
+          ResourceLimitError,"MemoryAllocationFailed","'%s'",log_info->name);
         continue;
       }
     (void) ResetMagickMemory(log_info,0,sizeof(*log_info));
@@ -1578,7 +1578,7 @@ static MagickBooleanType LoadLogLists(const char *filename,
     status=AppendValueToLinkedList(log_list,log_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",log_info->name);
+        ResourceLimitError,"MemoryAllocationFailed","'%s'",log_info->name);
   }
   /*
     Load external log map.

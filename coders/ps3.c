@@ -18,7 +18,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -45,6 +45,7 @@
 #include "MagickCore/blob.h"
 #include "MagickCore/blob-private.h"
 #include "MagickCore/cache.h"
+#include "MagickCore/channel.h"
 #include "MagickCore/color.h"
 #include "MagickCore/color-private.h"
 #include "MagickCore/compress.h"
@@ -430,9 +431,6 @@ static MagickBooleanType SerializeImageIndexes(const ImageInfo *image_info,
 static MagickBooleanType WritePS3MaskImage(const ImageInfo *image_info,
   Image *image,const CompressionType compression,ExceptionInfo *exception)
 {
-  ChannelType
-    channel_mask;
-
   char
     buffer[MaxTextExtent];
 
@@ -518,17 +516,9 @@ static MagickBooleanType WritePS3MaskImage(const ImageInfo *image_info,
   }
   (void) WriteBlobString(image,buffer);
   (void) WriteBlobString(image,"/ReusableStreamDecode filter\n");
-  mask_image=CloneImage(image,0,0,MagickTrue,exception);
+  mask_image=SeparateImage(image,AlphaChannel,exception);
   if (mask_image == (Image *) NULL)
     ThrowWriterException(CoderError,exception->reason);
-  channel_mask=SetPixelChannelMask(mask_image,AlphaChannel);
-  status=SeparateImage(mask_image,exception);
-  (void) SetPixelChannelMap(mask_image,channel_mask);
-  if (status == MagickFalse)
-    {
-      mask_image=DestroyImage(mask_image);
-      return(MagickFalse);
-    }
   (void) SetImageType(mask_image,BilevelType,exception);
   (void) SetImageType(mask_image,PaletteType,exception);
   mask_image->matte=MagickFalse;
@@ -1136,16 +1126,15 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image,
     /*
       PS clipping path from Photoshop clipping path.
     */
-    if ((image->clip_mask == (Image *) NULL) ||
-        (LocaleNCompare("8BIM:",image->clip_mask->magick_filename,5) != 0))
+    if ((image->mask != MagickFalse) ||
+        (LocaleNCompare("8BIM:",image->magick_filename,5) != 0))
       (void) WriteBlobString(image,"/ClipImage {} def\n");
     else
       {
         const char
           *value;
 
-        value=GetImageProperty(image,image->clip_mask->magick_filename,
-          exception);
+        value=GetImageProperty(image,image->magick_filename,exception);
         if (value == (const char *) NULL)
           return(MagickFalse);
         (void) WriteBlobString(image,value);
@@ -1213,8 +1202,8 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image,
     /*
       Photoshop clipping path active?
     */
-    if ((image->clip_mask != (Image *) NULL) &&
-        (LocaleNCompare("8BIM:",image->clip_mask->magick_filename,5) == 0))
+    if ((image->mask != MagickFalse) &&
+        (LocaleNCompare("8BIM:",image->magick_filename,5) == 0))
         (void) WriteBlobString(image,"true\n");
       else
         (void) WriteBlobString(image,"false\n");

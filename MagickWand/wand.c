@@ -17,7 +17,7 @@
 %                                 May  2004                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -79,7 +79,7 @@ WandExport size_t AcquireWandId(void)
   if (wand_semaphore == (SemaphoreInfo *) NULL)
     AcquireSemaphoreInfo(&wand_semaphore);
   LockSemaphoreInfo(wand_semaphore);
-  if ((wand_ids == (SplayTreeInfo *) NULL) && (instantiate_wand == MagickFalse))
+  if ((wand_ids == (SplayTreeInfo *) NULL) && IsMagickFalse(instantiate_wand))
     {
       wand_ids=NewSplayTree((int (*)(const void *,const void *)) NULL,
         (void *(*)(void *)) NULL,(void *(*)(void *)) NULL);

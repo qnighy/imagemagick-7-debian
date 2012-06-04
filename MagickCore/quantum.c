@@ -131,6 +131,7 @@ MagickExport QuantumInfo *AcquireQuantumInfo(const ImageInfo *image_info,
   status=SetQuantumDepth(image,quantum_info,image->depth);
   if (status == MagickFalse)
     quantum_info=DestroyQuantumInfo(quantum_info);
+  quantum_info->endian=image->endian;
   return(quantum_info);
 }
 
@@ -173,8 +174,8 @@ static MagickBooleanType AcquireQuantumPixels(QuantumInfo *quantum_info,
   if (quantum_info->pixels == (unsigned char **) NULL)
     return(MagickFalse);
   quantum_info->extent=extent;
-  (void) ResetMagickMemory(quantum_info->pixels,0,
-    quantum_info->number_threads*sizeof(*quantum_info->pixels));
+  (void) ResetMagickMemory(quantum_info->pixels,0,quantum_info->number_threads*
+    sizeof(*quantum_info->pixels));
   for (i=0; i < (ssize_t) quantum_info->number_threads; i++)
   {
     quantum_info->pixels[i]=(unsigned char *) AcquireQuantumMemory(extent+1,
@@ -332,6 +333,35 @@ MagickExport size_t GetQuantumExtent(const Image *image,
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%   G e t Q u a n t u m F o r m a t                                           %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetQuantumFormat() returns the quantum format of the image.
+%
+%  The format of the GetQuantumFormat method is:
+%
+%      QuantumFormatType GetQuantumFormat(const QuantumInfo *quantum_info)
+%
+%  A description of each parameter follows:
+%
+%    o quantum_info: the quantum info.
+%
+*/
+MagickExport QuantumFormatType GetQuantumFormat(const QuantumInfo *quantum_info)
+{
+  assert(quantum_info != (QuantumInfo *) NULL);
+  assert(quantum_info->signature == MagickSignature);
+  return(quantum_info->format);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   G e t Q u a n t u m I n f o                                               %
 %                                                                             %
 %                                                                             %
@@ -395,6 +425,8 @@ MagickExport void GetQuantumInfo(const ImageInfo *image_info,
   if (option != (char *) NULL)
     quantum_info->min_is_white=LocaleCompare(option,"min-is-white") == 0 ?
       MagickTrue : MagickFalse;
+  quantum_info->endian=image_info->endian;
+  ResetQuantumState(quantum_info);
 }
 
 /*
@@ -476,14 +508,58 @@ MagickExport QuantumType GetQuantumType(Image *image,ExceptionInfo *exception)
       if (image->matte != MagickFalse)
         quantum_type=GrayAlphaQuantum;
     }
-  else
-    if (image->storage_class == PseudoClass)
-      {
-        quantum_type=IndexQuantum;
-        if (image->matte != MagickFalse)
-          quantum_type=IndexAlphaQuantum;
-      }
+  if (image->storage_class == PseudoClass)
+    {
+      quantum_type=IndexQuantum;
+      if (image->matte != MagickFalse)
+        quantum_type=IndexAlphaQuantum;
+    }
   return(quantum_type);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   R e s e t Q u a n t u m S t a t e                                         %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ResetQuantumState() resets the quantum state.
+%
+%  The format of the ResetQuantumState method is:
+%
+%      void ResetQuantumState(QuantumInfo *quantum_info)
+%
+%  A description of each parameter follows:
+%
+%    o quantum_info: the quantum info.
+%
+*/
+MagickPrivate void ResetQuantumState(QuantumInfo *quantum_info)
+{
+  static const unsigned int mask[32] =
+  {
+    0x00000000U, 0x00000001U, 0x00000003U, 0x00000007U, 0x0000000fU,
+    0x0000001fU, 0x0000003fU, 0x0000007fU, 0x000000ffU, 0x000001ffU,
+    0x000003ffU, 0x000007ffU, 0x00000fffU, 0x00001fffU, 0x00003fffU,
+    0x00007fffU, 0x0000ffffU, 0x0001ffffU, 0x0003ffffU, 0x0007ffffU,
+    0x000fffffU, 0x001fffffU, 0x003fffffU, 0x007fffffU, 0x00ffffffU,
+    0x01ffffffU, 0x03ffffffU, 0x07ffffffU, 0x0fffffffU, 0x1fffffffU,
+    0x3fffffffU, 0x7fffffffU
+  };
+
+  assert(quantum_info != (QuantumInfo *) NULL);
+  assert(quantum_info->signature == MagickSignature);
+  quantum_info->state.inverse_scale=1.0;
+  if (fabs(quantum_info->scale) >= MagickEpsilon)
+    quantum_info->state.inverse_scale/=quantum_info->scale;
+  quantum_info->state.pixel=0U;
+  quantum_info->state.bits=0U;
+  quantum_info->state.mask=mask;
 }
 
 /*

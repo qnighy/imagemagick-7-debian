@@ -17,7 +17,7 @@
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -82,6 +82,7 @@
 #include "MagickCore/resource_.h"
 #include "MagickCore/shear.h"
 #include "MagickCore/segment.h"
+#include "MagickCore/statistic.h"
 #include "MagickCore/string_.h"
 #include "MagickCore/string-private.h"
 #include "MagickCore/transform.h"
@@ -1679,7 +1680,7 @@ MagickExport MagickBooleanType DisplayImages(const ImageInfo *image_info,
   if (display == (Display *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),XServerError,
-        "UnableToOpenXServer","`%s'",XDisplayName(image_info->server_name));
+        "UnableToOpenXServer","'%s'",XDisplayName(image_info->server_name));
       return(MagickFalse);
     }
   if (exception->severity != UndefinedException)
@@ -1700,8 +1701,8 @@ MagickExport MagickBooleanType DisplayImages(const ImageInfo *image_info,
     image=GetImageFromList(images,i % GetImageListLength(images));
     (void) XDisplayImage(display,&resource_info,argv,1,&image,&state,exception);
   }
-  SetErrorHandler((ErrorHandler) NULL);
-  SetWarningHandler((WarningHandler) NULL);
+  (void) SetErrorHandler((ErrorHandler) NULL);
+  (void) SetWarningHandler((WarningHandler) NULL);
   argv[0]=DestroyString(argv[0]);
   (void) XCloseDisplay(display);
   XDestroyResourceInfo(&resource_info);
@@ -1757,7 +1758,7 @@ MagickExport MagickBooleanType RemoteDisplayCommand(const ImageInfo *image_info,
   if (display == (Display *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),XServerError,
-        "UnableToOpenXServer","`%s'",XDisplayName(image_info->server_name));
+        "UnableToOpenXServer","'%s'",XDisplayName(image_info->server_name));
       return(MagickFalse);
     }
   (void) XSetErrorHandler(XError);
@@ -3732,7 +3733,7 @@ static MagickBooleanType XColorEditImage(Display *display,
         if ((x_offset >= (int) (*image)->columns) ||
             (y_offset >= (int) (*image)->rows))
           continue;
-        image_view=AcquireCacheView(*image);
+        image_view=AcquireAuthenticCacheView(*image,exception);
         switch (method)
         {
           case PointMethod:
@@ -3759,18 +3760,11 @@ static MagickBooleanType XColorEditImage(Display *display,
               pixel,
               target;
 
-            Quantum
-              virtual_pixel[CompositePixelChannel];
-
             /*
               Update color information using replace algorithm.
             */
-            (void) GetOneCacheViewVirtualPixel(image_view,(ssize_t) x_offset,
-              (ssize_t) y_offset,virtual_pixel,exception);
-            target.red=virtual_pixel[RedPixelChannel];
-            target.green=virtual_pixel[GreenPixelChannel];
-            target.blue=virtual_pixel[BluePixelChannel];
-            target.alpha=virtual_pixel[AlphaPixelChannel];
+            (void) GetOneCacheViewVirtualPixelInfo(image_view,(ssize_t)
+              x_offset,(ssize_t) y_offset,&target,exception);
             if ((*image)->storage_class == DirectClass)
               {
                 for (y=0; y < (int) (*image)->rows; y++)
@@ -3802,11 +3796,11 @@ static MagickBooleanType XColorEditImage(Display *display,
                 for (i=0; i < (ssize_t) (*image)->colors; i++)
                   if (IsFuzzyEquivalencePixelInfo((*image)->colormap+i,&target))
                     {
-                      (*image)->colormap[i].red=ScaleShortToQuantum(
+                      (*image)->colormap[i].red=(double) ScaleShortToQuantum(
                         color.red);
-                      (*image)->colormap[i].green=ScaleShortToQuantum(
+                      (*image)->colormap[i].green=(double) ScaleShortToQuantum(
                         color.green);
-                      (*image)->colormap[i].blue=ScaleShortToQuantum(
+                      (*image)->colormap[i].blue=(double) ScaleShortToQuantum(
                         color.blue);
                     }
                 (void) SyncImage(*image,exception);
@@ -3825,7 +3819,7 @@ static MagickBooleanType XColorEditImage(Display *display,
             /*
               Update color information using floodfill algorithm.
             */
-            (void) GetOneVirtualMagickPixel(*image,
+            (void) GetOneVirtualPixelInfo(*image,
               GetPixelCacheVirtualMethod(*image),(ssize_t) x_offset,(ssize_t)
               y_offset,&target,exception);
             if (method == FillToBorderMethod)
@@ -4303,8 +4297,7 @@ static MagickBooleanType XCompositeImage(Display *display,
         Scale composite image.
       */
       resize_image=ResizeImage(composite_image,composite_info.width,
-        composite_info.height,composite_image->filter,composite_image->blur,
-        exception);
+        composite_info.height,composite_image->filter,exception);
       composite_image=DestroyImage(composite_image);
       if (resize_image == (Image *) NULL)
         {
@@ -4342,7 +4335,7 @@ static MagickBooleanType XCompositeImage(Display *display,
       if (SetImageStorageClass(image,DirectClass,exception) == MagickFalse)
         return(MagickFalse);
       image->matte=MagickTrue;
-      image_view=AcquireCacheView(image);
+      image_view=AcquireAuthenticCacheView(image,exception);
       for (y=0; y < (int) image->rows; y++)
       {
         q=GetCacheViewAuthenticPixels(image_view,0,(ssize_t) y,image->columns,1,
@@ -4362,8 +4355,8 @@ static MagickBooleanType XCompositeImage(Display *display,
   /*
     Composite image with X Image window.
   */
-  (void) CompositeImage(image,compose,composite_image,composite_info.x,
-    composite_info.y,exception);
+  (void) CompositeImage(image,composite_image,compose,MagickTrue,
+    composite_info.x,composite_info.y,exception);
   composite_image=DestroyImage(composite_image);
   XSetCursorState(display,windows,MagickFalse);
   /*
@@ -5363,7 +5356,7 @@ static MagickBooleanType XCropImage(Display *display,
   if (SetImageStorageClass(image,DirectClass,exception) == MagickFalse)
     return(MagickFalse);
   image->matte=MagickTrue;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
   for (y=0; y < (int) crop_info.height; y++)
   {
     q=GetCacheViewAuthenticPixels(image_view,crop_info.x,y+crop_info.y,
@@ -5519,7 +5512,7 @@ static MagickBooleanType XDrawEditImage(Display *display,
   if (coordinate_info == (XPoint *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'","...");
+        ResourceLimitError,"MemoryAllocationFailed","'%s'","...");
       return(MagickFalse);
     }
   /*
@@ -6144,7 +6137,7 @@ static MagickBooleanType XDrawEditImage(Display *display,
             max_coordinates,sizeof(*coordinate_info));
           if (coordinate_info == (XPoint *) NULL)
             (void) ThrowMagickException(exception,GetMagickModule(),
-              ResourceLimitError,"MemoryAllocationFailed","`%s'","...");
+              ResourceLimitError,"MemoryAllocationFailed","'%s'","...");
           break;
         }
         case Expose:
@@ -6171,7 +6164,7 @@ static MagickBooleanType XDrawEditImage(Display *display,
             max_coordinates,sizeof(*coordinate_info));
           if (coordinate_info == (XPoint *) NULL)
             (void) ThrowMagickException(exception,GetMagickModule(),
-              ResourceLimitError,"MemoryAllocationFailed","`%s'","...");
+              ResourceLimitError,"MemoryAllocationFailed","'%s'","...");
           break;
         }
         default:
@@ -8073,7 +8066,8 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       XSetCursorState(display,windows,MagickTrue);
       XCheckRefreshWindows(display,windows);
       quantize_info.number_colors=StringToUnsignedLong(colors);
-      quantize_info.dither=status != 0 ? MagickTrue : MagickFalse;
+      quantize_info.dither_method=status != 0 ? RiemersmaDitherMethod :
+        NoDitherMethod;
       (void) QuantizeImage(&quantize_info,*image,exception);
       XSetCursorState(display,windows,MagickFalse);
       if (windows->image.orphan != MagickFalse)
@@ -8242,7 +8236,7 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       XCheckRefreshWindows(display,windows);
       flags=ParseGeometry(radius,&geometry_info);
       sharp_image=SharpenImage(*image,geometry_info.rho,geometry_info.sigma,
-        geometry_info.xi,exception);
+        exception);
       if (sharp_image != (Image *) NULL)
         {
           *image=DestroyImage(*image);
@@ -8278,7 +8272,7 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       XCheckRefreshWindows(display,windows);
       flags=ParseGeometry(radius,&geometry_info);
       blur_image=BlurImage(*image,geometry_info.rho,geometry_info.sigma,
-        geometry_info.xi,exception);
+        exception);
       if (blur_image != (Image *) NULL)
         {
           *image=DestroyImage(*image);
@@ -8482,7 +8476,7 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       flags=ParseGeometry(threshold,&geometry_info);
       if ((flags & SigmaValue) == 0)
         geometry_info.sigma=1.0;
-      (void) SegmentImage(*image,RGBColorspace,MagickFalse,geometry_info.rho,
+      (void) SegmentImage(*image,sRGBColorspace,MagickFalse,geometry_info.rho,
         geometry_info.sigma,exception);
       XSetCursorState(display,windows,MagickFalse);
       if (windows->image.orphan != MagickFalse)
@@ -8657,9 +8651,9 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
         geometry_info.xi=0.1*(*image)->columns;
       if ((flags & PsiValue) == 0)
         geometry_info.psi=0.1*(*image)->rows;
-      vignette_image=VignetteImage(*image,geometry_info.rho,geometry_info.sigma,
-        (ssize_t) ceil(geometry_info.xi-0.5),(ssize_t) ceil(geometry_info.psi-
-        0.5),exception);
+      vignette_image=VignetteImage(*image,geometry_info.rho,0.0,(ssize_t)
+        ceil(geometry_info.xi-0.5),(ssize_t) ceil(geometry_info.psi-0.5),
+        exception);
       if (vignette_image != (Image *) NULL)
         {
           *image=DestroyImage(*image);
@@ -8773,7 +8767,7 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       if ((flags & SigmaValue) == 0)
         geometry_info.sigma=geometry_info.rho;
       charcoal_image=CharcoalImage(*image,geometry_info.rho,geometry_info.sigma,
-        geometry_info.xi,exception);
+        exception);
       if (charcoal_image != (Image *) NULL)
         {
           *image=DestroyImage(*image);
@@ -10098,8 +10092,9 @@ static MagickBooleanType XMatteEditImage(Display *display,
           continue;
         if (SetImageStorageClass(*image,DirectClass,exception) == MagickFalse)
           return(MagickFalse);
-        (*image)->matte=MagickTrue;
-        image_view=AcquireCacheView(*image);
+        if ((*image)->matte == MagickFalse)
+          (void) SetImageAlphaChannel(*image,OpaqueAlphaChannel,exception);
+        image_view=AcquireAuthenticCacheView(*image,exception);
         switch (method)
         {
           case PointMethod:
@@ -10122,18 +10117,11 @@ static MagickBooleanType XMatteEditImage(Display *display,
               pixel,
               target;
 
-            Quantum
-              virtual_pixel[CompositePixelChannel];
-
             /*
               Update matte information using replace algorithm.
             */
-            (void) GetOneCacheViewVirtualPixel(image_view,(ssize_t) x_offset,
-              (ssize_t) y_offset,virtual_pixel,exception);
-            target.red=virtual_pixel[RedPixelChannel];
-            target.green=virtual_pixel[GreenPixelChannel];
-            target.blue=virtual_pixel[BluePixelChannel];
-            target.alpha=virtual_pixel[AlphaPixelChannel];
+            (void) GetOneCacheViewVirtualPixelInfo(image_view,(ssize_t)
+              x_offset,(ssize_t) y_offset,&target,exception);
             for (y=0; y < (int) (*image)->rows; y++)
             {
               q=GetCacheViewAuthenticPixels(image_view,0,(ssize_t) y,
@@ -10167,7 +10155,7 @@ static MagickBooleanType XMatteEditImage(Display *display,
             /*
               Update matte information using floodfill algorithm.
             */
-            (void) GetOneVirtualMagickPixel(*image,
+            (void) GetOneVirtualPixelInfo(*image,
               GetPixelCacheVirtualMethod(*image),(ssize_t) x_offset,(ssize_t)
               y_offset,&target,exception);
             if (method == FillToBorderMethod)
@@ -10181,13 +10169,13 @@ static MagickBooleanType XMatteEditImage(Display *display,
               }
             draw_info=CloneDrawInfo(resource_info->image_info,
               (DrawInfo *) NULL);
-            draw_info->fill.alpha=ClampToQuantum(StringToDouble(matte,
-              (char **) NULL));
+            draw_info->fill.alpha=(MagickRealType) ClampToQuantum(
+              StringToDouble(matte,(char **) NULL));
             channel_mask=SetPixelChannelMask(*image,AlphaChannel); 
             (void) FloodfillPaintImage(*image,draw_info,&target,(ssize_t)
               x_offset,(ssize_t) y_offset,method == FloodfillMethod ?
               MagickFalse : MagickTrue,exception);
-            (void) SetPixelChannelMap(*image,channel_mask);
+            (void) SetPixelChannelMapMask(*image,channel_mask);
             draw_info=DestroyDrawInfo(draw_info);
             break;
           }
@@ -10941,8 +10929,8 @@ static MagickBooleanType XPasteImage(Display *display,
   /*
     Paste image with X Image window.
   */
-  (void) CompositeImage(image,compose,paste_image,paste_info.x,paste_info.y,
-    exception);
+  (void) CompositeImage(image,paste_image,compose,MagickTrue,paste_info.x,
+    paste_info.y,exception);
   paste_image=DestroyImage(paste_image);
   XSetCursorState(display,windows,MagickFalse);
   /*
@@ -11675,8 +11663,8 @@ static MagickBooleanType XROIImage(Display *display,
               (void) XMagickCommand(display,resource_info,windows,
                 SaveToUndoBufferCommand,image,exception);
               windows->image.orphan=MagickFalse;
-              (void) CompositeImage(*image,CopyCompositeOp,roi_image,
-                crop_info.x,crop_info.y,exception);
+              (void) CompositeImage(*image,roi_image,CopyCompositeOp,
+                MagickTrue,crop_info.x,crop_info.y,exception);
               roi_image=DestroyImage(roi_image);
               (void) SetImageProgressMonitor(*image,progress_monitor,
                 (*image)->client_data);
@@ -12414,11 +12402,11 @@ static MagickBooleanType XRotateImage(Display *display,
       exception);
   XSetCursorState(display,windows,MagickTrue);
   XCheckRefreshWindows(display,windows);
-  (*image)->background_color.red=ScaleShortToQuantum(
+  (*image)->background_color.red=(double) ScaleShortToQuantum(
     windows->pixel_info->pen_colors[pen_id].red);
-  (*image)->background_color.green=ScaleShortToQuantum(
+  (*image)->background_color.green=(double) ScaleShortToQuantum(
     windows->pixel_info->pen_colors[pen_id].green);
-  (*image)->background_color.blue=ScaleShortToQuantum(
+  (*image)->background_color.blue=(double) ScaleShortToQuantum(
     windows->pixel_info->pen_colors[pen_id].blue);
   rotate_image=RotateImage(*image,degrees,exception);
   XSetCursorState(display,windows,MagickFalse);
@@ -13247,9 +13235,6 @@ static Image *XTileImage(Display *display,XResourceInfo *resource_info,
       PixelInfo
         pixel;
 
-      Quantum
-        virtual_pixel[CompositePixelChannel];
-
       register int
         j;
 
@@ -13281,13 +13266,8 @@ static Image *XTileImage(Display *display,XResourceInfo *resource_info,
         */
         x_offset=(int) (width*(tile % (((int) image->columns-x)/width))+x);
         y_offset=(int) (height*(tile/(((int) image->columns-x)/width))+y);
-        image_view=AcquireCacheView(image);
-        (void) GetOneCacheViewVirtualPixel(image_view,0,0,virtual_pixel,
-          exception);
-        pixel.red=virtual_pixel[RedPixelChannel];
-        pixel.green=virtual_pixel[GreenPixelChannel];
-        pixel.blue=virtual_pixel[BluePixelChannel];
-        pixel.alpha=virtual_pixel[AlphaPixelChannel];
+        image_view=AcquireAuthenticCacheView(image,exception);
+        (void) GetOneCacheViewVirtualPixelInfo(image_view,0,0,&pixel,exception);
         for (i=0; i < (int) height; i++)
         {
           s=GetCacheViewAuthenticPixels(image_view,(ssize_t) x_offset,(ssize_t)
@@ -13330,7 +13310,7 @@ static Image *XTileImage(Display *display,XResourceInfo *resource_info,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  XTranslateImage() translates the image within an Image window by one pixel
-%  as specified by the key symbol.  If the image has a `montage string the
+%  as specified by the key symbol.  If the image has a montage string the
 %  translation is respect to the width and height contained within the string.
 %
 %  The format of the XTranslateImage method is:
@@ -16215,7 +16195,7 @@ MagickExport MagickBooleanType DisplayImages(const ImageInfo *image_info,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   (void) ThrowMagickException(exception,GetMagickModule(),MissingDelegateError,
-    "DelegateLibrarySupportNotBuiltIn","`%s' (X11)",image->filename);
+    "DelegateLibrarySupportNotBuiltIn","'%s' (X11)",image->filename);
   return(MagickFalse);
 }
 
@@ -16258,7 +16238,7 @@ MagickExport MagickBooleanType RemoteDisplayCommand(const ImageInfo *image_info,
   (void) window;
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",filename);
   (void) ThrowMagickException(exception,GetMagickModule(),MissingDelegateError,
-    "DelegateLibrarySupportNotBuiltIn","`%s' (X11)",image_info->filename);
+    "DelegateLibrarySupportNotBuiltIn","'%s' (X11)",image_info->filename);
   return(MagickFalse);
 }
 #endif

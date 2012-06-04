@@ -82,14 +82,14 @@ typedef enum
 typedef struct _QuantumInfo
   QuantumInfo;
 
-static inline Quantum ClampToQuantum(const MagickRealType value)
+static inline Quantum ClampToQuantum(const double value)
 {
 #if defined(MAGICKCORE_HDRI_SUPPORT)
   return((Quantum) value);
 #else
   if (value <= 0.0)
     return((Quantum) 0);
-  if (value >= (MagickRealType) QuantumRange)
+  if (value >= (double) QuantumRange)
     return((Quantum) QuantumRange);
   return((Quantum) (value+0.5));
 #endif
@@ -155,6 +155,9 @@ extern MagickExport MagickBooleanType
   SetQuantumFormat(const Image *,QuantumInfo *,const QuantumFormatType),
   SetQuantumPad(const Image *,QuantumInfo *,const size_t);
 
+extern MagickExport QuantumFormatType
+  GetQuantumFormat(const QuantumInfo *);
+
 extern MagickExport QuantumInfo
   *AcquireQuantumInfo(const ImageInfo *,Image *),
   *DestroyQuantumInfo(QuantumInfo *);
@@ -163,10 +166,10 @@ extern MagickExport QuantumType
   GetQuantumType(Image *,ExceptionInfo *);
 
 extern MagickExport size_t
-  ExportQuantumPixels(Image *,CacheView *,const QuantumInfo *,const QuantumType,
+  ExportQuantumPixels(const Image *,CacheView *,QuantumInfo *,const QuantumType,
     unsigned char *,ExceptionInfo *),
   GetQuantumExtent(const Image *,const QuantumInfo *,const QuantumType),
-  ImportQuantumPixels(Image *,CacheView *,const QuantumInfo *,const QuantumType,
+  ImportQuantumPixels(const Image *,CacheView *,QuantumInfo *,const QuantumType,
     const unsigned char *,ExceptionInfo *);
 
 extern MagickExport unsigned char

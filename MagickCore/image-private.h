@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -30,13 +30,6 @@ extern "C" {
 #define MagickSQ2PI  2.50662827463100024161235523934010416269302368164062L
 #define UndefinedTicksPerSecond  100L
 #define UndefinedCompressionQuality  0UL
-
-extern MagickPrivate const char
-  BackgroundColor[],
-  BorderColor[],
-  ForegroundColor[],
-  DefaultTileFrame[],
-  MatteColor[];
 
 static inline double DegreesToRadians(const double degrees)
 {

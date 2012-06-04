@@ -18,7 +18,7 @@
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -75,20 +75,33 @@
 #undef BI_PNG
 #define BI_PNG  5
 #if !defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__MINGW32__)
+#undef BI_RGB
 #define BI_RGB  0
+#undef BI_RLE8
 #define BI_RLE8  1
+#undef BI_RLE4
 #define BI_RLE4  2
+#undef BI_BITFIELDS
 #define BI_BITFIELDS  3
 
+#undef LCS_CALIBRATED_RBG
 #define LCS_CALIBRATED_RBG  0
+#undef LCS_sRGB
 #define LCS_sRGB  1
+#undef LCS_WINDOWS_COLOR_SPACE
 #define LCS_WINDOWS_COLOR_SPACE  2
+#undef PROFILE_LINKED
 #define PROFILE_LINKED  3
+#undef PROFILE_EMBEDDED
 #define PROFILE_EMBEDDED  4
 
+#undef LCS_GM_BUSINESS
 #define LCS_GM_BUSINESS  1  /* Saturation */
+#undef LCS_GM_GRAPHICS
 #define LCS_GM_GRAPHICS  2  /* Relative */
+#undef LCS_GM_IMAGES
 #define LCS_GM_IMAGES  4  /* Perceptual */
+#undef LCS_GM_ABS_COLORIMETRIC
 #define LCS_GM_ABS_COLORIMETRIC  8  /* Absolute */
 #endif
 
@@ -827,8 +840,7 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->columns=(size_t) MagickAbsoluteValue(bmp_info.width);
     image->rows=(size_t) MagickAbsoluteValue(bmp_info.height);
     image->depth=bmp_info.bits_per_pixel <= 8 ? bmp_info.bits_per_pixel : 8;
-    if ((bmp_info.bits_per_pixel == 16) ||
-        (bmp_info.bits_per_pixel == 32))
+    if ((bmp_info.bits_per_pixel == 16) || (bmp_info.bits_per_pixel == 32))
       image->matte=bmp_info.alpha_mask != 0 ? MagickTrue : MagickFalse;
     if ((bmp_info.number_colors != 0) || (bmp_info.bits_per_pixel < 16))
       {
@@ -882,6 +894,9 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
         }
         bmp_colormap=(unsigned char *) RelinquishMagickMemory(bmp_colormap);
       }
+    image->resolution.x=(double) bmp_info.x_pixels/100.0;
+    image->resolution.y=(double) bmp_info.y_pixels/100.0;
+    image->units=PixelsPerCentimeterResolution;
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
@@ -926,12 +941,6 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
               "UnableToRunlengthDecodeImage");
           }
       }
-    /*
-      Initialize image structure.
-    */
-    image->resolution.x=(double) bmp_info.x_pixels/100.0;
-    image->resolution.y=(double) bmp_info.y_pixels/100.0;
-    image->units=PixelsPerCentimeterResolution;
     /*
       Convert BMP raster image to pixel packets.
     */
@@ -1514,8 +1523,8 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image,
     /*
       Initialize BMP raster file header.
     */
-    if (IsRGBColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,RGBColorspace,exception);
+    if (IssRGBColorspace(image->colorspace) == MagickFalse)
+      (void) TransformImageColorspace(image,sRGBColorspace,exception);
     (void) ResetMagickMemory(&bmp_info,0,sizeof(bmp_info));
     bmp_info.file_size=14+12;
     if (type > 2)
@@ -1947,7 +1956,7 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image,
         (void) WriteBlobLSBLong(image,0x0000ff00U);  /* Green mask */
         (void) WriteBlobLSBLong(image,0x000000ffU);  /* Blue mask */
         (void) WriteBlobLSBLong(image,0xff000000U);  /* Alpha mask */
-        (void) WriteBlobLSBLong(image,0x00000001U);  /* CSType==Calib. RGB */
+        (void) WriteBlobLSBLong(image,0x73524742U);  /* sRGB */
         (void) WriteBlobLSBLong(image,(unsigned int)
           image->chromaticity.red_primary.x*0x3ffffff);
         (void) WriteBlobLSBLong(image,(unsigned int)

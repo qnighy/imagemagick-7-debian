@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -97,7 +97,7 @@ MagickExport MagickBooleanType InvokeStaticImageFilter(const char *tag,
     {
       errno=EPERM;
       (void) ThrowMagickException(exception,GetMagickModule(),PolicyError,
-        "NotAuthorized","`%s'",tag);
+        "NotAuthorized","'%s'",tag);
       return(MagickFalse);
     }
 #if defined(MAGICKCORE_BUILD_MODULES)
@@ -118,7 +118,7 @@ MagickExport MagickBooleanType InvokeStaticImageFilter(const char *tag,
       image_filter=(ImageFilterHandler *) analyzeImage;
     if (image_filter == (ImageFilterHandler *) NULL)
       (void) ThrowMagickException(exception,GetMagickModule(),ModuleError,
-        "UnableToLoadModule","`%s'",tag);
+        "UnableToLoadModule","'%s'",tag);
     else
       {
         size_t
@@ -134,7 +134,7 @@ MagickExport MagickBooleanType InvokeStaticImageFilter(const char *tag,
         if (signature != MagickImageFilterSignature)
           {
             (void) ThrowMagickException(exception,GetMagickModule(),ModuleError,
-              "ImageFilterSignatureMismatch","`%s': %8lx != %8lx",tag,
+              "ImageFilterSignatureMismatch","'%s': %8lx != %8lx",tag,
               (unsigned long) signature,(unsigned long)
               MagickImageFilterSignature);
             return(MagickFalse);
@@ -204,6 +204,7 @@ MagickExport void RegisterStaticModules(void)
   (void) RegisterEXRImage();
 #endif
   (void) RegisterFAXImage();
+  (void) RegisterFDImage();
   (void) RegisterFITSImage();
 #if defined(MAGICKCORE_FPX_DELEGATE)
   (void) RegisterFPXImage();
@@ -247,6 +248,7 @@ MagickExport void RegisterStaticModules(void)
   (void) RegisterNULLImage();
   (void) RegisterOTBImage();
   (void) RegisterPALMImage();
+  (void) RegisterPANGOImage();
   (void) RegisterPATTERNImage();
   (void) RegisterPCDImage();
   (void) RegisterPCLImage();
@@ -379,6 +381,7 @@ MagickExport void UnregisterStaticModules(void)
   UnregisterEXRImage();
 #endif
   UnregisterFAXImage();
+  UnregisterFDImage();
   UnregisterFITSImage();
 #if defined(MAGICKCORE_FPX_DELEGATE)
   UnregisterFPXImage();
@@ -422,6 +425,7 @@ MagickExport void UnregisterStaticModules(void)
   UnregisterNULLImage();
   UnregisterOTBImage();
   UnregisterPALMImage();
+  UnregisterPANGOImage();
   UnregisterPATTERNImage();
   UnregisterPCDImage();
   UnregisterPCLImage();

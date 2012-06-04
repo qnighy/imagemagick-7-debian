@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -23,18 +23,10 @@ extern "C" {
 #endif
 
 #include <time.h>
+#include "MagickCore/cache.h"
 #include "MagickCore/random_.h"
 #include "MagickCore/thread-private.h"
 #include "MagickCore/semaphore.h"
-
-typedef enum
-{
-  UndefinedCache,
-  MemoryCache,
-  MapCache,
-  DiskCache,
-  PingCache
-} CacheType;
 
 typedef void
   *Cache;
@@ -119,7 +111,8 @@ typedef struct _CacheInfo
     colorspace;
 
   MagickBooleanType
-    matte;
+    matte,
+    mask;
 
   size_t
     columns,
@@ -128,6 +121,9 @@ typedef struct _CacheInfo
   size_t
     metacontent_extent,
     number_channels;
+
+  PixelChannelMap
+    channel_map[MaxPixelChannels];
 
   CacheType
     type;
@@ -201,9 +197,6 @@ extern MagickPrivate Cache
   DestroyPixelCache(Cache),
   ReferencePixelCache(Cache);
 
-extern MagickPrivate CacheType
-  GetPixelCacheType(const Image *);
-
 extern MagickPrivate ClassType
   GetPixelCacheStorageClass(const Cache);
 
@@ -213,7 +206,7 @@ extern MagickPrivate ColorspaceType
 extern MagickPrivate const Quantum
   *GetVirtualPixelsFromNexus(const Image *,const VirtualPixelMethod,
     const ssize_t,const ssize_t,const size_t,const size_t,NexusInfo *,
-    ExceptionInfo *),
+    ExceptionInfo *) magick_hot_spot,
   *GetVirtualPixelsNexus(const Cache,NexusInfo *);
 
 extern MagickPrivate const void
@@ -222,7 +215,8 @@ extern MagickPrivate const void
 
 extern MagickPrivate MagickBooleanType
   CacheComponentGenesis(void),
-  SyncAuthenticPixelCacheNexus(Image *,NexusInfo *,ExceptionInfo *),
+  SyncAuthenticPixelCacheNexus(Image *,NexusInfo *,ExceptionInfo *)
+    magick_hot_spot,
   SyncImagePixelCache(Image *,ExceptionInfo *);
 
 extern MagickPrivate MagickSizeType
@@ -234,22 +228,23 @@ extern MagickPrivate NexusInfo
 
 extern MagickPrivate Quantum
   *GetAuthenticPixelCacheNexus(Image *,const ssize_t,const ssize_t,
-    const size_t,const size_t,NexusInfo *,ExceptionInfo *),
+    const size_t,const size_t,NexusInfo *,ExceptionInfo *) magick_hot_spot,
   *GetPixelCacheNexusPixels(const Cache,NexusInfo *),
-  *QueueAuthenticNexus(Image *,const ssize_t,const ssize_t,const size_t,
-    const size_t,const MagickBooleanType,NexusInfo *,ExceptionInfo *);
+  *QueueAuthenticPixelCacheNexus(Image *,const ssize_t,const ssize_t,
+    const size_t,const size_t,const MagickBooleanType,NexusInfo *,
+    ExceptionInfo *) magick_hot_spot;
 
 extern MagickPrivate size_t
   GetPixelCacheChannels(const Cache);
 
 extern MagickPrivate VirtualPixelMethod
   GetPixelCacheVirtualMethod(const Image *),
-  SetPixelCacheVirtualMethod(const Image *,const VirtualPixelMethod);
+  SetPixelCacheVirtualMethod(Image *,const VirtualPixelMethod,ExceptionInfo *);
 
 extern MagickPrivate void
   CacheComponentTerminus(void),
   ClonePixelCacheMethods(Cache,const Cache),
-  *GetPixelCacheNexusMetacontent(const Cache,NexusInfo *),
+  *GetPixelCacheNexusMetacontent(const Cache,NexusInfo *) magick_hot_spot,
   *GetPixelCachePixels(Image *,MagickSizeType *,ExceptionInfo *),
   GetPixelCacheTileSize(const Image *,size_t *,size_t *),
   GetPixelCacheMethods(CacheMethods *),

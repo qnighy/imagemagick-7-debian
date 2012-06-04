@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ extern ModuleExport size_t
   RegisterEPTImage(void),
   RegisterEXRImage(void),
   RegisterFAXImage(void),
+  RegisterFDImage(void),
   RegisterFITSImage(void),
   RegisterFPXImage(void),
   RegisterG3Image(void),
@@ -107,6 +108,7 @@ extern ModuleExport size_t
   RegisterPBMImage(void),
   RegisterOTBImage(void),
   RegisterPALMImage(void),
+  RegisterPANGOImage(void),
   RegisterPATTERNImage(void),
   RegisterPCDImage(void),
   RegisterPCDSImage(void),
@@ -214,6 +216,7 @@ extern ModuleExport void
   UnregisterEPTImage(void),
   UnregisterEXRImage(void),
   UnregisterFAXImage(void),
+  UnregisterFDImage(void),
   UnregisterFITSImage(void),
   UnregisterFPXImage(void),
   UnregisterG3Image(void),
@@ -261,6 +264,7 @@ extern ModuleExport void
   UnregisterPBMImage(void),
   UnregisterOTBImage(void),
   UnregisterPALMImage(void),
+  UnregisterPANGOImage(void),
   UnregisterPATTERNImage(void),
   UnregisterPCDImage(void),
   UnregisterPCDSImage(void),

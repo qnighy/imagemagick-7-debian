@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -50,6 +50,7 @@
 #include "MagickCore/client.h"
 #include "MagickCore/color.h"
 #include "MagickCore/color-private.h"
+#include "MagickCore/colorspace-private.h"
 #include "MagickCore/composite.h"
 #include "MagickCore/composite-private.h"
 #include "MagickCore/constitute.h"
@@ -290,6 +291,8 @@ MagickExport MagickBooleanType AnnotateImage(Image *image,
     }
   if (SetImageStorageClass(image,DirectClass,exception) == MagickFalse)
     return(MagickFalse);
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace,exception);
   status=MagickTrue;
   for (i=0; textlist[i] != (char *) NULL; i++)
   {
@@ -356,7 +359,6 @@ MagickExport MagickBooleanType AnnotateImage(Image *image,
           (number_lines-1.0)*height)/2.0;
         break;
       }
-      case StaticGravity:
       case CenterGravity:
       {
         offset.x=(geometry.width == 0 ? -1.0 : 1.0)*annotate_info->affine.tx+
@@ -886,7 +888,7 @@ static MagickBooleanType RenderType(Image *image,const DrawInfo *draw_info,
       type_info=GetTypeInfo(draw_info->font,exception);
       if (type_info == (const TypeInfo *) NULL)
         (void) ThrowMagickException(exception,GetMagickModule(),TypeWarning,
-          "UnableToReadFont","`%s'",draw_info->font);
+          "UnableToReadFont","'%s'",draw_info->font);
     }
   if ((type_info == (const TypeInfo *) NULL) &&
       (draw_info->family != (const char *) NULL))
@@ -895,7 +897,7 @@ static MagickBooleanType RenderType(Image *image,const DrawInfo *draw_info,
         draw_info->stretch,draw_info->weight,exception);
       if (type_info == (const TypeInfo *) NULL)
         (void) ThrowMagickException(exception,GetMagickModule(),TypeWarning,
-          "UnableToReadFont","`%s'",draw_info->family);
+          "UnableToReadFont","'%s'",draw_info->family);
     }
   if (type_info == (const TypeInfo *) NULL)
     type_info=GetTypeInfoByFamily("Arial",draw_info->style,
@@ -1144,7 +1146,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
     {
       (void) FT_Done_FreeType(library);
       (void) ThrowMagickException(exception,GetMagickModule(),TypeError,
-        "UnableToReadFont","`%s'",draw_info->font);
+        "UnableToReadFont","'%s'",draw_info->font);
       return(RenderPostscript(image,draw_info,offset,metrics,exception));
     }
   if ((draw_info->metrics != (char *) NULL) &&
@@ -1246,6 +1248,16 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       draw_info->encoding != (char *) NULL ? draw_info->encoding : "none",
       draw_info->pointsize);
   flags=FT_LOAD_NO_BITMAP;
+  if (draw_info->text_antialias == MagickFalse)
+     flags|=FT_LOAD_TARGET_MONO;
+  else
+    {
+#if defined(FT_LOAD_TARGET_LIGHT)
+      flags|=FT_LOAD_TARGET_LIGHT;
+#elif defined(FT_LOAD_TARGET_LCD)
+      flags|=FT_LOAD_TARGET_LCD;
+#endif
+    }
   value=GetImageProperty(image,"type:hinting",exception);
   if ((value != (const char *) NULL) && (LocaleCompare(value,"off") == 0))
     flags|=FT_LOAD_NO_HINTING;
@@ -1373,7 +1385,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
           Rasterize the glyph.
         */
         status=MagickTrue;
-        image_view=AcquireCacheView(image);
+        image_view=AcquireAuthenticCacheView(image,exception);
         p=bitmap->bitmap.buffer;
         for (y=0; y < (ssize_t) bitmap->bitmap.rows; y++)
         {
@@ -1503,8 +1515,8 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       status=FT_Get_Glyph(face->glyph,&glyph.image);
       if (status == 0)
         {
-          status=FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph.image)->
-            outline,&bounds);
+          status=FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph.image)->outline,
+            &bounds);
           if (status == 0)
             {
               FT_Vector_Transform(&glyph.origin,&affine);
@@ -1539,9 +1551,9 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
   TypeMetric *metrics,ExceptionInfo *exception)
 {
   (void) ThrowMagickException(exception,GetMagickModule(),
-    MissingDelegateWarning,"DelegateLibrarySupportNotBuiltIn","`%s' (Freetype)",
+    MissingDelegateWarning,"DelegateLibrarySupportNotBuiltIn","'%s' (Freetype)",
     draw_info->font != (char *) NULL ? draw_info->font : "none");
-  return(RenderPostscript(image,draw_info,offset,metrics));
+  return(RenderPostscript(image,draw_info,offset,metrics,exception));
 }
 #endif
 
@@ -1647,6 +1659,9 @@ static MagickBooleanType RenderPostscript(Image *image,
   register ssize_t
     i;
 
+  size_t
+    length;
+
   ssize_t
     y;
 
@@ -1683,7 +1698,8 @@ static MagickBooleanType RenderPostscript(Image *image,
     (fabs(draw_info->affine.ry) < MagickEpsilon) ? MagickTrue : MagickFalse;
   extent.x=0.0;
   extent.y=0.0;
-  for (i=0; i <= (ssize_t) (strlen(draw_info->text)+2); i++)
+  length=strlen(draw_info->text);
+  for (i=0; i <= (ssize_t) (length+2); i++)
   {
     point.x=fabs(draw_info->affine.sx*i*draw_info->pointsize+
       draw_info->affine.ry*2.0*draw_info->pointsize);
@@ -1805,7 +1821,7 @@ static MagickBooleanType RenderPostscript(Image *image,
         (void) SetImageAlphaChannel(annotate_image,OpaqueAlphaChannel,
           exception);
       fill_color=draw_info->fill;
-      annotate_view=AcquireCacheView(annotate_image);
+      annotate_view=AcquireAuthenticCacheView(annotate_image,exception);
       for (y=0; y < (ssize_t) annotate_image->rows; y++)
       {
         register ssize_t
@@ -1834,7 +1850,7 @@ static MagickBooleanType RenderPostscript(Image *image,
           break;
       }
       annotate_view=DestroyCacheView(annotate_view);
-      (void) CompositeImage(image,OverCompositeOp,annotate_image,
+      (void) CompositeImage(image,annotate_image,OverCompositeOp,MagickTrue,
         (ssize_t) ceil(offset->x-0.5),(ssize_t) ceil(offset->y-(metrics->ascent+
         metrics->descent)-0.5),exception);
     }
@@ -1940,7 +1956,8 @@ static MagickBooleanType RenderX11(Image *image,const DrawInfo *draw_info,
       image_info=AcquireImageInfo();
       client_name=GetClientName();
       resource_database=XGetResourceDatabase(display,client_name);
-      XGetResourceInfo(image_info,resource_database,client_name,&resource_info);
+      XGetResourceInfo(image_info,resource_database,client_name,
+        &resource_info);
       resource_info.close_server=MagickFalse;
       resource_info.colormap=PrivateColormap;
       resource_info.font=AcquireString(draw_info->font);
@@ -2080,7 +2097,7 @@ static MagickBooleanType RenderX11(Image *image,const DrawInfo *draw_info,
   (void) offset;
   (void) metrics;
   (void) ThrowMagickException(exception,GetMagickModule(),
-    MissingDelegateError,"DelegateLibrarySupportNotBuiltIn","`%s' (X11)",
+    MissingDelegateError,"DelegateLibrarySupportNotBuiltIn","'%s' (X11)",
     image->filename);
   return(MagickFalse);
 }

@@ -17,7 +17,7 @@
 %                              January 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -115,7 +115,7 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
         (void) CopyMagickString(p,p+1,MaxTextExtent);
         continue;
       }
-    c=(int) ((unsigned int) *p);
+    c=(int)*p;
     switch (c)
     {
       case '%':
@@ -210,7 +210,6 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
       if (p != q)
         flags|=WidthValue;
     }
-  c=(*p);
   c=(int) ((unsigned char) *p);
   if ((c == 215) || (*p == 'x') || (*p == 'X'))
     {
@@ -443,7 +442,6 @@ MagickExport void GravityAdjustGeometry(const size_t width,
     case NorthGravity:
     case SouthGravity:
     case CenterGravity:
-    case StaticGravity:
     {
       region->x+=(ssize_t) (width/2-region->width/2);
       break;
@@ -467,7 +465,6 @@ MagickExport void GravityAdjustGeometry(const size_t width,
     case EastGravity:
     case WestGravity:
     case CenterGravity:
-    case StaticGravity:
     {
       region->y+=(ssize_t) (height/2-region->height/2);
       break;
@@ -516,8 +513,6 @@ MagickExport MagickBooleanType IsGeometry(const char *geometry)
   if (geometry == (const char *) NULL)
     return(MagickFalse);
   flags=ParseGeometry(geometry,&geometry_info);
-  if (flags == NoValue)
-    flags=ParseGeometry(geometry+1,&geometry_info);  /* i.e. +-4+-4 */
   return(flags != NoValue ? MagickTrue : MagickFalse);
 }
 
@@ -703,11 +698,11 @@ MagickExport MagickStatusType ParseAffineGeometry(const char *geometry,
       }
     }
   }
-  determinant=(affine_matrix->sx*affine_matrix->sy-affine_matrix->rx*
-    affine_matrix->ry);
+  determinant=(affine_matrix->sx*affine_matrix->sy
+                 - affine_matrix->rx*affine_matrix->ry);
   if (fabs(determinant) < MagickEpsilon)
     (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-      "InvalidGeometry","`%s'",geometry);
+      "InvalidArgument","'%s' : 'Indeterminate Matrix'",geometry);
   return(flags);
 }
 
@@ -913,7 +908,7 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
       /*
         Parse xi value.
       */
-      if ((*p == ',') || (*p == '/') || (*p == ':'))
+      if ((*p == '+') || (*p == ',') || (*p == '/') || (*p == ':') )
         p++;
       q=p;
       value=StringToDouble(p,&p);
@@ -932,7 +927,7 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
           /*
             Parse psi value.
           */
-          if ((*p == ',') || (*p == '/') || (*p == ':'))
+          if ((*p == '+') || (*p == ',') || (*p == '/') || (*p == ':'))
             p++;
           q=p;
           value=StringToDouble(p,&p);
@@ -952,7 +947,7 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
           /*
             Parse chi value.
           */
-          if ((*p == ',') || (*p == '/') || (*p == ':'))
+          if ((*p == '+') || (*p == ',') || (*p == '/') || (*p == ':'))
             p++;
           q=p;
           value=StringToDouble(p,&p);
@@ -1045,7 +1040,7 @@ MagickExport MagickStatusType ParseGravityGeometry(const Image *image,
   if (flags == NoValue)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "InvalidGeometry","`%s'",geometry);
+        "InvalidGeometry","'%s'",geometry);
       return(flags);
     }
   if ((flags & PercentValue) != 0)
@@ -1197,10 +1192,17 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
       former_width=(*width);
       former_height=(*height);
     }
-  if (((flags & AspectValue) == 0) && ((*width != former_width) ||
-      (*height != former_height)))
+  if (((flags & AspectValue) != 0) || ((*width == former_width) &&
+      (*height == former_height)))
     {
-      MagickRealType
+      if ((flags & RhoValue) == 0)
+        *width=former_width;
+      if ((flags & SigmaValue) == 0)
+        *height=former_height;
+    }
+  else
+    {
+      double
         scale_factor;
 
       /*
@@ -1211,40 +1213,30 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
       else
         if (((flags & RhoValue) != 0) && (flags & SigmaValue) != 0)
           {
-            scale_factor=(MagickRealType) *width/(MagickRealType) former_width;
+            scale_factor=(double) *width/(double) former_width;
             if ((flags & MinimumValue) == 0)
               {
-                if (scale_factor > ((MagickRealType) *height/(MagickRealType)
-                    former_height))
-                  scale_factor=(MagickRealType) *height/(MagickRealType)
-                    former_height;
+                if (scale_factor > ((double) *height/(double) former_height))
+                  scale_factor=(double) *height/(double) former_height;
               }
             else
-              if (scale_factor < ((MagickRealType) *height/(MagickRealType)
-                  former_height))
-                scale_factor=(MagickRealType) *height/(MagickRealType)
-                  former_height;
+              if (scale_factor < ((double) *height/(double) former_height))
+                scale_factor=(double) *height/(double) former_height;
           }
         else
           if ((flags & RhoValue) != 0)
             {
-              scale_factor=(MagickRealType) *width/(MagickRealType)
-                former_width;
+              scale_factor=(double) *width/(double) former_width;
               if (((flags & MinimumValue) != 0) &&
-                  (scale_factor < ((MagickRealType) *width/(MagickRealType)
-                   former_height)))
-                scale_factor=(MagickRealType) *width/(MagickRealType)
-                  former_height;
+                  (scale_factor < ((double) *width/(double) former_height)))
+                scale_factor=(double) *width/(double) former_height;
             }
           else
             {
-              scale_factor=(MagickRealType) *height/(MagickRealType)
-                former_height;
+              scale_factor=(double) *height/(double) former_height;
               if (((flags & MinimumValue) != 0) &&
-                  (scale_factor < ((MagickRealType) *height/(MagickRealType)
-                   former_width)))
-                scale_factor=(MagickRealType) *height/(MagickRealType)
-                  former_width;
+                  (scale_factor < ((double) *height/(double) former_width)))
+                scale_factor=(double) *height/(double) former_width;
             }
       *width=MagickMax((size_t) floor(scale_factor*former_width+0.5),1UL);
       *height=MagickMax((size_t) floor(scale_factor*former_height+0.5),1UL);
@@ -1265,7 +1257,7 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
     }
   if ((flags & AreaValue) != 0)
     {
-      MagickRealType
+      double
         area,
         distance;
 
@@ -1278,12 +1270,12 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
       (void) ParseGeometry(geometry,&geometry_info);
       area=geometry_info.rho;
       distance=sqrt((double) former_width*former_height);
-      scale.x=(double) former_width/(double) (distance/sqrt((double) area));
-      scale.y=(double) former_height/(double) (distance/sqrt((double) area));
+      scale.x=(double) former_width/(distance/sqrt((double) area));
+      scale.y=(double) former_height/(distance/sqrt((double) area));
       if ((scale.x < (double) *width) || (scale.y < (double) *height))
         {
-          *width=(size_t) (former_width/(distance/sqrt((double) area)));
-          *height=(size_t) (former_height/(distance/sqrt((double) area)));
+          *width=(size_t) (former_width/(distance/sqrt(area))+0.5);
+          *height=(size_t) (former_height/(distance/sqrt(area))+0.5);
         }
       former_width=(*width);
       former_height=(*height);
@@ -1339,7 +1331,7 @@ MagickExport MagickStatusType ParsePageGeometry(const Image *image,
   if (flags == NoValue)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "InvalidGeometry","`%s'",geometry);
+        "InvalidGeometry","'%s'",geometry);
       return(flags);
     }
   if ((flags & PercentValue) != 0)
@@ -1396,7 +1388,7 @@ MagickExport MagickStatusType ParseRegionGeometry(const Image *image,
     &region_info->width,&region_info->height);
   if (flags == NoValue)
     (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-      "InvalidGeometry","`%s'",geometry);
+      "InvalidGeometry","'%s'",geometry);
   return(flags);
 }
 

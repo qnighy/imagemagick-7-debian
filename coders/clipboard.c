@@ -17,7 +17,7 @@
 %                                 May 2002                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -59,6 +59,7 @@
 #include "MagickCore/magick.h"
 #include "MagickCore/memory_.h"
 #include "MagickCore/nt-base-private.h"
+#include "MagickCore/nt-feature.h"
 #include "MagickCore/pixel-accessor.h"
 #include "MagickCore/quantum-private.h"
 #include "MagickCore/static.h"
@@ -344,7 +345,7 @@ static MagickBooleanType WriteCLIPBOARDImage(const ImageInfo *image_info,
 
     OpenClipboard(NULL);
     EmptyClipboard();
-    bitmapH=(HBITMAP) ImageToHBITMAP(image);
+    bitmapH=(HBITMAP) ImageToHBITMAP(image,exception);
     SetClipboardData(CF_BITMAP,bitmapH);
     CloseClipboard();
   }

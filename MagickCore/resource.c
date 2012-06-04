@@ -17,7 +17,7 @@
 %                               September 2002                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -233,7 +233,6 @@ MagickExport MagickBooleanType AcquireMagickResource(const ResourceType type,
     }
     case ThreadResource:
     {
-      resource_info.thread+=size;
       limit=resource_info.thread_limit;
       status=(resource_info.thread_limit == MagickResourceInfinity) ||
         ((MagickSizeType) resource_info.thread < limit) ?
@@ -791,7 +790,6 @@ MagickExport void RelinquishMagickResource(const ResourceType type,
     }
     case ThreadResource:
     {
-      resource_info.thread-=size;
       (void) FormatMagickSize((MagickSizeType) resource_info.thread,MagickFalse,
         resource_current);
       (void) FormatMagickSize((MagickSizeType) resource_info.thread_limit,
@@ -996,7 +994,8 @@ MagickPrivate MagickBooleanType ResourceComponentGenesis(void)
     limit=GetPolicyValue("file");
   if (limit != (char *) NULL)
     {
-      (void) SetMagickResourceLimit(FileResource,StringToSizeType(limit,100.0));
+      (void) SetMagickResourceLimit(FileResource,StringToSizeType(limit,
+        100.0));
       limit=DestroyString(limit);
     }
   (void) SetMagickResourceLimit(ThreadResource,GetOpenMPMaximumThreads());
@@ -1145,7 +1144,8 @@ MagickExport MagickBooleanType SetMagickResourceLimit(const ResourceType type,
       if (value != (char *) NULL)
         resource_info.thread_limit=MagickMin(limit,StringToSizeType(value,
           100.0));
-      SetOpenMPMaximumThreads((int) resource_info.thread_limit);
+      if (resource_info.thread_limit > GetOpenMPMaximumThreads())
+        resource_info.thread_limit=GetOpenMPMaximumThreads();
       break;
     }
     case TimeResource:

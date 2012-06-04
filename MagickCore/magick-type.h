@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -37,11 +37,15 @@ extern "C" {
 #endif
 
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
-#define MagickEpsilon  1.0e-6
+#define MagickEpsilon  ((MagickRealType) 1.0e-7)
 #define MaxColormapSize  256UL
 #define MaxMap  255UL
 
+#if defined __arm__ || defined __thumb__
+typedef float MagickRealType;
+#else
 typedef double MagickRealType;
+#endif
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
 #define QuantumRange  255.0
@@ -52,11 +56,15 @@ typedef unsigned char Quantum;
 #define QuantumFormat  "%u"
 #endif
 #elif (MAGICKCORE_QUANTUM_DEPTH == 16)
-#define MagickEpsilon  1.0e-10
+#define MagickEpsilon  ((MagickRealType) 1.0e-16)
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
+#if defined __arm__ || defined __thumb__
+typedef float MagickRealType;
+#else
 typedef double MagickRealType;
+#endif
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
 #define QuantumRange  65535.0
@@ -67,7 +75,7 @@ typedef unsigned short Quantum;
 #define QuantumFormat  "%u"
 #endif
 #elif (MAGICKCORE_QUANTUM_DEPTH == 32)
-#define MagickEpsilon  1.0e-10
+#define MagickEpsilon  ((MagickRealType) 1.0e-16)
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
@@ -82,7 +90,7 @@ typedef unsigned int Quantum;
 #define QuantumFormat  "%u"
 #endif
 #elif (MAGICKCORE_QUANTUM_DEPTH == 64) && defined(MAGICKCORE_HAVE_LONG_DOUBLE_WIDER)
-#define MagickEpsilon  1.0e-10
+#define MagickEpsilon  ((MagickRealType) 1.0e-16)
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
@@ -122,6 +130,12 @@ typedef unsigned __int64 MagickSizeType;
 #define MagickSizeFormat  "I64u"
 #endif
 
+#if QuantumDepth > 16
+  typedef double SignedQuantum;
+#else
+  typedef ssize_t SignedQuantum;
+#endif
+
 #if defined(_MSC_VER) && (_MSC_VER == 1200)
 typedef MagickOffsetType QuantumAny;
 #else
@@ -131,32 +145,6 @@ typedef MagickSizeType QuantumAny;
 #if defined(macintosh)
 #define ExceptionInfo  MagickExceptionInfo
 #endif
-
-typedef enum
-{
-  UndefinedChannel = 0x0000,
-  RedChannel = 0x0001,
-  GrayChannel = 0x0001,
-  CyanChannel = 0x0001,
-  GreenChannel = 0x0002,
-  MagentaChannel = 0x0002,
-  BlueChannel = 0x0004,
-  YellowChannel = 0x0004,
-  AlphaChannel = 0x0008,
-  OpacityChannel = 0x0008,
-  BlackChannel = 0x0010,
-  IndexChannel = 0x0020,
-  CompositeChannels = 0x002F,
-  AllChannels = 0x7ffffff,
-  /*
-    Special purpose channel types.
-  */
-  TrueAlphaChannel = 0x0040, /* extract actual alpha channel from opacity */
-  RGBChannels = 0x0080,      /* set alpha from grayscale mask in RGB */
-  GrayChannels = 0x0080,
-  SyncChannels = 0x0100,     /* channels should be modified equally */
-  DefaultChannels = ((AllChannels | SyncChannels) &~ AlphaChannel)
-} ChannelType;
 
 typedef enum
 {
@@ -170,6 +158,42 @@ typedef enum
   MagickFalse = 0,
   MagickTrue = 1
 } MagickBooleanType;
+
+/*
+   Define some short-hand macros for handling MagickBooleanType
+   and uses fast C typing with C boolean operations
+
+     Is  -- returns a MagickBooleanType (for storage)
+     If  -- returns C integer boolean (for if's and while's)
+
+   IfMagickTrue()     converts MagickBooleanType to C integer Boolean
+   IfMagickFalse()    Not the MagickBooleanType to C integer Boolean
+
+   IsMagickTrue()     converts a C integer boolean to a MagickBooleanType
+   IsMagickFalse()    converts and is also a MagickBooleanType 'not' operation
+
+   IsMagickNULL()
+   IsMagickNotNULL()  converts C pointers tests MagickBooleanType
+*/
+#if 1
+/* Fast C typing method assumes MagickBooleanType uses match 0,1 values */
+#  define IfMagickTrue(v)  ((int)(v))
+#  define IfMagickFalse(v) (!(int)(v))
+#  define IsMagickTrue(v)  ((MagickBooleanType)((int)(v)!=0))
+#  define IsMagickFalse(v) ((MagickBooleanType)(!(int)(v)))
+#  define IsMagickNot(v)   ((MagickBooleanType)(!(int)(v)))
+#else
+/* Do not depend MagickBooleanValues */
+#  define IfMagickTrue(v)  ((v) != MagickFalse)
+#  define IfMagickFalse(v) ((v) == MagickFalse)
+#  define IsMagickTrue(v)  ((v)?MagickTrue:MagickFalse)
+#  define IsMagickFalse(v) ((v)?MagickFalse:MagickTrue)
+#  define IsMagickNot(v)   (IfMagickTrue(v)?MagickFalse:MagickTrue)
+#endif
+#define IfStringTrue(v)       IfMagickTrue(IsStringTrue(v))
+#define IfStringNotFalse(v)   IfMagickTrue(IsStringNotFalse(v))
+#define IsMagickNULL(v)       (((void *)(v) == NULL)?MagickTrue:MagickFalse)
+#define IsMagickNotNULL(v)    (((void *)(v) != NULL)?MagickTrue:MagickFalse)
 
 typedef struct _BlobInfo BlobInfo;
 

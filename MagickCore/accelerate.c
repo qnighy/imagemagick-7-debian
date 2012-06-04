@@ -17,7 +17,7 @@
 %                               January 2010                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -185,7 +185,7 @@ static const char
     "static inline CLQuantum ClampToQuantum(const float value)\n"
     "{\n"
     "#if defined(MAGICKCORE_HDRI_SUPPORT)\n"
-    "  return((CLQuantum) value)\n"
+    "  return((CLQuantum) value);\n"
     "#else\n"
     "  if (value < 0.0)\n"
     "    return((CLQuantum) 0);\n"
@@ -295,7 +295,7 @@ static const char
     "      break;\n"
     "    }\n"
     "  }\n"
-    "  gamma=1.0/(fabs(gamma) <= MagickEpsilon ? 1.0 : gamma);\n"
+    "  gamma=MagickEpsilonReciprocal(gamma);\n"
     "  const unsigned long index = y*columns+x;\n"
     "  output[index].x=ClampToQuantum(gamma*sum.x);\n"
     "  output[index].y=ClampToQuantum(gamma*sum.y);\n"
@@ -316,7 +316,7 @@ static void ConvolveNotify(const char *message,const void *data,size_t length,
   (void) length;
   exception=(ExceptionInfo *) user_context;
   (void) ThrowMagickException(exception,GetMagickModule(),DelegateWarning,
-    "DelegateFailed","`%s'",message);
+    "DelegateFailed","'%s'",message);
 }
 
 static MagickBooleanType BindConvolveParameters(ConvolveInfo *convolve_info,
@@ -496,7 +496,7 @@ static ConvolveInfo *GetConvolveInfo(const Image *image,const char *name,
   if (convolve_info == (ConvolveInfo *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",image->filename);
+        ResourceLimitError,"MemoryAllocationFailed","'%s'",image->filename);
       return((ConvolveInfo *) NULL);
     }
   (void) ResetMagickMemory(convolve_info,0,sizeof(*convolve_info));
@@ -509,7 +509,7 @@ static ConvolveInfo *GetConvolveInfo(const Image *image,const char *name,
   if (status != CL_SUCCESS)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),DelegateWarning,
-        "failed to create OpenCL context","`%s' (%d)",image->filename,status);
+        "failed to create OpenCL context","'%s' (%d)",image->filename,status);
       convolve_info=DestroyConvolveInfo(convolve_info);
       return((ConvolveInfo *) NULL);
     }
@@ -527,7 +527,7 @@ static ConvolveInfo *GetConvolveInfo(const Image *image,const char *name,
   if ((convolve_info->context == (cl_context) NULL) || (status != CL_SUCCESS))
     {
       (void) ThrowMagickException(exception,GetMagickModule(),DelegateWarning,
-        "failed to create OpenCL context","`%s' (%d)",image->filename,status);
+        "failed to create OpenCL context","'%s' (%d)",image->filename,status);
       convolve_info=DestroyConvolveInfo(convolve_info);
       return((ConvolveInfo *) NULL);
     }
@@ -545,7 +545,7 @@ static ConvolveInfo *GetConvolveInfo(const Image *image,const char *name,
   if (convolve_info->devices == (cl_device_id *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",image->filename);
+        ResourceLimitError,"MemoryAllocationFailed","'%s'",image->filename);
       convolve_info=DestroyConvolveInfo(convolve_info);
       return((ConvolveInfo *) NULL);
     }
@@ -630,7 +630,7 @@ static ConvolveInfo *GetConvolveInfo(const Image *image,const char *name,
       status=clGetProgramBuildInfo(convolve_info->program,
         convolve_info->devices[0],CL_PROGRAM_BUILD_LOG,length,log,&length);
       (void) ThrowMagickException(exception,GetMagickModule(),DelegateWarning,
-        "failed to build OpenCL program","`%s' (%s)",image->filename,log);
+        "failed to build OpenCL program","'%s' (%s)",image->filename,log);
       log=DestroyString(log);
       convolve_info=DestroyConvolveInfo(convolve_info);
       return((ConvolveInfo *) NULL);
@@ -703,7 +703,7 @@ MagickExport MagickBooleanType AccelerateConvolveImage(const Image *image,
       {
         convolve_info=DestroyConvolveInfo(convolve_info);
         (void) ThrowMagickException(exception,GetMagickModule(),CacheError,
-          "UnableToReadPixelCache","`%s'",image->filename);
+          "UnableToReadPixelCache","'%s'",image->filename);
         return(MagickFalse);
       }
     convolve_pixels=GetPixelCachePixels(convolve_image,&length,exception);
@@ -711,7 +711,7 @@ MagickExport MagickBooleanType AccelerateConvolveImage(const Image *image,
       {
         convolve_info=DestroyConvolveInfo(convolve_info);
         (void) ThrowMagickException(exception,GetMagickModule(),CacheError,
-          "UnableToReadPixelCache","`%s'",image->filename);
+          "UnableToReadPixelCache","'%s'",image->filename);
         return(MagickFalse);
       }
     filter=(float *) AcquireQuantumMemory(kernel->width,kernel->height*
@@ -721,7 +721,7 @@ MagickExport MagickBooleanType AccelerateConvolveImage(const Image *image,
         DestroyConvolveBuffers(convolve_info);
         convolve_info=DestroyConvolveInfo(convolve_info);
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",image->filename);
+          ResourceLimitError,"MemoryAllocationFailed","'%s'",image->filename);
         return(MagickFalse);
       }
     for (i=0; i < (ssize_t) (kernel->width*kernel->height); i++)

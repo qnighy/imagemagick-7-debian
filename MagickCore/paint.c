@@ -17,7 +17,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -55,6 +55,8 @@
 #include "MagickCore/monitor-private.h"
 #include "MagickCore/paint.h"
 #include "MagickCore/pixel-accessor.h"
+#include "MagickCore/resource_.h"
+#include "MagickCore/statistic.h"
 #include "MagickCore/string_.h"
 #include "MagickCore/thread-private.h"
 
@@ -138,10 +140,8 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
     status;
 
   PixelInfo
+    fill_color,
     pixel;
-
-  PixelInfo
-    fill_color;
 
   register SegmentInfo
     *s;
@@ -172,15 +172,22 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
     return(MagickFalse);
   if (SetImageStorageClass(image,DirectClass,exception) == MagickFalse)
     return(MagickFalse);
-  if (image->matte == MagickFalse)
-    (void) SetImageAlphaChannel(image,OpaqueAlphaChannel,exception);
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace,exception);
+  if ((image->matte == MagickFalse) && (draw_info->fill.matte != MagickFalse))
+    (void) SetImageAlpha(image,OpaqueAlpha,exception);
   /*
     Set floodfill state.
   */
-  floodplane_image=CloneImage(image,0,0,MagickTrue,exception);
+  floodplane_image=CloneImage(image,image->columns,image->rows,MagickTrue,
+    exception);
   if (floodplane_image == (Image *) NULL)
     return(MagickFalse);
-  (void) SetImageAlphaChannel(floodplane_image,OpaqueAlphaChannel,exception);
+  floodplane_image->matte=MagickFalse;
+  floodplane_image->colorspace=GRAYColorspace;
+  (void) QueryColorCompliance("#000",AllCompliance,
+    &floodplane_image->background_color,exception);
+  (void) SetImageBackgroundColor(floodplane_image,exception);
   segment_stack=(SegmentInfo *) AcquireQuantumMemory(MaxStacksize,
     sizeof(*segment_stack));
   if (segment_stack == (SegmentInfo *) NULL)
@@ -193,8 +200,6 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
     Push initial segment on stack.
   */
   status=MagickTrue;
-  fill_color.black=0.0;
-  fill_color.index=0.0;
   x=x_offset;
   y=y_offset;
   start=0;
@@ -202,8 +207,8 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
   PushSegmentStack(y,x,x,1);
   PushSegmentStack(y+1,x,x,-1);
   GetPixelInfo(image,&pixel);
-  image_view=AcquireCacheView(image);
-  floodplane_view=AcquireCacheView(floodplane_image);
+  image_view=AcquireVirtualCacheView(image,exception);
+  floodplane_view=AcquireAuthenticCacheView(floodplane_image,exception);
   while (s > segment_stack)
   {
     register const Quantum
@@ -235,12 +240,12 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
     q+=x1*GetPixelChannels(floodplane_image);
     for (x=x1; x >= 0; x--)
     {
-      if (GetPixelAlpha(image,q) == TransparentAlpha)
+      if (GetPixelGray(floodplane_image,q) != 0)
         break;
       GetPixelInfoPixel(image,p,&pixel);
       if (IsFuzzyEquivalencePixelInfo(&pixel,target) == invert)
         break;
-      SetPixelAlpha(floodplane_image,TransparentAlpha,q);
+      SetPixelGray(floodplane_image,QuantumRange,q);
       p-=GetPixelChannels(image);
       q-=GetPixelChannels(floodplane_image);
     }
@@ -262,18 +267,18 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
             {
               p=GetCacheViewVirtualPixels(image_view,x,y,image->columns-x,1,
                 exception);
-              q=GetCacheViewAuthenticPixels(floodplane_view,x,y,
-                image->columns-x,1,exception);
+              q=GetCacheViewAuthenticPixels(floodplane_view,x,y,image->columns-
+                x,1,exception);
               if ((p == (const Quantum *) NULL) || (q == (Quantum *) NULL))
                 break;
               for ( ; x < (ssize_t) image->columns; x++)
               {
-                if (GetPixelAlpha(image,q) == TransparentAlpha)
+                if (GetPixelGray(floodplane_image,q) != 0)
                   break;
                 GetPixelInfoPixel(image,p,&pixel);
                 if (IsFuzzyEquivalencePixelInfo(&pixel,target) == invert)
                   break;
-                SetPixelAlpha(floodplane_image,TransparentAlpha,q);
+                SetPixelGray(floodplane_image,QuantumRange,q);
                 p+=GetPixelChannels(image);
                 q+=GetPixelChannels(floodplane_image);
               }
@@ -297,7 +302,7 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
             break;
           for ( ; x <= x2; x++)
           {
-            if (GetPixelAlpha(image,q) == TransparentAlpha)
+            if (GetPixelGray(floodplane_image,q) != 0)
               break;
             GetPixelInfoPixel(image,p,&pixel);
             if (IsFuzzyEquivalencePixelInfo(&pixel,target) != invert)
@@ -323,26 +328,16 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
     /*
       Tile fill color onto floodplane.
     */
-    p=GetCacheViewVirtualPixels(floodplane_view,0,y,image->columns,1,
-      exception);
+    p=GetCacheViewVirtualPixels(floodplane_view,0,y,image->columns,1,exception);
     q=GetCacheViewAuthenticPixels(image_view,0,y,image->columns,1,exception);
     if ((p == (const Quantum *) NULL) || (q == (Quantum *) NULL))
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if (GetPixelAlpha(floodplane_image,p) != OpaqueAlpha)
+      if (GetPixelGray(floodplane_image,p) != 0)
         {
           (void) GetFillColor(draw_info,x,y,&fill_color,exception);
-          if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelRed(image,ClampToQuantum(fill_color.red),q);
-          if ((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelGreen(image,ClampToQuantum(fill_color.green),q);
-          if ((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelBlue(image,ClampToQuantum(fill_color.blue),q);
-          if ((GetPixelBlackTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelBlack(image,ClampToQuantum(fill_color.black),q);
-          if ((GetPixelAlphaTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelAlpha(image,ClampToQuantum(fill_color.alpha),q);
+          SetPixelInfoPixel(image,&fill_color,q);
         }
       p+=GetPixelChannels(floodplane_image);
       q+=GetPixelChannels(image);
@@ -462,7 +457,7 @@ MagickExport MagickBooleanType GradientImage(Image *image,
   */
   status=DrawGradientImage(image,draw_info,exception);
   draw_info=DestroyDrawInfo(draw_info);
-  if ((start_color->alpha == OpaqueAlpha) && (stop_color->alpha == OpaqueAlpha))
+  if ((start_color->matte == MagickFalse) && (stop_color->matte == MagickFalse))
     image->matte=MagickFalse;
   if ((IsPixelInfoGray(start_color) != MagickFalse) &&
       (IsPixelInfoGray(stop_color) != MagickFalse))
@@ -508,7 +503,7 @@ static size_t **DestroyHistogramThreadSet(size_t **histogram)
     i;
 
   assert(histogram != (size_t **) NULL);
-  for (i=0; i < (ssize_t) GetOpenMPMaximumThreads(); i++)
+  for (i=0; i < (ssize_t) GetMagickResourceLimit(ThreadResource); i++)
     if (histogram[i] != (size_t *) NULL)
       histogram[i]=(size_t *) RelinquishMagickMemory(histogram[i]);
   histogram=(size_t **) RelinquishMagickMemory(histogram);
@@ -562,6 +557,7 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
     width;
 
   ssize_t
+    center,
     y;
 
   /*
@@ -593,10 +589,13 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
   */
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
-  paint_view=AcquireCacheView(paint_image);
+  center=(ssize_t) GetPixelChannels(image)*(image->columns+width)*(width/2L)+
+    GetPixelChannels(image)*(width/2L);
+  image_view=AcquireVirtualCacheView(image,exception);
+  paint_view=AcquireAuthenticCacheView(paint_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -636,45 +635,59 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
       ssize_t
         j,
         k,
+        n,
         v;
 
       /*
         Assign most frequent color.
       */
-      i=0;
+      k=0;
       j=0;
       count=0;
-      (void) ResetMagickMemory(histogram,0,NumberPaintBins*sizeof(*histogram));
+      (void) ResetMagickMemory(histogram,0,NumberPaintBins* sizeof(*histogram));
       for (v=0; v < (ssize_t) width; v++)
       {
         for (u=0; u < (ssize_t) width; u++)
         {
-          k=(ssize_t) ScaleQuantumToChar(GetPixelIntensity(image,p+
-            GetPixelChannels(image)*(u+i)));
-          histogram[k]++;
-          if (histogram[k] > count)
+          n=(ssize_t) ScaleQuantumToChar(GetPixelIntensity(image,p+
+            GetPixelChannels(image)*(u+k)));
+          histogram[n]++;
+          if (histogram[n] > count)
             {
-              j=i+u;
-              count=histogram[k];
+              j=k+u;
+              count=histogram[n];
             }
         }
-        i+=(ssize_t) (image->columns+width);
+        k+=(ssize_t) (image->columns+width);
       }
-      if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
-        SetPixelRed(paint_image,GetPixelRed(image,p+j*
-          GetPixelChannels(image)),q);
-      if ((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0)
-        SetPixelGreen(paint_image,GetPixelGreen(image,p+j*
-          GetPixelChannels(image)),q);
-      if ((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0)
-        SetPixelBlue(paint_image,GetPixelBlue(image,p+j*
-          GetPixelChannels(image)),q);
-      if ((GetPixelBlackTraits(image) & UpdatePixelTrait) != 0)
-        SetPixelBlack(paint_image,GetPixelBlack(image,p+j*
-          GetPixelChannels(image)),q);
-      if ((GetPixelAlphaTraits(image) & UpdatePixelTrait) != 0)
-        SetPixelAlpha(paint_image,GetPixelAlpha(image,p+j*
-          GetPixelChannels(image)),q);
+      if (GetPixelMask(image,p) != 0)
+        {
+          p+=GetPixelChannels(image);
+          q+=GetPixelChannels(paint_image);
+          continue;
+        }
+      for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
+      {
+        PixelChannel
+          channel;
+
+        PixelTrait
+          paint_traits,
+          traits;
+
+        channel=GetPixelChannelMapChannel(image,i);
+        traits=GetPixelChannelMapTraits(image,channel);
+        paint_traits=GetPixelChannelMapTraits(paint_image,channel);
+        if ((traits == UndefinedPixelTrait) ||
+            (paint_traits == UndefinedPixelTrait))
+          continue;
+        if ((paint_traits & CopyPixelTrait) != 0)
+          {
+            SetPixelChannel(paint_image,channel,p[center+i],q);
+            continue;
+          }
+        SetPixelChannel(paint_image,channel,p[j*GetPixelChannels(image)+i],q);
+      }
       p+=GetPixelChannels(image);
       q+=GetPixelChannels(paint_image);
     }
@@ -686,7 +699,7 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_OilPaintImage)
+        #pragma omp critical (MagickCore_OilPaintImage)
 #endif
         proceed=SetImageProgress(image,OilPaintImageTag,progress++,image->rows);
         if (proceed == MagickFalse)
@@ -769,15 +782,21 @@ MagickExport MagickBooleanType OpaquePaintImage(Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (SetImageStorageClass(image,DirectClass,exception) == MagickFalse)
     return(MagickFalse);
+  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
+      (IsPixelInfoGray(fill) != MagickFalse))
+    (void) TransformImageColorspace(image,sRGBColorspace,exception);
+  if ((fill->matte != MagickFalse) && (image->matte == MagickFalse))
+    (void) SetImageAlpha(image,OpaqueAlpha,exception);
   /*
     Make image color opaque.
   */
   status=MagickTrue;
   progress=0;
   GetPixelInfo(image,&zero);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -803,18 +822,7 @@ MagickExport MagickBooleanType OpaquePaintImage(Image *image,
     {
       GetPixelInfoPixel(image,q,&pixel);
       if (IsFuzzyEquivalencePixelInfo(&pixel,target) != invert)
-        {
-          if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelRed(image,ClampToQuantum(fill->red),q);
-          if ((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelGreen(image,ClampToQuantum(fill->green),q);
-          if ((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelBlue(image,ClampToQuantum(fill->blue),q);
-          if ((GetPixelBlackTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelBlack(image,ClampToQuantum(fill->black),q);
-          if ((GetPixelAlphaTraits(image) & UpdatePixelTrait) != 0)
-            SetPixelAlpha(image,ClampToQuantum(fill->alpha),q);
-        }
+        SetPixelInfoPixel(image,fill,q);
       q+=GetPixelChannels(image);
     }
     if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
@@ -825,7 +833,7 @@ MagickExport MagickBooleanType OpaquePaintImage(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_OpaquePaintImage)
+        #pragma omp critical (MagickCore_OpaquePaintImage)
 #endif
         proceed=SetImageProgress(image,OpaquePaintImageTag,progress++,
           image->rows);
@@ -912,9 +920,10 @@ MagickExport MagickBooleanType TransparentPaintImage(Image *image,
   status=MagickTrue;
   progress=0;
   GetPixelInfo(image,&zero);
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -951,7 +960,7 @@ MagickExport MagickBooleanType TransparentPaintImage(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_TransparentPaintImage)
+        #pragma omp critical (MagickCore_TransparentPaintImage)
 #endif
         proceed=SetImageProgress(image,TransparentPaintImageTag,progress++,
           image->rows);
@@ -1038,9 +1047,10 @@ MagickExport MagickBooleanType TransparentPaintImageChroma(Image *image,
   */
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1084,7 +1094,7 @@ MagickExport MagickBooleanType TransparentPaintImageChroma(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_TransparentPaintImageChroma)
+        #pragma omp critical (MagickCore_TransparentPaintImageChroma)
 #endif
         proceed=SetImageProgress(image,TransparentPaintImageTag,progress++,
           image->rows);

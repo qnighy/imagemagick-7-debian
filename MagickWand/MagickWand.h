@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
   MagickWand Application Programming Interface declarations.
 */
 
-#ifndef _MAGICK_WAND_H
-#define _MAGICK_WAND_H
+#ifndef _MAGICKWAND_MAGICKWAND_H
+#define _MAGICKWAND_MAGICKWAND_H
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -55,7 +55,15 @@ extern "C" {
 #  define MAGICKCORE_POSIX_SUPPORT
 #endif 
 
-#if defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__CYGWIN__) || defined(__MINGW32__)
+#if defined(__BORLANDC__) && defined(_DLL)
+#  pragma message("BCBMagick lib DLL export interface")
+#  define _MAGICKDLL_
+#  define _MAGICKLIB_
+#endif
+
+#include "MagickWand/method-attribute.h"
+
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__CYGWIN__)
 # define WandPrivate
 # if defined(_MT) && defined(_DLL) && !defined(_MAGICKDLL_) && !defined(_LIB)
 #  define _MAGICKDLL_
@@ -66,7 +74,7 @@ extern "C" {
 #  endif
 #  if !defined(_MAGICKLIB_)
 #   if defined(__GNUC__)
-#    define WandExport __attribute__ ((dllimport))
+#    define WandExport __attribute__ ((__dllimport__))
 #   else
 #    define WandExport __declspec(dllimport)
 #   endif
@@ -75,7 +83,7 @@ extern "C" {
 #   endif
 #  else
 #   if defined(__GNUC__)
-#    define WandExport __attribute__ ((dllexport))
+#    define WandExport __attribute__ ((__dllexport__))
 #   else
 #    define WandExport __declspec(dllexport)
 #   endif
@@ -90,18 +98,6 @@ extern "C" {
 #  endif
 # endif
 
-# if defined(_DLL) && !defined(_LIB)
-#  define ModuleExport  __declspec(dllexport)
-#  if defined(_VISUALC_)
-#   pragma message( "MagickWand module DLL export interface" )
-#  endif
-# else
-#  define ModuleExport
-#  if defined(_VISUALC_)
-#   pragma message( "MagickWand module static interface" )
-#  endif
-
-# endif
 # define WandGlobal __declspec(thread)
 # if defined(_VISUALC_)
 #  pragma warning(disable : 4018)
@@ -113,8 +109,8 @@ extern "C" {
 # endif
 #else
 # if __GNUC__ >= 4
-#  define WandExport __attribute__ ((visibility ("default")))
-#  define WandPrivate  __attribute__ ((visibility ("hidden")))
+#  define WandExport __attribute__ ((__visibility__ ("default")))
+#  define WandPrivate  __attribute__ ((__visibility__ ("hidden")))
 # else
 #   define WandExport
 #   define WandPrivate
@@ -122,17 +118,26 @@ extern "C" {
 # define WandGlobal
 #endif
 
-#if !defined(MaxTextExtent)
-# define MaxTextExtent  4096
+#if defined(MAGICKCORE_HAVE___ATTRIBUTE__)
+#  define wand_aligned(x)  __attribute__((__aligned__(x)))
+#  define wand_attribute  __attribute__
+#  define wand_unused(x)  wand_unused_ ## x __attribute__((__unused__))
+#else
+#  define wand_aligned(x)  /* nothing */
+#  define wand_attribute(x)  /* nothing */
+#  define wand_unused(x) x
 #endif
-#define WandSignature  0xabacadabUL
 
-#if !defined(wand_attribute)
-#  if !defined(__GNUC__)
-#    define wand_attribute(x)  /* nothing */
-#  else
-#    define wand_attribute  __attribute__
-#  endif
+#if defined(MAGICKCORE_HAVE___ALLOC_SIZE__)
+#  define wand_alloc_size(x)  __attribute__((__alloc_size__(x)))
+#  define wand_alloc_sizes(x,y)  __attribute__((__alloc_size__(x,y)))
+#  define wand_cold  __attribute__((__cold__))
+#  define wand_hot  __attribute__((__hot__))
+#else
+#  define wand_alloc_size(x)  /* nothing */
+#  define wand_alloc_sizes(x,y)  /* nothing */
+#  define wand_cold
+#  define wand_hot
 #endif
 
 typedef struct _MagickWand
@@ -149,6 +154,9 @@ typedef struct _MagickWand
 #include "MagickWand/drawing-wand.h"
 #include "MagickWand/identify.h"
 #include "MagickWand/import.h"
+#include "MagickWand/wandcli.h"
+#include "MagickWand/operation.h"
+#include "MagickWand/magick-cli.h"
 #include "MagickWand/magick-property.h"
 #include "MagickWand/magick-image.h"
 #include "MagickWand/mogrify.h"

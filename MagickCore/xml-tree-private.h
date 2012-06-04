@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ extern MagickPrivate char
   *CanonicalXMLContent(const char *,const MagickBooleanType);
 
 extern MagickPrivate const char
-  *GetXMLTreeAttribute(XMLTreeInfo *,const char *),
   **GetXMLTreeProcessingInstructions(XMLTreeInfo *,const char *);
 
 extern MagickPrivate MagickBooleanType
@@ -37,7 +36,6 @@ extern MagickPrivate MagickBooleanType
 
 extern MagickPrivate XMLTreeInfo
   *AddPathToXMLTree(XMLTreeInfo *,const char *,const size_t),
-  *GetNextXMLTreeTag(XMLTreeInfo *),
   *GetXMLTreeOrdered(XMLTreeInfo *),
   *GetXMLTreePath(XMLTreeInfo *,const char *),
   *InsertTagIntoXMLTree(XMLTreeInfo *,XMLTreeInfo *,const size_t),

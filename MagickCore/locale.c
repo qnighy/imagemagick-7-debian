@@ -17,7 +17,7 @@
 %                                 July 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -50,6 +50,7 @@
 #include "MagickCore/locale-private.h"
 #include "MagickCore/log.h"
 #include "MagickCore/memory_.h"
+#include "MagickCore/nt-base-private.h"
 #include "MagickCore/semaphore.h"
 #include "MagickCore/splay-tree.h"
 #include "MagickCore/string_.h"
@@ -745,9 +746,11 @@ MagickExport LinkedListInfo *GetLocaleOptions(const char *filename,
     blob=(char *) NTResourceToBlob(filename);
     if (blob != (char *) NULL)
       {
-        xml=StringToStringInfo(blob);
+        xml=AcquireStringInfo(0);
+        SetStringInfoLength(xml,strlen(blob)+1);
+        SetStringInfoDatum(xml,(unsigned char *) blob);
+        SetStringInfoPath(xml,filename);
         (void) AppendValueToLinkedList(messages,xml);
-        blob=DestroyString(blob);
       }
   }
 #endif
@@ -1165,7 +1168,7 @@ static MagickBooleanType LoadLocaleList(const char *xml,const char *filename,
             {
               if (depth > 200)
                 (void) ThrowMagickException(exception,GetMagickModule(),
-                  ConfigureError,"IncludeElementNestedTooDeeply","`%s'",token);
+                  ConfigureError,"IncludeElementNestedTooDeeply","'%s'",token);
               else
                 {
                   char
@@ -1253,7 +1256,7 @@ static MagickBooleanType LoadLocaleList(const char *xml,const char *filename,
         status=AddValueToSplayTree(locale_list,locale_info->tag,locale_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
-            ResourceLimitError,"MemoryAllocationFailed","`%s'",
+            ResourceLimitError,"MemoryAllocationFailed","'%s'",
             locale_info->tag);
         (void) ConcatenateMagickString(tag,message,MaxTextExtent);
         (void) ConcatenateMagickString(tag,"\n",MaxTextExtent);

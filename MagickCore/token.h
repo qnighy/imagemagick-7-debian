@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -34,6 +34,9 @@ extern MagickExport int
 
 extern MagickExport MagickBooleanType
   GlobExpression(const char *,const char *,const MagickBooleanType);
+
+/* Depreciated Function equivelent */
+/* #define IsMagickTrue(v)   IsStringTrue(v) */
 
 extern MagickExport TokenInfo
   *AcquireTokenInfo(void),

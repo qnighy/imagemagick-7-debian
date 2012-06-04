@@ -1,4 +1,4 @@
-#  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -104,6 +104,7 @@ MAGICKCORE_CODER_SRCS = \
 	coders/dot.c \
 	coders/dpx.c \
 	coders/fax.c \
+	coders/fd.c \
 	coders/fits.c \
 	coders/gif.c \
 	coders/gradient.c \
@@ -135,6 +136,7 @@ MAGICKCORE_CODER_SRCS = \
 	coders/null.c \
 	coders/otb.c \
 	coders/palm.c \
+	coders/pango.c \
 	coders/pattern.c \
 	coders/pcd.c \
 	coders/pcl.c \
@@ -221,6 +223,7 @@ coders_LTLIBRARIES = \
 	coders/dot.la \
 	coders/dpx.la \
 	coders/fax.la \
+	coders/fd.la \
 	coders/fits.la \
 	coders/gif.la \
 	coders/gradient.la \
@@ -252,6 +255,7 @@ coders_LTLIBRARIES = \
 	coders/null.la \
 	coders/otb.la \
 	coders/palm.la \
+	coders/pango.la \
 	coders/pattern.la \
 	coders/pcd.la \
 	coders/pcl.la \
@@ -362,9 +366,9 @@ coders_cals_la_LIBADD      = $(MAGICKCORE_LIBS)
 
 # CAPTION coder module
 coders_caption_la_SOURCES  = coders/caption.c
-coders_caption_la_CPPFLAGS = $(MODULE_EXTRA_CPPFLAGS) $(PANGO_CFLAGS)
+coders_caption_la_CPPFLAGS = $(MODULE_EXTRA_CPPFLAGS)
 coders_caption_la_LDFLAGS  = $(MODULECOMMONFLAGS)
-coders_caption_la_LIBADD   = $(MAGICKCORE_LIBS) $(PANGO_LIBS)
+coders_caption_la_LIBADD   = $(MAGICKCORE_LIBS)
 
 # CINEON coder module
 coders_cin_la_SOURCES      = coders/cin.c
@@ -479,6 +483,12 @@ coders_fax_la_SOURCES      = coders/fax.c
 coders_fax_la_CPPFLAGS     = $(MODULE_EXTRA_CPPFLAGS)
 coders_fax_la_LDFLAGS      = $(MODULECOMMONFLAGS)
 coders_fax_la_LIBADD       = $(MAGICKCORE_LIBS)
+
+# FD coder module
+coders_fd_la_SOURCES      = coders/fd.c
+coders_fd_la_CPPFLAGS     = $(MODULE_EXTRA_CPPFLAGS)
+coders_fd_la_LDFLAGS      = $(MODULECOMMONFLAGS)
+coders_fd_la_LIBADD       = $(MAGICKCORE_LIBS)
 
 # FITS coder module
 coders_fits_la_SOURCES     = coders/fits.c
@@ -689,6 +699,12 @@ coders_palm_la_SOURCES     = coders/palm.c
 coders_palm_la_CPPFLAGS    = $(MODULE_EXTRA_CPPFLAGS)
 coders_palm_la_LDFLAGS     = $(MODULECOMMONFLAGS)
 coders_palm_la_LIBADD      = $(MAGICKCORE_LIBS)
+
+# PANGO coder module
+coders_pango_la_SOURCES  = coders/pango.c
+coders_pango_la_CPPFLAGS = $(MODULE_EXTRA_CPPFLAGS) $(PANGO_CFLAGS)
+coders_pango_la_LDFLAGS  = $(MODULECOMMONFLAGS)
+coders_pango_la_LIBADD   = $(MAGICKCORE_LIBS) $(PANGO_LIBS)
 
 # Pattern module
 coders_pattern_la_SOURCES   = coders/pattern.c

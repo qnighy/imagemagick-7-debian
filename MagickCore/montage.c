@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -63,6 +63,7 @@
 #include "MagickCore/monitor-private.h"
 #include "MagickCore/montage.h"
 #include "MagickCore/option.h"
+#include "MagickCore/pixel.h"
 #include "MagickCore/quantize.h"
 #include "MagickCore/property.h"
 #include "MagickCore/resize.h"
@@ -636,8 +637,8 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
     */
     (void) CopyMagickString(montage->filename,montage_info->filename,
       MaxTextExtent);
-    montage->columns=MagickMax(bounds.width,1);
-    montage->rows=MagickMax(bounds.height,1);
+    montage->columns=(size_t) MagickMax((ssize_t) bounds.width,1);
+    montage->rows=(size_t) MagickMax((ssize_t) bounds.height,1);
     (void) SetImageBackgroundColor(montage,exception);
     /*
       Set montage geometry.
@@ -759,9 +760,9 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
           if ((montage_info->frame != (char *) NULL) &&
               (image->compose == DstOutCompositeOp))
             {
-              SetPixelChannelMap(image,AlphaChannel);
+              SetPixelChannelMapMask(image,AlphaChannel);
               (void) NegateImage(image,MagickFalse,exception);
-              SetPixelChannelMap(image,DefaultChannels);
+              SetPixelChannelMapMask(image,DefaultChannels);
             }
         }
       /*
@@ -817,19 +818,19 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
               /*
                 Shadow image.
               */
-              (void) QueryColorCompliance("#00000000",AllCompliance,
+              (void) QueryColorCompliance("#0000",AllCompliance,
                 &image->background_color,exception);
               shadow_image=ShadowImage(image,80.0,2.0,5,5,exception);
               if (shadow_image != (Image *) NULL)
                 {
-                  (void) CompositeImage(shadow_image,OverCompositeOp,image,0,0,
-                    exception);
+                  (void) CompositeImage(shadow_image,image,OverCompositeOp,
+                    MagickTrue,0,0,exception);
                   image=DestroyImage(image);
                   image=shadow_image;
                 }
           }
-          (void) CompositeImage(montage,image->compose,image,x_offset+x,
-            y_offset+y,exception);
+          (void) CompositeImage(montage,image,image->compose,MagickTrue,
+            x_offset+x,y_offset+y,exception);
           value=GetImageProperty(image,"label",exception);
           if (value != (const char *) NULL)
             {

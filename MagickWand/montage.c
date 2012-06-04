@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -169,7 +169,6 @@ static MagickBooleanType MontageUsage(void)
       "-mattecolor color    frame color",
       "-mode type           framing style",
       "-monitor             monitor progress",
-      "-origin geometry     image origin",
       "-page geometry       size and location of an image canvas (setting)",
       "-pointsize value     font point size",
       "-profile filename    add, delete, or apply an image profile",
@@ -213,8 +212,12 @@ static MagickBooleanType MontageUsage(void)
     *stack_operators[]=
     {
       "-clone indexes       clone an image",
+      "-delete indexes      delete the image from the image sequence",
       "-duplicate count,indexes",
       "                     duplicate an image one or more times",
+      "-insert index        insert last image into the image sequence",
+      "-reverse             reverse image sequence",
+      "-swap indexes        swap two images in the image sequence",
       (char *) NULL
     };
 
@@ -245,7 +248,7 @@ static MagickBooleanType MontageUsage(void)
   (void) printf(
     "-borderwidth, -font, -mattecolor, or -title\n");
   (void) printf(
-    "\nBy default, the image format of `file' is determined by its magic\n");
+    "\nBy default, the image format of 'file' is determined by its magic\n");
   (void) printf(
     "number.  To specify a particular image format, precede the filename\n");
   (void) printf(
@@ -270,7 +273,7 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
 }
 #define ThrowMontageException(asperity,tag,option) \
 { \
-  (void) ThrowMagickException(exception,GetMagickModule(),asperity,tag,"`%s'", \
+  (void) ThrowMagickException(exception,GetMagickModule(),asperity,tag,"'%s'", \
     option); \
   DestroyMontage(); \
   return(MagickFalse); \
@@ -278,7 +281,7 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
 #define ThrowMontageInvalidArgumentException(option,argument) \
 { \
   (void) ThrowMagickException(exception,GetMagickModule(),OptionError, \
-    "InvalidArgument","`%s': %s",option,argument); \
+    "InvalidArgument","'%s': %s",option,argument); \
   DestroyMontage(); \
   return(MagickFalse); \
 }
@@ -404,8 +407,10 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
           filename=argv[i];
           if ((LocaleCompare(filename,"--") == 0) && (i < (ssize_t) (argc-1)))
             filename=argv[++i];
-          (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
-          if (first_scene != last_scene)
+          (void) CloneString(&image_info->font,montage_info->font);
+          if (first_scene == last_scene)
+            images=ReadImages(image_info,filename,exception);
+          else
             {
               char
                 filename[MaxTextExtent];
@@ -418,11 +423,8 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
               if (LocaleCompare(filename,image_info->filename) == 0)
                 (void) FormatLocaleString(filename,MaxTextExtent,"%s.%.20g",
                   image_info->filename,(double) scene);
-              (void) CopyMagickString(image_info->filename,filename,
-                MaxTextExtent);
+              images=ReadImages(image_info,filename,exception);
             }
-          (void) CloneString(&image_info->font,montage_info->font);
-          images=ReadImages(image_info,exception);
           status&=(images != (Image *) NULL) &&
             (exception->severity < ErrorException);
           if (images == (Image *) NULL)
@@ -627,7 +629,7 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
             if (k != 0)
               clone_images=image_stack[k-1].image;
             if (clone_images == (Image *) NULL)
-              ThrowMontageException(ImageError,"ImageSequenceRequired",option);
+              ThrowMontageException(ImageError,"UnableToCloneImage",option);
             FireImageStack(MagickTrue,MagickTrue,MagickTrue);
             if (*option == '+')
               clone_images=CloneImages(clone_images,"-1",exception);
@@ -768,6 +770,17 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
                   ThrowMontageException(OptionError,"NoSuchOption",argv[i]);
                 break;
               }
+            break;
+          }
+        if (LocaleCompare("delete",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowMontageException(OptionError,"MissingArgument",option);
+            if (IsSceneGeometry(argv[i],MagickFalse) == MagickFalse)
+              ThrowMontageInvalidArgumentException(option,argv[i]);
             break;
           }
         if (LocaleCompare("density",option+1) == 0)
@@ -1051,6 +1064,17 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
       {
         if (LocaleCompare("identify",option+1) == 0)
           break;
+        if (LocaleCompare("insert",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowMontageException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMontageInvalidArgumentException(option,argv[i]);
+            break;
+          }
         if (LocaleCompare("interlace",option+1) == 0)
           {
             ssize_t
@@ -1246,21 +1270,6 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
           break;
         ThrowMontageException(OptionError,"UnrecognizedOption",option)
       }
-      case 'o':
-      {
-        if (LocaleCompare("origin",option+1) == 0)
-          {
-            if (*option == '+')
-              break;
-            i++;
-            if (i == (ssize_t) argc)
-              ThrowMontageException(OptionError,"MissingArgument",option);
-            if (IsGeometry(argv[i]) == MagickFalse)
-              ThrowMontageInvalidArgumentException(option,argv[i]);
-            break;
-          }
-        ThrowMontageException(OptionError,"UnrecognizedOption",option)
-      }
       case 'p':
       {
         if (LocaleCompare("page",option+1) == 0)
@@ -1383,6 +1392,8 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
             respect_parenthesis=(*option == '-') ? MagickTrue : MagickFalse;
             break;
           }
+        if (LocaleCompare("reverse",option+1) == 0)
+          break;
         if (LocaleCompare("rotate",option+1) == 0)
           {
             i++;
@@ -1513,6 +1524,17 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
         if (LocaleCompare("support",option+1) == 0)
           {
             i++;  /* deprecated */
+            break;
+          }
+        if (LocaleCompare("swap",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowMontageException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMontageInvalidArgumentException(option,argv[i]);
             break;
           }
         if (LocaleCompare("synchronize",option+1) == 0)

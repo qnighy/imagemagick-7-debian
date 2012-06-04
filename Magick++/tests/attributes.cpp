@@ -19,7 +19,7 @@ int main( int /*argc*/, char ** argv)
   // Initialize ImageMagick install location for Windows
   InitializeMagick(*argv);
 
-  int failures=0;
+  volatile int failures=0;
 
   try {
 
@@ -350,7 +350,7 @@ int main( int /*argc*/, char ** argv)
       // Test default setting
       double x, y;
       image.chromaBluePrimary( &x, &y );
-      if ( x != 0 || y != 0 )
+      if ( x != 0.0f || y != 0.0f )
 	{
 	  ++failures;
 	  cout << "Line: " << __LINE__
@@ -376,7 +376,7 @@ int main( int /*argc*/, char ** argv)
       // Test default setting
       double x, y;
       image.chromaGreenPrimary( &x, &y );
-      if ( x != 0 || y != 0 )
+      if ( x != 0.0f || y != 0.0f )
 	{
 	  ++failures;
 	  cout << "Line: " << __LINE__
@@ -401,7 +401,7 @@ int main( int /*argc*/, char ** argv)
       // Test default setting
       double x, y;
       image.chromaRedPrimary( &x, &y );
-      if ( x != 0 || y != 0 )
+      if ( x != 0.0f || y != 0.0f )
 	{
 	  ++failures;
 	  cout << "Line: " << __LINE__
@@ -426,7 +426,7 @@ int main( int /*argc*/, char ** argv)
       // Test default setting
       double x, y;
       image.chromaWhitePoint( &x, &y );
-      if ( x != 0 || y != 0 )
+      if ( x != 0.0f || y != 0.0f )
 	{
 	  ++failures;
 	  cout << "Line: " << __LINE__
@@ -773,11 +773,11 @@ int main( int /*argc*/, char ** argv)
     //
     // gamma
     //
-    if ( image.gamma() != 0 )
+    if ( image.gamma() != 1.0f )
       {
 	++failures;
 	cout << "Line: " << __LINE__
-             << ", gamma correction is not zero as expected" << endl;
+             << ", gamma correction is not unity as expected" << endl;
       }
 
     //
@@ -1282,10 +1282,7 @@ int main( int /*argc*/, char ** argv)
     // signature
     //
 
-    if ( image.signature() != "c7ac1ef7b47015c6ea6c1fb1d736eba4f8c3fe81dbfe511fbce104cedfce7588" &&
-	 image.signature() != "a81c2719f3a1fda387f86cc103340bb121f87c33f91ba130b774d8ad582b30ea" &&
-	 image.signature() != "e073572dfa4ad28f2f8dd3c6d37dfb14585e60c94cfae910149e97eff2fd895f" &&
-   image.signature() != "b891ddb1d32cd45c6329180e5bd733eebb8dd06c401a9c721841ec43e4a662f8")
+    if ( image.signature() != "a81c2719f3a1fda387f86cc103340bb121f87c33f91ba130b774d8ad582b30ea")
       {
 	++failures;
 	cout << "Line: " << __LINE__ << ", signature ("

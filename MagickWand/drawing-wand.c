@@ -23,7 +23,7 @@
 %                                March 2002                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -60,7 +60,7 @@
 #define CurrentContext  (wand->graphic_context[wand->index])
 #define DrawingWandId  "DrawingWand"
 #define ThrowDrawException(severity,tag,reason) (void) ThrowMagickException( \
-  wand->exception,GetMagickModule(),severity,tag,"`%s'",reason);
+  wand->exception,GetMagickModule(),severity,tag,"'%s'",reason);
 
 /*
   Typedef declarations.
@@ -255,8 +255,8 @@ struct _DrawVTable
   void (*DrawSetTextDecoration)(DrawingWand *,const DecorationType);
   void (*DrawSetTextUnderColor)(DrawingWand *,const PixelWand *);
   void (*DrawTranslate)(DrawingWand *,const double,const double);
-  void (*DrawSetViewbox)(DrawingWand *,size_t,size_t,
-    size_t,size_t);
+  void (*DrawSetViewbox)(DrawingWand *,const double,const double,
+    const double,const double);
   void (*PeekDrawingWand)(DrawingWand *);
   MagickBooleanType (*PopDrawingWand)(DrawingWand *);
   MagickBooleanType (*PushDrawingWand)(DrawingWand *);
@@ -400,7 +400,7 @@ static void MvgAppendColor(DrawingWand *wand,const PixelInfo *packet)
         pixel;
 
       GetPixelInfo(wand->image,&pixel);
-      pixel.colorspace=RGBColorspace;
+      pixel.colorspace=sRGBColorspace;
       pixel.matte=packet->alpha != OpaqueAlpha ? MagickTrue : MagickFalse;
       pixel.red=(MagickRealType) packet->red;
       pixel.green=(MagickRealType) packet->green;
@@ -1217,7 +1217,7 @@ WandExport void DrawGetBorderColor(const DrawingWand *wand,
   assert(border_color != (PixelWand *) NULL);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  PixelSetQuantumPacket(border_color,&CurrentContext->border_color);
+  PixelSetPixelColor(border_color,&CurrentContext->border_color);
 }
 
 /*
@@ -1440,7 +1440,7 @@ WandExport void DrawGetFillColor(const DrawingWand *wand,PixelWand *fill_color)
   assert(fill_color != (PixelWand *) NULL);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  PixelSetQuantumPacket(fill_color,&CurrentContext->fill);
+  PixelSetPixelColor(fill_color,&CurrentContext->fill);
 }
 
 /*
@@ -1594,7 +1594,7 @@ WandExport char *DrawGetFontFamily(const DrawingWand *wand)
 %
 %  The format of the DrawGetFontResolution method is:
 %
-%      DrawBooleanType DrawGetFontResolution(const DrawingWand *wand,
+%      MagickBooleanType DrawGetFontResolution(const DrawingWand *wand,
 %        double *x,double *y)
 %
 %  A description of each parameter follows:
@@ -1874,7 +1874,7 @@ WandExport MagickBooleanType DrawGetStrokeAntialias(const DrawingWand *wand)
 %  The format of the DrawGetStrokeColor method is:
 %
 %      void DrawGetStrokeColor(const DrawingWand *wand,
-$        PixelWand *stroke_color)
+%        PixelWand *stroke_color)
 %
 %  A description of each parameter follows:
 %
@@ -1891,7 +1891,7 @@ WandExport void DrawGetStrokeColor(const DrawingWand *wand,
   assert(stroke_color != (PixelWand *) NULL);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  PixelSetQuantumPacket(stroke_color,&CurrentContext->stroke);
+  PixelSetPixelColor(stroke_color,&CurrentContext->stroke);
 }
 
 /*
@@ -2180,7 +2180,7 @@ WandExport double DrawGetStrokeWidth(const DrawingWand *wand)
 %
 %  The format of the DrawGetTextAlignment method is:
 %
-%      AlignType DrawGetTextAlignment(DrawingWand *wand)
+%      AlignType DrawGetTextAlignment(const DrawingWand *wand)
 %
 %  A description of each parameter follows:
 %
@@ -2244,7 +2244,7 @@ WandExport MagickBooleanType DrawGetTextAntialias(const DrawingWand *wand)
 %
 %  The format of the DrawGetTextDecoration method is:
 %
-%      DecorationType DrawGetTextDecoration(DrawingWand *wand)
+%      DecorationType DrawGetTextDecoration(const DrawingWand *wand)
 %
 %  A description of each parameter follows:
 %
@@ -2332,17 +2332,17 @@ WandExport double DrawGetTextKerning(DrawingWand *wand)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   D r a w G e t T e x t I n t e r L i n e S p a c i n g                     %
+%   D r a w G e t T e x t I n t e r l i n e S p a c i n g                     %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  DrawGetTextInterwordSpacing() gets the spacing between lines in text.
+%  DrawGetTextInterlineSpacing() gets the spacing between lines in text.
 %
-%  The format of the DrawSetFontKerning method is:
+%  The format of the DrawGetTextInterlineSpacing method is:
 %
-%      double DrawGetTextInterwordSpacing(DrawingWand *wand)
+%      double DrawGetTextInterlineSpacing(DrawingWand *wand)
 %
 %  A description of each parameter follows:
 %
@@ -2407,7 +2407,7 @@ WandExport double DrawGetTextInterwordSpacing(DrawingWand *wand)
 %
 %  The format of the DrawGetVectorGraphics method is:
 %
-%      char *DrawGetVectorGraphics(const DrawingWand *wand)
+%      char *DrawGetVectorGraphics(DrawingWand *wand)
 %
 %  A description of each parameter follows:
 %
@@ -2671,7 +2671,7 @@ WandExport void DrawGetTextUnderColor(const DrawingWand *wand,
   assert(under_color != (PixelWand *) NULL);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  PixelSetQuantumPacket(under_color,&CurrentContext->undercolor);
+  PixelSetPixelColor(under_color,&CurrentContext->undercolor);
 }
 
 /*
@@ -3110,7 +3110,7 @@ WandExport void DrawPathCurveToQuadraticBezierSmoothAbsolute(DrawingWand *wand,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  DrawPathCurveToQuadraticBezierSmoothAbsolute() draws a quadratic Bezier
+%  DrawPathCurveToQuadraticBezierSmoothRelative() draws a quadratic Bezier
 %  curve (using relative coordinates) from the current point to (x,y). The
 %  control point is assumed to be the reflection of the control point on the
 %  previous command relative to the current point. (If there is no previous
@@ -3168,7 +3168,7 @@ WandExport void DrawPathCurveToQuadraticBezierSmoothRelative(DrawingWand *wand,
 %  The format of the DrawPathCurveToSmoothAbsolute method is:
 %
 %      void DrawPathCurveToSmoothAbsolute(DrawingWand *wand,
-%        const double x2const double y2,const double x,const double y)
+%        const double x2,const double y2,const double x,const double y)
 %
 %  A description of each parameter follows:
 %
@@ -3551,8 +3551,7 @@ WandExport void DrawPathLineToRelative(DrawingWand *wand,const double x,
 %
 %  The format of the DrawPathLineToHorizontalAbsolute method is:
 %
-%      void DrawPathLineToHorizontalAbsolute(DrawingWand *wand,
-%        const PathMode mode,const double x)
+%      void DrawPathLineToHorizontalAbsolute(DrawingWand *wand,const double x)
 %
 %  A description of each parameter follows:
 %
@@ -4728,14 +4727,14 @@ WandExport void DrawSetFillColor(DrawingWand *wand,const PixelWand *fill_wand)
 */
 WandExport void DrawSetFillAlpha(DrawingWand *wand,const double fill_alpha)
 {
-  Quantum
+  double
     alpha;
 
   assert(wand != (DrawingWand *) NULL);
   assert(wand->signature == WandSignature);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  alpha=ClampToQuantum((double) QuantumRange*(1.0-fill_alpha));
+  alpha=(double) ClampToQuantum((double) QuantumRange*(1.0-fill_alpha));
   if ((wand->filter_off != MagickFalse) ||
       (CurrentContext->fill.alpha != alpha))
     {
@@ -4759,8 +4758,8 @@ WandExport void DrawSetFillAlpha(DrawingWand *wand,const double fill_alpha)
 %
 %  The format of the DrawSetFontResolution method is:
 %
-%      DrawBooleanType DrawSetFontResolution(DrawingWand *wand,
-%        const double x_resolution,const doubtl y_resolution)
+%      MagickBooleanType DrawSetFontResolution(DrawingWand *wand,
+%        const double x_resolution,const double y_resolution)
 %
 %  A description of each parameter follows:
 %
@@ -4889,7 +4888,7 @@ WandExport MagickBooleanType DrawSetFillPatternURL(DrawingWand *wand,
     &CurrentContext->fill_pattern);
 #endif
   if (CurrentContext->fill.alpha != (Quantum) TransparentAlpha)
-    CurrentContext->fill.alpha=CurrentContext->alpha;
+    CurrentContext->fill.alpha=(double) CurrentContext->alpha;
   (void) MvgPrintf(wand,"fill %s\n",pattern_spec);
   return(MagickTrue);
 }
@@ -5329,7 +5328,7 @@ WandExport MagickBooleanType DrawSetStrokePatternURL(DrawingWand *wand,
     &CurrentContext->stroke_pattern);
 #endif
   if (CurrentContext->stroke.alpha != (Quantum) TransparentAlpha)
-    CurrentContext->stroke.alpha=CurrentContext->alpha;
+    CurrentContext->stroke.alpha=(double) CurrentContext->alpha;
   (void) MvgPrintf(wand,"stroke %s\n",pattern_spec);
   return(MagickTrue);
 }
@@ -5695,14 +5694,14 @@ WandExport void DrawSetStrokeMiterLimit(DrawingWand *wand,
 WandExport void DrawSetStrokeAlpha(DrawingWand *wand,
   const double stroke_alpha)
 {
-  Quantum
+  double
     alpha;
 
   assert(wand != (DrawingWand *) NULL);
   assert(wand->signature == WandSignature);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  alpha=ClampToQuantum((double) QuantumRange*(1.0-stroke_alpha));
+  alpha=(double) ClampToQuantum((double) QuantumRange*(1.0-stroke_alpha));
   if ((wand->filter_off != MagickFalse) ||
       (CurrentContext->stroke.alpha != alpha))
     {
@@ -5973,11 +5972,11 @@ WandExport void DrawSetTextKerning(DrawingWand *wand,const double kerning)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  DrawSetTextInterwordSpacing() sets the spacing between line in text.
+%  DrawSetTextInterlineSpacing() sets the spacing between line in text.
 %
-%  The format of the DrawSetInterwordSpacing method is:
+%  The format of the DrawSetInterlineSpacing method is:
 %
-%      void DrawSetTextInterwordSpacing(DrawingWand *wand,
+%      void DrawSetTextInterlineSpacing(DrawingWand *wand,
 %        const double interline_spacing)
 %
 %  A description of each parameter follows:
@@ -6189,7 +6188,7 @@ WandExport MagickBooleanType DrawSetVectorGraphics(DrawingWand *wand,
     {
       value=GetXMLTreeContent(child);
       if (value != (const char *) NULL)
-        CurrentContext->fill.alpha=ClampToQuantum((MagickRealType)
+        CurrentContext->fill.alpha=(double) ClampToQuantum((MagickRealType)
           QuantumRange*(1.0-StringToDouble(value,(char **) NULL)));
     }
   child=GetXMLTreeChild(xml_info,"fill-rule");
@@ -6353,7 +6352,7 @@ WandExport MagickBooleanType DrawSetVectorGraphics(DrawingWand *wand,
     {
       value=GetXMLTreeContent(child);
       if (value != (const char *) NULL)
-        CurrentContext->stroke.alpha=ClampToQuantum((MagickRealType)
+        CurrentContext->stroke.alpha=(double) ClampToQuantum((MagickRealType)
           QuantumRange*(1.0-StringToDouble(value,(char **) NULL)));
     }
   child=GetXMLTreeChild(xml_info,"stroke-width");
@@ -6523,8 +6522,8 @@ WandExport void DrawTranslate(DrawingWand *wand,const double x,const double y)
 %
 %  The format of the DrawSetViewbox method is:
 %
-%      void DrawSetViewbox(DrawingWand *wand,size_t x1,
-%        size_t y1,size_t x2,size_t y2)
+%      void DrawSetViewbox(DrawingWand *wand,const double x1,const double y1,
+%        const double x2,const double y2)
 %
 %  A description of each parameter follows:
 %
@@ -6539,15 +6538,14 @@ WandExport void DrawTranslate(DrawingWand *wand,const double x,const double y)
 %    o y2: bottom y ordinate
 %
 */
-WandExport void DrawSetViewbox(DrawingWand *wand,ssize_t x1,ssize_t y1,
-  ssize_t x2,ssize_t y2)
+WandExport void DrawSetViewbox(DrawingWand *wand,const double x1,
+  const double y1,const double x2,const double y2)
 {
   assert(wand != (DrawingWand *) NULL);
   assert(wand->signature == WandSignature);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  (void) MvgPrintf(wand,"viewbox %.20g %.20g %.20g %.20g\n",(double) x1,
-    (double) y1,(double) x2,(double) y2);
+  (void) MvgPrintf(wand,"viewbox %.20g %.20g %.20g %.20g\n",x1,y1,x2,y2);
 }
 
 /*
@@ -6599,7 +6597,7 @@ WandExport MagickBooleanType IsDrawingWand(const DrawingWand *wand)
 %
 %  The format of the NewDrawingWand method is:
 %
-%      DrawingWand NewDrawingWand(void)
+%      DrawingWand *NewDrawingWand(void)
 %
 */
 WandExport DrawingWand *NewDrawingWand(void)
@@ -6737,7 +6735,7 @@ WandExport MagickBooleanType PopDrawingWand(DrawingWand *wand)
   if (CurrentContext->clip_mask != (char *) NULL)
     if (LocaleCompare(CurrentContext->clip_mask,
         wand->graphic_context[wand->index-1]->clip_mask) != 0)
-      (void) SetImageClipMask(wand->image,(Image *) NULL);
+      (void) SetImageMask(wand->image,(Image *) NULL);
 #endif
   CurrentContext=DestroyDrawInfo(CurrentContext);
   wand->index--;

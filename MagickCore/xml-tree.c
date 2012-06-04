@@ -23,7 +23,7 @@
 %                               December 2004                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -550,7 +550,7 @@ MagickExport XMLTreeInfo *DestroyXMLTree(XMLTreeInfo *xml_info)
 %    o xml_info: the xml info.
 %
 */
-MagickPrivate XMLTreeInfo *GetNextXMLTreeTag(XMLTreeInfo *xml_info)
+MagickExport XMLTreeInfo *GetNextXMLTreeTag(XMLTreeInfo *xml_info)
 {
   assert(xml_info != (XMLTreeInfo *) NULL);
   assert((xml_info->signature == MagickSignature) ||
@@ -584,7 +584,7 @@ MagickPrivate XMLTreeInfo *GetNextXMLTreeTag(XMLTreeInfo *xml_info)
 %    o tag: the attribute tag.
 %
 */
-MagickPrivate const char *GetXMLTreeAttribute(XMLTreeInfo *xml_info,
+MagickExport const char *GetXMLTreeAttribute(XMLTreeInfo *xml_info,
   const char *tag)
 {
   register ssize_t
@@ -1809,7 +1809,7 @@ MagickExport XMLTreeInfo *NewXMLTree(const char *xml,ExceptionInfo *exception)
           if (attributes == (char **) NULL)
             {
               (void) ThrowMagickException(exception,GetMagickModule(),
-                ResourceLimitError,"MemoryAllocationFailed","`%s'","");
+                ResourceLimitError,"MemoryAllocationFailed","'%s'","");
               utf8=DestroyString(utf8);
               return(&root->root);
             }
@@ -2051,7 +2051,7 @@ MagickExport XMLTreeInfo *NewXMLTree(const char *xml,ExceptionInfo *exception)
       return(&root->root);
     }
   (void) ThrowMagickException(exception,GetMagickModule(),OptionWarning,
-    "ParseError","unclosed tag: `%s'",root->node->tag);
+    "ParseError","unclosed tag: '%s'",root->node->tag);
   return(&root->root);
 }
 

@@ -17,7 +17,7 @@
 %                                December 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -41,31 +41,22 @@
 #include "MagickCore/studio.h"
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
 #include "MagickCore/client.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/color.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
 #include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
 #include "MagickCore/locale_.h"
 #include "MagickCore/log.h"
 #include "MagickCore/magick.h"
 #include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/pixel-accessor.h"
+#include "MagickCore/nt-base.h"
+#include "MagickCore/nt-base-private.h"
 #include "MagickCore/resource_.h"
 #include "MagickCore/resource-private.h"
 #include "MagickCore/timer.h"
-#include "MagickCore/type.h"
 #include "MagickCore/string_.h"
-#include "MagickCore/token.h"
 #include "MagickCore/utility.h"
 #include "MagickCore/version.h"
 #if defined(MAGICKCORE_LTDL_DELEGATE)
 #  include "ltdl.h"
 #endif
-#include "MagickCore/nt-base.h"
 #include "MagickCore/nt-base-private.h"
 #if defined(MAGICKCORE_CIPHER_SUPPORT)
 #include <ntsecapi.h>
@@ -100,171 +91,6 @@ static void
 extern "C" BOOL WINAPI
   DllMain(HINSTANCE handle,DWORD reason,LPVOID lpvReserved);
 #endif
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%   C r o p I m a g e T o H B i t m a p                                       %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  CropImageToHBITMAP() extracts a specified region of the image and returns
-%  it as a Windows HBITMAP. While the same functionality can be accomplished by
-%  invoking CropImage() followed by ImageToHBITMAP(), this method is more
-%  efficient since it copies pixels directly to the HBITMAP.
-%
-%  The format of the CropImageToHBITMAP method is:
-%
-%      HBITMAP CropImageToHBITMAP(Image* image,const RectangleInfo *geometry,
-%        ExceptionInfo *exception)
-%
-%  A description of each parameter follows:
-%
-%    o image: the image.
-%
-%    o geometry: Define the region of the image to crop with members
-%      x, y, width, and height.
-%
-%    o exception: return any errors or warnings in this structure.
-%
-*/
-MagickExport void *CropImageToHBITMAP(Image *image,
-  const RectangleInfo *geometry,ExceptionInfo *exception)
-{
-#define CropImageTag  "Crop/Image"
-
-  BITMAP
-    bitmap;
-
-  HBITMAP
-    bitmapH;
-
-  HANDLE
-    bitmap_bitsH;
-
-  MagickBooleanType
-    proceed;
-
-  RectangleInfo
-    page;
-
-  register const Quantum
-    *p;
-
-  register RGBQUAD
-    *q;
-
-  RGBQUAD
-    *bitmap_bits;
-
-  ssize_t
-    y;
-
-  /*
-    Check crop geometry.
-  */
-  assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
-  if (image->debug != MagickFalse)
-    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(geometry != (const RectangleInfo *) NULL);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  if (((geometry->x+(ssize_t) geometry->width) < 0) ||
-      ((geometry->y+(ssize_t) geometry->height) < 0) ||
-      (geometry->x >= (ssize_t) image->columns) ||
-      (geometry->y >= (ssize_t) image->rows))
-    ThrowImageException(OptionError,"GeometryDoesNotContainImage");
-  page=(*geometry);
-  if ((page.x+(ssize_t) page.width) > (ssize_t) image->columns)
-    page.width=image->columns-page.x;
-  if ((page.y+(ssize_t) page.height) > (ssize_t) image->rows)
-    page.height=image->rows-page.y;
-  if (page.x < 0)
-    {
-      page.width+=page.x;
-      page.x=0;
-    }
-  if (page.y < 0)
-    {
-      page.height+=page.y;
-      page.y=0;
-    }
-
-  if ((page.width == 0) || (page.height == 0))
-    ThrowImageException(OptionError,"GeometryDimensionsAreZero");
-  /*
-    Initialize crop image attributes.
-  */
-  bitmap.bmType         = 0;
-  bitmap.bmWidth        = (LONG) page.width;
-  bitmap.bmHeight       = (LONG) page.height;
-  bitmap.bmWidthBytes   = bitmap.bmWidth * 4;
-  bitmap.bmPlanes       = 1;
-  bitmap.bmBitsPixel    = 32;
-  bitmap.bmBits         = NULL;
-
-  bitmap_bitsH=(HANDLE) GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,page.width*
-    page.height*bitmap.bmBitsPixel);
-  if (bitmap_bitsH == NULL)
-    return(NULL);
-  bitmap_bits=(RGBQUAD *) GlobalLock((HGLOBAL) bitmap_bitsH);
-  if ( bitmap.bmBits == NULL )
-    bitmap.bmBits = bitmap_bits;
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    TransformImageColorspace(image,RGBColorspace,exception);
-  /*
-    Extract crop image.
-  */
-  q=bitmap_bits;
-  for (y=0; y < (ssize_t) page.height; y++)
-  {
-    p=GetVirtualPixels(image,page.x,page.y+y,page.width,1,exception);
-    if (p == (const Quantum *) NULL)
-      break;
-
-#if MAGICKCORE_QUANTUM_DEPTH == 8
-      /* Form of PixelInfo is identical to RGBQUAD when MAGICKCORE_QUANTUM_DEPTH==8 */
-      CopyMagickMemory((void*)q,(const void*)p,page.width*sizeof(PixelInfo));
-      q += page.width;
-
-#else  /* 16 or 32 bit Quantum */
-      {
-        ssize_t
-          x;
-
-        /* Transfer pixels, scaling to Quantum */
-        for( x=(ssize_t) page.width ; x> 0 ; x-- )
-          {
-            q->rgbRed = ScaleQuantumToChar(GetPixelRed(image,p));
-            q->rgbGreen = ScaleQuantumToChar(GetPixelGreen(image,p));
-            q->rgbBlue = ScaleQuantumToChar(GetPixelBlue(image,p));
-            q->rgbReserved = 0;
-            ++q;
-            ++p;
-          }
-      }
-#endif
-    proceed=SetImageProgress(image,CropImageTag,y,page.height);
-    if (proceed == MagickFalse)
-      break;
-  }
-  if (y < (ssize_t) page.height)
-    {
-      GlobalUnlock((HGLOBAL) bitmap_bitsH);
-      GlobalFree((HGLOBAL) bitmap_bitsH);
-      return((void *) NULL);
-    }
-  bitmap.bmBits=bitmap_bits;
-  bitmapH=CreateBitmapIndirect(&bitmap);
-  GlobalUnlock((HGLOBAL) bitmap_bitsH);
-  GlobalFree((HGLOBAL) bitmap_bitsH);
-  return((void *) bitmapH);
-}
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -487,117 +313,6 @@ MagickPrivate int gettimeofday (struct timeval *time_value,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   I m a g e T o H B i t m a p                                               %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  ImageToHBITMAP() creates a Windows HBITMAP from an image.
-%
-%  The format of the ImageToHBITMAP method is:
-%
-%      HBITMAP ImageToHBITMAP(Image *image,ExceptionInfo *exception)
-%
-%  A description of each parameter follows:
-%
-%    o image: the image to convert.
-%
-%    o exception: return any errors or warnings in this structure.
-%
-*/
-MagickExport void *ImageToHBITMAP(Image *image,ExceptionInfo *exception)
-{
-  BITMAP
-    bitmap;
-
-  HANDLE
-    bitmap_bitsH;
-
-  HBITMAP
-    bitmapH;
-
-  register ssize_t
-    x;
-
-  register const Quantum
-    *p;
-
-  register RGBQUAD
-    *q;
-
-  RGBQUAD
-    *bitmap_bits;
-
-  size_t
-    length;
-
-  ssize_t
-    y;
-
-  (void) ResetMagickMemory(&bitmap,0,sizeof(bitmap));
-  bitmap.bmType=0;
-  bitmap.bmWidth=(LONG) image->columns;
-  bitmap.bmHeight=(LONG) image->rows;
-  bitmap.bmWidthBytes=4*bitmap.bmWidth;
-  bitmap.bmPlanes=1;
-  bitmap.bmBitsPixel=32;
-  bitmap.bmBits=NULL;
-  length=bitmap.bmWidthBytes*bitmap.bmHeight;
-  bitmap_bitsH=(HANDLE) GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,length);
-  if (bitmap_bitsH == NULL)
-    {
-      char
-        *message;
-
-      message=GetExceptionMessage(errno);
-      (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",message);
-      message=DestroyString(message);
-      return(NULL);
-    }
-  bitmap_bits=(RGBQUAD *) GlobalLock((HGLOBAL) bitmap_bitsH);
-  q=bitmap_bits;
-  if (bitmap.bmBits == NULL)
-    bitmap.bmBits=bitmap_bits;
-  (void) TransformImageColorspace(image,RGBColorspace,exception);
-  for (y=0; y < (ssize_t) image->rows; y++)
-  {
-    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
-      break;
-    for (x=0; x < (ssize_t) image->columns; x++)
-    {
-      q->rgbRed=ScaleQuantumToChar(GetPixelRed(image,p));
-      q->rgbGreen=ScaleQuantumToChar(GetPixelGreen(image,p));
-      q->rgbBlue=ScaleQuantumToChar(GetPixelBlue(image,p));
-      q->rgbReserved=0;
-      p+=GetPixelChannels(image);
-      q++;
-    }
-  }
-  bitmap.bmBits=bitmap_bits;
-  bitmapH=CreateBitmapIndirect(&bitmap);
-  if (bitmapH == NULL)
-    {
-      char
-        *message;
-
-      message=GetExceptionMessage(errno);
-      (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",message);
-      message=DestroyString(message);
-    }
-  GlobalUnlock((HGLOBAL) bitmap_bitsH);
-  GlobalFree((HGLOBAL) bitmap_bitsH);
-  return((void *) bitmapH);
-}
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
 %   I s W i n d o w s 9 5                                                     %
 %                                                                             %
 %                                                                             %
@@ -611,7 +326,7 @@ MagickExport void *ImageToHBITMAP(Image *image,ExceptionInfo *exception)
 %      int IsWindows95()
 %
 */
-MagickPrivate int IsWindows95(void)
+MagickPrivate int IsWindows95()
 {
   OSVERSIONINFO
     version_info;
@@ -648,7 +363,7 @@ MagickPrivate int IsWindows95(void)
 %    o argv:  the  wide-character command line arguments.
 %
 */
-MagickExport char **NTArgvToUTF8(const int argc,wchar_t **argv)
+MagickPrivate char **NTArgvToUTF8(const int argc,wchar_t **argv)
 {
   char
     **utf8;
@@ -841,7 +556,7 @@ MagickPrivate double NTElapsedTime(void)
 %    o description: Specifies any description to the reason.
 %
 */
-MagickExport void NTErrorHandler(const ExceptionType severity,
+MagickPrivate void NTErrorHandler(const ExceptionType severity,
   const char *reason,const char *description)
 {
   char
@@ -1007,7 +722,7 @@ MagickPrivate MagickBooleanType NTGetExecutionPath(char *path,
 %      char *NTGetLastError(void)
 %
 */
-MagickPrivate char *NTGetLastError(void)
+char *NTGetLastError(void)
 {
   char
     *reason;
@@ -1153,300 +868,6 @@ MagickPrivate MagickBooleanType NTGetModulePath(const char *module,char *path)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   N T G e t T y pe L i s t                                                  %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  NTLoadTypeLists() loads a Windows TrueType fonts.
-%
-%  The format of the NTLoadTypeLists method is:
-%
-%      MagickBooleanType NTLoadTypeLists(SplayTreeInfo *type_list)
-%
-%  A description of each parameter follows:
-%
-%    o type_list: A linked list of fonts.
-%
-*/
-MagickPrivate MagickBooleanType NTLoadTypeLists(SplayTreeInfo *type_list,
-  ExceptionInfo *exception)
-{
-  HKEY
-    reg_key = (HKEY) INVALID_HANDLE_VALUE;
-
-  LONG
-    res;
-
-
-  int
-    list_entries = 0;
-
-  char
-    buffer[MaxTextExtent],
-    system_root[MaxTextExtent],
-    font_root[MaxTextExtent];
-
-  DWORD
-    type,
-    system_root_length;
-
-  MagickBooleanType
-    status;
-
-  /*
-    Try to find the right Windows*\CurrentVersion key, the SystemRoot and
-    then the Fonts key
-  */
-  res = RegOpenKeyExA (HKEY_LOCAL_MACHINE,
-    "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, KEY_READ, &reg_key);
-  if (res == ERROR_SUCCESS) {
-    system_root_length=sizeof(system_root)-1;
-    res = RegQueryValueExA(reg_key,"SystemRoot",NULL, &type,
-      (BYTE*) system_root, &system_root_length);
-  }
-  if (res != ERROR_SUCCESS) {
-    res = RegOpenKeyExA (HKEY_LOCAL_MACHINE,
-      "SOFTWARE\\Microsoft\\Windows\\CurrentVersion", 0, KEY_READ, &reg_key);
-    if (res == ERROR_SUCCESS) {
-      system_root_length=sizeof(system_root)-1;
-      res = RegQueryValueExA(reg_key,"SystemRoot",NULL, &type,
-        (BYTE*)system_root, &system_root_length);
-    }
-  }
-  if (res == ERROR_SUCCESS)
-    res = RegOpenKeyExA (reg_key, "Fonts",0, KEY_READ, &reg_key);
-  if (res != ERROR_SUCCESS)
-    return(MagickFalse);
-  *font_root='\0';
-  (void) CopyMagickString(buffer,system_root,MaxTextExtent);
-  (void) ConcatenateMagickString(buffer,"\\fonts\\arial.ttf",MaxTextExtent);
-  if (IsPathAccessible(buffer) != MagickFalse)
-    {
-      (void) CopyMagickString(font_root,system_root,MaxTextExtent);
-      (void) ConcatenateMagickString(font_root,"\\fonts\\",MaxTextExtent);
-    }
-  else
-    {
-      (void) CopyMagickString(font_root,system_root,MaxTextExtent);
-      (void) ConcatenateMagickString(font_root,"\\",MaxTextExtent);
-    }
-
-  {
-    TypeInfo
-      *type_info;
-
-    DWORD
-      registry_index = 0,
-      type,
-      value_data_size,
-      value_name_length;
-
-    char
-      value_data[MaxTextExtent],
-      value_name[MaxTextExtent];
-
-    res = ERROR_SUCCESS;
-
-    while (res != ERROR_NO_MORE_ITEMS)
-      {
-        char
-          *family_extent,
-          token[MaxTextExtent],
-          *pos,
-          *q;
-
-        value_name_length = sizeof(value_name) - 1;
-        value_data_size = sizeof(value_data) - 1;
-        res = RegEnumValueA ( reg_key, registry_index, value_name,
-          &value_name_length, 0, &type, (BYTE*)value_data, &value_data_size);
-        registry_index++;
-        if (res != ERROR_SUCCESS)
-          continue;
-        if ( (pos = strstr(value_name, " (TrueType)")) == (char*) NULL )
-          continue;
-        *pos='\0'; /* Remove (TrueType) from string */
-
-        type_info=(TypeInfo *) AcquireMagickMemory(sizeof(*type_info));
-        if (type_info == (TypeInfo *) NULL)
-          ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-        (void) ResetMagickMemory(type_info,0,sizeof(TypeInfo));
-
-        type_info->path=ConstantString("Windows Fonts");
-        type_info->signature=MagickSignature;
-
-        /* Name */
-        (void) CopyMagickString(buffer,value_name,MaxTextExtent);
-        for(pos = buffer; *pos != 0 ; pos++)
-          if (*pos == ' ')
-            *pos = '-';
-        type_info->name=ConstantString(buffer);
-
-        /* Fullname */
-        type_info->description=ConstantString(value_name);
-
-        /* Format */
-        type_info->format=ConstantString("truetype");
-
-        /* Glyphs */
-        if (strchr(value_data,'\\') != (char *) NULL)
-          (void) CopyMagickString(buffer,value_data,MaxTextExtent);
-        else
-          {
-            (void) CopyMagickString(buffer,font_root,MaxTextExtent);
-            (void) ConcatenateMagickString(buffer,value_data,MaxTextExtent);
-          }
-
-        LocaleLower(buffer);
-        type_info->glyphs=ConstantString(buffer);
-
-        type_info->stretch=NormalStretch;
-        type_info->style=NormalStyle;
-        type_info->weight=400;
-
-        /* Some fonts are known to require special encodings */
-        if ( (LocaleCompare(type_info->name, "Symbol") == 0 ) ||
-             (LocaleCompare(type_info->name, "Wingdings") == 0 ) ||
-             (LocaleCompare(type_info->name, "Wingdings-2") == 0 ) ||
-             (LocaleCompare(type_info->name, "Wingdings-3") == 0 ) )
-          type_info->encoding=ConstantString("AppleRoman");
-
-        family_extent=value_name;
-
-        for (q=value_name; *q != '\0'; )
-          {
-            GetMagickToken(q,(const char **) &q,token);
-            if (*token == '\0')
-              break;
-
-            if (LocaleCompare(token,"Italic") == 0)
-              {
-                type_info->style=ItalicStyle;
-              }
-
-            else if (LocaleCompare(token,"Oblique") == 0)
-              {
-                type_info->style=ObliqueStyle;
-              }
-
-            else if (LocaleCompare(token,"Bold") == 0)
-              {
-                type_info->weight=700;
-              }
-
-            else if (LocaleCompare(token,"Thin") == 0)
-              {
-                type_info->weight=100;
-              }
-
-            else if ( (LocaleCompare(token,"ExtraLight") == 0) ||
-                      (LocaleCompare(token,"UltraLight") == 0) )
-              {
-                type_info->weight=200;
-              }
-
-            else if (LocaleCompare(token,"Light") == 0)
-              {
-                type_info->weight=300;
-              }
-
-            else if ( (LocaleCompare(token,"Normal") == 0) ||
-                      (LocaleCompare(token,"Regular") == 0) )
-              {
-                type_info->weight=400;
-              }
-
-            else if (LocaleCompare(token,"Medium") == 0)
-              {
-                type_info->weight=500;
-              }
-
-            else if ( (LocaleCompare(token,"SemiBold") == 0) ||
-                      (LocaleCompare(token,"DemiBold") == 0) )
-              {
-                type_info->weight=600;
-              }
-
-            else if ( (LocaleCompare(token,"ExtraBold") == 0) ||
-                      (LocaleCompare(token,"UltraBold") == 0) )
-              {
-                type_info->weight=800;
-              }
-
-            else if ( (LocaleCompare(token,"Heavy") == 0) ||
-                      (LocaleCompare(token,"Black") == 0) )
-              {
-                type_info->weight=900;
-              }
-
-            else if (LocaleCompare(token,"Condensed") == 0)
-              {
-                type_info->stretch = CondensedStretch;
-              }
-
-            else if (LocaleCompare(token,"Expanded") == 0)
-              {
-                type_info->stretch = ExpandedStretch;
-              }
-
-            else if (LocaleCompare(token,"ExtraCondensed") == 0)
-              {
-                type_info->stretch = ExtraCondensedStretch;
-              }
-
-            else if (LocaleCompare(token,"ExtraExpanded") == 0)
-              {
-                type_info->stretch = ExtraExpandedStretch;
-              }
-
-            else if (LocaleCompare(token,"SemiCondensed") == 0)
-              {
-                type_info->stretch = SemiCondensedStretch;
-              }
-
-            else if (LocaleCompare(token,"SemiExpanded") == 0)
-              {
-                type_info->stretch = SemiExpandedStretch;
-              }
-
-            else if (LocaleCompare(token,"UltraCondensed") == 0)
-              {
-                type_info->stretch = UltraCondensedStretch;
-              }
-
-            else if (LocaleCompare(token,"UltraExpanded") == 0)
-              {
-                type_info->stretch = UltraExpandedStretch;
-              }
-
-            else
-              {
-                family_extent=q;
-              }
-          }
-
-        (void) CopyMagickString(buffer,value_name,family_extent-value_name+1);
-        StripString(buffer);
-        type_info->family=ConstantString(buffer);
-
-        list_entries++;
-        status=AddValueToSplayTree(type_list,ConstantString(type_info->name),
-          type_info);
-        if (status == MagickFalse)
-          (void) ThrowMagickException(exception,GetMagickModule(),
-            ResourceLimitError,"MemoryAllocationFailed","`%s'",type_info->name);
-      }
-  }
-  RegCloseKey ( reg_key );
-  return(MagickTrue);
-}
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
 %   N T G h o s t s c r i p t D L L                                           %
 %                                                                             %
 %                                                                             %
@@ -1468,7 +889,7 @@ MagickPrivate MagickBooleanType NTLoadTypeLists(SplayTreeInfo *type_list,
 %
 */
 
-static int NTGetRegistryValue(HKEY root,const char *key,const char *name,
+static int NTGetRegistryValue(HKEY root,const char *key,DWORD flags,const char *name,
   char *value,int *length)
 {
   BYTE
@@ -1488,7 +909,7 @@ static int NTGetRegistryValue(HKEY root,const char *key,const char *name,
   /*
     Get a registry value: key = root\\key, named value = name.
   */
-  if (RegOpenKeyExA(root,key,0,KEY_READ,&hkey) != ERROR_SUCCESS)
+  if (RegOpenKeyExA(root,key,0,KEY_READ | flags,&hkey) != ERROR_SUCCESS)
     return(1);  /* no match */
   p=(BYTE *) value;
   type=REG_SZ;
@@ -1510,7 +931,7 @@ static int NTGetRegistryValue(HKEY root,const char *key,const char *name,
   return(1);  /* not found */
 }
 
-static int NTLocateGhostscript(const char **product_family,int *major_version,
+static int NTLocateGhostscript(DWORD flags,const char **product_family,int *major_version,
   int *minor_version)
 {
   int
@@ -1549,7 +970,7 @@ static int NTLocateGhostscript(const char **product_family,int *major_version,
 
     (void) FormatLocaleString(key,MaxTextExtent,"SOFTWARE\\%s",products[i]);
     root=HKEY_LOCAL_MACHINE;
-    mode=KEY_READ;
+    mode=KEY_READ | flags;
     if (RegOpenKeyExA(root,key,0,mode,&hkey) == ERROR_SUCCESS)
       {
         DWORD
@@ -1594,7 +1015,17 @@ static int NTLocateGhostscript(const char **product_family,int *major_version,
   return(status);
 }
 
-static int NTGhostscriptGetString(const char *name,char *value,
+static BOOL NTIs64BitPlatform()
+{
+#if defined(_WIN64)
+  return(TRUE);
+#else
+  BOOL is64=FALSE;
+  return(IsWow64Process(GetCurrentProcess(), &is64) && is64);
+#endif
+}
+
+static int NTGhostscriptGetString(const char *name,BOOL *is_64_bit,char *value,
   const size_t length)
 {
   char
@@ -1607,7 +1038,11 @@ static int NTGhostscriptGetString(const char *name,char *value,
   static const char
     *product_family = (const char *) NULL;
 
+  static BOOL
+    is_64_bit_version = FALSE;
+
   static int
+    flags=0,
     major_version=0,
     minor_version=0;
 
@@ -1628,9 +1063,27 @@ static int NTGhostscriptGetString(const char *name,char *value,
   /*
     Get a string from the installed Ghostscript.
   */
+  if (is_64_bit!=NULL)
+    *is_64_bit=FALSE;
   *value='\0';
   if (product_family == NULL)
-    (void) NTLocateGhostscript(&product_family,&major_version,&minor_version);
+  {
+    flags=NTIs64BitPlatform() ? KEY_WOW64_64KEY : 0;
+    (void) NTLocateGhostscript(flags,&product_family,&major_version,&minor_version);
+    if (product_family == NULL)
+    {
+      if (flags!=0)
+      {
+        /* We are running on a 64 bit platform - check for a 32 bit Ghostscript, too */
+        flags=KEY_WOW64_32KEY;
+        (void) NTLocateGhostscript(flags,&product_family,&major_version,&minor_version);
+  	  }
+    }
+    else
+      is_64_bit_version=NTIs64BitPlatform();
+  }
+  if (is_64_bit!=NULL)
+    *is_64_bit=is_64_bit_version;
   if (product_family == NULL)
     return(FALSE);
   (void) FormatLocaleString(key,MaxTextExtent,"SOFTWARE\\%s\\%d.%02d",
@@ -1638,7 +1091,7 @@ static int NTGhostscriptGetString(const char *name,char *value,
   for (i=0; i < (ssize_t) (sizeof(hkeys)/sizeof(hkeys[0])); i++)
   {
     extent=(int) length;
-    if (NTGetRegistryValue(hkeys[i].hkey,key,name,value,&extent) == 0)
+    if (NTGetRegistryValue(hkeys[i].hkey,key,flags,name,value,&extent) == 0)
       {
         (void) LogMagickEvent(ConfigureEvent,GetMagickModule(),
           "registry: \"%s\\%s\\%s\"=\"%s\"",hkeys[i].name,key,name,value);
@@ -1655,10 +1108,21 @@ MagickPrivate int NTGhostscriptDLL(char *path,int length)
   static char
     dll[MaxTextExtent] = { "" };
 
+  static BOOL
+    is_64_bit_version;
+
   *path='\0';
   if ((*dll == '\0') &&
-      (NTGhostscriptGetString("GS_DLL",dll,sizeof(dll)) == FALSE))
+      (NTGhostscriptGetString("GS_DLL",&is_64_bit_version,dll,sizeof(dll)) == FALSE))
     return(FALSE);
+
+#if defined(_WIN64)
+  if (!is_64_bit_version)
+    return(FALSE);
+#else
+  if (is_64_bit_version)
+    return(FALSE);
+#endif
   (void) CopyMagickString(path,dll,length);
   return(TRUE);
 }
@@ -1684,7 +1148,7 @@ MagickPrivate int NTGhostscriptDLL(char *path,int length)
 %      const GhostInfo *NTGhostscriptDLLVectors(void)
 %
 */
-MagickExport const GhostInfo *NTGhostscriptDLLVectors(void)
+MagickPrivate const GhostInfo *NTGhostscriptDLLVectors(void)
 {
   if (NTGhostscriptLoadDLL() == FALSE)
     return((GhostInfo *) NULL);
@@ -1725,16 +1189,19 @@ MagickPrivate int NTGhostscriptEXE(char *path,int length)
   static char
     program[MaxTextExtent] = { "" };
 
+  static BOOL
+    is_64_bit_version = FALSE;
+
   (void) CopyMagickString(path,"gswin32c.exe",length);
   if ((*program == '\0') &&
-      (NTGhostscriptGetString("GS_DLL",program,sizeof(program)) == FALSE))
+      (NTGhostscriptGetString("GS_DLL",&is_64_bit_version,program,sizeof(program)) == FALSE))
     return(FALSE);
   p=strrchr(program,'\\');
   if (p != (char *) NULL)
     {
       p++;
       *p='\0';
-      (void) ConcatenateMagickString(program,"gswin32c.exe",sizeof(program));
+      (void) ConcatenateMagickString(program,is_64_bit_version ? "gswin64c.exe" : "gswin32c.exe",sizeof(program));
     }
   (void) CopyMagickString(path,program,length);
   return(TRUE);
@@ -1776,7 +1243,7 @@ MagickPrivate int NTGhostscriptFonts(char *path,int length)
     *q;
 
   *path='\0';
-  if (NTGhostscriptGetString("GS_LIB",buffer,MaxTextExtent) == FALSE)
+  if (NTGhostscriptGetString("GS_LIB",NULL,buffer,MaxTextExtent) == FALSE)
     return(FALSE);
   for (p=buffer-1; p != (char *) NULL; p=strchr(p+1,DirectoryListSeparator))
   {
@@ -1860,7 +1327,7 @@ MagickPrivate int NTGhostscriptLoadDLL(void)
 %      int NTGhostscriptUnLoadDLL(void)
 %
 */
-MagickExport int NTGhostscriptUnLoadDLL(void)
+MagickPrivate int NTGhostscriptUnLoadDLL(void)
 {
   int
     status;
@@ -1894,42 +1361,6 @@ MagickExport int NTGhostscriptUnLoadDLL(void)
 MagickPrivate int NTInitializeLibrary(void)
 {
   return(0);
-}
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%   N T I s M a g i c k C o n f l i c t                                       %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  NTIsMagickConflict() returns true if the image format conflicts with a
-%  logical drive (.e.g. X:).
-%
-%  The format of the IsMagickConflict method is:
-%
-%      MagickBooleanType IsMagickConflict(const char *magick)
-%
-%  A description of each parameter follows:
-%
-%    o magick: Specifies the image format.
-%
-*/
-MagickPrivate MagickBooleanType NTIsMagickConflict(const char *magick)
-{
-  MagickBooleanType
-    status;
-
-  assert(magick != (char *) NULL);
-  if (strlen(magick) > 1)
-    return(MagickFalse);
-  status=(GetLogicalDrives() & (1 << ((toupper((int) (*magick)))-'A'))) != 0 ?
-    MagickTrue : MagickFalse;
-  return(status);
 }
 
 /*
@@ -2236,7 +1667,8 @@ MagickPrivate struct dirent *NTReadDirectory(DIR *entry)
 %  may coexist.
 %
 %  Values are stored in the registry under a base path path similar to
-%  "HKEY_LOCAL_MACHINE/SOFTWARE\ImageMagick\5.5.7\Q:16". The provided subkey
+%  "HKEY_LOCAL_MACHINE/SOFTWARE\ImageMagick\6.7.4\Q:16" or
+%  "HKEY_CURRENT_USER/SOFTWARE\ImageMagick\6.7.4\Q:16". The provided subkey
 %  is appended to this base path to form the full key.
 %
 %  The format of the NTRegistryKeyLookup method is:
@@ -2276,6 +1708,9 @@ MagickPrivate unsigned char *NTRegistryKeyLookup(const char *subkey)
   (void) LogMagickEvent(ConfigureEvent,GetMagickModule(),"%s",package_key);
   registry_key=(HKEY) INVALID_HANDLE_VALUE;
   status=RegOpenKeyExA(HKEY_LOCAL_MACHINE,package_key,0,KEY_READ,&registry_key);
+  if (status != ERROR_SUCCESS)
+    status=RegOpenKeyExA(HKEY_CURRENT_USER,package_key,0,KEY_READ,
+      &registry_key);
   if (status != ERROR_SUCCESS)
     {
       registry_key=(HKEY) INVALID_HANDLE_VALUE;
@@ -2592,19 +2027,19 @@ MagickPrivate int NTSystemCommand(const char *command)
   (void) CopyMagickString(local_command,command,MaxTextExtent);
   background_process=command[strlen(command)-1] == '&' ? MagickTrue :
     MagickFalse;
-  if (background_process)
+  if (background_process != MagickFalse)
     local_command[strlen(command)-1]='\0';
   if (command[strlen(command)-1] == '|')
      local_command[strlen(command)-1]='\0';
    else
      startup_info.wShowWindow=SW_SHOWDEFAULT;
-  status=CreateProcess((LPCTSTR) NULL,local_command,
-    (LPSECURITY_ATTRIBUTES) NULL,(LPSECURITY_ATTRIBUTES) NULL,(BOOL) FALSE,
-    (DWORD) NORMAL_PRIORITY_CLASS,(LPVOID) NULL,(LPCSTR) NULL,&startup_info,
+  status=CreateProcess((LPCTSTR) NULL,local_command,(LPSECURITY_ATTRIBUTES)
+    NULL,(LPSECURITY_ATTRIBUTES) NULL,(BOOL) FALSE,(DWORD)
+    NORMAL_PRIORITY_CLASS,(LPVOID) NULL,(LPCSTR) NULL,&startup_info,
     &process_info);
   if (status == 0)
     return(-1);
-  if (background_process)
+  if (background_process != MagickFalse)
     return(status == 0);
   status=WaitForSingleObject(process_info.hProcess,INFINITE);
   if (status != WAIT_OBJECT_0)
@@ -2888,7 +2323,7 @@ MagickPrivate double NTUserTime(void)
 %    o description: Specifies any description to the reason.
 %
 */
-MagickExport void NTWarningHandler(const ExceptionType severity,
+MagickPrivate void NTWarningHandler(const ExceptionType severity,
   const char *reason,const char *description)
 {
   char

@@ -16,7 +16,7 @@
 %                              Bill Radcliffe                                 %
 %                                   2001                                      %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -38,14 +38,16 @@
  */
 
 #include "MagickCore/studio.h"
-#if defined(MAGICKCORE_WINGDI32_DELEGATE)
+#if defined(MAGICKCORE_WINGDI32_DELEGATE) && defined(__CYGWIN__)
+#  define MAGICKCORE_EMF_DELEGATE
+#endif
+#if defined(MAGICKCORE_EMF_DELEGATE)
 #  if defined(__CYGWIN__)
 #    include <windows.h>
 #  else
 #    include <wingdi.h>
 #  endif
 #endif
-
 #include "MagickCore/blob.h"
 #include "MagickCore/blob-private.h"
 #include "MagickCore/cache.h"
@@ -286,7 +288,7 @@ static wchar_t *ConvertUTF8ToUTF16(const unsigned char *source)
   metafile, or an Aldus Placeable metafile and converts it into an enhanced
   metafile.  Width and height are returned in .01mm units.
 */
-#if defined(MAGICKCORE_WINGDI32_DELEGATE)
+#if defined(MAGICKCORE_EMF_DELEGATE)
 static HENHMETAFILE ReadEnhMetaFile(const char *path,ssize_t *width,
   ssize_t *height)
 {
@@ -544,6 +546,7 @@ static Image *ReadEMFImage(const ImageInfo *image_info,
             image->rows=(size_t) floor(((image->rows*image->resolution.y)/
               DefaultResolution)+0.5);
         }
+      (void) flags;
       geometry=DestroyString(geometry);
     }
   hDC=GetDC(NULL);
@@ -631,7 +634,7 @@ static Image *ReadEMFImage(const ImageInfo *image_info,
   DeleteObject(hBitmap);
   return(GetFirstImageInList(image));
 }
-#endif /* MAGICKCORE_WINGDI32_DELEGATE */
+#endif /* MAGICKCORE_EMF_DELEGATE */
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -662,7 +665,7 @@ ModuleExport size_t RegisterEMFImage(void)
     *entry;
 
   entry=SetMagickInfo("EMF");
-#if defined(MAGICKCORE_WINGDI32_DELEGATE)
+#if defined(MAGICKCORE_EMF_DELEGATE)
   entry->decoder=ReadEMFImage;
 #endif
   entry->description=ConstantString(
@@ -672,7 +675,7 @@ ModuleExport size_t RegisterEMFImage(void)
   entry->module=ConstantString("WMF");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("WMFWIN32");
-#if defined(MAGICKCORE_WINGDI32_DELEGATE)
+#if defined(MAGICKCORE_EMF_DELEGATE)
   entry->decoder=ReadEMFImage;
 #endif
   entry->description=ConstantString("Windows WIN32 API rendered Meta File");

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -100,10 +100,10 @@ extern WandExport void
   PixelSetIndex(PixelWand *,const Quantum),
   PixelSetMagenta(PixelWand *,const double),
   PixelSetMagentaQuantum(PixelWand *,const Quantum),
-  PixelGetPixelInfoPixel(PixelWand *,const PixelInfo *),
+  PixelSetPixelColor(PixelWand *,const PixelInfo *),
   PixelSetAlpha(PixelWand *,const double),
   PixelSetAlphaQuantum(PixelWand *,const Quantum),
-  PixelSetQuantumPacket(PixelWand *,const PixelInfo *),
+  PixelSetPixelColor(PixelWand *,const PixelInfo *),
   PixelSetQuantumPixel(const Image *,const Quantum *,PixelWand *),
   PixelSetRed(PixelWand *,const double),
   PixelSetRedQuantum(PixelWand *,const Quantum),

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 #include "MagickCore/memory_.h"
+#include "MagickCore/nt-base.h"
 #include "MagickCore/nt-base-private.h"
 
 extern MagickPrivate char
@@ -104,7 +105,12 @@ static inline FILE *fopen_utf8(const char *path,const char *mode)
 #endif
 }
 
-static inline int open_utf8(const char *path,int flags,int mode)
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__CYGWIN__) && !defined(__MINGW32__)
+typedef int
+  mode_t;
+#endif
+
+static inline int open_utf8(const char *path,int flags,mode_t mode)
 {
 #if !defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__CYGWIN__) || defined(__MINGW32__)
   return(open(path,flags,mode));
@@ -131,7 +137,7 @@ static inline int open_utf8(const char *path,int flags,int mode)
 static inline FILE *popen_utf8(const char *command,const char *type)
 {
 #if !defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__CYGWIN__) || defined(__MINGW32__)
-  return(fopen(command,type));
+  return(popen(command,type));
 #else
    FILE
      *file;

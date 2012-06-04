@@ -49,6 +49,7 @@
 #include "MagickCore/hashmap.h"
 #include "MagickCore/log.h"
 #include "MagickCore/memory_.h"
+#include "MagickCore/nt-feature.h"
 #include "MagickCore/nt-base-private.h"
 #include "MagickCore/option.h"
 #include "MagickCore/semaphore.h"
@@ -209,16 +210,14 @@ MagickExport const TypeInfo *GetTypeInfo(const char *name,
 %
 */
 
-static inline size_t MagickMax(const size_t x,
-  const size_t y)
+static inline size_t MagickMax(const size_t x,const size_t y)
 {
   if (x > y)
     return(x);
   return(y);
 }
 
-static inline size_t MagickMin(const size_t x,
-  const size_t y)
+static inline size_t MagickMin(const size_t x,const size_t y)
 {
   if (x < y)
     return(x);
@@ -399,7 +398,7 @@ MagickExport const TypeInfo *GetTypeInfoByFamily(const char *family,
   if (type_info != (const TypeInfo *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),TypeError,
-        "FontSubstitutionRequired","`%s'",type_info->family);
+        "FontSubstitutionRequired","'%s'",type_info->family);
       return(type_info);
     }
   if (family != (const char *) NULL)
@@ -1027,7 +1026,7 @@ static MagickBooleanType LoadTypeList(const char *xml,const char *filename,
             {
               if (depth > 200)
                 (void) ThrowMagickException(exception,GetMagickModule(),
-                  ConfigureError,"IncludeNodeNestedTooDeeply","`%s'",token);
+                  ConfigureError,"IncludeNodeNestedTooDeeply","'%s'",token);
               else
                 {
                   char
@@ -1079,7 +1078,7 @@ static MagickBooleanType LoadTypeList(const char *xml,const char *filename,
         status=AddValueToSplayTree(type_list,type_info->name,type_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
-            ResourceLimitError,"MemoryAllocationFailed","`%s'",type_info->name);
+            ResourceLimitError,"MemoryAllocationFailed","'%s'",type_info->name);
         type_info=(TypeInfo *) NULL;
       }
     GetMagickToken(q,(const char **) NULL,token);
@@ -1209,7 +1208,7 @@ static MagickBooleanType LoadTypeList(const char *xml,const char *filename,
       {
         if (LocaleCompare((char *) keyword,"stealth") == 0)
           {
-            type_info->stealth=IsMagickTrue(token);
+            type_info->stealth=IsStringTrue(token);
             break;
           }
         if (LocaleCompare((char *) keyword,"stretch") == 0)

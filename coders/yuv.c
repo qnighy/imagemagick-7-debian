@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -391,7 +391,7 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
       Scale image.
     */
     resize_image=ResizeImage(chroma_image,image->columns,image->rows,
-      TriangleFilter,1.0,exception);
+      TriangleFilter,exception);
     chroma_image=DestroyImage(chroma_image);
     if (resize_image == (Image *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -414,7 +414,7 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
         break;
     }
     resize_image=DestroyImage(resize_image);
-    image->colorspace=YCbCrColorspace;
+    SetImageColorspace(image,YCbCrColorspace,exception);
     if (interlace == PartitionInterlace)
       (void) CopyMagickString(image->filename,image_info->filename,
         MaxTextExtent);
@@ -588,7 +588,7 @@ static MagickBooleanType WriteYUVImage(const ImageInfo *image_info,Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  quantum=image->depth <= 8 ? 1 : 2;
+  quantum=(size_t) (image->depth <= 8 ? 1 : 2);
   interlace=image->interlace;
   horizontal_factor=2;
   vertical_factor=2;
@@ -638,10 +638,10 @@ static MagickBooleanType WriteYUVImage(const ImageInfo *image_info,Image *image,
     /*
       Sample image to an even width and height, if necessary.
     */
-    image->depth=quantum == 1 ? 8 : 16;
+    image->depth=(size_t) (quantum == 1 ? 8 : 16);
     width=image->columns+(image->columns & (horizontal_factor-1));
     height=image->rows+(image->rows & (vertical_factor-1));
-    yuv_image=ResizeImage(image,width,height,TriangleFilter,1.0,exception);
+    yuv_image=ResizeImage(image,width,height,TriangleFilter,exception);
     if (yuv_image == (Image *) NULL)
       {
         (void) CloseBlob(image);
@@ -652,7 +652,7 @@ static MagickBooleanType WriteYUVImage(const ImageInfo *image_info,Image *image,
       Downsample image.
     */
     chroma_image=ResizeImage(image,width/horizontal_factor,
-      height/vertical_factor,TriangleFilter,1.0,exception);
+      height/vertical_factor,TriangleFilter,exception);
     if (chroma_image == (Image *) NULL)
       {
         (void) CloseBlob(image);

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -422,6 +422,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     /*
       Initialize image structure.
     */
+    SetImageColorspace(image,GRAYColorspace,exception);
     if ((fits_info.min_data != 0.0) || (fits_info.max_data != 0.0))
       {
         if ((fits_info.bits_per_pixel != 0) && (fits_info.max_data == 0.0))
@@ -444,10 +445,8 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
       for (x=0; x < (ssize_t) image->columns; x++)
       {
         pixel=GetFITSPixel(image,fits_info.bits_per_pixel);
-        SetPixelRed(image,ClampToQuantum(scale*(fits_info.scale*
+        SetPixelGray(image,ClampToQuantum(scale*(fits_info.scale*
           (pixel-fits_info.min_data)+fits_info.zero)),q);
-        SetPixelGreen(image,GetPixelRed(image,q),q);
-        SetPixelBlue(image,GetPixelRed(image,q),q);
         q+=GetPixelChannels(image);
       }
       if (SyncAuthenticPixels(image,exception) == MagickFalse)
@@ -637,8 +636,8 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
   if (status == MagickFalse)
     return(status);
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace,exception);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace,exception);
   /*
     Allocate image memory.
   */

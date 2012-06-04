@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -160,7 +160,7 @@ static MagickBooleanType CompareUsage(void)
   for (p=miscellaneous; *p != (char *) NULL; p++)
     (void) printf("  %s\n",*p);
   (void) printf(
-    "\nBy default, the image format of `file' is determined by its magic\n");
+    "\nBy default, the image format of 'file' is determined by its magic\n");
   (void) printf(
     "number.  To specify a particular image format, precede the filename\n");
   (void) printf(
@@ -190,14 +190,14 @@ WandExport MagickBooleanType CompareImagesCommand(ImageInfo *image_info,
 { \
   if (exception->severity < (asperity)) \
     (void) ThrowMagickException(exception,GetMagickModule(),asperity,tag, \
-      "`%s'",option); \
+      "'%s'",option); \
   DestroyCompare(); \
   return(MagickFalse); \
 }
 #define ThrowCompareInvalidArgumentException(option,argument) \
 { \
   (void) ThrowMagickException(exception,GetMagickModule(),OptionError, \
-    "InvalidArgument","`%s': %s",option,argument); \
+    "InvalidArgument","'%s': %s",option,argument); \
   DestroyCompare(); \
   return(MagickFalse); \
 }
@@ -325,8 +325,7 @@ WandExport MagickBooleanType CompareImagesCommand(ImageInfo *image_info,
         filename=argv[i];
         if ((LocaleCompare(filename,"--") == 0) && (i < (ssize_t) (argc-1)))
           filename=argv[++i];
-        (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
-        images=ReadImages(image_info,exception);
+        images=ReadImages(image_info,filename,exception);
         status&=(images != (Image *) NULL) &&
           (exception->severity < ErrorException);
         if (images == (Image *) NULL)
@@ -393,7 +392,7 @@ WandExport MagickBooleanType CompareImagesCommand(ImageInfo *image_info,
             if (channel < 0)
               ThrowCompareException(OptionError,"UnrecognizedChannelType",
                 argv[i]);
-            SetPixelChannelMap(image,(ChannelType) channel);
+            SetPixelChannelMapMask(image,(ChannelType) channel);
             break;
           }
         if (LocaleCompare("colorspace",option+1) == 0)
@@ -730,15 +729,6 @@ WandExport MagickBooleanType CompareImagesCommand(ImageInfo *image_info,
       }
       case 'p':
       {
-        if (LocaleCompare("passphrase",option+1) == 0)
-          {
-            if (*option == '+')
-              break;
-            i++;
-            if (i == (ssize_t) argc)
-              ThrowCompareException(OptionError,"MissingArgument",option);
-            break;
-          }
         if (LocaleCompare("profile",option+1) == 0)
           {
             i++;
@@ -969,8 +959,8 @@ WandExport MagickBooleanType CompareImagesCommand(ImageInfo *image_info,
             &distortion,exception);
         else
           {
-            (void) CompositeImage(composite_image,CopyCompositeOp,
-              reconstruct_image,offset.x,offset.y,exception);
+            (void) CompositeImage(composite_image,reconstruct_image,
+              CopyCompositeOp,MagickTrue,offset.x,offset.y,exception);
             difference_image=CompareImages(image,composite_image,metric,
               &distortion,exception);
             if (difference_image != (Image *) NULL)

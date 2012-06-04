@@ -960,6 +960,22 @@ namespace Magick
     bool    _colorShading;
   };
 
+  // Shadow effect image (simulate an image shadow)
+  class MagickPPExport shadowImage : public std::unary_function<Image&,void>
+  {
+  public:
+    shadowImage( const double percent_opacity_ = 80, const double sigma_ = 0.5,
+      const ssize_t x_ = 5, const ssize_t y_ = 5 );
+
+    void operator()( Image &image_ ) const;
+
+  private:
+    double _percent_opacity;
+    double _sigma;
+    ssize_t _x;
+    ssize_t _y;
+  };
+
   // Sharpen pixels in image
   class MagickPPExport sharpenImage : public std::unary_function<Image&,void>
   {
@@ -2112,9 +2128,9 @@ namespace Magick
     for ( size_t i=0; i < colors; i++)
       {
         histogram_->insert(histogram_->end(),std::pair<const Color,size_t>
-                           ( Color(histogram_array[i].red,
-                                   histogram_array[i].green,
-                                   histogram_array[i].blue),
+                           ( Color(MagickCore::ClampToQuantum(histogram_array[i].red),
+                                   MagickCore::ClampToQuantum(histogram_array[i].green),
+                                   MagickCore::ClampToQuantum(histogram_array[i].blue)),
                                    (size_t) histogram_array[i].count) );
       }
     
@@ -2241,7 +2257,8 @@ namespace Magick
     MagickCore::GetExceptionInfo( &exceptionInfo );
     MagickCore::QuantizeInfo quantizeInfo;
     MagickCore::GetQuantizeInfo( &quantizeInfo );
-    quantizeInfo.dither = dither_ ? MagickCore::MagickTrue : MagickCore::MagickFalse;
+    quantizeInfo.dither_method = dither_ ? MagickCore::RiemersmaDitherMethod :
+      MagickCore::NoDitherMethod;
     linkImages( first_, last_ );
     MagickCore::RemapImages( &quantizeInfo, first_->image(),
         mapImage_.constImage());

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -160,14 +160,13 @@ static MagickBooleanType WriteCLIPImage(const ImageInfo *image_info,
   MagickBooleanType
     status;
 
-  if (image->clip_mask == (Image *) NULL)
+  if (image->mask == MagickFalse)
     (void) ClipImage(image,exception);
-  if (image->clip_mask == (Image *) NULL)
+  if (image->mask == MagickFalse)
     ThrowWriterException(CoderError,"ImageDoesNotHaveAClipMask");
-  clip_image=CloneImage(image->clip_mask,0,0,MagickTrue,exception);
+  clip_image=GetImageMask(image,exception);
   if (clip_image == (Image *) NULL)
     return(MagickFalse);
-  (void) SetImageType(clip_image,TrueColorType,exception);
   (void) CopyMagickString(clip_image->filename,image->filename,MaxTextExtent);
   write_info=CloneImageInfo(image_info);
   (void) SetImageInfo(write_info,1,exception);

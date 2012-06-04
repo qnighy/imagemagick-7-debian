@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -372,7 +372,7 @@ static Image *ReadFPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       /*
         Create linear colormap.
       */
-      if (AcquireImageColormap(image,MaxColormapSize) == MagickFalse)
+      if (AcquireImageColormap(image,MaxColormapSize,exception) == MagickFalse)
         {
           FPX_ClearSystem();
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -858,8 +858,8 @@ static MagickBooleanType WriteFPXImage(const ImageInfo *image_info,Image *image,
     Initialize FPX toolkit.
   */
   image->depth=8;
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace,exception);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace,exception);
   memory_limit=20000000;
   fpx_status=FPX_SetToolkitMemoryLimit(&memory_limit);
   if (fpx_status != FPX_OK)
@@ -930,12 +930,9 @@ static MagickBooleanType WriteFPXImage(const ImageInfo *image_info,Image *image,
   summary_info.thumbnail_valid=MagickFalse;
   summary_info.appname_valid=MagickFalse;
   summary_info.security_valid=MagickFalse;
-  label=GetImageProperty(image,"label");
+  label=GetImageProperty(image,"label",exception);
   if (label != (const char *) NULL)
     {
-      size_t
-        length;
-
       /*
         Note image label.
       */
@@ -950,7 +947,7 @@ static MagickBooleanType WriteFPXImage(const ImageInfo *image_info,Image *image,
       (void) CopyMagickString((char *) summary_info.title.ptr,label,
         MaxTextExtent);
     }
-  comment=GetImageProperty(image,"comment");
+  comment=GetImageProperty(image,"comment",exception);
   if (comment != (const char *) NULL)
     {
       /*

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -399,8 +399,6 @@ extern MagickPrivate MagickBooleanType
   NTGatherRandomData(const size_t,unsigned char *),
   NTGetExecutionPath(char *,const size_t),
   NTGetModulePath(const char *,char *),
-  NTIsMagickConflict(const char *),
-  NTLoadTypeLists(SplayTreeInfo *,ExceptionInfo *),
   NTReportEvent(const char *,const MagickBooleanType),
   NTReportException(const char *,const MagickBooleanType);
 

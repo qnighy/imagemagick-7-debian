@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -102,9 +102,6 @@ static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   QuantumInfo
     *quantum_info;
 
-  QuantumType
-    quantum_type;
-
   MagickBooleanType
     status;
 
@@ -141,11 +138,6 @@ static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->columns=(size_t) ReadBlobLSBShort(image);
   (void) ReadBlobLSBShort(image);
   image->rows=(size_t) ReadBlobLSBShort(image);
-  /*
-    Initialize image colormap.
-  */
-  if (AcquireImageColormap(image,2,exception) == MagickFalse)
-    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   if (image_info->ping != MagickFalse)
     {
       (void) CloseBlob(image);
@@ -154,12 +146,12 @@ static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Convert bi-level image to pixel packets.
   */
-  quantum_type=IndexQuantum;
+  SetImageColorspace(image,GRAYColorspace,exception);
   quantum_info=AcquireQuantumInfo(image_info,image);
   if (quantum_info == (QuantumInfo *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   pixels=GetQuantumPixels(quantum_info);
-  length=GetQuantumExtent(image,quantum_info,quantum_type);
+  length=GetQuantumExtent(image,quantum_info,GrayQuantum);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register Quantum
@@ -172,14 +164,14 @@ static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if (count != (ssize_t) length)
       ThrowReaderException(CorruptImageError,"UnableToReadImageData");
     (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
-      quantum_type,pixels,exception);
+      GrayQuantum,pixels,exception);
     count=ReadBlob(image,(size_t) (-(ssize_t) length) & 0x01,pixels);
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
     if (SetImageProgress(image,LoadImageTag,y,image->rows) == MagickFalse)
       break;
   }
-  SetQuantumImageType(image,quantum_type);
+  SetQuantumImageType(image,GrayQuantum);
   quantum_info=DestroyQuantumInfo(quantum_info);
   if (EOFBlob(image) != MagickFalse)
     ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
@@ -316,29 +308,23 @@ static MagickBooleanType WriteARTImage(const ImageInfo *image_info,Image *image,
     return(status);
   if ((image->columns > 65535UL) || (image->rows > 65535UL))
     ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace,exception);
+  (void) SetImageType(image,BilevelType,exception);
   image->endian=MSBEndian;
   image->depth=1;
   (void) WriteBlobLSBShort(image,0);
   (void) WriteBlobLSBShort(image,(unsigned short) image->columns);
   (void) WriteBlobLSBShort(image,0);
   (void) WriteBlobLSBShort(image,(unsigned short) image->rows);
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace,exception);
-  length=(image->columns+7)/8;
-  pixels=(unsigned char *) AcquireQuantumMemory(length,sizeof(*pixels));
-  if (pixels == (unsigned char *) NULL)
-    ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
-  /*
-    Convert image to a bi-level image.
-  */
-  (void) SetImageType(image,BilevelType,exception);
   quantum_info=AcquireQuantumInfo(image_info,image);
+  pixels=GetQuantumPixels(quantum_info);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);
     if (p == (const Quantum *) NULL)
       break;
-    (void) ExportQuantumPixels(image,(CacheView *) NULL,quantum_info,
+    length=ExportQuantumPixels(image,(CacheView *) NULL,quantum_info,
       GrayQuantum,pixels,exception);
     count=WriteBlob(image,length,pixels);
     if (count != (ssize_t) length)
@@ -350,7 +336,6 @@ static MagickBooleanType WriteARTImage(const ImageInfo *image_info,Image *image,
       break;
   }
   quantum_info=DestroyQuantumInfo(quantum_info);
-  pixels=(unsigned char *) RelinquishMagickMemory(pixels);
   (void) CloseBlob(image);
-  return(MagickTrue);
+  return(status);
 }

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -140,7 +140,7 @@ static Image *ReadCMYKImage(const ImageInfo *image_info,
   image=AcquireImage(image_info,exception);
   if ((image->columns == 0) || (image->rows == 0))
     ThrowReaderException(OptionError,"MustSpecifyImageSize");
-  image->colorspace=CMYKColorspace;
+  SetImageColorspace(image,CMYKColorspace,exception);
   if (image_info->interlace != PartitionInterlace)
     {
       status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
@@ -158,7 +158,8 @@ static Image *ReadCMYKImage(const ImageInfo *image_info,
   */
   canvas_image=CloneImage(image,image->extract_info.width,1,MagickFalse,
     exception);
-  (void) SetImageVirtualPixelMethod(canvas_image,BlackVirtualPixelMethod);
+  (void) SetImageVirtualPixelMethod(canvas_image,BlackVirtualPixelMethod,
+    exception);
   quantum_info=AcquireQuantumInfo(image_info,canvas_image);
   if (quantum_info == (QuantumInfo *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -195,7 +196,7 @@ static Image *ReadCMYKImage(const ImageInfo *image_info,
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
-    image->colorspace=CMYKColorspace;
+    SetImageColorspace(image,CMYKColorspace,exception);
     switch (image_info->interlace)
     {
       case NoInterlace:
@@ -1211,12 +1212,6 @@ static MagickBooleanType WriteCMYKImage(const ImageInfo *image_info,
       if (status == MagickFalse)
         return(status);
     }
-  quantum_type=CMYKQuantum;
-  if (LocaleCompare(image_info->magick,"CMYKA") == 0)
-    {
-      quantum_type=CMYKAQuantum;
-      image->matte=MagickTrue;
-    }
   scene=0;
   do
   {
@@ -1225,9 +1220,13 @@ static MagickBooleanType WriteCMYKImage(const ImageInfo *image_info,
     */
     if (image->colorspace != CMYKColorspace)
       (void) TransformImageColorspace(image,CMYKColorspace,exception);
-    if ((LocaleCompare(image_info->magick,"CMYKA") == 0) &&
-        (image->matte == MagickFalse))
-      (void) SetImageAlphaChannel(image,OpaqueAlphaChannel,exception);
+    quantum_type=CMYKQuantum;
+    if (LocaleCompare(image_info->magick,"CMYKA") == 0)
+      {
+        quantum_type=CMYKAQuantum;
+        if (image->matte == MagickFalse)
+          (void) SetImageAlphaChannel(image,OpaqueAlphaChannel,exception);
+      }
     quantum_info=AcquireQuantumInfo(image_info,image);
     if (quantum_info == (QuantumInfo *) NULL)
       ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");

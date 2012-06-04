@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ static inline ResampleFilter **AcquireResampleFilterThreadSet(
     if (method != UndefinedVirtualPixelMethod)
       (void) SetResampleFilterVirtualPixelMethod(filter[i],method);
     if (interpolate != MagickFalse)
-      SetResampleFilter(filter[i],PointFilter,1.0);
+      SetResampleFilter(filter[i],PointFilter);
   }
   return(filter);
 }

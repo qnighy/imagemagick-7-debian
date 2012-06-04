@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -167,7 +167,11 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
   unsigned char
     j,
     k,
+    pixels[4],
     runlength;
+
+  unsigned int
+    alpha_bits;
 
   /*
     Open image file.
@@ -222,7 +226,9 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   image->columns=tga_info.width;
   image->rows=tga_info.height;
-  image->matte=(tga_info.attributes & 0x0FU) != 0 ? MagickTrue : MagickFalse;
+  alpha_bits=(tga_info.attributes & 0x0FU);
+  image->matte=(alpha_bits > 0) || (tga_info.bits_per_pixel == 32) ?
+    MagickTrue : MagickFalse;
   if ((tga_info.image_type != TGAColormap) &&
       (tga_info.image_type != TGARLEColormap))
     image->depth=(size_t) ((tga_info.bits_per_pixel <= 8) ? 8 :
@@ -406,34 +412,47 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
               range;
 
             /*
-              5 bits each of red green and blue.
+              5 bits each of RGB.
             */
-            j=(unsigned char) ReadBlobByte(image);
-            k=(unsigned char) ReadBlobByte(image);
+            if (ReadBlob(image,2,pixels) != 2)
+              ThrowReaderException(CorruptImageError,"UnableToReadImageData");
+            j=pixels[0];
+            k=pixels[1];
             range=GetQuantumRange(5UL);
             pixel.red=ScaleAnyToQuantum(1UL*(k & 0x7c) >> 2,range);
             pixel.green=ScaleAnyToQuantum((1UL*(k & 0x03) << 3)+
               (1UL*(j & 0xe0) >> 5),range);
             pixel.blue=ScaleAnyToQuantum(1UL*(j & 0x1f),range);
             if (image->matte != MagickFalse)
-              pixel.alpha=(k & 0x80) == 0 ? (Quantum) OpaqueAlpha :
-                (Quantum) TransparentAlpha; 
+              pixel.alpha=(k & 0x80) == 0 ? (Quantum) OpaqueAlpha : (Quantum)
+                TransparentAlpha; 
             if (image->storage_class == PseudoClass)
               index=ConstrainColormapIndex(image,((size_t) k << 8)+j,exception);
             break;
           }
           case 24:
+          {
+            /*
+              BGR pixels.
+            */
+            if (ReadBlob(image,3,pixels) != 3)
+              ThrowReaderException(CorruptImageError,"UnableToReadImageData");
+            pixel.blue=ScaleCharToQuantum(pixels[0]);
+            pixel.green=ScaleCharToQuantum(pixels[1]);
+            pixel.red=ScaleCharToQuantum(pixels[2]);
+            break;
+          }
           case 32:
           {
             /*
-              8 bits each of blue green and red.
+              BGRA pixels.
             */
-            pixel.blue=ScaleCharToQuantum((unsigned char) ReadBlobByte(image));
-            pixel.green=ScaleCharToQuantum((unsigned char) ReadBlobByte(image));
-            pixel.red=ScaleCharToQuantum((unsigned char) ReadBlobByte(image));
-            if (tga_info.bits_per_pixel == 32)
-              pixel.alpha=ScaleCharToQuantum((unsigned char)
-                ReadBlobByte(image));
+            if (ReadBlob(image,4,pixels) != 4)
+              ThrowReaderException(CorruptImageError,"UnableToReadImageData");
+            pixel.blue=ScaleCharToQuantum(pixels[0]);
+            pixel.green=ScaleCharToQuantum(pixels[1]);
+            pixel.red=ScaleCharToQuantum(pixels[2]);
+            pixel.alpha=ScaleCharToQuantum(pixels[3]);
             break;
           }
         }
@@ -679,8 +698,8 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image,
   */
   if ((image->columns > 65535L) || (image->rows > 65535L))
     ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
-  if (IsRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace,exception);
+  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace,exception);
   targa_info.id_length=0;
   value=GetImageProperty(image,"comment",exception);
   if (value != (const char *) NULL)

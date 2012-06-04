@@ -17,7 +17,7 @@
 %                            September 1994                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -166,7 +166,7 @@ static MagickBooleanType IdentifyUsage(void)
   for (p=miscellaneous; *p != (char *) NULL; p++)
     (void) printf("  %s\n",*p);
   (void) printf(
-    "\nBy default, the image format of `file' is determined by its magic\n");
+    "\nBy default, the image format of 'file' is determined by its magic\n");
   (void) printf(
     "number.  To specify a particular image format, precede the filename\n");
   (void) printf(
@@ -189,7 +189,7 @@ WandExport MagickBooleanType IdentifyImageCommand(ImageInfo *image_info,
 }
 #define ThrowIdentifyException(asperity,tag,option) \
 { \
-  (void) ThrowMagickException(exception,GetMagickModule(),asperity,tag,"`%s'", \
+  (void) ThrowMagickException(exception,GetMagickModule(),asperity,tag,"'%s'", \
     option); \
   DestroyIdentify(); \
   return(MagickFalse); \
@@ -197,7 +197,7 @@ WandExport MagickBooleanType IdentifyImageCommand(ImageInfo *image_info,
 #define ThrowIdentifyInvalidArgumentException(option,argument) \
 { \
   (void) ThrowMagickException(exception,GetMagickModule(),OptionError, \
-    "InvalidArgument","`%s': %s",option,argument); \
+    "InvalidArgument","'%s': %s",option,argument); \
   DestroyIdentify(); \
   return(MagickFalse); \
 }
@@ -313,11 +313,10 @@ WandExport MagickBooleanType IdentifyImageCommand(ImageInfo *image_info,
         filename=argv[i];
         if ((LocaleCompare(filename,"--") == 0) && (i < (ssize_t) (argc-1)))
           filename=argv[++i];
-        (void) CopyMagickString(identify_info->filename,filename,MaxTextExtent);
         if (identify_info->ping != MagickFalse)
-          images=PingImages(identify_info,exception);
+          images=PingImages(identify_info,filename,exception);
         else
-          images=ReadImages(identify_info,exception);
+          images=ReadImages(identify_info,filename,exception);
         identify_info=DestroyImageInfo(identify_info);
         status&=(images != (Image *) NULL) &&
           (exception->severity < ErrorException);

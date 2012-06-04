@@ -19,7 +19,7 @@
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -83,6 +83,7 @@
 #include "MagickCore/segment.h"
 #include "MagickCore/shear.h"
 #include "MagickCore/signature.h"
+#include "MagickCore/statistic.h"
 #include "MagickCore/static.h"
 #include "MagickCore/string_.h"
 #include "MagickCore/string-private.h"
@@ -746,7 +747,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
           channel_mask=SetPixelChannelMask(msl_info->image[n],channel);
           noise_image=AddNoiseImage(msl_info->image[n],noise,1.0,
             msl_info->exception);
-          (void) SetPixelChannelMap(msl_info->image[n],channel_mask);
+          (void) SetPixelChannelMapMask(msl_info->image[n],channel_mask);
           if (noise_image == (Image *) NULL)
             break;
           msl_info->image[n]=DestroyImage(msl_info->image[n]);
@@ -1240,9 +1241,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
             }
           channel_mask=SetPixelChannelMask(msl_info->image[n],channel);
           blur_image=BlurImage(msl_info->image[n],geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,
-            msl_info->exception);
-          (void) SetPixelChannelMap(msl_info->image[n],channel_mask);
+            geometry_info.sigma,msl_info->exception);
+          (void) SetPixelChannelMapMask(msl_info->image[n],channel_mask);
           if (blur_image == (Image *) NULL)
             break;
           msl_info->image[n]=DestroyImage(msl_info->image[n]);
@@ -1439,7 +1439,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
         }
       if (LocaleCompare((const char *) tag, "charcoal") == 0)
       {
-        double bias = 0.0,
+        double 
             radius = 0.0,
             sigma = 1.0;
 
@@ -1461,17 +1461,6 @@ static void MSLStartElement(void *context,const xmlChar *tag,
             msl_info->attributes[n],(const char *) attributes[i],&exception));
           switch (*keyword)
           {
-            case 'B':
-            case 'b':
-            {
-              if (LocaleCompare(keyword, "bias") == 0)
-                {
-                  bias=StringToDouble(value,(char **) NULL);
-                  break;
-                }
-              ThrowMSLException(OptionError,"UnrecognizedAttribute",keyword);
-              break;
-            }
             case 'R':
             case 'r':
             {
@@ -1510,7 +1499,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
         Image
           *newImage;
 
-        newImage=CharcoalImage(msl_info->image[n],radius,sigma,bias,
+        newImage=CharcoalImage(msl_info->image[n],radius,sigma,
           msl_info->exception);
         if (newImage == (Image *) NULL)
           break;
@@ -1696,7 +1685,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                         &geometry,&exception);
                       if ((flags & HeightValue) == 0)
                         geometry.height=geometry.width;
-                      (void) GetOneVirtualMagickPixel(msl_info->image[n],
+                      (void) GetOneVirtualPixelInfo(msl_info->image[n],
                         TileVirtualPixelMethod,geometry.x,geometry.y,&target,
                         &exception);
                       break;
@@ -1711,7 +1700,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                   if (LocaleCompare(keyword,"x") == 0)
                     {
                       geometry.x=StringToLong(value);
-                      (void) GetOneVirtualMagickPixel(msl_info->image[n],
+                      (void) GetOneVirtualPixelInfo(msl_info->image[n],
                         TileVirtualPixelMethod,geometry.x,geometry.y,&target,
                         &exception);
                       break;
@@ -1726,7 +1715,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                   if (LocaleCompare(keyword,"y") == 0)
                     {
                       geometry.y=StringToLong(value);
-                      (void) GetOneVirtualMagickPixel(msl_info->image[n],
+                      (void) GetOneVirtualPixelInfo(msl_info->image[n],
                         TileVirtualPixelMethod,geometry.x,geometry.y,&target,
                         &exception);
                       break;
@@ -1926,8 +1915,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                           SetImageType(composite_image,TrueColorMatteType,
                             &exception);
                           (void) CompositeImage(composite_image,
-                            CopyOpacityCompositeOp,msl_info->image[j],0,0,
-                            &exception);
+                            msl_info->image[j],CopyAlphaCompositeOp,MagickTrue,
+                            0,0,&exception);
                           break;
                         }
                     }
@@ -1965,7 +1954,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                       if (composite_image->matte != MagickTrue)
                         (void) SetImageAlpha(composite_image,OpaqueAlpha,
                           &exception);
-                      composite_view=AcquireCacheView(composite_image);
+                      composite_view=AcquireAuthenticCacheView(composite_image,
+                        &exception);
                       for (y=0; y < (ssize_t) composite_image->rows ; y++)
                       {
                         q=GetCacheViewAuthenticPixels(composite_view,0,y,
@@ -2028,11 +2018,11 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                          for (x=0; x < (ssize_t) image->columns; x+=(ssize_t) width)
                          {
                            if (rotate_image != (Image *) NULL)
-                             (void) CompositeImage(image,compose,rotate_image,
-                               x,y,&exception);
+                             (void) CompositeImage(image,rotate_image,compose,
+                               MagickTrue,x,y,&exception);
                            else
-                             (void) CompositeImage(image,compose,
-                               composite_image,x,y,&exception);
+                             (void) CompositeImage(image,composite_image,
+                               compose,MagickTrue,x,y,&exception);
                          }
                       if (rotate_image != (Image *) NULL)
                         rotate_image=DestroyImage(rotate_image);
@@ -2083,8 +2073,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
             &exception);
           channel_mask=SetPixelChannelMask(image,channel);
           if (rotate_image == (Image *) NULL)
-            CompositeImage(image,compose,composite_image,geometry.x,geometry.y,
-              &exception);
+            CompositeImage(image,composite_image,compose,MagickTrue,geometry.x,
+              geometry.y,&exception);
           else
             {
               /*
@@ -2094,8 +2084,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                 composite_image->columns)/2;
               geometry.y-=(ssize_t) (rotate_image->rows-
                 composite_image->rows)/2;
-              CompositeImage(image,compose,rotate_image,geometry.x,geometry.y,
-                &exception);
+              CompositeImage(image,rotate_image,compose,MagickTrue,geometry.x,
+                geometry.y,&exception);
               rotate_image=DestroyImage(rotate_image);
             }
           (void) SetPixelChannelMask(image,channel_mask);
@@ -3654,7 +3644,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
               }
             }
           quantize_info=AcquireQuantizeInfo(msl_info->image_info[n]);
-          quantize_info->dither=dither;
+          quantize_info->dither_method=dither != MagickFalse ?
+            RiemersmaDitherMethod : NoDitherMethod;
           (void) RemapImages(quantize_info,msl_info->image[n],
             affinity_image,&exception);
           quantize_info=DestroyQuantizeInfo(quantize_info);
@@ -3730,7 +3721,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                         &geometry,&exception);
                       if ((flags & HeightValue) == 0)
                         geometry.height=geometry.width;
-                      (void) GetOneVirtualMagickPixel(msl_info->image[n],
+                      (void) GetOneVirtualPixelInfo(msl_info->image[n],
                         TileVirtualPixelMethod,geometry.x,geometry.y,&target,
                         &exception);
                       break;
@@ -3757,7 +3748,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                   if (LocaleCompare(keyword,"x") == 0)
                     {
                       geometry.x=StringToLong(value);
-                      (void) GetOneVirtualMagickPixel(msl_info->image[n],
+                      (void) GetOneVirtualPixelInfo(msl_info->image[n],
                         TileVirtualPixelMethod,geometry.x,geometry.y,&target,
                         &exception);
                       break;
@@ -3772,7 +3763,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                   if (LocaleCompare(keyword,"y") == 0)
                     {
                       geometry.y=StringToLong(value);
-                      (void) GetOneVirtualMagickPixel(msl_info->image[n],
+                      (void) GetOneVirtualPixelInfo(msl_info->image[n],
                         TileVirtualPixelMethod,geometry.x,geometry.y,&target,
                         &exception);
                       break;
@@ -3796,7 +3787,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
           (void) FloodfillPaintImage(msl_info->image[n],draw_info,&target,
             geometry.x,geometry.y,paint_method == FloodfillMethod ?
             MagickFalse : MagickTrue,msl_info->exception);
-          (void) SetPixelChannelMap(msl_info->image[n],channel_mask);
+          (void) SetPixelChannelMapMask(msl_info->image[n],channel_mask);
           draw_info=DestroyDrawInfo(draw_info);
           break;
         }
@@ -4100,7 +4091,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
           channel_mask=SetPixelChannelMask(msl_info->image[n],channel);
           (void) NegateImage(msl_info->image[n],gray,
             msl_info->exception);
-          (void) SetPixelChannelMap(msl_info->image[n],channel_mask);
+          (void) SetPixelChannelMapMask(msl_info->image[n],channel_mask);
           break;
         }
       if (LocaleCompare((const char *) tag,"normalize") == 0)
@@ -4299,7 +4290,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
           channel_mask=SetPixelChannelMask(msl_info->image[n],channel);
           (void) OpaquePaintImage(msl_info->image[n],&target,&fill_color,
             MagickFalse,msl_info->exception);
-          (void) SetPixelChannelMap(msl_info->image[n],channel_mask);
+          (void) SetPixelChannelMapMask(msl_info->image[n],channel_mask);
           break;
         }
       ThrowMSLException(OptionError,"UnrecognizedElement",(const char *) tag);
@@ -4499,12 +4490,12 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                 {
                   if (LocaleCompare(keyword,"dither") == 0)
                     {
-                      option=ParseCommandOption(MagickBooleanOptions,MagickFalse,
+                      option=ParseCommandOption(MagickDitherOptions,MagickFalse,
                         value);
                       if (option < 0)
                         ThrowMSLException(OptionError,"UnrecognizedBooleanType",
                           value);
-                      quantize_info.dither=(MagickBooleanType) option;
+                      quantize_info.dither_method=(DitherMethod) option;
                       break;
                     }
                   ThrowMSLException(OptionError,"UnrecognizedAttribute",
@@ -5277,17 +5268,6 @@ static void MSLStartElement(void *context,const xmlChar *tag,
           msl_info->attributes[n],(const char *) attributes[i],&exception));
         switch (*keyword)
         {
-          case 'b':
-          {
-            if (LocaleCompare(keyword,"blur") == 0)
-              {
-                msl_info->image[n]->blur=StringToDouble(value,
-                        (char **) NULL);
-                break;
-              }
-            ThrowMSLException(OptionError,"UnrecognizedAttribute",keyword);
-            break;
-          }
           case 'G':
           case 'g':
           {
@@ -5355,8 +5335,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
           (factor*(msl_info->image[n]->resolution.y == 0.0 ? DefaultResolution :
           msl_info->image[n]->resolution.y))+0.5);
         resample_image=ResizeImage(msl_info->image[n],width,height,
-          msl_info->image[n]->filter,msl_info->image[n]->blur,
-          msl_info->exception);
+          msl_info->image[n]->filter,msl_info->exception);
         if (resample_image == (Image *) NULL)
           break;
         msl_info->image[n]=DestroyImage(msl_info->image[n]);
@@ -5366,9 +5345,6 @@ static void MSLStartElement(void *context,const xmlChar *tag,
     }
       if (LocaleCompare((const char *) tag,"resize") == 0)
         {
-          double
-            blur;
-
           FilterTypes
             filter;
 
@@ -5385,7 +5361,6 @@ static void MSLStartElement(void *context,const xmlChar *tag,
               break;
             }
           filter=UndefinedFilter;
-          blur=1.0;
           if (attributes != (const xmlChar **) NULL)
             for (i=0; (attributes[i] != (const xmlChar *) NULL); i++)
             {
@@ -5438,18 +5413,6 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                     keyword);
                   break;
                 }
-                case 'S':
-                case 's':
-                {
-                  if (LocaleCompare(keyword,"support") == 0)
-                    {
-                      blur=StringToDouble(value,(char **) NULL);
-                      break;
-                    }
-                  ThrowMSLException(OptionError,"UnrecognizedAttribute",
-                    keyword);
-                  break;
-                }
                 case 'W':
                 case 'w':
                 {
@@ -5471,7 +5434,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
               }
             }
           resize_image=ResizeImage(msl_info->image[n],geometry.width,
-            geometry.height,filter,blur,msl_info->exception);
+            geometry.height,filter,msl_info->exception);
           if (resize_image == (Image *) NULL)
             break;
           msl_info->image[n]=DestroyImage(msl_info->image[n]);
@@ -5937,7 +5900,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
             }
           geometry_info.rho=1.0;
           geometry_info.sigma=1.5;
-          colorspace=RGBColorspace;
+          colorspace=sRGBColorspace;
           verbose=MagickFalse;
           if (attributes != (const xmlChar **) NULL)
             for (i=0; (attributes[i] != (const xmlChar *) NULL); i++)
@@ -6060,7 +6023,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                       &exception);
                     if (LocaleCompare(property,value) == 0)
                       {
-                        SetImageClipMask(msl_info->image[n],msl_info->image[j],
+                        SetImageMask(msl_info->image[n],msl_info->image[j],
                           &exception);
                         break;
                       }
@@ -6365,8 +6328,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
               }
             }
           shadow_image=ShadowImage(msl_info->image[n],geometry_info.rho,
-            geometry_info.sigma,(ssize_t) ceil(geometry_info.xi-0.5),(ssize_t)
-            ceil(geometry_info.psi-0.5),msl_info->exception);
+            geometry_info.sigma,(ssize_t) ceil(geometry_info.xi-0.5),
+            (ssize_t) ceil(geometry_info.psi-0.5),msl_info->exception);
           if (shadow_image == (Image *) NULL)
             break;
           msl_info->image[n]=DestroyImage(msl_info->image[n]);
@@ -6375,7 +6338,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
         }
       if (LocaleCompare((const char *) tag,"sharpen") == 0)
       {
-        double bias = 0.0,
+        double 
             radius = 0.0,
             sigma = 1.0;
 
@@ -6397,17 +6360,6 @@ static void MSLStartElement(void *context,const xmlChar *tag,
             msl_info->attributes[n],(const char *) attributes[i],&exception));
           switch (*keyword)
           {
-            case 'B':
-            case 'b':
-            {
-              if (LocaleCompare(keyword, "bias") == 0)
-              {
-                bias = StringToDouble(value,(char **) NULL);
-                break;
-              }
-              ThrowMSLException(OptionError,"UnrecognizedAttribute",keyword);
-              break;
-            }
             case 'R':
             case 'r':
             {
@@ -6446,7 +6398,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
         Image
           *newImage;
 
-        newImage=SharpenImage(msl_info->image[n],radius,sigma,bias,
+        newImage=SharpenImage(msl_info->image[n],radius,sigma,
           msl_info->exception);
         if (newImage == (Image *) NULL)
           break;
@@ -8022,13 +7974,6 @@ static MagickBooleanType SetMSLAttributes(MSLInfo *msl_info,const char *keyword,
         {
           (void) QueryColorCompliance(value,AllCompliance,
             &image_info->background_color,exception);
-          break;
-        }
-      if (LocaleCompare(keyword,"bias") == 0)
-        {
-          if (image == (Image *) NULL)
-            break;
-          image->bias=StringToDoubleInterval(value,QuantumRange);
           break;
         }
       if (LocaleCompare(keyword,"blue-primary") == 0)

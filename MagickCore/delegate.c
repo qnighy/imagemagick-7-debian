@@ -16,7 +16,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -81,12 +81,12 @@ static const char
     "<delegatemap>"
     "  <delegate decode=\"autotrace\" stealth=\"True\" command=\"&quot;autotrace&quot; -output-format svg -output-file &quot;%o&quot; &quot;%i&quot;\"/>"
     "  <delegate decode=\"avi:decode\" stealth=\"True\" command=\"&quot;mplayer&quot; &quot;%i&quot; -really-quiet -ao null -vo png:z=3\"/>"
-    "  <delegate decode=\"browse\" stealth=\"True\" spawn=\"True\" command=\"&quot;xdg-open&quot; http://www.imagemagick.org/\"/>"
+    "  <delegate decode=\"browse\" stealth=\"True\" spawn=\"True\" command=\"&quot;xdg-open&quot; http://www.imagemagick.org/; rm &quot;%i&quot;\"/>"
     "  <delegate decode=\"cgm\" thread-support=\"False\" command=\"&quot;ralcgm&quot; -d ps -oC &lt; &quot;%i&quot; &gt; &quot;%o&quot; 2&gt; &quot;%u&quot;\"/>"
     "  <delegate decode=\"dng:decode\" command=\"&quot;/usr/bin/ufraw-batch&quot; --silent --wb=camera --black-point=auto --exposure=auto --create-id=also --out-type=ppm16 &quot;--output=%u.pnm&quot; &quot;%i&quot;\"/>"
     "  <delegate decode=\"edit\" stealth=\"True\" command=\"&quot;xterm&quot; -title &quot;Edit Image Comment&quot; -e vi &quot;%o&quot;\"/>"
-    "  <delegate decode=\"eps\" encode=\"pdf\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pdfwrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
-    "  <delegate decode=\"eps\" encode=\"ps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"eps\" encode=\"pdf\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pdfwrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"eps\" encode=\"ps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
     "  <delegate decode=\"fig\" command=\"&quot;fig2dev&quot; -L ps &quot;%i&quot; &quot;%o&quot;\"/>"
     "  <delegate decode=\"gplt\" command=\"&quot;echo&quot; &quot;set size 1.25,0.62     set terminal postscript portrait color solid; set output &quot;%o&quot;; load &quot;%i&quot;&quot; &gt; &quot;%u&quot;;&quot;gnuplot&quot; &quot;%u&quot;\"/>"
     "  <delegate decode=\"hpg\" command=\"&quot;hp2xx&quot; -q -m eps -f `basename &quot;%o&quot;` &quot;%i&quot;     mv -f `basename &quot;%o&quot;` &quot;%o&quot;\"/>"
@@ -96,31 +96,31 @@ static const char
     "  <delegate decode=\"https\" command=\"&quot;wget&quot; -q -O &quot;%o&quot; &quot;https:%M&quot;\"/>"
     "  <delegate decode=\"ilbm\" command=\"&quot;ilbmtoppm&quot; &quot;%i&quot; &gt; &quot;%o&quot;\"/>"
     "  <delegate decode=\"man\" command=\"&quot;groff&quot; -man -Tps &quot;%i&quot; &gt; &quot;%o&quot;\"/>"
-    "  <delegate decode=\"mpeg:decode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; -i &quot;%i&quot; -vcodec pam -an -f rawvideo -y &quot;%u0.pam&quot; 2;&gt; &quot;%Z&quot;\"/>"
-    "  <delegate decode=\"null\" encode=\"mpeg:encode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; &quot;%M%%d.jpg&quot; &quot;%u.%m&quot; 2;&gt; &quot;%Z&quot;\"/>"
-    "  <delegate decode=\"pcl:color\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=ppmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
-    "  <delegate decode=\"pcl:cmyk\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=bmpsep8&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
-    "  <delegate decode=\"pcl:mono\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pbmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
-    "  <delegate decode=\"pdf\" encode=\"eps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=epswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
-    "  <delegate decode=\"pdf\" encode=\"ps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"mpeg:decode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; -v -1 -vframes %S -i &quot;%i&quot; -vcodec pam -an -f rawvideo -y &quot;%u.pam&quot; 2&gt; &quot;%Z&quot;\"/>"
+    "  <delegate decode=\"null\" encode=\"mpeg:encode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; -v -1 -mbd rd -trellis 2 -cmp 2 -subcmp 2 -g 300 -i &quot;%M%%d.jpg&quot; &quot;%u.%m&quot; 2&gt; &quot;%Z&quot;\"/>"
+    "  <delegate decode=\"pcl:color\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=ppmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
+    "  <delegate decode=\"pcl:cmyk\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=bmpsep8&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
+    "  <delegate decode=\"pcl:mono\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pbmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
+    "  <delegate decode=\"pdf\" encode=\"eps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=epswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"pdf\" encode=\"ps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
     "  <delegate decode=\"pnm\" encode=\"ilbm\" mode=\"encode\" command=\"&quot;ppmtoilbm&quot; -24if &quot;%i&quot; &gt; &quot;%o&quot;\"/>"
     "  <delegate decode=\"pnm\" encode=\"launch\" mode=\"encode\" command=\"&quot;gimp&quot; &quot;%i&quot;\"/>"
     "  <delegate decode=\"pov\" command=\"&quot;povray&quot; &quot;+i&quot;%i&quot;&quot; -D0 +o&quot;%o&quot; +fn%q +w%w +h%h +a -q9 -kfi&quot;%s&quot; -kff&quot;%n&quot;     &quot;convert&quot; -concatenate &quot;%o*.png&quot; &quot;%o&quot;\"/>"
-    "  <delegate decode=\"ps\" encode=\"eps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=epswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
-    "  <delegate decode=\"ps\" encode=\"pdf\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pdfwrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"ps\" encode=\"eps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=epswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"ps\" encode=\"pdf\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pdfwrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
     "  <delegate decode=\"ps\" encode=\"print\" mode=\"encode\" command=\"lpr &quot;%i&quot;\"/>"
-    "  <delegate decode=\"ps:alpha\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pngalpha&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
-    "  <delegate decode=\"ps:bbox\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=bbox&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
-    "  <delegate decode=\"ps:cmyk\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=bmpsep8&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
-    "  <delegate decode=\"ps:color\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pnmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
-    "  <delegate decode=\"ps:mono\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dPARANOIDSAFE -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pnmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
+    "  <delegate decode=\"ps:alpha\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pngalpha&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
+    "  <delegate decode=\"ps:bbox\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=bbox&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
+    "  <delegate decode=\"ps:cmyk\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=bmpsep8&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
+    "  <delegate decode=\"ps:color\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pnmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
+    "  <delegate decode=\"ps:mono\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=0 &quot;-sDEVICE=pnmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
     "  <delegate decode=\"rgba\" encode=\"rle\" mode=\"encode\" command=\"&quot;rawtorle&quot; -o &quot;%o&quot; -v &quot;%i&quot;\"/>"
     "  <delegate decode=\"scan\" command=\"&quot;scanimage&quot; -d &quot;%i&quot; &gt; &quot;%o&quot;\"/>"
-    "  <delegate encode=\"show\" spawn=\"True\" command=\"&quot;/usr/local/bin/display&quot; -immutable -delay 0 -window-group %g -title &quot;%l of %f&quot; &quot;temporary:%i&quot;\"/>"
+    "  <delegate encode=\"show\" spawn=\"True\" command=\"&quot;display&quot; -immutable -delay 0 -window-group %g -title &quot;%l of %f&quot; &quot;temporary:%i&quot;\"/>"
     "  <delegate decode=\"shtml\" command=\"&quot;html2ps&quot; -U -o &quot;%o&quot; &quot;%i&quot;\"/>"
     "  <delegate decode=\"svg\" command=\"&quot;rsvg&quot; &quot;%i&quot; &quot;%o&quot;\"/>"
     "  <delegate decode=\"txt\" encode=\"ps\" mode=\"bi\" command=\"&quot;enscript&quot; -o &quot;%o&quot; &quot;%i&quot;\"/>"
-    "  <delegate encode=\"win\" stealth=\"True\" spawn=\"True\" command=\"&quot;/usr/local/bin/display&quot; -immutable -delay 0 -window-group %g -title &quot;%l of %f&quot; &quot;temporary:%i&quot;\"/>"
+    "  <delegate encode=\"win\" stealth=\"True\" spawn=\"True\" command=\"&quot;display&quot; -immutable -delay 0 -window-group %g -title &quot;%l of %f&quot; &quot;temporary:%i&quot;\"/>"
     "  <delegate decode=\"wmf\" command=\"&quot;wmf2eps&quot; -o &quot;%o&quot; &quot;%i&quot;\"/>"
     "</delegatemap>";
 
@@ -270,27 +270,28 @@ MagickExport char *GetDelegateCommand(const ImageInfo *image_info,Image *image,
   assert(image_info->signature == MagickSignature);
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
-  if (image->debug != MagickFalse)
+  if( IfMagickTrue(image->debug) )
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+
   delegate_info=GetDelegateInfo(decode,encode,exception);
   if (delegate_info == (const DelegateInfo *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
-        "NoTagFound","`%s'",decode ? decode : encode);
+        "NoTagFound","'%s'",decode ? decode : encode);
       return((char *) NULL);
     }
   commands=StringToList(delegate_info->commands);
   if (commands == (char **) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",
+        ResourceLimitError,"MemoryAllocationFailed","'%s'",
         decode ? decode : encode);
       return((char *) NULL);
     }
   command=InterpretImageProperties(image_info,image,commands[0],exception);
   if (command == (char *) NULL)
     (void) ThrowMagickException(exception,GetMagickModule(),ResourceLimitError,
-      "MemoryAllocationFailed","`%s'",commands[0]);
+      "MemoryAllocationFailed","'%s'",commands[0]);
   /*
     Relinquish resources.
   */
@@ -325,6 +326,7 @@ MagickExport char *GetDelegateCommand(const ImageInfo *image_info,Image *image,
 MagickExport const char *GetDelegateCommands(const DelegateInfo *delegate_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
+
   assert(delegate_info != (DelegateInfo *) NULL);
   assert(delegate_info->signature == MagickSignature);
   return(delegate_info->commands);
@@ -367,11 +369,11 @@ MagickExport const DelegateInfo *GetDelegateInfo(const char *decode,
 
   assert(exception != (ExceptionInfo *) NULL);
   if ((delegate_list == (LinkedListInfo *) NULL) ||
-      (instantiate_delegate == MagickFalse))
-    if (InitializeDelegateList(exception) == MagickFalse)
+      (IfMagickFalse(instantiate_delegate)))
+    if( IfMagickFalse(InitializeDelegateList(exception)) )
       return((const DelegateInfo *) NULL);
   if ((delegate_list == (LinkedListInfo *) NULL) ||
-      (IsLinkedListEmpty(delegate_list) != MagickFalse))
+      (IfMagickTrue(IsLinkedListEmpty(delegate_list))))
     return((const DelegateInfo *) NULL);
   if ((LocaleCompare(decode,"*") == 0) && (LocaleCompare(encode,"*") == 0))
     return((const DelegateInfo *) GetValueFromLinkedList(delegate_list,0));
@@ -488,9 +490,10 @@ MagickExport const DelegateInfo **GetDelegateInfoList(const char *pattern,
   /*
     Allocate delegate list.
   */
+  assert(number_delegates != (size_t *) NULL);
   assert(pattern != (char *) NULL);
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",pattern);
-  assert(number_delegates != (size_t *) NULL);
+
   *number_delegates=0;
   p=GetDelegateInfo("*","*",exception);
   if (p == (const DelegateInfo *) NULL)
@@ -507,9 +510,9 @@ MagickExport const DelegateInfo **GetDelegateInfoList(const char *pattern,
   p=(const DelegateInfo *) GetNextValueInLinkedList(delegate_list);
   for (i=0; p != (const DelegateInfo *) NULL; )
   {
-    if ((p->stealth == MagickFalse) &&
-        ((GlobExpression(p->decode,pattern,MagickFalse) != MagickFalse) ||
-         (GlobExpression(p->encode,pattern,MagickFalse) != MagickFalse)))
+    if( IfMagickFalse(p->stealth) &&
+        ( IfMagickTrue(GlobExpression(p->decode,pattern,MagickFalse)) ||
+          IfMagickTrue(GlobExpression(p->encode,pattern,MagickFalse))) )
       delegates[i++]=p;
     p=(const DelegateInfo *) GetNextValueInLinkedList(delegate_list);
   }
@@ -586,6 +589,7 @@ MagickExport char **GetDelegateList(const char *pattern,
   */
   assert(pattern != (char *) NULL);
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",pattern);
+
   assert(number_delegates != (size_t *) NULL);
   *number_delegates=0;
   p=GetDelegateInfo("*","*",exception);
@@ -600,11 +604,11 @@ MagickExport char **GetDelegateList(const char *pattern,
   p=(const DelegateInfo *) GetNextValueInLinkedList(delegate_list);
   for (i=0; p != (const DelegateInfo *) NULL; )
   {
-    if ((p->stealth == MagickFalse) &&
-        (GlobExpression(p->decode,pattern,MagickFalse) != MagickFalse))
+    if( IfMagickFalse(p->stealth) &&
+        IfMagickTrue(GlobExpression(p->decode,pattern,MagickFalse)) )
       delegates[i++]=ConstantString(p->decode);
-    if ((p->stealth == MagickFalse) &&
-        (GlobExpression(p->encode,pattern,MagickFalse) != MagickFalse))
+    if( IfMagickFalse(p->stealth) &&
+        IfMagickTrue(GlobExpression(p->encode,pattern,MagickFalse)) )
       delegates[i++]=ConstantString(p->encode);
     p=(const DelegateInfo *) GetNextValueInLinkedList(delegate_list);
   }
@@ -640,6 +644,7 @@ MagickExport char **GetDelegateList(const char *pattern,
 MagickExport ssize_t GetDelegateMode(const DelegateInfo *delegate_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
+
   assert(delegate_info != (DelegateInfo *) NULL);
   assert(delegate_info->signature == MagickSignature);
   return(delegate_info->mode);
@@ -673,6 +678,7 @@ MagickExport MagickBooleanType GetDelegateThreadSupport(
   const DelegateInfo *delegate_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
+
   assert(delegate_info != (DelegateInfo *) NULL);
   assert(delegate_info->signature == MagickSignature);
   return(delegate_info->thread_support);
@@ -703,20 +709,20 @@ MagickExport MagickBooleanType GetDelegateThreadSupport(
 static MagickBooleanType InitializeDelegateList(ExceptionInfo *exception)
 {
   if ((delegate_list == (LinkedListInfo *) NULL) &&
-      (instantiate_delegate == MagickFalse))
+      IfMagickFalse(instantiate_delegate))
     {
       if (delegate_semaphore == (SemaphoreInfo *) NULL)
         AcquireSemaphoreInfo(&delegate_semaphore);
       LockSemaphoreInfo(delegate_semaphore);
       if ((delegate_list == (LinkedListInfo *) NULL) &&
-          (instantiate_delegate == MagickFalse))
+          IfMagickFalse(instantiate_delegate))
         {
           (void) LoadDelegateLists(DelegateFilename,exception);
           instantiate_delegate=MagickTrue;
         }
       UnlockSemaphoreInfo(delegate_semaphore);
     }
-  return(delegate_list != (LinkedListInfo *) NULL ? MagickTrue : MagickFalse);
+  return(IsMagickNotNULL(delegate_list));
 }
 
 /*
@@ -783,16 +789,13 @@ static MagickBooleanType CopyDelegateFile(const char *source,
     *buffer;
 
   /*
-    Return if destination file already exists.
+    Copy source file to destination.
   */
   assert(source != (const char *) NULL);
   assert(destination != (char *) NULL);
   status=GetPathAttributes(destination,&attributes);
-  if (status != MagickFalse)
+  if( IfMagickTrue(status) && (attributes.st_size != 0))
     return(MagickTrue);
-  /*
-    Copy source file to destination.
-  */
   destination_file=open_utf8(destination,O_WRONLY | O_BINARY | O_CREAT,S_MODE);
   if (destination_file == -1)
     return(MagickFalse);
@@ -826,7 +829,7 @@ static MagickBooleanType CopyDelegateFile(const char *source,
   (void) close(destination_file);
   (void) close(source_file);
   buffer=(unsigned char *) RelinquishMagickMemory(buffer);
-  return(i != 0 ? MagickTrue : MagickFalse);
+  return(IsMagickTrue(i!=0));
 }
 
 MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
@@ -858,26 +861,27 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
   assert(image_info->signature == MagickSignature);
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
-  if (image->debug != MagickFalse)
+  if( IfMagickTrue(image->debug) )
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+
   rights=ExecutePolicyRights;
-  if (IsRightsAuthorized(DelegatePolicyDomain,rights,decode) == MagickFalse)
+  if( IfMagickFalse(IsRightsAuthorized(DelegatePolicyDomain,rights,decode)) )
     {
       errno=EPERM;
       (void) ThrowMagickException(exception,GetMagickModule(),PolicyError,
-        "NotAuthorized","`%s'",decode);
+        "NotAuthorized","'%s'",decode);
       return(MagickFalse);
     }
-  if (IsRightsAuthorized(DelegatePolicyDomain,rights,encode) == MagickFalse)
+  if( IfMagickFalse(IsRightsAuthorized(DelegatePolicyDomain,rights,encode)) )
     {
       errno=EPERM;
       (void) ThrowMagickException(exception,GetMagickModule(),PolicyError,
-        "NotAuthorized","`%s'",encode);
+        "NotAuthorized","'%s'",encode);
       return(MagickFalse);
     }
-  temporary=(*image->filename == '\0') ? MagickTrue : MagickFalse;
-  if (temporary != MagickFalse)
-    if (AcquireUniqueFilename(image->filename) == MagickFalse)
+  temporary=IsMagickTrue(*image->filename == '\0');
+  if( IfMagickTrue(temporary) )
+    if( IfMagickFalse(AcquireUniqueFilename(image->filename)) )
       {
         ThrowFileException(exception,FileOpenError,
           "UnableToCreateTemporaryFile",image->filename);
@@ -886,17 +890,17 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
   delegate_info=GetDelegateInfo(decode,encode,exception);
   if (delegate_info == (DelegateInfo *) NULL)
     {
-      if (temporary != MagickFalse)
+      if( IfMagickTrue(temporary) )
         (void) RelinquishUniqueFileResource(image->filename);
       (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
-        "NoTagFound","`%s'",decode ? decode : encode);
+        "NoTagFound","'%s'",decode ? decode : encode);
       return(MagickFalse);
     }
   if (*image_info->filename == '\0')
     {
-      if (AcquireUniqueFilename(image_info->filename) == MagickFalse)
+      if( IfMagickFalse(AcquireUniqueFilename(image_info->filename)) )
         {
-          if (temporary != MagickFalse)
+          if( IfMagickTrue(temporary) )
             (void) RelinquishUniqueFileResource(image->filename);
           ThrowFileException(exception,FileOpenError,
             "UnableToCreateTemporaryFile",image_info->filename);
@@ -921,15 +925,15 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
       /*
         Delegate requires a particular image format.
       */
-      if (AcquireUniqueFilename(image_info->unique) == MagickFalse)
+      if( IfMagickFalse(AcquireUniqueFilename(image_info->unique)) )
         {
           ThrowFileException(exception,FileOpenError,
             "UnableToCreateTemporaryFile",image_info->unique);
           return(MagickFalse);
         }
-      if (AcquireUniqueFilename(image_info->zero) == MagickFalse)
+      if( IfMagickFalse(AcquireUniqueFilename(image_info->zero)) )
         {
-          (void) RelinquishUniqueFileResource(image_info->zero);
+          (void) RelinquishUniqueFileResource(image_info->unique);
           ThrowFileException(exception,FileOpenError,
             "UnableToCreateTemporaryFile",image_info->zero);
           return(MagickFalse);
@@ -940,10 +944,10 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
         {
           (void) RelinquishUniqueFileResource(image_info->unique);
           (void) RelinquishUniqueFileResource(image_info->zero);
-          if (temporary != MagickFalse)
+          if( IfMagickTrue(temporary) )
             (void) RelinquishUniqueFileResource(image->filename);
           (void) ThrowMagickException(exception,GetMagickModule(),
-            DelegateError,"DelegateFailed","`%s'",decode ? decode : encode);
+            DelegateError,"DelegateFailed","'%s'",decode ? decode : encode);
           return(MagickFalse);
         }
       LocaleUpper(magick);
@@ -966,18 +970,18 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
         (void) FormatLocaleString(p->filename,MaxTextExtent,"%s:%s",
           delegate_info->decode,clone_info->filename);
         status=WriteImage(clone_info,p,exception);
-        if (status == MagickFalse)
+        if( IfMagickFalse(status) )
           {
             (void) RelinquishUniqueFileResource(image_info->unique);
             (void) RelinquishUniqueFileResource(image_info->zero);
-            if (temporary != MagickFalse)
+            if( IfMagickTrue(temporary) )
               (void) RelinquishUniqueFileResource(image->filename);
             clone_info=DestroyImageInfo(clone_info);
             (void) ThrowMagickException(exception,GetMagickModule(),
-              DelegateError,"DelegateFailed","`%s'",decode ? decode : encode);
+              DelegateError,"DelegateFailed","'%s'",decode ? decode : encode);
             return(MagickFalse);
           }
-        if (clone_info->adjoin != MagickFalse)
+        if( IfMagickTrue(clone_info->adjoin) )
           break;
       }
       (void) RelinquishUniqueFileResource(image_info->unique);
@@ -990,10 +994,10 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
   commands=StringToList(delegate_info->commands);
   if (commands == (char **) NULL)
     {
-      if (temporary != MagickFalse)
+      if( IfMagickTrue(temporary) )
         (void) RelinquishUniqueFileResource(image->filename);
       (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",
+        ResourceLimitError,"MemoryAllocationFailed","'%s'",
         decode ? decode : encode);
       return(MagickFalse);
     }
@@ -1004,13 +1008,13 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
   for (i=0; commands[i] != (char *) NULL; i++)
   {
     status=AcquireUniqueSymbolicLink(output_filename,image_info->filename);
-    if (AcquireUniqueFilename(image_info->unique) == MagickFalse)
+    if( IfMagickFalse(AcquireUniqueFilename(image_info->unique)) )
       {
         ThrowFileException(exception,FileOpenError,
           "UnableToCreateTemporaryFile",image_info->unique);
         break;
       }
-    if (AcquireUniqueFilename(image_info->zero) == MagickFalse)
+    if( IfMagickFalse(AcquireUniqueFilename(image_info->zero)) )
       {
         (void) RelinquishUniqueFileResource(image_info->unique);
         ThrowFileException(exception,FileOpenError,
@@ -1020,7 +1024,7 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
     if (LocaleCompare(decode,"SCAN") != 0)
       {
         status=AcquireUniqueSymbolicLink(input_filename,image->filename);
-        if (status == MagickFalse)
+        if( IfMagickFalse(status) )
           {
             ThrowFileException(exception,FileOpenError,
               "UnableToCreateTemporaryFile",input_filename);
@@ -1034,29 +1038,39 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
         /*
           Execute delegate.
         */
-        status=SystemCommand(delegate_info->spawn,image_info->verbose,command,
-          exception) != 0 ? MagickTrue : MagickFalse;
-        if (delegate_info->spawn != MagickFalse)
-          (void) sleep(2);
+        status=IsMagickTrue(SystemCommand(delegate_info->spawn,
+          image_info->verbose,command,exception) != 0);
+        if (IfMagickTrue(delegate_info->spawn))
+          {
+            ssize_t
+              count;
+
+            /*
+              Wait for input file to 'disappear', or maximum 5 secs.
+            */
+            count=50;
+            while ((count-- > 0) && (access_utf8(image->filename,F_OK) == 0))
+              (void) MagickDelay(100);  /* sleep 0.1 seconds */
+          }
         command=DestroyString(command);
       }
     if (LocaleCompare(decode,"SCAN") != 0)
       {
-        if (CopyDelegateFile(image->filename,input_filename) == MagickFalse)
+        if( IfMagickFalse(CopyDelegateFile(image->filename,input_filename)) )
           (void) RelinquishUniqueFileResource(input_filename);
       }
-    if (CopyDelegateFile(image_info->filename,output_filename) == MagickFalse)
+    if( IfMagickFalse(CopyDelegateFile(image_info->filename,output_filename)) )
       (void) RelinquishUniqueFileResource(output_filename);
-    if (image_info->temporary != MagickFalse)
+    if( IfMagickTrue(image_info->temporary) )
       (void) RelinquishUniqueFileResource(image_info->filename);
     (void) RelinquishUniqueFileResource(image_info->unique);
     (void) RelinquishUniqueFileResource(image_info->zero);
     (void) RelinquishUniqueFileResource(image_info->filename);
     (void) RelinquishUniqueFileResource(image->filename);
-    if (status != MagickFalse)
+    if( IfMagickTrue(status) )
       {
         (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
-          "DelegateFailed","`%s'",commands[i]);
+          "DelegateFailed","'%s'",commands[i]);
         break;
       }
     commands[i]=DestroyString(commands[i]);
@@ -1069,9 +1083,9 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
   for ( ; commands[i] != (char *) NULL; i++)
     commands[i]=DestroyString(commands[i]);
   commands=(char **) RelinquishMagickMemory(commands);
-  if (temporary != MagickFalse)
+  if( IfMagickTrue(temporary) )
     (void) RelinquishUniqueFileResource(image->filename);
-  return(status == MagickFalse ? MagickTrue : MagickFalse);
+  return(IsMagickFalse(status));
 }
 
 /*
@@ -1128,7 +1142,7 @@ MagickExport MagickBooleanType ListDelegateInfo(FILE *file,
   path=(const char *) NULL;
   for (i=0; i < (ssize_t) number_delegates; i++)
   {
-    if (delegate_info[i]->stealth != MagickFalse)
+    if( IfMagickTrue(delegate_info[i]->stealth) )
       continue;
     if ((path == (const char *) NULL) ||
         (LocaleCompare(path,delegate_info[i]->path) != 0))
@@ -1278,7 +1292,7 @@ static MagickBooleanType LoadDelegateList(const char *xml,const char *filename,
             {
               if (depth > 200)
                 (void) ThrowMagickException(exception,GetMagickModule(),
-                  ConfigureError,"IncludeElementNestedTooDeeply","`%s'",token);
+                  ConfigureError,"IncludeElementNestedTooDeeply","'%s'",token);
               else
                 {
                   char
@@ -1323,9 +1337,9 @@ static MagickBooleanType LoadDelegateList(const char *xml,const char *filename,
     if (LocaleCompare(keyword,"/>") == 0)
       {
         status=AppendValueToLinkedList(delegate_list,delegate_info);
-        if (status == MagickFalse)
+        if( IfMagickFalse(status) )
           (void) ThrowMagickException(exception,GetMagickModule(),
-            ResourceLimitError,"MemoryAllocationFailed","`%s'",
+            ResourceLimitError,"MemoryAllocationFailed","'%s'",
             delegate_info->commands);
         delegate_info=(DelegateInfo *) NULL;
       }
@@ -1408,12 +1422,12 @@ static MagickBooleanType LoadDelegateList(const char *xml,const char *filename,
       {
         if (LocaleCompare((char *) keyword,"spawn") == 0)
           {
-            delegate_info->spawn=IsMagickTrue(token);
+            delegate_info->spawn=IsStringTrue(token);
             break;
           }
         if (LocaleCompare((char *) keyword,"stealth") == 0)
           {
-            delegate_info->stealth=IsMagickTrue(token);
+            delegate_info->stealth=IsStringTrue(token);
             break;
           }
         break;
@@ -1423,7 +1437,7 @@ static MagickBooleanType LoadDelegateList(const char *xml,const char *filename,
       {
         if (LocaleCompare((char *) keyword,"thread-support") == 0)
           {
-            delegate_info->thread_support=IsMagickTrue(token);
+            delegate_info->thread_support=IsStringTrue(token);
             break;
           }
         break;
@@ -1488,8 +1502,8 @@ static MagickBooleanType LoadDelegateLists(const char *filename,
   }
   options=DestroyConfigureOptions(options);
   if ((delegate_list == (LinkedListInfo *) NULL) ||
-      (IsLinkedListEmpty(delegate_list) != MagickFalse))
+      (IfMagickTrue(IsLinkedListEmpty(delegate_list))))
     status|=LoadDelegateList(DelegateMap,"built-in",0,exception);
-  return(status != 0 ? MagickTrue : MagickFalse);
+  return(IsMagickTrue(status!=0));
 #endif
 }

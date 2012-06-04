@@ -20,7 +20,7 @@
 %                               October 2003                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -744,7 +744,7 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (EOFBlob(image) != MagickFalse)
     ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
       image->filename);
-  image->colorspace=LogColorspace;
+  SetImageColorspace(image,LogColorspace,exception);
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
 }
@@ -1165,7 +1165,7 @@ static MagickBooleanType WriteCINImage(const ImageInfo *image_info,Image *image,
   if (0)
     {
       quantum_type=GrayQuantum;
-      length=GetBytesPerRow(image->columns,3,image->depth,MagickTrue);
+      length=GetBytesPerRow(image->columns,1,image->depth,MagickTrue);
     }
   for (y=0; y < (ssize_t) image->rows; y++)
   {

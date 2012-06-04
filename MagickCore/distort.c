@@ -18,7 +18,7 @@
 %                                 June 2007                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -63,6 +63,7 @@
 #include "MagickCore/resample.h"
 #include "MagickCore/resample-private.h"
 #include "MagickCore/registry.h"
+#include "MagickCore/resource_.h"
 #include "MagickCore/semaphore.h"
 #include "MagickCore/shear.h"
 #include "MagickCore/string_.h"
@@ -1461,15 +1462,15 @@ MagickExport Image *DistortResizeImage(const Image *image,
 {
 #define DistortResizeImageTag  "Distort/Image"
 
+  double
+    distort_args[12];
+
   Image
     *resize_image,
     *tmp_image;
 
   RectangleInfo
     crop_area;
-
-  double
-    distort_args[12];
 
   VirtualPixelMethod
     vp_save;
@@ -1487,8 +1488,6 @@ MagickExport Image *DistortResizeImage(const Image *image,
     return((Image *) NULL);
   /* Do not short-circuit this resize if final image size is unchanged */
 
-  (void) SetImageVirtualPixelMethod(image,TransparentVirtualPixelMethod);
-
   (void) ResetMagickMemory(distort_args,0,12*sizeof(double));
   distort_args[4]=(double) image->columns;
   distort_args[6]=(double) columns;
@@ -1500,7 +1499,8 @@ MagickExport Image *DistortResizeImage(const Image *image,
   tmp_image=CloneImage(image,0,0,MagickTrue,exception);
   if ( tmp_image == (Image *) NULL )
     return((Image *) NULL);
-  (void) SetImageVirtualPixelMethod(tmp_image,TransparentVirtualPixelMethod);
+  (void) SetImageVirtualPixelMethod(tmp_image,TransparentVirtualPixelMethod,
+    exception);
 
   if (image->matte == MagickFalse)
     {
@@ -1519,9 +1519,6 @@ MagickExport Image *DistortResizeImage(const Image *image,
     }
   else
     {
-      ChannelType
-        channel_mask;
-
       Image
         *resize_alpha;
 
@@ -1532,9 +1529,7 @@ MagickExport Image *DistortResizeImage(const Image *image,
 
         distort alpha channel separately
       */
-      channel_mask=SetPixelChannelMask(tmp_image,AlphaChannel);
-      (void) SeparateImage(tmp_image,exception);
-      SetPixelChannelMap(tmp_image,channel_mask);
+      (void) SetImageAlphaChannel(tmp_image,ExtractAlphaChannel,exception);
       (void) SetImageAlphaChannel(tmp_image,OpaqueAlphaChannel,exception);
       resize_alpha=DistortImage(tmp_image,AffineDistortion,12,distort_args,
         MagickTrue,exception),
@@ -1547,7 +1542,7 @@ MagickExport Image *DistortResizeImage(const Image *image,
       if ( tmp_image == (Image *) NULL )
         return((Image *) NULL);
       (void) SetImageVirtualPixelMethod(tmp_image,
-        TransparentVirtualPixelMethod);
+        TransparentVirtualPixelMethod,exception);
       resize_image=DistortImage(tmp_image,AffineDistortion,12,distort_args,
         MagickTrue,exception),
       tmp_image=DestroyImage(tmp_image);
@@ -1561,11 +1556,11 @@ MagickExport Image *DistortResizeImage(const Image *image,
         exception);
       (void) SetImageAlphaChannel(resize_alpha,DeactivateAlphaChannel,
         exception);
-      (void) CompositeImage(resize_image,CopyOpacityCompositeOp,resize_alpha,
-        0,0,exception);
+      (void) CompositeImage(resize_image,resize_alpha,CopyAlphaCompositeOp,
+        MagickTrue,0,0,exception);
       resize_alpha=DestroyImage(resize_alpha);
     }
-  (void) SetImageVirtualPixelMethod(resize_image,vp_save);
+  (void) SetImageVirtualPixelMethod(resize_image,vp_save,exception);
 
   /*
     Clean up the results of the Distortion
@@ -1803,28 +1798,28 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
         s.x = (double) image->page.x;
         s.y = (double) image->page.y;
         scale=inverse[6]*s.x+inverse[7]*s.y+1.0;
-        scale=1.0/(  (fabs(scale) <= MagickEpsilon) ? 1.0 : scale );
+        scale=MagickEpsilonReciprocal(scale);
         d.x = scale*(inverse[0]*s.x+inverse[1]*s.y+inverse[2]);
         d.y = scale*(inverse[3]*s.x+inverse[4]*s.y+inverse[5]);
         InitalBounds(d);
         s.x = (double) image->page.x+image->columns;
         s.y = (double) image->page.y;
         scale=inverse[6]*s.x+inverse[7]*s.y+1.0;
-        scale=1.0/(  (fabs(scale) <= MagickEpsilon) ? 1.0 : scale );
+        scale=MagickEpsilonReciprocal(scale);
         d.x = scale*(inverse[0]*s.x+inverse[1]*s.y+inverse[2]);
         d.y = scale*(inverse[3]*s.x+inverse[4]*s.y+inverse[5]);
         ExpandBounds(d);
         s.x = (double) image->page.x;
         s.y = (double) image->page.y+image->rows;
         scale=inverse[6]*s.x+inverse[7]*s.y+1.0;
-        scale=1.0/(  (fabs(scale) <= MagickEpsilon) ? 1.0 : scale );
+        scale=MagickEpsilonReciprocal(scale);
         d.x = scale*(inverse[0]*s.x+inverse[1]*s.y+inverse[2]);
         d.y = scale*(inverse[3]*s.x+inverse[4]*s.y+inverse[5]);
         ExpandBounds(d);
         s.x = (double) image->page.x+image->columns;
         s.y = (double) image->page.y+image->rows;
         scale=inverse[6]*s.x+inverse[7]*s.y+1.0;
-        scale=1.0/(  (fabs(scale) <= MagickEpsilon) ? 1.0 : scale );
+        scale=MagickEpsilonReciprocal(scale);
         d.x = scale*(inverse[0]*s.x+inverse[1]*s.y+inverse[2]);
         d.y = scale*(inverse[3]*s.x+inverse[4]*s.y+inverse[5]);
         ExpandBounds(d);
@@ -1953,13 +1948,18 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
   { const char *artifact=GetImageArtifact(image,"distort:viewport");
     viewport_given = MagickFalse;
     if ( artifact != (const char *) NULL ) {
-      (void) ParseAbsoluteGeometry(artifact,&geometry);
-      viewport_given = MagickTrue;
+      MagickStatusType flags=ParseAbsoluteGeometry(artifact,&geometry);
+      if (flags==NoValue)
+        (void) ThrowMagickException(exception,GetMagickModule(),
+             OptionWarning,"InvalidSetting","'%s' '%s'",
+             "distort:viewport",artifact);
+      else
+        viewport_given = MagickTrue;
     }
   }
 
   /* Verbose output */
-  if ( GetImageArtifact(image,"verbose") != (const char *) NULL ) {
+  if ( IfStringTrue(GetImageArtifact(image,"verbose")) ) {
     register ssize_t
        i;
     char image_gen[MaxTextExtent];
@@ -2281,7 +2281,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
     }
   distort_image->page.x=geometry.x;
   distort_image->page.y=geometry.y;
-  if (distort_image->background_color.alpha != OpaqueAlpha)
+  if (distort_image->background_color.matte != MagickFalse)
     distort_image->matte=MagickTrue;
 
   { /* ----- MAIN CODE -----
@@ -2310,9 +2310,10 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
     GetPixelInfo(distort_image,&zero);
     resample_filter=AcquireResampleFilterThreadSet(image,
       UndefinedVirtualPixelMethod,MagickFalse,exception);
-    distort_view=AcquireCacheView(distort_image);
+    distort_view=AcquireAuthenticCacheView(distort_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+    #pragma omp parallel for schedule(static,4) shared(progress,status) \
+      dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
     for (j=0; j < (ssize_t) distort_image->rows; j++)
     {
@@ -2710,7 +2711,8 @@ if ( d.x == 0.5 && d.y == 0.5 ) {
         }
         else {
           /* resample the source image to find its correct color */
-          (void) ResamplePixelColor(resample_filter[id],s.x,s.y,&pixel);
+          (void) ResamplePixelColor(resample_filter[id],s.x,s.y,&pixel,
+            exception);
           /* if validity between 0.0 and 1.0 mix result with invalid pixel */
           if ( validity < 1.0 ) {
             /* Do a blend of sample color and invalid pixel */
@@ -2731,7 +2733,7 @@ if ( d.x == 0.5 && d.y == 0.5 ) {
             proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_DistortImage)
+          #pragma omp critical (MagickCore_DistortImage)
 #endif
           proceed=SetImageProgress(image,DistortImageTag,progress++,
             image->rows);
@@ -2795,6 +2797,7 @@ MagickExport Image *RotateImage(const Image *image,const double degrees,
   ExceptionInfo *exception)
 {
   Image
+    *distort_image,
     *rotate_image;
 
   MagickRealType
@@ -2805,9 +2808,6 @@ MagickExport Image *RotateImage(const Image *image,const double degrees,
 
   size_t
     rotations;
-
-  VirtualPixelMethod
-    method;
 
   /*
     Adjust rotation angle.
@@ -2828,10 +2828,16 @@ MagickExport Image *RotateImage(const Image *image,const double degrees,
   shear.y=sin((double) DegreesToRadians(angle));
   if ((fabs(shear.x) < MagickEpsilon) && (fabs(shear.y) < MagickEpsilon))
     return(IntegralRotateImage(image,rotations,exception));
-  method=SetImageVirtualPixelMethod(image,BackgroundVirtualPixelMethod);
-  rotate_image=DistortImage(image,ScaleRotateTranslateDistortion,1,&degrees,
-    MagickTrue,exception);
-  method=SetImageVirtualPixelMethod(image,method);
+  distort_image=CloneImage(image,0,0,MagickTrue,exception);
+  if (distort_image == (Image *) NULL)
+    return((Image *) NULL);
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+    (void) TransformImageColorspace(distort_image,sRGBColorspace,exception);
+  (void) SetImageVirtualPixelMethod(distort_image,BackgroundVirtualPixelMethod,
+    exception);
+  rotate_image=DistortImage(distort_image,ScaleRotateTranslateDistortion,1,
+    &degrees,MagickTrue,exception);
+  distort_image=DestroyImage(distort_image);
   return(rotate_image);
 }
 
@@ -2940,7 +2946,7 @@ MagickExport Image *SparseColorImage(const Image *image,
   }
 
   /* Verbose output */
-  if ( GetImageArtifact(image,"verbose") != (const char *) NULL ) {
+  if ( IfStringTrue(GetImageArtifact(image,"verbose")) ) {
 
     switch (sparse_method) {
       case BarycentricColorInterpolate:
@@ -3029,9 +3035,10 @@ MagickExport Image *SparseColorImage(const Image *image,
 
     status=MagickTrue;
     progress=0;
-    sparse_view=AcquireCacheView(sparse_image);
+    sparse_view=AcquireAuthenticCacheView(sparse_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress,status)
+    #pragma omp parallel for schedule(static,4) shared(progress,status) \
+      dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
     for (j=0; j < (ssize_t) sparse_image->rows; j++)
     {
@@ -3218,7 +3225,7 @@ MagickExport Image *SparseColorImage(const Image *image,
             proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_SparseColorImage)
+          #pragma omp critical (MagickCore_SparseColorImage)
 #endif
           proceed=SetImageProgress(image,SparseColorTag,progress++,image->rows);
           if (proceed == MagickFalse)

@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -146,6 +146,7 @@ static const CoderMapInfo
     { "JNG", "PNG" },
     { "JPC", "JP2" },
     { "J2C", "JP2" },
+    { "J2K", "JP2" },
     { "JPG", "JPEG" },
     { "JPX", "JP2" },
     { "K", "RAW" },
@@ -158,10 +159,12 @@ static const CoderMapInfo
     { "MP4", "MPEG" },
     { "MPG", "MPEG" },
     { "MPRI", "MPR" },
+    { "MEF", "DNG" },
     { "MRW", "DNG" },
     { "MSVG", "SVG" },
     { "NEF", "DNG" },
     { "NETSCAPE", "MAGICK" },
+    { "NRW", "DNG" },
     { "O", "RAW" },
     { "ORF", "DNG" },
     { "OTF", "TTF" },
@@ -750,7 +753,7 @@ static MagickBooleanType LoadCoderList(const char *xml,const char *filename,
             {
               if (depth > 200)
                 (void) ThrowMagickException(exception,GetMagickModule(),
-                  ConfigureError,"IncludeNodeNestedTooDeeply","`%s'",token);
+                  ConfigureError,"IncludeNodeNestedTooDeeply","'%s'",token);
               else
                 {
                   char
@@ -798,7 +801,7 @@ static MagickBooleanType LoadCoderList(const char *xml,const char *filename,
           coder_info->magick),coder_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
-            ResourceLimitError,"MemoryAllocationFailed","`%s'",
+            ResourceLimitError,"MemoryAllocationFailed","'%s'",
             coder_info->magick);
         coder_info=(CoderInfo *) NULL;
       }
@@ -834,7 +837,7 @@ static MagickBooleanType LoadCoderList(const char *xml,const char *filename,
       {
         if (LocaleCompare((char *) keyword,"stealth") == 0)
           {
-            coder_info->stealth=IsMagickTrue(token);
+            coder_info->stealth=IsStringTrue(token);
             break;
           }
         break;
@@ -916,7 +919,7 @@ static MagickBooleanType LoadCoderLists(const char *filename,
     if (coder_info == (CoderInfo *) NULL)
       {
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",coder_info->name);
+          ResourceLimitError,"MemoryAllocationFailed","'%s'",coder_info->name);
         continue;
       }
     (void) ResetMagickMemory(coder_info,0,sizeof(*coder_info));
@@ -929,7 +932,7 @@ static MagickBooleanType LoadCoderLists(const char *filename,
       coder_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",coder_info->name);
+        ResourceLimitError,"MemoryAllocationFailed","'%s'",coder_info->name);
   }
   /*
     Load external coder map.

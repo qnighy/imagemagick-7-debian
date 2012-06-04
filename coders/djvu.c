@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -170,6 +170,7 @@ pump_data_until_message(LoadContext *lc,Image *image) /* ddjvu_context_t *contex
         ddjvu_message_t *message;
 
         /* i might check for a condition! */
+        size=0;
         while (!(message = ddjvu_message_peek(lc->context))
                && (size = (size_t) ReadBlob(image,(size_t) blocksize,data)) == blocksize) {
                 ddjvu_stream_write(lc->document, lc->streamid, (char *) data, size);
@@ -871,6 +872,7 @@ static Image *ReadDJVUImage(const ImageInfo *image_info,
       break;
     image->scene=i;
     AppendImageToList(&images,CloneImageList(image,exception));
+    images->extent=GetBlobSize(image);
     if (image_info->number_scenes != 0)
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;

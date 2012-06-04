@@ -17,7 +17,7 @@
 %                                  July 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -345,7 +345,7 @@ static RadonInfo *AcquireRadonInfo(const Image *image,const size_t width,
       if (status == MagickFalse)
         {
           (void) ThrowMagickException(exception,GetMagickModule(),CacheError,
-            "CacheResourcesExhausted","`%s'",image->filename);
+            "CacheResourcesExhausted","'%s'",image->filename);
           return(DestroyRadonInfo(radon_info));
         }
       radon_info->type=DiskCache;
@@ -511,7 +511,7 @@ static inline MagickBooleanType SetRadonCell(const RadonInfo *radon_info,
   return(MagickTrue);
 }
 
-static void RadonProjection(RadonInfo *source_cells,
+static void RadonProjection(const Image *image,RadonInfo *source_cells,
   RadonInfo *destination_cells,const ssize_t sign,size_t *projection)
 {
   RadonInfo
@@ -572,7 +572,8 @@ static void RadonProjection(RadonInfo *source_cells,
     q=swap;
   }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4)
+  #pragma omp parallel for schedule(static,4) \
+    dynamic_number_threads(image,p->width,p->height,1)
 #endif
   for (x=0; x < (ssize_t) p->width; x++)
   {
@@ -650,9 +651,10 @@ static MagickBooleanType RadonTransform(const Image *image,
     bits[i]=(unsigned short) count;
   }
   status=MagickTrue;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireVirtualCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -698,10 +700,11 @@ static MagickBooleanType RadonTransform(const Image *image,
         (void) SetRadonCell(source_cells,--i,y,bits[byte]);
       }
   }
-  RadonProjection(source_cells,destination_cells,-1,projection);
+  RadonProjection(image,source_cells,destination_cells,-1,projection);
   (void) ResetRadonCells(source_cells);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -747,7 +750,7 @@ static MagickBooleanType RadonTransform(const Image *image,
         (void) SetRadonCell(source_cells,i++,y,bits[byte]);
       }
   }
-  RadonProjection(source_cells,destination_cells,1,projection);
+  RadonProjection(image,source_cells,destination_cells,1,projection);
   image_view=DestroyCacheView(image_view);
   destination_cells=DestroyRadonInfo(destination_cells);
   source_cells=DestroyRadonInfo(source_cells);
@@ -776,7 +779,7 @@ static void GetImageBackgroundColor(Image *image,const ssize_t offset,
     return;
   GetPixelInfo(image,&background);
   count=0.0;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const Quantum
@@ -881,7 +884,8 @@ MagickExport Image *DeskewImage(const Image *image,const double threshold,
   clone_image=CloneImage(image,0,0,MagickTrue,exception);
   if (clone_image == (Image *) NULL)
     return((Image *) NULL);
-  (void) SetImageVirtualPixelMethod(clone_image,BackgroundVirtualPixelMethod);
+  (void) SetImageVirtualPixelMethod(clone_image,BackgroundVirtualPixelMethod,
+    exception);
   degrees=RadiansToDegrees(-atan((double) skew/width/8));
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TransformEvent,GetMagickModule(),
@@ -997,8 +1001,8 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
   */
   status=MagickTrue;
   progress=0;
-  image_view=AcquireCacheView(image);
-  rotate_view=AcquireCacheView(rotate_image);
+  image_view=AcquireVirtualCacheView(image,exception);
+  rotate_view=AcquireAuthenticCacheView(rotate_image,exception);
   switch (rotations)
   {
     case 0:
@@ -1021,9 +1025,9 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
         Rotate 90 degrees.
       */
       GetPixelCacheTileSize(image,&tile_width,&tile_height);
-      tile_width=image->columns;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(dynamic,4) shared(progress, status) omp_throttle(1)
+      #pragma omp parallel for schedule(static,4) shared(progress,status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (tile_y=0; tile_y < (ssize_t) image->rows; tile_y+=(ssize_t) tile_height)
       {
@@ -1088,6 +1092,12 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
               register ssize_t
                 i;
 
+              if (GetPixelMask(image,tile_pixels) != 0)
+                {
+                  tile_pixels-=width*GetPixelChannels(image);
+                  q+=GetPixelChannels(rotate_image);
+                  continue;
+                }
               for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
               {
                 PixelChannel
@@ -1097,8 +1107,8 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
                   rotate_traits,
                   traits;
 
-                traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-                channel=GetPixelChannelMapChannel(image,(PixelChannel) i);
+                channel=GetPixelChannelMapChannel(image,i);
+                traits=GetPixelChannelMapTraits(image,channel);
                 rotate_traits=GetPixelChannelMapTraits(rotate_image,channel);
                 if ((traits == UndefinedPixelTrait) ||
                     (rotate_traits == UndefinedPixelTrait))
@@ -1141,7 +1151,8 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
         Rotate 180 degrees.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(dynamic,4) shared(progress,status) omp_throttle(1)
+      #pragma omp parallel for schedule(static) shared(progress,status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1174,6 +1185,11 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
             i;
 
           q-=GetPixelChannels(rotate_image);
+          if (GetPixelMask(image,p) != 0)
+            {
+              p+=GetPixelChannels(image);
+              continue;
+            }
           for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
           {
             PixelChannel
@@ -1183,8 +1199,8 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
               rotate_traits,
               traits;
 
-            traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-            channel=GetPixelChannelMapChannel(image,(PixelChannel) i);
+            channel=GetPixelChannelMapChannel(image,i);
+            traits=GetPixelChannelMapTraits(image,channel);
             rotate_traits=GetPixelChannelMapTraits(rotate_image,channel);
             if ((traits == UndefinedPixelTrait) ||
                 (rotate_traits == UndefinedPixelTrait))
@@ -1231,9 +1247,9 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
         Rotate 270 degrees.
       */
       GetPixelCacheTileSize(image,&tile_width,&tile_height);
-      tile_width=image->columns;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(dynamic,4) shared(progress,status) omp_throttle(1)
+      #pragma omp parallel for schedule(static,4) shared(progress,status) \
+        dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (tile_y=0; tile_y < (ssize_t) image->rows; tile_y+=(ssize_t) tile_height)
       {
@@ -1297,6 +1313,12 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
               register ssize_t
                 i;
 
+              if (GetPixelMask(image,tile_pixels) != 0)
+                {
+                  tile_pixels+=width*GetPixelChannels(image);
+                  q+=GetPixelChannels(rotate_image);
+                  continue;
+                }
               for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
               {
                 PixelChannel
@@ -1306,8 +1328,8 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
                   rotate_traits,
                   traits;
 
-                traits=GetPixelChannelMapTraits(image,(PixelChannel) i);
-                channel=GetPixelChannelMapChannel(image,(PixelChannel) i);
+                channel=GetPixelChannelMapChannel(image,i);
+                traits=GetPixelChannelMapTraits(image,channel);
                 rotate_traits=GetPixelChannelMapTraits(rotate_image,channel);
                 if ((traits == UndefinedPixelTrait) ||
                     (rotate_traits == UndefinedPixelTrait))
@@ -1427,9 +1449,10 @@ static MagickBooleanType XShearImage(Image *image,const MagickRealType degrees,
   status=MagickTrue;
   background=image->background_color;
   progress=0;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress, status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,width,height,1)
 #endif
   for (y=0; y < (ssize_t) height; y++)
   {
@@ -1642,9 +1665,10 @@ static MagickBooleanType YShearImage(Image *image,const MagickRealType degrees,
   status=MagickTrue;
   progress=0;
   background=image->background_color;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(progress, status)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,width,height,1)
 #endif
   for (x=0; x < (ssize_t) width; x++)
   {

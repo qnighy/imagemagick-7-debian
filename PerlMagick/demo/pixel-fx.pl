@@ -22,7 +22,7 @@ warn("$w")  if $w;
 exit  if $w =~ /^Exception/;
 
 
-# make a clone of the image for modifications
+# make a clone of the image (preserve input, modify output)
 my $dest = $orig->Clone();
 
 # You could enlarge destination image here if you like.
@@ -49,5 +49,5 @@ for( my $j = 0; $j < $height; $j++ ) {
 
 # display the result (or you could save it)
 $dest->Write('win:');
-$dest->Write('pixel_fx.gif');
+$dest->Write('pixel-fx.gif');
 

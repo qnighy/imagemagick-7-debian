@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -62,8 +62,10 @@
 #include "MagickCore/pixel-accessor.h"
 #include "MagickCore/quantize.h"
 #include "MagickCore/quantum.h"
+#include "MagickCore/resource_.h"
 #include "MagickCore/semaphore.h"
 #include "MagickCore/string_.h"
+#include "MagickCore/thread-private.h"
 #include "MagickCore/token.h"
 #include "MagickCore/utility.h"
 #include "MagickCore/xml-tree.h"
@@ -136,13 +138,15 @@ MagickExport MagickBooleanType AcquireImageColormap(Image *image,
       image->filename);
   for (i=0; i < (ssize_t) image->colors; i++)
   {
-    size_t
+    double
       pixel;
 
-    pixel=(size_t) (i*(QuantumRange/MagickMax(colors-1,1)));
-    image->colormap[i].red=(Quantum) pixel;
-    image->colormap[i].green=(Quantum) pixel;
-    image->colormap[i].blue=(Quantum) pixel;
+    pixel=(double) (i*(QuantumRange/MagickMax(colors-1,1)));
+    GetPixelInfo(image,image->colormap+i);
+    image->colormap[i].matte=MagickTrue;
+    image->colormap[i].red=pixel;
+    image->colormap[i].green=pixel;
+    image->colormap[i].blue=pixel;
     image->colormap[i].alpha=OpaqueAlpha;
   }
   return(SetImageStorageClass(image,PseudoClass,exception));
@@ -162,6 +166,9 @@ MagickExport MagickBooleanType AcquireImageColormap(Image *image,
 %  CycleColormap() displaces an image's colormap by a given number of
 %  positions.  If you cycle the colormap a number of times you can produce
 %  a psychodelic effect.
+%
+%  WARNING: this assumes an images colormap is in a well know and defined
+%  order. Currently Imagemagick has no way of setting that order.
 %
 %  The format of the CycleColormapImage method is:
 %
@@ -196,9 +203,10 @@ MagickExport MagickBooleanType CycleColormapImage(Image *image,
   if (image->storage_class == DirectClass)
     (void) SetImageType(image,PaletteType,exception);
   status=MagickTrue;
-  image_view=AcquireCacheView(image);
-#if defined(MAGICKCORE_OPENMP_SUPPORT) 
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+  image_view=AcquireAuthenticCacheView(image,exception);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -322,10 +330,11 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image,
     Assign index values to colormap entries.
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    dynamic_number_threads(image,image->columns,1,1)
 #endif
   for (i=0; i < (ssize_t) image->colors; i++)
-    image->colormap[i].alpha=(Quantum) i;
+    image->colormap[i].alpha=(double) i;
   /*
     Sort image colormap by decreasing color popularity.
   */
@@ -335,12 +344,12 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image,
     Update image colormap indexes to sorted colormap order.
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(dynamic,4) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status)
 #endif
   for (i=0; i < (ssize_t) image->colors; i++)
     pixels[(ssize_t) image->colormap[i].alpha]=(unsigned short) i;
   status=MagickTrue;
-  image_view=AcquireCacheView(image);
+  image_view=AcquireAuthenticCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     Quantum
@@ -356,7 +365,7 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image,
     if (q == (Quantum *) NULL)
       {
         status=MagickFalse;
-        continue;
+        break;
       }
     for (x=0; x < (ssize_t) image->columns; x++)
     {

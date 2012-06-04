@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -346,9 +346,6 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     options[MaxTextExtent],
     postscript_filename[MaxTextExtent];
 
-  const char
-    *option;
-
   const DelegateInfo
     *delegate_info;
 
@@ -376,7 +373,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     flags;
 
   PointInfo
-    delta;
+    delta,
+    resolution;
 
   RectangleInfo
     page;
@@ -477,21 +475,34 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if ((flags & SigmaValue) == 0)
         image->resolution.y=image->resolution.x;
     }
+  if (image_info->density != (char *) NULL)
+    {
+      flags=ParseGeometry(image_info->density,&geometry_info);
+      image->resolution.x=geometry_info.rho;
+      image->resolution.y=geometry_info.sigma;
+      if ((flags & SigmaValue) == 0)
+        image->resolution.y=image->resolution.x;
+    }
+  (void) ParseAbsoluteGeometry(PSPageGeometry,&page);
+  if (image_info->page != (char *) NULL)
+    (void) ParseAbsoluteGeometry(image_info->page,&page);
+  resolution=image->resolution;
+  page.width=(size_t) ceil((double) (page.width*resolution.x/delta.x)-0.5);
+  page.height=(size_t) ceil((double) (page.height*resolution.y/delta.y)-0.5);
   /*
     Determine page geometry from the Postscript bounding box.
   */
   (void) ResetMagickMemory(&bounds,0,sizeof(bounds));
-  (void) ResetMagickMemory(&hires_bounds,0,sizeof(hires_bounds));
-  (void) ResetMagickMemory(&page,0,sizeof(page));
   (void) ResetMagickMemory(command,0,sizeof(command));
+  cmyk=image_info->colorspace == CMYKColorspace ? MagickTrue : MagickFalse;
+  (void) ResetMagickMemory(&hires_bounds,0,sizeof(hires_bounds));
   priority=0;
   rows=0;
   extent=0;
   spotcolor=0;
   language_level=1;
-  skip=MagickFalse;
-  cmyk=image_info->colorspace == CMYKColorspace ? MagickTrue : MagickFalse;
   pages=(~0UL);
+  skip=MagickFalse;
   p=command;
   for (c=ReadBlobByte(image); c != EOF; c=ReadBlobByte(image))
   {
@@ -636,6 +647,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         value=DestroyString(value);
         continue;
       }
+    if (image_info->page != (char *) NULL)
+      continue;
     /*
       Note region defined by bounding box.
     */
@@ -673,10 +686,14 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
     if ((count != 4) || (i < (ssize_t) priority))
       continue;
+    if ((fabs(bounds.x2-bounds.x1) <= fabs(hires_bounds.x2-hires_bounds.x1)) ||
+        (fabs(bounds.y2-bounds.y1) <= fabs(hires_bounds.y2-hires_bounds.y1)))
+      continue;
     hires_bounds=bounds;
     priority=i;
   }
-  if (priority != 0)
+  if ((fabs(hires_bounds.x2-hires_bounds.x1) >= MagickEpsilon) && 
+      (fabs(hires_bounds.y2-hires_bounds.y1) >= MagickEpsilon))
     {
       /*
         Set Postscript render geometry.
@@ -685,11 +702,13 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         hires_bounds.x2-hires_bounds.x1,hires_bounds.y2-hires_bounds.y1,
         hires_bounds.x1,hires_bounds.y1);
       (void) SetImageProperty(image,"ps:HiResBoundingBox",geometry,exception);
-      page.width=(size_t) floor(hires_bounds.x2-hires_bounds.x1+0.5);
-      page.height=(size_t) floor(hires_bounds.y2-hires_bounds.y1+0.5);
+      page.width=(size_t) ceil((double) ((hires_bounds.x2-hires_bounds.x1)*
+        resolution.x/delta.x)-0.5);
+      page.height=(size_t) ceil((double) ((hires_bounds.y2-hires_bounds.y1)*
+        resolution.y/delta.y)-0.5);
     }
   (void) CloseBlob(image);
-  if (IsRGBColorspace(image_info->colorspace) != MagickFalse)
+  if (IssRGBColorspace(image_info->colorspace) != MagickFalse)
     cmyk=MagickFalse;
   /*
     Create Ghostscript control file.
@@ -734,24 +753,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return((Image *) NULL);
     }
   *options='\0';
-  if ((page.width == 0) || (page.height == 0))
-    (void) ParseAbsoluteGeometry(PSPageGeometry,&page);
-  if (image_info->density != (char *) NULL)
-    {
-      flags=ParseGeometry(image_info->density,&geometry_info);
-      image->resolution.x=geometry_info.rho;
-      image->resolution.y=geometry_info.sigma;
-      if ((flags & SigmaValue) == 0)
-        image->resolution.y=image->resolution.x;
-    }
-  (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",
-    image->resolution.x,image->resolution.y);
-  if (image_info->page != (char *) NULL)
-    (void) ParseAbsoluteGeometry(image_info->page,&page);
-  page.width=(size_t) floor((double) (page.width*image->resolution.x/delta.x)+
-    0.5);
-  page.height=(size_t) floor((double) (page.height*image->resolution.y/delta.y)+
-    0.5);
+  (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",resolution.x,
+    resolution.y);
   (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
     page.width,(double) page.height);
   read_info=CloneImageInfo(image_info);
@@ -769,8 +772,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (read_info->scenes != (char *) NULL)
         *read_info->scenes='\0';
     }
-  option=GetImageOption(image_info,"ps:use-cropbox");
-  if ((option != (const char *) NULL) && (IsMagickTrue(option) != MagickFalse))
+  if (IfMagickTrue(IsStringTrue(GetImageOption(image_info,"ps:use-cropbox"))))
     (void) ConcatenateMagickString(options,"-dEPSCrop ",MaxTextExtent);
   (void) CopyMagickString(filename,read_info->filename,MaxTextExtent);
   (void) AcquireUniqueFilename(filename);
@@ -1341,6 +1343,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image,
       "  currentfile buffer readline pop",
       "  token pop /compression exch def pop",
       "  class 0 gt { PseudoClassImage } { DirectClassImage } ifelse",
+      "  grestore",
       (char *) NULL
     };
 
@@ -1440,9 +1443,9 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image,
     /*
       Scale relative to dots-per-inch.
     */
-    if ((IsRGBColorspace(image->colorspace) == MagickFalse) &&
+    if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
         (image->colorspace != CMYKColorspace))
-      (void) TransformImageColorspace(image,RGBColorspace,exception);
+      (void) TransformImageColorspace(image,sRGBColorspace,exception);
     delta.x=DefaultResolution;
     delta.y=DefaultResolution;
     resolution.x=image->resolution.x;
@@ -1861,7 +1864,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image,
                 };
               if (image->previous == (Image *) NULL)
                 {
-                  status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) 
+                  status=SetImageProgress(image,SaveImageTag,(MagickOffsetType)
                     y,image->rows);
                   if (status == MagickFalse)
                     break;

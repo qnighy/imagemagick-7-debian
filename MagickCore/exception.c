@@ -17,7 +17,7 @@
 %                                July 1993                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -951,8 +951,9 @@ MagickExport MagickBooleanType ThrowException(ExceptionInfo *exception,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  ThrowMagickException logs an exception as determined by the log configuration
-%  file.  If an error occurs, MagickFalse is returned otherwise MagickTrue.
+%  ThrowMagickException logs an exception as determined by the log
+%  configuration file.  If an error occurs, MagickFalse is returned
+%  otherwise MagickTrue.
 %
 %  The format of the ThrowMagickException method is:
 %
@@ -978,7 +979,7 @@ MagickExport MagickBooleanType ThrowException(ExceptionInfo *exception,
 %
 */
 
-static MagickBooleanType ThrowMagickExceptionList(ExceptionInfo *exception,
+MagickExport MagickBooleanType ThrowMagickExceptionList(ExceptionInfo *exception,
   const char *module,const char *function,const size_t line,
   const ExceptionType severity,const char *tag,const char *format,
   va_list operands)

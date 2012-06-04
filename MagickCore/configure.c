@@ -17,7 +17,7 @@
 %                                 July 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -574,23 +574,25 @@ MagickExport LinkedListInfo *GetConfigureOptions(const char *filename,
       paths=DestroyLinkedList(paths,RelinquishMagickMemory);
     }
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
-  {
-    char
-      *blob;
+  if (GetNumberOfElementsInLinkedList(options) == 0)
+    {
+      char
+        *blob;
 
-    blob=(char *) NTResourceToBlob(filename);
-    if (blob != (char *) NULL)
-      {
-        xml=StringToStringInfo(blob);
-        SetStringInfoPath(xml,filename);
-        (void) AppendValueToLinkedList(options,xml);
-        blob=DestroyString(blob);
-      }
-  }
+      blob=(char *) NTResourceToBlob(filename);
+      if (blob != (char *) NULL)
+        {
+          xml=AcquireStringInfo(0);
+          SetStringInfoLength(xml,strlen(blob)+1);
+          SetStringInfoDatum(xml,(unsigned char *) blob);
+          SetStringInfoPath(xml,filename);
+          (void) AppendValueToLinkedList(options,xml);
+        }
+    }
 #endif
   if (GetNumberOfElementsInLinkedList(options) == 0)
     (void) ThrowMagickException(exception,GetMagickModule(),ConfigureWarning,
-      "UnableToOpenConfigureFile","`%s'",filename);
+      "UnableToOpenConfigureFile","'%s'",filename);
   ResetLinkedListIterator(options);
   return(options);
 }
@@ -624,6 +626,7 @@ MagickExport LinkedListInfo *GetConfigureOptions(const char *filename,
 MagickExport LinkedListInfo *GetConfigurePaths(const char *filename,
   ExceptionInfo *exception)
 {
+#define RegistryKey  "ConfigurePath"
 #define MagickCoreDLL  "CORE_RL_MagickCore_.dll"
 #define MagickCoreDebugDLL  "CORE_DB_MagickCore_.dll"
 
@@ -686,17 +689,13 @@ MagickExport LinkedListInfo *GetConfigurePaths(const char *filename,
 #endif
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !(defined(MAGICKCORE_CONFIGURE_PATH) || defined(MAGICKCORE_SHARE_PATH))
   {
-    char
-      *registry_key;
-
     unsigned char
       *key_value;
 
     /*
       Locate file via registry key.
     */
-    registry_key="ConfigurePath";
-    key_value=NTRegistryKeyLookup(registry_key);
+    key_value=NTRegistryKeyLookup(RegistryKey);
     if (key_value != (unsigned char *) NULL)
       {
         (void) FormatLocaleString(path,MaxTextExtent,"%s%s",(char *) key_value,
@@ -786,18 +785,19 @@ MagickExport LinkedListInfo *GetConfigurePaths(const char *filename,
     if ((NTGetModulePath(MagickCoreDLL,module_path) != MagickFalse) ||
         (NTGetModulePath(MagickCoreDebugDLL,module_path) != MagickFalse))
       {
-        char
-          *element;
+        unsigned char
+          *key_value;
 
         /*
           Search module path.
         */
         (void) FormatLocaleString(path,MaxTextExtent,"%s%s",module_path,
           DirectorySeparator);
-        element=(char *) RemoveElementByValueFromLinkedList(paths,path);
-        if (element != (char *) NULL)
-          element=DestroyString(element);
-        (void) AppendValueToLinkedList(paths,ConstantString(path));
+        key_value=NTRegistryKeyLookup(RegistryKey);
+        if (key_value == (unsigned char *) NULL)
+          (void) AppendValueToLinkedList(paths,ConstantString(path));
+        else
+          key_value=(unsigned char *) RelinquishMagickMemory(key_value);
       }
     if (NTGetModulePath("Magick.dll",module_path) != MagickFalse)
       {
@@ -1079,7 +1079,7 @@ static MagickBooleanType LoadConfigureList(const char *xml,const char *filename,
             {
               if (depth > 200)
                 (void) ThrowMagickException(exception,GetMagickModule(),
-                  ConfigureError,"IncludeElementNestedTooDeeply","`%s'",token);
+                  ConfigureError,"IncludeElementNestedTooDeeply","'%s'",token);
               else
                 {
                   char
@@ -1127,7 +1127,7 @@ static MagickBooleanType LoadConfigureList(const char *xml,const char *filename,
         status=AppendValueToLinkedList(configure_list,configure_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
-            ResourceLimitError,"MemoryAllocationFailed","`%s'",
+            ResourceLimitError,"MemoryAllocationFailed","'%s'",
             configure_info->name);
         configure_info=(ConfigureInfo *) NULL;
       }
@@ -1156,7 +1156,7 @@ static MagickBooleanType LoadConfigureList(const char *xml,const char *filename,
       {
         if (LocaleCompare((char *) keyword,"stealth") == 0)
           {
-            configure_info->stealth=IsMagickTrue(token);
+            configure_info->stealth=IsStringTrue(token);
             break;
           }
         break;
@@ -1248,7 +1248,7 @@ static MagickBooleanType LoadConfigureLists(const char *filename,
     if (configure_info == (ConfigureInfo *) NULL)
       {
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",
+          ResourceLimitError,"MemoryAllocationFailed","'%s'",
           configure_info->name);
         continue;
       }
@@ -1261,7 +1261,7 @@ static MagickBooleanType LoadConfigureLists(const char *filename,
     status=AppendValueToLinkedList(configure_list,configure_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",
+        ResourceLimitError,"MemoryAllocationFailed","'%s'",
         configure_info->name);
   }
   /*

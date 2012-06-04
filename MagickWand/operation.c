@@ -3,21 +3,21 @@
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%             OOO  PPPP  EEEE RRRR   AA  TTTTTT III  OOO  N   N               %
-%            O   O P   P E    R   R A  A   TT    I  O   O NN  N               %
-%            O   O PPPP  EEE  RRRR  AAAA   TT    I  O   O N N N               %
-%            O   O P     E    R R   A  A   TT    I  O   O N  NN               %
-%             OOO  P     EEEE R  RR A  A   TT   III  OOO  N   N               %
+%          OOO   PPPP   EEEE  RRRR    AA   TTTTT  III   OOO   N   N           %
+%         O   O  P   P  E     R   R  A  A    T     I   O   O  NN  N           %
+%         O   O  PPPP   EEE   RRRR   AAAA    T     I   O   O  N N N           %
+%         O   O  P      E     R R    A  A    T     I   O   O  N  NN           %
+%          OOO   P      EEEE  R  RR  A  A    T    III   OOO   N   N           %
 %                                                                             %
 %                                                                             %
-%                         MagickWand Module Methods                           %
+%                         CLI Magick Option Methods                           %
 %                                                                             %
-%                              Software Design                                %
-%                                John Cristy                                  %
+%                              Dragon Computing                               %
+%                              Anthony Thyssen                                %
 %                               September 2011                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -34,23 +34,26 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Apply the given options (settings, and simple, or sequence operations) to
-% the given image(s) according to the current "image_info" and "draw_info"
-% settings.
+% the given image(s) according to the current "image_info", "draw_info", and
+% "quantize_info" settings, stored in a special CLI Image Wand.
 %
 % The final goal is to allow the execution in a strict one option at a time
 % manner that is needed for 'pipelining and file scripting' of options in
 % IMv7.
 %
-% Anthony Thyssen, Sept 2011
+% Anthony Thyssen, September 2011
 */
-#if 0
 
 /*
   Include declarations.
 */
 #include "MagickWand/studio.h"
 #include "MagickWand/MagickWand.h"
-#include "MagickWand/mogrify-private.h"
+#include "MagickWand/magick-wand-private.h"
+#include "MagickWand/wand.h"
+#include "MagickWand/wandcli.h"
+#include "MagickWand/wandcli-private.h"
+#include "MagickWand/operation.h"
 #include "MagickCore/monitor-private.h"
 #include "MagickCore/thread-private.h"
 #include "MagickCore/string-private.h"
@@ -58,21 +61,32 @@
 /*
   Define declarations.
 */
-#define UndefinedCompressionQuality  0UL
+#define USE_WAND_METHODS  0
+#define MAX_STACK_DEPTH  32
+#define UNDEFINED_COMPRESSION_QUALITY  0UL
+
+/* FUTURE: why is this default so specific? */
+#define DEFAULT_DISSIMILARITY_THRESHOLD "0.31830988618379067154"
+
 /*
   Constant declaration. (temporary exports)
 */
 static const char
   BackgroundColor[] = "#fff",  /* white */
-  BorderColor[] = "#dfdfdf",  /* gray */
-  MatteColor[] = "#bdbdbd";  /* gray */
+  BorderColor[] = "#dfdfdf",  /* sRGB gray */
+  MatteColor[] = "#bdbdbd";  /* slightly darker gray */
+
+/* For Debugging Geometry Input */
+#define ReportGeometry(flags,info) \
+  (void) FormatLocaleFile(stderr, "Geometry = 0x%04X : %lg x %lg %+lg %+lg\n", \
+       flags, info.rho, info.sigma, info.xi, info.psi )
 
 /*
 ** Function to report on the progress of image operations
 */
 static MagickBooleanType MonitorProgress(const char *text,
   const MagickOffsetType offset,const MagickSizeType extent,
-  void *wand_unused(client_data))
+  void *wand_unused(cli_wandent_data))
 {
   char
     message[MaxTextExtent],
@@ -149,10 +163,12 @@ static inline Image *GetImageCache(const ImageInfo *image_info,const char *path,
   specifications (or direct floating point numbers).  The number of floats
   needed to represent a color varies depending on teh current channel
   setting.
+
+  This really should be in MagickCore, so that other API's can make use of it.
 */
 static Image *SparseColorOption(const Image *image,
   const SparseColorMethod method,const char *arguments,
-  const MagickBooleanType color_from_image,ExceptionInfo *exception)
+  ExceptionInfo *exception)
 {
   char
     token[MaxTextExtent];
@@ -181,12 +197,13 @@ static Image *SparseColorOption(const Image *image,
 
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
-  if (image->debug != MagickFalse)
+  if (IfMagickTrue(image->debug))
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
   /*
-    Limit channels according to image - and add up number of color channel.
+    Limit channels according to image
+    add up number of values needed per color.
   */
   number_colors=0;
   if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
@@ -199,7 +216,7 @@ static Image *SparseColorOption(const Image *image,
       (image->colorspace == CMYKColorspace))
     number_colors++;
   if (((GetPixelAlphaTraits(image) & UpdatePixelTrait) != 0) &&
-      (image->matte != MagickFalse))
+      IfMagickTrue(image->matte))
     number_colors++;
 
   /*
@@ -211,33 +228,17 @@ static Image *SparseColorOption(const Image *image,
   {
     GetMagickToken(p,&p,token);
     if ( token[0] == ',' ) continue;
-    if ( isalpha((int) token[0]) || token[0] == '#' ) {
-      if ( color_from_image ) {
-        (void) ThrowMagickException(exception,GetMagickModule(),
-            OptionError, "InvalidArgument", "`%s': %s", "sparse-color",
-            "Color arg given, when colors are coming from image");
-        return( (Image *)NULL);
-      }
-      x += number_colors;  /* color argument */
-    }
-    else {
+    if ( isalpha((int) token[0]) || token[0] == '#' )
+      x += number_colors;  /* color argument found */
+    else
       x++;   /* floating point argument */
-    }
   }
-  error=MagickTrue;
-  if ( color_from_image ) {
-    /* just the control points are being given */
-    error = ( x % 2 != 0 ) ? MagickTrue : MagickFalse;
-    number_arguments=(x/2)*(2+number_colors);
-  }
-  else {
-    /* control points and color values */
-    error = ( x % (2+number_colors) != 0 ) ? MagickTrue : MagickFalse;
-    number_arguments=x;
-  }
-  if ( error ) {
+  /* control points and color values */
+  error = IsMagickTrue( x % (2+number_colors) );
+  number_arguments=x;
+  if ( IfMagickTrue(error) ) {
     (void) ThrowMagickException(exception,GetMagickModule(),
-               OptionError, "InvalidArgument", "`%s': %s", "sparse-color",
+               OptionError, "InvalidArgument", "'%s': %s", "sparse-color",
                "Invalid number of Arguments");
     return( (Image *)NULL);
   }
@@ -260,7 +261,7 @@ static Image *SparseColorOption(const Image *image,
     if ( token[0] == '\0' ) break;
     if ( isalpha((int) token[0]) || token[0] == '#' ) {
       (void) ThrowMagickException(exception,GetMagickModule(),
-            OptionError, "InvalidArgument", "`%s': %s", "sparse-color",
+            OptionError, "InvalidArgument", "'%s': %s", "sparse-color",
             "Color found, instead of X-coord");
       error = MagickTrue;
       break;
@@ -271,99 +272,89 @@ static Image *SparseColorOption(const Image *image,
     if ( token[0] == '\0' ) break;
     if ( isalpha((int) token[0]) || token[0] == '#' ) {
       (void) ThrowMagickException(exception,GetMagickModule(),
-            OptionError, "InvalidArgument", "`%s': %s", "sparse-color",
+            OptionError, "InvalidArgument", "'%s': %s", "sparse-color",
             "Color found, instead of Y-coord");
       error = MagickTrue;
       break;
     }
     sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-    /* color values for this control point */
-#if 0
-    if ( (color_from_image ) {
-      /* get color from image */
-      /* HOW??? */
+    /* color name or function given in string argument */
+    token[0]=','; while ( token[0] == ',' ) GetMagickToken(p,&p,token);
+    if ( token[0] == '\0' ) break;
+    if ( isalpha((int) token[0]) || token[0] == '#' ) {
+      /* Color string given */
+      (void) QueryColorCompliance(token,AllCompliance,&color,
+                exception);
+      if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
+        sparse_arguments[x++] = QuantumScale*color.red;
+      if ((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0)
+        sparse_arguments[x++] = QuantumScale*color.green;
+      if ((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0)
+        sparse_arguments[x++] = QuantumScale*color.blue;
+      if (((GetPixelBlackTraits(image) & UpdatePixelTrait) != 0) &&
+          (image->colorspace == CMYKColorspace))
+        sparse_arguments[x++] = QuantumScale*color.black;
+      if (((GetPixelAlphaTraits(image) & UpdatePixelTrait) != 0) &&
+          IfMagickTrue(image->matte))
+        sparse_arguments[x++] = QuantumScale*color.alpha;
     }
-    else
-#endif
-    {
-      /* color name or function given in string argument */
-      token[0]=','; while ( token[0] == ',' ) GetMagickToken(p,&p,token);
-      if ( token[0] == '\0' ) break;
-      if ( isalpha((int) token[0]) || token[0] == '#' ) {
-        /* Color string given */
-        (void) QueryColorCompliance(token,AllCompliance,&color,
-                  exception);
-        if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
-          sparse_arguments[x++] = QuantumScale*color.red;
-        if ((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0)
-          sparse_arguments[x++] = QuantumScale*color.green;
-        if ((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0)
-          sparse_arguments[x++] = QuantumScale*color.blue;
-        if (((GetPixelBlackTraits(image) & UpdatePixelTrait) != 0) &&
-            (image->colorspace == CMYKColorspace))
-          sparse_arguments[x++] = QuantumScale*color.black;
-        if (((GetPixelAlphaTraits(image) & UpdatePixelTrait) != 0) &&
-            (image->matte != MagickFalse))
-          sparse_arguments[x++] = QuantumScale*color.alpha;
+    else {
+      /* Colors given as a set of floating point values - experimental */
+      /* NB: token contains the first floating point value to use! */
+      if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
+        {
+        while ( token[0] == ',' ) GetMagickToken(p,&p,token);
+        if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          break;
+        sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
+        token[0] = ','; /* used this token - get another */
       }
-      else {
-        /* Colors given as a set of floating point values - experimental */
-        /* NB: token contains the first floating point value to use! */
-        if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
-          {
-          while ( token[0] == ',' ) GetMagickToken(p,&p,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
-            break;
-          sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
-        }
-        if ((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0)
-          {
-          while ( token[0] == ',' ) GetMagickToken(p,&p,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
-            break;
-          sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
-        }
-        if ((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0)
-          {
-          while ( token[0] == ',' ) GetMagickToken(p,&p,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
-            break;
-          sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
-        }
-        if (((GetPixelBlackTraits(image) & UpdatePixelTrait) != 0) &&
-            (image->colorspace == CMYKColorspace))
-          {
-          while ( token[0] == ',' ) GetMagickToken(p,&p,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
-            break;
-          sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
-        }
-        if (((GetPixelAlphaTraits(image) & UpdatePixelTrait) != 0) &&
-            (image->matte != MagickFalse))
-          {
-          while ( token[0] == ',' ) GetMagickToken(p,&p,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
-            break;
-          sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
-        }
+      if ((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0)
+        {
+        while ( token[0] == ',' ) GetMagickToken(p,&p,token);
+        if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          break;
+        sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
+        token[0] = ','; /* used this token - get another */
+      }
+      if ((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0)
+        {
+        while ( token[0] == ',' ) GetMagickToken(p,&p,token);
+        if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          break;
+        sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
+        token[0] = ','; /* used this token - get another */
+      }
+      if (((GetPixelBlackTraits(image) & UpdatePixelTrait) != 0) &&
+          (image->colorspace == CMYKColorspace))
+        {
+        while ( token[0] == ',' ) GetMagickToken(p,&p,token);
+        if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          break;
+        sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
+        token[0] = ','; /* used this token - get another */
+      }
+      if (((GetPixelAlphaTraits(image) & UpdatePixelTrait) != 0) &&
+          IfMagickTrue(image->matte))
+        {
+        while ( token[0] == ',' ) GetMagickToken(p,&p,token);
+        if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          break;
+        sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
+        token[0] = ','; /* used this token - get another */
       }
     }
   }
   if ( number_arguments != x && !error ) {
     (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-      "InvalidArgument","`%s': %s","sparse-color","Argument Parsing Error");
+      "InvalidArgument","'%s': %s","sparse-color","Argument Parsing Error");
     sparse_arguments=(double *) RelinquishMagickMemory(sparse_arguments);
     return( (Image *)NULL);
   }
   if ( error )
     return( (Image *)NULL);
 
-  /* Call the Interpolation function with the parsed arguments */
+  /* Call the Sparse Color Interpolation function with the parsed arguments */
   sparse_image=SparseColorImage(image,method,number_arguments,sparse_arguments,
     exception);
   sparse_arguments=(double *) RelinquishMagickMemory(sparse_arguments);
@@ -375,765 +366,774 @@ static Image *SparseColorOption(const Image *image,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   A p p l y S e t t i n g O p t i o n                                       %
+%   C L I S e t t i n g O p t i o n I n f o                                   %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  ApplySettingOption() applies a single settings option into a CLI wand
+%  CLISettingOptionInfo() applies a single settings option into a CLI wand
 %  holding the image_info, draw_info, quantize_info structures that will be
-%  later used when processing images.
+%  used when processing the images.
 %
-%  These options require no images to be present in the wand for them to be
-%  able to be set.  That is they may be used before the first image is read.
+%  These options do no require images to be present in the CLI wand for them
+%  to be able to be set, in which case they will generally be applied to image
+%  that are read in later
 %
-%  The format of the ApplySettingOption method is:
+%  Options handled by this function are listed in CommandOptions[] of
+%  "option.c" that is one of "SettingOptionFlags" option flags.
 %
-%    MagickBooleanType ApplySettingOption(MagickWand *wand,
-%        const char *option, const MagickBooleanType set_option, const char
-%        **args, ExceptionInfo *exception)
+%  The format of the CLISettingOptionInfo method is:
+%
+%    void CLISettingOptionInfo(MagickCLI *cli_wand,
+%               const char *option, const char *arg1, const char *arg2)
 %
 %  A description of each parameter follows:
 %
-%    o wand: structure holding settings to be applied
+%    o cli_wand: structure holding settings to be applied
 %
 %    o option: The option string to be set
 %
-%    o set_option: is the option being set, or reset to some default
-%
-%    o arg: the single argument (if needed) to set this option.
-%
-%    o exception: return any errors or warnings in this structure.
-%
-%
-% Example usage (FUTURE)
-%
-%    argc,argv
-%    i=index in argv
-%
-%    count=ParseCommandOption(MagickCommandOptions,MagickFalse,argv[i]);
-%    flags=GetCommandOptionFlags(MagickCommandOptions,MagickFalse,argv[i]);
-%    if ( flags == MagickCommandOptions )
-%      ApplySettingsOption(wand, argv[i]+1,
-%          (*argv[i])=='-' ? MagickTrue : MagickFalse,
-%          (count>0)? argv[i+1]:(char *)NULL,
-%          exception);
-%    i += count+1;
+%    o arg1, arg2: optional argument strings to the operation
+%        arg2 is currently only used by "-limit"
 %
 */
-WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
-  const char *option, const MagickBooleanType set_option, const char *arg,
-  ExceptionInfo *exception)
+WandExport void CLISettingOptionInfo(MagickCLI *cli_wand,
+     const char *option,const char *arg1, const char *arg2)
 {
-  assert(wand != (MagickWand *) NULL);
-  assert(wand->signature == WandSignature);
-  assert(wand->draw_info != (DrawInfo *) NULL); /* ensure it is a CLI wand */
-  if (wand->debug != MagickFalse)
-    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  ssize_t
+    parse;     /* option argument parsing (string to value table lookup) */
 
-#define image_info    (wand->image_info)
-#define draw_info     (wand->draw_info)
-#define quantize_info (wand->quantize_info)
-#define IfSetOption   (set_option != MagickFalse)
-#define IfArgOption   (IfSetOption?arg:(char *)NULL)
+  assert(cli_wand != (MagickCLI *) NULL);
+  assert(cli_wand->signature == WandSignature);
+  assert(cli_wand->wand.signature == WandSignature);
+  if (IfMagickTrue(cli_wand->wand.debug))
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",cli_wand->wand.name);
 
-  switch (*option)
+#define _image_info       (cli_wand->wand.image_info)
+#define _exception        (cli_wand->wand.exception)
+#define _draw_info        (cli_wand->draw_info)
+#define _quantize_info    (cli_wand->quantize_info)
+#define IfSetOption       (*option=='-')
+#define ArgBoolean        IsMagickTrue(IfSetOption)
+#define ArgBooleanNot     IsMagickFalse(IfSetOption)
+#define ArgBooleanString  (IfSetOption?"true":"false")
+#define ArgOption(def)    (IfSetOption?arg1:(const char *)(def))
+
+#if 0
+Setting are not directly involved with images, so can not
+interpret Percent Escapes in Arguments, At least not yet */
+
+#define _process_flags    (cli_wand->process_flags)
+#define _option_type      ((CommandOptionFlags) cli_wand->command->flags)
+  /* Interpret Percent Escapes in Arguments - using first image */
+  arg1 = arg1n,
+  arg2 = arg2n;
+  if ( (((_process_flags & ProcessInterpretProperities) != 0 )
+        || ((_option_type & AlwaysInterpretArgsFlag) != 0)
+       )  && ((_option_type & NeverInterpretArgsFlag) == 0) ) {
+    /* Interpret Percent escapes in argument 1 */
+    if (arg1n != (char *) NULL) {
+      arg1=InterpretImageProperties(_image_info,_image,arg1n,_exception);
+      if (arg1 == (char *) NULL) {
+        CLIWandException(OptionWarning,"InterpretPropertyFailure",option);
+        arg1=arg1n;  /* use the given argument as is */
+      }
+    }
+    if (arg2n != (char *) NULL) {
+      arg2=InterpretImageProperties(_image_info,_image,arg2n,_exception);
+      if (arg2 == (char *) NULL) {
+        CLIWandException(OptionWarning,"InterpretPropertyFailure",option);
+        arg2=arg2n;  /* use the given argument as is */
+      }
+    }
+  }
+#undef _process_flags
+#undef _option_type
+#endif
+
+  switch (*(option+1))
   {
     case 'a':
     {
-      if (LocaleCompare("adjoin",option) == 0)
+      if (LocaleCompare("adjoin",option+1) == 0)
         {
-          image_info->adjoin = set_option;
+          _image_info->adjoin = ArgBoolean;
           break;
         }
-      if (LocaleCompare("affine",option) == 0)
+      if (LocaleCompare("affine",option+1) == 0)
         {
-          /* draw_info setting only */
+          CLIWandWarnReplaced("-draw 'affine ...'");
           if (IfSetOption)
-            (void) ParseAffineGeometry(arg,draw_info->affine,exception);
+            (void) ParseAffineGeometry(arg1,&_draw_info->affine,_exception);
           else
-            GetAffineMatrix(draw_info->affine);
+            GetAffineMatrix(&_draw_info->affine);
           break;
         }
-      if (LocaleCompare("antialias",option) == 0)
+      if (LocaleCompare("antialias",option+1) == 0)
         {
-          image_info->antialias =
-          draw_info->stroke_antialias =
-          draw_info->text_antialias = set_option;
+          _image_info->antialias =
+            _draw_info->stroke_antialias =
+              _draw_info->text_antialias = ArgBoolean;
           break;
         }
-      if (LocaleCompare("authenticate",option) == 0)
+      if (LocaleCompare("attenuate",option+1) == 0)
         {
-          (void) SetImageOption(image_info,option,IfArgOption);
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,ArgOption("1.0"));
           break;
         }
-      break;
+      if (LocaleCompare("authenticate",option+1) == 0)
+        {
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          break;
+        }
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'b':
     {
-      if (LocaleCompare("background",option) == 0)
+      if (LocaleCompare("background",option+1) == 0)
         {
-          /* FUTURE: both image_info attribute & ImageOption in use!
-             image_info only used for generating new images.
-             Note that +background, means fall-back to image
-             attribute so ImageOption is deleted, not set to a default.
+          /* FUTURE: both _image_info attribute & ImageOption in use!
+             _image_info only used directly for generating new images.
+             SyncImageSettings() used to set per-image attribute.
+
+             FUTURE: if _image_info->background_color is not set then
+             we should fall back to per-image background_color
+
+             At this time -background will 'wipe out' the per-image
+             background color!
+
+             Better error handling of QueryColorCompliance() needed.
           */
-          if (IfSetOption)
-            {
-              (void) SetImageOption(image_info,option,arg);
-              (void) QueryColorCompliance(arg,AllCompliance,
-                   image_info->background_color,exception);
-              break;
-            }
-          (void) DeleteImageOption(image_info,option);
-          (void) QueryColorCompliance("none",AllCompliance,
-               image_info->background_color,exception);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          (void) QueryColorCompliance(ArgOption(BackgroundColor),AllCompliance,
+             &_image_info->background_color,_exception);
           break;
         }
-      if (LocaleCompare("bias",option) == 0)
+      if (LocaleCompare("bias",option+1) == 0)
         {
-          /* FUTURE: bias OBSOLETED, replaced by "convolve:bias"
-             as it is actually rarely used except in direct convolve
-             Usage outside direct convolve is actally non-sensible!
+          /* FUTURE: bias OBSOLETED, replaced by Artifact "convolve:bias"
+             as it is actually rarely used except in direct convolve operations
+             Usage outside a direct convolve operation is actally non-sensible!
+
+             SyncImageSettings() used to set per-image attribute.
           */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "0");
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,"convolve:bias",ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("black-point-compensation",option) == 0)
+      if (LocaleCompare("black-point-compensation",option+1) == 0)
         {
-          /* Used as a image chromaticity setting */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? "true" : "false" );
+          /* Used as a image chromaticity setting
+             SyncImageSettings() used to set per-image attribute.
+          */
+          (void) SetImageOption(_image_info,option+1,ArgBooleanString);
           break;
         }
-      if (LocaleCompare("blue-primary",option) == 0)
+      if (LocaleCompare("blue-primary",option+1) == 0)
         {
           /* Image chromaticity X,Y  NB: Y=X if Y not defined
              Used by many coders including PNG
+             SyncImageSettings() used to set per-image attribute.
           */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "0" );
+          arg1=ArgOption("0.0");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("bordercolor",option) == 0)
+      if (LocaleCompare("bordercolor",option+1) == 0)
         {
-          /* FUTURE: both image_info attribute & ImageOption in use! */
+          /* FUTURE: both _image_info attribute & ImageOption in use!
+             SyncImageSettings() used to set per-image attribute.
+             Better error checking of QueryColorCompliance().
+          */
           if (IfSetOption)
             {
-              (void) SetImageOption(image_info,option,arg);
-              (void) QueryColorCompliance(arg,AllCompliece,
-                  &image_info->border_color,exception);
-              (void) QueryColorCompliance(arg,AllCompliance,
-                  &draw_info->border_color,exception);
+              (void) SetImageOption(_image_info,option+1,arg1);
+              (void) QueryColorCompliance(arg1,AllCompliance,
+                  &_image_info->border_color,_exception);
+              (void) QueryColorCompliance(arg1,AllCompliance,
+                  &_draw_info->border_color,_exception);
               break;
             }
-          (void) DeleteImageOption(image_info,option);
+          (void) DeleteImageOption(_image_info,option+1);
           (void) QueryColorCompliance(BorderColor,AllCompliance,
-            &image_info->border_color,exception);
+            &_image_info->border_color,_exception);
           (void) QueryColorCompliance(BorderColor,AllCompliance,
-            &draw_info->border_color,exception);
+            &_draw_info->border_color,_exception);
           break;
         }
-      if (LocaleCompare("box",option) == 0)
+      if (LocaleCompare("box",option+1) == 0)
         {
-          /* Only used to set draw_info for text drawing */
-          const char
-            *value = IfSetOption ? arg : "none";
-          (void) SetImageOption(image_info,option,value);
-          (void) QueryColorCompliance(value,AllCompliance,
-               &draw_info->undercolor,exception);
+          CLIWandWarnReplaced("-undercolor");
+          CLISettingOptionInfo(cli_wand,"-undercolor",arg1, arg2);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'c':
     {
-      if (LocaleCompare("cache",option) == 0)
+      if (LocaleCompare("cache",option+1) == 0)
         {
           MagickSizeType
             limit;
 
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           limit=MagickResourceInfinity;
-          if (LocaleCompare("unlimited",arg) != 0)
-            limit=(MagickSizeType) SiPrefixToDoubleInterval(arg,100.0);
+          if (LocaleCompare("unlimited",arg1) != 0)
+            limit=(MagickSizeType) SiPrefixToDoubleInterval(arg1,100.0);
           (void) SetMagickResourceLimit(MemoryResource,limit);
           (void) SetMagickResourceLimit(MapResource,2*limit);
           break;
         }
-      if (LocaleCompare("caption",option) == 0)
+      if (LocaleCompare("caption",option+1) == 0)
         {
-          (void) SetImageOption(image_info,option,IfSetOption ? arg :
-            (const char*)NULL);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("channel",option) == 0)
+      if (LocaleCompare("channel",option+1) == 0)
         {
-          /* FUTURE: This is also a SimpleImageOperator!!! */
-          image_info->channel=(ChannelType) (
-               IfSetOption ? ParseChannelOption(arg) : DefaultChannels );
-          /* This is also a SimpleImageOperator */
+          arg1=ArgOption("default");
+          parse=ParseChannelOption(arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedChannelType",
+                 option,arg1);
+          _image_info->channel=(ChannelType) parse;
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("colorspace",option) == 0)
+      if (LocaleCompare("colorspace",option+1) == 0)
         {
           /* Setting used for new images via AquireImage()
              But also used as a SimpleImageOperator
              Undefined colorspace means don't modify images on
              read or as a operation */
-          image_info->colorspace=UndefinedColorspace;
-          if (IfSetOption)
-            image_info->colorspace=(ColorspaceType) ParseCommandOption(
-                 MagickColorspaceOptions,MagickFalse,arg)
+          parse = ParseCommandOption(MagickColorspaceOptions,MagickFalse,
+                        ArgOption("undefined"));
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedColorspace",
+                                    option,arg1);
+          _image_info->colorspace=(ColorspaceType) parse;
           break;
         }
-      if (LocaleCompare("comment",option) == 0)
+      if (LocaleCompare("comment",option+1) == 0)
         {
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : (const char*)NULL);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("compose",option) == 0)
+      if (LocaleCompare("compose",option+1) == 0)
         {
-          /* FUTURE: image_info should be used, but Option kept escapes
-             This setting should NOT be used to set image 'compose'
-             which is used by "-layer" operators is image_info is undefined
-          */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : (const char*)NULL);
-          image_info->compose=(CompositeOperator) ParseCommandOption(
-               MagickComposeOptions,MagickFalse,
-               IfSetOption ? arg : "undefined");
-          break;
-        }
-      if (LocaleCompare("compress",option) == 0)
-        {
-          /* FUTURE: What should be used?  image_info  or ImageOption ???
-             The former is more efficent, but Crisy prefers the latter!
+          /* FUTURE: _image_info should be used,
+             SyncImageSettings() used to set per-image attribute. - REMOVE
 
-             The coders appears to use image_info, not Image_Option
+             This setting should NOT be used to set image 'compose'
+             "-layer" operators shoud use _image_info if defined otherwise
+             they should use a per-image compose setting.
+          */
+          parse = ParseCommandOption(MagickComposeOptions,MagickFalse,
+                          ArgOption("undefined"));
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedComposeOperator",
+                                      option,arg1);
+          _image_info->compose=(CompositeOperator) parse;
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          break;
+        }
+      if (LocaleCompare("compress",option+1) == 0)
+        {
+          /* FUTURE: What should be used?  _image_info  or ImageOption ???
+             The former is more efficent, but Crisy prefers the latter!
+             SyncImageSettings() used to set per-image attribute.
+
+             The coders appears to use _image_info, not Image_Option
              however the image attribute (for save) is set from the
              ImageOption!
+
+             Note that "undefined" is a different setting to "none".
           */
-          if (IfSetOption)
-            {
-              image_info->compression=(CompressionType) ParseCommandOption(
-                MagickCompressOptions,MagickFalse,arg);
-              (void) SetImageOption(image_info,option,arg);
-              break;
-            }
-          image_info->compression=UndefinedCompression;
-          (void) SetImageOption(image_info,option,"undefined");
+          parse = ParseCommandOption(MagickCompressOptions,MagickFalse,
+                     ArgOption("undefined"));
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedImageCompression",
+                                      option,arg1);
+          _image_info->compression=(CompressionType) parse;
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'd':
     {
-      if (LocaleCompare("debug",option) == 0)
+      if (LocaleCompare("debug",option+1) == 0)
         {
-          if (IfSetOption)
-          (void) SetLogEventMask(IfSetOption?arg:"none");
-          image_info->debug=IsEventLogging(); /* extract logging*/
-          wand->debug=IsEventLogging();
+          /* SyncImageSettings() used to set per-image attribute. */
+          arg1=ArgOption("none");
+          parse = ParseCommandOption(MagickLogEventOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedEventType",
+                                      option,arg1);
+          (void) SetLogEventMask(arg1);
+          _image_info->debug=IsEventLogging();   /* extract logging*/
+          cli_wand->wand.debug=IsEventLogging();
           break;
         }
-      if (LocaleCompare("define",option) == 0)
+      if (LocaleCompare("define",option+1) == 0)
         {
-          /* FUTURE both -set and -define sets ImageOption
-             But differs in that -set tries to set image properity (attributes)
-          */
-          if (LocaleNCompare(arg,"registry:",9) == 0)
+          if (LocaleNCompare(arg1,"registry:",9) == 0)
             {
               if (IfSetOption)
-                (void) DefineImageRegistry(StringRegistryType,arg+9,
-                    exception);
+                (void) DefineImageRegistry(StringRegistryType,arg1+9,_exception);
               else
-                (void) DefineImageOption(image_info,arg,exception);
+                (void) DeleteImageRegistry(arg1+9);
               break;
             }
+          /* DefineImageOption() equals SetImageOption() but with '=' */
           if (IfSetOption)
-            (void) DefineImageOption(image_info,arg,exception);
-          else
-            (void) DeleteImageOption(image_info,arg,exception);
+            (void) DefineImageOption(_image_info,arg1);
+          else if (IsMagickFalse(DeleteImageOption(_image_info,arg1)))
+            CLIWandExceptArgBreak(OptionError,"NoSuchOption",option,arg1);
           break;
         }
-      if (LocaleCompare("delay",option) == 0)
+      if (LocaleCompare("delay",option+1) == 0)
         {
           /* Only used for new images via AcquireImage()
              FUTURE: Option should also be used for "-morph" (color morphing)
           */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "0");
+          arg1=ArgOption("0");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("density",option) == 0)
+      if (LocaleCompare("density",option+1) == 0)
         {
-          /* FUTURE: string in image_info - moved into Option ??? */
-          /* Used by both draw_info and in images via SyncImageSettings() */
-          if (IfSetOption)
-            {
-              (void) CloneString(&image_info->density,arg);
-              (void) CloneString(&draw_info->density,arg);
-              (void) SetImageOption(image_info,option,arg);
-              break;
-            }
-          if (image_info->density != (char *) NULL)
-            image_info->density=DestroyString(image_info->density);
-          if (draw_info->density != (char *) NULL)
-            draw_info->density=DestroyString(draw_info->density);
-          (void) SetImageOption(image_info,option,"72");
+          /* FUTURE: strings used in _image_info attr and _draw_info!
+             Basically as density can be in a XxY form!
+
+             SyncImageSettings() used to set per-image attribute.
+          */
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          (void) CloneString(&_image_info->density,ArgOption(NULL));
+          (void) CloneString(&_draw_info->density,_image_info->density);
           break;
         }
-      if (LocaleCompare("depth",option) == 0)
+      if (LocaleCompare("depth",option+1) == 0)
         {
-          /* This is also a SimpleImageOperator! to set depth across images */
-          image_info->depth=IfSetOption?StringToUnsignedLong(arg)
+          /* This is also a SimpleImageOperator! for 8->16 vaule trunc !!!!
+             SyncImageSettings() used to set per-image attribute.
+          */
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          _image_info->depth=IfSetOption?StringToUnsignedLong(arg1)
                                        :MAGICKCORE_QUANTUM_DEPTH;
           break;
         }
-      if (LocaleCompare("direction",option) == 0)
+      if (LocaleCompare("direction",option+1) == 0)
         {
-          /* Image Option is only used to set draw_info */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "undefined");
-          draw_info->direction=(DirectionType) ParseCommandOption(
-                         MagickDirectionOptions,MagickFalse,
-                         IfSetOption ? arg : "undefined");
+          /* Image Option is only used to set _draw_info */
+          arg1=ArgOption("undefined");
+          parse = ParseCommandOption(MagickDirectionOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedDirectionType",
+                                      option,arg1);
+          _draw_info->direction=(DirectionType) parse;
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("display",option) == 0)
+      if (LocaleCompare("display",option+1) == 0)
         {
-          /* FUTURE: string in image_info - moved into Option ??? */
-          (void) CloneString(&image_info->server_name,
-               IfSetOption ? arg :(char *) NULL);
+          (void) CloneString(&_image_info->server_name,ArgOption(NULL));
+          (void) CloneString(&_draw_info->server_name,_image_info->server_name);
           break;
         }
-      if (LocaleCompare("dispose",option) == 0)
+      if (LocaleCompare("dispose",option+1) == 0)
         {
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "undefined");
+          /* only used in setting new images */
+          arg1=ArgOption("undefined");
+          parse = ParseCommandOption(MagickDisposeOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedDisposeMethod",
+                                      option,arg1);
+          (void) SetImageOption(_image_info,option+1,ArgOption("undefined"));
           break;
         }
-      if (LocaleCompare("dither",option) == 0)
+      if (LocaleCompare("dissimilarity-threshold",option+1) == 0)
         {
-          /* FUTURE: merge all options to just Option and quantize_info! */
-          (void) SetImageOption(image_info,option,
-                       IfSetOption ? arg : "none");
-          image_info->dither = quantize_info->dither =
-                    IfSetOption ? MagickTrue : MagickFalse;
-          quantize_info->dither_method=(DitherMethod) ParseCommandOption(
-                    MagickDitherOptions,MagickFalse,
-                    IfSetOption ? arg : "none");
-          if (quantize_info->dither_method == NoDitherMethod)
-                image_info->dither = quantize_info->dither = MagickFalse;
+          /* FUTURE: this is only used by CompareImages() which is used
+             only by the "compare" CLI program at this time.  */
+          arg1=ArgOption(DEFAULT_DISSIMILARITY_THRESHOLD);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      break;
+      if (LocaleCompare("dither",option+1) == 0)
+        {
+          /* _image_info attr (on/off), _quantize_info attr (on/off)
+             but also ImageInfo and _quantize_info method!
+             FUTURE: merge the duality of the dithering options
+          */
+          _image_info->dither = ArgBoolean;
+          (void) SetImageOption(_image_info,option+1,ArgOption("none"));
+          _quantize_info->dither_method=(DitherMethod) ParseCommandOption(
+             MagickDitherOptions,MagickFalse,ArgOption("none"));
+          if (_quantize_info->dither_method == NoDitherMethod)
+            _image_info->dither = MagickFalse;
+          break;
+        }
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'e':
     {
-      if (LocaleCompare("encoding",option) == 0)
+      if (LocaleCompare("encoding",option+1) == 0)
         {
-          (void) CloneString(&draw_info->encoding,
-                       IfSetOption ? arg : "undefined");
-          (void) SetImageOption(image_info,option,&draw_info->encoding);
+          (void) CloneString(&_draw_info->encoding,ArgOption("undefined"));
+          (void) SetImageOption(_image_info,option+1,_draw_info->encoding);
           break;
         }
-      if (LocaleCompare("endian",option) == 0)
+      if (LocaleCompare("endian",option+1) == 0)
         {
-          const char
-            value;
-
-          value=IfSetOption?arg:"undefined";
-          (void) SetImageOption(image_info,option,value);
-          image_info->endian=(EndianType) ParseCommandOption(
-              MagickEndianOptions,MagickFalse,value);
+          /* Both _image_info attr and ImageInfo */
+          arg1 = ArgOption("undefined");
+          parse = ParseCommandOption(MagickEndianOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedEndianType",
+                                      option,arg1);
+          /* FUTURE: check alloc/free of endian string!  - remove? */
+          _image_info->endian=(EndianType) (*arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("extract",option) == 0)
+      if (LocaleCompare("extract",option+1) == 0)
         {
-          (void) CloneString(&image_info->extract,
-               IfSetOption?arg:(const char *) NULL);
+          (void) CloneString(&_image_info->extract,ArgOption(NULL));
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'f':
     {
-      if (LocaleCompare("family",argv[0]+1) == 0)
+      if (LocaleCompare("family",option+1) == 0)
         {
-          (void) CloneString(&draw_info->family,
-               IfSetOption ? arg : (const char *) NULL);
+          (void) CloneString(&_draw_info->family,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("fill",option) == 0)
+      if (LocaleCompare("fill",option+1) == 0)
         {
-          /* set fill OR a fill-pattern
-             color is only used by draw_info
-             but draw_info is only initialsed using the color not the pattern
+          /* Set "fill" OR "fill-pattern" in _draw_info
+             The original fill color is preserved if a fill-pattern is given.
+             That way it does not effect other operations that directly using
+             the fill color and, can be retored using "+tile".
           */
-          const char
-            value;
+          MagickBooleanType
+            status;
 
           ExceptionInfo
             *sans;
 
-          value = IfSetOption ? arg : "none";
-          (void) SetImageOption(image_info,option,value);
+          PixelInfo
+            color;
 
+          arg1 = ArgOption("none");  /* +fill turns it off! */
+          (void) SetImageOption(_image_info,option+1,arg1);
+          if (_draw_info->fill_pattern != (Image *) NULL)
+            _draw_info->fill_pattern=DestroyImage(_draw_info->fill_pattern);
+
+          /* is it a color or a image? -- ignore exceptions */
           sans=AcquireExceptionInfo();
-          status=QueryColorCompliance(value,AllCompliance,&draw_info->fill,sans);
+          status=QueryColorCompliance(arg1,AllCompliance,&color,sans);
           sans=DestroyExceptionInfo(sans);
 
-          if (draw_info->fill_pattern != (Image *) NULL)
-            draw_info->fill_pattern=DestroyImage(draw_info->fill_pattern);
-          if (status == MagickFalse)
-            draw_info->fill_pattern=GetImageCache(image_info,value,
-              exception);
+          if (IfMagickFalse(status))
+            _draw_info->fill_pattern=GetImageCache(_image_info,arg1,_exception);
+          else
+            _draw_info->fill=color;
           break;
         }
-      if (LocaleCompare("filter",option) == 0)
+      if (LocaleCompare("filter",option+1) == 0)
         {
-          (void) SetImageOption(image_info,option,
-                IfSetOption ? arg : "undefined");
+          /* SyncImageSettings() used to set per-image attribute. */
+          arg1 = ArgOption("undefined");
+          parse = ParseCommandOption(MagickFilterOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedImageFilter",
+                                      option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("font",option) == 0)
+      if (LocaleCompare("font",option+1) == 0)
         {
-          (void) CloneString(&draw_info->font,
-               IfSetOption ? arg : (const char *) NULL);
-          (void) CloneString(&image_info->font,draw_info->font);
+          (void) CloneString(&_draw_info->font,ArgOption(NULL));
+          (void) CloneString(&_image_info->font,_draw_info->font);
           break;
         }
-      if (LocaleCompare("format",option) == 0)
+      if (LocaleCompare("format",option+1) == 0)
         {
           /* FUTURE: why the ping test, you could set ping after this! */
           /*
           register const char
             *q;
 
-          for (q=strchr(arg,'%'); q != (char *) NULL; q=strchr(q+1,'%'))
+          for (q=strchr(arg1,'%'); q != (char *) NULL; q=strchr(q+1,'%'))
             if (strchr("Agkrz@[#",*(q+1)) != (char *) NULL)
-              image_info->ping=MagickFalse;
+              _image_info->ping=MagickFalse;
           */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : (const char *) NULL);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("fuzz",option) == 0)
+      if (LocaleCompare("fuzz",option+1) == 0)
         {
-          /* FUTURE: image_info and ImageOption!
-             Option used to set image fuzz! unless blank canvas (from color)
+          /* Option used to set image fuzz! unless blank canvas (from color)
              Image attribute used for color compare operations
-             image->fuzz is being set by SyncImageSettings()
-             Can't find anything using image_info->fuzz (except cloning)!
+             SyncImageSettings() used to set per-image attribute.
+
+             FUTURE: Can't find anything else using _image_info->fuzz directly!
+                     remove direct sttribute from image_info
           */
-          if (IfSetOption)
-            {
-              image_info->fuzz=StringToDoubleInterval(arg,(double) QuantumRange+
-                1.0);
-              (void) SetImageOption(image_info,option,arg);
-              break;
-            }
-          image_info->fuzz=0.0;
-          (void) SetImageOption(image_info,option,"0");
+          arg1=ArgOption("0");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          _image_info->fuzz=StringToDoubleInterval(arg1,(double)
+                QuantumRange+1.0);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'g':
     {
-      if (LocaleCompare("gravity",option) == 0)
+      if (LocaleCompare("gravity",option+1) == 0)
         {
-          /* FUTURE gravity also set in image via SyncImageSettings() */
-          const char
-            value;
-
-          value = IfSetOption ? arg : "none";
-          (void) SetImageOption(image_info,option,value);
-          draw_info->gravity=(GravityType) ParseCommandOption(
-                           MagickGravityOptions,MagickFalse,value);
+          /* SyncImageSettings() used to set per-image attribute. */
+          arg1 = ArgOption("none");
+          parse = ParseCommandOption(MagickGravityOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedGravityType",
+                                      option,arg1);
+          _draw_info->gravity=(GravityType) parse;
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("green-primary",option) == 0)
+      if (LocaleCompare("green-primary",option+1) == 0)
         {
           /* Image chromaticity X,Y  NB: Y=X if Y not defined
-             Used by many coders
+             SyncImageSettings() used to set per-image attribute.
+             Used directly by many coders
           */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "0.0");
+          arg1=ArgOption("0.0");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
+    }
+    case 'h':
+    {
+      if (LocaleCompare("highlight-color",option+1) == 0)
+        {
+          /* FUTURE: this is only used by CompareImages() which is used
+             only by the "compare" CLI program at this time.  */
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          break;
+        }
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'i':
     {
-      if (LocaleCompare("intent",option) == 0)
+      if (LocaleCompare("intent",option+1) == 0)
         {
-          /* FUTURE: sets image->rendering_intent in SyncImagesSettings
-             Which is only used by coders: MIFF, MPC, BMP, PNG
+          /* Only used by coders: MIFF, MPC, BMP, PNG
              and for image profile call to AcquireTransformThreadSet()
+             SyncImageSettings() used to set per-image attribute.
           */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "undefined");
+          arg1 = ArgOption("indefined");
+          parse = ParseCommandOption(MagickIntentOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedIntentType",
+                                      option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("interlace",option) == 0)
+      if (LocaleCompare("interlace",option+1) == 0)
         {
-          /* sets image attibute interlace via SyncImageSettings()
-             Also image_info is directly used by coders
+          /* _image_info is directly used by coders (so why an image setting?)
+             SyncImageSettings() used to set per-image attribute.
           */
-          const char
-            value;
-
-          value = IfSetOption ? arg : "undefined";
-          (void) SetImageOption(image_info,option, value);
-          image_info->interlace=(InterlaceType) ParseCommandOption(
-            MagickInterlaceOptions,MagickFalse,arg);
-          (void) SetImageOption(image_info,option,arg);
+          arg1 = ArgOption("undefined");
+          parse = ParseCommandOption(MagickInterlaceOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedInterlaceType",
+                                      option,arg1);
+          _image_info->interlace=(InterlaceType) parse;
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("interline-spacing",option) == 0)
+      if (LocaleCompare("interline-spacing",option+1) == 0)
         {
-          const char
-            value;
-
-          value = IfSetOption ? arg : "0"; /* undefined? */
-          (void) SetImageOption(image_info,option, value);
-          draw_info->interline_spacing=StringToDouble(value,(char **) NULL);
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1, ArgOption(NULL));
+          _draw_info->interline_spacing=StringToDouble(ArgOption("0"),
+               (char **) NULL);
           break;
         }
-      if (LocaleCompare("interpolate",option) == 0)
+      if (LocaleCompare("interpolate",option+1) == 0)
         {
-          /* FUTURE: sets image interpolate value via SyncImageSettings()
-             It is NOT used by coders, only in image processing,
-             so shoud really be a image_info attribute.
-          */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "undefined");
+          /* SyncImageSettings() used to set per-image attribute. */
+          arg1 = ArgOption("undefined");
+          parse = ParseCommandOption(MagickInterpolateOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedInterpolateMethod",
+                                      option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("interword-spacing",option) == 0)
+      if (LocaleCompare("interword-spacing",option+1) == 0)
         {
-          const char
-            value;
-
-          value = IfSetOption ? arg : "0"; /* undefined? */
-          (void) SetImageOption(image_info,option, value);
-          draw_info->interword_spacing=StringToDouble(value,(char **) NULL);
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1, ArgOption(NULL));
+          _draw_info->interword_spacing=StringToDouble(ArgOption("0"),(char **) NULL);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'k':
     {
-      if (LocaleCompare("kerning",option) == 0)
+      if (LocaleCompare("kerning",option+1) == 0)
         {
-          const char
-            value;
-
-          value = IfSetOption ? arg : "0"; /* undefined? */
-          (void) SetImageOption(image_info,option, value);
-          draw_info->kerning=StringToDouble(value,(char **) NULL);
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          _draw_info->kerning=StringToDouble(ArgOption("0"),(char **) NULL);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'l':
     {
-      if (LocaleCompare("label",option) == 0)
+      if (LocaleCompare("label",option+1) == 0)
         {
-          /* only used for new images */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : (char *)NULL);
+          /* only used for new images - not in SyncImageOptions() */
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("limit",option) == 0)
+      if (LocaleCompare("limit",option+1) == 0)
         {
           MagickSizeType
             limit;
 
-          ResourceType
-            type;
-
-          if (!IfSetOption)
-            break;
-          type=(ResourceType) ParseCommandOption(MagickResourceOptions,
-            MagickFalse,arg);
           limit=MagickResourceInfinity;
-          if (LocaleCompare("unlimited",argv[2]) != 0)
-            limit=(MagickSizeType) SiPrefixToDoubleInterval(argv[2],
-              100.0);
-          (void) SetMagickResourceLimit(type,limit);
+          parse= ParseCommandOption(MagickResourceOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedResourceType",
+                option,arg1);
+          if (LocaleCompare("unlimited",arg2) != 0)
+            limit=(MagickSizeType) SiPrefixToDoubleInterval(arg2,100.0);
+          (void) SetMagickResourceLimit((ResourceType)parse,limit);
           break;
         }
-      if (LocaleCompare("list",option) == 0)
+      if (LocaleCompare("log",option+1) == 0)
         {
-          ssize_t
-            list;
-
-          list=ParseCommandOption(MagickListOptions,MagickFalse,arg);
-          switch (list)
-          {
-            case MagickCoderOptions:
-            {
-              (void) ListCoderInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickColorOptions:
-            {
-              (void) ListColorInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickConfigureOptions:
-            {
-              (void) ListConfigureInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickDelegateOptions:
-            {
-              (void) ListDelegateInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickFontOptions:
-            {
-              (void) ListTypeInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickFormatOptions:
-            {
-              (void) ListMagickInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickLocaleOptions:
-            {
-              (void) ListLocaleInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickLogOptions:
-            {
-              (void) ListLogInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickMagicOptions:
-            {
-              (void) ListMagicInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickMimeOptions:
-            {
-              (void) ListMimeInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickModuleOptions:
-            {
-              (void) ListModuleInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickPolicyOptions:
-            {
-              (void) ListPolicyInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickResourceOptions:
-            {
-              (void) ListMagickResourceInfo((FILE *) NULL,exception);
-              break;
-            }
-            case MagickThresholdOptions:
-            {
-              (void) ListThresholdMaps((FILE *) NULL,exception);
-              break;
-            }
-            default:
-            {
-              (void) ListCommandOptions((FILE *) NULL,(CommandOption) list,
-                exception);
-              break;
-            }
+          if (IfSetOption) {
+            if ((strchr(arg1,'%') == (char *) NULL))
+              CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+            (void) SetLogFormat(arg1);
           }
           break;
         }
-      if (LocaleCompare("log",option) == 0)
+      if (LocaleCompare("lowlight-color",option+1) == 0)
         {
-          if (IfSetOption)
-            (void) SetLogFormat(arg);
+          /* FUTURE: this is only used by CompareImages() which is used
+             only by the "compare" CLI program at this time.  */
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("loop",option) == 0)
+      if (LocaleCompare("loop",option+1) == 0)
         {
-          /* Sets image attibutes iterations via SyncImageSettings() */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "0");
+          /* SyncImageSettings() used to set per-image attribute. */
+          arg1=ArgOption("0");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'm':
     {
-      if (LocaleCompare("matte",option) == 0)
+      if (LocaleCompare("mattecolor",option+1) == 0)
         {
-          if (*argv[0] == '+')
-            {
-              (void) SetImageOption(image_info,option,"false");
-              break;
-            }
-          (void) SetImageOption(image_info,option,"true");
+          /* SyncImageSettings() used to set per-image attribute. */
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          (void) QueryColorCompliance(ArgOption(MatteColor),AllCompliance,
+             &_image_info->matte_color,_exception);
           break;
         }
-      if (LocaleCompare("mattecolor",option) == 0)
+      if (LocaleCompare("metric",option+1) == 0)
         {
-          if (*argv[0] == '+')
-            {
-              (void) SetImageOption(image_info,option,arg);
-              (void) QueryColorCompliance(MatteColor,AllCompliance,
-                &image_info->matte_color,exception);
-              break;
-            }
-          (void) SetImageOption(image_info,option,arg);
-          (void) QueryColorCompliance(arg,AllCompliance,&image_info->matte_color,
-            exception);
+          /* FUTURE: this is only used by CompareImages() which is used
+             only by the "compare" CLI program at this time.  */
+          parse=ParseCommandOption(MagickMetricOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedMetricType",
+                option,arg1);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("monitor",option) == 0)
+      if (LocaleCompare("monitor",option+1) == 0)
         {
-          (void) SetImageInfoProgressMonitor(image_info,MonitorProgress,
-            (void *) NULL);
+          (void) SetImageInfoProgressMonitor(_image_info, IfSetOption?
+                MonitorProgress: (MagickProgressMonitor) NULL, (void *) NULL);
           break;
         }
-      if (LocaleCompare("monochrome",option) == 0)
+      if (LocaleCompare("monochrome",option+1) == 0)
         {
-          /* Setting (for input coders) and a 'type' operation */
-          image_info->monochrome=IfSetOption ? MagickTrue : MagickFalse;
+          /* Setting (used by some input coders!) -- why?
+             Warning: This is also Special '-type' SimpleOperator
+          */
+          _image_info->monochrome= ArgBoolean;
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'o':
     {
-      if (LocaleCompare("orient",option) == 0)
+      if (LocaleCompare("orient",option+1) == 0)
         {
-          /* Sets image attribute orientation via SyncImageSettings()
-             Is not used when defining for new images.
+          /* Is not used when defining for new images.
              This makes it more of a 'operation' than a setting
+             FUTURE: make set meta-data operator instead.
+             SyncImageSettings() used to set per-image attribute.
           */
-          const char
-            value;
-
-          value = IfSetOption ? arg : "undefined";
-          (void) SetImageOption(image_info,option, value);
-          image_info->orientation=(InterlaceType) ParseCommandOption(
-            MagickOrientationOptions,MagickFalse,value);
+          parse=ParseCommandOption(MagickOrientationOptions,MagickFalse,
+               ArgOption("undefined"));
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedImageOrientation",
+                                      option,arg1);
+          _image_info->orientation=(OrientationType)parse;
+          (void) SetImageOption(_image_info,option+1, ArgOption(NULL));
           break;
         }
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'p':
     {
-      if (LocaleCompare("page",option) == 0)
+      if (LocaleCompare("page",option+1) == 0)
         {
-          /* Only used for new images and image generators */
+          /* Only used for new images and image generators.
+             SyncImageSettings() used to set per-image attribute. ?????
+             That last is WRONG!!!!
+             FUTURE: adjust named 'page' sizes according density
+          */
           char
             *canonical_page,
             page[MaxTextExtent];
@@ -1149,15 +1149,15 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
 
           if (!IfSetOption)
             {
-              (void) DeleteImageOption(image_info,option);
-              (void) CloneString(&image_info->page,(char *) NULL);
+              (void) DeleteImageOption(_image_info,option+1);
+              (void) CloneString(&_image_info->page,(char *) NULL);
               break;
             }
           (void) ResetMagickMemory(&geometry,0,sizeof(geometry));
-          image_option=GetImageOption(image_info,"page");
+          image_option=GetImageOption(_image_info,"page");
           if (image_option != (const char *) NULL)
             flags=ParseAbsoluteGeometry(image_option,&geometry);
-          canonical_page=GetPageGeometry(arg);
+          canonical_page=GetPageGeometry(arg1);
           flags=ParseAbsoluteGeometry(canonical_page,&geometry);
           canonical_page=DestroyString(canonical_page);
           (void) FormatLocaleString(page,MaxTextExtent,"%lux%lu",
@@ -1166,71 +1166,81 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
             (void) FormatLocaleString(page,MaxTextExtent,"%lux%lu%+ld%+ld",
               (unsigned long) geometry.width,(unsigned long) geometry.height,
               (long) geometry.x,(long) geometry.y);
-          (void) SetImageOption(image_info,option,page);
-          (void) CloneString(&image_info->page,page);
+          (void) SetImageOption(_image_info,option+1,page);
+          (void) CloneString(&_image_info->page,page);
           break;
         }
-      if (LocaleCompare("ping",option) == 0)
+      if (LocaleCompare("ping",option+1) == 0)
         {
-          image_info->ping= IfSetOption ? MagickTrue : MagickFalse;
+          _image_info->ping = ArgBoolean;
           break;
         }
-      if (LocaleCompare("pointsize",option) == 0)
+      if (LocaleCompare("pointsize",option+1) == 0)
         {
-          double
-            value=12.0;
-
-          if (IfSetOption)
-            StringToDouble(arg,(char **) NULL);
-          image_info->pointsize=draw_info->pointsize=value;
+          if (IfSetOption) {
+            if (IfMagickFalse(IsGeometry(arg1)))
+              CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+            _image_info->pointsize =
+            _draw_info->pointsize =
+              StringToDouble(arg1,(char **) NULL);
+          }
+          else {
+            _image_info->pointsize=0.0; /* unset pointsize */
+            _draw_info->pointsize=12.0;
+          }
           break;
         }
-      if (LocaleCompare("precision",option) == 0)
+      if (LocaleCompare("precision",option+1) == 0)
         {
-          (void) SetMagickPrecision(StringToInteger(arg));
+          arg1=ArgOption("-1");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetMagickPrecision(StringToInteger(arg1));
           break;
         }
       /* FUTURE: Only the 'preview' coder appears to use this
-       * Depreciate the coder?  Leaving only the 'preview' operator.
-      if (LocaleCompare("preview",option) == 0)
+       * DEPRECIATE the coder?  Leaving only the 'preview' operator.
+      if (LocaleCompare("preview",option+1) == 0)
         {
-          image_info->preview_type=UndefinedPreview;
+          _image_info->preview_type=UndefinedPreview;
           if (IfSetOption)
-            image_info->preview_type=(PreviewType) ParseCommandOption(
-                MagickPreviewOptions,MagickFalse,arg);
+            _image_info->preview_type=(PreviewType) ParseCommandOption(
+                MagickPreviewOptions,MagickFalse,arg1);
           break;
         }
       */
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'q':
     {
-      if (LocaleCompare("quality",option) == 0)
+      if (LocaleCompare("quality",option+1) == 0)
         {
-          if (IfSetOption)
-            {
-              image_info->quality=StringToUnsignedLong(arg);
-              (void) SetImageOption(image_info,option,arg);
-              break;
-            }
-          image_info->quality=UndefinedCompressionQuality;
-          (void) SetImageOption(image_info,option,"0");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          _image_info->quality= IfSetOption ? StringToUnsignedLong(arg1)
+                                            : UNDEFINED_COMPRESSION_QUALITY;
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("quantize",option) == 0)
+      if (LocaleCompare("quantize",option+1) == 0)
         {
-          /* no image_info setting!  Only set direct in quantize_info */
-          quantize_info->colorspace=UndefinedColorspace;
-          if (IfSetOption)
-            quantize_info->colorspace=(ColorspaceType) ParseCommandOption(
-                 MagickColorspaceOptions,MagickFalse,arg);
+          /* Just a set direct in _quantize_info */
+          arg1=ArgOption("undefined");
+          parse=ParseCommandOption(MagickColorspaceOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedColorspace",
+                 option,arg1);
+          _quantize_info->colorspace=(ColorspaceType)parse;
           break;
         }
-      if (LocaleCompare("quiet",option) == 0)
+      if (LocaleCompare("quiet",option+1) == 0)
         {
-          /* FUTURE: if two -quiet is performed you can not do +quiet! */
+          /* FUTURE: if two -quiet is performed you can not do +quiet!
+             This needs to be checked over thoughly.
+          */
           static WarningHandler
             warning_handler = (WarningHandler) NULL;
+
           WarningHandler
             tmp = SetWarningHandler((WarningHandler) NULL);
 
@@ -1240,271 +1250,345 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
             warning_handler=SetWarningHandler(warning_handler);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'r':
     {
-      if (LocaleCompare("red-primary",option) == 0)
+      if (LocaleCompare("red-primary",option+1) == 0)
         {
           /* Image chromaticity X,Y  NB: Y=X if Y not defined
              Used by many coders
+             SyncImageSettings() used to set per-image attribute.
           */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "0" );
+          arg1=ArgOption("0.0");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("render",option) == 0)
+      if (LocaleCompare("regard-warnings",option+1) == 0)
+        /* FUTURE: to be replaced by a 'fatal-level' type setting */
+        break;
+      if (LocaleCompare("render",option+1) == 0)
         {
-          /* draw_info only setting */
-          draw_info->render= IfSetOption ? MagickFalse : MagickTrue;
+          /* _draw_info only setting */
+          _draw_info->render= ArgBooleanNot;
           break;
         }
-      break;
+      if (LocaleCompare("respect-parenthesis",option+1) == 0)
+        {
+          /* link image and setting stacks - option is itself saved on stack! */
+          (void) SetImageOption(_image_info,option+1,ArgBooleanString);
+          break;
+        }
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 's':
     {
-      if (LocaleCompare("sampling-factor",option) == 0)
+      if (LocaleCompare("sampling-factor",option+1) == 0)
         {
           /* FUTURE: should be converted to jpeg:sampling_factor */
-          (void) CloneString(&image_info->sampling_factor,
-               IfSetOption ? arg : (char *) NULL);
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) CloneString(&_image_info->sampling_factor,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("scene",option) == 0)
+      if (LocaleCompare("scene",option+1) == 0)
         {
-          char
-            *value = IfSetOption ? arg : "0";
-
-          (void) SetImageOption(image_info,option,value);
-          image_info->scene=StringToUnsignedLong(value);
+          /* SyncImageSettings() used to set this as a per-image attribute.
+             What ??? Why ????
+          */
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          _image_info->scene=StringToUnsignedLong(ArgOption("0"));
           break;
         }
-      if (LocaleCompare("seed",option) == 0)
+      if (LocaleCompare("seed",option+1) == 0)
         {
-          SeedPseudoRandomGenerator(
-               IfSetOption ? (size_t) StringToUnsignedLong(arg)
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          SetRandomSecretKey(
+               IfSetOption ? (size_t) StringToUnsignedLong(arg1)
                            : (size_t) time((time_t *) NULL) );
           break;
         }
-      if (LocaleCompare("size",option) == 0)
+      if (LocaleCompare("size",option+1) == 0)
         {
-          /* FUTURE: string in image_info -- convert to Option ???
+          /* FUTURE: string in _image_info -- convert to Option ???
              Look at the special handling for "size" in SetImageOption()
            */
-          (void) CloneString(&image_info->size,
-               IfSetOption ? arg : (char *) NULL);
+          (void) CloneString(&_image_info->size,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("stretch",option) == 0)
+      if (LocaleCompare("stretch",option+1) == 0)
         {
-          draw_info->stretch=UndefinedStretch;
-          if (IfSetOption)
-            draw_info->stretch=(StretchType) ParseCommandOption(
-              MagickStretchOptions,MagickFalse,arg);
+          arg1=ArgOption("undefined");
+          parse = ParseCommandOption(MagickStretchOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedStretchType",
+                 option,arg1);
+          _draw_info->stretch=(StretchType) parse;
           break;
         }
-      if (LocaleCompare("stroke",option) == 0)
+      if (LocaleCompare("stroke",option+1) == 0)
         {
           /* set stroke color OR stroke-pattern
-             color is only used by draw_info
-             but draw_info is only initialsed using the color not the pattern
+             UPDATE: ensure stroke color is not destroyed is a pattern
+             is given. Just in case the color is also used for other purposes.
            */
-          const char
-            *value = IfSetOption ? arg : "none";
+          MagickBooleanType
+            status;
 
           ExceptionInfo
             *sans;
 
-          (void) SetImageOption(image_info,option,value);
+          PixelInfo
+            color;
 
+          arg1 = ArgOption("none");  /* +fill turns it off! */
+          (void) SetImageOption(_image_info,option+1,arg1);
+          if (_draw_info->stroke_pattern != (Image *) NULL)
+            _draw_info->stroke_pattern=DestroyImage(_draw_info->stroke_pattern);
+
+          /* is it a color or a image? -- ignore exceptions */
           sans=AcquireExceptionInfo();
-          status=QueryColorCompliance(value,AllCompliance,&draw_info->stroke,
-               sans);
+          status=QueryColorCompliance(arg1,AllCompliance,&color,sans);
           sans=DestroyExceptionInfo(sans);
 
-          if (draw_info->stroke_pattern != (Image *) NULL)
-            draw_info->stroke_pattern=DestroyImage(draw_info->stroke_pattern);
-          if (status == MagickFalse)
-            draw_info->stroke_pattern=GetImageCache(image_info,value,
-              exception);
+          if (IfMagickFalse(status))
+            _draw_info->stroke_pattern=GetImageCache(_image_info,arg1,_exception);
+          else
+            _draw_info->stroke=color;
           break;
         }
-      if (LocaleCompare("strokewidth",option) == 0)
+      if (LocaleCompare("strokewidth",option+1) == 0)
         {
-          const char
-            *value = IfSetOption ? arg : "1.0";
-          (void) SetImageOption(image_info,option,value);
-          draw_info->stroke_width=StringToDouble(value,(char **) NULL);
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          _draw_info->stroke_width=StringToDouble(ArgOption("1.0"),
+               (char **) NULL);
           break;
         }
-      if (LocaleCompare("style",option) == 0)
+      if (LocaleCompare("style",option+1) == 0)
         {
-          draw_info->style=UndefinedStyle;
-          if (IfSetOption)
-            draw_info->style=(StyleType) ParseCommandOption(MagickStyleOptions,
-                 MagickFalse,arg);
+          arg1=ArgOption("undefined");
+          parse = ParseCommandOption(MagickStyleOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedStyleType",
+                 option,arg1);
+          _draw_info->style=(StyleType) parse;
           break;
         }
-      if (LocaleCompare("synchronize",option) == 0)
+#if 0
+      if (LocaleCompare("subimage-search",option+1) == 0)
         {
-          image_info->synchronize=IfSetOption ? MagickTrue : MagickFalse;
+        /* FUTURE: this is only used by CompareImages() which is used
+            only by the "compare" CLI program at this time.  */
+          (void) SetImageOption(_image_info,option+1,ArgBooleanString);
           break;
         }
-      break;
+#endif
+      if (LocaleCompare("synchronize",option+1) == 0)
+        {
+          /* FUTURE: syncronize to storage - but what does that mean? */
+          _image_info->synchronize = ArgBoolean;
+          break;
+        }
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 't':
     {
-      if (LocaleCompare("taint",option) == 0)
+      if (LocaleCompare("taint",option+1) == 0)
         {
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? "true" : "false");
+          /* SyncImageSettings() used to set per-image attribute. */
+          (void) SetImageOption(_image_info,option+1,ArgBooleanString);
           break;
         }
-      if (LocaleCompare("texture",option) == 0)
+      if (LocaleCompare("texture",option+1) == 0)
         {
-          /* FUTURE: move image_info string to option splay-tree */
-          (void) CloneString(&image_info->texture,
-               IfSetOption ? arg : (char *) NULL);
+          /* Note: arguments do not have percent escapes expanded */
+          /* FUTURE: move _image_info string to option splay-tree
+             Other than "montage" what uses "texture" ????
+          */
+          (void) CloneString(&_image_info->texture,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("tile",option) == 0)
+      if (LocaleCompare("tile",option+1) == 0)
         {
-          draw_info->fill_pattern=DestroyImage(draw_info->fill_pattern);
-          if (IfSetOption)
-            draw_info->fill_pattern=GetImageCache(image_info,arg,exception);
+          /* Note: arguments do not have percent escapes expanded */
+          _draw_info->fill_pattern=IfSetOption
+                                 ?GetImageCache(_image_info,arg1,_exception)
+                                 :DestroyImage(_draw_info->fill_pattern);
           break;
         }
-      if (LocaleCompare("tile-offset",option) == 0)
+      if (LocaleCompare("tile-offset",option+1) == 0)
         {
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "0");
+          /* SyncImageSettings() used to set per-image attribute. ??? */
+          arg1=ArgOption("0");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      if (LocaleCompare("transparent-color",option) == 0)
+      if (LocaleCompare("transparent-color",option+1) == 0)
         {
-          /* FUTURE: both image_info attribute & ImageOption in use!
-             image_info only used for generating new images.
+          /* FUTURE: both _image_info attribute & ImageOption in use!
+             _image_info only used for generating new images.
+             SyncImageSettings() used to set per-image attribute.
+
              Note that +transparent-color, means fall-back to image
              attribute so ImageOption is deleted, not set to a default.
           */
-          if (IfSetOption)
-            {
-              (void) SetImageOption(image_info,option,arg);
-              (void) QueryColorCompliance(arg,AllCompliance,
-                   image_info->transparent_color,exception);
-              break;
-            }
-          (void) DeleteImageOption(image_info,option);
-          (void) QueryColorCompliance("none",AllCompliance,
-               image_info->transparent_color,exception);
+          if (IfSetOption && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          (void) QueryColorCompliance(ArgOption("none"),AllCompliance,
+              &_image_info->transparent_color,_exception);
           break;
         }
-      if (LocaleCompare("type",option) == 0)
+      if (LocaleCompare("treedepth",option+1) == 0)
         {
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : (char) NULL);
-          image_info->type=UndefinedType;
-          if (IfSetOption)
-            image_info->type=(ImageType) ParseCommandOption(MagickTypeOptions,
-                 MagickFalse,arg);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          _quantize_info->tree_depth=StringToUnsignedLong(ArgOption("0"));
           break;
         }
-      break;
+      if (LocaleCompare("type",option+1) == 0)
+        {
+          /* SyncImageSettings() used to set per-image attribute. */
+          parse=ParseCommandOption(MagickTypeOptions,MagickFalse,
+               ArgOption("undefined"));
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedImageType",
+                 option,arg1);
+          _image_info->type=(ImageType) parse;
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          break;
+        }
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'u':
     {
-      if (LocaleCompare("undercolor",option) == 0)
+      if (LocaleCompare("undercolor",option+1) == 0)
         {
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : (char) NULL);
-          (void) QueryColorCompliance(arg,AllCompliance,
-               draw_info->undercolor,exception);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
+          (void) QueryColorCompliance(ArgOption("none"),AllCompliance,
+               &_draw_info->undercolor,_exception);
           break;
         }
-      if (LocaleCompare("units",option) == 0)
+      if (LocaleCompare("units",option+1) == 0)
         {
-          /* Set in images via SyncImageSettings() */
-          /* Should this effect draw_info X and Y resolution? */
-          /* FUTURE: this probably should be part of the density setting */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : (char) NULL);
-          image_info->units=UndefinedResolution;
-          if (IfSetOption)
-             image_info->units=(ResolutionType) ParseCommandOption(
-                  MagickResolutionOptions,MagickFalse,arg);
+          /* SyncImageSettings() used to set per-image attribute.
+             Should this effect _draw_info X and Y resolution?
+             FUTURE: this probably should be part of the density setting
+          */
+          parse=ParseCommandOption(MagickResolutionOptions,MagickFalse,
+               ArgOption("undefined"));
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedUnitsType",
+                 option,arg1);
+          _image_info->units=(ResolutionType) parse;
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'v':
     {
-      if (LocaleCompare("verbose",option) == 0)
+      if (LocaleCompare("verbose",option+1) == 0)
         {
-          /* FUTURE: Also an image artifact, set in Simple Operators.
-             But artifact is only used in verbose output.
+          /* FUTURE: Remember all options become image artifacts
+             _image_info->verbose is only used by coders.
           */
-          image_info->verbose= IfSetOption ? MagickTrue : MagickFalse;
-          image_info->ping=MagickFalse; /* verbose can't be a ping */
+          (void) SetImageOption(_image_info,option+1,ArgBooleanString);
+          _image_info->verbose= ArgBoolean;
+          _image_info->ping=MagickFalse; /* verbose can't be a ping */
           break;
         }
-      if (LocaleCompare("view",option) == 0)
+      if (LocaleCompare("view",option+1) == 0)
         {
-          /* FUTURE: Convert from image_info to Option
+          /* FUTURE: Convert from _image_info to ImageOption
              Only used by coder FPX
+             And it only tests existance, not its content!
           */
-          (void) CloneString(&image_info->view,
-               IfSetOption ? arg : (char) NULL);
+          (void) CloneString(&_image_info->view,ArgOption(NULL));
           break;
         }
-      if (LocaleCompare("virtual-pixel",option) == 0)
+      if (LocaleCompare("virtual-pixel",option+1) == 0)
         {
-          /* Also used as a 'image' option deep in image structure */
-          const char
-            *value = IfSetOption ? arg : "undefined";
-
-          (void) SetImageOption(image_info,option,value);
-          image_info->virtual_pixel_method=(VirtualPixelMethod)
-            ParseCommandOption(MagickVirtualPixelOptions,MagickFalse,value);
+          /* SyncImageSettings() used to set per-image attribute.
+             This is VERY deep in the image caching structure.
+          */
+          parse=ParseCommandOption(MagickVirtualPixelOptions,MagickFalse,
+               ArgOption("undefined"));
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedVirtualPixelMethod",
+                 option,arg1);
+          (void) SetImageOption(_image_info,option+1,ArgOption(NULL));
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'w':
     {
-      if (LocaleCompare("weight",option) == 0)
+      if (LocaleCompare("weight",option+1) == 0)
         {
-          /* FUTURE: relative weights not sensical due to first assignment!
-             Also just what is actually using font 'weight' ???
+          /* Just what does using a font 'weight' do ???
              There is no "-list weight" output (reference manual says there is)
           */
-          draw_info->weight=StringToUnsignedLong(arg);
-          if (LocaleCompare(arg,"all") == 0)
-            draw_info->weight=0;
-          if (LocaleCompare(arg,"bold") == 0)
-            draw_info->weight=700;
-          if (LocaleCompare(arg,"bolder") == 0)
-            if (draw_info->weight <= 800)
-              draw_info->weight+=100;
-          if (LocaleCompare(arg,"lighter") == 0)
-            if (draw_info->weight >= 100)
-              draw_info->weight-=100;
-          if (LocaleCompare(arg,"normal") == 0)
-            draw_info->weight=400;
+          arg1=ArgOption("all");
+          _draw_info->weight=StringToUnsignedLong(arg1);
+          if (LocaleCompare(arg1,"all") == 0)
+            _draw_info->weight=0;
+          if (LocaleCompare(arg1,"bold") == 0)
+            _draw_info->weight=700;
+          if (LocaleCompare(arg1,"bolder") == 0)
+            if (_draw_info->weight <= 800)
+              _draw_info->weight+=100;
+          if (LocaleCompare(arg1,"lighter") == 0)
+            if (_draw_info->weight >= 100)
+              _draw_info->weight-=100;
+          if (LocaleCompare(arg1,"normal") == 0)
+            _draw_info->weight=400;
           break;
         }
-      if (LocaleCompare("white-point",option) == 0)
+      if (LocaleCompare("white-point",option+1) == 0)
         {
-          /* Used as a image chromaticity setting */
-          (void) SetImageOption(image_info,option,
-               IfSetOption ? arg : "0.0" );
+          /* Used as a image chromaticity setting
+             SyncImageSettings() used to set per-image attribute.
+          */
+          arg1=ArgOption("0.0");
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SetImageOption(_image_info,option+1,arg1);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     default:
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
   }
-  return(MagickTrue);
+
+#if 0
+  /* clean up percent escape interpreted strings */
+  if (arg1 != arg1n )
+    arg1=DestroyString((char *)arg1);
+  if (arg2 != arg2n )
+    arg2=DestroyString((char *)arg2);
+#endif
+
+#undef _image_info
+#undef _exception
+#undef _draw_info
+#undef _quantize_info
+#undef IfSetOption
+#undef ArgBoolean
+#undef ArgBooleanNot
+#undef ArgBooleanString
+#undef ArgOption
+
+  return;
 }
 
 /*
@@ -1512,67 +1596,53 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+     A p p l y I m a g e O p e r a t o r                                     %
++     C L I S i m p l e O p e r a t o r I m a g e s                           %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  ApplyImageOperator() apply one simple image operation to the current
-%  image pointed to by the CLI wand, with the settings that are saved in the
-%  CLI wand.
-%
-%  The image in the list may be modified in three different ways...
-%
-%    * directly modified (EG: -negate, -gamma, -level, -annotate, -draw),
-%    * replaced by a new image (EG: -spread, -resize, -rotate, -morphology)
-%    * replace by a list of images (-separate and -crop only!)
-%
-%  In each case the result replaces the original image in the list, as well as
-%  the pointer to the modified image (last image added if replaced by a list
-%  of images) is returned.  As the image pointed to may be replaced, the first
-%  image in the list may also change.  GetFirstImageInList() should be used by
-%  caller if they wish return the Image pointer to the first image in list.
+%  WandSimpleOperatorImages() applys one simple image operation given to all
+%  the images in the CLI wand,  with the settings that was previously saved in
+%  the CLI wand.
 %
 %  It is assumed that any per-image settings are up-to-date with respect to
-%  extra settings that have been saved in the wand.
+%  extra settings that were already saved in the wand.
 %
-%  The format of the ApplyImageOperator method is:
+%  The format of the WandSimpleOperatorImage method is:
 %
-%    MagickBooleanType ApplyImageOperator(MagickWand *wand,
-%        const char *option, const MagickBooleanType set_option, const char
-%        **args, ExceptionInfo *exception)
+%    void CLISimpleOperatorImages(MagickCLI *cli_wand,
+%        const char *option, const char *arg1, const char *arg2)
 %
 %  A description of each parameter follows:
 %
-%    o wand: structure holding settings to be applied
+%    o cli_wand: structure holding settings and images to be operated on
 %
-%    o option: The option string to be set
+%    o option:  The option string for the operation
 %
-%    o set_option: is the option being set, or reset to some default
-%
-%    o arg: the single argument (if needed) to set this option.
-%
-%    o exception: return any errors or warnings in this structure.
-%
-%
-% Example usage (FUTURE)
-%
-%    argc,argv
-%    i=index in argv
-%
-%    count=ParseCommandOption(MagickCommandOptions,MagickFalse,argv[i]);
-%    flags=GetCommandOptionFlags(MagickCommandOptions,MagickFalse,argv[i]);
-%    if ( flags == MagickCommandOptions )
-%      ApplySettingsOption(wand, argv[i]+1,
-%          (*argv[i])=='-' ? MagickTrue : MagickFalse,
-%          argv+i+1, exception);
-%    i += count+1;
+%    o arg1, arg2: optional argument strings to the operation
 %
 */
-WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
-  const char *option, const MagickBooleanType set_option, const char **args,
-  ExceptionInfo *exception)
+
+/*
+  Internal subrountine to apply one simple image operation to the current
+  image pointed to by the CLI wand.
+
+  The image in the list may be modified in three different ways...
+    * directly modified (EG: -negate, -gamma, -level, -annotate, -draw),
+    * replaced by a new image (EG: -spread, -resize, -rotate, -morphology)
+    * one image replace by a list of images (-separate and -crop only!)
+
+  In each case the result replaces the single original image in the list, as
+  well as the pointer to the modified image (last image added if replaced by a
+  list of images) is returned.
+
+  As the image pointed to may be replaced, the first image in the list may
+  also change.  GetFirstImageInList() should be used by caller if they wish
+  return the Image pointer to the first image in list.
+*/
+static void CLISimpleOperatorImage(MagickCLI *cli_wand,
+  const char *option, const char *arg1n, const char *arg2n)
 {
   Image *
     new_image;
@@ -1584,165 +1654,188 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
     geometry;
 
   MagickStatusType
-    status;
-
-  MagickStatusType
     flags;
 
-  assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
-  assert(wand->draw_info != (DrawInfo *) NULL); /* ensure it is a CLI wand */
-  assert(image != (Image **) NULL);             /* there is an image */
-  assert((*image)->signature == MagickSignature);
+  ssize_t
+    parse;
 
-  if (wand->debug != MagickFalse)
-    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  const char    /* For percent escape interpretImageProperties() */
+    *arg1,
+    *arg2;
 
-  SetGeometryInfo(&geometry_info);
+#define _image_info     (cli_wand->wand.image_info)
+#define _image          (cli_wand->wand.images)
+#define _exception      (cli_wand->wand.exception)
+#define _draw_info      (cli_wand->draw_info)
+#define _quantize_info  (cli_wand->quantize_info)
+#define _process_flags  (cli_wand->process_flags)
+#define _option_type    ((CommandOptionFlags) cli_wand->command->flags)
+#define IfNormalOp      (*option=='-')
+#define IfPlusOp        (*option!='-')
+#define normal_op       IsMagickTrue(IfNormalOp)
+#define plus_alt_op     IsMagickFalse(IfNormalOp)
+
+  assert(cli_wand != (MagickCLI *) NULL);
+  assert(cli_wand->signature == WandSignature);
+  assert(cli_wand->wand.signature == WandSignature);
+  assert(_image != (Image *) NULL);             /* an image must be present */
+  if (IfMagickTrue(cli_wand->wand.debug))
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",cli_wand->wand.name);
+
+  /* Interpret Percent Escapes in Arguments - using first image */
+  arg1 = arg1n,
+  arg2 = arg2n;
+  if ( (((_process_flags & ProcessInterpretProperities) != 0 )
+        || ((_option_type & AlwaysInterpretArgsFlag) != 0)
+       )  && ((_option_type & NeverInterpretArgsFlag) == 0) ) {
+    /* Interpret Percent escapes in argument 1 */
+    if (arg1n != (char *) NULL) {
+      arg1=InterpretImageProperties(_image_info,_image,arg1n,_exception);
+      if (arg1 == (char *) NULL) {
+        CLIWandException(OptionWarning,"InterpretPropertyFailure",option);
+        arg1=arg1n;  /* use the given argument as is */
+      }
+    }
+    if (arg2n != (char *) NULL) {
+      arg2=InterpretImageProperties(_image_info,_image,arg2n,_exception);
+      if (arg2 == (char *) NULL) {
+        CLIWandException(OptionWarning,"InterpretPropertyFailure",option);
+        arg2=arg2n;  /* use the given argument as is */
+      }
+    }
+  }
+#undef _process_flags
+#undef _option_type
+
+#if 0
+  (void) FormatLocaleFile(stderr,
+    "CLISimpleOperatorImage: \"%s\" \"%s\" \"%s\"\n",option,arg1,arg2);
+#endif
 
   new_image = (Image *)NULL; /* the replacement image, if not null at end */
+  SetGeometryInfo(&geometry_info);
 
-  /* We need somthing more optimized than this! */
-  (void) SyncImageSettings(image_info,*image,exception);
-
-  switch (*option)
+  switch (*(option+1))
   {
     case 'a':
     {
-      if (LocaleCompare("adaptive-blur",option) == 0)
+      if (LocaleCompare("adaptive-blur",option+1) == 0)
         {
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          if ((flags & XiValue) == 0)
-            geometry_info.xi=0.0;
-          new_image=AdaptiveBlurImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,exception);
+          new_image=AdaptiveBlurImage(_image,geometry_info.rho,
+            geometry_info.sigma,_exception);
           break;
         }
-      if (LocaleCompare("adaptive-resize",option) == 0)
+      if (LocaleCompare("adaptive-resize",option+1) == 0)
         {
-          /* FUTURE: this is really a "interpolate-resize" operator
-             "adaptive-resize" uses a fixed "Mesh" interpolation
-          */
-          (void) ParseRegionGeometry(*image,args[0],&geometry,exception);
-          new_image=AdaptiveResizeImage(*image,geometry.width,
-            geometry.height,interpolate_method,exception);
+          /* FUTURE: Roll into a resize special operator */
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ParseRegionGeometry(_image,arg1,&geometry,_exception);
+          new_image=AdaptiveResizeImage(_image,geometry.width,geometry.height,
+            _exception);
           break;
         }
-      if (LocaleCompare("adaptive-sharpen",option) == 0)
+      if (LocaleCompare("adaptive-sharpen",option+1) == 0)
         {
-          /*
-            Adaptive sharpen image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          if ((flags & XiValue) == 0)
-            geometry_info.xi=0.0;
-          new_image=AdaptiveSharpenImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,exception);
+          new_image=AdaptiveSharpenImage(_image,geometry_info.rho,
+            geometry_info.sigma,_exception);
           break;
         }
-      if (LocaleCompare("alpha",option) == 0)
+      if (LocaleCompare("alpha",option+1) == 0)
         {
-          AlphaChannelType
-            alpha_type;
-
-          (void) SyncImageSettings(image_info,*image,exception);
-          alpha_type=(AlphaChannelType) ParseCommandOption(MagickAlphaOptions,
-            MagickFalse,args[0]);
-          (void) SetImageAlphaChannel(*image,alpha_type,exception);
+          parse=ParseCommandOption(MagickAlphaOptions,MagickFalse,arg1);
+          if (parse < 0)
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedAlphaChannelType",
+                 option,arg1);
+          (void) SetImageAlphaChannel(_image,(AlphaChannelType)parse,
+               _exception);
           break;
         }
-      if (LocaleCompare("annotate",option) == 0)
+      if (LocaleCompare("annotate",option+1) == 0)
         {
           char
-            *text,
             geometry[MaxTextExtent];
 
-          (void) SyncImageSettings(image_info,*image,exception);
           SetGeometryInfo(&geometry_info);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=geometry_info.rho;
-          text=InterpretImageProperties(image_info,*image,argv[2],
-            exception);
-          if (text == (char *) NULL)
-            break;
-          (void) CloneString(&draw_info->text,text);
-          text=DestroyString(text);
+          (void) CloneString(&_draw_info->text,arg2);
           (void) FormatLocaleString(geometry,MaxTextExtent,"%+f%+f",
             geometry_info.xi,geometry_info.psi);
-          (void) CloneString(&draw_info->geometry,geometry);
-          draw_info->affine.sx=cos(DegreesToRadians(
+          (void) CloneString(&_draw_info->geometry,geometry);
+          _draw_info->affine.sx=cos(DegreesToRadians(
             fmod(geometry_info.rho,360.0)));
-          draw_info->affine.rx=sin(DegreesToRadians(
+          _draw_info->affine.rx=sin(DegreesToRadians(
             fmod(geometry_info.rho,360.0)));
-          draw_info->affine.ry=(-sin(DegreesToRadians(
+          _draw_info->affine.ry=(-sin(DegreesToRadians(
             fmod(geometry_info.sigma,360.0))));
-          draw_info->affine.sy=cos(DegreesToRadians(
+          _draw_info->affine.sy=cos(DegreesToRadians(
             fmod(geometry_info.sigma,360.0)));
-          (void) AnnotateImage(*image,draw_info,exception);
+          (void) AnnotateImage(_image,_draw_info,_exception);
+          GetAffineMatrix(&_draw_info->affine);
           break;
         }
-      if (LocaleCompare("auto-gamma",option) == 0)
+      if (LocaleCompare("auto-gamma",option+1) == 0)
         {
-          /*
-            Auto Adjust Gamma of image based on its mean
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) AutoGammaImage(*image,exception);
+          (void) AutoGammaImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("auto-level",option) == 0)
+      if (LocaleCompare("auto-level",option+1) == 0)
         {
-          /*
-            Perfectly Normalize (max/min stretch) the image
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) AutoLevelImage(*image,exception);
+          (void) AutoLevelImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("auto-orient",option) == 0)
+      if (LocaleCompare("auto-orient",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          switch ((*image)->orientation)
+          /* This should probably be a MagickCore function */
+          switch (_image->orientation)
           {
             case TopRightOrientation:
             {
-              new_image=FlopImage(*image,exception);
+              new_image=FlopImage(_image,_exception);
               break;
             }
             case BottomRightOrientation:
             {
-              new_image=RotateImage(*image,180.0,exception);
+              new_image=RotateImage(_image,180.0,_exception);
               break;
             }
             case BottomLeftOrientation:
             {
-              new_image=FlipImage(*image,exception);
+              new_image=FlipImage(_image,_exception);
               break;
             }
             case LeftTopOrientation:
             {
-              new_image=TransposeImage(*image,exception);
+              new_image=TransposeImage(_image,_exception);
               break;
             }
             case RightTopOrientation:
             {
-              new_image=RotateImage(*image,90.0,exception);
+              new_image=RotateImage(_image,90.0,_exception);
               break;
             }
             case RightBottomOrientation:
             {
-              new_image=TransverseImage(*image,exception);
+              new_image=TransverseImage(_image,_exception);
               break;
             }
             case LeftBottomOrientation:
             {
-              new_image=RotateImage(*image,270.0,exception);
+              new_image=RotateImage(_image,270.0,_exception);
               break;
             }
             default:
@@ -1752,62 +1845,64 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
             new_image->orientation=TopLeftOrientation;
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'b':
     {
-      if (LocaleCompare("black-threshold",option) == 0)
+      if (LocaleCompare("black-threshold",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) BlackThresholdImage(*image,args[0],exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) BlackThresholdImage(_image,arg1,_exception);
           break;
         }
-      if (LocaleCompare("blue-shift",option) == 0)
+      if (LocaleCompare("blue-shift",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
           geometry_info.rho=1.5;
-          if (*argv[0] == '-')
-            flags=ParseGeometry(args[0],&geometry_info);
-          new_image=BlueShiftImage(*image,geometry_info.rho,exception);
+          if (IfNormalOp) {
+            flags=ParseGeometry(arg1,&geometry_info);
+            if ((flags & RhoValue) == 0)
+              CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          }
+          new_image=BlueShiftImage(_image,geometry_info.rho,_exception);
           break;
         }
-      if (LocaleCompare("blur",option) == 0)
+      if (LocaleCompare("blur",option+1) == 0)
         {
-          /* FUTURE: use of "bias" in a blur is non-sensible */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          if ((flags & XiValue) == 0)
-            geometry_info.xi=0.0;
-          new_image=BlurImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,exception);
+          new_image=BlurImage(_image,geometry_info.rho,geometry_info.sigma,
+           _exception);
           break;
         }
-      if (LocaleCompare("border",option) == 0)
+      if (LocaleCompare("border",option+1) == 0)
         {
-          ComposeOperator
+          CompositeOperator
             compose;
 
           const char*
-          const char*
             value;
 
-          value=GetImageOption(image_info,"compose");
+          flags=ParsePageGeometry(_image,arg1,&geometry,_exception);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          if ((flags & SigmaValue) == 0)
+            geometry.height=geometry.width;
+
+          value=GetImageOption(_image_info,"compose");
           if (value != (const char *) NULL)
             compose=(CompositeOperator) ParseCommandOption(
                  MagickComposeOptions,MagickFalse,value);
           else
-            compose=OverCompositeOp;  /* use Over not image->compose */
+            compose=OverCompositeOp;  /* use Over not _image->compose */
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParsePageGeometry(*image,args[0],&geometry,exception);
-          if ((flags & SigmaValue) == 0)
-            geometry.height=geometry.width;
-          new_image=BorderImage(*image,&geometry,compose,exception);
+          new_image=BorderImage(_image,&geometry,compose,_exception);
           break;
         }
-      if (LocaleCompare("brightness-contrast",option) == 0)
+      if (LocaleCompare("brightness-contrast",option+1) == 0)
         {
           double
             brightness,
@@ -1819,80 +1914,74 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
           MagickStatusType
             flags;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           brightness=geometry_info.rho;
           contrast=0.0;
           if ((flags & SigmaValue) != 0)
             contrast=geometry_info.sigma;
-          (void) BrightnessContrastImage(*image,brightness,contrast,
-            exception);
+          (void) BrightnessContrastImage(_image,brightness,contrast,
+            _exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'c':
     {
-      if (LocaleCompare("cdl",option) == 0)
+      if (LocaleCompare("cdl",option+1) == 0)
         {
+          /* Note: arguments do not have percent escapes expanded */
           char
             *color_correction_collection;
 
           /*
             Color correct with a color decision list.
           */
-          (void) SyncImageSettings(image_info,*image,exception);
-          color_correction_collection=FileToString(args[0],~0,exception);
+          color_correction_collection=FileToString(arg1,~0,_exception);
           if (color_correction_collection == (char *) NULL)
             break;
-          (void) ColorDecisionListImage(*image,color_correction_collection,
-            exception);
+          (void) ColorDecisionListImage(_image,color_correction_collection,
+            _exception);
           break;
         }
-      if (LocaleCompare("channel",option) == 0)
+      if (LocaleCompare("charcoal",option+1) == 0)
         {
-          /* The "channel" setting has already been set */
-          SetPixelChannelMap(*image,image_info->channel);
-          break;
-        }
-      if (LocaleCompare("charcoal",option) == 0)
-        {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
           if ((flags & XiValue) == 0)
             geometry_info.xi=1.0;
-          new_image=CharcoalImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,exception);
+          new_image=CharcoalImage(_image,geometry_info.rho,
+            geometry_info.sigma,_exception);
           break;
         }
-      if (LocaleCompare("chop",option) == 0)
+      if (LocaleCompare("chop",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseGravityGeometry(*image,args[0],&geometry,exception);
-          new_image=ChopImage(*image,&geometry,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ParseGravityGeometry(_image,arg1,&geometry,_exception);
+          new_image=ChopImage(_image,&geometry,_exception);
           break;
         }
-      if (LocaleCompare("clamp",option) == 0)
+      if (LocaleCompare("clamp",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ClampImage(*image,exception);
+          (void) ClampImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("clip",option) == 0)
+      if (LocaleCompare("clip",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            {
-              (void) SetImageClipMask(*image,(Image *) NULL,exception);
-              break;
-            }
-          (void) ClipImage(*image,exception);
+          if (IfNormalOp)
+            (void) ClipImage(_image,_exception);
+          else /* "+mask" remove the write mask */
+            (void) SetImageMask(_image,(Image *) NULL,_exception);
           break;
         }
-      if (LocaleCompare("clip-mask",option) == 0)
+      if (LocaleCompare("clip-mask",option+1) == 0)
         {
+          /* Note: arguments do not have percent escapes expanded */
           CacheView
             *mask_view;
 
@@ -1908,109 +1997,108 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
           ssize_t
             y;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            {
-              /* Remove the write mask */
-              (void) SetImageMask(*image,(Image *) NULL,exception);
-              break;
-            }
-          mask_image=GetImageCache(image_info,args[0],exception);
+          if (IfPlusOp) {
+            /* use "+clip-mask" Remove the write mask for -clip-path */
+            (void) SetImageMask(_image,(Image *) NULL,_exception);
+            break;
+          }
+          mask_image=GetImageCache(_image_info,arg1,_exception);
           if (mask_image == (Image *) NULL)
             break;
-          if (SetImageStorageClass(mask_image,DirectClass,exception) == MagickFalse)
-            return(MagickFalse);
-          /* create a write mask from clip-mask image */
-          /* FUTURE: use Alpha operations instead */
-          mask_view=AcquireCacheView(mask_image);
+          if (IfMagickFalse(SetImageStorageClass(mask_image,DirectClass,_exception)))
+            break;
+          /* Create a write mask from cli_wand mask image */
+          /* FUTURE: use Alpha operations instead and create a Grey Image */
+          mask_view=AcquireAuthenticCacheView(mask_image,_exception);
           for (y=0; y < (ssize_t) mask_image->rows; y++)
           {
             q=GetCacheViewAuthenticPixels(mask_view,0,y,mask_image->columns,1,
-              exception);
+              _exception);
             if (q == (Quantum *) NULL)
               break;
             for (x=0; x < (ssize_t) mask_image->columns; x++)
             {
-              if (mask_image->matte == MagickFalse)
+              if (IfMagickFalse(mask_image->matte))
                 SetPixelAlpha(mask_image,GetPixelIntensity(mask_image,q),q);
               SetPixelRed(mask_image,GetPixelAlpha(mask_image,q),q);
               SetPixelGreen(mask_image,GetPixelAlpha(mask_image,q),q);
               SetPixelBlue(mask_image,GetPixelAlpha(mask_image,q),q);
               q+=GetPixelChannels(mask_image);
             }
-            if (SyncCacheViewAuthenticPixels(mask_view,exception) == MagickFalse)
+            if (IfMagickFalse(SyncCacheViewAuthenticPixels(mask_view,_exception)))
               break;
           }
-          /* set the write mask */
+          /* clean up and set the write mask */
           mask_view=DestroyCacheView(mask_view);
           mask_image->matte=MagickTrue;
-          (void) SetImageClipMask(*image,mask_image,exception);
+          (void) SetImageMask(_image,mask_image,_exception);
           mask_image=DestroyImage(mask_image);
           break;
         }
-      if (LocaleCompare("clip-path",option) == 0)
+      if (LocaleCompare("clip-path",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ClipImagePath(*image,args[0],*argv[0] == '-' ? MagickTrue :
-            MagickFalse,exception);
+          (void) ClipImagePath(_image,arg1,normal_op,_exception);
+          /* Note: Use "+clip-mask" remove the write mask added */
           break;
         }
-      if (LocaleCompare("colorize",option) == 0)
+      if (LocaleCompare("colorize",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=ColorizeImage(*image,args[0],draw_info->fill,
-            exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=ColorizeImage(_image,arg1,&_draw_info->fill,_exception);
           break;
         }
-      if (LocaleCompare("color-matrix",option) == 0)
+      if (LocaleCompare("color-matrix",option+1) == 0)
         {
           KernelInfo
             *kernel;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          kernel=AcquireKernelInfo(args[0]);
+          kernel=AcquireKernelInfo(arg1);
           if (kernel == (KernelInfo *) NULL)
-            break;
-          new_image=ColorMatrixImage(*image,kernel,exception);
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=ColorMatrixImage(_image,kernel,_exception);
           kernel=DestroyKernelInfo(kernel);
           break;
         }
-      if (LocaleCompare("colors",option) == 0)
+      if (LocaleCompare("colors",option+1) == 0)
         {
-          /* Reduce the number of colors in the image.  */
-          (void) SyncImageSettings(image_info,*image,exception);
-          quantize_info->number_colors=StringToUnsignedLong(args[0]);
-          if (quantize_info->number_colors == 0)
-            break;
-          if (((*image)->storage_class == DirectClass) ||
-              (*image)->colors > quantize_info->number_colors)
-            (void) QuantizeImage(quantize_info,*image,exception);
+          /* Reduce the number of colors in the image.
+             FUTURE: also provide 'plus version with image 'color counts'
+          */
+          _quantize_info->number_colors=StringToUnsignedLong(arg1);
+          if (_quantize_info->number_colors == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          if ((_image->storage_class == DirectClass) ||
+              _image->colors > _quantize_info->number_colors)
+            (void) QuantizeImage(_quantize_info,_image,_exception);
           else
-            (void) CompressImageColormap(*image,exception);
+            (void) CompressImageColormap(_image,_exception);
           break;
         }
-      if (LocaleCompare("colorspace",option) == 0)
+      if (LocaleCompare("colorspace",option+1) == 0)
         {
-          /* This is a Image Setting, which should already been set */
-          /* FUTURE: default colorspace should be sRGB!
+          /* WARNING: this is both a image_info setting (already done)
+                      and a operator to change image colorspace.
+
+             FUTURE: default colorspace should be sRGB!
              Unless some type of 'linear colorspace' mode is set.
+
              Note that +colorspace sets "undefined" or no effect on
              new images, but forces images already in memory back to RGB!
+             That seems to be a little strange!
           */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) TransformImageColorspace(*image,
-                    IfSetOption ? image_info->colorspace : RGBColorspace,
-                    exception);
+          (void) TransformImageColorspace(_image,
+                    IfNormalOp ? _image_info->colorspace : RGBColorspace,
+                    _exception);
           break;
         }
-      if (LocaleCompare("contrast",option) == 0)
+      if (LocaleCompare("contrast",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ContrastImage(*image,(*argv[0] == '-') ? MagickTrue :
-            MagickFalse,exception);
+          CLIWandWarnReplaced(normal_op?"-level":"+level");
+          (void) ContrastImage(_image,normal_op,_exception);
           break;
         }
-      if (LocaleCompare("contrast-stretch",option) == 0)
+      if (LocaleCompare("contrast-stretch",option+1) == 0)
         {
           double
             black_point,
@@ -2019,340 +2107,286 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
           MagickStatusType
             flags;
 
-          /*
-            Contrast stretch image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           black_point=geometry_info.rho;
           white_point=(flags & SigmaValue) != 0 ? geometry_info.sigma :
             black_point;
-          if ((flags & PercentValue) != 0)
-            {
-              black_point*=(double) (*image)->columns*(*image)->rows/100.0;
-              white_point*=(double) (*image)->columns*(*image)->rows/100.0;
+          if ((flags & PercentValue) != 0) {
+              black_point*=(double) _image->columns*_image->rows/100.0;
+              white_point*=(double) _image->columns*_image->rows/100.0;
             }
-          white_point=(MagickRealType) (*image)->columns*(*image)->rows-
+          white_point=(MagickRealType) _image->columns*_image->rows-
             white_point;
-          (void) ContrastStretchImage(*image,black_point,white_point,
-            exception);
+          (void) ContrastStretchImage(_image,black_point,white_point,
+            _exception);
           break;
         }
-      if (LocaleCompare("convolve",option) == 0)
+      if (LocaleCompare("convolve",option+1) == 0)
         {
           KernelInfo
             *kernel_info;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          kernel_info=AcquireKernelInfo(args[0]);
+          kernel_info=AcquireKernelInfo(arg1);
           if (kernel_info == (KernelInfo *) NULL)
-            break;
-          kernel_info->bias=(*image)->bias;
-          new_image=ConvolveImage(*image,kernel_info,exception);
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=MorphologyImage(_image,CorrelateMorphology,1,kernel_info,
+            _exception);
           kernel_info=DestroyKernelInfo(kernel_info);
           break;
         }
-      if (LocaleCompare("crop",option) == 0)
+      if (LocaleCompare("crop",option+1) == 0)
         {
-          /*
-            Crop a image to a smaller size
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=CropImageToTiles(*image,args[0],exception);
+          /* WARNING: This can generate multiple images! */
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=CropImageToTiles(_image,arg1,_exception);
           break;
         }
-      if (LocaleCompare("cycle",option) == 0)
+      if (LocaleCompare("cycle",option+1) == 0)
         {
-          /*
-            Cycle an image colormap.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) CycleColormapImage(*image,(ssize_t) StringToLong(args[0]),
-            exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) CycleColormapImage(_image,(ssize_t) StringToLong(arg1),
+            _exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'd':
     {
-      if (LocaleCompare("decipher",option) == 0)
+      if (LocaleCompare("decipher",option+1) == 0)
         {
+          /* Note: arguments do not have percent escapes expanded */
           StringInfo
             *passkey;
 
-          /*
-            Decipher pixels.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          passkey=FileToStringInfo(args[0],~0,exception);
-          if (passkey != (StringInfo *) NULL)
-            {
-              (void) PasskeyDecipherImage(*image,passkey,exception);
-              passkey=DestroyStringInfo(passkey);
-            }
+          passkey=FileToStringInfo(arg1,~0,_exception);
+          if (passkey == (StringInfo *) NULL)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+
+          (void) PasskeyDecipherImage(_image,passkey,_exception);
+          passkey=DestroyStringInfo(passkey);
           break;
         }
-      if (LocaleCompare("depth",option) == 0)
+      if (LocaleCompare("depth",option+1) == 0)
         {
-          /* The image_info->depth setting has already been set
+          /* The _image_info->depth setting has already been set
              We just need to apply it to all images in current sequence
+
              WARNING: Depth from 8 to 16 causes 'quantum rounding to images!
              That is it really is an operation, not a setting! Arrgghhh
+
+             FUTURE: this should not be an operator!!!
           */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) SetImageDepth(*image,image_info->depth);
+          (void) SetImageDepth(_image,_image_info->depth,_exception);
           break;
         }
-      if (LocaleCompare("deskew",option) == 0)
+      if (LocaleCompare("deskew",option+1) == 0)
         {
           double
             threshold;
 
-          /*
-            Straighten the image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            threshold=40.0*QuantumRange/100.0;
+          if (IfNormalOp) {
+            if (IfMagickFalse(IsGeometry(arg1)))
+              CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+            threshold=StringToDoubleInterval(arg1,(double) QuantumRange+1.0);
+          }
           else
-            threshold=StringToDoubleInterval(args[0],(double) QuantumRange+1.0);
-          new_image=DeskewImage(*image,threshold,exception);
+            threshold=40.0*QuantumRange/100.0;
+          new_image=DeskewImage(_image,threshold,_exception);
           break;
         }
-      if (LocaleCompare("despeckle",option) == 0)
+      if (LocaleCompare("despeckle",option+1) == 0)
         {
-          /*
-            Reduce the speckles within an image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=DespeckleImage(*image,exception);
+          new_image=DespeckleImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("display",option) == 0)
+      if (LocaleCompare("distort",option+1) == 0)
         {
-          (void) CloneString(&draw_info->server_name,args[0]);
-          break;
-        }
-      if (LocaleCompare("distort",option) == 0)
-        {
-          char
-            *args,
-            token[MaxTextExtent];
-
-          const char
-            *p;
-
-          DistortImageMethod
-            method;
-
           double
-            *arguments;
+            *args;
 
-          register ssize_t
-            x;
+          ssize_t
+            count;
 
-          size_t
-            number_arguments;
-
-          /*
-            Distort image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          method=(DistortImageMethod) ParseCommandOption(MagickDistortOptions,
-            MagickFalse,args[0]);
-          if ( method == ResizeDistortion )
+          parse = ParseCommandOption(MagickDistortOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+             CLIWandExceptArgBreak(OptionError,"UnrecognizedDistortMethod",
+                                      option,arg1);
+          if ((DistortImageMethod) parse == ResizeDistortion)
             {
-               /* Special Case - Argument is actually a resize geometry!
-               ** Convert that to an appropriate distortion argument array.
-               */
                double
                  resize_args[2];
-               (void) ParseRegionGeometry(*image,argv[2],&geometry,
-                    exception);
-               resize_args[0]=(double)geometry.width;
-               resize_args[1]=(double)geometry.height;
-               new_image=DistortImage(*image,method,(size_t)2,
-                    resize_args,MagickTrue,exception);
+               /* Special Case - Argument is actually a resize geometry!
+               ** Convert that to an appropriate distortion argument array.
+               ** FUTURE: make a separate special resize operator
+                    Roll into a resize special operator */
+               if (IfMagickFalse(IsGeometry(arg2)))
+                 CLIWandExceptArgBreak(OptionError,"InvalidGeometry",
+                                           option,arg2);
+               (void) ParseRegionGeometry(_image,arg2,&geometry,_exception);
+               resize_args[0]=(double) geometry.width;
+               resize_args[1]=(double) geometry.height;
+               new_image=DistortImage(_image,(DistortImageMethod) parse,
+                    (size_t)2,resize_args,MagickTrue,_exception);
                break;
             }
-          args=InterpretImageProperties(image_info,*image,argv[2],
-            exception);
-          if (args == (char *) NULL)
-            break;
-          p=(char *) args;
-          for (x=0; *p != '\0'; x++)
-          {
-            GetMagickToken(p,&p,token);
-            if (*token == ',')
-              GetMagickToken(p,&p,token);
-          }
-          number_arguments=(size_t) x;
-          arguments=(double *) AcquireQuantumMemory(number_arguments,
-            sizeof(*arguments));
-          if (arguments == (double *) NULL)
-            ThrowWandFatalException(ResourceLimitFatalError,
-              "MemoryAllocationFailed",(*image)->filename);
-          (void) ResetMagickMemory(arguments,0,number_arguments*
-            sizeof(*arguments));
-          p=(char *) args;
-          for (x=0; (x < (ssize_t) number_arguments) && (*p != '\0'); x++)
-          {
-            GetMagickToken(p,&p,token);
-            if (*token == ',')
-              GetMagickToken(p,&p,token);
-            arguments[x]=StringToDouble(token,(char **) NULL);
-          }
-          args=DestroyString(args);
-          new_image=DistortImage(*image,method,number_arguments,arguments,
-            (*argv[0] == '+') ? MagickTrue : MagickFalse,exception);
-          arguments=(double *) RelinquishMagickMemory(arguments);
+          /* convert argument string into an array of doubles */
+          args = StringToArrayOfDoubles(arg2,&count,_exception);
+          if (args == (double *)NULL )
+            CLIWandExceptArgBreak(OptionError,"InvalidNumberList",option,arg2);
+
+          new_image=DistortImage(_image,(DistortImageMethod) parse,count,args,
+               plus_alt_op,_exception);
+          args=(double *) RelinquishMagickMemory(args);
           break;
         }
-      if (LocaleCompare("draw",option) == 0)
+      if (LocaleCompare("draw",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) CloneString(&draw_info->primitive,args[0]);
-          (void) DrawImage(*image,draw_info,exception);
+          (void) CloneString(&_draw_info->primitive,arg1);
+          (void) DrawImage(_image,_draw_info,_exception);
+          (void) CloneString(&_draw_info->primitive,(char *)NULL);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'e':
     {
-      if (LocaleCompare("edge",option) == 0)
+      if (LocaleCompare("edge",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          new_image=EdgeImage(*image,geometry_info.rho,
-            geometry_info.sigma,exception);
+          new_image=EdgeImage(_image,geometry_info.rho,geometry_info.sigma,
+               _exception);
           break;
         }
-      if (LocaleCompare("emboss",option) == 0)
+      if (LocaleCompare("emboss",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          new_image=EmbossImage(*image,geometry_info.rho,
-            geometry_info.sigma,exception);
+          new_image=EmbossImage(_image,geometry_info.rho,
+            geometry_info.sigma,_exception);
           break;
         }
-      if (LocaleCompare("encipher",option) == 0)
+      if (LocaleCompare("encipher",option+1) == 0)
         {
+          /* Note: arguments do not have percent escapes expanded */
           StringInfo
             *passkey;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          passkey=FileToStringInfo(args[0],~0,exception);
+          passkey=FileToStringInfo(arg1,~0,_exception);
           if (passkey != (StringInfo *) NULL)
             {
-              (void) PasskeyEncipherImage(*image,passkey,exception);
+              (void) PasskeyEncipherImage(_image,passkey,_exception);
               passkey=DestroyStringInfo(passkey);
             }
           break;
         }
-      if (LocaleCompare("enhance",option) == 0)
+      if (LocaleCompare("enhance",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=EnhanceImage(*image,exception);
+          new_image=EnhanceImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("equalize",option) == 0)
+      if (LocaleCompare("equalize",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) EqualizeImage(*image,exception);
+          (void) EqualizeImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("evaluate",option) == 0)
+      if (LocaleCompare("evaluate",option+1) == 0)
         {
           double
             constant;
 
-          MagickEvaluateOperator
-            op;
-
-          (void) SyncImageSettings(image_info,*image,exception);
-          op=(MagickEvaluateOperator) ParseCommandOption(
-            MagickEvaluateOptions,MagickFalse,args[0]);
-          constant=StringToDoubleInterval(argv[2],(double) QuantumRange+1.0);
-          (void) EvaluateImage(*image,op,constant,exception);
+          parse = ParseCommandOption(MagickEvaluateOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedEvaluateOperator",
+                 option,arg1);
+          if (IfMagickFalse(IsGeometry(arg2)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg2);
+          constant=StringToDoubleInterval(arg2,(double) QuantumRange+1.0);
+          (void) EvaluateImage(_image,(MagickEvaluateOperator)parse,constant,
+               _exception);
           break;
         }
-      if (LocaleCompare("extent",option) == 0)
+      if (LocaleCompare("extent",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGravityGeometry(*image,args[0],&geometry,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          flags=ParseGravityGeometry(_image,arg1,&geometry,_exception);
           if (geometry.width == 0)
-            geometry.width=(*image)->columns;
+            geometry.width=_image->columns;
           if (geometry.height == 0)
-            geometry.height=(*image)->rows;
-          new_image=ExtentImage(*image,&geometry,exception);
+            geometry.height=_image->rows;
+          new_image=ExtentImage(_image,&geometry,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'f':
     {
-      if (LocaleCompare("features",option) == 0)
+      if (LocaleCompare("features",option+1) == 0)
         {
-          /* FUTURE: Assign Artifact to all images -- per image setting */
-          (void) SetImageArtifact(*image,"identify:features",
-              IfSetOption ? args[0] : (const char *) NULL);
+          /* FUTURE: move to SyncImageSettings() and AcqireImage()??? */
+          if (IfPlusOp) {
+              (void) DeleteImageArtifact(_image,"identify:features");
+              break;
+            }
+          (void) SetImageArtifact(_image,"identify:features","true");
+          (void) SetImageArtifact(_image,"verbose","true");
           break;
         }
-      if (LocaleCompare("flip",option) == 0)
+      if (LocaleCompare("flip",option+1) == 0)
         {
-          /*
-            Flip image scanlines.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=FlipImage(*image,exception);
+          new_image=FlipImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("flop",option) == 0)
+      if (LocaleCompare("flop",option+1) == 0)
         {
-          /*
-            Flop image scanlines.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=FlopImage(*image,exception);
+          new_image=FlopImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("floodfill",option) == 0)
+      if (LocaleCompare("floodfill",option+1) == 0)
         {
           PixelInfo
             target;
 
-          /*
-            Floodfill image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParsePageGeometry(*image,args[0],&geometry,exception);
-          (void) QueryColorCompliance(argv[2],AllCompliance,&target,
-                        exception);
-          (void) FloodfillPaintImage(*image,draw_info,&target,geometry.x,
-            geometry.y,*argv[0] == '-' ? MagickFalse : MagickTrue,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ParsePageGeometry(_image,arg1,&geometry,_exception);
+          (void) QueryColorCompliance(arg2,AllCompliance,&target,_exception);
+          (void) FloodfillPaintImage(_image,_draw_info,&target,geometry.x,
+                    geometry.y,plus_alt_op,_exception);
           break;
         }
-      /* FUTURE: should be from  ImageOption "format"
-      if (LocaleCompare("format",option) == 0)
-        {
-          format=args[0];
-          break;
-        }
-      */
-      if (LocaleCompare("frame",option) == 0)
+      if (LocaleCompare("frame",option+1) == 0)
         {
           FrameInfo
             frame_info;
 
-          /*
-            Surround image with an ornamental border.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParsePageGeometry(*image,args[0],&geometry,exception);
+          CompositeOperator
+            compose;
+
+          const char*
+            value;
+
+          value=GetImageOption(_image_info,"compose");
+          if (value != (const char *) NULL)
+            compose=(CompositeOperator) ParseCommandOption(
+                 MagickComposeOptions,MagickFalse,value);
+          else
+            compose=OverCompositeOp;  /* use Over not _image->compose */
+
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          flags=ParsePageGeometry(_image,arg1,&geometry,_exception);
           frame_info.width=geometry.width;
           frame_info.height=geometry.height;
           if ((flags & HeightValue) == 0)
@@ -2361,220 +2395,149 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
           frame_info.inner_bevel=geometry.y;
           frame_info.x=(ssize_t) frame_info.width;
           frame_info.y=(ssize_t) frame_info.height;
-          frame_info.width=(*image)->columns+2*frame_info.width;
-          frame_info.height=(*image)->rows+2*frame_info.height;
-          new_image=FrameImage(*image,&frame_info,COMPOSE,exception);
+          frame_info.width=_image->columns+2*frame_info.width;
+          frame_info.height=_image->rows+2*frame_info.height;
+          new_image=FrameImage(_image,&frame_info,compose,_exception);
           break;
         }
-      if (LocaleCompare("function",option) == 0)
+      if (LocaleCompare("function",option+1) == 0)
         {
-          char
-            *arguments,
-            token[MaxTextExtent];
-
-          const char
-            *p;
-
           double
-            *parameters;
+            *args;
 
-          MagickFunction
-            function;
+          ssize_t
+            count;
 
-          register ssize_t
-            x;
+          parse=ParseCommandOption(MagickFunctionOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedFunction",
+                 option,arg1);
+          /* convert argument string into an array of doubles */
+          args = StringToArrayOfDoubles(arg2,&count,_exception);
+          if (args == (double *)NULL )
+            CLIWandExceptArgBreak(OptionError,"InvalidNumberList",option,arg2);
 
-          size_t
-            number_parameters;
-
-          /*
-            Function Modify Image Values
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          function=(MagickFunction) ParseCommandOption(MagickFunctionOptions,
-            MagickFalse,args[0]);
-          arguments=InterpretImageProperties(image_info,*image,argv[2],
-            exception);
-          if (arguments == (char *) NULL)
-            break;
-          p=(char *) arguments;
-          for (x=0; *p != '\0'; x++)
-          {
-            GetMagickToken(p,&p,token);
-            if (*token == ',')
-              GetMagickToken(p,&p,token);
-          }
-          number_parameters=(size_t) x;
-          parameters=(double *) AcquireQuantumMemory(number_parameters,
-            sizeof(*parameters));
-          if (parameters == (double *) NULL)
-            ThrowWandFatalException(ResourceLimitFatalError,
-              "MemoryAllocationFailed",(*image)->filename);
-          (void) ResetMagickMemory(parameters,0,number_parameters*
-            sizeof(*parameters));
-          p=(char *) arguments;
-          for (x=0; (x < (ssize_t) number_parameters) && (*p != '\0'); x++)
-          {
-            GetMagickToken(p,&p,token);
-            if (*token == ',')
-              GetMagickToken(p,&p,token);
-            parameters[x]=StringToDouble(token,(char **) NULL);
-          }
-          arguments=DestroyString(arguments);
-          (void) FunctionImage(*image,function,number_parameters,parameters,
-            exception);
-          parameters=(double *) RelinquishMagickMemory(parameters);
+          (void) FunctionImage(_image,(MagickFunction)parse,count,args,
+               _exception);
+          args=(double *) RelinquishMagickMemory(args);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'g':
     {
-      if (LocaleCompare("gamma",option) == 0)
+      if (LocaleCompare("gamma",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            (*image)->gamma=StringToDouble(args[0],(char **) NULL);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          if (IfNormalOp)
+            (void) GammaImage(_image,StringToDouble(arg1,(char **) NULL),
+                 _exception);
           else
-            (void) GammaImage(*image,StringToDouble(args[0],
-              (char **) NULL),exception);
+            _image->gamma=StringToDouble(arg1,(char **) NULL);
           break;
         }
-      if ((LocaleCompare("gaussian-blur",option) == 0) ||
-          (LocaleCompare("gaussian",option) == 0))
+      if (LocaleCompare("gaussian-blur",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          if ((flags & XiValue) == 0)
-            geometry_info.xi=0.0;
-          new_image=GaussianBlurImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,exception);
+          new_image=GaussianBlurImage(_image,geometry_info.rho,
+            geometry_info.sigma,_exception);
           break;
         }
-      if (LocaleCompare("geometry",option) == 0)
+      if (LocaleCompare("gaussian",option+1) == 0)
         {
-            /*
-              Record Image offset for composition,
-              Resize last image. -- FUTURE depreciate this aspect
-            */
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            {
-              if ((*image)->geometry != (char *) NULL)
-                (*image)->geometry=DestroyString((*image)->geometry);
+          CLIWandWarnReplaced("-gaussian-blur");
+          CLISimpleOperatorImage(cli_wand,"-gaussian-blur",arg1,NULL);
+        }
+      if (LocaleCompare("geometry",option+1) == 0)
+        {
+          /*
+            Record Image offset for composition. (A Setting)
+            Resize last _image. (ListOperator)  -- DEPRECIATE
+            FUTURE: Why if no 'offset' does this resize ALL images?
+            Also why is the setting recorded in the IMAGE non-sense!
+          */
+          if (IfPlusOp)
+            { /* remove the previous composition geometry offset! */
+              if (_image->geometry != (char *) NULL)
+                _image->geometry=DestroyString(_image->geometry);
               break;
             }
-          flags=ParseRegionGeometry(*image,args[0],&geometry,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          flags=ParseRegionGeometry(_image,arg1,&geometry,_exception);
           if (((flags & XValue) != 0) || ((flags & YValue) != 0))
-            (void) CloneString(&(*image)->geometry,args[0]);
+            (void) CloneString(&_image->geometry,arg1);
           else
-            new_image=ResizeImage(*image,geometry.width,geometry.height,
-              (*image)->filter,(*image)->blur,exception);
+            new_image=ResizeImage(_image,geometry.width,geometry.height,
+              _image->filter,_exception);
           break;
         }
-      break;
-    }
-    case 'h':
-    {
-      if (LocaleCompare("highlight-color",option) == 0)
-        {
-          (void) SetImageArtifact(*image,option,args[0]);
-          break;
-        }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'i':
     {
-      if (LocaleCompare("identify",option) == 0)
+      if (LocaleCompare("identify",option+1) == 0)
         {
-          char
+          const char
+            *format,
             *text;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (format == (char *) NULL)
-            {
-              (void) IdentifyImage(*image,stdout,image_info->verbose,
-                exception);
-              break;
-            }
-          text=InterpretImageProperties(image_info,*image,format,
-            exception);
-          if (text == (char *) NULL)
+          format=GetImageOption(_image_info,"format");
+          if (format == (char *) NULL) {
+            (void) IdentifyImage(_image,stdout,_image_info->verbose,_exception);
             break;
+          }
+          text=InterpretImageProperties(_image_info,_image,format,_exception);
+          if (text == (char *) NULL)
+            CLIWandExceptionBreak(OptionWarning,"InterpretPropertyFailure",
+                 option);
           (void) fputs(text,stdout);
           (void) fputc('\n',stdout);
-          text=DestroyString(text);
+          text=DestroyString((char *)text);
           break;
         }
-      if (LocaleCompare("implode",option) == 0)
+      if (LocaleCompare("implode",option+1) == 0)
         {
-          /*
-            Implode image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseGeometry(args[0],&geometry_info);
-          new_image=ImplodeImage(*image,geometry_info.rho,
-            interpolate_method,exception);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=ImplodeImage(_image,geometry_info.rho,_image->interpolate,
+               _exception);
           break;
         }
-      if (LocaleCompare("interline-spacing",option) == 0)
+      if (LocaleCompare("interpolative-resize",option+1) == 0)
         {
-          if (*argv[0] == '+')
-            (void) ParseGeometry("0",&geometry_info);
-          else
-            (void) ParseGeometry(args[0],&geometry_info);
-          draw_info->interline_spacing=geometry_info.rho;
+          /* FUTURE: New to IMv7
+               Roll into a resize special operator */
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ParseRegionGeometry(_image,arg1,&geometry,_exception);
+          new_image=InterpolativeResizeImage(_image,geometry.width,
+               geometry.height,_image->interpolate,_exception);
           break;
         }
-      if (LocaleCompare("interpolate",option) == 0)
-        {
-          interpolate_method=(PixelInterpolateMethod) ParseCommandOption(
-            MagickInterpolateOptions,MagickFalse,args[0]);
-          break;
-        }
-      if (LocaleCompare("interword-spacing",option) == 0)
-        {
-          if (*argv[0] == '+')
-            (void) ParseGeometry("0",&geometry_info);
-          else
-            (void) ParseGeometry(args[0],&geometry_info);
-          draw_info->interword_spacing=geometry_info.rho;
-          break;
-        }
-      break;
-    }
-    case 'k':
-    {
-      if (LocaleCompare("kerning",option) == 0)
-        {
-          if (*argv[0] == '+')
-            (void) ParseGeometry("0",&geometry_info);
-          else
-            (void) ParseGeometry(args[0],&geometry_info);
-          draw_info->kerning=geometry_info.rho;
-          break;
-        }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'l':
     {
-      if (LocaleCompare("lat",option) == 0)
+      if (LocaleCompare("lat",option+1) == 0)
         {
-          /*
-            Local adaptive threshold image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & PercentValue) != 0)
             geometry_info.xi=(double) QuantumRange*geometry_info.xi/100.0;
-          new_image=AdaptiveThresholdImage(*image,(size_t)
-            geometry_info.rho,(size_t) geometry_info.sigma,(double)
-            geometry_info.xi,exception);
+          new_image=AdaptiveThresholdImage(_image,(size_t) geometry_info.rho,
+               (size_t) geometry_info.sigma,(double) geometry_info.xi,
+               _exception);
           break;
         }
-      if (LocaleCompare("level",option) == 0)
+      if (LocaleCompare("level",option+1) == 0)
         {
           MagickRealType
             black_point,
@@ -2584,11 +2547,9 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
           MagickStatusType
             flags;
 
-          /*
-            Parse levels.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           black_point=geometry_info.rho;
           white_point=(MagickRealType) QuantumRange;
           if ((flags & SigmaValue) != 0)
@@ -2603,15 +2564,13 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
             }
           if ((flags & SigmaValue) == 0)
             white_point=(MagickRealType) QuantumRange-black_point;
-          if ((*argv[0] == '+') || ((flags & AspectValue) != 0))
-            (void) LevelizeImage(*image,black_point,white_point,gamma,
-              exception);
+          if (IfPlusOp || ((flags & AspectValue) != 0))
+            (void) LevelizeImage(_image,black_point,white_point,gamma,_exception);
           else
-            (void) LevelImage(*image,black_point,white_point,gamma,
-              exception);
+            (void) LevelImage(_image,black_point,white_point,gamma,_exception);
           break;
         }
-      if (LocaleCompare("level-colors",option) == 0)
+      if (LocaleCompare("level-colors",option+1) == 0)
         {
           char
             token[MaxTextExtent];
@@ -2623,14 +2582,14 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
             black_point,
             white_point;
 
-          p=(const char *) args[0];
+          p=(const char *) arg1;
           GetMagickToken(p,&p,token);  /* get black point color */
           if ((isalpha((int) *token) != 0) || ((*token == '#') != 0))
             (void) QueryColorCompliance(token,AllCompliance,
-                      &black_point,exception);
+                      &black_point,_exception);
           else
             (void) QueryColorCompliance("#000000",AllCompliance,
-                      &black_point,exception);
+                      &black_point,_exception);
           if (isalpha((int) token[0]) || (token[0] == '#'))
             GetMagickToken(p,&p,token);
           if (*token == '\0')
@@ -2641,16 +2600,16 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
                 GetMagickToken(p,&p,token); /* Get white point color. */
               if ((isalpha((int) *token) != 0) || ((*token == '#') != 0))
                 (void) QueryColorCompliance(token,AllCompliance,
-                           &white_point,exception);
+                           &white_point,_exception);
               else
                 (void) QueryColorCompliance("#ffffff",AllCompliance,
-                           &white_point,exception);
+                           &white_point,_exception);
             }
-          (void) LevelImageColors(*image,&black_point,&white_point,
-            *argv[0] == '+' ? MagickTrue : MagickFalse,exception);
+          (void) LevelImageColors(_image,&black_point,&white_point,
+                     plus_alt_op,_exception);
           break;
         }
-      if (LocaleCompare("linear-stretch",option) == 0)
+      if (LocaleCompare("linear-stretch",option+1) == 0)
         {
           double
             black_point,
@@ -2659,153 +2618,106 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
           MagickStatusType
             flags;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           black_point=geometry_info.rho;
-          white_point=(MagickRealType) (*image)->columns*(*image)->rows;
+          white_point=(MagickRealType) _image->columns*_image->rows;
           if ((flags & SigmaValue) != 0)
             white_point=geometry_info.sigma;
           if ((flags & PercentValue) != 0)
             {
-              black_point*=(double) (*image)->columns*(*image)->rows/100.0;
-              white_point*=(double) (*image)->columns*(*image)->rows/100.0;
+              black_point*=(double) _image->columns*_image->rows/100.0;
+              white_point*=(double) _image->columns*_image->rows/100.0;
             }
           if ((flags & SigmaValue) == 0)
-            white_point=(MagickRealType) (*image)->columns*(*image)->rows-
+            white_point=(MagickRealType) _image->columns*_image->rows-
               black_point;
-          (void) LinearStretchImage(*image,black_point,white_point,exception);
+          (void) LinearStretchImage(_image,black_point,white_point,_exception);
           break;
         }
-      if (LocaleCompare("linewidth",option) == 0)
+      if (LocaleCompare("liquid-rescale",option+1) == 0)
         {
-          draw_info->stroke_width=StringToDouble(args[0],
-            (char **) NULL);
-          break;
-        }
-      if (LocaleCompare("liquid-rescale",option) == 0)
-        {
-          /*
-            Liquid rescale image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseRegionGeometry(*image,args[0],&geometry,exception);
+          /* FUTURE: Roll into a resize special operator */
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          flags=ParseRegionGeometry(_image,arg1,&geometry,_exception);
           if ((flags & XValue) == 0)
             geometry.x=1;
           if ((flags & YValue) == 0)
             geometry.y=0;
-          new_image=LiquidRescaleImage(*image,geometry.width,
-            geometry.height,1.0*geometry.x,1.0*geometry.y,exception);
+          new_image=LiquidRescaleImage(_image,geometry.width,
+            geometry.height,1.0*geometry.x,1.0*geometry.y,_exception);
           break;
         }
-      if (LocaleCompare("lowlight-color",option) == 0)
-        {
-          (void) SetImageArtifact(*image,option,args[0]);
-          break;
-        }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'm':
     {
-      if (LocaleCompare("map",option) == 0)
+      if (LocaleCompare("map",option+1) == 0)
         {
-          Image
-            *remap_image;
-
-          /*
-            Transform image colors to match this set of colors.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            break;
-          remap_image=GetImageCache(image_info,args[0],exception);
-          if (remap_image == (Image *) NULL)
-            break;
-          (void) RemapImage(quantize_info,*image,remap_image,exception);
-          remap_image=DestroyImage(remap_image);
+          CLIWandWarnReplaced("-remap");
+          CLISimpleOperatorImage(cli_wand,"-remap",NULL,NULL);
           break;
         }
-      if (LocaleCompare("mask",option) == 0)
+      if (LocaleCompare("mask",option+1) == 0)
         {
+          /* Note: arguments do not have percent escapes expanded */
           Image
             *mask;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            {
-              /*
-                Remove a mask.
-              */
-              (void) SetImageMask(*image,(Image *) NULL,exception);
+          if (IfPlusOp)
+            { /* Remove a mask. */
+              (void) SetImageMask(_image,(Image *) NULL,_exception);
               break;
             }
-          /*
-            Set the image mask.
-          */
-          mask=GetImageCache(image_info,args[0],exception);
+          /* Set the image mask. */
+          mask=GetImageCache(_image_info,arg1,_exception);
           if (mask == (Image *) NULL)
             break;
-          (void) SetImageMask(*image,mask,exception);
+          (void) SetImageMask(_image,mask,_exception);
           mask=DestroyImage(mask);
           break;
         }
-      if (LocaleCompare("matte",option) == 0)
+      if (LocaleCompare("matte",option+1) == 0)
         {
-          (void) SetImageAlphaChannel(*image,(*argv[0] == '-') ?
-            SetAlphaChannel : DeactivateAlphaChannel,exception);
+          CLIWandWarnReplaced(IfNormalOp?"-alpha Set":"-alpha Off");
+          (void) SetImageAlphaChannel(_image,IfNormalOp ? SetAlphaChannel :
+                         DeactivateAlphaChannel, _exception);
           break;
         }
-      if (LocaleCompare("median",option) == 0)
+      if (LocaleCompare("median",option+1) == 0)
         {
-          /*
-            Median filter image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
-          if ((flags & SigmaValue) == 0)
-            geometry_info.sigma=geometry_info.rho;
-          new_image=StatisticImage(*image,MedianStatistic,(size_t)
-            geometry_info.rho,(size_t) geometry_info.sigma,exception);
+          CLIWandWarnReplaced("-statistic Median");
+          CLISimpleOperatorImage(cli_wand,"-statistic","Median",arg1);
           break;
         }
-      if (LocaleCompare("mode",option) == 0)
+      if (LocaleCompare("mode",option+1) == 0)
         {
-          /*
-            Mode image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
-          if ((flags & SigmaValue) == 0)
-            geometry_info.sigma=geometry_info.rho;
-          new_image=StatisticImage(*image,ModeStatistic,(size_t)
-            geometry_info.rho,(size_t) geometry_info.sigma,exception);
+          /* FUTURE: note this is also a special "montage" option */
+          CLIWandWarnReplaced("-statistic Mode");
+          CLISimpleOperatorImage(cli_wand,"-statistic","Mode",arg1);
           break;
         }
-      if (LocaleCompare("modulate",option) == 0)
+      if (LocaleCompare("modulate",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ModulateImage(*image,args[0],exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ModulateImage(_image,arg1,_exception);
           break;
         }
-      if (LocaleCompare("monitor",option) == 0)
+      if (LocaleCompare("monitor",option+1) == 0)
         {
-          /* FUTURE: Why is this a per-image setting? */
-          if (*argv[0] == '+')
-            {
-              (void) SetImageProgressMonitor(*image,
+          (void) SetImageProgressMonitor(_image, IfNormalOp ? MonitorProgress :
                 (MagickProgressMonitor) NULL,(void *) NULL);
-              break;
-            }
-          (void) SetImageProgressMonitor(*image,MonitorProgress,
-            (void *) NULL);
           break;
         }
-      if (LocaleCompare("monochrome",option) == 0)
+      if (LocaleCompare("monochrome",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) SetImageType(*image,BilevelType,exception);
+          (void) SetImageType(_image,BilevelType,_exception);
           break;
         }
-      if (LocaleCompare("morphology",option) == 0)
+      if (LocaleCompare("morphology",option+1) == 0)
         {
           char
             token[MaxTextExtent];
@@ -2816,177 +2728,165 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
           KernelInfo
             *kernel;
 
-          MorphologyMethod
-            method;
-
           ssize_t
             iterations;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          p=args[0];
+          p=arg1;
           GetMagickToken(p,&p,token);
-          method=(MorphologyMethod) ParseCommandOption(
-            MagickMorphologyOptions,MagickFalse,token);
+          parse=ParseCommandOption(MagickMorphologyOptions,MagickFalse,token);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedFunction",
+                 option,arg1);
           iterations=1L;
           GetMagickToken(p,&p,token);
           if ((*p == ':') || (*p == ','))
             GetMagickToken(p,&p,token);
           if ((*p != '\0'))
             iterations=(ssize_t) StringToLong(p);
-          kernel=AcquireKernelInfo(argv[2]);
+          kernel=AcquireKernelInfo(arg2);
           if (kernel == (KernelInfo *) NULL)
-            {
-              (void) ThrowMagickException(exception,GetMagickModule(),
-                OptionError,"UnabletoParseKernel","morphology");
-              status=MagickFalse;
-              break;
-            }
-          new_image=MorphologyImage(*image,method,iterations,kernel,
-            exception);
+            CLIWandExceptArgBreak(OptionError,"UnabletoParseKernel",
+                 option,arg2);
+          new_image=MorphologyImage(_image,(MorphologyMethod)parse,
+               iterations,kernel,_exception);
           kernel=DestroyKernelInfo(kernel);
           break;
         }
-      if (LocaleCompare("motion-blur",option) == 0)
+      if (LocaleCompare("motion-blur",option+1) == 0)
         {
-          /*
-            Motion blur image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          new_image=MotionBlurImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,geometry_info.psi,
-            exception);
+          new_image=MotionBlurImage(_image,geometry_info.rho,
+            geometry_info.sigma,geometry_info.xi,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'n':
     {
-      if (LocaleCompare("negate",option) == 0)
+      if (LocaleCompare("negate",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) NegateImage(*image,*argv[0] == '+' ? MagickTrue :
-            MagickFalse,exception);
+          (void) NegateImage(_image, plus_alt_op, _exception);
           break;
         }
-      if (LocaleCompare("noise",option) == 0)
+      if (LocaleCompare("noise",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '-')
-            {
-              flags=ParseGeometry(args[0],&geometry_info);
-              if ((flags & SigmaValue) == 0)
-                geometry_info.sigma=geometry_info.rho;
-              new_image=StatisticImage(*image,NonpeakStatistic,(size_t)
-                geometry_info.rho,(size_t) geometry_info.sigma,exception);
-            }
-          else
-            {
-              NoiseType
-                noise;
+          double
+            attenuate;
 
-              noise=(NoiseType) ParseCommandOption(MagickNoiseOptions,
-                MagickFalse,args[0]);
-              new_image=AddNoiseImage(*image,noise,exception);
+          const char*
+            value;
+
+          if (IfNormalOp)
+            {
+              CLIWandWarnReplaced("-statistic NonPeak");
+              CLISimpleOperatorImage(cli_wand,"-statistic","NonPeak",arg1);
+              break;
             }
+          parse=ParseCommandOption(MagickNoiseOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedNoiseType",
+                option,arg1);
+          attenuate=1.0;
+          value=GetImageOption(_image_info,"attenuate");
+          if  (value != (const char *) NULL)
+            attenuate=StringToDouble(value,(char **) NULL);
+          new_image=AddNoiseImage(_image,(NoiseType)parse,attenuate,
+               _exception);
           break;
         }
-      if (LocaleCompare("normalize",option) == 0)
+      if (LocaleCompare("normalize",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) NormalizeImage(*image,exception);
+          (void) NormalizeImage(_image,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'o':
     {
-      if (LocaleCompare("opaque",option) == 0)
+      if (LocaleCompare("opaque",option+1) == 0)
         {
           PixelInfo
             target;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) QueryColorCompliance(args[0],AllCompliance,&target,
-                       exception);
-          (void) OpaquePaintImage(*image,&target,&fill,*argv[0] == '-' ?
-            MagickFalse : MagickTrue,exception);
+          (void) QueryColorCompliance(arg1,AllCompliance,&target,_exception);
+          (void) OpaquePaintImage(_image,&target,&_draw_info->fill,plus_alt_op,
+               _exception);
           break;
         }
-      if (LocaleCompare("ordered-dither",option) == 0)
+      if (LocaleCompare("ordered-dither",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) OrderedPosterizeImage(*image,args[0],exception);
+          (void) OrderedPosterizeImage(_image,arg1,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'p':
     {
-      if (LocaleCompare("paint",option) == 0)
+      if (LocaleCompare("paint",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseGeometry(args[0],&geometry_info);
-          new_image=OilPaintImage(*image,geometry_info.rho,
-            geometry_info.sigma,exception);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=OilPaintImage(_image,geometry_info.rho,geometry_info.sigma,
+               _exception);
           break;
         }
-      if (LocaleCompare("polaroid",option) == 0)
+      if (LocaleCompare("polaroid",option+1) == 0)
         {
+          const char
+            *caption;
+
           double
             angle;
 
-          RandomInfo
+          if (IfPlusOp) {
+            RandomInfo
             *random_info;
 
-          /*
-            Simulate a Polaroid picture.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          random_info=AcquireRandomInfo();
-          angle=22.5*(GetPseudoRandomValue(random_info)-0.5);
-          random_info=DestroyRandomInfo(random_info);
-          if (*argv[0] == '-')
-            {
-              SetGeometryInfo(&geometry_info);
-              flags=ParseGeometry(args[0],&geometry_info);
-              angle=geometry_info.rho;
-            }
-          new_image=PolaroidImage(*image,draw_info,angle,
-            interpolate_method,exception);
+            random_info=AcquireRandomInfo();
+            angle=22.5*(GetPseudoRandomValue(random_info)-0.5);
+            random_info=DestroyRandomInfo(random_info);
+          }
+          else {
+            flags=ParseGeometry(arg1,&geometry_info);
+            if ((flags & RhoValue) == 0)
+              CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+            angle=geometry_info.rho;
+          }
+          caption=GetImageProperty(_image,"caption",_exception);
+          new_image=PolaroidImage(_image,_draw_info,caption,angle,
+            _image->interpolate,_exception);
           break;
         }
-      if (LocaleCompare("posterize",option) == 0)
+      if (LocaleCompare("posterize",option+1) == 0)
         {
-          /*
-            Posterize image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) PosterizeImage(*image,StringToUnsignedLong(args[0]),
-            quantize_info->dither,exception);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) PosterizeImage(_image,(size_t) geometry_info.rho,
+            _quantize_info->dither_method,_exception);
           break;
         }
-      if (LocaleCompare("preview",option) == 0)
+      if (LocaleCompare("preview",option+1) == 0)
         {
-          PreviewType
-            preview_type;
-
-          /*
-            Preview image.
+          /* FUTURE: should be a 'Genesis' option?
+             Option however is also in WandSettingOptionInfo()
+             Why???
           */
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            preview_type=UndefinedPreview;
-          else
-            preview_type=(PreviewType) ParseCommandOption(
-              MagickPreviewOptions,MagickFalse,args[0]);
-          new_image=PreviewImage(*image,preview_type,exception);
+          parse=ParseCommandOption(MagickPreviewOptions, MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedPreviewType",
+                option,arg1);
+          new_image=PreviewImage(_image,(PreviewType)parse,_exception);
           break;
         }
-      if (LocaleCompare("profile",option) == 0)
+      if (LocaleCompare("profile",option+1) == 0)
         {
+          /* Note: arguments do not have percent escapes expanded */
           const char
             *name;
 
@@ -2999,39 +2899,33 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
           ImageInfo
             *profile_info;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            {
-              /*
-                Remove a profile from the image.
-              */
-              (void) ProfileImage(*image,args[0],(const unsigned char *)
-                NULL,0,exception);
+          if (IfPlusOp)
+            { /* Remove a profile from the _image.  */
+              (void) ProfileImage(_image,arg1,(const unsigned char *)
+                NULL,0,_exception);
               break;
             }
-          /*
-            Associate a profile with the image.
-          */
-          profile_info=CloneImageInfo(image_info);
-          profile=GetImageProfile(*image,"iptc");
+          /* Associate a profile with the _image.  */
+          profile_info=CloneImageInfo(_image_info);
+          profile=GetImageProfile(_image,"iptc");
           if (profile != (StringInfo *) NULL)
             profile_info->profile=(void *) CloneStringInfo(profile);
-          profile_image=GetImageCache(profile_info,args[0],exception);
+          profile_image=GetImageCache(profile_info,arg1,_exception);
           profile_info=DestroyImageInfo(profile_info);
           if (profile_image == (Image *) NULL)
             {
               StringInfo
                 *profile;
 
-              profile_info=CloneImageInfo(image_info);
-              (void) CopyMagickString(profile_info->filename,args[0],
+              profile_info=CloneImageInfo(_image_info);
+              (void) CopyMagickString(profile_info->filename,arg1,
                 MaxTextExtent);
-              profile=FileToStringInfo(profile_info->filename,~0UL,exception);
+              profile=FileToStringInfo(profile_info->filename,~0UL,_exception);
               if (profile != (StringInfo *) NULL)
                 {
-                  (void) ProfileImage(*image,profile_info->magick,
+                  (void) ProfileImage(_image,profile_info->magick,
                     GetStringInfoDatum(profile),(size_t)
-                    GetStringInfoLength(profile),exception);
+                    GetStringInfoLength(profile),_exception);
                   profile=DestroyStringInfo(profile);
                 }
               profile_info=DestroyImageInfo(profile_info);
@@ -3043,574 +2937,585 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
           {
             profile=GetImageProfile(profile_image,name);
             if (profile != (StringInfo *) NULL)
-              (void) ProfileImage(*image,name,GetStringInfoDatum(profile),
-                (size_t) GetStringInfoLength(profile),exception);
+              (void) ProfileImage(_image,name,GetStringInfoDatum(profile),
+                (size_t) GetStringInfoLength(profile),_exception);
             name=GetNextImageProfile(profile_image);
           }
           profile_image=DestroyImage(profile_image);
           break;
         }
-      break;
-    }
-    case 'q':
-    {
-      if (LocaleCompare("quantize",option) == 0)
-        {
-          if (*argv[0] == '+')
-            {
-              quantize_info->colorspace=UndefinedColorspace;
-              break;
-            }
-          quantize_info->colorspace=(ColorspaceType) ParseCommandOption(
-            MagickColorspaceOptions,MagickFalse,args[0]);
-          break;
-        }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'r':
     {
-      if (LocaleCompare("radial-blur",option) == 0)
+      if (LocaleCompare("radial-blur",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
-          new_image=RadialBlurImage(*image,geometry_info.rho,
-            geometry_info.sigma,exception);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=RadialBlurImage(_image,geometry_info.rho,_exception);
           break;
         }
-      if (LocaleCompare("raise",option) == 0)
+      if (LocaleCompare("raise",option+1) == 0)
         {
-          flags=ParsePageGeometry(*image,args[0],&geometry,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          flags=ParsePageGeometry(_image,arg1,&geometry,_exception);
           if ((flags & SigmaValue) == 0)
             geometry.height=geometry.width;
-          (void) RaiseImage(*image,&geometry,*argv[0] == '-' ? MagickTrue :
-            MagickFalse,exception);
+          (void) RaiseImage(_image,&geometry,normal_op,_exception);
           break;
         }
-      if (LocaleCompare("random-threshold",option) == 0)
+      if (LocaleCompare("random-threshold",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) RandomThresholdImage(*image,args[0],exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) RandomThresholdImage(_image,arg1,_exception);
           break;
         }
-      if (LocaleCompare("recolor",option) == 0)
+      if (LocaleCompare("recolor",option+1) == 0)
         {
-          KernelInfo
-            *kernel;
-
-          (void) SyncImageSettings(image_info,*image,exception);
-          kernel=AcquireKernelInfo(args[0]);
-          if (kernel == (KernelInfo *) NULL)
-            break;
-          new_image=ColorMatrixImage(*image,kernel,exception);
-          kernel=DestroyKernelInfo(kernel);
-          break;
+          CLIWandWarnReplaced("-color-matrix");
+          CLISimpleOperatorImage(cli_wand,"-color-matrix",arg1,NULL);
         }
-      if (LocaleCompare("remap",option) == 0)
+      if (LocaleCompare("remap",option+1) == 0)
         {
+          /* Note: arguments do not have percent escapes expanded */
           Image
             *remap_image;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            break;
-          remap_image=GetImageCache(image_info,args[0],exception);
+          remap_image=GetImageCache(_image_info,arg1,_exception);
           if (remap_image == (Image *) NULL)
             break;
-          (void) RemapImage(quantize_info,*image,remap_image,exception);
+          (void) RemapImage(_quantize_info,_image,remap_image,_exception);
           remap_image=DestroyImage(remap_image);
           break;
         }
-      if (LocaleCompare("repage",option) == 0)
+      if (LocaleCompare("repage",option+1) == 0)
         {
-          if (*argv[0] == '+')
+          if (IfNormalOp)
             {
-              (void) ParseAbsoluteGeometry("0x0+0+0",&(*image)->page);
-              break;
+              if (IfMagickFalse(IsGeometry(arg1)))
+                CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,
+                  arg1);
+              (void) ResetImagePage(_image,arg1);
             }
-          (void) ResetImagePage(*image,args[0]);
+          else
+            (void) ParseAbsoluteGeometry("0x0+0+0",&_image->page);
           break;
         }
-      if (LocaleCompare("resample",option) == 0)
+      if (LocaleCompare("resample",option+1) == 0)
         {
-          /* FUTURE: remove blur - no longer used */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          /* FUTURE: Roll into a resize special operation */
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=geometry_info.rho;
-          new_image=ResampleImage(*image,geometry_info.rho,
-            geometry_info.sigma,(*image)->filter,(*image)->blur,exception);
+          new_image=ResampleImage(_image,geometry_info.rho,
+            geometry_info.sigma,_image->filter,_exception);
           break;
         }
-      if (LocaleCompare("resize",option) == 0)
+      if (LocaleCompare("resize",option+1) == 0)
         {
-          /* FUTURE: remove blur argument - no longer used */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseRegionGeometry(*image,args[0],&geometry,exception);
-          new_image=ResizeImage(*image,geometry.width,geometry.height,
-            (*image)->filter,(*image)->blur,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ParseRegionGeometry(_image,arg1,&geometry,_exception);
+          new_image=ResizeImage(_image,geometry.width,geometry.height,
+            _image->filter,_exception);
           break;
         }
-      if (LocaleCompare("roll",option) == 0)
+      if (LocaleCompare("roll",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParsePageGeometry(*image,args[0],&geometry,exception);
-          new_image=RollImage(*image,geometry.x,geometry.y,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ParsePageGeometry(_image,arg1,&geometry,_exception);
+          new_image=RollImage(_image,geometry.x,geometry.y,_exception);
           break;
         }
-      if (LocaleCompare("rotate",option) == 0)
+      if (LocaleCompare("rotate",option+1) == 0)
         {
-          /* special case rotation flags */
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (strchr(args[0],'>') != (char *) NULL)
-            if ((*image)->columns <= (*image)->rows)
-              break;
-          if (strchr(args[0],'<') != (char *) NULL)
-            if ((*image)->columns >= (*image)->rows)
-              break;
-
-          (void) ParseGeometry(args[0],&geometry_info);
-          new_image=RotateImage(*image,geometry_info.rho,exception);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          if ((flags & GreaterValue) != 0 && (_image->columns <= _image->rows))
+            break;
+          if ((flags & LessValue) != 0 && (_image->columns >= _image->rows))
+            break;
+          new_image=RotateImage(_image,geometry_info.rho,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 's':
     {
-      if (LocaleCompare("sample",option) == 0)
+      if (LocaleCompare("sample",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseRegionGeometry(*image,args[0],&geometry,exception);
-          new_image=SampleImage(*image,geometry.width,geometry.height,
-            exception);
+          /* FUTURE: Roll into a resize special operator */
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ParseRegionGeometry(_image,arg1,&geometry,_exception);
+          new_image=SampleImage(_image,geometry.width,geometry.height,
+            _exception);
           break;
         }
-      if (LocaleCompare("scale",option) == 0)
+      if (LocaleCompare("scale",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseRegionGeometry(*image,args[0],&geometry,exception);
-          new_image=ScaleImage(*image,geometry.width,geometry.height,
-            exception);
+          /* FUTURE: Roll into a resize special operator */
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ParseRegionGeometry(_image,arg1,&geometry,_exception);
+          new_image=ScaleImage(_image,geometry.width,geometry.height,
+            _exception);
           break;
         }
-      if (LocaleCompare("selective-blur",option) == 0)
+      if (LocaleCompare("segment",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
-          if ((flags & PercentValue) != 0)
-            geometry_info.xi=(double) QuantumRange*geometry_info.xi/100.0;
-          new_image=SelectiveBlurImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,geometry_info.psi,exception);
-          break;
-        }
-      if (LocaleCompare("separate",option) == 0)
-        {
-          /*
-            Break channels into separate images.
-            WARNING: This can generate multiple images!
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=SeparateImages(*image,exception);
-          break;
-        }
-      if (LocaleCompare("sepia-tone",option) == 0)
-        {
-          double
-            threshold;
-
-          (void) SyncImageSettings(image_info,*image,exception);
-          threshold=StringToDoubleInterval(args[0],(double) QuantumRange+1.0);
-          new_image=SepiaToneImage(*image,threshold,exception);
-          break;
-        }
-      if (LocaleCompare("segment",option) == 0)
-        {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          (void) SegmentImage(*image,(*image)->colorspace,
-            image_info->verbose,geometry_info.rho,geometry_info.sigma,
-            exception);
+          (void) SegmentImage(_image,_image->colorspace,
+            _image_info->verbose,geometry_info.rho,geometry_info.sigma,
+            _exception);
           break;
         }
-      if (LocaleCompare("set",option) == 0)
+      if (LocaleCompare("selective-blur",option+1) == 0)
         {
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          if ((flags & SigmaValue) == 0)
+            geometry_info.sigma=1.0;
+          if ((flags & PercentValue) != 0)
+            geometry_info.xi=(double) QuantumRange*geometry_info.xi/100.0;
+          new_image=SelectiveBlurImage(_image,geometry_info.rho,
+            geometry_info.sigma,geometry_info.xi,_exception);
+          break;
+        }
+      if (LocaleCompare("separate",option+1) == 0)
+        {
+          /* WARNING: This can generate multiple images! */
+          /* FUTURE - this may be replaced by a "-channel" method */
+          new_image=SeparateImages(_image,_exception);
+          break;
+        }
+      if (LocaleCompare("sepia-tone",option+1) == 0)
+        {
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=SepiaToneImage(_image,StringToDoubleInterval(arg1,
+                 (double) QuantumRange+1.0),_exception);
+          break;
+        }
+      if (LocaleCompare("set",option+1) == 0)
+        {
+          /* Note: arguments do not have percent escapes expanded */
           char
             *value;
 
-          if (*argv[0] == '+')
-            {
-              if (LocaleNCompare(args[0],"registry:",9) == 0)
-                (void) DeleteImageRegistry(args[0]+9);
+          if (IfPlusOp) {
+              if (LocaleNCompare(arg1,"registry:",9) == 0)
+                (void) DeleteImageRegistry(arg1+9);
               else
-                if (LocaleNCompare(args[0],"argv[0]:",7) == 0)
+                if (LocaleNCompare(arg1,"option:",7) == 0)
                   {
-                    (void) DeleteImageOption(image_info,args[0]+7);
-                    (void) DeleteImageArtifact(*image,args[0]+7);
+                    (void) DeleteImageOption(_image_info,arg1+7);
+                    (void) DeleteImageArtifact(_image,arg1+7);
                   }
                 else
-                  (void) DeleteImageProperty(*image,args[0]);
+                  (void) DeleteImageProperty(_image,arg1);
               break;
             }
-          value=InterpretImageProperties(image_info,*image,argv[2],
-            exception);
+          value=InterpretImageProperties(_image_info,_image,arg2,_exception);
           if (value == (char *) NULL)
-            break;
-          if (LocaleNCompare(args[0],"registry:",9) == 0)
-            (void) SetImageRegistry(StringRegistryType,args[0]+9,value,
-              exception);
+            CLIWandExceptionBreak(OptionWarning,"InterpretPropertyFailure",
+                  option);
+          if (LocaleNCompare(arg1,"registry:",9) == 0)
+            (void) SetImageRegistry(StringRegistryType,arg1+9,value,_exception);
           else
-            if (LocaleNCompare(args[0],"option:",7) == 0)
+            if (LocaleNCompare(arg1,"option:",7) == 0)
               {
-                (void) SetImageOption(image_info,args[0]+7,value);
-                (void) SetImageArtifact(*image,args[0]+7,value);
+                (void) SetImageOption(_image_info,arg1+7,value);
+                (void) SetImageArtifact(_image,arg1+7,value);
               }
             else
-              (void) SetImageProperty(*image,args[0],value,exception);
+              (void) SetImageProperty(_image,arg1,value,_exception);
           value=DestroyString(value);
           break;
         }
-      if (LocaleCompare("shade",option) == 0)
+      if (LocaleCompare("shade",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
-          if ((flags & SigmaValue) == 0)
-            geometry_info.sigma=1.0;
-          new_image=ShadeImage(*image,(*argv[0] == '-') ? MagickTrue :
-            MagickFalse,geometry_info.rho,geometry_info.sigma,exception);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if (((flags & RhoValue) == 0) || ((flags & SigmaValue) == 0))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=ShadeImage(_image,normal_op,geometry_info.rho,
+               geometry_info.sigma,_exception);
           break;
         }
-      if (LocaleCompare("shadow",option) == 0)
+      if (LocaleCompare("shadow",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
           if ((flags & XiValue) == 0)
             geometry_info.xi=4.0;
           if ((flags & PsiValue) == 0)
             geometry_info.psi=4.0;
-          new_image=ShadowImage(*image,geometry_info.rho,
-            geometry_info.sigma,(ssize_t) ceil(geometry_info.xi-0.5),(ssize_t)
-            ceil(geometry_info.psi-0.5),exception);
+          new_image=ShadowImage(_image,geometry_info.rho,geometry_info.sigma,
+            (ssize_t) ceil(geometry_info.xi-0.5),(ssize_t)
+            ceil(geometry_info.psi-0.5),_exception);
           break;
         }
-      if (LocaleCompare("sharpen",option) == 0)
+      if (LocaleCompare("sharpen",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
           if ((flags & XiValue) == 0)
             geometry_info.xi=0.0;
-          new_image=SharpenImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,exception);
+          new_image=SharpenImage(_image,geometry_info.rho,geometry_info.sigma,
+           _exception);
           break;
         }
-      if (LocaleCompare("shave",option) == 0)
+      if (LocaleCompare("shave",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParsePageGeometry(*image,args[0],&geometry,exception);
-          new_image=ShaveImage(*image,&geometry,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          flags=ParsePageGeometry(_image,arg1,&geometry,_exception);
+          new_image=ShaveImage(_image,&geometry,_exception);
           break;
         }
-      if (LocaleCompare("shear",option) == 0)
+      if (LocaleCompare("shear",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=geometry_info.rho;
-          new_image=ShearImage(*image,geometry_info.rho,
-            geometry_info.sigma,exception);
+          new_image=ShearImage(_image,geometry_info.rho,
+            geometry_info.sigma,_exception);
           break;
         }
-      if (LocaleCompare("sigmoidal-contrast",option) == 0)
+      if (LocaleCompare("sigmoidal-contrast",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=(double) QuantumRange/2.0;
           if ((flags & PercentValue) != 0)
             geometry_info.sigma=(double) QuantumRange*geometry_info.sigma/
               100.0;
-          (void) SigmoidalContrastImage(*image,(*argv[0] == '-') ?
-            MagickTrue : MagickFalse,geometry_info.rho,geometry_info.sigma,
-            exception);
+          (void) SigmoidalContrastImage(_image,normal_op,geometry_info.rho,
+               geometry_info.sigma,_exception);
           break;
         }
-      if (LocaleCompare("sketch",option) == 0)
+      if (LocaleCompare("sketch",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          new_image=SketchImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,geometry_info.psi,exception);
+          new_image=SketchImage(_image,geometry_info.rho,
+            geometry_info.sigma,geometry_info.xi,_exception);
           break;
         }
-      if (LocaleCompare("solarize",option) == 0)
+      if (LocaleCompare("solarize",option+1) == 0)
         {
-          double
-            threshold;
-
-          (void) SyncImageSettings(image_info,*image,exception);
-          threshold=StringToDoubleInterval(args[0],(double) QuantumRange+1.0);
-          (void) SolarizeImage(*image,threshold,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) SolarizeImage(_image,StringToDoubleInterval(arg1,(double)
+                 QuantumRange+1.0),_exception);
           break;
         }
-      if (LocaleCompare("sparse-color",option) == 0)
+      if (LocaleCompare("sparse-color",option+1) == 0)
         {
-          SparseColorMethod
-            method;
-
-          char
-            *arguments;
-
-          (void) SyncImageSettings(image_info,*image,exception);
-          method=(SparseColorMethod) ParseCommandOption(
-            MagickSparseColorOptions,MagickFalse,args[0]);
-          arguments=InterpretImageProperties(image_info,*image,argv[2],
-            exception);
-          if (arguments == (char *) NULL)
-            break;
-          new_image=SparseColorOption(*image,method,arguments,
-            argv[0][0] == '+' ? MagickTrue : MagickFalse,exception);
-          arguments=DestroyString(arguments);
+          parse= ParseCommandOption(MagickSparseColorOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedSparseColorMethod",
+                option,arg1);
+          new_image=SparseColorOption(_image,(SparseColorMethod)parse,arg2,
+               _exception);
           break;
         }
-      if (LocaleCompare("splice",option) == 0)
+      if (LocaleCompare("splice",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseGravityGeometry(*image,args[0],&geometry,exception);
-          new_image=SpliceImage(*image,&geometry,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          flags=ParseGravityGeometry(_image,arg1,&geometry,_exception);
+          new_image=SpliceImage(_image,&geometry,_exception);
           break;
         }
-      if (LocaleCompare("spread",option) == 0)
+      if (LocaleCompare("spread",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseGeometry(args[0],&geometry_info);
-          new_image=SpreadImage(*image,geometry_info.rho,
-            interpolate_method,exception);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg2);
+          new_image=SpreadImage(_image,geometry_info.rho,_image->interpolate,
+               _exception);
           break;
         }
-      if (LocaleCompare("statistic",option) == 0)
+      if (LocaleCompare("statistic",option+1) == 0)
         {
-          StatisticType
-            type;
-
-          (void) SyncImageSettings(image_info,*image,exception);
-          type=(StatisticType) ParseCommandOption(MagickStatisticOptions,
-            MagickFalse,args[0]);
-          (void) ParseGeometry(argv[2],&geometry_info);
-          new_image=StatisticImage(*image,type,(size_t) geometry_info.rho,
-            (size_t) geometry_info.sigma,exception);
+          parse=ParseCommandOption(MagickStatisticOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedStatisticType",
+                 option,arg1);
+          flags=ParseGeometry(arg2,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg2);
+          if ((flags & SigmaValue) == 0)
+            geometry_info.sigma=geometry_info.rho;
+          new_image=StatisticImage(_image,(StatisticType)parse,
+               (size_t) geometry_info.rho,(size_t) geometry_info.sigma,
+               _exception);
           break;
         }
-      if (LocaleCompare("strip",option) == 0)
+      if (LocaleCompare("strip",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) StripImage(*image,exception);
+          (void) StripImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("swirl",option) == 0)
+      if (LocaleCompare("swirl",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseGeometry(args[0],&geometry_info);
-          new_image=SwirlImage(*image,geometry_info.rho,
-            interpolate_method,exception);
+          flags=ParseGeometry(arg2,&geometry_info);
+          if ((flags & RhoValue) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg2);
+          new_image=SwirlImage(_image,geometry_info.rho,
+            _image->interpolate,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 't':
     {
-      if (LocaleCompare("threshold",option) == 0)
+      if (LocaleCompare("threshold",option+1) == 0)
         {
           double
             threshold;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          if (*argv[0] == '+')
-            threshold=(double) QuantumRange/2;
-          else
-            threshold=StringToDoubleInterval(args[0],(double) QuantumRange+1.0);
-          (void) BilevelImage(*image,threshold,exception);
+          threshold=(double) QuantumRange/2;
+          if (normal_op) {
+            if (IfMagickFalse(IsGeometry(arg1)))
+              CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+            threshold=StringToDoubleInterval(arg1,(double) QuantumRange+1.0);
+          }
+          (void) BilevelImage(_image,threshold,_exception);
           break;
         }
-      if (LocaleCompare("thumbnail",option) == 0)
+      if (LocaleCompare("thumbnail",option+1) == 0)
         {
-          /*
-            Thumbnail image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) ParseRegionGeometry(*image,args[0],&geometry,exception);
-          new_image=ThumbnailImage(*image,geometry.width,geometry.height,
-            exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) ParseRegionGeometry(_image,arg1,&geometry,_exception);
+          new_image=ThumbnailImage(_image,geometry.width,geometry.height,
+            _exception);
           break;
         }
-      if (LocaleCompare("tint",option) == 0)
+      if (LocaleCompare("tint",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=TintImage(*image,args[0],&fill,exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          new_image=TintImage(_image,arg1,&_draw_info->fill,_exception);
           break;
         }
-      if (LocaleCompare("transform",option) == 0)
+      if (LocaleCompare("transform",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=AffineTransformImage(*image,&draw_info->affine,
-            exception);
+          CLIWandWarnReplaced("+distort AffineProjection");
+          new_image=AffineTransformImage(_image,&_draw_info->affine,_exception);
           break;
         }
-      if (LocaleCompare("transparent",option) == 0)
+      if (LocaleCompare("transparent",option+1) == 0)
         {
           PixelInfo
             target;
 
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) QueryColorCompliance(args[0],AllCompliance,&target,
-                       exception);
-          (void) TransparentPaintImage(*image,&target,(Quantum)
-            TransparentAlpha,*argv[0] == '-' ? MagickFalse : MagickTrue,
-            exception);
+          (void) QueryColorCompliance(arg1,AllCompliance,&target,_exception);
+          (void) TransparentPaintImage(_image,&target,(Quantum)
+            TransparentAlpha,plus_alt_op,_exception);
           break;
         }
-      if (LocaleCompare("transpose",option) == 0)
+      if (LocaleCompare("transpose",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=TransposeImage(*image,exception);
+          new_image=TransposeImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("transverse",option) == 0)
+      if (LocaleCompare("transverse",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=TransverseImage(*image,exception);
+          new_image=TransverseImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("treedepth",option) == 0)
+      if (LocaleCompare("trim",option+1) == 0)
         {
-          quantize_info->tree_depth=StringToUnsignedLong(args[0]);
+          new_image=TrimImage(_image,_exception);
           break;
         }
-      if (LocaleCompare("trim",option) == 0)
-        {
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=TrimImage(*image,exception);
-          break;
-        }
-      if (LocaleCompare("type",option) == 0)
+      if (LocaleCompare("type",option+1) == 0)
         {
           /* Note that "type" setting should have already been defined */
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) SetImageType(*image,type,exception);
+          (void) SetImageType(_image,_image_info->type,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'u':
     {
-      if (LocaleCompare("unique",option) == 0)
+      if (LocaleCompare("unique",option+1) == 0)
         {
-          if (*argv[0] == '+')
-            {
-              (void) DeleteImageArtifact(*image,"identify:unique-colors");
+          /* FUTURE: move to SyncImageSettings() and AcqireImage()???
+             Option is not documented, bt appears to be for "identify".
+             We may need a identify specific verbose!
+          */
+          if (plus_alt_op) {
+              (void) DeleteImageArtifact(_image,"identify:unique-colors");
               break;
             }
-          (void) SetImageArtifact(*image,"identify:unique-colors","true");
-          (void) SetImageArtifact(*image,"verbose","true");
+          (void) SetImageArtifact(_image,"identify:unique-colors","true");
+          (void) SetImageArtifact(_image,"verbose","true");
           break;
         }
-      if (LocaleCompare("unique-colors",option) == 0)
+      if (LocaleCompare("unique-colors",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          new_image=UniqueImageColors(*image,exception);
+          new_image=UniqueImageColors(_image,_exception);
           break;
         }
-      if (LocaleCompare("unsharp",option) == 0)
+      if (LocaleCompare("unsharp",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
           if ((flags & XiValue) == 0)
             geometry_info.xi=1.0;
           if ((flags & PsiValue) == 0)
             geometry_info.psi=0.05;
-          new_image=UnsharpMaskImage(*image,geometry_info.rho,
-            geometry_info.sigma,geometry_info.xi,geometry_info.psi,exception);
+          new_image=UnsharpMaskImage(_image,geometry_info.rho,
+            geometry_info.sigma,geometry_info.xi,geometry_info.psi,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'v':
     {
-      if (LocaleCompare("verbose",option) == 0)
+      if (LocaleCompare("verbose",option+1) == 0)
         {
-          (void) SetImageArtifact(*image,option,
-                 *argv[0] == '+' ? "false" : "true");
+          /* FUTURE: move to SyncImageSettings() and AcquireImage()???
+             three places!   ImageArtifact   ImageOption  _image_info->verbose
+             Some how new images also get this artifact!
+          */
+          (void) SetImageArtifact(_image,option+1,
+                           IfNormalOp ? "true" : "false" );
           break;
         }
-      if (LocaleCompare("vignette",option) == 0)
+      if (LocaleCompare("vignette",option+1) == 0)
         {
-          /*
-            Vignette image.
-          */
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
           if ((flags & XiValue) == 0)
-            geometry_info.xi=0.1*(*image)->columns;
+            geometry_info.xi=0.1*_image->columns;
           if ((flags & PsiValue) == 0)
-            geometry_info.psi=0.1*(*image)->rows;
-          new_image=VignetteImage(*image,geometry_info.rho,
-            geometry_info.sigma,(ssize_t) ceil(geometry_info.xi-0.5),(ssize_t)
-            ceil(geometry_info.psi-0.5),exception);
+            geometry_info.psi=0.1*_image->rows;
+          new_image=VignetteImage(_image,geometry_info.rho,geometry_info.sigma,
+            (ssize_t) ceil(geometry_info.xi-0.5),(ssize_t)
+            ceil(geometry_info.psi-0.5),_exception);
           break;
         }
-      if (LocaleCompare("virtual-pixel",option) == 0)
-        {
-          /* setting already defined in image_info structure */
-          SetImageVirtualPixelMethod(*image, image_info->virtual_pixel_method);
-          break;
-        }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'w':
     {
-      if (LocaleCompare("wave",option) == 0)
+      if (LocaleCompare("wave",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          flags=ParseGeometry(args[0],&geometry_info);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & (RhoValue|SigmaValue)) == 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           if ((flags & SigmaValue) == 0)
             geometry_info.sigma=1.0;
-          new_image=WaveImage(*image,geometry_info.rho,
-            geometry_info.sigma,interpolate_method,exception);
+          new_image=WaveImage(_image,geometry_info.rho,geometry_info.sigma,
+               _image->interpolate,_exception);
           break;
         }
-      if (LocaleCompare("white-threshold",option) == 0)
+      if (LocaleCompare("white-threshold",option+1) == 0)
         {
-          (void) SyncImageSettings(image_info,*image,exception);
-          (void) WhiteThresholdImage(*image,args[0],exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          (void) WhiteThresholdImage(_image,arg1,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     default:
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
   }
-  /*
-     Replace current image with any image that was generated
-  */
-  if (new_image != (Image *) NULL)
-    ReplaceImageInListReturnLast(image,new_image);
+  /* clean up percent escape interpreted strings */
+  if (arg1 != arg1n )
+    arg1=DestroyString((char *)arg1);
+  if (arg2 != arg2n )
+    arg2=DestroyString((char *)arg2);
 
-  /*
-    Free resources.
-  */
-  quantize_info=DestroyQuantizeInfo(quantize_info);
-  draw_info=DestroyDrawInfo(draw_info);
-  status=(MagickStatusType) (exception->severity == UndefinedException ? 1 : 0);
-  return(status == 0 ? MagickFalse : MagickTrue);
+  /* Replace current image with any image that was generated
+     and set image point to last image (so image->next is correct) */
+  if (new_image != (Image *) NULL)
+    ReplaceImageInListReturnLast(&_image,new_image);
+
+  return;
+#undef _image_info
+#undef _draw_info
+#undef _quantize_info
+#undef _image
+#undef _exception
+#undef IfNormalOp
+#undef IfPlusOp
+#undef normal_op
+#undef plus_alt_op
+}
+
+WandExport void CLISimpleOperatorImages(MagickCLI *cli_wand,
+  const char *option, const char *arg1, const char *arg2)
+{
+  size_t
+    n,
+    i;
+
+  assert(cli_wand != (MagickCLI *) NULL);
+  assert(cli_wand->signature == WandSignature);
+  assert(cli_wand->wand.signature == WandSignature);
+  assert(cli_wand->wand.images != (Image *) NULL); /* images must be present */
+  if (IfMagickTrue(cli_wand->wand.debug))
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",cli_wand->wand.name);
+
+#if !USE_WAND_METHODS
+  /* FUTURE add appropriate tracing */
+  i=0;
+  n=GetImageListLength(cli_wand->wand.images);
+  cli_wand->wand.images=GetFirstImageInList(cli_wand->wand.images);
+  while (1) {
+    i++;
+    CLISimpleOperatorImage(cli_wand, option, arg1, arg2);
+    if ( cli_wand->wand.images->next == (Image *) NULL )
+      break;
+    cli_wand->wand.images=cli_wand->wand.images->next;
+  }
+  assert( i == n );
+  cli_wand->wand.images=GetFirstImageInList(cli_wand->wand.images);
+#else
+  MagickResetIterator(&cli_wand->wand);
+  while ( IfMagickTrue(MagickNextImage(&cli_wand->wand)) )
+    CLISimpleOperatorImage(cli_wand, option, arg1, arg2);
+  MagickResetIterator(&cli_wand->wand);
+#endif
+  return;
 }
 
 /*
@@ -3618,308 +3523,245 @@ WandExport MagickBooleanType ApplySettingsOption(MagickWand *wand,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+     S e q u e n c e O p e r a t i o n I m a g e s                           %
++     C L I L i s t O p e r a t o r I m a g e s                               %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  SequenceOperationImages() applies a single operation that apply to the
-%  entire image list (e.g. -append, -layers, -coalesce, etc.).
+%  CLIListOperatorImages() applies a single operation that is apply to the
+%  entire image list as a whole. The result is often a complete replacment
+%  of the image list with a completely new list, or just a single image.
 %
 %  The format of the MogrifyImage method is:
 %
-%    MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
-%        const int argc, const char **argv,Image **images,
-%        ExceptionInfo *exception)
+%    void CLIListOperatorImages(MagickCLI *cli_wand,
+%        const char *option, const char *arg1, const char *arg2)
 %
 %  A description of each parameter follows:
 %
-%    o image_info: the image info..
+%    o cli_wand: structure holding settings to be applied
 %
-%    o argc: Specifies a pointer to an integer describing the number of
-%      elements in the argument vector.
+%    o option:  The option string for the operation
 %
-%    o argv: Specifies a pointer to a text array containing the command line
-%      arguments.
-%
-%    o images: pointer to pointer of the first image in image list.
-%
-%    o exception: return any errors or warnings in this structure.
+%    o arg1, arg2: optional argument strings to the operation
+%        arg2 is currently not used
 %
 */
-WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
-  const int argc,const char **argv,Image **images,ExceptionInfo *exception)
+WandExport void CLIListOperatorImages(MagickCLI *cli_wand,
+     const char *option,const char *arg1n, const char *arg2n)
 {
+  ssize_t
+    parse;
 
-  MagickStatusType
-    status;
+  Image
+    *new_images;
 
-  QuantizeInfo
-    *quantize_info;
+  const char    /* For percent escape interpretImageProperties() */
+    *arg1,
+    *arg2;
 
-  assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
-  assert(images != (Image **) NULL);
-  assert((*images)->previous == (Image *) NULL);
-  assert((*images)->signature == MagickSignature);
-  if ((*images)->debug != MagickFalse)
-    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
-      (*images)->filename);
-  if ((argc <= 0) || (*argv == (char *) NULL))
-    return(MagickTrue);
-  status=MagickTrue;
+#define _image_info     (cli_wand->wand.image_info)
+#define _images         (cli_wand->wand.images)
+#define _exception      (cli_wand->wand.exception)
+#define _draw_info      (cli_wand->draw_info)
+#define _quantize_info  (cli_wand->quantize_info)
+#define _process_flags  (cli_wand->process_flags)
+#define _option_type    ((CommandOptionFlags) cli_wand->command->flags)
+#define IfNormalOp      (*option=='-')
+#define IfPlusOp        (*option!='-')
+#define normal_op       IsMagickTrue(IfNormalOp)
 
-  switch (*(argv[0]+1))
+  assert(cli_wand != (MagickCLI *) NULL);
+  assert(cli_wand->signature == WandSignature);
+  assert(cli_wand->wand.signature == WandSignature);
+  assert(_images != (Image *) NULL);             /* _images must be present */
+  if (IfMagickTrue(cli_wand->wand.debug))
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",cli_wand->wand.name);
+
+  /* Interpret Percent Escapes in Arguments - using first image */
+  arg1 = arg1n;
+  arg2 = arg2n;
+  if ( (((_process_flags & ProcessInterpretProperities) != 0 )
+        || ((_option_type & AlwaysInterpretArgsFlag) != 0)
+       )  && ((_option_type & NeverInterpretArgsFlag) == 0) ) {
+    /* Interpret Percent escapes in argument 1 */
+    if (arg1n != (char *) NULL) {
+      arg1=InterpretImageProperties(_image_info,_images,arg1n,_exception);
+      if (arg1 == (char *) NULL) {
+        CLIWandException(OptionWarning,"InterpretPropertyFailure",option);
+        arg1=arg1n;  /* use the given argument as is */
+      }
+    }
+    if (arg2n != (char *) NULL) {
+      arg2=InterpretImageProperties(_image_info,_images,arg2n,_exception);
+      if (arg2 == (char *) NULL) {
+        CLIWandException(OptionWarning,"InterpretPropertyFailure",option);
+        arg2=arg2n;  /* use the given argument as is */
+      }
+    }
+  }
+#undef _process_flags
+#undef _option_type
+
+#if 0
+  (void) FormatLocaleFile(stderr,
+    "CLIListOperatorImages: \"%s\" \"%s\" \"%s\"\n",option,arg1,arg2);
+#endif
+
+
+  new_images=NewImageList();
+
+  switch (*(option+1))
   {
     case 'a':
     {
-      if (LocaleCompare("affinity",argv[0]+1) == 0)
+      if (LocaleCompare("append",option+1) == 0)
         {
-          (void) SyncImagesSettings(image_info,*images,exception);
-          if (*argv[0] == '+')
-            {
-              (void) RemapImages(quantize_info,*images,(Image *) NULL,
-                exception);
-              break;
-            }
+          new_images=AppendImages(_images,normal_op,_exception);
           break;
         }
-      if (LocaleCompare("append",argv[0]+1) == 0)
+      if (LocaleCompare("average",option+1) == 0)
         {
-          Image
-            *append_image;
-
-          (void) SyncImagesSettings(image_info,*images,exception);
-          append_image=AppendImages(*images,*argv[0] == '-' ? MagickTrue :
-            MagickFalse,exception);
-          if (append_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=append_image;
+          CLIWandWarnReplaced("-evaluate-sequence Mean");
+          CLIListOperatorImages(cli_wand,"-evaluate-sequence","Mean",NULL);
           break;
         }
-      if (LocaleCompare("average",argv[0]+1) == 0)
-        {
-          Image
-            *average_image;
-
-          /*
-            Average an image sequence (deprecated).
-          */
-          (void) SyncImagesSettings(image_info,*images,exception);
-          average_image=EvaluateImages(*images,MeanEvaluateOperator,
-            exception);
-          if (average_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=average_image;
-          break;
-        }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'c':
     {
-      if (LocaleCompare("channel",argv[0]+1) == 0)
+      if (LocaleCompare("channel-fx",option+1) == 0)
         {
-          ChannelType
-            channel;
-
-          if (*argv[0] == '+')
-            {
-              channel=DefaultChannels;
-              break;
-            }
-          channel=(ChannelType) ParseChannelOption(argv[1]);
-          SetPixelChannelMap(*images,channel);
+          new_images=ChannelFxImage(_images,arg1,_exception);
           break;
         }
-      if (LocaleCompare("clut",argv[0]+1) == 0)
+      if (LocaleCompare("clut",option+1) == 0)
         {
           Image
-            *clut_image,
-            *image;
+            *clut_image;
 
-          (void) SyncImagesSettings(image_info,*images,exception);
-          image=RemoveFirstImageFromList(images);
-          clut_image=RemoveFirstImageFromList(images);
+          /* FUTURE - make this a compose option, and thus can be used
+             with layers compose or even compose last image over all other
+             _images.
+          */
+          new_images=RemoveFirstImageFromList(&_images);
+          clut_image=RemoveLastImageFromList(&_images);
+          /* FUTURE - produce Exception, rather than silent fail */
           if (clut_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          (void) ClutImage(image,clut_image,interpolate_method,exception);
+            break;
+          (void) ClutImage(new_images,clut_image,new_images->interpolate,_exception);
           clut_image=DestroyImage(clut_image);
-          *images=DestroyImageList(*images);
-          *images=image;
           break;
         }
-      if (LocaleCompare("coalesce",argv[0]+1) == 0)
+      if (LocaleCompare("coalesce",option+1) == 0)
         {
-          Image
-            *coalesce_image;
-
-          (void) SyncImagesSettings(image_info,*images,exception);
-          coalesce_image=CoalesceImages(*images,exception);
-          if (coalesce_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=coalesce_image;
+          new_images=CoalesceImages(_images,_exception);
           break;
         }
-      if (LocaleCompare("combine",argv[0]+1) == 0)
+      if (LocaleCompare("combine",option+1) == 0)
         {
-          Image
-            *combine_image;
-
-          (void) SyncImagesSettings(image_info,*images,exception);
-          combine_image=CombineImages(*images,exception);
-          if (combine_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=combine_image;
+          /* FUTURE - this may be replaced by a 'channel' method */
+          new_images=CombineImages(_images,_exception);
           break;
         }
-      if (LocaleCompare("composite",argv[0]+1) == 0)
+      if (LocaleCompare("composite",option+1) == 0)
         {
-          Image
-            *mask_image,
-            *composite_image,
-            *image;
-
-          RectangleInfo
-            geometry;
-
-          ComposeOperator
+          CompositeOperator
             compose;
 
           const char*
             value;
 
-          value=GetImageOption(image_info,"compose");
-          if (value != (const char *) NULL)
-            compose=(CompositeOperator) ParseCommandOption(
-                 MagickComposeOptions,MagickFalse,value);
+          MagickBooleanType
+            clip_to_self;
+
+          Image
+            *mask_image,
+            *source_image;
+
+          RectangleInfo
+            geometry;
+
+          /* Compose value from "-compose" option only */
+          value=GetImageOption(_image_info,"compose");
+          if (value == (const char *) NULL)
+            compose=OverCompositeOp;  /* use Over not source_image->compose */
           else
-            compose=OverCompositeOp;  /* use Over not image->compose */
+            compose=(CompositeOperator) ParseCommandOption(MagickComposeOptions,
+              MagickFalse,value);
 
-          const char*
-            value=GetImageOption(image_info,"compose");
+          /* Get "clip-to-self" expert setting (false is normal) */
+          value=GetImageOption(_image_info,"compose:clip-to-self");
+          if (value == (const char *) NULL)
+            clip_to_self=MagickTrue;
+          else
+            clip_to_self=IsStringTrue(GetImageOption(_image_info,
+              "compose:clip-to-self")); /* if this is true */
+          value=GetImageOption(_image_info,"compose:outside-overlay");
+          if (value != (const char *) NULL) {   /* or this false */
+            /* FUTURE: depreciate warning for "compose:outside-overlay"*/
+            clip_to_self= IsMagickFalse(IsStringNotFalse(value));
+          }
 
-           if (value != (const char *) NULL)
-             compose=(CompositeOperator) ParseCommandOption(
-                  MagickComposeOptions,MagickFalse,value);
-           else
-             compose=OverCompositeOp;  /* use Over not image->compose */
+          new_images=RemoveFirstImageFromList(&_images);
+          source_image=RemoveFirstImageFromList(&_images);
+          if (source_image == (Image *) NULL)
+            break; /* FUTURE - produce Exception, rather than silent fail */
 
+          /* FUTURE - this should not be here! - should be part of -geometry */
+          (void) TransformImage(&source_image,(char *) NULL,
+            source_image->geometry,_exception);
 
-          (void) SyncImagesSettings(image_info,*images,exception);
-          image=RemoveFirstImageFromList(images);
-          composite_image=RemoveFirstImageFromList(images);
-          if (composite_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          (void) TransformImage(&composite_image,(char *) NULL,
-            composite_image->geometry,exception);
-          SetGeometry(composite_image,&geometry);
-          (void) ParseAbsoluteGeometry(composite_image->geometry,&geometry);
-          GravityAdjustGeometry(image->columns,image->rows,image->gravity,
-            &geometry);
-          mask_image=RemoveFirstImageFromList(images);
+          SetGeometry(source_image,&geometry);
+          (void) ParseAbsoluteGeometry(source_image->geometry,&geometry);
+          GravityAdjustGeometry(new_images->columns,new_images->rows,
+               new_images->gravity, &geometry);
+
+          mask_image=RemoveFirstImageFromList(&_images);
           if (mask_image != (Image *) NULL)
-            {
+            { /* handle a third write mask image */
               if ((compose == DisplaceCompositeOp) ||
-                  (compose == DistortCompositeOp))
-                {
-                  /*
-                    Merge Y displacement into X displacement image.
-                  */
-                  (void) CompositeImage(composite_image,CopyGreenCompositeOp,
-                    mask_image,0,0,exception);
-                  mask_image=DestroyImage(mask_image);
-                }
-              else
-                {
-                  /*
-                    Set a blending mask for the composition.
-                    Posible error, what if image->mask already set.
-                  */
-                  image->mask=mask_image;
-                  (void) NegateImage(image->mask,MagickFalse,exception);
-                }
+                  (compose == DistortCompositeOp)) {
+                /* Merge Y displacement into X displace/distort map. */
+                (void) CompositeImage(source_image,mask_image,
+                  CopyGreenCompositeOp,MagickTrue,0,0,_exception);
+                mask_image=DestroyImage(mask_image);
+              }
+              else {
+                /* Set a blending mask for the composition.  */
+                (void) NegateImage(mask_image,MagickFalse,_exception);
+                (void) SetImageMask(source_image,mask_image,_exception);
+                mask_image=DestroyImage(mask_image);
+              }
             }
-          (void) CompositeImage(image,compose,composite_image,
-            geometry.x,geometry.y,exception);
-          if (mask_image != (Image *) NULL)
-            mask_image=image->mask=DestroyImage(image->mask);
-          composite_image=DestroyImage(composite_image);
-          *images=DestroyImageList(*images);
-          *images=image;
+          (void) CompositeImage(new_images,source_image,compose,clip_to_self,
+            geometry.x,geometry.y,_exception);
+          (void) SetImageMask(new_images,(Image *) NULL,_exception);
+          source_image=DestroyImage(source_image);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'd':
     {
-      if (LocaleCompare("deconstruct",argv[0]+1) == 0)
+      if (LocaleCompare("deconstruct",option+1) == 0)
         {
-          Image
-            *deconstruct_image;
-
-          (void) SyncImagesSettings(image_info,*images,exception);
-          deconstruct_image=CompareImagesLayers(*images,CompareAnyLayer,
-            exception);
-          if (deconstruct_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=deconstruct_image;
+          CLIWandWarnReplaced("-layer CompareAny");
+          CLIListOperatorImages(cli_wand,"-layer","CompareAny",NULL);
           break;
         }
-      if (LocaleCompare("delete",argv[0]+1) == 0)
+      if (LocaleCompare("delete",option+1) == 0)
         {
-          if (*argv[0] == '+')
-            DeleteImages(images,"-1",exception);
+          if (IfNormalOp)
+            DeleteImages(&_images,arg1,_exception);
           else
-            DeleteImages(images,argv[1],exception);
+            DeleteImages(&_images,"-1",_exception);
           break;
         }
-      if (LocaleCompare("dither",argv[0]+1) == 0)
+      if (LocaleCompare("duplicate",option+1) == 0)
         {
-          if (*argv[0] == '+')
-            {
-              quantize_info->dither=MagickFalse;
-              break;
-            }
-          quantize_info->dither=MagickTrue;
-          quantize_info->dither_method=(DitherMethod) ParseCommandOption(
-            MagickDitherOptions,MagickFalse,argv[1]);
-          break;
-        }
-      if (LocaleCompare("duplicate",argv[0]+1) == 0)
-        {
-          Image
-            *duplicate_images;
-
-          if (*argv[0] == '+')
-            duplicate_images=DuplicateImages(*images,1,"-1",exception);
-          else
+          if (IfNormalOp)
             {
               const char
                 *p;
@@ -3927,215 +3769,144 @@ WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
               size_t
                 number_duplicates;
 
-              number_duplicates=(size_t) StringToLong(argv[1]);
-              p=strchr(argv[1],',');
+              if (IfMagickFalse(IsGeometry(arg1)))
+                CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,
+                      arg1);
+              number_duplicates=(size_t) StringToLong(arg1);
+              p=strchr(arg1,',');
               if (p == (const char *) NULL)
-                duplicate_images=DuplicateImages(*images,number_duplicates,
-                  "-1",exception);
+                new_images=DuplicateImages(_images,number_duplicates,"-1",
+                  _exception);
               else
-                duplicate_images=DuplicateImages(*images,number_duplicates,p,
-                  exception);
+                new_images=DuplicateImages(_images,number_duplicates,p,
+                  _exception);
             }
-          AppendImageToList(images, duplicate_images);
-          (void) SyncImagesSettings(image_info,*images,exception);
+          else
+            new_images=DuplicateImages(_images,1,"-1",_exception);
+          AppendImageToList(&_images, new_images);
+          new_images=(Image *)NULL;
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'e':
     {
-      if (LocaleCompare("evaluate-sequence",argv[0]+1) == 0)
+      if (LocaleCompare("evaluate-sequence",option+1) == 0)
         {
-          Image
-            *evaluate_image;
-
-          MagickEvaluateOperator
-            op;
-
-          (void) SyncImageSettings(image_info,*images);
-          op=(MagickEvaluateOperator) ParseCommandOption(
-            MagickEvaluateOptions,MagickFalse,argv[1]);
-          evaluate_image=EvaluateImages(*images,op,exception);
-          if (evaluate_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=evaluate_image;
+          parse = ParseCommandOption(MagickEvaluateOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedEvaluateOperator",
+                 option,arg1);
+          new_images=EvaluateImages(_images,(MagickEvaluateOperator)parse,
+               _exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'f':
     {
-      if (LocaleCompare("fft",argv[0]+1) == 0)
+      if (LocaleCompare("fft",option+1) == 0)
         {
-          Image
-            *fourier_image;
-
-          /*
-            Implements the discrete Fourier transform (DFT).
-          */
-          (void) SyncImageSettings(image_info,*images);
-          fourier_image=ForwardFourierTransformImage(*images,*argv[0] == '-' ?
-            MagickTrue : MagickFalse,exception);
-          if (fourier_image == (Image *) NULL)
-            break;
-          *images=DestroyImage(*images);
-          *images=fourier_image;
+          new_images=ForwardFourierTransformImage(_images,normal_op,_exception);
           break;
         }
-      if (LocaleCompare("flatten",argv[0]+1) == 0)
+      if (LocaleCompare("flatten",option+1) == 0)
         {
-          Image
-            *flatten_image;
-
-          (void) SyncImagesSettings(image_info,*images,exception);
-          flatten_image=MergeImageLayers(*images,FlattenLayer,exception);
-          if (flatten_image == (Image *) NULL)
-            break;
-          *images=DestroyImageList(*images);
-          *images=flatten_image;
+          /* REDIRECTED to use -layers flatten instead */
+          CLIListOperatorImages(cli_wand,"-layers",option+1,NULL);
           break;
         }
-      if (LocaleCompare("fx",argv[0]+1) == 0)
+      if (LocaleCompare("fx",option+1) == 0)
         {
-          Image
-            *fx_image;
-
-          (void) SyncImagesSettings(image_info,*images,exception);
-          fx_image=FxImage(*images,argv[1],exception);
-          if (fx_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=fx_image;
+          new_images=FxImage(_images,arg1,_exception);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'h':
     {
-      if (LocaleCompare("hald-clut",argv[0]+1) == 0)
+      if (LocaleCompare("hald-clut",option+1) == 0)
         {
+          /* FUTURE - make this a compose option (and thus layers compose )
+             or perhaps compose last image over all other _images.
+          */
           Image
-            *hald_image,
-            *image;
+            *hald_image;
 
-          (void) SyncImagesSettings(image_info,*images,exception);
-          image=RemoveFirstImageFromList(images);
-          hald_image=RemoveFirstImageFromList(images);
+          new_images=RemoveFirstImageFromList(&_images);
+          hald_image=RemoveLastImageFromList(&_images);
           if (hald_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          (void) HaldClutImage(image,hald_image,exception);
+            break;
+          (void) HaldClutImage(new_images,hald_image,_exception);
           hald_image=DestroyImage(hald_image);
-          if (*images != (Image *) NULL)
-            *images=DestroyImageList(*images);
-          *images=image;
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'i':
     {
-      if (LocaleCompare("ift",argv[0]+1) == 0)
+      if (LocaleCompare("ift",option+1) == 0)
         {
           Image
-            *fourier_image,
             *magnitude_image,
             *phase_image;
 
-          /*
-            Implements the inverse fourier discrete Fourier transform (DFT).
-          */
-          (void) SyncImagesSettings(image_info,*images,exception);
-          magnitude_image=RemoveFirstImageFromList(images);
-          phase_image=RemoveFirstImageFromList(images);
-          if (phase_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          fourier_image=InverseFourierTransformImage(magnitude_image,
-            phase_image,*argv[0] == '-' ? MagickTrue : MagickFalse,exception);
-          if (fourier_image == (Image *) NULL)
-            break;
-          if (*images != (Image *) NULL)
-            *images=DestroyImage(*images);
-          *images=fourier_image;
+           magnitude_image=RemoveFirstImageFromList(&_images);
+           phase_image=RemoveFirstImageFromList(&_images);
+          /* FUTURE - produce Exception, rather than silent fail */
+           if (phase_image == (Image *) NULL)
+             break;
+           new_images=InverseFourierTransformImage(magnitude_image,phase_image,
+                   normal_op,_exception);
+           magnitude_image=DestroyImage(magnitude_image);
+           phase_image=DestroyImage(phase_image);
           break;
         }
-      if (LocaleCompare("insert",argv[0]+1) == 0)
+      if (LocaleCompare("insert",option+1) == 0)
         {
           Image
-            *p,
-            *q;
+            *insert_image,
+            *index_image;
 
+          ssize_t
+            index;
+
+          if (IfNormalOp && IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
           index=0;
-          if (*argv[0] != '+')
-            index=(ssize_t) StringToLong(argv[1]);
-          p=RemoveLastImageFromList(images);
-          if (p == (Image *) NULL)
-            {
-              (void) ThrowMagickException(exception,GetMagickModule(),
-                OptionError,"NoSuchImage","`%s'",argv[1]);
-              status=MagickFalse;
-              break;
-            }
-          q=p;
+          insert_image=RemoveLastImageFromList(&_images);
+          if (IfNormalOp)
+            index=(ssize_t) StringToLong(arg1);
+          index_image=insert_image;
           if (index == 0)
-            PrependImageToList(images,q);
+            PrependImageToList(&_images,insert_image);
+          else if (index == (ssize_t) GetImageListLength(_images))
+            AppendImageToList(&_images,insert_image);
           else
-            if (index == (ssize_t) GetImageListLength(*images))
-              AppendImageToList(images,q);
-            else
-              {
-                 q=GetImageFromList(*images,index-1);
-                 if (q == (Image *) NULL)
-                   {
-                     (void) ThrowMagickException(exception,GetMagickModule(),
-                       OptionError,"NoSuchImage","`%s'",argv[1]);
-                     status=MagickFalse;
-                     break;
-                   }
-                InsertImageInList(&q,p);
-              }
-          *images=GetFirstImageInList(q);
+            {
+               index_image=GetImageFromList(_images,index-1);
+               if (index_image == (Image *) NULL)
+                 CLIWandExceptArgBreak(OptionError,"NoSuchImage",option,arg1);
+              InsertImageInList(&index_image,insert_image);
+            }
+          _images=GetFirstImageInList(index_image);
           break;
         }
-      if (LocaleCompare("interpolate",argv[0]+1) == 0)
-        {
-          interpolate_method=(PixelInterpolateMethod) ParseCommandOption(
-            MagickInterpolateOptions,MagickFalse,argv[1]);
-          break;
-        }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'l':
     {
-      if (LocaleCompare("layers",argv[0]+1) == 0)
+      if (LocaleCompare("layers",option+1) == 0)
         {
-          Image
-            *layers;
-
-          ImageLayerMethod
-            method;
-
-          (void) SyncImagesSettings(image_info,*images,exception);
-          layers=(Image *) NULL;
-          method=(ImageLayerMethod) ParseCommandOption(MagickLayerOptions,
-            MagickFalse,argv[1]);
-          switch (method)
+          parse=ParseCommandOption(MagickLayerOptions,MagickFalse,arg1);
+          if ( parse < 0 )
+            CLIWandExceptArgBreak(OptionError,"UnrecognizedLayerMethod",
+                 option,arg1);
+          switch ((ImageLayerMethod) parse)
           {
             case CoalesceLayer:
             {
-              layers=CoalesceImages(*images,exception);
+              new_images=CoalesceImages(_images,_exception);
               break;
             }
             case CompareAnyLayer:
@@ -4143,7 +3914,8 @@ WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
             case CompareOverlayLayer:
             default:
             {
-              layers=CompareImagesLayers(*images,method,exception);
+              new_images=CompareImagesLayers(_images,(ImageLayerMethod) parse,
+                   _exception);
               break;
             }
             case MergeLayer:
@@ -4151,64 +3923,53 @@ WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
             case MosaicLayer:
             case TrimBoundsLayer:
             {
-              layers=MergeImageLayers(*images,method,exception);
+              new_images=MergeImageLayers(_images,(ImageLayerMethod) parse,
+                   _exception);
               break;
             }
             case DisposeLayer:
             {
-              layers=DisposeImages(*images,exception);
+              new_images=DisposeImages(_images,_exception);
               break;
             }
             case OptimizeImageLayer:
             {
-              layers=OptimizeImageLayers(*images,exception);
+              new_images=OptimizeImageLayers(_images,_exception);
               break;
             }
             case OptimizePlusLayer:
             {
-              layers=OptimizePlusImageLayers(*images,exception);
+              new_images=OptimizePlusImageLayers(_images,_exception);
               break;
             }
             case OptimizeTransLayer:
             {
-              OptimizeImageTransparency(*images,exception);
+              OptimizeImageTransparency(_images,_exception);
               break;
             }
             case RemoveDupsLayer:
             {
-              RemoveDuplicateLayers(images,exception);
+              RemoveDuplicateLayers(&_images,_exception);
               break;
             }
             case RemoveZeroLayer:
             {
-              RemoveZeroDelayLayers(images,exception);
+              RemoveZeroDelayLayers(&_images,_exception);
               break;
             }
             case OptimizeLayer:
-            {
-              /*
-                General Purpose, GIF Animation Optimizer.
-              */
-              layers=CoalesceImages(*images,exception);
-              if (layers == (Image *) NULL)
-                {
-                  status=MagickFalse;
-                  break;
-                }
-              *images=DestroyImageList(*images);
-              *images=layers;
-              layers=OptimizeImageLayers(*images,exception);
-              if (layers == (Image *) NULL)
-                {
-                  status=MagickFalse;
-                  break;
-                }
-              *images=DestroyImageList(*images);
-              *images=layers;
-              layers=(Image *) NULL;
-              OptimizeImageTransparency(*images,exception);
-              (void) RemapImages(quantize_info,*images,(Image *) NULL,
-                exception);
+            { /* General Purpose, GIF Animation Optimizer.  */
+              new_images=CoalesceImages(_images,_exception);
+              if (new_images == (Image *) NULL)
+                break;
+              _images=DestroyImageList(_images);
+              _images=OptimizeImageLayers(new_images,_exception);
+              if (_images == (Image *) NULL)
+                break;
+              new_images=DestroyImageList(new_images);
+              OptimizeImageTransparency(_images,_exception);
+              (void) RemapImages(_quantize_info,_images,(Image *) NULL,
+                _exception);
               break;
             }
             case CompositeLayer:
@@ -4219,23 +3980,20 @@ WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
               RectangleInfo
                 geometry;
 
-              ComposeOperator
+              CompositeOperator
                 compose;
 
               const char*
                 value;
 
-              value=GetImageOption(image_info,"compose");
+              value=GetImageOption(_image_info,"compose");
+              compose=OverCompositeOp;  /* Default to Over */
               if (value != (const char *) NULL)
                 compose=(CompositeOperator) ParseCommandOption(
                       MagickComposeOptions,MagickFalse,value);
-              else
-                compose=OverCompositeOp;  /* use Over not image->compose */
 
-              /*
-                Split image sequence at the first 'NULL:' image.
-              */
-              source=(*images);
+              /* Split image sequence at the first 'NULL:' image. */
+              source=_images;
               while (source != (Image *) NULL)
               {
                 source=GetNextImageInList(source);
@@ -4249,155 +4007,81 @@ WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
                       (GetNextImageInList(source) == (Image *) NULL))
                     source=(Image *) NULL;
                   else
-                    {
-                      /*
-                        Separate the two lists, junk the null: image.
-                      */
+                    { /* Separate the two lists, junk the null: image.  */
                       source=SplitImageList(source->previous);
                       DeleteImageFromList(&source);
                     }
                 }
               if (source == (Image *) NULL)
                 {
-                  (void) ThrowMagickException(exception,GetMagickModule(),
+                  (void) ThrowMagickException(_exception,GetMagickModule(),
                     OptionError,"MissingNullSeparator","layers Composite");
-                  status=MagickFalse;
                   break;
                 }
-              /*
-                Adjust offset with gravity and virtual canvas.
-              */
-              SetGeometry(*images,&geometry);
-              (void) ParseAbsoluteGeometry((*images)->geometry,&geometry);
+              /* Adjust offset with gravity and virtual canvas.  */
+              SetGeometry(_images,&geometry);
+              (void) ParseAbsoluteGeometry(_images->geometry,&geometry);
               geometry.width=source->page.width != 0 ?
                 source->page.width : source->columns;
               geometry.height=source->page.height != 0 ?
                source->page.height : source->rows;
-              GravityAdjustGeometry((*images)->page.width != 0 ?
-                (*images)->page.width : (*images)->columns,
-                (*images)->page.height != 0 ? (*images)->page.height :
-                (*images)->rows,(*images)->gravity,&geometry);
+              GravityAdjustGeometry(_images->page.width != 0 ?
+                _images->page.width : _images->columns,
+                _images->page.height != 0 ? _images->page.height :
+                _images->rows,_images->gravity,&geometry);
 
-              /*
-                Compose the two image sequences together
-              */
-              CompositeLayers(*images,compose,source,geometry.x,geometry.y,
-                exception);
+              /* Compose the two image sequences together */
+              CompositeLayers(_images,compose,source,geometry.x,geometry.y,
+                _exception);
               source=DestroyImageList(source);
               break;
             }
           }
-          if (layers == (Image *) NULL)
-            break;
-          *images=DestroyImageList(*images);
-          *images=layers;
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'm':
     {
-      if (LocaleCompare("map",argv[0]+1) == 0)
+      if (LocaleCompare("map",option+1) == 0)
         {
-          (void) SyncImagesSettings(image_info,*images,exception);
-          if (*argv[0] == '+')
-            {
-              (void) RemapImages(quantize_info,*images,(Image *) NULL,
-                exception);
-              break;
-            }
+          CLIWandWarnReplaced("+remap");
+          (void) RemapImages(_quantize_info,_images,(Image *) NULL,_exception);
           break;
         }
-      if (LocaleCompare("maximum",argv[0]+1) == 0)
-        {
-          Image
-            *maximum_image;
-
-          /*
-            Maximum image sequence (deprecated).
-          */
-          (void) SyncImagesSettings(image_info,*images,exception);
-          maximum_image=EvaluateImages(*images,MaxEvaluateOperator,exception);
-          if (maximum_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=maximum_image;
-          break;
-        }
-      if (LocaleCompare("minimum",argv[0]+1) == 0)
-        {
-          Image
-            *minimum_image;
-
-          /*
-            Minimum image sequence (deprecated).
-          */
-          (void) SyncImagesSettings(image_info,*images,exception);
-          minimum_image=EvaluateImages(*images,MinEvaluateOperator,exception);
-          if (minimum_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=minimum_image;
-          break;
-        }
-      if (LocaleCompare("morph",argv[0]+1) == 0)
+      if (LocaleCompare("morph",option+1) == 0)
         {
           Image
             *morph_image;
 
-          (void) SyncImagesSettings(image_info,*images,exception);
-          morph_image=MorphImages(*images,StringToUnsignedLong(argv[1]),
-            exception);
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          morph_image=MorphImages(_images,StringToUnsignedLong(arg1),
+            _exception);
           if (morph_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=morph_image;
+            break;
+          _images=DestroyImageList(_images);
+          _images=morph_image;
           break;
         }
-      if (LocaleCompare("mosaic",argv[0]+1) == 0)
+      if (LocaleCompare("mosaic",option+1) == 0)
         {
-          Image
-            *mosaic_image;
-
-          (void) SyncImagesSettings(image_info,*images,exception);
-          mosaic_image=MergeImageLayers(*images,MosaicLayer,exception);
-          if (mosaic_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=mosaic_image;
+          /* REDIRECTED to use -layers mosaic instead */
+          CLIListOperatorImages(cli_wand,"-layers",option+1,NULL);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'p':
     {
-      if (LocaleCompare("print",argv[0]+1) == 0)
+      if (LocaleCompare("print",option+1) == 0)
         {
-          char
-            *string;
-
-          (void) SyncImagesSettings(image_info,*images,exception);
-          string=InterpretImageProperties(image_info,*images,argv[1],
-            exception);
-          if (string == (char *) NULL)
-            break;
-          (void) FormatLocaleFile(stdout,"%s",string);
-          string=DestroyString(string);
+          (void) FormatLocaleFile(stdout,"%s",arg1);
+          break;
         }
-      if (LocaleCompare("process",argv[0]+1) == 0)
+      if (LocaleCompare("process",option+1) == 0)
         {
+          /* FUTURE: better parsing using ScriptToken() from string ??? */
           char
             **arguments;
 
@@ -4405,11 +4089,10 @@ WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
             j,
             number_arguments;
 
-          (void) SyncImagesSettings(image_info,*images,exception);
-          arguments=StringToArgv(argv[1],&number_arguments);
+          arguments=StringToArgv(arg1,&number_arguments);
           if (arguments == (char **) NULL)
             break;
-          if ((argc > 1) && (strchr(arguments[1],'=') != (char *) NULL))
+          if (strchr(arguments[1],'=') != (char *) NULL)
             {
               char
                 breaker,
@@ -4430,9 +4113,9 @@ WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
                 *token_info;
 
               /*
-                Support old style syntax, filter="-option arg".
+                Support old style syntax, filter="-option arg1".
               */
-              length=strlen(argv[1]);
+              length=strlen(arg1);
               token=(char *) NULL;
               if (~length >= (MaxTextExtent-1))
                 token=(char *) AcquireQuantumMemory(length+MaxTextExtent,
@@ -4440,7 +4123,7 @@ WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
               if (token == (char *) NULL)
                 break;
               next=0;
-              arguments=argv[1];
+              arguments=arg1;
               token_info=AcquireTokenInfo();
               status=Tokenizer(token_info,0,token,length,arguments,"","=",
                 "\"",'\0',&breaker,&next,&quote);
@@ -4451,133 +4134,749 @@ WandExport MagickBooleanType SequenceOperationImages(ImageInfo *image_info,
                     *argv;
 
                   argv=(&(arguments[next]));
-                  (void) InvokeDynamicImageFilter(token,&(*images),1,&argv,
-                    exception);
+                  (void) InvokeDynamicImageFilter(token,&_images,1,&argv,
+                    _exception);
                 }
               token=DestroyString(token);
               break;
             }
           (void) SubstituteString(&arguments[1],"-","");
-          (void) InvokeDynamicImageFilter(arguments[1],&(*images),
-            number_arguments-2,(const char **) arguments+2,exception);
+          (void) InvokeDynamicImageFilter(arguments[1],&_images,
+            number_arguments-2,(const char **) arguments+2,_exception);
           for (j=0; j < number_arguments; j++)
             arguments[j]=DestroyString(arguments[j]);
           arguments=(char **) RelinquishMagickMemory(arguments);
           break;
         }
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 'r':
     {
-      if (LocaleCompare("reverse",argv[0]+1) == 0)
+      if (LocaleCompare("remap",option+1) == 0)
         {
-          ReverseImageList(images);
+          (void) RemapImages(_quantize_info,_images,(Image *) NULL,_exception);
           break;
         }
-      break;
+      if (LocaleCompare("reverse",option+1) == 0)
+        {
+          ReverseImageList(&_images);
+          break;
+        }
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     case 's':
     {
-      if (LocaleCompare("smush",argv[0]+1) == 0)
+      if (LocaleCompare("smush",option+1) == 0)
         {
-          Image
-            *smush_image;
-
+          /* FUTURE: this option needs more work to make better */
           ssize_t
             offset;
 
-          (void) SyncImagesSettings(image_info,*images,exception);
-          offset=(ssize_t) StringToLong(argv[1]);
-          smush_image=SmushImages(*images,*argv[0] == '-' ? MagickTrue :
-            MagickFalse,offset,exception);
-          if (smush_image == (Image *) NULL)
-            {
-              status=MagickFalse;
-              break;
-            }
-          *images=DestroyImageList(*images);
-          *images=smush_image;
+          if (IfMagickFalse(IsGeometry(arg1)))
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          offset=(ssize_t) StringToLong(arg1);
+          new_images=SmushImages(_images,normal_op,offset,_exception);
           break;
         }
-      if (LocaleCompare("swap",argv[0]+1) == 0)
+      if (LocaleCompare("subimage",option+1) == 0)
         {
           Image
-            *p,
-            *q,
-            *swap;
+            *base_image,
+            *compare_image;
 
-          ssize_t
-            swap_index;
+          const char *
+            value;
 
-          index=(-1);
-          swap_index=(-2);
-          if (*argv[0] != '+')
-            {
-              GeometryInfo
-                geometry_info;
+          MetricType
+            metric;
 
-              MagickStatusType
-                flags;
+          double
+            similarity;
 
-              swap_index=(-1);
-              flags=ParseGeometry(argv[1],&geometry_info);
-              index=(ssize_t) geometry_info.rho;
-              if ((flags & SigmaValue) != 0)
-                swap_index=(ssize_t) geometry_info.sigma;
-            }
-          p=GetImageFromList(*images,index);
-          q=GetImageFromList(*images,swap_index);
-          if ((p == (Image *) NULL) || (q == (Image *) NULL))
-            {
-              (void) ThrowMagickException(exception,GetMagickModule(),
-                OptionError,"NoSuchImage","`%s'",(*images)->filename);
-              status=MagickFalse;
-              break;
-            }
-          if (p == q)
-            break;
-          swap=CloneImage(p,0,0,MagickTrue,exception);
-          ReplaceImageInList(&p,CloneImage(q,0,0,MagickTrue,exception));
-          ReplaceImageInList(&q,swap);
-          *images=GetFirstImageInList(q);
+          RectangleInfo
+            offset;
+
+          base_image=GetImageFromList(_images,0);
+          compare_image=GetImageFromList(_images,1);
+
+          /* Comparision Metric */
+          metric=UndefinedMetric;
+          value=GetImageOption(_image_info,"metric");
+          if (value != (const char *) NULL)
+            metric=(MetricType) ParseCommandOption(MagickMetricOptions,
+              MagickFalse,value);
+
+          new_images=SimilarityImage(base_image,compare_image,metric,
+               &offset,&similarity,_exception);
+
+          if ( new_images != (Image *)NULL ) {
+            char
+              result[MaxTextExtent];
+
+            (void) FormatLocaleString(result,MaxTextExtent,"%lf",similarity);
+            (void) SetImageProperty(new_images,"subimage:similarity",result,
+                 _exception);
+            (void) FormatLocaleString(result,MaxTextExtent,"%+ld",
+                (long) offset.x);
+            (void) SetImageProperty(new_images,"subimage:x",result,
+                 _exception);
+            (void) FormatLocaleString(result,MaxTextExtent,"%+ld",
+                (long) offset.y);
+            (void) SetImageProperty(new_images,"subimage:y",result,
+                 _exception);
+            (void) FormatLocaleString(result,MaxTextExtent,"%lux%lu%+ld%+ld",
+                (unsigned long) offset.width,(unsigned long) offset.height,
+                (long) offset.x,(long) offset.y);
+            (void) SetImageProperty(new_images,"subimage:offset",result,
+                 _exception);
+          }
           break;
         }
-      break;
-    }
-    case 'w':
-    {
-      if (LocaleCompare("write",argv[0]+1) == 0)
-        {
-          char
-            key[MaxTextExtent];
+      if (LocaleCompare("swap",option+1) == 0) {
+        Image
+          *p,
+          *q,
+          *swap;
 
-          Image
-            *write_images;
+        ssize_t
+          index,
+          swap_index;
 
-          ImageInfo
-            *write_info;
+        index=-1;
+        swap_index=-2;
+        if (IfNormalOp) {
+          GeometryInfo
+            geometry_info;
 
-          (void) SyncImagesSettings(image_info,*images,exception);
-          (void) FormatLocaleString(key,MaxTextExtent,"cache:%s",argv[1]);
-          (void) DeleteImageRegistry(key);
-          write_images=(*images);
-          if (*argv[0] == '+')
-            write_images=CloneImageList(*images,exception);
-          write_info=CloneImageInfo(image_info);
-          status&=WriteImages(write_info,write_images,argv[1],exception);
-          write_info=DestroyImageInfo(write_info);
-          if (*argv[0] == '+')
-            write_images=DestroyImageList(write_images);
-          break;
+          MagickStatusType
+            flags;
+
+          swap_index=(-1);
+          flags=ParseGeometry(arg1,&geometry_info);
+          if ((flags & RhoValue) != 0)
+            CLIWandExceptArgBreak(OptionError,"InvalidArgument",option,arg1);
+          index=(ssize_t) geometry_info.rho;
+          if ((flags & SigmaValue) != 0)
+            swap_index=(ssize_t) geometry_info.sigma;
         }
-      break;
+        p=GetImageFromList(_images,index);
+        q=GetImageFromList(_images,swap_index);
+        if ((p == (Image *) NULL) || (q == (Image *) NULL)) {
+          if (IfNormalOp)
+            CLIWandExceptArgBreak(OptionError,"InvalidImageIndex",option,arg1)
+          else
+            CLIWandExceptionBreak(OptionError,"TwoOrMoreImagesRequired",option);
+        }
+        if (p == q)
+          CLIWandExceptArgBreak(OptionError,"InvalidImageIndex",option,arg1);
+        swap=CloneImage(p,0,0,MagickTrue,_exception);
+        ReplaceImageInList(&p,CloneImage(q,0,0,MagickTrue,_exception));
+        ReplaceImageInList(&q,swap);
+        _images=GetFirstImageInList(q);
+        break;
+      }
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
     }
     default:
-      break;
+      CLIWandExceptionBreak(OptionError,"UnrecognizedOption",option);
   }
-  quantize_info=DestroyQuantizeInfo(quantize_info);
 
-  status=(MagickStatusType) (exception->severity == UndefinedException ? 1 : 0);
-  return(status != 0 ? MagickTrue : MagickFalse);
+  /* clean up percent escape interpreted strings */
+  if (arg1 != arg1n )
+    arg1=DestroyString((char *)arg1);
+  if (arg2 != arg2n )
+    arg2=DestroyString((char *)arg2);
+
+  /* if new image list generated, replace existing image list */
+  if (new_images == (Image *) NULL)
+    return;
+  _images=DestroyImageList(_images);
+  _images=GetFirstImageInList(new_images);
+  return;
+
+#undef _image_info
+#undef _images
+#undef _exception
+#undef _draw_info
+#undef _quantize_info
+#undef IfNormalOp
+#undef IfPlusOp
+#undef normal_op
 }
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   C L I N o I m a g e O p e r a t i o n s                                   %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  CLINoImageOperator() Applies operations that may not actually need images
+%  in an image list.
+%
+%  The classic operators of this type is "-read", which actually creates
+%  images even when no images are present.  Or image stack operators, which
+%  can be applied (push or pop) to an empty image list.
+%
+%  Note that these operators may involve other special 'option' prefix
+%  characters other  than '-' or '+', namely parenthesis and braces.
+%
+%  The format of the CLINoImageOption method is:
+%
+%      void CLINoImageOption(MagickCLI *cli_wand,const char *option,
+%           const char *arg1, const char *arg2)
+%
+%  A description of each parameter follows:
+%
+%    o cli_wand: the main CLI Wand to use.
+%
+%    o option: The special option (with any switch char) to process
+%
+%    o arg1 & arg2: Argument for option, if required
+%                   Currently arg2 is not used.
+%
+*/
+WandExport void CLINoImageOperator(MagickCLI *cli_wand,
+  const char *option, const char *arg1, const char *magick_unused(arg2))
+{
+#if 0
+  const char    /* For percent escape interpretImageProperties() */
+    *arg1,
+    *arg2;
 #endif
+
+#define _image_info     (cli_wand->wand.image_info)
+#define _images         (cli_wand->wand.images)
+#define _exception      (cli_wand->wand.exception)
+#define IfNormalOp      (*option=='-')
+#define IfPlusOp        (*option!='-')
+
+  assert(cli_wand != (MagickCLI *) NULL);
+  assert(cli_wand->signature == WandSignature);
+  assert(cli_wand->wand.signature == WandSignature);
+  if (IfMagickTrue(cli_wand->wand.debug))
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",cli_wand->wand.name);
+
+#if 0
+  Not able to be used as their may not be any images!
+  Also the only option that may have arguments that can be percent escaped is
+  "-clone".
+
+#define _process_flags  (cli_wand->process_flags)
+#define _option_type    ((CommandOptionFlags) cli_wand->command->flags)
+  /* Interpret Percent Escapes in Arguments - using first image */
+  arg1 = arg1n;
+  arg2 = arg2n;
+  if ( (((_process_flags & ProcessInterpretProperities) != 0 )
+        || ((_option_type & AlwaysInterpretArgsFlag) != 0)
+       )  && ((_option_type & NeverInterpretArgsFlag) == 0) ) {
+    /* Interpret Percent escapes in argument 1 */
+    if (arg1n != (char *) NULL) {
+      arg1=InterpretImageProperties(_image_info,_images,arg1n,_exception);
+      if (arg1 == (char *) NULL) {
+        CLIWandException(OptionWarning,"InterpretPropertyFailure",option);
+        arg1=arg1n;  /* use the given argument as is */
+      }
+    }
+    if (arg2n != (char *) NULL) {
+      arg2=InterpretImageProperties(_image_info,_images,arg2n,_exception);
+      if (arg2 == (char *) NULL) {
+        CLIWandException(OptionWarning,"InterpretPropertyFailure",option);
+        arg2=arg2n;  /* use the given argument as is */
+      }
+    }
+  }
+#undef _process_flags
+#undef _option_type
+#endif
+
+  do {  /* break to exit code */
+    /*
+      No-op options  (ignore these)
+    */
+    if (LocaleCompare("noop",option+1) == 0)   /* no argument */
+      break;
+    if (LocaleCompare("sans",option+1) == 0)   /* one argument */
+      break;
+    if (LocaleCompare("sans0",option+1) == 0)  /* no argument */
+      break;
+    if (LocaleCompare("sans2",option+1) == 0)  /* two arguments */
+      break;
+    /*
+      Image Reading
+    */
+    if ( ( LocaleCompare("read",option+1) == 0 ) ||
+      ( LocaleCompare("--",option) == 0 ) ) {
+      /* Do Glob filename Expansion for 'arg1' then read all images.
+      *
+      * Expansion handles '@', '~', '*', and '?' meta-characters while ignoring
+      * (but attaching to the filenames in the generated argument list) any
+      * [...] read modifiers that may be present.
+      *
+      * For example: It will expand '*.gif[20x20]' into a list such as
+      * 'abc.gif[20x20]',  'foobar.gif[20x20]',  'xyzzy.gif[20x20]'
+      *
+      * NOTE: In IMv6 this was done globally across all images. This
+      * meant you could include IM options in '@filename' lists, but you
+      * could not include comments.   Doing it only for image read makes
+      * it far more secure.
+      *
+      * Note: arguments do not have percent escapes expanded for security
+      * reasons.
+      */
+      int      argc;
+      char     **argv;
+      ssize_t  i;
+
+      argc = 1;
+      argv = (char **) &arg1;
+
+      /* Expand 'glob' expressions in the given filename.
+        Expansion handles any 'coder:' prefix, or read modifiers attached
+        to the filename, including them in the resulting expanded list.
+      */
+      if (IfMagickFalse(  ExpandFilenames(&argc,&argv)  ))
+        CLIWandExceptArgBreak(ResourceLimitError,"MemoryAllocationFailed",
+            option,GetExceptionMessage(errno));
+
+      /* loop over expanded filename list, and read then all in */
+      for (i=0; i<argc; i++) {
+        Image *
+          new_images;
+        if (IfMagickTrue(_image_info->ping))
+          new_images=PingImages(_image_info,argv[i],_exception);
+        else
+          new_images=ReadImages(_image_info,argv[i],_exception);
+        AppendImageToList(&_images, new_images);
+      }
+      argv=DestroyStringList(argv);  /* Destroy the Expanded Filename list */
+      break;
+    }
+    /*
+      Image Writing
+      Note: Writing a empty image list is valid in specific cases
+    */
+    if (LocaleCompare("write",option+1) == 0) {
+      /* Note: arguments do not have percent escapes expanded */
+      char
+        key[MaxTextExtent];
+
+      Image
+        *write_images;
+
+      ImageInfo
+        *write_info;
+
+      /* Need images, unless a "null:" output coder is used */
+      if ( cli_wand->wand.images == (Image *) NULL ) {
+        if ( LocaleCompare(arg1,"null:") == 0 )
+          break;
+        CLIWandExceptArgBreak(OptionError,"NoImagesForWrite",option,arg1);
+      }
+
+      (void) FormatLocaleString(key,MaxTextExtent,"cache:%s",arg1);
+      (void) DeleteImageRegistry(key);
+      write_images=_images;
+      if (IfPlusOp)
+        write_images=CloneImageList(_images,_exception);
+      write_info=CloneImageInfo(_image_info);
+      (void) WriteImages(write_info,write_images,arg1,_exception);
+      write_info=DestroyImageInfo(write_info);
+      if (IfPlusOp)
+        write_images=DestroyImageList(write_images);
+      break;
+    }
+    /*
+      Parenthesis and Brace operations
+    */
+    if (LocaleCompare("(",option) == 0) {
+      /* stack 'push' images */
+      Stack
+        *node;
+
+      size_t
+        size;
+
+      size=0;
+      node=cli_wand->image_list_stack;
+      for ( ; node != (Stack *)NULL; node=node->next)
+        size++;
+      if ( size >= MAX_STACK_DEPTH )
+        CLIWandExceptionBreak(OptionError,"ParenthesisNestedTooDeeply",option);
+      node=(Stack *) AcquireMagickMemory(sizeof(*node));
+      if (node == (Stack *) NULL)
+        CLIWandExceptionBreak(ResourceLimitFatalError,
+            "MemoryAllocationFailed",option);
+      node->data = (void *)cli_wand->wand.images;
+      cli_wand->wand.images = NewImageList();
+      node->next = cli_wand->image_list_stack;
+      cli_wand->image_list_stack = node;
+
+      /* handle respect-parenthesis */
+      if (IfMagickTrue(IsStringTrue(GetImageOption(cli_wand->wand.image_info,
+                    "respect-parenthesis"))))
+        option="{"; /* fall-thru so as to push image settings too */
+      else
+        break;
+      /* fall thru to next if */
+    }
+    if (LocaleCompare("{",option) == 0) {
+      /* stack 'push' of image_info settings */
+      Stack
+        *node;
+
+      size_t
+        size;
+
+      size=0;
+      node=cli_wand->image_info_stack;
+      for ( ; node != (Stack *)NULL; node=node->next)
+        size++;
+      if ( size >= MAX_STACK_DEPTH )
+        CLIWandExceptionBreak(OptionError,"CurlyBracesNestedTooDeeply",option);
+      node=(Stack *) AcquireMagickMemory(sizeof(*node));
+      if (node == (Stack *) NULL)
+        CLIWandExceptionBreak(ResourceLimitFatalError,
+            "MemoryAllocationFailed",option);
+
+      node->data = (void *)cli_wand->wand.image_info;
+      cli_wand->wand.image_info = CloneImageInfo(cli_wand->wand.image_info);
+      if (cli_wand->wand.image_info == (ImageInfo *)NULL) {
+        CLIWandException(ResourceLimitFatalError,"MemoryAllocationFailed",
+            option);
+        cli_wand->wand.image_info = (ImageInfo *)node->data;
+        node = (Stack *)RelinquishMagickMemory(node);
+        break;
+      }
+
+      node->next = cli_wand->image_info_stack;
+      cli_wand->image_info_stack = node;
+
+      break;
+    }
+    if (LocaleCompare(")",option) == 0) {
+      /* pop images from stack */
+      Stack
+        *node;
+
+      node = (Stack *)cli_wand->image_list_stack;
+      if ( node == (Stack *)NULL)
+        CLIWandExceptionBreak(OptionError,"UnbalancedParenthesis",option);
+      cli_wand->image_list_stack = node->next;
+
+      AppendImageToList((Image **)&node->data,cli_wand->wand.images);
+      cli_wand->wand.images= (Image *)node->data;
+      node = (Stack *)RelinquishMagickMemory(node);
+
+      /* handle respect-parenthesis - of the previous 'pushed' settings */
+      node = cli_wand->image_info_stack;
+      if ( node != (Stack *)NULL)
+        {
+          if (IfMagickTrue(IsStringTrue(GetImageOption(
+                cli_wand->wand.image_info,"respect-parenthesis"))))
+            option="}"; /* fall-thru so as to pop image settings too */
+          else
+            break;
+        }
+      else
+        break;
+      /* fall thru to next if */
+    }
+    if (LocaleCompare("}",option) == 0) {
+      /* pop image_info settings from stack */
+      Stack
+        *node;
+
+      node = (Stack *)cli_wand->image_info_stack;
+      if ( node == (Stack *)NULL)
+        CLIWandExceptionBreak(OptionError,"UnbalancedCurlyBraces",option);
+      cli_wand->image_info_stack = node->next;
+
+      (void) DestroyImageInfo(cli_wand->wand.image_info);
+      cli_wand->wand.image_info = (ImageInfo *)node->data;
+      node = (Stack *)RelinquishMagickMemory(node);
+
+      GetDrawInfo(cli_wand->wand.image_info, cli_wand->draw_info);
+      cli_wand->quantize_info=DestroyQuantizeInfo(cli_wand->quantize_info);
+      cli_wand->quantize_info=AcquireQuantizeInfo(cli_wand->wand.image_info);
+
+      break;
+    }
+    if (LocaleCompare("clone",option+1) == 0) {
+        Image
+          *new_images;
+
+        if (*option == '+')
+          arg1="-1";
+        if (IfMagickFalse(IsSceneGeometry(arg1,MagickFalse)))
+          CLIWandExceptionBreak(OptionError,"InvalidArgument",option);
+        if ( cli_wand->image_list_stack == (Stack *)NULL)
+          CLIWandExceptionBreak(OptionError,"UnableToCloneImage",option);
+        new_images = (Image *)cli_wand->image_list_stack->data;
+        if (new_images == (Image *) NULL)
+          CLIWandExceptionBreak(OptionError,"UnableToCloneImage",option);
+        new_images=CloneImages(new_images,arg1,_exception);
+        if (new_images == (Image *) NULL)
+          CLIWandExceptionBreak(OptionError,"NoSuchImage",option);
+        AppendImageToList(&_images,new_images);
+        break;
+      }
+    /*
+       Informational Operations
+
+       Note that these do not require either cli-wand or images!
+    */
+    if (LocaleCompare("version",option+1) == 0) {
+      (void) FormatLocaleFile(stdout,"Version: %s\n",
+        GetMagickVersion((size_t *) NULL));
+      (void) FormatLocaleFile(stdout,"Copyright: %s\n",
+        GetMagickCopyright());
+      (void) FormatLocaleFile(stdout,"Features: %s\n\n",
+        GetMagickFeatures());
+      break;
+    }
+    if (LocaleCompare("list",option+1) == 0) {
+      /*
+         FUTURE: This 'switch' should really be built into the MagickCore
+      */
+      ssize_t
+        list;
+
+      list=ParseCommandOption(MagickListOptions,MagickFalse,arg1);
+      if ( list < 0 ) {
+        CLIWandExceptionArg(OptionError,"UnrecognizedListType",option,arg1);
+        break;
+      }
+      switch (list)
+      {
+        case MagickCoderOptions:
+        {
+          (void) ListCoderInfo((FILE *) NULL,_exception);
+          break;
+        }
+        case MagickColorOptions:
+        {
+          (void) ListColorInfo((FILE *) NULL,_exception);
+          break;
+        }
+        case MagickConfigureOptions:
+        {
+          (void) ListConfigureInfo((FILE *) NULL,_exception);
+          break;
+        }
+        case MagickDelegateOptions:
+        {
+          (void) ListDelegateInfo((FILE *) NULL,_exception);
+          break;
+        }
+        case MagickFontOptions:
+        {
+          (void) ListTypeInfo((FILE *) NULL,_exception);
+          break;
+        }
+        case MagickFormatOptions:
+          (void) ListMagickInfo((FILE *) NULL,_exception);
+          break;
+        case MagickLocaleOptions:
+          (void) ListLocaleInfo((FILE *) NULL,_exception);
+          break;
+        case MagickLogOptions:
+          (void) ListLogInfo((FILE *) NULL,_exception);
+          break;
+        case MagickMagicOptions:
+          (void) ListMagicInfo((FILE *) NULL,_exception);
+          break;
+        case MagickMimeOptions:
+          (void) ListMimeInfo((FILE *) NULL,_exception);
+          break;
+        case MagickModuleOptions:
+          (void) ListModuleInfo((FILE *) NULL,_exception);
+          break;
+        case MagickPolicyOptions:
+          (void) ListPolicyInfo((FILE *) NULL,_exception);
+          break;
+        case MagickResourceOptions:
+          (void) ListMagickResourceInfo((FILE *) NULL,_exception);
+          break;
+        case MagickThresholdOptions:
+          (void) ListThresholdMaps((FILE *) NULL,_exception);
+          break;
+        default:
+          (void) ListCommandOptions((FILE *) NULL,(CommandOption) list,
+            _exception);
+          break;
+      }
+      break;
+    }
+
+    CLIWandException(OptionError,"UnrecognizedOption",option);
+
+  } while (0);  /* break to exit code. */
+
+#if 0
+  /* clean up percent escape interpreted strings */
+  if (arg1 != arg1n )
+    arg1=DestroyString((char *)arg1);
+  if (arg2 != arg2n )
+    arg2=DestroyString((char *)arg2);
+#endif
+
+#undef _image_info
+#undef _images
+#undef _exception
+#undef IfNormalOp
+#undef IfPlusOp
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   C L I O p t i o n                                                         %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  CLIOption() Processes the given option using the given CLI Magick Wand.
+%  The option arguments can be variable in number, though at this time no more
+%  that two is actually used by any option (this may change). Excess options
+%  are simply ignored.
+%
+%  If the cli_wand->command pointer is non-null, then it is assumed that the
+%  option has already been search for up from the CommandOptions[] table in
+%  "MagickCore/options.c" using  GetCommandOptionInfo().  If not set this
+%  routine will do the lookup instead. The pointer is reset afterward.
+%
+%  This action allows the caller to lookup and pre-handle any 'special'
+%  options, (such as implicit reads) before calling this general option
+%  handler to deal with 'standard' command line options.
+%
+%  The format of the CLIOption method is:
+%
+%       void CLIOption(MagickCLI *cli_wand,const char *option, ...)
+%
+%  A description of each parameter follows:
+%
+%     o cli_wand: the main CLI Wand to use.
+%
+%     o option: The special option (with any switch char) to process
+%
+%     o args: any required arguments for an option (variable number)
+%
+%  Example Usage...
+%
+%    CLIoption(cli_wand,"-read","rose:");
+%    CLIoption(cli_wand,"-virtual-pixel","transparent");
+%    CLIoption(cli_wand,"-distort","SRT:","30");
+%    CLIoption(cli_wand,"-write","rotated_rose.png");
+%
+*/
+WandExport void CLIOption(MagickCLI *cli_wand,const char *option,...)
+{
+  const char
+    *arg1,
+    *arg2;
+
+  CommandOptionFlags
+    option_type;
+
+  assert(cli_wand != (MagickCLI *) NULL);
+  assert(cli_wand->signature == WandSignature);
+  assert(cli_wand->wand.signature == WandSignature);
+  if (IfMagickTrue(cli_wand->wand.debug))
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",cli_wand->wand.name);
+
+  do { /* Break Code Block for error handling */
+
+    /* get information about option */
+    if ( cli_wand->command == (const OptionInfo *) NULL )
+      cli_wand->command = GetCommandOptionInfo(option);
+#if 0
+      (void) FormatLocaleFile(stderr, "CLIOption \"%s\" matched \"%s\"\n",
+            option, cli_wand->command->mnemonic );
+#endif
+    option_type=(CommandOptionFlags) cli_wand->command->flags;
+
+    if ( option_type == UndefinedOptionFlag )
+      CLIWandExceptionReturn(OptionFatalError,"UnrecognizedOption",option);
+
+    assert( LocaleCompare(cli_wand->command->mnemonic,option) == 0 );
+
+    /* depreciated options */
+    if ( (option_type & DeprecateOptionFlag) != 0 )
+      CLIWandExceptionBreak(OptionError,"DeprecatedOptionNoCode",option);
+
+    /* options that this module does not handle */
+    if ((option_type & (SpecialOptionFlag|GenesisOptionFlag)) != 0 )
+      CLIWandExceptionBreak(OptionFatalError,"InvalidUseOfOption",option);
+
+    /* Get argument strings from VarArgs
+      How can you determine arguments is enough was supplied? */
+    { size_t
+        count = cli_wand->command->type;
+
+      va_list
+        operands;
+
+      va_start(operands,option);
+
+      arg1=arg2=NULL;
+      if ( count >= 1 )
+        arg1=(const char *) va_arg(operands, const char *);
+      if ( count >= 2 )
+        arg2=(const char *) va_arg(operands, const char *);
+
+      va_end(operands);
+
+#if 0
+      (void) FormatLocaleFile(stderr,
+        "CLIOption: \"%s\"  Count: %ld  Flags: %04x  Args: \"%s\" \"%s\"\n",
+            option,(long) count,option_type,arg1,arg2);
+#endif
+    }
+
+    /*
+      Call the appropriate option handler
+    */
+
+    /* FUTURE: this is temporary - get 'settings' to handle distribution of
+      settings to images attributes,proprieties,artifacts */
+    if ( cli_wand->wand.images != (Image *)NULL )
+      SyncImagesSettings(cli_wand->wand.image_info,cli_wand->wand.images,
+          cli_wand->wand.exception);
+
+    if ( (option_type & SettingOptionFlags) != 0 ) {
+      CLISettingOptionInfo(cli_wand, option, arg1, arg2);
+      // FUTURE: Sync Specific Settings into Image Properities (not global)
+    }
+
+    /* Operators that do not need images - read, write, stack, clone */
+    if ( (option_type & NoImageOperatorFlag) != 0)
+      CLINoImageOperator(cli_wand, option, arg1, arg2);
+
+    /* FUTURE: The not a setting part below is a temporary hack due to
+    * some options being both a Setting and a Simple operator.
+    * Specifically -monitor, -depth, and  -colorspace */
+    if ( cli_wand->wand.images == (Image *)NULL )
+      if ( ((option_type & (SimpleOperatorFlag|ListOperatorFlag)) != 0 ) &&
+          ((option_type & SettingOptionFlags) == 0 ))  /* temp hack */
+        CLIWandExceptionBreak(OptionError,"NoImagesFound",option);
+
+    /* Operators work on single images, and needs a loop over the images */
+    if ( (option_type & SimpleOperatorFlag) != 0)
+      CLISimpleOperatorImages(cli_wand, option, arg1, arg2);
+
+    /* Operators that work on the image list as a whole */
+    if ( (option_type & ListOperatorFlag) != 0 )
+      CLIListOperatorImages(cli_wand, option, arg1, arg2);
+
+  } while (0);  /* end Break code block */
+
+  cli_wand->command = (const OptionInfo *) NULL; /* prevent re-use later */
+}

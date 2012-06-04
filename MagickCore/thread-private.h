@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -22,9 +22,21 @@
 extern "C" {
 #endif
 
+#include <MagickCore/cache.h>
+#include <MagickCore/resource_.h>
 #include <MagickCore/thread_.h>
 
-#define omp_throttle(factor)  num_threads(omp_get_max_threads() >> (factor))
+/*
+  Single threaded unless workload justifies the threading overhead.
+*/
+#define WorkloadThreshold()  (16*GetMagickResourceLimit(ThreadResource))
+#define dynamic_number_threads(image,columns,rows,expression) \
+  if (((((columns) > WorkloadThreshold()) || \
+      ((rows) > WorkloadThreshold()))) && ((MagickSizeType) \
+      ((columns)*(rows)) > (WorkloadThreshold()*WorkloadThreshold())) && \
+      ((GetImagePixelCacheType(image) == MemoryCache) || \
+       (GetImagePixelCacheType(image) == MapCache)) && (expression)) \
+    num_threads(GetMagickResourceLimit(ThreadResource))
 
 #if (__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR > 10))
 #define MagickCachePrefetch(address,mode,locality) \
@@ -96,25 +108,16 @@ static inline MagickBooleanType IsMagickThreadEqual(const MagickThreadType id)
 */
 static inline size_t GetOpenMPMaximumThreads(void)
 {
-  static size_t
-    maximum_threads = 1;
-
-#if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
-  {
-    ssize_t
-      threads;
-
-    threads=omp_get_max_threads();
-    if (threads > (ssize_t) maximum_threads)
-      maximum_threads=threads;
-  }
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  return(omp_get_max_threads());
+#else
+  return(1);
 #endif
-  return(maximum_threads);
 }
 
 static inline int GetOpenMPThreadId(void)
 {
-#if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   return(omp_get_thread_num());
 #else
   return(0);
@@ -123,7 +126,7 @@ static inline int GetOpenMPThreadId(void)
 
 static inline void SetOpenMPMaximumThreads(const int threads)
 {
-#if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   omp_set_num_threads(threads);
 #else
   (void) threads;
@@ -132,7 +135,7 @@ static inline void SetOpenMPMaximumThreads(const int threads)
 
 static inline void SetOpenMPNested(const int value)
 {
-#if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   omp_set_nested(value);
 #else
   (void) value;

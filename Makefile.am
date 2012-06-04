@@ -1,4 +1,4 @@
-#  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -70,6 +70,7 @@ TESTS_ENVIRONMENT = \
 	CONVERT="$(MEMCHECK) @abs_top_builddir@/utilities/convert" \
 	DISPLAY="$(MEMCHECK) @abs_top_builddir@/utilities/display" \
 	IDENTIFY="$(MEMCHECK) @abs_top_builddir@/utilities/identify" \
+	MAGICK="$(MEMCHECK) @abs_top_builddir@/utilities/magick" \
 	MONTAGE="$(MEMCHECK) @abs_top_builddir@/utilities/montage" \
 	VALIDATE="$(MEMCHECK) @abs_top_builddir@/tests/validate" \
 	LD_LIBRARY_PATH="@abs_top_builddir@/MagickCore/.libs:${LD_LIBRARY_PATH}" \
@@ -183,11 +184,17 @@ endif
 
 all-local: $(MAGICKPP_LOCAL_TARGETS) $(PERLMAGICK_ALL_LOCAL_TARGETS) $(MAINTAINER_TARGETS)
 
-install-exec-local: $(PERLMAGICK_INSTALL_EXEC_LOCAL_TARGETS)
+install-exec-local: $(PERLMAGICK_INSTALL_EXEC_LOCAL_TARGETS) \
+	$(UTILITIES_INSTALL_EXEC_LOCAL_TARGETS)
 
-install-data-local: $(MAGICK_INSTALL_DATA_LOCAL_TARGETS) $(PERLMAGICK_INSTALL_DATA_LOCAL_TARGETS) $(HTML_INSTALL_DATA_TARGETS)
+install-data-local: $(MAGICK_INSTALL_DATA_LOCAL_TARGETS) \
+	$(PERLMAGICK_INSTALL_DATA_LOCAL_TARGETS) \
+	$(HTML_INSTALL_DATA_TARGETS)
 
-uninstall-local: $(MAGICK_UNINSTALL_LOCAL_TARGETS) $(PERLMAGICK_UNINSTALL_LOCAL_TARGETS) $(HTML_UNINSTALL_DATA_TARGETS)
+uninstall-local: $(MAGICK_UNINSTALL_LOCAL_TARGETS) \
+	$(PERLMAGICK_UNINSTALL_LOCAL_TARGETS) \
+	$(HTML_UNINSTALL_DATA_TARGETS) \
+	$(UTILITIES_UNINSTALL_LOCAL_TARGETS)
 
 clean-local: $(PERLMAGICK_CLEAN_LOCAL_TARGETS)
 
@@ -321,7 +328,7 @@ if RPM_DELEGATE
 
 DIST_ARCHIVE_SRPM=$(distdir)-1.src.rpm
 .PHONY: srpm
-$(DIST_ARCHIVE_SRPM) srpm: dist
+$(DIST_ARCHIVE_SRPM) srpm: dist-bzip2
 	rm -f $(DIST_ARCHIVE_SRPM)
 	$(RPM) --define="_sourcedir `pwd`" --define="_srcrpmdir `pwd`" --nodeps --bs ImageMagick.spec
 	@echo ==============================================================
