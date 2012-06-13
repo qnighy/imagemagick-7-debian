@@ -6,9 +6,9 @@ imagemagick (8:6.7.7.7-1) unstable; urgency=low
   * Bug fix: "Please include large 256x256px icon", thanks to Ralph
     Aichinger (Closes: #675484). Add scalable icons, 16x16, 32x32, 48x48
   * Copyright review:
-  - move to dep5 format
-  - Remove dot support due to incompatibility between EPL and GPL.
-  - Remove sRGB.icc
+  - move to dep5 format.
+  - Remove dot support due to incompatibility between EPL and GPL (Closes: #677413).
+  - Remove non modifiable sRGB.icc (Closes: #677414).
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 13 Jun 2012 14:33:52 +0200
 
