@@ -27,6 +27,7 @@ endif
 build: build-stamp
 build-stamp: $(QUILT_STAMPFN)
 	dh_testdir
+        # NOTICE: remove EPL delegate lib gvc
 	MagickDocumentPath="/usr/share/doc/imagemagick" ./configure \
 	--prefix=/usr \
         --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
@@ -39,7 +40,7 @@ build-stamp: $(QUILT_STAMPFN)
 	--with-magick-plus-plus \
 	--with-djvu \
         --with-wmf \
-        --without-gvc \ # remove EPL delegate
+        --without-gvc \
 	--enable-shared \
 	--without-dps \
 	--without-fpx \
