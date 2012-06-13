@@ -9,7 +9,6 @@ usr/bin/stream*
 usr/bin/display*
 usr/bin/montage*
 usr/bin/mogrify*
-usr/share/pixmaps/
 debian/icons/* usr/share/icons/hicolor/
 debian/display.im*.xpm usr/share/pixmaps/
 debian/display.im*.desktop usr/share/applications/
