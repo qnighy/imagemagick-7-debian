@@ -64,6 +64,11 @@ Copyright: 1999-2012, ImageMagick Studio LLC
 License: ImageMagick
 Comment: libdjvulibre used by this delegate is under GPL2+
 
+Files: coders/dot.c
+Copyright: 1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+Comment: use a delegate under EPL but not compiled under debian
+
 Files: coders/dps.c
 Copyright: 1999-2012, ImageMagick Studio LLC
 License: ImageMagick
@@ -115,6 +120,11 @@ Copyright: 1999-2012, ImageMagick Studio LLC
            1991-2010, Thomas G. Lane, Guido Vollbeding
 License: ImagemagickPartlibjpeg
 Comment: use libopenjpeg8 under BDS-3 like
+
+Files: coders/mat.c
+Copyright: 2001-2008, Jaroslav Fojtik
+           2001-2012, ImageMagick Studio LLC
+License: ImageMagick
 
 Files: debian/*
 Copyright: 1998-2000, Scott K. Ellis

@@ -39,6 +39,7 @@ build-stamp: $(QUILT_STAMPFN)
 	--with-magick-plus-plus \
 	--with-djvu \
         --with-wmf \
+        --without-gvc \ # remove EPL delegate
 	--enable-shared \
 	--without-dps \
 	--without-fpx \

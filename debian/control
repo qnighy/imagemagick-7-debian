@@ -9,7 +9,8 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Vincent Fourmond <fourmond@debian.org>
 Standards-Version: 3.9.3
 Build-Depends: chrpath, debhelper (>= 8.1.3~), ghostscript, libbz2-dev,
- libdjvulibre-dev, libexif-dev, fftw-dev, libfreetype6-dev, libgraphviz-dev,
+ libdjvulibre-dev, libexif-dev, fftw-dev, libfreetype6-dev, 
+# libgraphviz-dev, incompatible license against fftw
  libjasper-dev, libjpeg-dev, liblcms2-dev, liblqr-1-0-dev, libltdl-dev,
  libopenexr-dev, libperl-dev, libpng-dev, librsvg2-dev, libtiff-dev,
  libwmf-dev, libx11-dev, libxext-dev, libxml2-dev, libxt-dev, pkg-config,

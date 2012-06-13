@@ -4,7 +4,8 @@ imagemagick (8:6.7.7.2-2) unstable; urgency=low
   * Bug fix: "Menu entry of imagemagick does not lauch it", thanks to
     Michael Biebl (Closes: #675453). Use a wrapper script.
   * Bug fix: "Please include large 256x256px icon", thanks to Ralph
-    Aichinger (Closes: #675484). Add scalable icons, 16x16, 32x32, 48x48 
+    Aichinger (Closes: #675484). Add scalable icons, 16x16, 32x32, 48x48
+  * Remove dot support due to incompatibility between EPL and GPL.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 02 Jun 2012 21:24:32 +0200
 
