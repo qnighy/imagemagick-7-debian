@@ -3790,7 +3790,7 @@ static inline void MagickPixelCompositeMask(const MagickPixelPacket *p,
       return;
     }
   gamma=1.0-QuantumScale*QuantumScale*alpha*beta;
-  gamma=1.0/(gamma <= MagickEpsilon ? 1.0 : gamma);
+  gamma=MagickEpsilonReciprocal(gamma);
   composite->red=gamma*MagickOver_(p->red,alpha,q->red,beta);
   composite->green=gamma*MagickOver_(p->green,alpha,q->green,beta);
   composite->blue=gamma*MagickOver_(p->blue,alpha,q->blue,beta);
@@ -5188,24 +5188,25 @@ MagickExport VirtualPixelMethod SetPixelCacheVirtualMethod(const Image *image,
   assert(cache_info->signature == MagickSignature);
   method=cache_info->virtual_pixel_method;
   cache_info->virtual_pixel_method=virtual_pixel_method;
-  switch (virtual_pixel_method)
-  {
-    case BackgroundVirtualPixelMethod:
+  if ((image->columns != 0) && (image->rows != 0))
+    switch (virtual_pixel_method)
     {
-      if ((image->background_color.opacity != OpaqueOpacity) &&
-          (image->matte == MagickFalse))
-        (void) SetCacheAlphaChannel((Image *) image,OpaqueOpacity);
-      break;
+      case BackgroundVirtualPixelMethod:
+      {
+        if ((image->background_color.opacity != OpaqueOpacity) &&
+            (image->matte == MagickFalse))
+          (void) SetCacheAlphaChannel((Image *) image,OpaqueOpacity);
+        break;
+      }
+      case TransparentVirtualPixelMethod:
+      {
+        if (image->matte == MagickFalse)
+          (void) SetCacheAlphaChannel((Image *) image,OpaqueOpacity);
+        break;
+      }
+      default:
+        break;
     }
-    case TransparentVirtualPixelMethod:
-    {
-      if (image->matte == MagickFalse)
-        (void) SetCacheAlphaChannel((Image *) image,OpaqueOpacity);
-      break;
-    }
-    default:
-      break;
-  }
   return(method);
 }
 

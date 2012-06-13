@@ -1,12 +1,12 @@
 /*
   Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-  
+
     http://www.imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,16 @@ extern "C" {
 #include <magick/image.h>
 #include <magick/color.h>
 #include <magick/image-private.h>
+#include <magick/memory_.h>
 #include <magick/quantum-private.h>
+
+static inline MagickRealType MagickEpsilonReciprocal(const MagickRealType x)
+{
+  MagickRealType sign = x < (MagickRealType) 0.0 ? (MagickRealType) -1.0 : 
+    (MagickRealType) 1.0;
+  return((sign*x) > MagickEpsilon ? (MagickRealType) 1.0/x : sign*(
+    (MagickRealType) 1.0/MagickEpsilon));
+}
 
 static inline MagickPixelPacket *CloneMagickPixelPacket(
   const MagickPixelPacket *pixel)
@@ -56,7 +65,7 @@ static inline MagickBooleanType IsGrayPixel(const PixelPacket *pixel)
 
     alpha=GetPixelRed(pixel)-GetPixelGreen(pixel);
     beta=GetPixelGreen(pixel)-GetPixelBlue(pixel);
-    if ((fabs(alpha) <= MagickEpsilon) && (fabs(beta) <= MagickEpsilon))
+    if ((fabs((double) alpha) <= MagickEpsilon) && (fabs(beta) <= MagickEpsilon))
       return(MagickTrue);
   }
 #endif
@@ -81,7 +90,7 @@ static inline MagickBooleanType IsMonochromePixel(const PixelPacket *pixel)
     beta=GetPixelGreen(pixel)-GetPixelBlue(pixel);
     if (((fabs(GetPixelRed(pixel)) <= MagickEpsilon) ||
          (fabs(GetPixelRed(pixel)-QuantumRange) <= MagickEpsilon)) &&
-        (fabs(alpha) <= MagickEpsilon) && (fabs(beta) <= MagickEpsilon))
+        (fabs((double) alpha) <= MagickEpsilon) && (fabs(beta) <= MagickEpsilon))
       return(MagickTrue);
     }
 #endif

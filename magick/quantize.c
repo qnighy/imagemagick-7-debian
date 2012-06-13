@@ -1221,7 +1221,7 @@ static size_t DefineImageColormap(Image *image,CubeInfo *cube_info,
       */
       q=image->colormap+image->colors;
       alpha=(MagickRealType) ((MagickOffsetType) node_info->number_unique);
-      alpha=1.0/(fabs(alpha) <= MagickEpsilon ? 1.0 : alpha);
+      alpha=MagickEpsilonReciprocal(alpha);
       if (cube_info->associate_alpha == MagickFalse)
         {
           SetPixelRed(q,ClampToQuantum((MagickRealType) (alpha*
@@ -1256,7 +1256,7 @@ static size_t DefineImageColormap(Image *image,CubeInfo *cube_info,
 
               gamma=(MagickRealType) (QuantumScale*(QuantumRange-
                 (MagickRealType) q->opacity));
-              gamma=1.0/(fabs(gamma) <= MagickEpsilon ? 1.0 : gamma);
+              gamma=MagickEpsilonReciprocal(gamma);
               SetPixelRed(q,ClampToQuantum((MagickRealType) (alpha*
                 gamma*QuantumRange*node_info->total_color.red)));
               SetPixelGreen(q,ClampToQuantum((MagickRealType) (alpha*
@@ -1995,7 +1995,7 @@ static CubeInfo *GetCubeInfo(const QuantizeInfo *quantize_info,
   weight=1.0;
   for (i=0; i < ErrorQueueLength; i++)
   {
-    cube_info->weights[ErrorQueueLength-i-1]=1.0/weight;
+    cube_info->weights[ErrorQueueLength-i-1]=MagickEpsilonReciprocal(weight);
     weight*=exp(log(((double) QuantumRange+1.0))/(ErrorQueueLength-1.0));
   }
   /*

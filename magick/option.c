@@ -411,6 +411,8 @@ static const OptionInfo
     { "-interline-spacing", 1L, ImageInfoOptionFlag | DrawInfoOptionFlag, MagickFalse },
     { "+interpolate", 0L, ImageInfoOptionFlag, MagickFalse },
     { "-interpolate", 1L, ImageInfoOptionFlag, MagickFalse },
+    { "+interpolative-resize", 1L, DeprecateOptionFlag, MagickFalse },
+    { "-interpolative-resize", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+interword-spacing", 0L, ImageInfoOptionFlag | DrawInfoOptionFlag, MagickFalse },
     { "-interword-spacing", 1L, ImageInfoOptionFlag | DrawInfoOptionFlag, MagickFalse },
     { "+kerning", 0L, ImageInfoOptionFlag | DrawInfoOptionFlag, MagickFalse },
@@ -1008,6 +1010,7 @@ static const OptionInfo
     { "RobidouxSharp", RobidouxSharpFilter, UndefinedOptionFlag, MagickFalse },
     { "Sinc", SincFilter, UndefinedOptionFlag, MagickFalse },
     { "SincFast", SincFastFilter, UndefinedOptionFlag, MagickFalse },
+    { "Spline", SplineFilter, UndefinedOptionFlag, MagickFalse },
     { "Triangle", TriangleFilter, UndefinedOptionFlag, MagickFalse },
     { "Welsh", WelshFilter, UndefinedOptionFlag, MagickFalse },
     /* For backward compatibility - must be after "Jinc" */
@@ -1065,14 +1068,21 @@ static const OptionInfo
   {
     { "Undefined", UndefinedInterpolatePixel, UndefinedOptionFlag, MagickTrue },
     { "Average", AverageInterpolatePixel, UndefinedOptionFlag, MagickFalse },
-    { "Bicubic", BicubicInterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    { "Average4", AverageInterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    { "Average9", Average9InterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    { "Average16", Average16InterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    { "Background", BackgroundInterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    { "Bicubic", CatromInterpolatePixel, UndefinedOptionFlag, MagickTrue },
     { "Bilinear", BilinearInterpolatePixel, UndefinedOptionFlag, MagickFalse },
-    { "filter", FilterInterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    { "Blend", BlendInterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    { "Catrom", CatromInterpolatePixel, UndefinedOptionFlag, MagickTrue },
     { "Integer", IntegerInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Mesh", MeshInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Nearest", NearestNeighborInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "NearestNeighbor", NearestNeighborInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Spline", SplineInterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    /* depreciation of slow and useless interpolation method */
+    { "Filter", FilterInterpolatePixel, UndefinedOptionFlag, MagickTrue },
     { (char *) NULL, UndefinedInterpolatePixel, UndefinedOptionFlag, MagickFalse }
   },
   KernelOptions[] =
@@ -1550,6 +1560,7 @@ static const OptionInfo
     { "HorizontalTile", HorizontalTileVirtualPixelMethod, UndefinedOptionFlag, MagickFalse },
     { "HorizontalTileEdge", HorizontalTileEdgeVirtualPixelMethod, UndefinedOptionFlag, MagickFalse },
     { "Mirror", MirrorVirtualPixelMethod, UndefinedOptionFlag, MagickFalse },
+    { "None", TransparentVirtualPixelMethod, UndefinedOptionFlag, MagickFalse },
     { "Random", RandomVirtualPixelMethod, UndefinedOptionFlag, MagickFalse },
     { "Tile", TileVirtualPixelMethod, UndefinedOptionFlag, MagickFalse },
     { "Transparent", TransparentVirtualPixelMethod, UndefinedOptionFlag, MagickFalse },

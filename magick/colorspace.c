@@ -636,8 +636,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       gamma=DisplayGamma;
       value=GetImageProperty(image,"gamma");
       if (value != (const char *) NULL)
-        gamma=1.0/StringToDouble(value,(char **) NULL) != 0.0 ? StringToDouble(
-          value,(char **) NULL) : 1.0;
+        gamma=MagickEpsilonReciprocal(StringToDouble(value,(char **) NULL));
       film_gamma=FilmGamma;
       value=GetImageProperty(image,"film-gamma");
       if (value != (const char *) NULL)
@@ -1373,7 +1372,6 @@ static double LabF2(double alpha)
 static inline void ConvertLabToXYZ(const double L,const double a,const double b,
   double *X,double *Y,double *Z)
 {
-
   double
     x,
     y,
@@ -2146,8 +2144,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       gamma=DisplayGamma;
       value=GetImageProperty(image,"gamma");
       if (value != (const char *) NULL)
-        gamma=1.0/StringToDouble(value,(char **) NULL) != 0.0 ? StringToDouble(
-          value,(char **) NULL) : 1.0;
+        gamma=MagickEpsilonReciprocal(StringToDouble(value,(char **) NULL));
       film_gamma=FilmGamma;
       value=GetImageProperty(image,"film-gamma");
       if (value != (const char *) NULL)

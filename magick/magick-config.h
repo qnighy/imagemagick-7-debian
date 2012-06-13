@@ -1281,7 +1281,9 @@
 /* #undef NO_MINUS_C_MINUS_O */
 
 /* Define if you have OPENEXR library */
-/* #undef OPENEXR_DELEGATE */
+#ifndef MAGICKCORE_OPENEXR_DELEGATE
+#define MAGICKCORE_OPENEXR_DELEGATE 1
+#endif
 
 /* Name of package */
 #ifndef MAGICKCORE_PACKAGE
@@ -1300,7 +1302,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.7-2"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.7-7"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1315,7 +1317,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.7.7-2"
+#define MAGICKCORE_PACKAGE_VERSION "6.7.7-7"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1505,7 +1507,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.7.7-2"
+#define MAGICKCORE_VERSION "6.7.7-7"
 #endif
 
 /* Define if you have WEBP library */

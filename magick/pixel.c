@@ -3776,6 +3776,11 @@ MagickExport MagickBooleanType ImportImagePixels(Image *image,const ssize_t x,
 %
 */
 
+/*
+  Prepare pixels for weighted alpha blending.
+  Save PixelPacket/IndexPacket 'color'/'index' into 'pixel'/'alpha'
+  after multiplying colors by alpha.
+*/
 static inline void AlphaBlendMagickPixelPacket(const Image *image,
   const PixelPacket *color,const IndexPacket *indexes,MagickPixelPacket *pixel,
   MagickRealType *alpha)
@@ -3804,47 +3809,6 @@ static inline void AlphaBlendMagickPixelPacket(const Image *image,
        (image->storage_class == PseudoClass)) &&
       (indexes != (const IndexPacket *) NULL))
     pixel->index=(*alpha*GetPixelIndex(indexes));
-}
-
-static void BicubicInterpolate(const MagickPixelPacket *pixels,const double dx,
-  MagickPixelPacket *pixel)
-{
-  MagickRealType
-    dx2,
-    p,
-    q,
-    r,
-    s;
-
-  dx2=dx*dx;
-  p=(pixels[3].red-pixels[2].red)-(pixels[0].red-pixels[1].red);
-  q=(pixels[0].red-pixels[1].red)-p;
-  r=pixels[2].red-pixels[0].red;
-  s=pixels[1].red;
-  pixel->red=(dx*dx2*p)+(dx2*q)+(dx*r)+s;
-  p=(pixels[3].green-pixels[2].green)-(pixels[0].green-pixels[1].green);
-  q=(pixels[0].green-pixels[1].green)-p;
-  r=pixels[2].green-pixels[0].green;
-  s=pixels[1].green;
-  pixel->green=(dx*dx2*p)+(dx2*q)+(dx*r)+s;
-  p=(pixels[3].blue-pixels[2].blue)-(pixels[0].blue-pixels[1].blue);
-  q=(pixels[0].blue-pixels[1].blue)-p;
-  r=pixels[2].blue-pixels[0].blue;
-  s=pixels[1].blue;
-  pixel->blue=(dx*dx2*p)+(dx2*q)+(dx*r)+s;
-  p=(pixels[3].opacity-pixels[2].opacity)-(pixels[0].opacity-pixels[1].opacity);
-  q=(pixels[0].opacity-pixels[1].opacity)-p;
-  r=pixels[2].opacity-pixels[0].opacity;
-  s=pixels[1].opacity;
-  pixel->opacity=(dx*dx2*p)+(dx2*q)+(dx*r)+s;
-  if (pixel->colorspace == CMYKColorspace)
-    {
-      p=(pixels[3].index-pixels[2].index)-(pixels[0].index-pixels[1].index);
-      q=(pixels[0].index-pixels[1].index)-p;
-      r=pixels[2].index-pixels[0].index;
-      s=pixels[1].index;
-      pixel->index=(dx*dx2*p)+(dx2*q)+(dx*r)+s;
-    }
 }
 
 static inline double MagickMax(const MagickRealType x,const MagickRealType y)
@@ -3877,13 +3841,6 @@ static inline double MeshInterpolate(const PointInfo *delta,const double p,
   return(delta->x*x+delta->y*y+(1.0-delta->x-delta->y)*p);
 }
 
-static inline ssize_t NearestNeighbor(const MagickRealType x)
-{
-  if (x >= 0.0)
-    return((ssize_t) (x+0.5));
-  return((ssize_t) (x-0.5));
-}
-
 MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
   const CacheView *image_view,const InterpolatePixelMethod method,
   const double x,const double y,MagickPixelPacket *pixel,
@@ -3912,94 +3869,78 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
     x_offset,
     y_offset;
 
+  InterpolatePixelMethod
+    interpolate;
+
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
   assert(image_view != (CacheView *) NULL);
   status=MagickTrue;
   x_offset=(ssize_t) floor(x);
   y_offset=(ssize_t) floor(y);
-  switch (method == UndefinedInterpolatePixel ? image->interpolate : method)
+  interpolate = method;
+  if ( interpolate == UndefinedInterpolatePixel )
+    interpolate = image->interpolate;
+  switch (interpolate)
   {
-    case AverageInterpolatePixel:
+    case AverageInterpolatePixel:        /* nearest 4 neighbours */
+    case Average9InterpolatePixel:       /* nearest 9 neighbours */
+    case Average16InterpolatePixel:      /* nearest 16 neighbours */
     {
-      p=GetCacheViewVirtualPixels(image_view,x_offset-1,y_offset-1,4,4,
-        exception);
+      size_t
+        count=2; /* size of the area to average - default nearest 4 */
+      if (interpolate == Average9InterpolatePixel)
+        {
+          count=3;
+          x_offset=(ssize_t) (floor(x+0.5)-1);
+          y_offset=(ssize_t) (floor(y+0.5)-1);
+        }
+      else if (interpolate == Average16InterpolatePixel)
+        {
+          count=4;
+          x_offset--;
+          y_offset--;
+        }
+
+      p=GetCacheViewVirtualPixels(image_view,x_offset,y_offset,(size_t) count,
+        (size_t) count,exception);
       if (p == (const PixelPacket *) NULL)
         {
           status=MagickFalse;
           break;
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
-      AlphaBlendMagickPixelPacket(image,p+0,indexes+0,pixels+0,alpha+0);
-      AlphaBlendMagickPixelPacket(image,p+1,indexes+1,pixels+1,alpha+1);
-      AlphaBlendMagickPixelPacket(image,p+2,indexes+2,pixels+2,alpha+2);
-      AlphaBlendMagickPixelPacket(image,p+3,indexes+3,pixels+3,alpha+3);
-      AlphaBlendMagickPixelPacket(image,p+4,indexes+4,pixels+4,alpha+4);
-      AlphaBlendMagickPixelPacket(image,p+5,indexes+5,pixels+5,alpha+5);
-      AlphaBlendMagickPixelPacket(image,p+6,indexes+6,pixels+6,alpha+6);
-      AlphaBlendMagickPixelPacket(image,p+7,indexes+7,pixels+7,alpha+7);
-      AlphaBlendMagickPixelPacket(image,p+8,indexes+8,pixels+8,alpha+8);
-      AlphaBlendMagickPixelPacket(image,p+9,indexes+9,pixels+9,alpha+9);
-      AlphaBlendMagickPixelPacket(image,p+10,indexes+10,pixels+10,alpha+10);
-      AlphaBlendMagickPixelPacket(image,p+11,indexes+11,pixels+11,alpha+11);
-      AlphaBlendMagickPixelPacket(image,p+12,indexes+12,pixels+12,alpha+12);
-      AlphaBlendMagickPixelPacket(image,p+13,indexes+13,pixels+13,alpha+13);
-      AlphaBlendMagickPixelPacket(image,p+14,indexes+14,pixels+14,alpha+14);
-      AlphaBlendMagickPixelPacket(image,p+15,indexes+15,pixels+15,alpha+15);
       pixel->red=0.0;
       pixel->green=0.0;
       pixel->blue=0.0;
       pixel->opacity=0.0;
       pixel->index=0.0;
-      for (i=0; i < 16L; i++)
+      count*=count;            /* number of pixels - square of size */
+      for (i=0; i < count; i++)
       {
-        gamma=1.0/(fabs((double) alpha[i]) <= MagickEpsilon ? 1.0 : alpha[i]);
-        pixel->red+=gamma*0.0625*pixels[i].red;
-        pixel->green+=gamma*0.0625*pixels[i].green;
-        pixel->blue+=gamma*0.0625*pixels[i].blue;
-        pixel->opacity+=0.0625*pixels[i].opacity;
-        if (image->colorspace == CMYKColorspace)
-          pixel->index+=gamma*0.0625*pixels[i].index;
+        AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels,alpha);
+        gamma=MagickEpsilonReciprocal(alpha[0]);
+        pixel->red     += gamma*pixels[0].red;
+        pixel->green   += gamma*pixels[0].green;
+        pixel->blue    += gamma*pixels[0].blue;
+        pixel->index   += gamma*pixels[0].index;
+        pixel->opacity +=       pixels[0].opacity;
       }
+      gamma=1.0/count;  /* average weighting of each pixel in area */
+      pixel->red     *= gamma;
+      pixel->green   *= gamma;
+      pixel->blue    *= gamma;
+      pixel->index   *= gamma;
+      pixel->opacity *= gamma;
       break;
     }
-    case BicubicInterpolatePixel:
+    case BackgroundInterpolatePixel:
     {
-      MagickPixelPacket
-        u[4];
+      /* Use the background color -- for resampling error checking */
+      IndexPacket
+        index=0;  /* CMYK index -- What should we do?  -- This is a HACK */
 
-      PointInfo
-        delta;
-
-      p=GetCacheViewVirtualPixels(image_view,x_offset-1,y_offset-1,4,4,
-        exception);
-      if (p == (const PixelPacket *) NULL)
-        {
-          status=MagickFalse;
-          break;
-        }
-      indexes=GetCacheViewVirtualIndexQueue(image_view);
-      AlphaBlendMagickPixelPacket(image,p+0,indexes+0,pixels+0,alpha+0);
-      AlphaBlendMagickPixelPacket(image,p+1,indexes+1,pixels+1,alpha+1);
-      AlphaBlendMagickPixelPacket(image,p+2,indexes+2,pixels+2,alpha+2);
-      AlphaBlendMagickPixelPacket(image,p+3,indexes+3,pixels+3,alpha+3);
-      AlphaBlendMagickPixelPacket(image,p+4,indexes+4,pixels+4,alpha+4);
-      AlphaBlendMagickPixelPacket(image,p+5,indexes+5,pixels+5,alpha+5);
-      AlphaBlendMagickPixelPacket(image,p+6,indexes+6,pixels+6,alpha+6);
-      AlphaBlendMagickPixelPacket(image,p+7,indexes+7,pixels+7,alpha+7);
-      AlphaBlendMagickPixelPacket(image,p+8,indexes+8,pixels+8,alpha+8);
-      AlphaBlendMagickPixelPacket(image,p+9,indexes+9,pixels+9,alpha+9);
-      AlphaBlendMagickPixelPacket(image,p+10,indexes+10,pixels+10,alpha+10);
-      AlphaBlendMagickPixelPacket(image,p+11,indexes+11,pixels+11,alpha+11);
-      AlphaBlendMagickPixelPacket(image,p+12,indexes+12,pixels+12,alpha+12);
-      AlphaBlendMagickPixelPacket(image,p+13,indexes+13,pixels+13,alpha+13);
-      AlphaBlendMagickPixelPacket(image,p+14,indexes+14,pixels+14,alpha+14);
-      AlphaBlendMagickPixelPacket(image,p+15,indexes+15,pixels+15,alpha+15);
-      delta.x=x-x_offset;
-      delta.y=y-y_offset;
-      for (i=0; i < 4L; i++)
-        BicubicInterpolate(pixels+4*i,delta.x,u+i);
-      BicubicInterpolate(u,delta.y,pixel);
+      SetMagickPixelPacket(image,&image->background_color,&index,pixel);
       break;
     }
     case BilinearInterpolatePixel:
@@ -4016,17 +3957,15 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
           break;
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
-      AlphaBlendMagickPixelPacket(image,p+0,indexes+0,pixels+0,alpha+0);
-      AlphaBlendMagickPixelPacket(image,p+1,indexes+1,pixels+1,alpha+1);
-      AlphaBlendMagickPixelPacket(image,p+2,indexes+2,pixels+2,alpha+2);
-      AlphaBlendMagickPixelPacket(image,p+3,indexes+3,pixels+3,alpha+3);
+      for (i=0; i < 4L; i++)
+        AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
       delta.x=x-x_offset;
       delta.y=y-y_offset;
       epsilon.x=1.0-delta.x;
       epsilon.y=1.0-delta.y;
       gamma=((epsilon.y*(epsilon.x*alpha[0]+delta.x*alpha[1])+delta.y*
         (epsilon.x*alpha[2]+delta.x*alpha[3])));
-      gamma=1.0/(fabs((double) gamma) <= MagickEpsilon ? 1.0 : gamma);
+      gamma=MagickEpsilonReciprocal(gamma);
       pixel->red=gamma*(epsilon.y*(epsilon.x*pixels[0].red+delta.x*
         pixels[1].red)+delta.y*(epsilon.x*pixels[2].red+delta.x*pixels[3].red));
       pixel->green=gamma*(epsilon.y*(epsilon.x*pixels[0].green+delta.x*
@@ -4040,14 +3979,147 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
           pixels[1].index)+delta.y*(epsilon.x*pixels[2].index+delta.x*
           pixels[3].index));
       gamma=((epsilon.y*(epsilon.x+delta.x)+delta.y*(epsilon.x+delta.x)));
-      gamma=1.0/(fabs((double) gamma) <= MagickEpsilon ? 1.0 : gamma);
+      gamma=MagickEpsilonReciprocal(gamma);
       pixel->opacity=(epsilon.y*(epsilon.x*pixels[0].opacity+delta.x*
         pixels[1].opacity)+delta.y*(epsilon.x*pixels[2].opacity+delta.x*
         pixels[3].opacity));
       break;
     }
-    case FilterInterpolatePixel:
+    case BlendInterpolatePixel:
     {
+      p=GetCacheViewVirtualPixels(image_view,x_offset,y_offset,2,2,exception);
+      if (p == (const PixelPacket *) NULL)
+        {
+          status=MagickFalse;
+          break;
+        }
+      indexes=GetCacheViewVirtualIndexQueue(image_view);
+      for (i=0; i < 4L; i++)
+        AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
+      gamma=1.0;       /* number of pixels blended together */
+      for (i=0; i <= 1L; i++) {
+        if ( y-y_offset >= 0.75 ) {
+          alpha[i]  = alpha[i+2];
+          pixels[i] = pixels[i+2];
+        }
+        else if ( y-y_offset > 0.25 ) {
+          gamma = 2.0;             /* each y pixels have been blended */
+          alpha[i] += alpha[i+2];  /* add up alpha weights */
+          pixels[i].red     += pixels[i+2].red;
+          pixels[i].green   += pixels[i+2].green;
+          pixels[i].blue    += pixels[i+2].blue;
+          pixels[i].opacity += pixels[i+2].opacity;
+          pixels[i].index   += pixels[i+2].index;
+        }
+      }
+      if ( x-x_offset >= 0.75 ) {
+        alpha[0] = alpha[1];
+        pixels[0] = pixels[1];
+      }
+      else if ( x-x_offset > 0.25 ) {
+        gamma *= 2.0;          /* double number of pixels blended */
+        alpha[0] += alpha[1];  /* add up alpha weights */
+        pixels[0].red     += pixels[1].red;
+        pixels[0].green   += pixels[1].green;
+        pixels[0].blue    += pixels[1].blue;
+        pixels[0].opacity += pixels[1].opacity;
+        pixels[0].index   += pixels[1].index;
+      }
+      gamma = 1.0/gamma;                          /* 1/sum(pixels) */
+      alpha[0]=MagickEpsilonReciprocal(alpha[0]); /* 1/sum(alpha) */
+      pixel->red   = alpha[0]*pixels[0].red;
+      pixel->green = alpha[0]*pixels[0].green;  /* divide by sum of alpha */
+      pixel->blue  = alpha[0]*pixels[0].blue;
+      pixel->index = alpha[0]*pixels[0].index;
+      pixel->opacity =  gamma*pixels[0].opacity; /* divide by number pixels */
+      break;
+    }
+    case CatromInterpolatePixel:
+    case BicubicInterpolatePixel: /* depreciated method */
+    {
+      MagickRealType
+        beta[4],
+        cx[4],
+        cy[4];
+
+      PointInfo
+        delta;
+
+      /*
+        Refactoring of the Catmull-Rom computation by Nicolas Robidoux with 55
+        flops = 28* + 10- + 17+.  Originally implemented for the VIPS (Virtual
+        Image Processing System) library.
+      */
+      p=GetCacheViewVirtualPixels(image_view,x_offset-1,y_offset-1,4,4,
+        exception);
+      if (p == (const PixelPacket *) NULL)
+        {
+          status=MagickFalse;
+          break;
+        }
+      indexes=GetCacheViewVirtualIndexQueue(image_view);
+      for (i=0; i < 16L; i++)
+        AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
+      delta.x=x-x_offset;
+      delta.y=y-y_offset;
+      beta[0]=1.0-delta.x;
+      beta[1]=(-0.5)*delta.x;
+      beta[2]=beta[0]*beta[1];
+      cx[0]=beta[0]*beta[2];
+      cx[3]=delta.x*beta[2];
+      beta[3]=cx[3]-cx[0];
+      cx[1]=beta[0]-cx[0]+beta[3];
+      cx[2]=delta.x-cx[3]-beta[3];
+      beta[0]=1.0-delta.y;
+      beta[1]=(-0.5)*delta.y;
+      beta[2]=beta[0]*beta[1];
+      cy[0]=beta[0]*beta[2];
+      cy[3]=delta.y*beta[2];
+      beta[3]=cy[3]-cy[0];
+      cy[1]=beta[0]-cy[0]+beta[3];
+      cy[2]=delta.y-cy[3]-beta[3];
+      /*
+        Interpolate pixel.
+      */
+      pixel->red=(cy[0]*(cx[0]*pixels[0].red+cx[1]*
+        pixels[1].red+cx[2]*pixels[2].red+cx[3]*
+        pixels[3].red)+cy[1]*(cx[0]*pixels[4].red+cx[1]*
+        pixels[5].red+cx[2]*pixels[6].red+cx[3]*
+        pixels[7].red)+cy[2]*(cx[0]*pixels[8].red+cx[1]*
+        pixels[9].red+cx[2]*pixels[10].red+cx[3]*
+        pixels[11].red)+cy[3]*(cx[0]*pixels[12].red+cx[1]*
+        pixels[13].red+cx[2]*pixels[14].red+cx[3]*pixels[15].red));
+      pixel->green=(cy[0]*(cx[0]*pixels[0].green+cx[1]*
+        pixels[1].green+cx[2]*pixels[2].green+cx[3]*
+        pixels[3].green)+cy[1]*(cx[0]*pixels[4].green+cx[1]*
+        pixels[5].green+cx[2]*pixels[6].green+cx[3]*
+        pixels[7].green)+cy[2]*(cx[0]*pixels[8].green+cx[1]*
+        pixels[9].green+cx[2]*pixels[10].green+cx[3]*
+        pixels[11].green)+cy[3]*(cx[0]*pixels[12].green+cx[1]*
+        pixels[13].green+cx[2]*pixels[14].green+cx[3]*pixels[15].green));
+      pixel->blue=(cy[0]*(cx[0]*pixels[0].blue+cx[1]*
+        pixels[1].blue+cx[2]*pixels[2].blue+cx[3]*
+        pixels[3].blue)+cy[1]*(cx[0]*pixels[4].blue+cx[1]*
+        pixels[5].blue+cx[2]*pixels[6].blue+cx[3]*
+        pixels[7].blue)+cy[2]*(cx[0]*pixels[8].blue+cx[1]*
+        pixels[9].blue+cx[2]*pixels[10].blue+cx[3]*
+        pixels[11].blue)+cy[3]*(cx[0]*pixels[12].blue+cx[1]*
+        pixels[13].blue+cx[2]*pixels[14].blue+cx[3]*pixels[15].blue));
+      pixel->opacity=(cy[0]*(cx[0]*pixels[0].opacity+cx[1]*
+        pixels[1].opacity+cx[2]*pixels[2].opacity+cx[3]*
+        pixels[3].opacity)+cy[1]*(cx[0]*pixels[4].opacity+cx[1]*
+        pixels[5].opacity+cx[2]*pixels[6].opacity+cx[3]*
+        pixels[7].opacity)+cy[2]*(cx[0]*pixels[8].opacity+cx[1]*
+        pixels[9].opacity+cx[2]*pixels[10].opacity+cx[3]*
+        pixels[11].opacity)+cy[3]*(cx[0]*pixels[12].opacity+cx[1]*
+        pixels[13].opacity+cx[2]*pixels[14].opacity+cx[3]*pixels[15].opacity));
+      break;
+    }
+    case FilterInterpolatePixel:
+    { /* Use a normal resize filter.
+         warning this is slow due to setup time a cache should be
+         initialised on first call, and replaced if 'filter' changes
+      */
       CacheView
         *filter_view;
 
@@ -4110,15 +4182,15 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
           break;
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
-      AlphaBlendMagickPixelPacket(image,p+0,indexes+0,pixels+0,alpha+0);
-      AlphaBlendMagickPixelPacket(image,p+1,indexes+1,pixels+1,alpha+1);
-      AlphaBlendMagickPixelPacket(image,p+2,indexes+2,pixels+2,alpha+2);
-      AlphaBlendMagickPixelPacket(image,p+3,indexes+3,pixels+3,alpha+3);
+      for (i=0; i < 4L; i++)
+        AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
       delta.x=x-x_offset;
       delta.y=y-y_offset;
-      luminance.x=MagickPixelLuminance(pixels+0)-MagickPixelLuminance(pixels+3);
-      luminance.y=MagickPixelLuminance(pixels+1)-MagickPixelLuminance(pixels+2);
-      if (fabs(luminance.x) < fabs(luminance.y))
+      luminance.x=fabs(MagickPixelLuminance(pixels+0)
+                       -MagickPixelLuminance(pixels+3));
+      luminance.y=fabs(MagickPixelLuminance(pixels+1)
+                       -MagickPixelLuminance(pixels+2));
+      if (luminance.x < luminance.y)
         {
           /*
             Diagonal 0-3 NW-SE.
@@ -4130,7 +4202,7 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
               */
               delta.y=1.0-delta.y;
               gamma=MeshInterpolate(&delta,alpha[2],alpha[3],alpha[0]);
-              gamma=1.0/(fabs((double) gamma) <= MagickEpsilon ? 1.0 : gamma);
+              gamma=MagickEpsilonReciprocal(gamma);
               pixel->red=gamma*MeshInterpolate(&delta,pixels[2].red,
                 pixels[3].red,pixels[0].red);
               pixel->green=gamma*MeshInterpolate(&delta,pixels[2].green,
@@ -4151,7 +4223,7 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
               */
               delta.x=1.0-delta.x;
               gamma=MeshInterpolate(&delta,alpha[1],alpha[0],alpha[3]);
-              gamma=1.0/(fabs((double) gamma) <= MagickEpsilon ? 1.0 : gamma);
+              gamma=MagickEpsilonReciprocal(gamma);
               pixel->red=gamma*MeshInterpolate(&delta,pixels[1].red,
                 pixels[0].red,pixels[3].red);
               pixel->green=gamma*MeshInterpolate(&delta,pixels[1].green,
@@ -4177,7 +4249,7 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
                 Top-left triangle (pixel 0, diagonal: 1-2).
               */
               gamma=MeshInterpolate(&delta,alpha[0],alpha[1],alpha[2]);
-              gamma=1.0/(fabs((double) gamma) <= MagickEpsilon ? 1.0 : gamma);
+              gamma=MagickEpsilonReciprocal(gamma);
               pixel->red=gamma*MeshInterpolate(&delta,pixels[0].red,
                 pixels[1].red,pixels[2].red);
               pixel->green=gamma*MeshInterpolate(&delta,pixels[0].green,
@@ -4199,7 +4271,7 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
               delta.x=1.0-delta.x;
               delta.y=1.0-delta.y;
               gamma=MeshInterpolate(&delta,alpha[3],alpha[2],alpha[1]);
-              gamma=1.0/(fabs((double) gamma) <= MagickEpsilon ? 1.0 : gamma);
+              gamma=MagickEpsilonReciprocal(gamma);
               pixel->red=gamma*MeshInterpolate(&delta,pixels[3].red,
                 pixels[2].red,pixels[1].red);
               pixel->green=gamma*MeshInterpolate(&delta,pixels[3].green,
@@ -4218,8 +4290,8 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
     }
     case NearestNeighborInterpolatePixel:
     {
-      p=GetCacheViewVirtualPixels(image_view,NearestNeighbor(x),
-        NearestNeighbor(y),1,1,exception);
+      p=GetCacheViewVirtualPixels(image_view,(ssize_t) floor(x+0.5),
+        (ssize_t) floor(y+0.5),1,1,exception);
       if (p == (const PixelPacket *) NULL)
         {
           status=MagickFalse;
@@ -4250,22 +4322,8 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
           break;
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
-      AlphaBlendMagickPixelPacket(image,p+0,indexes+0,pixels+0,alpha+0);
-      AlphaBlendMagickPixelPacket(image,p+1,indexes+1,pixels+1,alpha+1);
-      AlphaBlendMagickPixelPacket(image,p+2,indexes+2,pixels+2,alpha+2);
-      AlphaBlendMagickPixelPacket(image,p+3,indexes+3,pixels+3,alpha+3);
-      AlphaBlendMagickPixelPacket(image,p+4,indexes+4,pixels+4,alpha+4);
-      AlphaBlendMagickPixelPacket(image,p+5,indexes+5,pixels+5,alpha+5);
-      AlphaBlendMagickPixelPacket(image,p+6,indexes+6,pixels+6,alpha+6);
-      AlphaBlendMagickPixelPacket(image,p+7,indexes+7,pixels+7,alpha+7);
-      AlphaBlendMagickPixelPacket(image,p+8,indexes+8,pixels+8,alpha+8);
-      AlphaBlendMagickPixelPacket(image,p+9,indexes+9,pixels+9,alpha+9);
-      AlphaBlendMagickPixelPacket(image,p+10,indexes+10,pixels+10,alpha+10);
-      AlphaBlendMagickPixelPacket(image,p+11,indexes+11,pixels+11,alpha+11);
-      AlphaBlendMagickPixelPacket(image,p+12,indexes+12,pixels+12,alpha+12);
-      AlphaBlendMagickPixelPacket(image,p+13,indexes+13,pixels+13,alpha+13);
-      AlphaBlendMagickPixelPacket(image,p+14,indexes+14,pixels+14,alpha+14);
-      AlphaBlendMagickPixelPacket(image,p+15,indexes+15,pixels+15,alpha+15);
+      for (i=0; i < 16L; i++)
+        AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
       pixel->red=0.0;
       pixel->green=0.0;
       pixel->blue=0.0;
@@ -4280,7 +4338,7 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
         for (j=(-1); j < 3L; j++)
         {
           dx=CubicWeightingFunction(delta.x-(MagickRealType) j);
-          gamma=1.0/(fabs((double) alpha[n]) <= MagickEpsilon ? 1.0 : alpha[n]);
+          gamma=MagickEpsilonReciprocal(alpha[n]);
           pixel->red+=gamma*dx*dy*pixels[n].red;
           pixel->green+=gamma*dx*dy*pixels[n].green;
           pixel->blue+=gamma*dx*dy*pixels[n].blue;

@@ -1116,6 +1116,32 @@ Magick_RenderingIntent_from_PNG_RenderingIntent(const int ping_intent)
     }
 }
 
+
+static char *
+Magick_ColorType_from_PNG_ColorType(const int ping_colortype)
+{
+  switch (ping_colortype)
+  {
+    case 0:
+      return "Grayscale";
+
+    case 2:
+      return "Truecolor";
+
+    case 3:
+      return "Indexed";
+
+    case 4:
+      return "GrayAlpha";
+
+    case 6:
+      return "RGBA";
+
+    default:
+      return "UndefinedColorType";
+    }
+}
+
 static inline ssize_t MagickMax(const ssize_t x,const ssize_t y)
 {
   if (x > y)
@@ -2060,7 +2086,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   ssize_t
     j;
 
-#if defined(PNG_UNKNOWN_CHUNKS_SUPPORTED)
+#ifdef PNG_UNKNOWN_CHUNKS_SUPPORTED
   png_byte unused_chunks[]=
   {
     104,  73,  83,  84, (png_byte) '\0',   /* hIST */
@@ -2069,6 +2095,12 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
     115,  67,  65,  76, (png_byte) '\0',   /* sCAL */
     115,  80,  76,  84, (png_byte) '\0',   /* sPLT */
     116,  73,  77,  69, (png_byte) '\0',   /* tIME */
+#ifdef PNG_APNG_SUPPORTED /* libpng was built with APNG patch; */
+                          /* ignore the APNG chunks */
+     97,  99,  84,  76, (png_byte) '\0',   /* acTL */
+    102,  99,  84,  76, (png_byte) '\0',   /* fcTL */
+    102, 100,  65,  84, (png_byte) '\0',   /* fdAT */
+#endif
   };
 #endif
 
@@ -2213,6 +2245,11 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
      (int)sizeof(unused_chunks)/5);
   /* Callback for other unknown chunks */
   png_set_read_user_chunk_fn(ping, image, read_vpag_chunk_callback);
+#endif
+
+#ifdef PNG_READ_CHECK_FOR_INVALID_INDEX_SUPPORTED
+    /* Disable new libpng-1.5.10 feature */
+    png_set_check_for_invalid_index (ping, 0);
 #endif
 
 #if (PNG_LIBPNG_VER < 10400)
@@ -2789,7 +2826,9 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
      (void) FormatLocaleString(msg,MaxTextExtent,"%d",(int) ping_bit_depth);
      (void) SetImageProperty(image,"png:IHDR.bit_depth       ",msg);
 
-     (void) FormatLocaleString(msg,MaxTextExtent,"%d",(int) ping_color_type);
+     (void) FormatLocaleString(msg,MaxTextExtent,"%d (%s)",
+         (int) ping_color_type,
+         Magick_ColorType_from_PNG_ColorType((int)ping_color_type));
      (void) SetImageProperty(image,"png:IHDR.color_type      ",msg);
 
      (void) FormatLocaleString(msg,MaxTextExtent,"%d",
@@ -8919,9 +8958,18 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   /*
     Prepare PNG for writing.
   */
+
 #if defined(PNG_MNG_FEATURES_SUPPORTED)
   if (mng_info->write_mng)
-     (void) png_permit_mng_features(ping,PNG_ALL_MNG_FEATURES);
+    {
+      (void) png_permit_mng_features(ping,PNG_ALL_MNG_FEATURES);
+# ifdef PNG_WRITE_CHECK_FOR_INVALID_INDEX_SUPPORTED
+      /* Disable new libpng-1.5.10 feature when writing a MNG because
+       * zero-length PLTE is OK
+       */
+      png_set_check_for_invalid_index (ping, 0);
+# endif
+    }
 
 #else
 # ifdef PNG_WRITE_EMPTY_PLTE_SUPPORTED

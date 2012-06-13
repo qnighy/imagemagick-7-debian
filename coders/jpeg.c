@@ -98,7 +98,7 @@ typedef unsigned char boolean;
 #define ICC_PROFILE  "ICC_PROFILE"
 #define IPTC_MARKER  (JPEG_APP0+13)
 #define XML_MARKER  (JPEG_APP0+1)
-#define MaxBufferExtent  8192
+#define MaxBufferExtent  16384
 
 /*
   Typedef declarations.
@@ -242,7 +242,7 @@ static boolean FillInputBuffer(j_decompress_ptr cinfo)
     MaxBufferExtent,source->buffer);
   if (source->manager.bytes_in_buffer == 0)
     {
-      if (source->start_of_blob != 0)
+      if (source->start_of_blob != FALSE)
         ERREXIT(cinfo,JERR_INPUT_EMPTY);
       WARNMS(cinfo,JWRN_JPEG_EOF);
       source->buffer[0]=(JOCTET) 0xff;

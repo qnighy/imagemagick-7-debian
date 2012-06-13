@@ -47,7 +47,9 @@
 #include "wand/studio.h"
 #include "wand/MagickWand.h"
 #include "wand/mogrify-private.h"
+#include "magick/color-private.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-private.h"
 #include "magick/thread-private.h"
 #include "magick/string-private.h"
 #include "magick/utility-private.h"
@@ -61,9 +63,9 @@
   Constant declaration.
 */
 static const char
-  BackgroundColor[] = "#fff",  /* white */
-  BorderColor[] = "#dfdfdf",  /* gray */
-  MatteColor[] = "#bdbdbd";  /* gray */
+  MogrifyBackgroundColor[] = "#fff",  /* white */
+  MogrifyBorderColor[] = "#dfdfdf",  /* sRGB gray */
+  MogrifyMatteColor[] = "#bdbdbd";  /* slightly darker gray */
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -953,8 +955,8 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
           {
             if (*option == '+')
               {
-                (void) QueryColorDatabase(BorderColor,&draw_info->border_color,
-                  exception);
+                (void) QueryColorDatabase(MogrifyBorderColor,
+                  &draw_info->border_color,exception);
                 break;
               }
             (void) QueryColorDatabase(argv[i+1],&draw_info->border_color,
@@ -1250,7 +1252,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             gamma=0.0;
             for (j=0; j < (ssize_t) (kernel->width*kernel->height); j++)
               gamma+=kernel->values[j];
-            gamma=1.0/(fabs((double) gamma) <= MagickEpsilon ? 1.0 : gamma);
+            gamma=MagickEpsilonReciprocal(gamma);
             for (j=0; j < (ssize_t) (kernel->width*kernel->height); j++)
               kernel->values[j]*=gamma;
             mogrify_image=FilterImageChannel(*image,channel,kernel,exception);
@@ -1869,6 +1871,17 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             else
               (void) ParseGeometry(argv[i+1],&geometry_info);
             draw_info->interword_spacing=geometry_info.rho;
+            break;
+          }
+        if (LocaleCompare("interpolative-resize",option+1) == 0)
+          {
+            /*
+              Resize image using 'point sampled' interpolation
+            */
+            (void) SyncImageSettings(mogrify_info,*image);
+            (void) ParseRegionGeometry(*image,argv[i+1],&geometry,exception);
+            mogrify_image=InterpolativeResizeImage(*image,geometry.width,
+              geometry.height,(*image)->interpolate,exception);
             break;
           }
         break;
@@ -6221,7 +6234,7 @@ WandExport MagickBooleanType MogrifyImageInfo(ImageInfo *image_info,
             if (*option == '+')
               {
                 (void) DeleteImageOption(image_info,option+1);
-                (void) QueryColorDatabase(BackgroundColor,
+                (void) QueryColorDatabase(MogrifyBackgroundColor,
                   &image_info->background_color,exception);
                 break;
               }
@@ -6265,8 +6278,8 @@ WandExport MagickBooleanType MogrifyImageInfo(ImageInfo *image_info,
             if (*option == '+')
               {
                 (void) DeleteImageOption(image_info,option+1);
-                (void) QueryColorDatabase(BorderColor,&image_info->border_color,
-                  exception);
+                (void) QueryColorDatabase(MogrifyBorderColor,
+                  &image_info->border_color,exception);
                 break;
               }
             (void) QueryColorDatabase(argv[i+1],&image_info->border_color,
@@ -6836,8 +6849,8 @@ WandExport MagickBooleanType MogrifyImageInfo(ImageInfo *image_info,
             if (*option == '+')
               {
                 (void) SetImageOption(image_info,option+1,argv[i+1]);
-                (void) QueryColorDatabase(MatteColor,&image_info->matte_color,
-                  exception);
+                (void) QueryColorDatabase(MogrifyMatteColor,
+                  &image_info->matte_color,exception);
                 break;
               }
             (void) SetImageOption(image_info,option+1,argv[i+1]);
