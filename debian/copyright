@@ -126,6 +126,72 @@ Copyright: 2001-2008, Jaroslav Fojtik
            2001-2012, ImageMagick Studio LLC
 License: ImageMagick
 
+Files: coders/meta.c
+Copyright: 2001, William Radcliffe
+           2001-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: coders/palm.c
+Copyright:  2001, Christopher R. Hawks
+            2001-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: coders/pattern.c
+Copyright: 1985-1988, Supoj Sutanthavibul
+	   1989-2000, Brian V. Smith
+	   1991, Paul King
+	   1999-2012, ImageMagick Studio LLC
+License: ImageMagickLicensePartFIG
+Comment: ImageMagick Licence with part of xfig program
+
+Files: coders/png.c
+Copyright: 1997, Glenn Randers-Pehrson
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+Comment: use libpng under BSD-3
+
+Files: coders/scr.c
+Copyright: 2003, Catalin Mihaila 
+           2003-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: coders/svg.c
+Copyright: 2000, William Radcliffe
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+Comment: use librsvg-2 under LGPL-2+
+
+Files: coders/tiff.c
+Copyright: 1992, John Cristy
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+Comment: Use a few libraries for delegate
+ * use libtiff under BSD-2 like
+ * use libjbig delegate under GPL-2+
+ * use libopenjpeg8 under BDS-3 like
+
+Files: coders/url.c
+Copyright: 2000, Bill Radcliffe
+           2000-2012, ImageMagick Studio LLC
+License: ImageMagick
+Comment: use libxml delegate under BSD-3
+
+Files: coders/wmf.c
+Copyright: 2000, John Cristy
+           2000-2012, ImageMagick Studio LLC 
+License: ImageMagick
+Comment: use libwmf delegate under LGPL-2+
+
+Files: coders/wpg.c
+Copyright: 2000, Jaroslav Fojtik
+           2000-2012, ImageMagick Studio LLC 
+License: ImageMagick
+
+Files: coders/xcf.c
+Copyright: 2001, Leonard Rosenthol
+           2001-2012, ImageMagick Studio LLC 
+License: ImageMagick
+
 Files: debian/*
 Copyright: 1998-2000, Scott K. Ellis
 	   2000-2006, Ryuichi Arafune 
@@ -140,13 +206,7 @@ Files: debian/display.im6.svg
 Copyright: 1999-2012, ImageMagick Studio LLC
 License: ImageMagick
 
-Files: coders/pattern.c
-Copyright: 1985-1988, Supoj Sutanthavibul
-	   1989-2000, Brian V. Smith
-	   1991, Paul King
-	   1999-2012, ImageMagick Studio LLC
-License: ImageMagickLicensePartFIG
-Comment: ImageMagick Licence with part of xfig program
+
 
 Files: magick/nt_base.c
 Copyright: 2000-2002, Ghostgum Software Pty Ltd.  All rights reserved.
