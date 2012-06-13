@@ -1,7 +1,8 @@
 imagemagick (8:6.7.7.7-1) unstable; urgency=low
-
+   
+  * New upstream version
   * Bug fix: "Menu entry of imagemagick does not lauch it", thanks to
-    Michael Biebl (Closes: #675453). Use a wrapper script.
+    Michael Biebl (Closes: #675453). 
   * Bug fix: "Please include large 256x256px icon", thanks to Ralph
     Aichinger (Closes: #675484). Add scalable icons, 16x16, 32x32, 48x48
   * Copyright review:

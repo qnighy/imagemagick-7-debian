@@ -136,11 +136,6 @@ install: build check
 		DESTDIR="$(CURDIR)/debian/tmp" \
 		pkgdocdir=/usr/share/doc/imagemagick
 
-	# install desktop wrapper
-	mkdir -p "$(DESTDIR)/usr/lib/ImageMagick-$(DEB_UPSTREAM_VERSION_MAJOR)"
-	install -m 755 "$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR)-desktop-wrapper" \
-		"$(DESTDIR)/usr/lib/ImageMagick-$(DEB_UPSTREAM_VERSION_MAJOR)/"
-
 	-find "$(CURDIR)/debian" -type f -name .packlist | xargs rm -f
 
 	# Fix HTML location inside manpages
