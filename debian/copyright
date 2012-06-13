@@ -227,9 +227,45 @@ Copyright: 1999-2003, Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2006-2012, ImageMagick Studio LLC 
 License: Magick++
 
+Files: PerlMagick/*
+Copyright: 1997, Kyle Shorter
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: PerlMagick/Makefile.am
+Copyright: 2003-2008, GraphicsMagick Group
+           1999-2012, ImageMagick Studio LLC,
+License: ImageMagickPartGraphicsMagick
+
+Files: PerlMagick/check.*
+Copyright: 2003-2008, GraphicsMagick Group
+           1999-2012, ImageMagick Studio LLC,
+License: ImageMagickPartGraphicsMagick
+
 Files: PerlMagick/t/*
 Copyright: 1999-2003, Bob Friesenhahn
 	   1999-2012, ImageMagick Studio LLC 
+License: ImageMagick
+
+Files: PerlMagick/demo/turtle.pm
+Copyright: 1999, Jason Reed
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: PerlMagicl/demo/annotate_words.pl 
+Copyright: 2008, Joseph B. Milosch a.k.a zentara
+           2008, Rick Mabry
+License: ImageMagick
+Comment: Posted on imagemagick user list.
+
+Files: PerlMagick/demo/lsys.pl
+Copyright: 1999, Jason Reed
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: PerlMagick/demo/pixel-fx.pl
+Copyright: 1997, Anthony Thyssen
+           1999-2012, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: PerlMagick/t/ttf/input.ttf 
@@ -240,10 +276,86 @@ Files: PerlMagick/demo/Generic.ttf
 Copyright: 2004-2007, Thatcher Ulrich <tu@tulrich.com>
 License: TatcherUlrichPublicDomain
 
+Files: filters/analyse.c
+Copyright: 1998, Bill Corbis
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: magick/distort.c
+Copyright: 1997, Anthony Thyssen
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: magick/fourier.c
+Copyright: 2009, Sean Burke
+           2009, Fred Weinhaus
+           2009, John Cristy
+           2009-2012, ImageMagick Studio LLC
+License: ImageMagick
+Comment: link with libfftw under GPL-2+
+
+Files: magick/histogram.c
+Copyright: 2009, Anthony Thyssen
+           2009, Fred Weinhaus
+           2009-2012, ImageMagick Studio LLC
+License: ImageMagick  
+
+Files: magick/magic.c
+Copyright: 2000, Bob Friesenhahn
+           2000-2012, ImageMagick Studio LLC
+License: ImageMagick        
+
+Files: magick/magic.c
+Copyright: 1998, Bob Friesenhahn
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick        
+
+Files: magick/module.c
+Copyright: 2000, Bob Friesenhahn
+           2000-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: magick/morphology.c
+Copyright: 2010, Anthony Thyssen
+           2010-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: magick/resample.c
+Copyright: 2007, Anthony Thyssen
+           2007, John Cristy
+           2007-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: magick/semaphore.c
+Copyright: 2000, William Radcliffe
+           2000, John Cristy
+           2000-2012, ImageMagick Studio LLC
+License: ImageMagick
+
 Files: magick/xml-tree.c
 Copyright: 2004-2006, Aaron Voisine <aaron@voisine.org>
 License: ImageMagickLicensePartEZXML
 Comment: Imagemagick with part from ezxml
+
+Files: scripts/format_c_api_docs
+Copyright: 1997, Bob Friesenhahn
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: script/txt2html
+Copyright: 1994-2000 Seth Golub
+License: Perl like licence
+ Original txt2html script copyright (c) 1994-2000 Seth Golub seth AT aigeek.com
+ .
+ Copyright (c) 2002-2005 Kathryn Andersen
+ .
+ This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+Comment: retrieved from homepage of script http://txt2html.sourceforge.net/txt2html.html#copyright
+
+Files: wand/draw*
+Copyright: 2002, Bob Friesenhahn
+           2002-2012, ImageMagick Studio LLC
+License: ImageMagick
 
 License: ImageMagickPartlibjpeg
  Some part of these file are subject to this license from libjpeg:
