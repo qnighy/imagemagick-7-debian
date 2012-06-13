@@ -19,10 +19,10 @@ UTILITIES_PGMS = \
 	utilities/compare \
 	utilities/composite \
 	utilities/conjure \
+	utilities/convert \
 	utilities/display \
 	utilities/identify \
 	utilities/import \
-	utilities/magick \
 	utilities/mogrify \
 	utilities/montage \
 	utilities/stream
@@ -47,6 +47,10 @@ utilities_conjure_LDADD	= $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
 utilities_conjure_LDFLAGS	= $(LDFLAGS)
 utilities_conjure_SOURCES	= utilities/conjure.c
 
+utilities_convert_LDADD	= $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
+utilities_convert_LDFLAGS	= $(LDFLAGS)
+utilities_convert_SOURCES	= utilities/convert.c
+
 utilities_display_LDADD	= $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
 utilities_display_LDFLAGS	= $(LDFLAGS)
 utilities_display_SOURCES	= utilities/display.c
@@ -58,10 +62,6 @@ utilities_identify_SOURCES	= utilities/identify.c
 utilities_import_LDADD	= $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
 utilities_import_LDFLAGS	= $(LDFLAGS)
 utilities_import_SOURCES	= utilities/import.c
-
-utilities_magick_LDADD	= $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
-utilities_magick_LDFLAGS	= $(LDFLAGS)
-utilities_magick_SOURCES	= utilities/magick.c
 
 utilities_mogrify_LDADD	= $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
 utilities_mogrify_LDFLAGS	= $(LDFLAGS)
@@ -85,7 +85,6 @@ UTILITIES_MANS = \
 	utilities/display.1 \
 	utilities/identify.1 \
 	utilities/import.1 \
-	utilities/magick.1 \
 	utilities/mogrify.1 \
 	utilities/montage.1 \
 	utilities/stream.1
@@ -100,7 +99,6 @@ UTILITIES_CONFIGURE = \
 	utilities/display.1.in \
 	utilities/identify.1.in \
 	utilities/import.1.in \
-	utilities/magick.1.in \
 	utilities/mogrify.1.in \
 	utilities/montage.1.in \
 	utilities/stream.1.in
@@ -110,26 +108,3 @@ UTILITIES_EXTRA_DIST = \
 	$(UTILITIES_TESTS) 
 
 UTILITIES_CLEANFILES = 
-
-# Link these utilities to 'magick'.
-MAGICK_UTILITIES=convert magick-script
-UTILITIES_INSTALL_EXEC_LOCAL_TARGETS=install-exec-local-utilities
-install-exec-local-utilities:
-	$(mkdir_p) $(DESTDIR)$(bindir)
-	cd $(DESTDIR)$(bindir) ; \
-	magick=`echo "magick" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	for name in $(MAGICK_UTILITIES) ; \
-	do \
-	  target=`echo "$$name" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  rm -f $$target ; \
-	  $(LN_S) $$magick $$target ; \
-	done
-
-UTILITIES_UNINSTALL_LOCAL_TARGETS=uninstall-local-utilities
-uninstall-local-utilities:
-	cd $(DESTDIR)$(bindir) ; \
-	for name in $(MAGICK_UTILITIES) ; \
-	do \
-	  target=`echo "$$name" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  rm -f $$target ; \
-	done

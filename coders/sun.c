@@ -39,36 +39,34 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/attribute.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/color.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/colormap.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/color.h"
+#include "magick/color-private.h"
+#include "magick/colormap.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteSUNImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteSUNImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -242,7 +240,10 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
   MagickSizeType
     number_pixels;
 
-  register Quantum
+  register IndexPacket
+    *indexes;
+
+  register PixelPacket
     *q;
 
   register ssize_t
@@ -279,7 +280,7 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -333,7 +334,7 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Create linear color ramp.
             */
-            if (AcquireImageColormap(image,image->colors,exception) == MagickFalse)
+            if (AcquireImageColormap(image,image->colors) == MagickFalse)
               ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           }
         break;
@@ -346,7 +347,7 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Read SUN raster colormap.
         */
-        if (AcquireImageColormap(image,image->colors,exception) == MagickFalse)
+        if (AcquireImageColormap(image,image->colors) == MagickFalse)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         sun_colormap=(unsigned char *) AcquireQuantumMemory(image->colors,
           sizeof(*sun_colormap));
@@ -441,24 +442,21 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
       for (y=0; y < (ssize_t) image->rows; y++)
       {
         q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-        if (q == (Quantum *) NULL)
+        if (q == (PixelPacket *) NULL)
           break;
+        indexes=GetAuthenticIndexQueue(image);
         for (x=0; x < ((ssize_t) image->columns-7); x+=8)
         {
           for (bit=7; bit >= 0; bit--)
-          {
-            SetPixelIndex(image,((*p) & (0x01 << bit) ? 0x00 : 0x01),q);
-            q+=GetPixelChannels(image);
-          }
+            SetPixelIndex(indexes+x+7-bit,((*p) & (0x01 << bit) ?
+              0x00 : 0x01));
           p++;
         }
         if ((image->columns % 8) != 0)
           {
             for (bit=7; bit >= (ssize_t) (8-(image->columns % 8)); bit--)
-            {
-              SetPixelIndex(image,(*p) & (0x01 << bit) ? 0x00 : 0x01,q);
-              q+=GetPixelChannels(image);
-            }
+              SetPixelIndex(indexes+x+7-bit,(*p) & (0x01 << bit) ?
+                0x00 : 0x01);
             p++;
           }
         if ((((image->columns/8)+(image->columns % 8 ? 1 : 0)) % 2) != 0)
@@ -484,13 +482,11 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
           for (y=0; y < (ssize_t) image->rows; y++)
           {
             q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-            if (q == (Quantum *) NULL)
+            if (q == (PixelPacket *) NULL)
               break;
+            indexes=GetAuthenticIndexQueue(image);
             for (x=0; x < (ssize_t) image->columns; x++)
-            {
-              SetPixelIndex(image,*p++,q);
-              q+=GetPixelChannels(image);
-            }
+              SetPixelIndex(indexes+x,*p++);
             if ((image->columns % 2) != 0)
               p++;
             if (SyncAuthenticPixels(image,exception) == MagickFalse)
@@ -521,34 +517,34 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
           for (y=0; y < (ssize_t) image->rows; y++)
           {
             q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-            if (q == (Quantum *) NULL)
+            if (q == (PixelPacket *) NULL)
               break;
             for (x=0; x < (ssize_t) image->columns; x++)
             {
               if (image->matte != MagickFalse)
-                SetPixelAlpha(image,ScaleCharToQuantum(*p++),q);
+                SetPixelAlpha(q,ScaleCharToQuantum(*p++));
               if (sun_info.type == RT_STANDARD)
                 {
-                  SetPixelBlue(image,ScaleCharToQuantum(*p++),q);
-                  SetPixelGreen(image,ScaleCharToQuantum(*p++),q);
-                  SetPixelRed(image,ScaleCharToQuantum(*p++),q);
+                  SetPixelBlue(q,ScaleCharToQuantum(*p++));
+                  SetPixelGreen(q,ScaleCharToQuantum(*p++));
+                  SetPixelRed(q,ScaleCharToQuantum(*p++));
                 }
               else
                 {
-                  SetPixelRed(image,ScaleCharToQuantum(*p++),q);
-                  SetPixelGreen(image,ScaleCharToQuantum(*p++),q);
-                  SetPixelBlue(image,ScaleCharToQuantum(*p++),q);
+                  SetPixelRed(q,ScaleCharToQuantum(*p++));
+                  SetPixelGreen(q,ScaleCharToQuantum(*p++));
+                  SetPixelBlue(q,ScaleCharToQuantum(*p++));
                 }
               if (image->colors != 0)
                 {
-                  SetPixelRed(image,image->colormap[(ssize_t)
-                    GetPixelRed(image,q)].red,q);
-                  SetPixelGreen(image,image->colormap[(ssize_t)
-                    GetPixelGreen(image,q)].green,q);
-                  SetPixelBlue(image,image->colormap[(ssize_t)
-                    GetPixelBlue(image,q)].blue,q);
+                  SetPixelRed(q,image->colormap[(ssize_t)
+                    GetPixelRed(q)].red);
+                  SetPixelGreen(q,image->colormap[(ssize_t)
+                    GetPixelGreen(q)].green);
+                  SetPixelBlue(q,image->colormap[(ssize_t)
+                    GetPixelBlue(q)].blue);
                 }
-              q+=GetPixelChannels(image);
+              q++;
             }
             if (((bytes_per_pixel*image->columns) % 2) != 0)
               p++;
@@ -564,7 +560,7 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
           }
         }
     if (image->storage_class == PseudoClass)
-      (void) SyncImage(image,exception);
+      (void) SyncImage(image);
     sun_pixels=(unsigned char *) RelinquishMagickMemory(sun_pixels);
     if (EOFBlob(image) != MagickFalse)
       {
@@ -584,7 +580,7 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Allocate next image structure.
         */
-        AcquireNextImage(image_info,image,exception);
+        AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
             image=DestroyImageList(image);
@@ -685,8 +681,7 @@ ModuleExport void UnregisterSUNImage(void)
 %
 %  The format of the WriteSUNImage method is:
 %
-%      MagickBooleanType WriteSUNImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%      MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -694,11 +689,8 @@ ModuleExport void UnregisterSUNImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
-static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
-  ExceptionInfo *exception)
+static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image)
 {
 #define RMT_EQUAL_RGB  1
 #define RMT_NONE  0
@@ -728,7 +720,10 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
   MagickSizeType
     number_pixels;
 
-  register const Quantum
+  register const IndexPacket
+    *indexes;
+
+  register const PixelPacket
     *p;
 
   register ssize_t
@@ -750,9 +745,7 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   scene=0;
@@ -762,7 +755,7 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
       Initialize SUN raster file header.
     */
     if (IssRGBColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,sRGBColorspace,exception);
+      (void) TransformImageColorspace(image,sRGBColorspace);
     sun_info.magic=0x59a66a95;
     if ((image->columns != (unsigned int) image->columns) ||
         (image->rows != (unsigned int) image->rows))
@@ -787,7 +780,7 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
           0;
       }
     else
-      if (IsImageMonochrome(image,exception) != MagickFalse)
+      if (IsMonochromeImage(image,&image->exception))
         {
           /*
             Monochrome SUN raster.
@@ -853,18 +846,18 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
         */
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-          if (p == (const Quantum *) NULL)
+          p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+          if (p == (const PixelPacket *) NULL)
             break;
           q=pixels;
           for (x=0; x < (ssize_t) image->columns; x++)
           {
             if (image->matte != MagickFalse)
-              *q++=ScaleQuantumToChar(GetPixelAlpha(image,p));
-            *q++=ScaleQuantumToChar(GetPixelRed(image,p));
-            *q++=ScaleQuantumToChar(GetPixelGreen(image,p));
-            *q++=ScaleQuantumToChar(GetPixelBlue(image,p));
-            p+=GetPixelChannels(image);
+              *q++=ScaleQuantumToChar(GetPixelAlpha(p));
+            *q++=ScaleQuantumToChar(GetPixelRed(p));
+            *q++=ScaleQuantumToChar(GetPixelGreen(p));
+            *q++=ScaleQuantumToChar(GetPixelBlue(p));
+            p++;
           }
           if (((bytes_per_pixel*image->columns) & 0x01) != 0)
             *q++='\0';  /* pad scanline */
@@ -880,7 +873,7 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
         pixels=(unsigned char *) RelinquishMagickMemory(pixels);
       }
     else
-      if (IsImageMonochrome(image,exception) != MagickFalse)
+      if (IsMonochromeImage(image,&image->exception))
         {
           register unsigned char
             bit,
@@ -889,18 +882,19 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
           /*
             Convert PseudoClass image to a SUN monochrome image.
           */
-          (void) SetImageType(image,BilevelType,exception);
+          (void) SetImageType(image,BilevelType);
           for (y=0; y < (ssize_t) image->rows; y++)
           {
-            p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-            if (p == (const Quantum *) NULL)
+            p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+            if (p == (const PixelPacket *) NULL)
               break;
+            indexes=GetVirtualIndexQueue(image);
             bit=0;
             byte=0;
             for (x=0; x < (ssize_t) image->columns; x++)
             {
               byte<<=1;
-              if (GetPixelIntensity(image,p) < (MagickRealType) (QuantumRange/2.0))
+              if (PixelIntensity(p) < (MagickRealType) (QuantumRange/2.0))
                 byte|=0x01;
               bit++;
               if (bit == 8)
@@ -909,7 +903,7 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
                   bit=0;
                   byte=0;
                 }
-              p+=GetPixelChannels(image);
+              p++;
             }
             if (bit != 0)
               (void) WriteBlobByte(image,(unsigned char) (byte << (8-bit)));
@@ -944,14 +938,15 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image,
           */
           for (y=0; y < (ssize_t) image->rows; y++)
           {
-            p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-            if (p == (const Quantum *) NULL)
+            p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+            if (p == (const PixelPacket *) NULL)
               break;
+            indexes=GetVirtualIndexQueue(image);
             for (x=0; x < (ssize_t) image->columns; x++)
             {
               (void) WriteBlobByte(image,(unsigned char)
-                GetPixelIndex(image,p));
-              p+=GetPixelChannels(image);
+                GetPixelIndex(indexes+x));
+              p++;
             }
             if (image->columns & 0x01)
               (void) WriteBlobByte(image,0);  /* pad scanline */

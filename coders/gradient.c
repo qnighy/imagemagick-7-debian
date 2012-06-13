@@ -39,26 +39,26 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/color.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/draw.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/paint.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/studio.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/color.h"
+#include "magick/color-private.h"
+#include "magick/draw.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/paint.h"
+#include "magick/pixel-private.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
+#include "magick/studio.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -94,15 +94,16 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
   char
     colorname[MaxTextExtent];
 
-  Image
-    *image;
+  MagickPixelPacket
+    start_pixel,
+    stop_pixel;
 
-  MagickBooleanType
-    status;
-
-  PixelInfo
+  PixelPacket
     start_color,
     stop_color;
+
+  Image
+    *image;
 
   /*
     Initialize Image structure.
@@ -114,32 +115,34 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   if ((image->columns == 0) || (image->rows == 0))
     ThrowReaderException(OptionError,"MustSpecifyImageSize");
-  (void) SetImageAlpha(image,(Quantum) TransparentAlpha,exception);
+  (void) SetImageOpacity(image,(Quantum) TransparentOpacity);
   (void) CopyMagickString(image->filename,image_info->filename,MaxTextExtent);
   (void) CopyMagickString(colorname,image_info->filename,MaxTextExtent);
   (void) sscanf(image_info->filename,"%[^-]",colorname);
-  status=QueryColorCompliance(colorname,AllCompliance,&start_color,exception);
-  if (status == MagickFalse)
+  if (QueryColorDatabase(colorname,&start_color,exception) == MagickFalse)
     {
       image=DestroyImage(image);
       return((Image *) NULL);
     }
+  (void) QueryMagickColor(colorname,&start_pixel,exception);
   (void) CopyMagickString(colorname,"white",MaxTextExtent);
-  if (GetPixelInfoIntensity(&start_color) > (Quantum) (QuantumRange/2))
+  if (PixelIntensityToQuantum(&start_color) > (Quantum) (QuantumRange/2))
     (void) CopyMagickString(colorname,"black",MaxTextExtent);
   (void) sscanf(image_info->filename,"%*[^-]-%s",colorname);
-  status=QueryColorCompliance(colorname,AllCompliance,&stop_color,exception);
-  if (status == MagickFalse)
+  if (QueryColorDatabase(colorname,&stop_color,exception) == MagickFalse)
     {
       image=DestroyImage(image);
       return((Image *) NULL);
     }
+  (void) QueryMagickColor(colorname,&stop_pixel,exception);
   (void) GradientImage(image,LocaleCompare(image_info->magick,"GRADIENT") == 0 ?
-    LinearGradient : RadialGradient,PadSpread,&start_color,&stop_color,
-    exception);
+    LinearGradient : RadialGradient,PadSpread,&start_color,&stop_color);
+  if ((start_pixel.colorspace == GRAYColorspace) &&
+      (stop_pixel.colorspace == GRAYColorspace))
+    (void) SetImageColorspace(image,GRAYColorspace);
   return(GetFirstImageInList(image));
 }
 

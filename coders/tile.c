@@ -39,23 +39,23 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/constitute.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -111,21 +111,21 @@ static Image *ReadTILEImage(const ImageInfo *image_info,
   read_info=DestroyImageInfo(read_info);
   if (tile_image == (Image *) NULL)
     return((Image *) NULL);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   if ((image->columns == 0) || (image->rows == 0))
     ThrowReaderException(OptionError,"MustSpecifyImageSize");
   if (*image_info->filename == '\0')
     ThrowReaderException(OptionError,"MustSpecifyAnImageName");
   image->matte=tile_image->matte;
   if (image->matte != MagickFalse)
-    (void) SetImageBackgroundColor(image,exception);
+    (void) SetImageBackgroundColor(image);
   (void) CopyMagickString(image->filename,image_info->filename,MaxTextExtent);
   if (LocaleCompare(tile_image->magick,"PATTERN") == 0)
     {
       tile_image->tile_offset.x=0;
       tile_image->tile_offset.y=0;
     }
-  (void) TextureImage(image,tile_image,exception);
+  (void) TextureImage(image,tile_image);
   tile_image=DestroyImage(tile_image);
   return(GetFirstImageInList(image));
 }

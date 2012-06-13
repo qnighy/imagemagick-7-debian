@@ -39,26 +39,26 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/constitute.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteCLIPImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteCLIPImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -137,7 +137,7 @@ ModuleExport void UnregisterCLIPImage(void)
 %  The format of the WriteCLIPImage method is:
 %
 %      MagickBooleanType WriteCLIPImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -145,11 +145,9 @@ ModuleExport void UnregisterCLIPImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
 static MagickBooleanType WriteCLIPImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   Image
     *clip_image;
@@ -160,20 +158,21 @@ static MagickBooleanType WriteCLIPImage(const ImageInfo *image_info,
   MagickBooleanType
     status;
 
-  if (image->mask == MagickFalse)
-    (void) ClipImage(image,exception);
-  if (image->mask == MagickFalse)
+  if (image->clip_mask == (Image *) NULL)
+    (void) ClipImage(image);
+  if (image->clip_mask == (Image *) NULL)
     ThrowWriterException(CoderError,"ImageDoesNotHaveAClipMask");
-  clip_image=GetImageMask(image,exception);
+  clip_image=CloneImage(image->clip_mask,0,0,MagickTrue,&image->exception);
   if (clip_image == (Image *) NULL)
     return(MagickFalse);
+  (void) SetImageType(clip_image,TrueColorType);
   (void) CopyMagickString(clip_image->filename,image->filename,MaxTextExtent);
   write_info=CloneImageInfo(image_info);
-  (void) SetImageInfo(write_info,1,exception);
+  (void) SetImageInfo(write_info,1,&image->exception);
   if (LocaleCompare(write_info->magick,"CLIP") == 0)
     (void) FormatLocaleString(clip_image->filename,MaxTextExtent,"miff:%s",
       write_info->filename);
-  status=WriteImage(write_info,clip_image,exception);
+  status=WriteImage(write_info,clip_image);
   clip_image=DestroyImage(clip_image);
   write_info=DestroyImageInfo(write_info);
   return(status);

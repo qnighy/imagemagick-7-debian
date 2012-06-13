@@ -169,28 +169,28 @@ void Magick::cdlImage::operator()( Image &image_ ) const
   image_.cdl( _cdl.c_str() );
 }
 
-// Colorize image using pen color at specified percent alpha
-Magick::colorizeImage::colorizeImage( const unsigned int alphaRed_,
-                                      const unsigned int alphaGreen_,
-                                      const unsigned int alphaBlue_,
+// Colorize image using pen color at specified percent opacity
+Magick::colorizeImage::colorizeImage( const unsigned int opacityRed_,
+                                      const unsigned int opacityGreen_,
+                                      const unsigned int opacityBlue_,
                                       const Magick::Color &penColor_ )
-  : _alphaRed ( alphaRed_ ),
-    _alphaGreen ( alphaGreen_ ),
-    _alphaBlue ( alphaBlue_ ),
+  : _opacityRed ( opacityRed_ ),
+    _opacityGreen ( opacityGreen_ ),
+    _opacityBlue ( opacityBlue_ ),
     _penColor( penColor_ )
 {
 }
-Magick::colorizeImage::colorizeImage( const unsigned int alpha_,
+Magick::colorizeImage::colorizeImage( const unsigned int opacity_,
                                       const Magick::Color &penColor_ )
-  : _alphaRed ( alpha_ ),
-    _alphaGreen ( alpha_ ),
-    _alphaBlue ( alpha_ ),
+  : _opacityRed ( opacity_ ),
+    _opacityGreen ( opacity_ ),
+    _opacityBlue ( opacity_ ),
     _penColor( penColor_ )
 {
 }
 void Magick::colorizeImage::operator()( Magick::Image &image_ ) const
 {
-  image_.colorize( _alphaRed, _alphaGreen, _alphaBlue, _penColor );
+  image_.colorize( _opacityRed, _opacityGreen, _opacityBlue, _penColor );
 }
 
 // Apply a color matrix to the image channels.  The user supplied
@@ -335,14 +335,13 @@ void Magick::drawImage::operator()( Magick::Image &image_ ) const
 }
 
 // Edge image (hilight edges in image)
-Magick::edgeImage::edgeImage( const double radius_, const double sigma_ )
-  : _radius( radius_ ),
-    _sigma( sigma_ )
+Magick::edgeImage::edgeImage( const double radius_ )
+  : _radius( radius_ )
 {
 }
 void Magick::edgeImage::operator()( Magick::Image &image_ ) const
 {
-  image_.edge( _radius, _sigma );
+  image_.edge( _radius );
 }
 
 // Emboss image (hilight edges with 3D effect)
@@ -640,6 +639,22 @@ void Magick::levelImage::operator()( Magick::Image &image_ ) const
   image_.level( _black_point, _white_point, _mid_point );
 }
 
+// Level image channel
+Magick::levelChannelImage::levelChannelImage( const Magick::ChannelType channel,                                              const double black_point,
+                                              const double white_point,
+                                              const double mid_point )
+  : _channel(channel),
+    _black_point(black_point),
+    _white_point(white_point),
+    _mid_point(mid_point)
+{
+}
+
+void Magick::levelChannelImage::operator()( Magick::Image &image_ ) const
+{
+  image_.levelChannel( _channel, _black_point, _white_point, _mid_point );
+}
+
 // Magnify image by integral size
 Magick::magnifyImage::magnifyImage( void )
 {
@@ -680,11 +695,11 @@ void Magick::matteFloodfillImage::operator()( Magick::Image &image_ ) const
 
 // Filter image by replacing each pixel component with the median
 // color in a circular neighborhood
-Magick::medianConvolveImage::medianConvolveImage( const double radius_  )
+Magick::medianFilterImage::medianFilterImage( const double radius_  )
   : _radius( radius_ )
 {
 }
-void Magick::medianConvolveImage::operator()( Magick::Image &image_ ) const
+void Magick::medianFilterImage::operator()( Magick::Image &image_ ) const
 {
   image_.medianFilter( _radius );
 }
@@ -743,19 +758,19 @@ void Magick::oilPaintImage::operator()( Magick::Image &image_ ) const
   image_.oilPaint( _radius );
 }
 
-// Set or attenuate the image alpha channel. If the image pixels are
-// opaque then they are set to the specified alpha value, otherwise
-// they are blended with the supplied alpha value.  The value of
-// alpha_ ranges from 0 (completely opaque) to QuantumRange. The defines
-// OpaqueAlpha and TransparentAlpha are available to specify
+// Set or attenuate the image opacity channel. If the image pixels are
+// opaque then they are set to the specified opacity value, otherwise
+// they are blended with the supplied opacity value.  The value of
+// opacity_ ranges from 0 (completely opaque) to QuantumRange. The defines
+// OpaqueOpacity and TransparentOpacity are available to specify
 // completely opaque or completely transparent, respectively.
-Magick::alphaImage::alphaImage( const unsigned int alpha_ )
-  : _alpha( alpha_ )
+Magick::opacityImage::opacityImage( const unsigned int opacity_ )
+  : _opacity( opacity_ )
 {
 }
-void Magick::alphaImage::operator()( Magick::Image &image_ ) const
+void Magick::opacityImage::operator()( Magick::Image &image_ ) const
 {
-  image_.alpha( _alpha );
+  image_.opacity( _opacity );
 }
 
 // Change color of opaque pixel to specified pen color.
@@ -1571,6 +1586,16 @@ Magick::subRangeImage::subRangeImage( const size_t subRange_ )
 void Magick::subRangeImage::operator()( Magick::Image &image_ ) const
 {
   image_.subRange( _subRange );
+}
+
+// Tile name
+Magick::tileNameImage::tileNameImage( const std::string &tileName_ )
+  : _tileName( tileName_ )
+{
+}
+void Magick::tileNameImage::operator()( Magick::Image &image_ ) const
+{
+  image_.tileName( _tileName );
 }
 
 // Image storage type

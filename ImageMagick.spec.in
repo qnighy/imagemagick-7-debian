@@ -87,6 +87,7 @@ save and load DjvU files from ImageMagick and libMagickCore using applications.
 Summary: ImageMagick HTML documentation
 Group: Documentation
 
+
 %description doc
 ImageMagick documentation, this package contains usage (for the
 commandline tools) and API (for the libraries) documentation in HTML format.
@@ -261,16 +262,21 @@ rm -rf %{buildroot}
 %files devel
 %defattr(-,root,root,-)
 %{_bindir}/MagickCore-config
+%{_bindir}/Magick-config
 %{_bindir}/MagickWand-config
+%{_bindir}/Wand-config
 %{_libdir}/libMagickCore.so*
 %{_libdir}/libMagickWand.so*
 %{_libdir}/pkgconfig/MagickCore.pc
 %{_libdir}/pkgconfig/ImageMagick.pc
 %{_libdir}/pkgconfig/MagickWand.pc
+%{_libdir}/pkgconfig/Wand.pc
 %dir %{_includedir}/%{name}
-%{_includedir}/%{name}/MagickCore
-%{_includedir}/%{name}/MagickWand
+%{_includedir}/%{name}/magick
+%{_includedir}/%{name}/wand
+%{_mandir}/man1/Magick-config.*
 %{_mandir}/man1/MagickCore-config.*
+%{_mandir}/man1/Wand-config.*
 %{_mandir}/man1/MagickWand-config.*
 
 %files djvu

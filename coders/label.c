@@ -39,24 +39,24 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/annotate.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/draw.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/property.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/utility.h"
+#include "magick/studio.h"
+#include "magick/annotate.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/draw.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/property.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
+#include "magick/utility.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -121,13 +121,12 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   (void) ResetImagePage(image,"0x0+0+0");
-  property=InterpretImageProperties(image_info,image,image_info->filename,
-    exception);
-  (void) SetImageProperty(image,"label",property,exception);
+  property=InterpretImageProperties(image_info,image,image_info->filename);
+  (void) SetImageProperty(image,"label",property);
   property=DestroyString(property);
-  label=GetImageProperty(image,"label",exception);
+  label=GetImageProperty(image,"label");
   draw_info=CloneDrawInfo(image_info,(DrawInfo *) NULL);
   draw_info->text=ConstantString(label);
   if (((image->columns != 0) || (image->rows != 0)) &&
@@ -136,7 +135,7 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
       /*
         Fit label to canvas size.
       */
-      status=GetMultilineTypeMetrics(image,draw_info,&metrics,exception);
+      status=GetMultilineTypeMetrics(image,draw_info,&metrics);
       for ( ; status != MagickFalse; draw_info->pointsize*=2.0)
       {
         width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
@@ -144,7 +143,7 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
         if (((image->columns != 0) && (width >= image->columns)) ||
             ((image->rows != 0) && (height >= image->rows)))
           break;
-        status=GetMultilineTypeMetrics(image,draw_info,&metrics,exception);
+        status=GetMultilineTypeMetrics(image,draw_info,&metrics);
       }
       draw_info->pointsize/=2.0;
       for ( ; status != MagickFalse; draw_info->pointsize--)
@@ -159,12 +158,13 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
           break;
         if (draw_info->pointsize < 2.0)
           break;
-        status=GetMultilineTypeMetrics(image,draw_info,&metrics,exception);
+        status=GetMultilineTypeMetrics(image,draw_info,&metrics);
       }
     }
-  status=GetMultilineTypeMetrics(image,draw_info,&metrics,exception);
+  status=GetMultilineTypeMetrics(image,draw_info,&metrics);
   if (status == MagickFalse)
     {
+      InheritException(exception,&image->exception);
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
@@ -192,12 +192,13 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
   if (image->rows == 0)
     image->rows=(size_t) floor(draw_info->pointsize+draw_info->stroke_width+
       0.5);
-  if (SetImageBackgroundColor(image,exception) == MagickFalse)
+  if (SetImageBackgroundColor(image) == MagickFalse)
     {
+      InheritException(exception,&image->exception);
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  (void) AnnotateImage(image,draw_info,exception);
+  (void) AnnotateImage(image,draw_info);
   if (image_info->pointsize == 0.0)
     {
       char
@@ -205,7 +206,7 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
 
       (void) FormatLocaleString(pointsize,MaxTextExtent,"%.20g",
         draw_info->pointsize);
-      (void) SetImageProperty(image,"label:pointsize",pointsize,exception);
+      (void) SetImageProperty(image,"label:pointsize",pointsize);
     }
   draw_info=DestroyDrawInfo(draw_info);
   return(GetFirstImageInList(image));

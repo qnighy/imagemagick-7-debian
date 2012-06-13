@@ -16,21 +16,21 @@
 
 AC_PREREQ(2.67)
 
-m4_define([magick_major_version], [7])
-m4_define([magick_minor_version], [0])
-m4_define([magick_micro_version], [0])
-m4_define([magick_patchlevel_version], [0])
+m4_define([magick_major_version], [6])
+m4_define([magick_minor_version], [7])
+m4_define([magick_micro_version], [7])
+m4_define([magick_patchlevel_version], [7])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "svnversion | sed -r 's/([0-9]+).*/\1/'"]))
 
 AC_INIT([ImageMagick],[magick_version],[http://www.imagemagick.org],[ImageMagick])
-AC_CONFIG_SRCDIR([MagickCore/MagickCore.h])
+AC_CONFIG_SRCDIR([magick/MagickCore.h])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_LIBOBJ_DIR([ltdl])
 AC_CONFIG_HEADERS([config/config.h])
-AX_PREFIX_CONFIG_H([MagickCore/magick-config.h],[MagickCore])
+AX_PREFIX_CONFIG_H([magick/magick-config.h],[MagickCore])
 AC_CONFIG_FILES([\
     config/configure.xml \
     config/delegates.xml \
@@ -43,12 +43,13 @@ AC_CONFIG_FILES([\
     config/type.xml \
     ImageMagick.spec \
     Magick++/bin/Magick++-config \
-    MagickCore/ImageMagick.pc \
+    magick/ImageMagick.pc \
     Magick++/lib/ImageMagick++.pc \
     Magick++/lib/Magick++.pc \
-    MagickCore/MagickCore-config \
-    MagickCore/MagickCore.pc \
-    MagickCore/version.h \
+    magick/Magick-config \
+    magick/MagickCore-config \
+    magick/MagickCore.pc \
+    magick/version.h \
     Makefile \
     magick.sh \
     PerlMagick/Magick.pm \
@@ -66,8 +67,10 @@ AC_CONFIG_FILES([\
     utilities/mogrify.1 \
     utilities/montage.1 \
     utilities/stream.1 \
-    MagickWand/MagickWand-config \
-    MagickWand/MagickWand.pc ])
+    wand/MagickWand-config \
+    wand/MagickWand.pc \
+    wand/Wand-config \
+    wand/Wand.pc ])
 
 #
 # Save initial user-tunable values
@@ -399,10 +402,8 @@ AC_ARG_WITH([sharearch-dir],
                     [sharearch_dir="${LIB_DIR}"])
 
 eval "eval SHAREARCH_DIR=$sharearch_dir"
-SHAREARCH_DIR="$sharearch_dir"
 AC_SUBST(SHAREARCH_DIR)
 
-#
 # Enable support for threads
 AC_ARG_WITH([threads],
     [AC_HELP_STRING([--without-threads], [disable threads support])],
@@ -470,8 +471,8 @@ if test "$enable_largefile" != no; then
           exit(!(sizeof(off_t) == 8));
         }])],
         [ac_cv_sys_file_offset_bits=64; AC_DEFINE(_FILE_OFFSET_BITS,64)
-         AC_MSG_NOTICE([yes])],
-        [AC_MSG_NOTICE([no])])
+         AC_MSG_RESULT([yes])],
+        [AC_MSG_RESULT([no])])
         ;;
     *)
         LFS_CPPFLAGS="$LFS_CPPFLAGS -D_FILE_OFFSET_BITS=$ac_cv_sys_file_offset_bits"
@@ -593,7 +594,7 @@ if test "$enable_cipher" = 'yes'; then
     AC_DEFINE(CIPHER_SUPPORT,1,[permit enciphering and deciphering image pixels])
 fi
 
-# Build a zero-configuration version of ImageMagick.
+# Build an zero-configuration version of ImageMagick.
 AC_ARG_ENABLE([zero-configuration],
     [AC_HELP_STRING([--enable-zero-configuration],
                     [enable self-contained, embeddable, zero-configuration ImageMagick])],
@@ -631,8 +632,11 @@ if test "$enable_assert" = 'no'; then
     AC_DEFINE(NDEBUG,1,[Turn off assert statements])
 fi
 
-# Don't emit "rebuild rules" for configure, Makefile.ins, etc.
+# Add configure option --enable-maintainer-mode which enables dependency
+# checking and generation useful to package maintainers.  This is made an
+# option to avoid confusing end users.
 AM_MAINTAINER_MODE
+
 
 # Enable ccmalloc memory debugging support
 AC_ARG_ENABLE([ccmalloc],
@@ -686,15 +690,8 @@ AC_ARG_WITH([method-prefix],
 
 if test "$with_method_prefix" != 'no'; then
     AC_DEFINE_UNQUOTED(NAMESPACE_PREFIX,$with_method_prefix,[Magick API method prefix])
-    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-method-prefix "
+  DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-method-prefix "
 fi
-
-# Enable legacy support (default no)
-AC_ARG_ENABLE(legacy-support,
-              [  --enable-legacy-support  install legacy command-line utilities (default disabled)],
-              [with_legacy_support=$enableval],
-              [with_legacy_support='no'])
-AM_CONDITIONAL(LEGACY_SUPPORT, test "$with_legacy_support" != 'no')
 
 # Number of bits in a Quantum
 AC_ARG_WITH([quantum-depth],
@@ -938,22 +935,22 @@ AC_CHECK_SIZEOF(unsigned int*)
 
 AC_MSG_CHECKING(for signed 8-bit type)
 INT8_T='signed char'
-AC_MSG_NOTICE($INT8_T)
+AC_MSG_RESULT($INT8_T)
 AC_SUBST(INT8_T)
 
 AC_MSG_CHECKING(for unsigned 8-bit type)
 UINT8_T='unsigned char'
-AC_MSG_NOTICE($UINT8_T)
+AC_MSG_RESULT($UINT8_T)
 AC_SUBST(UINT8_T)
 
 AC_MSG_CHECKING(for signed 16-bit type)
 INT16_T='signed short'
-AC_MSG_NOTICE($INT16_T)
+AC_MSG_RESULT($INT16_T)
 AC_SUBST(INT16_T)
 
 AC_MSG_CHECKING(for unsigned 16-bit type)
 UINT16_T='unsigned short'
-AC_MSG_NOTICE($UINT16_T)
+AC_MSG_RESULT($UINT16_T)
 AC_SUBST(UINT16_T)
 
 AC_MSG_CHECKING(for signed 32-bit type)
@@ -966,7 +963,7 @@ elif test $ac_cv_sizeof_signed_long -eq 4; then
   INT32_T='signed long'
   INT32_F='"l"'
 fi
-AC_MSG_NOTICE($INT32_T)
+AC_MSG_RESULT($INT32_T)
 AC_SUBST(INT32_T)
 AC_SUBST(INT32_F)
 
@@ -980,7 +977,7 @@ elif test $ac_cv_sizeof_unsigned_long -eq 4; then
   UINT32_T='unsigned long'
   UINT32_F='"l"'
 fi
-AC_MSG_NOTICE($UINT32_T)
+AC_MSG_RESULT($UINT32_T)
 AC_SUBST(UINT32_T)
 AC_SUBST(UINT32_F)
 
@@ -999,7 +996,7 @@ case "${host_os}" in
     INT64_F='"I64"'
     ;;
 esac
-AC_MSG_NOTICE($INT64_T)
+AC_MSG_RESULT($INT64_T)
 AC_SUBST(INT64_T)
 AC_SUBST(INT64_F)
 
@@ -1018,7 +1015,7 @@ case "${host_os}" in
     UINT64_F='"I64"'
     ;;
 esac
-AC_MSG_NOTICE($UINT64_T)
+AC_MSG_RESULT($UINT64_T)
 AC_SUBST(UINT64_T)
 AC_SUBST(UINT64_F)
 
@@ -1032,7 +1029,7 @@ elif test "$UINT32_T" != 'none'; then
   UINTMAX_T=$UINT32_T
   UINTMAX_F=$UINT32_F
 fi
-AC_MSG_NOTICE($UINTMAX_T)
+AC_MSG_RESULT($UINTMAX_T)
 AC_SUBST(UINTMAX_T)
 AC_SUBST(UINTMAX_F)
 
@@ -1046,22 +1043,22 @@ elif test $ac_cv_sizeof_unsigned_long_long -eq $ac_cv_sizeof_unsigned_intp; then
   UINTPTR_T='unsigned long long'
   UINTPTR_F='"ll"'
 fi
-AC_MSG_NOTICE($UINTPTR_T)
+AC_MSG_RESULT($UINTPTR_T)
 AC_SUBST(UINTPTR_T)
 AC_SUBST(UINTPTR_F)
 
 AC_MSG_CHECKING([whether our compiler supports __func__])
 AC_TRY_COMPILE([],
  [{ const char *func = __func__; return(func != 0 ? 0 : 1); }],
- AC_MSG_NOTICE([yes]),
- AC_MSG_NOTICE([no])
+ AC_MSG_RESULT([yes]),
+ AC_MSG_RESULT([no])
  AC_MSG_CHECKING([whether our compiler supports __FUNCTION__])
  AC_TRY_COMPILE([],
    [{ const char *func = __FUNCTION__; return(func != 0 ? 0 : 1); }],
-   AC_MSG_NOTICE([yes])
+   AC_MSG_RESULT([yes])
    AC_DEFINE(__func__, __FUNCTION__,
      [Define to appropriate substitue if compiler does not have __func__]),
-   AC_MSG_NOTICE([no])
+   AC_MSG_RESULT([no])
    AC_DEFINE(__func__, __FILE__,
      [Define to appropriate substitue if compiler does not have __func__])))
 
@@ -1078,8 +1075,8 @@ AC_FUNC_MEMCMP
 AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_SETVBUF_REVERSED
 AC_TYPE_SIGNAL
-AC_FUNC_STRTOD
 AC_FUNC_STRERROR_R
+AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 
 #
@@ -1090,7 +1087,7 @@ AC_CHECK_LIB(m,sqrt,MATH_LIBS="-lm",,)
 LIBS="$MATH_LIBS $LIBS"
 AC_SUBST(MATH_LIBS)
 
-AC_CHECK_FUNCS([acosh asinh atanh atoll atexit cabs carg cimag creal clock ctime_r directio _exit execvp fchmod floor fork ftime ftruncate getc_unlocked getcwd getpid getexecname getdtablesize getpagesize getrlimit getrusage gettimeofday gmtime_r isnan j0 j1 lltostr localtime_r lstat memmove memset mkstemp munmap nanosleep newlocale _NSGetExecutablePath pclose _pclose poll popen _popen posix_fadvise posix_fallocate posix_madvise posix_memalign posix_spawnp pow pread pwrite qsort_r raise rand_r readlink readdir_r realpath select seekdir setlocale sqrt setvbuf stat strchr strrchr strcspn strdup strpbrk strspn strstr strtod strtod_l strtol strtoul symlink sysconf sigemptyset sigaction spawnvp strerror strlcat strlcpy strcasecmp strncasecmp telldir tempnam times ulltostr uselocale usleep utime vfprintf vfprintf_l vsprintf vsnprintf vsnprintf_l waitpid _wfopen _wstat])
+AC_CHECK_FUNCS([acosh asinh atanh atoll atexit cabs carg cimag creal clock ctime_r directio _exit execvp fchmod floor fork ftime ftruncate getc_unlocked getcwd getpid getexecname getdtablesize getpagesize getrlimit getrusage gettimeofday gmtime_r isnan j0 j1 lltostr localtime_r lstat memmove memset mkstemp munmap nanosleep newlocale _NSGetExecutablePath pclose _pclose poll popen _popen posix_fadvise posix_fallocate posix_madvise posix_memalign posix_spawnp pow pread pwrite qsort_r raise rand_r readlink readdir_r realpath select seekdir setlocale sqrt setvbuf stat strchr strerror_r strrchr strcspn strdup strpbrk strspn strstr strtod strtod_l strtol strtoul symlink sysconf sigemptyset sigaction spawnvp strerror strlcat strlcpy strcasecmp strncasecmp telldir tempnam times ulltostr uselocale usleep utime vfprintf vfprintf_l vsprintf vsnprintf vsnprintf_l waitpid _wfopen _wstat])
 
 #
 # Check for clock_gettime().
@@ -1104,11 +1101,11 @@ AC_SEARCH_LIBS(clock_gettime, rt,
       [[#include <time.h>]],
        [[clockid_t clockType = CLOCK_REALTIME;]])],
       [
-        AC_MSG_NOTICE(yes)
+        AC_MSG_RESULT(yes)
       	AC_DEFINE([HAVE_CLOCK_REALTIME],[1],
           [Define to 1 if clock_gettime supports CLOCK_REALTIME.])
       ],
-      AC_MSG_NOTICE(no)
+      AC_MSG_RESULT(no)
     )
   ],
   [
@@ -1165,7 +1162,7 @@ if test "$with_magick_plus_plus" = 'yes'; then
     else
         have_magick_plus_plus='no (failed tests)'
     fi
-    AC_MSG_NOTICE([$have_magick_plus_plus])
+    AC_MSG_RESULT([$have_magick_plus_plus])
     LIBS="$OLIBS"
 fi
 AM_CONDITIONAL(WITH_MAGICK_PLUS_PLUS, test "$have_magick_plus_plus" = 'yes')
@@ -1336,7 +1333,7 @@ have_umem='no'
 UMEM_LIBS=''
 if test "$with_umem" != 'no'; then
   AC_MSG_CHECKING(for UMEM support )
-  AC_MSG_NOTICE()
+  AC_MSG_RESULT()
   failed=0
   passed=0
   AC_CHECK_HEADER(umem.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
@@ -1345,17 +1342,17 @@ if test "$with_umem" != 'no'; then
   AC_MSG_CHECKING(if umem memory allocation library is complete)
   if test $passed -gt 0; then
     if test $failed -gt 0; then
-      AC_MSG_NOTICE(no -- some components failed test)
+      AC_MSG_RESULT(no -- some components failed test)
       have_umem='no (failed tests)'
     else
       UMEM_LIBS='-lumem'
       LIBS="$UMEM_LIBS $LIBS"
       AC_DEFINE(HasUMEM,1,Define if you have umem memory allocation library)
-      AC_MSG_NOTICE(yes)
+      AC_MSG_RESULT(yes)
       have_umem='yes'
     fi
   else
-    AC_MSG_NOTICE(no)
+    AC_MSG_RESULT(no)
   fi
 fi
 AM_CONDITIONAL(HasUMEM, test "$have_umem" = 'yes')
@@ -1411,9 +1408,9 @@ fi
 have_bzlib='no'
 if test "$with_bzlib" != 'no'; then
     BZLIB_LIBS=''
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for BZLIB])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     found_libbz=0
@@ -1430,17 +1427,17 @@ if test "$with_bzlib" != 'no'; then
     AC_MSG_CHECKING(if BZLIB package is complete)
     if test $passed -gt 0; then
       if test $failed -gt 0; then
-        AC_MSG_NOTICE(no -- some components failed test)
+        AC_MSG_RESULT(no -- some components failed test)
         have_bzlib='no (failed tests)'
       else
         BZLIB_LIBS='-lbz2'
         LIBS="$BZLIB_LIBS $LIBS"
         AC_DEFINE(BZLIB_DELEGATE,1,Define if you have the bzip2 library)
-        AC_MSG_NOTICE(yes)
+        AC_MSG_RESULT(yes)
         have_bzlib='yes'
       fi
     else
-      AC_MSG_NOTICE(no)
+      AC_MSG_RESULT(no)
     fi
 fi
 AM_CONDITIONAL(BZLIB_DELEGATE, test "$have_bzlib" = 'yes')
@@ -1455,9 +1452,9 @@ XEXT_LIBS=''
 XT_LIBS=''
 AC_PATH_XTRA
 if test "$no_x" != 'yes'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for X11])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     LDFLAGS="$LDFLAGS $X_LIBS"
     X11_LIBS="$X_PRE_LIBS -lX11 $X_EXTRA_LIBS"
     LIBS="$X11_LIBS $LIBS"
@@ -1516,9 +1513,9 @@ have_zlib='no'
 ZLIB_LIBS=''
 dnl PNG requires zlib so enable zlib check if PNG is requested
 if test "$with_zlib" != 'no' || test "$with_png" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for ZLIB])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     ZLIB_LIBS=''
     failed=0
     passed=0
@@ -1533,17 +1530,17 @@ if test "$with_zlib" != 'no' || test "$with_png" != 'no'; then
     AC_MSG_CHECKING([if ZLIB package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_zlib='no (failed tests)'
         else
             ZLIB_LIBS='-lz'
             LIBS="$ZLIB_LIBS $LIBS"
             AC_DEFINE(ZLIB_DELEGATE,1,Define if you have zlib compression library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_zlib='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(ZLIB_DELEGATE, test "$have_zlib" = 'yes')
@@ -1579,9 +1576,9 @@ AUTOTRACE_CFLAGS=""
 AUTOTRACE_LIBS=""
 AUTOTRACE_PKG=""
 if test "x$with_autotrace" = "xyes"; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     PKG_CHECK_MODULES(AUTOTRACE,[autotrace >= 0.31.1], have_autotrace=yes, have_autotrace=no)
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
 fi
 
 if test "$have_autotrace" = 'yes'; then
@@ -1614,9 +1611,9 @@ fi
 have_dps='no'
 DPS_LIBS=''
 if test "$with_dps" != 'no' && test "$with_x" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for DPS])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     PERSIST_CPPFLAGS="$CPPFLAGS"
@@ -1647,18 +1644,18 @@ if test "$with_dps" != 'no' && test "$with_x" != 'no'; then
     AC_MSG_CHECKING([if DPS package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_dps='no (failed tests)'
             CPPFLAGS="$PERSIST_CPPFLAGS"
         else
             DPS_LIBS="-ldpstk -ldps ${LIBDPS_XT}"
             LIBS="$DPS_LIBS $LIBS"
             AC_DEFINE(DPS_DELEGATE,1,Define if you have Display Postscript)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_dps='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
         CPPFLAGS=$PERSIST_CPPFLAGS
     fi
 fi
@@ -1683,9 +1680,9 @@ fi
 have_djvu='no'
 DJVU_LIBS=''
 if test "$with_djvu" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for DJVU])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     AC_CHECK_HEADER(libdjvu/ddjvuapi.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
@@ -1693,17 +1690,17 @@ if test "$with_djvu" != 'no'; then
     AC_MSG_CHECKING([if DJVU package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_djvu='no (failed tests)'
         else
             DJVU_LIBS='-ldjvulibre'
             LIBS="$DJVU_LIBS $LIBS"
             AC_DEFINE(DJVU_DELEGATE,1,Define if you have DJVU library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_djvu='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(DJVU_DELEGATE, test "$have_djvu" = 'yes')
@@ -1742,9 +1739,9 @@ fi
 have_fftw='no'
 FFTW_LIBS=''
 if test "$with_fftw" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for FFTW])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     AC_CHECK_HEADER(fftw3.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
@@ -1752,17 +1749,17 @@ if test "$with_fftw" != 'no'; then
     AC_MSG_CHECKING([if FFTW package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_fftw='no (failed tests)'
         else
             FFTW_LIBS='-lfftw3'
             LIBS="$FFTW_LIBS $LIBS"
             AC_DEFINE(FFTW_DELEGATE,1,Define if you have FFTW library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_fftw='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(FFTW_DELEGATE, test "$have_fftw" = 'yes')
@@ -1786,9 +1783,9 @@ fi
 have_fpx='no'
 FPX_LIBS=''
 if test "$with_fpx" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for FlashPIX])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     AC_LANG_PUSH(C++)
@@ -1798,17 +1795,17 @@ if test "$with_fpx" != 'no'; then
     AC_MSG_CHECKING([if FlashPIX package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_fpx='no (failed tests)'
         else
             FPX_LIBS='-lfpx'
             AC_DEFINE(FPX_DELEGATE,1,Define if you have FlashPIX library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_fpx='yes'
             PERLMAINCC="$CXX"
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(FPX_DELEGATE, test "$have_fpx" = 'yes')
@@ -1834,9 +1831,9 @@ FONTCONFIG_CFLAGS=""
 FONTCONFIG_LIBS=""
 FONTCONFIG_PKG=""
 if test "x$with_fontconfig" = "xyes"; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     PKG_CHECK_MODULES(FONTCONFIG,[fontconfig >= 2.1.0], have_fontconfig=yes, have_fontconfig=no)
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
 fi
 
 if test "$have_fontconfig" = 'yes'; then
@@ -1869,9 +1866,9 @@ fi
 have_freetype='no'
 FREETYPE_LIBS=''
 if test "$with_freetype" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING(for FreeType 2.0 )
-    AC_MSG_NOTICE()
+    AC_MSG_RESULT()
     failed=0
     passed=0
     PERSIST_LDFLAGS="$LDFLAGS"
@@ -1920,7 +1917,7 @@ dnl Now test for the headers
     if test $passed -gt 0; then
       if test $failed -gt 0; then
         FREETYPE_LIBS=''
-        AC_MSG_NOTICE(no -- some components failed test)
+        AC_MSG_RESULT(no -- some components failed test)
         have_freetype='no (failed tests)'
       else
         LIBS="$FREETYPE_LIBS $LIBS"
@@ -1928,11 +1925,11 @@ dnl Now test for the headers
         if test "$ac_cv_header_ft2build_h" = 'yes'; then
           AC_DEFINE([HAVE_FT2BUILD_H],[1],[Define to 1 if you have the <ft2build.h> header file.])
         fi
-        AC_MSG_NOTICE(yes)
+        AC_MSG_RESULT(yes)
         have_freetype='yes'
       fi
     else
-      AC_MSG_NOTICE(no)
+      AC_MSG_RESULT(no)
     fi
 fi
 AM_CONDITIONAL(FREETYPE_DELEGATE, test "$have_freetype" = 'yes')
@@ -1960,9 +1957,9 @@ fi
 have_gslib='no'
 GS_LIBS=''
 if test "$with_gslib" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for Ghostscript])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     framework=0
     failed=0
     passed=0
@@ -1975,15 +1972,15 @@ if test "$with_gslib" != 'no'; then
     AC_MSG_CHECKING([if Ghostscript package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_gslib='no (failed tests)'
         else
             if test $framework -gt 0; then
                 GS_LIBS='-framework Ghostscript'
                 gslib_framework='yes'
-                AC_MSG_NOTICE([yes, using framework.])
+                AC_MSG_RESULT([yes, using framework.])
             else
-                AC_MSG_NOTICE([yes, using library.])
+                AC_MSG_RESULT([yes, using library.])
                 GS_LIBS='-lgs'
             fi
             LIBS="$GS_LIBS $LIBS"
@@ -1991,7 +1988,7 @@ if test "$with_gslib" != 'no'; then
             have_gslib='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(GS_DELEGATE, test "$have_gslib" = 'yes')
@@ -2041,9 +2038,9 @@ fi
 
 GVC_PKG=""
 if test "x$with_gvc" = "xyes"; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     PKG_CHECK_MODULES(GVC,[libgvc >= 2.9.0], have_gvc=yes, have_gvc=no)
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
 fi
 
 if test "$have_gvc" = 'yes'; then
@@ -2072,9 +2069,9 @@ AC_ARG_WITH([jbig],
 have_jbig='no'
 JBIG_LIBS=''
 if test "$with_jbig" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for JBIG])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     AC_CHECK_HEADER(jbig.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
@@ -2082,17 +2079,17 @@ if test "$with_jbig" != 'no'; then
     AC_MSG_CHECKING([if JBIG package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_jbig='no (failed tests)'
         else
             JBIG_LIBS='-ljbig'
             LIBS="$JBIG_LIBS $LIBS"
             AC_DEFINE(JBIG_DELEGATE,1,Define if you have JBIG library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_jbig='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(JBIG_DELEGATE, test "$have_jbig" = 'yes')
@@ -2116,9 +2113,9 @@ fi
 have_jpeg='no'
 JPEG_LIBS=''
 if test "$with_jpeg" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for JPEG])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     AC_CHECK_HEADER(jconfig.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
@@ -2149,17 +2146,17 @@ fi
     AC_MSG_CHECKING([if JPEG package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_jpeg='no (failed tests)'
         else
             JPEG_LIBS='-ljpeg'
             LIBS="$JPEG_LIBS $LIBS"
             AC_DEFINE(JPEG_DELEGATE,1,Define if you have JPEG library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_jpeg='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(JPEG_DELEGATE, test "$have_jpeg" = 'yes')
@@ -2183,9 +2180,9 @@ fi
 have_jp2='no'
 JP2_LIBS=''
 if test "$with_jp2" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for JPEG Version 2])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     AC_CHECK_HEADER(jasper/jasper.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
@@ -2193,17 +2190,17 @@ if test "$with_jp2" != 'no'; then
     AC_MSG_CHECKING([if JPEG version 2 support package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_jp2='no (failed tests)'
         else
             JP2_LIBS='-ljasper'
             LIBS="$JP2_LIBS $LIBS"
             AC_DEFINE(JP2_DELEGATE,1,Define if you have JPEG version 2 "Jasper" library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_jp2='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(JP2_DELEGATE, test "$have_jp2" = 'yes')
@@ -2235,9 +2232,9 @@ fi
 have_lcms2='no'
 LCMS_LIBS=''
 if test "$with_lcms2" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for LCMS v2])
-    AC_MSG_NOTICE()
+    AC_MSG_RESULT()
     failed=0
     passed=0
     have_lcms_header='no'
@@ -2267,16 +2264,16 @@ if test "$with_lcms2" != 'no'; then
     AC_MSG_CHECKING(if LCMS v2 package is complete)
     if test $passed -gt 0; then
       if test $failed -gt 0; then
-        AC_MSG_NOTICE(no -- some components failed test)
+        AC_MSG_RESULT(no -- some components failed test)
         have_lcms2='no (failed tests)'
       else
         LCMS_LIBS='-llcms2'
         LIBS="$LCMS_LIBS $LIBS"
-        AC_MSG_NOTICE(yes)
+        AC_MSG_RESULT(yes)
         have_lcms2='yes'
       fi
     else
-      AC_MSG_NOTICE(no)
+      AC_MSG_RESULT(no)
     fi
 fi
 
@@ -2289,9 +2286,9 @@ fi
 
 have_lcms='no'
 if test "$with_lcms" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for LCMS v1.1X])
-    AC_MSG_NOTICE()
+    AC_MSG_RESULT()
     failed=0
     passed=0
     have_lcms_header='no'
@@ -2323,16 +2320,16 @@ if test "$with_lcms" != 'no'; then
     AC_MSG_CHECKING(if LCMS package is complete)
     if test $passed -gt 0; then
       if test $failed -gt 0; then
-        AC_MSG_NOTICE(no -- some components failed test)
+        AC_MSG_RESULT(no -- some components failed test)
         have_lcms='no (failed tests)'
       else
         LCMS_LIBS='-llcms'
         LIBS="$LCMS_LIBS $LIBS"
-        AC_MSG_NOTICE(yes)
+        AC_MSG_RESULT(yes)
         have_lcms='yes'
       fi
     else
-      AC_MSG_NOTICE(no)
+      AC_MSG_RESULT(no)
     fi
 fi
 
@@ -2363,9 +2360,9 @@ LQR_CFLAGS=""
 LQR_LIBS=""
 LQR_PKG=""
 if test "x$with_lqr" = "xyes"; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     PKG_CHECK_MODULES(LQR,[lqr-1 >= 0.1.0], have_lqr=yes, have_lqr=no)
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
 fi
 
 if test "$have_lqr" = 'yes'; then
@@ -2426,9 +2423,9 @@ OPENEXR_CFLAGS=""
 OPENEXR_LIBS=""
 OPENEXR_PKG=""
 if test "x$with_openexr" = "xyes"; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     PKG_CHECK_MODULES(OPENEXR,[OpenEXR >= 1.0.6], have_openexr=yes, have_openexr=no)
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
 fi
 
 if test "$have_openexr" = 'yes'; then
@@ -2508,9 +2505,9 @@ have_png='no'
 PNG_LIBS=''
 
 if test "$with_png" != 'no' -a  "$have_zlib" != 'no' ; then
-  AC_MSG_NOTICE([-------------------------------------------------------------])
+  AC_MSG_RESULT([-------------------------------------------------------------])
   AC_MSG_CHECKING(for PNG support )
-  AC_MSG_NOTICE()
+  AC_MSG_RESULT()
   failed=0
   passed=0
   AC_CHECK_HEADER(png.h,passed=`expr $passed + 1`,
@@ -2549,14 +2546,14 @@ return 0;
             ac_cv_libpng_ok='no')
             if test "$ac_cv_libpng_ok" = 'yes' ; then
               passed=`expr $passed + 1`
-              AC_MSG_NOTICE(yes)
+              AC_MSG_RESULT(yes)
             else
               failed=`expr $failed + 1`
-              AC_MSG_NOTICE(no)
+              AC_MSG_RESULT(no)
             fi
           else
             passed=`expr $passed + 1`
-            AC_MSG_NOTICE(yes)
+            AC_MSG_RESULT(yes)
           fi
         fi
 
@@ -2585,13 +2582,13 @@ return 0;
             AC_MSG_CHECKING(if ${pnglib} package is complete)
             if test $passed -gt 0 ; then
               if test $failed -gt 0 ; then
-                  AC_MSG_NOTICE(no -- some components failed test)
+                  AC_MSG_RESULT(no -- some components failed test)
                   have_png='no (failed tests)'
               else
                   PNG_LIBS="-l${pnglib}"
                   LIBS="$PNG_LIBS $LIBS"
                   AC_DEFINE(PNG_DELEGATE,1,Define if you have PNG library)
-                  AC_MSG_NOTICE(yes)
+                  AC_MSG_RESULT(yes)
                   have_png='yes'
               fi
             fi
@@ -2604,7 +2601,6 @@ fi
 
 AM_CONDITIONAL(PNG_DELEGATE,test "$have_png" = 'yes')
 AC_SUBST(PNG_LIBS)
-
 
 dnl ===========================================================================
 
@@ -2627,11 +2623,11 @@ RSVG_CFLAGS=""
 RSVG_LIBS=""
 RSVG_PKG=""
 if test "x$with_rsvg" = "xyes"; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     PKG_CHECK_MODULES(RSVG,[librsvg-2.0 >= 2.9.0], have_rsvg=yes, have_rsvg=no)
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     PKG_CHECK_MODULES(CAIRO_SVG, cairo-svg, have_cairo=yes, have_cairo=no)
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
 fi
 
 if test "$have_rsvg" = 'yes'; then
@@ -2671,9 +2667,9 @@ fi
 have_tiff='no'
 TIFF_LIBS=''
 if test "$with_tiff" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for TIFF])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     AC_CHECK_HEADER(tiff.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
@@ -2686,13 +2682,13 @@ if test "$with_tiff" != 'no'; then
     AC_MSG_CHECKING([if TIFF package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_tiff='no (failed tests)'
         else
             TIFF_LIBS='-ltiff'
             LIBS="$TIFF_LIBS $LIBS"
             AC_DEFINE(TIFF_DELEGATE,1,Define if you have TIFF library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_tiff='yes'
             AC_CHECK_HEADERS(tiffconf.h)
             AC_CHECK_FUNCS([TIFFIsCODECConfigured TIFFMergeFieldInfo \
@@ -2701,7 +2697,7 @@ if test "$with_tiff" != 'no'; then
               TIFFSwabArrayOfTriples])
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(TIFF_DELEGATE, test "$have_tiff" = 'yes')
@@ -2725,9 +2721,9 @@ fi
 have_webp='no'
 WEBP_LIBS=''
 if test "$with_webp" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for WEBP])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     failed=0
     passed=0
     AC_CHECK_HEADER(webp/decode.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
@@ -2735,17 +2731,17 @@ if test "$with_webp" != 'no'; then
     AC_MSG_CHECKING([if WEBP package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_webp='no (failed tests)'
         else
             WEBP_LIBS='-lwebp'
             LIBS="$WEBP_LIBS $LIBS"
             AC_DEFINE(WEBP_DELEGATE,1,Define if you have WEBP library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_webp='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(WEBP_DELEGATE,test "$have_webp" = 'yes')
@@ -2852,9 +2848,9 @@ fi
 have_xml='no'
 XML_LIBS=''
 if test "$with_xml" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for XML])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     PERSIST_LDFLAGS=$LDFLAGS
     PERSIST_CPPFLAGS=$CPPFLAGS
     xml2_config=''
@@ -2875,12 +2871,13 @@ if test "$with_xml" != 'no'; then
     passed=0
     AC_CHECK_HEADER(libxml/parser.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
     AC_CHECK_LIB(xml2,xmlSAXVersion,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
+    # Next two require --with-push to be enabled
     AC_CHECK_LIB(xml2,xmlParseChunk,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_CHECK_LIB(xml2,xmlCreatePushParserCtxt,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_MSG_CHECKING([if XML package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
-            AC_MSG_NOTICE([no -- some components failed test])
+            AC_MSG_RESULT([no -- some components failed test])
             have_xml='no (failed tests)'
             LDFLAGS="$PERSIST_LDFLAGS"
             CPPFLAGS="$PERSIST_CPPFLAGS"
@@ -2888,11 +2885,11 @@ if test "$with_xml" != 'no'; then
             XML_LIBS='-lxml2'
             LIBS="$XML_LIBS $LIBS"
             AC_DEFINE(XML_DELEGATE,1,Define if you have XML library)
-            AC_MSG_NOTICE([yes])
+            AC_MSG_RESULT([yes])
             have_xml='yes'
         fi
     else
-        AC_MSG_NOTICE([no])
+        AC_MSG_RESULT([no])
     fi
 fi
 AM_CONDITIONAL(XML_DELEGATE,test "$have_xml" = 'yes')
@@ -3013,7 +3010,7 @@ esac
 AC_DEFINE_UNQUOTED(SHARE_PATH,"$DEFINE_SHARE_PATH",Directory where architecture-independent configuration files live.)
 AC_SUBST(SHARE_PATH)
 
-# Subdirectory to place architecture-dependent configuration files
+# Subdirectory to place architecture-independent configuration files
 SHAREARCH_RELATIVE_PATH="${LIBRARY_RELATIVE_PATH}/config"
 AC_DEFINE_UNQUOTED(SHAREARCH_RELATIVE_PATH,"$SHAREARCH_RELATIVE_PATH",Subdirectory of lib where architecture-independent configuration files live.)
 SHAREARCH_PATH="${SHAREARCH_DIR}/${SHAREARCH_RELATIVE_PATH}"
@@ -3032,9 +3029,9 @@ AC_SUBST(SHAREARCH_PATH)
 configure_transform_name=`echo ${program_transform_name} | sed 's,\\$\\$,$,'`
 
 # Default delegate definitions
-AC_MSG_NOTICE([-------------------------------------------------------------])
+AC_MSG_RESULT([-------------------------------------------------------------])
 AC_MSG_CHECKING([for ImageMagick delegate programs])
-AC_MSG_NOTICE([])
+AC_MSG_RESULT([])
 AutotraceDecodeDelegateDefault='autotrace'
 BlenderDecodeDelegateDefault='blender'
 BZIPDelegateDefault='bzip2'
@@ -3177,9 +3174,9 @@ else
 fi
 if test "${dejavu_font_dir}x" != 'x'; then
   type_include_files="${type_include_files} "'<include file="type-dejavu.xml" />'
-  AC_MSG_NOTICE([$dejavu_font_dir])
+  AC_MSG_RESULT([$dejavu_font_dir])
 else
-  AC_MSG_NOTICE([not found!]);
+  AC_MSG_RESULT([not found!]);
 fi
 AC_SUBST(dejavu_font_dir)
 
@@ -3238,9 +3235,9 @@ else
 fi
 if test "${ghostscript_font_dir}x" != 'x'; then
   type_include_files="${type_include_files} "'<include file="type-ghostscript.xml" />'
-  AC_MSG_NOTICE([$ghostscript_font_dir])
+  AC_MSG_RESULT([$ghostscript_font_dir])
 else
-  AC_MSG_NOTICE([not found!]);
+  AC_MSG_RESULT([not found!]);
 fi
 AC_SUBST(ghostscript_font_dir)
 case "${build_os}" in
@@ -3383,9 +3380,9 @@ if test -z "$PCLVersion"; then
     PCLVersion='unknown'
 fi
 if test $have_pcl = 'yes'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for PCL])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     # PCLColorDevice
     AC_MSG_CHECKING([for pcl color device])
     if $PCLDelegate -dBATCH -sDEVICE=$PCLColorDevice -sOutputFile=/dev/null < /dev/null 2> /dev/null; then
@@ -3393,7 +3390,7 @@ if test $have_pcl = 'yes'; then
     else
         PCLColorDevice=ppmraw
     fi
-    AC_MSG_NOTICE([$PCLColorDevice])
+    AC_MSG_RESULT([$PCLColorDevice])
 
     # PCLCMYKDevice
     AC_MSG_CHECKING([for pcl CMYK device])
@@ -3402,7 +3399,7 @@ if test $have_pcl = 'yes'; then
     else
         PCLCMYKDevice=$PCLColorDevice
     fi
-    AC_MSG_NOTICE([$PCLCMYKDevice])
+    AC_MSG_RESULT([$PCLCMYKDevice])
 
     # PCLMonoDevice
     AC_MSG_CHECKING([for pcl mono device])
@@ -3411,7 +3408,7 @@ if test $have_pcl = 'yes'; then
     else
         PCLMonoDevice=$PCLColorDevice
     fi
-    AC_MSG_NOTICE([$PCLMonoDevice])
+    AC_MSG_RESULT([$PCLMonoDevice])
 fi
 
 AC_SUBST(PCLMonoDevice)
@@ -3429,9 +3426,9 @@ if test -z "$XPSVersion"; then
     XPSVersion='unknown'
 fi
 if test $have_xps = 'yes'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for XPS])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     # XPSColorDevice
     AC_MSG_CHECKING([for xps color device])
     if $XPSDelegate -dBATCH -sDEVICE=$XPSColorDevice -sOutputFile=/dev/null < /dev/null 2> /dev/null; then
@@ -3439,7 +3436,7 @@ if test $have_xps = 'yes'; then
     else
         XPSColorDevice=ppmraw
     fi
-    AC_MSG_NOTICE([$XPSColorDevice])
+    AC_MSG_RESULT([$XPSColorDevice])
 
     # XPSCMYKDevice
     AC_MSG_CHECKING([for xps CMYK device])
@@ -3448,7 +3445,7 @@ if test $have_xps = 'yes'; then
     else
         XPSCMYKDevice=$XPSColorDevice
     fi
-    AC_MSG_NOTICE([$XPSCMYKDevice])
+    AC_MSG_RESULT([$XPSCMYKDevice])
 
     # XPSMonoDevice
     AC_MSG_CHECKING([for xps mono device])
@@ -3457,7 +3454,7 @@ if test $have_xps = 'yes'; then
     else
         XPSMonoDevice=$XPSColorDevice
     fi
-    AC_MSG_NOTICE([$XPSMonoDevice])
+    AC_MSG_RESULT([$XPSMonoDevice])
 fi
 
 AC_SUBST(XPSMonoDevice)
@@ -3477,16 +3474,16 @@ GSPSDevice=pswrite
 GSEPSDevice=epswrite
 GSVersion='unknown'
 if test $have_gs = 'yes'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for Ghostscript])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     AC_MSG_CHECKING([for Ghostscript version])
     if GSVersion=`$PSDelegate --version`; then
         :
     else
         GSVersion=`$PSDelegate --help | sed -e '1q' | awk '{ print $3 }'`
     fi
-    AC_MSG_NOTICE([$GSVersion])
+    AC_MSG_RESULT([$GSVersion])
 
     # GSAlphaDevice
     AC_MSG_CHECKING([for gs alpha device])
@@ -3495,7 +3492,7 @@ if test $have_gs = 'yes'; then
     else
         GSAlphaDevice=pnmraw
     fi
-    AC_MSG_NOTICE([$GSAlphaDevice])
+    AC_MSG_RESULT([$GSAlphaDevice])
 
     # GSColorDevice
     AC_MSG_CHECKING([for gs color device])
@@ -3504,7 +3501,7 @@ if test $have_gs = 'yes'; then
     else
         GSColorDevice=pnmraw
     fi
-    AC_MSG_NOTICE([$GSColorDevice])
+    AC_MSG_RESULT([$GSColorDevice])
 
     # GSCMYKDevice
     AC_MSG_CHECKING([for gs CMYK device])
@@ -3513,7 +3510,7 @@ if test $have_gs = 'yes'; then
     else
         GSCMYKDevice=bmpsep8
     fi
-    AC_MSG_NOTICE([$GSCMYKDevice])
+    AC_MSG_RESULT([$GSCMYKDevice])
 
     # GSMonoDevice
     AC_MSG_CHECKING([for gs mono device])
@@ -3522,7 +3519,7 @@ if test $have_gs = 'yes'; then
     else
         GSMonoDevice=$GSColorDevice
     fi
-    AC_MSG_NOTICE([$GSMonoDevice])
+    AC_MSG_RESULT([$GSMonoDevice])
 
     # GSPDFDevice
     AC_MSG_CHECKING([for gs PDF writing device])
@@ -3531,7 +3528,7 @@ if test $have_gs = 'yes'; then
     else
         GSPDFDevice=nodevice
     fi
-        AC_MSG_NOTICE([$GSPDFDevice])
+        AC_MSG_RESULT([$GSPDFDevice])
 
     # GSPSDevice
     AC_MSG_CHECKING([for gs PS writing device])
@@ -3540,7 +3537,7 @@ if test $have_gs = 'yes'; then
     else
         GSPSDevice=nodevice
     fi
-    AC_MSG_NOTICE([$GSPSDevice])
+    AC_MSG_RESULT([$GSPSDevice])
 
     # GSEPSDevice
     AC_MSG_CHECKING([for gs EPS writing device])
@@ -3549,7 +3546,7 @@ if test $have_gs = 'yes'; then
     else
         GSEPSDevice=nodevice
     fi
-    AC_MSG_NOTICE([$GSEPSDevice])
+    AC_MSG_RESULT([$GSEPSDevice])
 fi
 
 AC_SUBST(GSAlphaDevice)
@@ -3569,9 +3566,9 @@ AC_SUBST(GSVersion)
 # If name/path of desired PERL interpreter is specified, look for that one first
 have_perl='no'
 if test "$with_perl" != 'no'; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for Perl])
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
     if test "$with_perl" != 'yes'; then
         AC_CACHE_CHECK(for perl,ac_cv_path_PERL,ac_cv_path_PERL="$with_perl");
         PERL=$ac_cv_path_PERL
@@ -3615,7 +3612,7 @@ if test $with_perl_static = 'yes'; then
     libtool_objdir=$objdir
 
     # Linker search path to library, followed by -lMagickCore
-    MAGICKCORE_PATH="${builddir}/MagickCore/${libtool_objdir}"
+    MAGICKCORE_PATH="${builddir}/magick/${libtool_objdir}"
 fi
 AC_SUBST(MAGICKCORE_PATH)
 
@@ -3762,13 +3759,15 @@ AC_SUBST(MAGICK_FEATURES)
 
 # Set configured scripts to executable.
 AC_CONFIG_COMMANDS([default],[],[])
-AC_CONFIG_COMMANDS([MagickCore-config.in],[chmod +x MagickCore/MagickCore-config])
-AC_CONFIG_COMMANDS([MagickWand-config.in],[chmod +x MagickWand/MagickWand-config])
+AC_CONFIG_COMMANDS([MagickCore-config.in],[chmod +x magick/MagickCore-config])
+AC_CONFIG_COMMANDS([Magick-config.in],[chmod +x magick/Magick-config])
+AC_CONFIG_COMMANDS([MagickWand-config.in],[chmod +x wand/MagickWand-config])
+AC_CONFIG_COMMANDS([Wand-config.in],[chmod +x wand/Wand-config])
 AC_CONFIG_COMMANDS([Magick++-config.in],[chmod +x Magick++/bin/Magick++-config])
 AC_CONFIG_COMMANDS([PerlMagick/check.sh.in],[chmod +x PerlMagick/check.sh])
 
-AC_MSG_NOTICE([-------------------------------------------------------------])
-AC_MSG_NOTICE([Update ImageMagick configuration])
+AC_MSG_RESULT([-------------------------------------------------------------])
+AC_MSG_RESULT([Update ImageMagick configuration])
 AC_OUTPUT
 
 rm -f magick-version
@@ -3788,7 +3787,7 @@ if test "${windows_font_dir}x" != 'x'; then
     result_windows_font_dir=${windows_font_dir}
 fi
 
-AC_MSG_NOTICE([
+AC_MSG_RESULT([
 ImageMagick is configured as follows. Please verify that this configuration
 matches your expectations.
 
@@ -3830,8 +3829,8 @@ LQR               --with-lqr=$with_lqr		$have_lqr
 LZMA              --with-lzma=$with_lzma		$have_lzma
 Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
 OpenEXR           --with-openexr=$with_openexr		$have_openexr
-PANGO             --with-pango=$with_pango		$have_pango
 PERL              --with-perl=$with_perl		$have_perl
+PANGO             --with-pango=$with_pango		$have_pango
 PNG               --with-png=$with_png		$have_png
 RSVG              --with-rsvg=$with_rsvg		$have_rsvg
 TIFF              --with-tiff=$with_tiff		$have_tiff

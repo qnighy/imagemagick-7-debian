@@ -39,20 +39,20 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
   Predefined ImageMagick images.
@@ -13265,7 +13265,7 @@ static const MagickImageInfo
   Forward declarations.
 */
 static MagickBooleanType
-  WriteMAGICKImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteMAGICKImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -13469,7 +13469,7 @@ ModuleExport void UnregisterMAGICKImage(void)
 %  The format of the WriteMAGICKImage method is:
 %
 %      MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -13477,11 +13477,9 @@ ModuleExport void UnregisterMAGICKImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
 static MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   char
     buffer[MaxTextExtent];
@@ -13517,9 +13515,9 @@ static MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
       image_info->filename);
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
-  magick_image=CloneImage(image,0,0,MagickTrue,exception);
+  magick_image=CloneImage(image,0,0,MagickTrue,&image->exception);
   if (magick_image == (Image *) NULL)
-    return(MagickFalse);
+    ThrowWriterException(ResourceLimitError,image->exception.reason);
   write_info=CloneImageInfo(image_info);
   *write_info->filename='\0';
   (void) CopyMagickString(write_info->magick,"GIF",MaxTextExtent);
@@ -13529,14 +13527,12 @@ static MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
       (void) CopyMagickString(write_info->magick,"PNM",MaxTextExtent);
       length*=3;
     }
-  blob=ImageToBlob(write_info,magick_image,&length,exception);
+  blob=ImageToBlob(write_info,magick_image,&length,&image->exception);
   magick_image=DestroyImage(magick_image);
   (void) DestroyImageInfo(write_info);
   if (blob == (void *) NULL)
     return(MagickFalse);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   (void) WriteBlobString(image,"/*\n");

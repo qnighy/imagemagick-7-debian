@@ -39,32 +39,31 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/attribute.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/color.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/option.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/profile.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/statistic.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/attribute.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
+#include "magick/color.h"
+#include "magick/color-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/option.h"
+#include "magick/profile.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/statistic.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 #if defined(MAGICKCORE_JP2_DELEGATE)
 #ifndef JAS_IMAGE_CM_GRAY
 #define JAS_IMAGE_CM_GRAY JAS_IMAGE_CS_GRAY
@@ -105,7 +104,7 @@
 */
 #if defined(MAGICKCORE_JP2_DELEGATE)
 static MagickBooleanType
-  WriteJP2Image(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteJP2Image(const ImageInfo *,Image *);
 
 static volatile MagickBooleanType
   instantiate_jp2 = MagickFalse;
@@ -360,7 +359,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     i,
     x;
 
-  register Quantum
+  register PixelPacket
     *q;
 
   size_t
@@ -383,7 +382,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -409,7 +408,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   {
     case JAS_CLRSPC_FAM_RGB:
     {
-      SetImageColorspace(image,RGBColorspace,exception);
+      SetImageColorspace(image,RGBColorspace);
       components[0]=jas_image_getcmptbytype(jp2_image,JAS_IMAGE_CT_RGB_R);
       components[1]=jas_image_getcmptbytype(jp2_image,JAS_IMAGE_CT_RGB_G);
       components[2]=jas_image_getcmptbytype(jp2_image,JAS_IMAGE_CT_RGB_B);
@@ -430,7 +429,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     }
     case JAS_CLRSPC_FAM_GRAY:
     {
-      SetImageColorspace(image,GRAYColorspace,exception);
+      SetImageColorspace(image,GRAYColorspace);
       components[0]=jas_image_getcmptbytype(jp2_image,JAS_IMAGE_CT_GRAY_Y);
       if (components[0] < 0)
         {
@@ -443,7 +442,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     }
     case JAS_CLRSPC_FAM_YCBCR:
     {
-      SetImageColorspace(image,YCbCrColorspace,exception);
+      SetImageColorspace(image,YCbCrColorspace);
       components[0]=jas_image_getcmptbytype(jp2_image,JAS_IMAGE_CT_YCBCR_Y);
       components[1]=jas_image_getcmptbytype(jp2_image,JAS_IMAGE_CT_YCBCR_CB);
       components[2]=jas_image_getcmptbytype(jp2_image,JAS_IMAGE_CT_YCBCR_CR);
@@ -464,7 +463,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     }
     case JAS_CLRSPC_FAM_XYZ:
     {
-      SetImageColorspace(image,XYZColorspace,exception);
+      SetImageColorspace(image,XYZColorspace);
       components[0]=jas_image_getcmptbytype(jp2_image,0);
       components[1]=jas_image_getcmptbytype(jp2_image,1);
       components[2]=jas_image_getcmptbytype(jp2_image,2);
@@ -485,7 +484,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     }
     case JAS_CLRSPC_FAM_LAB:
     {
-      SetImageColorspace(image,LabColorspace,exception);
+      SetImageColorspace(image,YCbCrColorspace);
       components[0]=jas_image_getcmptbytype(jp2_image,0);
       components[1]=jas_image_getcmptbytype(jp2_image,1);
       components[2]=jas_image_getcmptbytype(jp2_image,2);
@@ -565,7 +564,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     q=GetAuthenticPixels(image,0,y,image->columns,1,exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       break;
     for (i=0; i < (ssize_t) number_components; i++)
       (void) jas_image_readcmpt(jp2_image,(short) components[i],0,
@@ -581,8 +580,11 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
         for (x=0; x < (ssize_t) image->columns; x++)
         {
           pixel=(QuantumAny) jas_matrix_getv(pixels[0],x/x_step[0]);
-          SetPixelGray(image,ScaleAnyToQuantum((QuantumAny) pixel,range[0]),q);
-          q+=GetPixelChannels(image);
+          SetPixelRed(q,ScaleAnyToQuantum((QuantumAny) pixel,
+            range[0]));
+          SetPixelGreen(q,GetPixelRed(q));
+          SetPixelBlue(q,GetPixelRed(q));
+          q++;
         }
         break;
       }
@@ -594,12 +596,12 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
         for (x=0; x < (ssize_t) image->columns; x++)
         {
           pixel=(QuantumAny) jas_matrix_getv(pixels[0],x/x_step[0]);
-          SetPixelRed(image,ScaleAnyToQuantum((QuantumAny) pixel,range[0]),q);
+          SetPixelRed(q,ScaleAnyToQuantum((QuantumAny) pixel,range[0]));
           pixel=(QuantumAny) jas_matrix_getv(pixels[1],x/x_step[1]);
-          SetPixelGreen(image,ScaleAnyToQuantum((QuantumAny) pixel,range[1]),q);
+          SetPixelGreen(q,ScaleAnyToQuantum((QuantumAny) pixel,range[1]));
           pixel=(QuantumAny) jas_matrix_getv(pixels[2],x/x_step[2]);
-          SetPixelBlue(image,ScaleAnyToQuantum((QuantumAny) pixel,range[2]),q);
-          q+=GetPixelChannels(image);
+          SetPixelBlue(q,ScaleAnyToQuantum((QuantumAny) pixel,range[2]));
+          q++;
         }
         break;
       }
@@ -611,14 +613,15 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
         for (x=0; x < (ssize_t) image->columns; x++)
         {
           pixel=(QuantumAny) jas_matrix_getv(pixels[0],x/x_step[0]);
-          SetPixelRed(image,ScaleAnyToQuantum((QuantumAny) pixel,range[0]),q);
+          SetPixelRed(q,ScaleAnyToQuantum((QuantumAny) pixel,
+            range[0]));
           pixel=(QuantumAny) jas_matrix_getv(pixels[1],x/x_step[1]);
-          SetPixelGreen(image,ScaleAnyToQuantum((QuantumAny) pixel,range[1]),q);
+          SetPixelGreen(q,ScaleAnyToQuantum((QuantumAny) pixel,range[1]));
           pixel=(QuantumAny) jas_matrix_getv(pixels[2],x/x_step[2]);
-          SetPixelBlue(image,ScaleAnyToQuantum((QuantumAny) pixel,range[2]),q);
+          SetPixelBlue(q,ScaleAnyToQuantum((QuantumAny) pixel,range[2]));
           pixel=(QuantumAny) jas_matrix_getv(pixels[3],x/x_step[3]);
-          SetPixelAlpha(image,ScaleAnyToQuantum((QuantumAny) pixel,range[3]),q);
-          q+=GetPixelChannels(image);
+          SetPixelAlpha(q,ScaleAnyToQuantum((QuantumAny) pixel,range[3]));
+          q++;
         }
         break;
       }
@@ -663,7 +666,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
             ThrowReaderException(CorruptImageError,"MemoryAllocationFailed");
           icc_profile=(StringInfo *) GetImageProfile(image,"icc");
           if (icc_profile == (StringInfo *) NULL)
-            (void) SetImageProfile(image,"icc",profile,exception);
+            (void) SetImageProfile(image,"icc",profile);
           else
             (void) ConcatenateStringInfo(icc_profile,profile);
           profile=DestroyStringInfo(profile);
@@ -839,8 +842,7 @@ ModuleExport void UnregisterJP2Image(void)
 %
 %  The format of the WriteJP2Image method is:
 %
-%      MagickBooleanType WriteJP2Image(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%      MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -848,11 +850,8 @@ ModuleExport void UnregisterJP2Image(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
-static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image,
-  ExceptionInfo *exception)
+static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
 {
   char
     *key,
@@ -880,7 +879,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image,
   QuantumAny
     range;
 
-  register const Quantum
+  register const PixelPacket
     *p;
 
   register ssize_t
@@ -903,16 +902,14 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   /*
     Initialize JPEG 2000 API.
   */
   if (IssRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace,exception);
+    (void) TransformImageColorspace(image,sRGBColorspace);
   jp2_stream=JP2StreamManager(image);
   if (jp2_stream == (jas_stream_t *) NULL)
     ThrowWriterException(DelegateError,"UnableToManageJP2Stream");
@@ -1049,27 +1046,27 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image,
   range=GetQuantumRange((size_t) component_info[0].prec);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
+    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+    if (p == (const PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       if (number_components == 1)
         jas_matrix_setv(pixels[0],x,(jas_seqent_t) ScaleQuantumToAny(
-          GetPixelIntensity(image,p),range));
+          PixelIntensityToQuantum(p),range));
       else
         {
-          jas_matrix_setv(pixels[0],x,(jas_seqent_t) ScaleQuantumToAny(
-            GetPixelRed(image,p),range));
-          jas_matrix_setv(pixels[1],x,(jas_seqent_t) ScaleQuantumToAny(
-            GetPixelGreen(image,p),range));
-          jas_matrix_setv(pixels[2],x,(jas_seqent_t) ScaleQuantumToAny(
-            GetPixelBlue(image,p),range));
+          jas_matrix_setv(pixels[0],x,(jas_seqent_t)
+            ScaleQuantumToAny(GetPixelRed(p),range));
+          jas_matrix_setv(pixels[1],x,(jas_seqent_t)
+            ScaleQuantumToAny(GetPixelGreen(p),range));
+          jas_matrix_setv(pixels[2],x,(jas_seqent_t)
+            ScaleQuantumToAny(GetPixelBlue(p),range));
           if (number_components > 3)
-            jas_matrix_setv(pixels[3],x,(jas_seqent_t) ScaleQuantumToAny(
-              GetPixelAlpha(image,p),range));
+            jas_matrix_setv(pixels[3],x,(jas_seqent_t)
+              ScaleQuantumToAny((Quantum) (GetPixelAlpha(p)),range));
         }
-      p+=GetPixelChannels(image);
+      p++;
     }
     for (i=0; i < (ssize_t) number_components; i++)
       (void) jas_image_writecmpt(jp2_image,(short) i,0,(unsigned int) y,

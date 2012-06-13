@@ -26,7 +26,7 @@ configshare_DATA = \
 # (share/arch/ImageMagick-version)
 configsharearchdir = $(SHAREARCH_PATH)
 configsharearch_DATA = \
-	config/configure.xml
+  config/configure.xml 
 
 # Where architecture-dependent configuration files get installed
 # (share/ImageMagick-version)

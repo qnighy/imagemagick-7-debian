@@ -39,35 +39,35 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/pixel.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/statistic.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
+#include "magick/constitute.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/pixel.h"
+#include "magick/pixel-private.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/statistic.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteGRAYImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteGRAYImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -135,7 +135,7 @@ static Image *ReadGRAYImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   if ((image->columns == 0) || (image->rows == 0))
     ThrowReaderException(OptionError,"MustSpecifyImageSize");
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
@@ -150,11 +150,10 @@ static Image *ReadGRAYImage(const ImageInfo *image_info,
   /*
     Create virtual canvas to support cropping (i.e. image.gray[100x100+10+20]).
   */
-  SetImageColorspace(image,GRAYColorspace,exception);
+  SetImageColorspace(image,GRAYColorspace);
   canvas_image=CloneImage(image,image->extract_info.width,1,MagickFalse,
     exception);
-  (void) SetImageVirtualPixelMethod(canvas_image,BlackVirtualPixelMethod,
-    exception);
+  (void) SetImageVirtualPixelMethod(canvas_image,BlackVirtualPixelMethod);
   quantum_type=GrayQuantum;
   quantum_info=AcquireQuantumInfo(image_info,canvas_image);
   if (quantum_info == (QuantumInfo *) NULL)
@@ -193,13 +192,13 @@ static Image *ReadGRAYImage(const ImageInfo *image_info,
       }
     for (y=0; y < (ssize_t) image->extract_info.height; y++)
     {
-      register const Quantum
+      register const PixelPacket
         *restrict p;
 
       register ssize_t
         x;
 
-      register Quantum
+      register PixelPacket
         *restrict q;
 
       if (count != (ssize_t) length)
@@ -209,7 +208,7 @@ static Image *ReadGRAYImage(const ImageInfo *image_info,
           break;
         }
       q=GetAuthenticPixels(canvas_image,0,0,canvas_image->columns,1,exception);
-      if (q == (Quantum *) NULL)
+      if (q == (PixelPacket *) NULL)
         break;
       length=ImportQuantumPixels(canvas_image,(CacheView *) NULL,quantum_info,
         quantum_type,pixels,exception);
@@ -222,14 +221,15 @@ static Image *ReadGRAYImage(const ImageInfo *image_info,
             image->columns,1,exception);
           q=QueueAuthenticPixels(image,0,y-image->extract_info.y,image->columns,
             1,exception);
-          if ((p == (const Quantum *) NULL) ||
-              (q == (Quantum *) NULL))
+          if ((p == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))
             break;
           for (x=0; x < (ssize_t) image->columns; x++)
           {
-            SetPixelGray(image,GetPixelGray(canvas_image,p),q);
-            p+=GetPixelChannels(canvas_image);
-            q+=GetPixelChannels(image);
+            SetPixelRed(q,GetPixelRed(p));
+            SetPixelGreen(q,GetPixelGreen(p));
+            SetPixelBlue(q,GetPixelBlue(p));
+            p++;
+            q++;
           }
           if (SyncAuthenticPixels(image,exception) == MagickFalse)
             break;
@@ -255,7 +255,7 @@ static Image *ReadGRAYImage(const ImageInfo *image_info,
         /*
           Allocate next image structure.
         */
-        AcquireNextImage(image_info,image,exception);
+        AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
             image=DestroyImageList(image);
@@ -270,6 +270,7 @@ static Image *ReadGRAYImage(const ImageInfo *image_info,
     scene++;
   } while (count == (ssize_t) length);
   quantum_info=DestroyQuantumInfo(quantum_info);
+  InheritException(&image->exception,&canvas_image->exception);
   canvas_image=DestroyImage(canvas_image);
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
@@ -355,7 +356,7 @@ ModuleExport void UnregisterGRAYImage(void)
 %  The format of the WriteGRAYImage method is:
 %
 %      MagickBooleanType WriteGRAYImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -363,11 +364,9 @@ ModuleExport void UnregisterGRAYImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
 static MagickBooleanType WriteGRAYImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   MagickBooleanType
     status;
@@ -400,9 +399,7 @@ static MagickBooleanType WriteGRAYImage(const ImageInfo *image_info,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   scene=0;
@@ -412,7 +409,7 @@ static MagickBooleanType WriteGRAYImage(const ImageInfo *image_info,
       Write grayscale pixels.
     */
     if (IssRGBColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,sRGBColorspace,exception);
+      (void) TransformImageColorspace(image,sRGBColorspace);
     quantum_type=GrayQuantum;
     quantum_info=AcquireQuantumInfo(image_info,image);
     if (quantum_info == (QuantumInfo *) NULL)
@@ -420,14 +417,14 @@ static MagickBooleanType WriteGRAYImage(const ImageInfo *image_info,
     pixels=GetQuantumPixels(quantum_info);
     for (y=0; y < (ssize_t) image->rows; y++)
     {
-      register const Quantum
+      register const PixelPacket
         *restrict p;
 
-      p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-      if (p == (const Quantum *) NULL)
+      p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+      if (p == (const PixelPacket *) NULL)
         break;
-      length=ExportQuantumPixels(image,(CacheView *) NULL,quantum_info,
-        quantum_type,pixels,exception);
+      length=ExportQuantumPixels(image,(const CacheView *) NULL,quantum_info,
+        quantum_type,pixels,&image->exception);
       count=WriteBlob(image,length,pixels);
       if (count != (ssize_t) length)
         break;

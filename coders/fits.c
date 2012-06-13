@@ -39,33 +39,33 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/attribute.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/property.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/statistic.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/string-private.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/attribute.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/color-private.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
+#include "magick/constitute.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/module.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/pixel-private.h"
+#include "magick/pixel-private.h"
+#include "magick/property.h"
+#include "magick/static.h"
+#include "magick/statistic.h"
+#include "magick/string_.h"
+#include "magick/string-private.h"
+#include "magick/module.h"
 
 /*
   Forward declarations.
@@ -76,7 +76,7 @@
   Forward declarations.
 */
 static MagickBooleanType
-  WriteFITSImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteFITSImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -270,7 +270,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     i,
     x;
 
-  register Quantum
+  register PixelPacket
     *q;
 
   ssize_t
@@ -288,7 +288,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -381,7 +381,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
             fits_info.endian=LSBEndian;
         }
       (void) FormatLocaleString(property,MaxTextExtent,"fits:%s",keyword);
-      (void) SetImageProperty(image,property,p,exception);
+      (void) SetImageProperty(image,property,p);
     }
     c=0;
     while (((TellBlob(image) % FITSBlocksize) != 0) && (c != EOF))
@@ -398,7 +398,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
   */
   if (comment != (char *) NULL)
     {
-      (void) SetImageProperty(image,"comment",comment,exception);
+      (void) SetImageProperty(image,"comment",comment);
       comment=DestroyString(comment);
     }
   if (EOFBlob(image) != MagickFalse)
@@ -422,7 +422,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     /*
       Initialize image structure.
     */
-    SetImageColorspace(image,GRAYColorspace,exception);
+    SetImageColorspace(image,GRAYColorspace);
     if ((fits_info.min_data != 0.0) || (fits_info.max_data != 0.0))
       {
         if ((fits_info.bits_per_pixel != 0) && (fits_info.max_data == 0.0))
@@ -440,21 +440,23 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     for (y=(ssize_t) image->rows-1; y >= 0; y--)
     {
       q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-      if (q == (Quantum *) NULL)
+      if (q == (PixelPacket *) NULL)
         break;
       for (x=0; x < (ssize_t) image->columns; x++)
       {
         pixel=GetFITSPixel(image,fits_info.bits_per_pixel);
-        SetPixelGray(image,ClampToQuantum(scale*(fits_info.scale*
-          (pixel-fits_info.min_data)+fits_info.zero)),q);
-        q+=GetPixelChannels(image);
+        SetPixelRed(q,ClampToQuantum(scale*(fits_info.scale*(pixel-
+          fits_info.min_data)+fits_info.zero)));
+        SetPixelGreen(q,GetPixelRed(q));
+        SetPixelBlue(q,GetPixelRed(q));
+        q++;
       }
       if (SyncAuthenticPixels(image,exception) == MagickFalse)
         break;
       if (image->previous == (Image *) NULL)
         {
           status=SetImageProgress(image,LoadImageTag,(MagickOffsetType) y,
-            image->rows);
+                image->rows);
           if (status == MagickFalse)
             break;
         }
@@ -476,7 +478,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
         /*
           Allocate next image structure.
         */
-        AcquireNextImage(image_info,image,exception);
+        AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
             image=DestroyImageList(image);
@@ -584,7 +586,7 @@ ModuleExport void UnregisterFITSImage(void)
 %  The format of the WriteFITSImage method is:
 %
 %      MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -592,11 +594,9 @@ ModuleExport void UnregisterFITSImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
 static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   char
     header[FITSBlocksize],
@@ -608,7 +608,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   QuantumInfo
     *quantum_info;
 
-  register const Quantum
+  register const PixelPacket
     *p;
 
   size_t
@@ -631,13 +631,11 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   if (IssRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace,exception);
+    (void) TransformImageColorspace(image,sRGBColorspace);
   /*
     Allocate image memory.
   */
@@ -663,7 +661,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   (void) strncpy(fits_info+offset,header,strlen(header));
   offset+=80;
   (void) FormatLocaleString(header,FITSBlocksize,"NAXIS   =           %10lu",
-    IsImageGray(image,exception) != MagickFalse ? 2UL : 3UL);
+    IsGrayImage(image,&image->exception) != MagickFalse ? 2UL : 3UL);
   (void) strncpy(fits_info+offset,header,strlen(header));
   offset+=80;
   (void) FormatLocaleString(header,FITSBlocksize,"NAXIS1  =           %10lu",
@@ -674,7 +672,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
     (unsigned long) image->rows);
   (void) strncpy(fits_info+offset,header,strlen(header));
   offset+=80;
-  if (IsImageGray(image,exception) == MagickFalse)
+  if (IsGrayImage(image,&image->exception) == MagickFalse)
     {
       (void) FormatLocaleString(header,FITSBlocksize,
         "NAXIS3  =           %10lu",3UL);
@@ -713,16 +711,16 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
     Convert image to fits scale PseudoColor class.
   */
   pixels=GetQuantumPixels(quantum_info);
-  if (IsImageGray(image,exception) != MagickFalse)
+  if (IsGrayImage(image,&image->exception) != MagickFalse)
     {
       length=GetQuantumExtent(image,quantum_info,GrayQuantum);
       for (y=(ssize_t) image->rows-1; y >= 0; y--)
       {
-        p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-        if (p == (const Quantum *) NULL)
+        p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+        if (p == (const PixelPacket *) NULL)
           break;
-        length=ExportQuantumPixels(image,(CacheView *) NULL,quantum_info,
-          GrayQuantum,pixels,exception);
+        length=ExportQuantumPixels(image,(const CacheView *) NULL,quantum_info,
+          GrayQuantum,pixels,&image->exception);
         if (image->depth == 16)
           SetFITSUnsignedPixels(image->columns,image->depth,pixels);
         if (((image->depth == 32) || (image->depth == 64)) &&
@@ -742,11 +740,11 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
       length=GetQuantumExtent(image,quantum_info,RedQuantum);
       for (y=(ssize_t) image->rows-1; y >= 0; y--)
       {
-        p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-        if (p == (const Quantum *) NULL)
+        p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+        if (p == (const PixelPacket *) NULL)
           break;
-        length=ExportQuantumPixels(image,(CacheView *) NULL,quantum_info,
-          RedQuantum,pixels,exception);
+        length=ExportQuantumPixels(image,(const CacheView *) NULL,quantum_info,
+          RedQuantum,pixels,&image->exception);
         if (image->depth == 16)
           SetFITSUnsignedPixels(image->columns,image->depth,pixels);
         if (((image->depth == 32) || (image->depth == 64)) &&
@@ -763,11 +761,11 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
       length=GetQuantumExtent(image,quantum_info,GreenQuantum);
       for (y=(ssize_t) image->rows-1; y >= 0; y--)
       {
-        p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-        if (p == (const Quantum *) NULL)
+        p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+        if (p == (const PixelPacket *) NULL)
           break;
-        length=ExportQuantumPixels(image,(CacheView *) NULL,quantum_info,
-          GreenQuantum,pixels,exception);
+        length=ExportQuantumPixels(image,(const CacheView *) NULL,quantum_info,
+          GreenQuantum,pixels,&image->exception);
         if (image->depth == 16)
           SetFITSUnsignedPixels(image->columns,image->depth,pixels);
         if (((image->depth == 32) || (image->depth == 64)) &&
@@ -784,11 +782,11 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
       length=GetQuantumExtent(image,quantum_info,BlueQuantum);
       for (y=(ssize_t) image->rows-1; y >= 0; y--)
       {
-        p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-        if (p == (const Quantum *) NULL)
+        p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+        if (p == (const PixelPacket *) NULL)
           break;
-        length=ExportQuantumPixels(image,(CacheView *) NULL,quantum_info,
-          BlueQuantum,pixels,exception);
+        length=ExportQuantumPixels(image,(const CacheView *) NULL,quantum_info,
+          BlueQuantum,pixels,&image->exception);
         if (image->depth == 16)
           SetFITSUnsignedPixels(image->columns,image->depth,pixels);
         if (((image->depth == 32) || (image->depth == 64)) &&

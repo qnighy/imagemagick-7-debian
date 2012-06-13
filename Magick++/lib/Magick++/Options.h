@@ -230,6 +230,9 @@ namespace Magick
     void            textEncoding ( const std::string &encoding_ );
     std::string     textEncoding ( void ) const;
     
+    void            tileName ( const std::string &tileName_ );
+    std::string     tileName ( void ) const;
+
     // Image representation type
     void            type ( const ImageType type_ );
     ImageType       type ( void ) const;
@@ -258,6 +261,10 @@ namespace Magick
     
     void            view ( const std::string &view_ );
     std::string     view ( void ) const;
+
+    // Virtual pixel method.
+    void            virtualPixelMethod ( VirtualPixelMethod virtual_pixel_method_ );
+    VirtualPixelMethod virtualPixelMethod ( void ) const;
 
     // X11 display name
     void            x11Display ( const std::string &display_ );

@@ -39,46 +39,44 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/attribute.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/color.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/delegate.h"
-#include "MagickCore/draw.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/geometry.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/option.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/profile.h"
-#include "MagickCore/property.h"
-#include "MagickCore/resource_.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/token.h"
-#include "MagickCore/transform.h"
-#include "MagickCore/utility.h"
+#include "magick/studio.h"
+#include "magick/property.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/color.h"
+#include "magick/color-private.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
+#include "magick/constitute.h"
+#include "magick/delegate.h"
+#include "magick/draw.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/geometry.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/option.h"
+#include "magick/profile.h"
+#include "magick/resource_.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
+#include "magick/token.h"
+#include "magick/transform.h"
+#include "magick/utility.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WritePCLImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WritePCLImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -157,9 +155,6 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
     options[MaxTextExtent],
     input_filename[MaxTextExtent];
 
-  const char
-    *option;
-
   const DelegateInfo
     *delegate_info;
 
@@ -207,7 +202,7 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Open image file.
   */
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -227,7 +222,7 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   delta.x=DefaultResolution;
   delta.y=DefaultResolution;
-  if ((image->resolution.x == 0.0) || (image->resolution.y == 0.0))
+  if ((image->x_resolution == 0.0) || (image->y_resolution == 0.0))
     {
       GeometryInfo
         geometry_info;
@@ -236,10 +231,10 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
         flags;
 
       flags=ParseGeometry(PSDensityGeometry,&geometry_info);
-      image->resolution.x=geometry_info.rho;
-      image->resolution.y=geometry_info.sigma;
+      image->x_resolution=geometry_info.rho;
+      image->y_resolution=geometry_info.sigma;
       if ((flags & SigmaValue) == 0)
-        image->resolution.y=image->resolution.x;
+        image->y_resolution=image->x_resolution;
     }
   /*
     Determine page geometry from the PCL media box.
@@ -328,9 +323,9 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (image_info->page != (char *) NULL)
     (void) ParseAbsoluteGeometry(image_info->page,&page);
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",
-    image->resolution.x,image->resolution.y);
-  page.width=(size_t) floor(page.width*image->resolution.x/delta.x+0.5);
-  page.height=(size_t) floor(page.height*image->resolution.y/delta.y+
+    image->x_resolution,image->y_resolution);
+  page.width=(size_t) floor(page.width*image->x_resolution/delta.x+0.5);
+  page.height=(size_t) floor(page.height*image->y_resolution/delta.y+
     0.5);
   (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
      page.width,(double) page.height);
@@ -350,10 +345,9 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (read_info->scenes != (char *) NULL)
         *read_info->scenes='\0';
     }
-  option=GetImageOption(read_info,"authenticate");
-  if (option != (const char *) NULL)
+  if (read_info->authenticate != (char *) NULL)
     (void) FormatLocaleString(options+strlen(options),MaxTextExtent,
-      " -sPCLPassword=%s",option);
+      " -sPCLPassword=%s",read_info->authenticate);
   (void) CopyMagickString(filename,read_info->filename,MaxTextExtent);
   (void) AcquireUniqueFilename(read_info->filename);
   (void) FormatLocaleString(command,MaxTextExtent,
@@ -374,7 +368,7 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
       Image
         *cmyk_image;
 
-      cmyk_image=ConsolidateCMYKImages(image,exception);
+      cmyk_image=ConsolidateCMYKImages(image,&image->exception);
       if (cmyk_image != (Image *) NULL)
         {
           image=DestroyImageList(image);
@@ -473,16 +467,13 @@ ModuleExport void UnregisterPCLImage(void)
 %
 %  The format of the WritePCLImage method is:
 %
-%      MagickBooleanType WritePCLImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%      MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image)
 %
 %  A description of each parameter follows.
 %
 %    o image_info: the image info.
 %
 %    o image:  The image.
-%
-%    o exception: return any errors or warnings in this structure.
 %
 */
 
@@ -658,8 +649,7 @@ static size_t PCLPackbitsCompressImage(const size_t length,
   return((size_t) (q-compress_pixels));
 }
 
-static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
-  ExceptionInfo *exception)
+static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image)
 {
   char
     buffer[MaxTextExtent];
@@ -673,15 +663,10 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
   MagickOffsetType
     scene;
 
-  register const Quantum *p;
+  register const IndexPacket
+    *indexes;
 
-  register ssize_t i, x;
-
-  register unsigned char *q;
-
-  size_t
-    density,
-    length,
+  register const PixelPacket *p; register ssize_t i, x; register unsigned char *q; size_t density, length,
     one,
     packets;
 
@@ -703,9 +688,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   density=75;
@@ -722,7 +705,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
   do
   {
     if (IssRGBColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,sRGBColorspace,exception);
+      (void) TransformImageColorspace(image,sRGBColorspace);
     /*
       Initialize the printer.
     */
@@ -735,7 +718,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
       density);
     (void) WriteBlobString(image,buffer);
     (void) WriteBlobString(image,"\033&l0E");  /* top margin 0 */
-    if (IsImageMonochrome(image,exception) != MagickFalse)
+    if (IsMonochromeImage(image,&image->exception) != MagickFalse)
       {
         /*
           Monochrome image: use default printer monochrome setup.
@@ -787,7 +770,8 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
           }
         }
     option=GetImageOption(image_info,"pcl:fit-to-page");
-    if (IfMagickTrue(IsStringTrue(option)))
+    if ((option != (const char *) NULL) &&
+        (IsMagickTrue(option) != MagickFalse))
       (void) WriteBlobString(image,"\033*r3A");
     else
       (void) WriteBlobString(image,"\033*r1A");  /* start raster graphics */
@@ -851,9 +835,10 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
     }
     for (y=0; y < (ssize_t) image->rows; y++)
     {
-      p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-      if (p == (const Quantum *) NULL)
+      p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+      if (p == (const PixelPacket *) NULL)
         break;
+      indexes=GetAuthenticIndexQueue(image);
       q=pixels;
       switch (bits_per_pixel)
       {
@@ -871,7 +856,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
           for (x=0; x < (ssize_t) image->columns; x++)
           {
             byte<<=1;
-            if (GetPixelIntensity(image,p) < ((MagickRealType) QuantumRange/2.0))
+            if (PixelIntensity(p) < ((MagickRealType) QuantumRange/2.0))
               byte|=0x01;
             bit++;
             if (bit == 8)
@@ -880,7 +865,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
                 bit=0;
                 byte=0;
               }
-            p+=GetPixelChannels(image);
+            p++;
           }
           if (bit != 0)
             *q++=byte << (8-bit);
@@ -892,10 +877,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
             Colormapped image.
           */
           for (x=0; x < (ssize_t) image->columns; x++)
-          {
-            *q++=(unsigned char) GetPixelIndex(image,p);
-            p+=GetPixelChannels(image);
-          }
+            *q++=(unsigned char) GetPixelIndex(indexes+x);
           break;
         }
         case 24:
@@ -906,10 +888,10 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image,
           */
           for (x=0; x < (ssize_t) image->columns; x++)
           {
-            *q++=ScaleQuantumToChar(GetPixelRed(image,p));
-            *q++=ScaleQuantumToChar(GetPixelGreen(image,p));
-            *q++=ScaleQuantumToChar(GetPixelBlue(image,p));
-            p+=GetPixelChannels(image);
+            *q++=ScaleQuantumToChar(GetPixelRed(p));
+            *q++=ScaleQuantumToChar(GetPixelGreen(p));
+            *q++=ScaleQuantumToChar(GetPixelBlue(p));
+            p++;
           }
           break;
         }
