@@ -92,6 +92,12 @@ Copyright: 2007-2012, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate libopenexr under BSD-3
 
+Files: coders/fd.c
+Copyright: 2000, Bill Radcliffe
+           2000, John Cristy
+           2000-2012, ImageMagick Studio LLC 
+License: ImageMagick
+
 Files: coders/fpx.c
 Copyright: 1999-2012, ImageMagick Studio LLC 
 License: ImageMagick
@@ -118,7 +124,7 @@ Files: coders/jpeg.c
 Copyright: 1999-2012, ImageMagick Studio LLC
            1999, Glenn Randers-Pehrson
            1991-2010, Thomas G. Lane, Guido Vollbeding
-License: ImagemagickPartlibjpeg
+License: ImageMagickPartlibjpeg
 Comment: use libopenjpeg8 under BDS-3 like
 
 Files: coders/mat.c
@@ -128,6 +134,13 @@ License: ImageMagick
 
 Files: coders/meta.c
 Copyright: 2001, William Radcliffe
+           2001-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: coders/msl.c
+Copyright: 2001, William Radcliffe
+           2001, John Cristy
+           2001, Leonard Rosenthol
            2001-2012, ImageMagick Studio LLC
 License: ImageMagick
 
@@ -149,6 +162,12 @@ Copyright: 1997, Glenn Randers-Pehrson
            1999-2012, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use libpng under BSD-3
+
+Files: coders/ps3.c
+Copyright: 1992, Lars Ruben Skyum  
+           1992, John Cristy
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
 
 Files: coders/scr.c
 Copyright: 2003, Catalin Mihaila 
@@ -176,8 +195,15 @@ Copyright: 2000, Bill Radcliffe
 License: ImageMagick
 Comment: use libxml delegate under BSD-3
 
+Files: coders/wbmp.c
+Copyright: 2000, John Cristy
+           2000, Milan Votava
+           2000-2012, ImageMagick Studio LLC
+License: ImageMagick
+
 Files: coders/wmf.c
 Copyright: 2000, John Cristy
+           2000, Francis J. Franklin 
            2000-2012, ImageMagick Studio LLC 
 License: ImageMagick
 Comment: use libwmf delegate under LGPL-2+
@@ -205,8 +231,6 @@ License: ImageMagick
 Files: debian/display.im6.svg
 Copyright: 1999-2012, ImageMagick Studio LLC
 License: ImageMagick
-
-
 
 Files: magick/nt_base.c
 Copyright: 2000-2002, Ghostgum Software Pty Ltd.  All rights reserved.
@@ -286,6 +310,14 @@ Copyright: 1997, Anthony Thyssen
            1999-2012, ImageMagick Studio LLC
 License: ImageMagick
 
+Files: magick/draw.c
+Copyright: 1998, Bill Radcliffe 
+           1998, Leonard Rosenthal
+           1998, David Harr
+           1998, John Cristy
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+
 Files: magick/fourier.c
 Copyright: 2009, Sean Burke
            2009, Fred Weinhaus
@@ -324,6 +356,15 @@ Files: magick/resample.c
 Copyright: 2007, Anthony Thyssen
            2007, John Cristy
            2007-2012, ImageMagick Studio LLC
+           2010, Chantal Racette 
+           2010, Nicolas Robidoux
+License: ImageMagick
+
+Files: magick/resize.c
+Copyright: 1992, John Cristy
+           1999-2012, ImageMagick Studio LLC
+           2010, Chantal Racette 
+           2010, Nicolas Robidoux
 License: ImageMagick
 
 Files: magick/semaphore.c
@@ -331,6 +372,14 @@ Copyright: 2000, William Radcliffe
            2000, John Cristy
            2000-2012, ImageMagick Studio LLC
 License: ImageMagick
+
+Files: magick/timer.c
+Copyright: 1993, Bill Radcliffe 
+           1993, Bob Friesenhahn
+           1993, John Cristy
+           1999-2012, ImageMagick Studio LLC
+License: ImageMagick
+
 
 Files: magick/xml-tree.c
 Copyright: 2004-2006, Aaron Voisine <aaron@voisine.org>
@@ -344,7 +393,7 @@ License: ImageMagick
 
 Files: script/txt2html
 Copyright: 1994-2000 Seth Golub
-License: Perl like licence
+License: Perllikelicence
  Original txt2html script copyright (c) 1994-2000 Seth Golub seth AT aigeek.com
  .
  Copyright (c) 2002-2005 Kathryn Andersen
@@ -355,6 +404,13 @@ Comment: retrieved from homepage of script http://txt2html.sourceforge.net/txt2h
 Files: wand/draw*
 Copyright: 2002, Bob Friesenhahn
            2002-2012, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: www/*
+Copyright: 1999-2012, Rick Mabry
+           1999-2012, John Cristy
+           1999-2012, Anthony Thyssen
+           1999-2012, ImageMagick Studio LLC
 License: ImageMagick
 
 License: ImageMagickPartlibjpeg
@@ -943,29 +999,4 @@ License: ImageMagick
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
    implied.  See the License for the specific language governing
    permissions and limitations under the License.
-
-
----
-In November 2002, the GraphicsMagick Group created GraphicsMagick from ImageMagick Studio's ImageMagick source.  ImageMagick adopted some of their improvements to existing programs and scripts, including:
-
-     Unix configure
-     Installation instructions
-     Test programs
-     PerlMagick test scripts
-     JP2 image coder
-     Windows configure scripts
-     Some web page improvements
-
-The source code is distributed under the following license:
-
-Copyright (C) 2002 GraphicsMagick Group, an organization dedicated to making software imaging solutions freely available.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files ("GraphicsMagick"), to deal in GraphicsMagick without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of GraphicsMagick, and to permit persons to whom GraphicsMagick is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of GraphicsMagick.
-
-The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.  In no event shall GraphicsMagick Group be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with GraphicsMagick or the use or other dealings in GraphicsMagick.
-
-Except as contained in this notice, the name of the GraphicsMagick Group shall not be used in advertising or otherwise to promote the sale, use or other dealings in GraphicsMagick without prior written authorization from the GraphicsMagick Group.
-
 
