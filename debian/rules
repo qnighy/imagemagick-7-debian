@@ -72,16 +72,15 @@ build-stamp: $(QUILT_STAMPFN)
 	# build icons cache
 	while read SIZE; do \
 		mkdir -p $(CURDIR)/debian/icons/$$SIZE/apps/ ;\
-		$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize $$SIZE \
-			$(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
+                echo $$SIZE | sed "s/^\([[:digit:]]*\)x\([[:digit:]]*\)$$/-w \1 -h \2/g" \
+			| xargs rsvg-convert $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg > $(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
 	done < $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
 	# make xpm
-	$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize 32x32 \
-		$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
+	rsvg-convert $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -w 32 -h 32 | \
+		$(CONVERT) - $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
 	mkdir -p $(CURDIR)/debian/icons/scalable/apps/
 	gzip -c -n -9 $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
 		> $(CURDIR)/debian/icons/scalable/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svgz
-
 	touch build-stamp
 
 # This package does not currently split building of architecture dependent and independent packages
