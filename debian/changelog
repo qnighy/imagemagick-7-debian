@@ -29,10 +29,11 @@ imagemagick (8:6.7.7.9-1) unstable; urgency=low
     they include: [...]"
 
   [ Vincent Fourmond ]
-  * Fixup the call to convert (and build-depend on librsvg2-bin for rsvg)
   * Enable pango support (closes: #678390), placed in libmagickcore5-extra
+  * Use graphicsmagick's convert for building the XPM files, in order to
+    avoid circular dependencies
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 25 Jun 2012 13:32:17 +0200
+ -- Vincent Fourmond <fourmond@debian.org>  Mon, 25 Jun 2012 22:28:57 +0200
 
 imagemagick (8:6.7.7.2-1) unstable; urgency=low
 

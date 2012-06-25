@@ -26,7 +26,11 @@ endif
 
 # This is very hackish, but should do the trick. For some reason, the
 # libtools wrapper scripts don't work.
-CONVERT = LD_LIBRARY_PATH=$(CURDIR)/magick/.libs:$(CURDIR)/wand/.libs $(CURDIR)/utilities/.libs/convert
+# And for some reasons, the delegates are missing here.
+# CONVERT = MAGICK_CONFIGURE_PATH=./config LD_LIBRARY_PATH=$(CURDIR)/magick/.libs:$(CURDIR)/wand/.libs $(CURDIR)/utilities/.libs/convert
+
+# ARGH, we use graphicsmagick convert to avoid painful circular dependencies...
+CONVERT = /usr/bin/convert
 
 build: build-stamp
 build-stamp: $(QUILT_STAMPFN)
@@ -72,15 +76,16 @@ build-stamp: $(QUILT_STAMPFN)
 	# build icons cache
 	while read SIZE; do \
 		mkdir -p $(CURDIR)/debian/icons/$$SIZE/apps/ ;\
-                echo $$SIZE | sed "s/^\([[:digit:]]*\)x\([[:digit:]]*\)$$/-w \1 -h \2/g" \
-			| xargs rsvg-convert $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg > $(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
+		$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize $$SIZE \
+			$(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
 	done < $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
 	# make xpm
-	rsvg-convert $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -w 32 -h 32 | \
-		$(CONVERT) - $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
+	$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize 32x32 \
+		$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
 	mkdir -p $(CURDIR)/debian/icons/scalable/apps/
 	gzip -c -n -9 $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
 		> $(CURDIR)/debian/icons/scalable/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svgz
+
 	touch build-stamp
 
 # This package does not currently split building of architecture dependent and independent packages
