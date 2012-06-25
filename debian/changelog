@@ -2,13 +2,14 @@ imagemagick (8:6.7.7.9-1) unstable; urgency=low
   [ Bastien Roucariès ]
    
   * New upstream version
-  * Bug fix: "Menu entry of imagemagick does not lauch it", thanks to
+  * Bug fix: "Menu entry of imagemagick does not launch it", thanks to
     Michael Biebl (Closes: #675453). 
   * Bug fix: "Please include large 256x256px icon", thanks to Ralph
     Aichinger (Closes: #675484). Add scalable icons, 16x16, 32x32, 48x48
   * Copyright review:
   - move to dep5 format.
-  - Remove dot support due to incompatibility between EPL and GPL (Closes: #677413).
+  - Remove dot support due to incompatibility between EPL and GPL 
+    (Closes: #677413).
   - Remove non modifiable sRGB.icc (Closes: #677414).
   * Add automation script for source download and git machinery
   * Use manual delegate to rsvg for icons creation
@@ -32,8 +33,10 @@ imagemagick (8:6.7.7.9-1) unstable; urgency=low
   * Enable pango support (closes: #678390), placed in libmagickcore5-extra
   * Use graphicsmagick's convert for building the XPM files, in order to
     avoid circular dependencies
+  * Add a reference to the GPL and Artistic license in debian/copyright
+  * Word-wrap changelog
 
- -- Vincent Fourmond <fourmond@debian.org>  Mon, 25 Jun 2012 22:28:57 +0200
+ -- Vincent Fourmond <fourmond@debian.org>  Mon, 25 Jun 2012 22:55:44 +0200
 
 imagemagick (8:6.7.7.2-1) unstable; urgency=low
 
