@@ -1,4 +1,4 @@
-imagemagick (8:6.7.7.7-1) unstable; urgency=low
+imagemagick (8:6.7.7.9-1) unstable; urgency=low
   [ Bastien Roucariès ]
    
   * New upstream version
@@ -10,13 +10,14 @@ imagemagick (8:6.7.7.7-1) unstable; urgency=low
   - move to dep5 format.
   - Remove dot support due to incompatibility between EPL and GPL (Closes: #677413).
   - Remove non modifiable sRGB.icc (Closes: #677414).
+  * Add automation script for source download and git machinery
+  * Use manual delegate to rsvg for icons creation
 
   [ Vincent Fourmond ]
   * Fixup the call to convert (and build-depend on librsvg2-bin for rsvg)
   * Enable pango support (closes: #678390), placed in libmagickcore5-extra
-  * 
 
- -- Vincent Fourmond <fourmond@debian.org>  Thu, 21 Jun 2012 22:22:47 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 25 Jun 2012 12:19:34 +0200
 
 imagemagick (8:6.7.7.2-1) unstable; urgency=low
 
