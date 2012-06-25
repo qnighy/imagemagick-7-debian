@@ -700,7 +700,8 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
   */
   if ((image->columns > 65535L) || (image->rows > 65535L))
     ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
-  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+      (IsGrayImage(image,&image->exception) == MagickFalse))
     (void) TransformImageColorspace(image,sRGBColorspace);
   targa_info.id_length=0;
   value=GetImageProperty(image,"comment");
@@ -808,7 +809,7 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
         *q++=(unsigned char) GetPixelIndex(indexes+x);
       else
         if (targa_info.image_type == TargaMonochrome)
-          *q++=(unsigned char) ScaleQuantumToChar(PixelIntensityToQuantum(p));
+          *q++=(unsigned char) ScaleQuantumToChar(PixelIntensityToQuantum(image,p));
         else
           {
             *q++=ScaleQuantumToChar(GetPixelBlue(p));

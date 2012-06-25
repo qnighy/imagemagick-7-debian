@@ -450,9 +450,9 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
               image->colormap[0].red=(Quantum) 0;
               image->colormap[0].green=(Quantum) 0;
               image->colormap[0].blue=(Quantum) 0;
-              image->colormap[1].red=(Quantum) QuantumRange;
-              image->colormap[1].green=(Quantum) QuantumRange;
-              image->colormap[1].blue=(Quantum) QuantumRange;
+              image->colormap[1].red=QuantumRange;
+              image->colormap[1].green=QuantumRange;
+              image->colormap[1].blue=QuantumRange;
             }
           else
             if (image->colors > 16)
@@ -878,7 +878,8 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+      (IsGrayImage(image,&image->exception) == MagickFalse))
     (void) TransformImageColorspace(image,sRGBColorspace);
   page_table=(MagickOffsetType *) NULL;
   if ((LocaleCompare(image_info->magick,"DCX") == 0) ||
@@ -1093,12 +1094,12 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
             /*
               Convert PseudoClass image to a PCX monochrome image.
             */
-            polarity=(IndexPacket) (PixelIntensityToQuantum(
-              &image->colormap[0]) < ((Quantum) QuantumRange/2) ? 1 : 0);
+            polarity=(IndexPacket) (PixelIntensityToQuantum(image,
+              &image->colormap[0]) < (QuantumRange/2) ? 1 : 0);
             if (image->colors == 2)
               polarity=(IndexPacket) (
-                PixelIntensityToQuantum(&image->colormap[0]) <
-                PixelIntensityToQuantum(&image->colormap[1]) ? 1 : 0);
+                PixelIntensityToQuantum(image,&image->colormap[0]) <
+                PixelIntensityToQuantum(image,&image->colormap[1]) ? 1 : 0);
             for (y=0; y < (ssize_t) image->rows; y++)
             {
               p=GetVirtualPixels(image,0,y,image->columns,1,

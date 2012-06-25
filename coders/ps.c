@@ -815,6 +815,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         read_info->filename);
       if (IsPostscriptRendered(read_info->filename) == MagickFalse)
         break;
+      read_info->blob=NULL;
+      read_info->length=0;
       next=ReadImage(read_info,exception);
       (void) RelinquishUniqueFileResource(read_info->filename);
       if (next == (Image *) NULL)
@@ -1446,6 +1448,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
       Scale relative to dots-per-inch.
     */
     if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+        (IsGrayImage(image,&image->exception) == MagickFalse) &&
         (image->colorspace != CMYKColorspace))
       (void) TransformImageColorspace(image,sRGBColorspace);
     delta.x=DefaultResolution;
@@ -1649,7 +1652,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
               for (x=0; x < (ssize_t) preview_image->columns; x++)
               {
                 byte<<=1;
-                pixel=PixelIntensityToQuantum(p);
+                pixel=PixelIntensityToQuantum(image,p);
                 if (pixel >= (Quantum) (QuantumRange/2))
                   byte|=0x01;
                 bit++;
@@ -1787,7 +1790,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
                 break;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                pixel=(Quantum) ScaleQuantumToChar(PixelIntensityToQuantum(p));
+                pixel=(Quantum) ScaleQuantumToChar(PixelIntensityToQuantum(image,p));
                 q=PopHexPixel(hex_digits,(size_t) pixel,q);
                 i++;
                 if ((q-pixels+8) >= 80)
@@ -1840,7 +1843,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
               for (x=0; x < (ssize_t) image->columns; x++)
               {
                 byte<<=1;
-                pixel=PixelIntensityToQuantum(p);
+                pixel=PixelIntensityToQuantum(image,p);
                 if (pixel >= (Quantum) (QuantumRange/2))
                   byte|=0x01;
                 bit++;

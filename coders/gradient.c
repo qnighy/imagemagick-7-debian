@@ -44,6 +44,7 @@
 #include "magick/blob-private.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
+#include "magick/colorspace-private.h"
 #include "magick/draw.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
@@ -94,6 +95,9 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
   char
     colorname[MaxTextExtent];
 
+  MagickBooleanType
+    status;
+
   MagickPixelPacket
     start_pixel,
     stop_pixel;
@@ -129,7 +133,7 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
     }
   (void) QueryMagickColor(colorname,&start_pixel,exception);
   (void) CopyMagickString(colorname,"white",MaxTextExtent);
-  if (PixelIntensityToQuantum(&start_color) > (Quantum) (QuantumRange/2))
+  if (PixelIntensityToQuantum(image,&start_color) > (Quantum) (QuantumRange/2))
     (void) CopyMagickString(colorname,"black",MaxTextExtent);
   (void) sscanf(image_info->filename,"%*[^-]-%s",colorname);
   if (QueryColorDatabase(colorname,&stop_color,exception) == MagickFalse)
@@ -138,11 +142,39 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
       return((Image *) NULL);
     }
   (void) QueryMagickColor(colorname,&stop_pixel,exception);
-  (void) GradientImage(image,LocaleCompare(image_info->magick,"GRADIENT") == 0 ?
+  if (IssRGBColorspace(start_pixel.colorspace) != MagickFalse)
+    {
+      start_color.red=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
+        start_color.red));
+      start_color.green=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
+        start_color.green));
+      start_color.blue=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
+        start_color.blue));
+    }
+  if (IssRGBColorspace(stop_pixel.colorspace) != MagickFalse)
+    {
+      stop_color.red=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
+        stop_color.red));
+      stop_color.green=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
+        stop_color.green));
+      stop_color.blue=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
+        stop_color.blue));
+    }
+  status=GradientImage(image,LocaleCompare(image_info->magick,"GRADIENT") == 0 ?
     LinearGradient : RadialGradient,PadSpread,&start_color,&stop_color);
-  if ((start_pixel.colorspace == GRAYColorspace) &&
-      (stop_pixel.colorspace == GRAYColorspace))
-    (void) SetImageColorspace(image,GRAYColorspace);
+  if (status == MagickFalse)
+    {
+      image=DestroyImageList(image);
+      return((Image *) NULL);
+    }
+  (void) SetImageColorspace(image,start_pixel.colorspace);
+  if ((start_pixel.matte == MagickFalse) && (stop_pixel.matte == MagickFalse))
+    (void) SetImageAlphaChannel(image,DeactivateAlphaChannel);
+  if (IssRGBColorspace(start_pixel.colorspace) != MagickFalse)
+    {
+      (void) SetImageColorspace(image,RGBColorspace);
+      (void) TransformImageColorspace(image,sRGBColorspace);
+    }
   return(GetFirstImageInList(image));
 }
 

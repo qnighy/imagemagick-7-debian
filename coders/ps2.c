@@ -786,7 +786,7 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
                 break;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                *q++=ScaleQuantumToChar(PixelIntensityToQuantum(p));
+                *q++=ScaleQuantumToChar(PixelIntensityToQuantum(image,p));
                 p++;
               }
               progress=SetImageProgress(image,SaveImageTag,(MagickOffsetType) y,
@@ -822,7 +822,7 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
               for (x=0; x < (ssize_t) image->columns; x++)
               {
                 Ascii85Encode(image,ScaleQuantumToChar(
-                  PixelIntensityToQuantum(p)));
+                  PixelIntensityToQuantum(image,p)));
                 p++;
               }
               progress=SetImageProgress(image,SaveImageTag,(MagickOffsetType)
@@ -887,9 +887,9 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
                   if ((image->matte != MagickFalse) &&
                       (GetPixelOpacity(p) == (Quantum) TransparentOpacity))
                     {
-                      *q++=ScaleQuantumToChar((Quantum) QuantumRange);
-                      *q++=ScaleQuantumToChar((Quantum) QuantumRange);
-                      *q++=ScaleQuantumToChar((Quantum) QuantumRange);
+                      *q++=ScaleQuantumToChar(QuantumRange);
+                      *q++=ScaleQuantumToChar(QuantumRange);
+                      *q++=ScaleQuantumToChar(QuantumRange);
                     }
                   else
                     if (image->colorspace != CMYKColorspace)

@@ -46,6 +46,8 @@
 #include "magick/cache.h"
 #include "magick/cache-private.h"
 #include "magick/color-private.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
 #include "magick/composite-private.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
@@ -447,15 +449,14 @@ static MagickBooleanType ClipPixelCacheNexus(Image *image,
   {
     if ((p == (PixelPacket *) NULL) || (r == (const PixelPacket *) NULL))
       break;
-    if (PixelIntensityToQuantum(r) > ((Quantum) QuantumRange/2))
+    if (PixelIntensityToQuantum(image,r) > (QuantumRange/2))
       {
         SetPixelRed(q,GetPixelRed(p));
         SetPixelGreen(q,GetPixelGreen(p));
         SetPixelBlue(q,GetPixelBlue(p));
         SetPixelOpacity(q,GetPixelOpacity(p));
         if (cache_info->active_index_channel != MagickFalse)
-          SetPixelIndex(nexus_indexes+i,GetPixelIndex(
-            indexes+i));
+          SetPixelIndex(nexus_indexes+i,GetPixelIndex(indexes+i));
       }
     p++;
     q++;
@@ -3863,8 +3864,8 @@ static MagickBooleanType MaskPixelCacheNexus(Image *image,NexusInfo *nexus_info,
       break;
     SetMagickPixelPacket(image,p,indexes+i,&alpha);
     SetMagickPixelPacket(image,q,nexus_indexes+i,&beta);
-    MagickPixelCompositeMask(&beta,(MagickRealType) PixelIntensityToQuantum(r),
-      &alpha,alpha.opacity,&beta);
+    MagickPixelCompositeMask(&beta,(MagickRealType)
+      PixelIntensityToQuantum(image,r),&alpha,alpha.opacity,&beta);
     SetPixelRed(q,ClampToQuantum(beta.red));
     SetPixelGreen(q,ClampToQuantum(beta.green));
     SetPixelBlue(q,ClampToQuantum(beta.blue));
@@ -5196,6 +5197,9 @@ MagickExport VirtualPixelMethod SetPixelCacheVirtualMethod(const Image *image,
         if ((image->background_color.opacity != OpaqueOpacity) &&
             (image->matte == MagickFalse))
           (void) SetCacheAlphaChannel((Image *) image,OpaqueOpacity);
+        if ((IsPixelGray(&image->background_color) == MagickFalse) &&
+            (IsGrayColorspace(image->colorspace) != MagickFalse))
+          (void) TransformImageColorspace((Image *) image,sRGBColorspace);
         break;
       }
       case TransparentVirtualPixelMethod:

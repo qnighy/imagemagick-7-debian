@@ -41,6 +41,7 @@
 */
 #include "magick/studio.h"
 #include "magick/artifact.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/cache.h"
 #include "magick/client.h"
@@ -4295,8 +4296,8 @@ static MagickBooleanType XCompositeImage(Display *display,
         Create mattes for blending.
       */
       (void) SetImageAlphaChannel(composite_image,OpaqueAlphaChannel);
-      opacity=(Quantum) (ScaleQuantumToChar((Quantum) QuantumRange)-
-        ((ssize_t) ScaleQuantumToChar((Quantum) QuantumRange)*blend)/100);
+      opacity=(Quantum) (ScaleQuantumToChar(QuantumRange)-
+        ((ssize_t) ScaleQuantumToChar(QuantumRange)*blend)/100);
       if (SetImageStorageClass(image,DirectClass) == MagickFalse)
         return(MagickFalse);
       image->matte=MagickTrue;

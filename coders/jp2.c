@@ -908,7 +908,8 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   /*
     Initialize JPEG 2000 API.
   */
-  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+      (IsGrayImage(image,&image->exception) == MagickFalse))
     (void) TransformImageColorspace(image,sRGBColorspace);
   jp2_stream=JP2StreamManager(image);
   if (jp2_stream == (jas_stream_t *) NULL)
@@ -1053,7 +1054,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
     {
       if (number_components == 1)
         jas_matrix_setv(pixels[0],x,(jas_seqent_t) ScaleQuantumToAny(
-          PixelIntensityToQuantum(p),range));
+          PixelIntensityToQuantum(image,p),range));
       else
         {
           jas_matrix_setv(pixels[0],x,(jas_seqent_t)

@@ -166,9 +166,9 @@ static Image *ReadFAXImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Monochrome colormap.
   */
-  image->colormap[0].red=(Quantum) QuantumRange;
-  image->colormap[0].green=(Quantum) QuantumRange;
-  image->colormap[0].blue=(Quantum) QuantumRange;
+  image->colormap[0].red=QuantumRange;
+  image->colormap[0].green=QuantumRange;
+  image->colormap[0].blue=QuantumRange;
   image->colormap[1].red=(Quantum) 0;
   image->colormap[1].green=(Quantum) 0;
   image->colormap[1].blue=(Quantum) 0;
@@ -324,7 +324,8 @@ static MagickBooleanType WriteFAXImage(const ImageInfo *image_info,Image *image)
     /*
       Convert MIFF to monochrome.
     */
-    if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+        (IsGrayImage(image,&image->exception) == MagickFalse))
       (void) TransformImageColorspace(image,sRGBColorspace);
     status=HuffmanEncodeImage(write_info,image,image);
     if (GetNextImageInList(image) == (Image *) NULL)

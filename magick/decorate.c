@@ -226,8 +226,8 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
       frame_image=DestroyImage(frame_image);
       return((Image *) NULL);
     }
-  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
-      (IsGray(&image->matte_color) == MagickFalse))
+  if ((IsPixelGray(&frame_image->border_color) == MagickFalse) &&
+      (IsGrayColorspace(frame_image->colorspace) != MagickFalse))
     (void) SetImageColorspace(frame_image,sRGBColorspace);
   if ((frame_image->border_color.opacity != OpaqueOpacity) &&
       (frame_image->matte == MagickFalse))
@@ -280,13 +280,13 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
   trough.opacity=matte.opacity;
   if (image->colorspace == CMYKColorspace)
     {
-      ConvertRGBToCMYK(&interior);
-      ConvertRGBToCMYK(&matte);
-      ConvertRGBToCMYK(&border);
-      ConvertRGBToCMYK(&accentuate);
-      ConvertRGBToCMYK(&highlight);
-      ConvertRGBToCMYK(&shadow);
-      ConvertRGBToCMYK(&trough);
+      ConvertsRGBToCMYK(&interior);
+      ConvertsRGBToCMYK(&matte);
+      ConvertsRGBToCMYK(&border);
+      ConvertsRGBToCMYK(&accentuate);
+      ConvertsRGBToCMYK(&highlight);
+      ConvertsRGBToCMYK(&shadow);
+      ConvertsRGBToCMYK(&trough);
     }
   status=MagickTrue;
   progress=0;
@@ -716,12 +716,12 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
       (image->rows <= (raise_info->height << 1)))
     ThrowBinaryException(OptionError,"ImageSizeMustExceedBevelWidth",
       image->filename);
-  foreground=(Quantum) QuantumRange;
+  foreground=QuantumRange;
   background=(Quantum) 0;
   if (raise == MagickFalse)
     {
       foreground=(Quantum) 0;
-      background=(Quantum) QuantumRange;
+      background=QuantumRange;
     }
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);

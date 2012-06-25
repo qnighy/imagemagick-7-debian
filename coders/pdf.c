@@ -656,6 +656,8 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
         read_info->filename);
       if (IsPDFRendered(read_info->filename) == MagickFalse)
         break;
+      read_info->blob=NULL;
+      read_info->length=0;
       next=ReadImage(read_info,exception);
       (void) RelinquishUniqueFileResource(read_info->filename);
       if (next == (Image *) NULL)
@@ -1609,7 +1611,7 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
                 break;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                *q++=ScaleQuantumToChar(PixelIntensityToQuantum(p));
+                *q++=ScaleQuantumToChar(PixelIntensityToQuantum(image,p));
                 p++;
               }
               if (image->previous == (Image *) NULL)
@@ -1651,7 +1653,7 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
               for (x=0; x < (ssize_t) image->columns; x++)
               {
                 Ascii85Encode(image,
-                  ScaleQuantumToChar(PixelIntensityToQuantum(p)));
+                  ScaleQuantumToChar(PixelIntensityToQuantum(image,p)));
                 p++;
               }
               if (image->previous == (Image *) NULL)
@@ -2059,7 +2061,7 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
                 break;
               for (x=0; x < (ssize_t) tile_image->columns; x++)
               {
-                *q++=ScaleQuantumToChar(PixelIntensityToQuantum(p));
+                *q++=ScaleQuantumToChar(PixelIntensityToQuantum(image,p));
                 p++;
               }
             }
@@ -2095,7 +2097,7 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
               for (x=0; x < (ssize_t) tile_image->columns; x++)
               {
                 Ascii85Encode(image,
-                  ScaleQuantumToChar(PixelIntensityToQuantum(p)));
+                  ScaleQuantumToChar(PixelIntensityToQuantum(image,p)));
                 p++;
               }
             }

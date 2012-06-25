@@ -455,7 +455,7 @@ static inline Quantum ClampToUnsignedQuantum(const MagickRealType value)
   if (value <= 0.0)
     return((Quantum) 0);
   if (value >= QuantumRange)
-    return((Quantum) QuantumRange);
+    return(QuantumRange);
   return((Quantum) (value+0.5));
 }
 
@@ -3195,13 +3195,12 @@ static int IntensityCompare(const void *x,const void *y)
     *color_1,
     *color_2;
 
-  ssize_t
+  int
     intensity;
 
   color_1=(PixelPacket *) x;
   color_2=(PixelPacket *) y;
-  intensity=PixelIntensityToQuantum(color_1)-(ssize_t)
-    PixelIntensityToQuantum(color_2);
+  intensity=PixelPacketIntensity(color_1)-(int) PixelPacketIntensity(color_2);
   return((int) intensity);
 }
 

@@ -42,6 +42,7 @@
 #include "magick/studio.h"
 #include "magick/animate.h"
 #include "magick/animate-private.h"
+#include "magick/attribute.h"
 #include "magick/client.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
@@ -1922,7 +1923,8 @@ MagickExport Image *XAnimateImages(Display *display,
     /*
       Create X image.
     */
-    if (IssRGBColorspace(image_list[scene]->colorspace) == MagickFalse)
+    if ((IssRGBColorspace(image_list[scene]->colorspace) == MagickFalse) &&
+        (IsGrayColorspace(image_list[scene]->colorspace) == MagickFalse))
       (void) TransformImageColorspace(image_list[scene],sRGBColorspace);
     windows->image.pixmap=(Pixmap) NULL;
     windows->image.matte_pixmap=(Pixmap) NULL;

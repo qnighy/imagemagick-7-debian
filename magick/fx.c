@@ -715,7 +715,7 @@ MagickExport Image *ColorizeImage(const Image *image,const char *opacity,
       return((Image *) NULL);
     }
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
-      (IsGray(&colorize) != MagickFalse))
+      (IsPixelGray(&colorize) != MagickFalse))
     (void) SetImageColorspace(colorize_image,sRGBColorspace);
   if ((colorize_image->matte == MagickFalse) &&
       (colorize.opacity != OpaqueOpacity))
@@ -4135,7 +4135,7 @@ MagickExport Image *SepiaToneImage(const Image *image,const double threshold,
         intensity,
         tone;
 
-      intensity=(MagickRealType) PixelIntensityToQuantum(p);
+      intensity=(MagickRealType) PixelIntensityToQuantum(image,p);
       tone=intensity > threshold ? (MagickRealType) QuantumRange : intensity+
         (MagickRealType) QuantumRange-threshold;
       SetPixelRed(q,ClampToQuantum(tone));
@@ -4554,12 +4554,12 @@ MagickExport MagickBooleanType SolarizeImage(Image *image,
       for (i=0; i < (ssize_t) image->colors; i++)
       {
         if ((MagickRealType) image->colormap[i].red > threshold)
-          image->colormap[i].red=(Quantum) QuantumRange-image->colormap[i].red;
+          image->colormap[i].red=QuantumRange-image->colormap[i].red;
         if ((MagickRealType) image->colormap[i].green > threshold)
-          image->colormap[i].green=(Quantum) QuantumRange-
+          image->colormap[i].green=QuantumRange-
             image->colormap[i].green;
         if ((MagickRealType) image->colormap[i].blue > threshold)
-          image->colormap[i].blue=(Quantum) QuantumRange-
+          image->colormap[i].blue=QuantumRange-
             image->colormap[i].blue;
       }
     }
@@ -4740,19 +4740,19 @@ MagickExport Image *SteganoImage(const Image *image,const Image *watermark,
         {
           case 0:
           {
-            SetBit(GetPixelRed(q),j,GetBit(PixelIntensityToQuantum(
+            SetBit(GetPixelRed(q),j,GetBit(PixelIntensityToQuantum(image,
               &pixel),i));
             break;
           }
           case 1:
           {
-            SetBit(GetPixelGreen(q),j,GetBit(PixelIntensityToQuantum(
+            SetBit(GetPixelGreen(q),j,GetBit(PixelIntensityToQuantum(image,
               &pixel),i));
             break;
           }
           case 2:
           {
-            SetBit(GetPixelBlue(q),j,GetBit(PixelIntensityToQuantum(
+            SetBit(GetPixelBlue(q),j,GetBit(PixelIntensityToQuantum(image,
               &pixel),i));
             break;
           }
@@ -5205,7 +5205,7 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
       return((Image *) NULL);
     }
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
-      (IsGray(&tint) == MagickFalse))
+      (IsPixelGray(&tint) == MagickFalse))
     (void) SetImageColorspace(tint_image,sRGBColorspace);
   if (opacity == (const char *) NULL)
     return(tint_image);
@@ -5402,6 +5402,8 @@ MagickExport Image *VignetteImage(const Image *image,const double radius,
   blur_image=DestroyImage(blur_image);
   vignette_image=MergeImageLayers(canvas_image,FlattenLayer,exception);
   canvas_image=DestroyImage(canvas_image);
+  if (vignette_image != (Image *) NULL)
+    (void) TransformImageColorspace(vignette_image,image->colorspace);
   return(vignette_image);
 }
 

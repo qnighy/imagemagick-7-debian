@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -970,10 +971,9 @@ static MagickBooleanType WriteVIFFImage(const ImageInfo *image_info,
     /*
       Initialize VIFF image structure.
     */
-    if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+        (IsGrayImage(image,&image->exception) == MagickFalse))
       (void) TransformImageColorspace(image,sRGBColorspace);
-    if (IsGrayImage(image,&image->exception) != MagickFalse)
-      (void) SetImageStorageClass(image,DirectClass);
     viff_info.identifier=(char) 0xab;
     viff_info.file_type=1;
     viff_info.release=1;
@@ -1220,7 +1220,7 @@ static MagickBooleanType WriteVIFFImage(const ImageInfo *image_info,
                 break;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                *q++=(unsigned char) PixelIntensityToQuantum(p);
+                *q++=(unsigned char) PixelIntensityToQuantum(image,p);
                 p++;
               }
               if (image->previous == (Image *) NULL)

@@ -19,7 +19,7 @@ AC_PREREQ(2.67)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [7])
 m4_define([magick_micro_version], [7])
-m4_define([magick_patchlevel_version], [7])
+m4_define([magick_patchlevel_version], [9])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "svnversion | sed -r 's/([0-9]+).*/\1/'"]))
@@ -95,6 +95,7 @@ echo "configuring ${PACKAGE_NAME} ${PACKAGE_VERSION}${PACKAGE_VERSION_ADDENDUM}"
 AC_CANONICAL_SYSTEM
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
 
 MAGICK_TARGET_CPU=$host_cpu
 AC_SUBST(MAGICK_TARGET_CPU)

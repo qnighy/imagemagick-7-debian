@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 #  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
@@ -51,6 +51,7 @@ echo ''
 #
 # Actual values used below come from IM v6.5.4-7 colorspace conversions
 #
+error=false
 if [ "X$average" != "X146,89,80" ]; then
   echo "Sanity Failure: Average expected to be 145,89,80 - ABORTING"
   error=true
@@ -78,7 +79,8 @@ test_color() {
     printf "$format" "$test" "good"
     return
   fi
-  error=false
+  # Its failed the round-trip test, now report how it failed!
+  error=true
   if [ "X$color" = "X$too_light" ]; then
     printf "$format" "$test" "TOO_LIGHT"
     return
@@ -92,14 +94,17 @@ test_color() {
 
 # ----------------
 
-test_color RGB sRGB
-test_color XYZ sRGB
+test_color RGB     sRGB  # round trip (parts tested above)
+
+test_color XYZ     sRGB
 test_color XYZ RGB sRGB
 test_color RGB XYZ sRGB
 
-test_color LAB   sRGB
+test_color LAB     sRGB
 test_color XYZ LAB sRGB
-test_color RGB LAB sRGB  # this is failing
+test_color LAB XYZ sRGB
+test_color RGB LAB sRGB
+test_color LAB RGB sRGB
 
 test_color CMY   sRGB
 test_color CMYK  sRGB

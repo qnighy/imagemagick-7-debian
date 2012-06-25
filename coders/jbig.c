@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -445,7 +446,8 @@ static MagickBooleanType WriteJBIGImage(const ImageInfo *image_info,
     /*
       Allocate pixel data.
     */
-    if (IssRGBColorspace(image->colorspace) == MagickFalse)
+    if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+        (IsGrayImage(image,&image->exception) == MagickFalse))
       (void) TransformImageColorspace(image,sRGBColorspace);
     number_packets=(image->columns+7)/8;
     pixels=(unsigned char *) AcquireQuantumMemory(number_packets,

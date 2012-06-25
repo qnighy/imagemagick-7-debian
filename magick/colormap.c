@@ -42,6 +42,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/cache-view.h"
 #include "magick/cache.h"
@@ -289,8 +290,7 @@ static int IntensityCompare(const void *x,const void *y)
 
   color_1=(const PixelPacket *) x;
   color_2=(const PixelPacket *) y;
-  intensity=(int) PixelIntensityToQuantum(color_2)-
-    (int) PixelIntensityToQuantum(color_1);
+  intensity=PixelPacketIntensity(color_2)-(int) PixelPacketIntensity(color_1);
   return(intensity);
 }
 

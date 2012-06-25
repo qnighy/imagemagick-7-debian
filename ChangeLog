@@ -1,3 +1,37 @@
+2012-06-24  6.7.7-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.7-9, SVN revision 8460.
+
+2012-06-23  6.7.7-9 Cristy  <quetzlzacatenango@image...>
+  * Some options were incorrectly promoting linear gray to sRGB.
+
+2012-06-22  6.7.7-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.7-8, SVN revision 8432.
+
+2012-06-15  6.7.7-8 Cristy  <quetzlzacatenango@image...>
+  * Support the -features option in convert / mogrify.
+  * Add support for the %[type] property.
+
+2012-06-15  6.7.7-8 Anthony Thyssen <A.Thyssen@griffith...>
+  * Geometry arguments accept multiple sign character for offsets
+    EG: "-10-10", "-+10-+10", or "+-10+-10" generate negative offsets
+    while "+10+10", "++10++10", or "--10--10" generate positive offsets,
+    that is, you can not only optionally have a sign in offset variable
+    substitutions, but can negate that substitution if you so desire.
+
+2012-06-12  6.7.7-8 Nicolas Robidoux <nicolas.robidoux@gmail...>
+  * Refactor Catmull-Rom and Spline "interpolation" using
+    state-of-the-art unpublished formulas
+  * Fix incorrect transparency handling of "interpolative" cubic
+    B-spline smoothing
+
+2012-06-09  6.7.7-8 Cristy  <quetzlzacatenango@image...>
+  * Initialize alpha channel when floodfill fill color is not opaque.
+  * XYZ and Lab colorspace conversion tweaked (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=21161).
+
+2012-06-08  6.7.7-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.7-7, SVN revision 8219.
+
 2012-06-06  6.7.7-7 Glenn Randers-Pehrson <glennrp@image...>
   * Disabled the new libpng-1.5.10 test for invalid palette index when
     reading a PNG or MNG (for speed), or when writing a MNG (because a

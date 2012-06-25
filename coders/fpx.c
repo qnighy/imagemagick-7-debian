@@ -848,13 +848,14 @@ static MagickBooleanType WriteFPXImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
+  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+      (IsGrayImage(image,&image->exception) == MagickFalse))
+    (void) TransformImageColorspace(image,sRGBColorspace);
   (void) CloseBlob(image);
   /*
     Initialize FPX toolkit.
   */
   image->depth=8;
-  if (IssRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
   memory_limit=20000000;
   fpx_status=FPX_SetToolkitMemoryLimit(&memory_limit);
   if (fpx_status != FPX_OK)

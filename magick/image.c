@@ -1116,7 +1116,7 @@ MagickExport Image *CombineImages(const Image *image,const ChannelType channel,
         q=pixels;
         for (x=0; x < (ssize_t) combine_image->columns; x++)
         {
-          SetPixelRed(q,PixelIntensityToQuantum(p));
+          SetPixelRed(q,PixelIntensityToQuantum(image,p));
           p++;
           q++;
         }
@@ -1132,7 +1132,7 @@ MagickExport Image *CombineImages(const Image *image,const ChannelType channel,
         q=pixels;
         for (x=0; x < (ssize_t) combine_image->columns; x++)
         {
-          SetPixelGreen(q,PixelIntensityToQuantum(p));
+          SetPixelGreen(q,PixelIntensityToQuantum(image,p));
           p++;
           q++;
         }
@@ -1148,7 +1148,7 @@ MagickExport Image *CombineImages(const Image *image,const ChannelType channel,
         q=pixels;
         for (x=0; x < (ssize_t) combine_image->columns; x++)
         {
-          SetPixelBlue(q,PixelIntensityToQuantum(p));
+          SetPixelBlue(q,PixelIntensityToQuantum(image,p));
           p++;
           q++;
         }
@@ -1164,7 +1164,7 @@ MagickExport Image *CombineImages(const Image *image,const ChannelType channel,
         q=pixels;
         for (x=0; x < (ssize_t) combine_image->columns; x++)
         {
-          SetPixelAlpha(q,PixelIntensityToQuantum(p));
+          SetPixelAlpha(q,PixelIntensityToQuantum(image,p));
           p++;
           q++;
         }
@@ -1184,7 +1184,7 @@ MagickExport Image *CombineImages(const Image *image,const ChannelType channel,
         indexes=GetCacheViewAuthenticIndexQueue(combine_view);
         for (x=0; x < (ssize_t) combine_image->columns; x++)
         {
-          SetPixelIndex(indexes+x,PixelIntensityToQuantum(p));
+          SetPixelIndex(indexes+x,PixelIntensityToQuantum(image,p));
           p++;
         }
         image_view=DestroyCacheView(image_view);
@@ -1841,7 +1841,7 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
 #if 0
         // FUTURE: remove this code. -- Anthony  29 Arpil 2012
         // Removed as GetMagickProperty() will will never match a "filename:"
-        // string as this is not a 'known' image properity.
+        // string as this is not a 'known' image property.
         //
         if ((image_info != (const ImageInfo *) NULL) &&
             (image != (const Image *) NULL))
@@ -2399,7 +2399,7 @@ MagickExport MagickBooleanType SeparateImageChannel(Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  SetImageColorspace(image,GRAYColorspace);
+  (void) SetImageColorspace(image,GRAYColorspace);
   /*
     Separate image channels.
   */
@@ -2505,7 +2505,7 @@ MagickExport MagickBooleanType SeparateImageChannel(Image *image,
       {
         for (x=0; x < (ssize_t) image->columns; x++)
         {
-          SetPixelAlpha(q,PixelIntensityToQuantum(q));
+          SetPixelAlpha(q,PixelIntensityToQuantum(image,q));
           q++;
         }
         break;
@@ -2691,7 +2691,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       SetMagickPixelPacket(image,&image->background_color,(const IndexPacket *)
         NULL,&background);
       if (image->colorspace == CMYKColorspace)
-        ConvertRGBToCMYK(&background);
+        ConvertsRGBToCMYK(&background);
       index=0;
       SetPixelPacket(image,&background,&pixel,&index);
       status=MagickTrue;
@@ -2813,7 +2813,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       SetMagickPixelPacket(image,&image->background_color,(const IndexPacket *)
         NULL,&background);
       if (image->colorspace == CMYKColorspace)
-        ConvertRGBToCMYK(&background);
+        ConvertsRGBToCMYK(&background);
       index=0;
       SetPixelPacket(image,&background,&pixel,&index);
       status=MagickTrue;
@@ -2954,8 +2954,8 @@ MagickExport MagickBooleanType SetImageBackgroundColor(Image *image)
   assert(image->signature == MagickSignature);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
-      (IsGray(&image->background_color) == MagickFalse))
+  if ((IsPixelGray(&image->background_color) == MagickFalse) &&
+      (IsGrayColorspace(image->colorspace) != MagickFalse))
     (void) TransformImageColorspace(image,sRGBColorspace);
   if ((image->background_color.opacity != OpaqueOpacity) &&
       (image->matte == MagickFalse))
@@ -2964,7 +2964,7 @@ MagickExport MagickBooleanType SetImageBackgroundColor(Image *image)
   SetMagickPixelPacket(image,&image->background_color,(const IndexPacket *)
     NULL,&background);
   if (image->colorspace == CMYKColorspace)
-    ConvertRGBToCMYK(&background);
+    ConvertsRGBToCMYK(&background);
   index=0;
   SetPixelPacket(image,&background,&pixel,&index);
   /*
@@ -3795,183 +3795,6 @@ MagickExport MagickBooleanType SetImageOpacity(Image *image,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   S e t I m a g e T y p e                                                   %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  SetImageType() sets the type of image.  Choose from these types:
-%
-%      BilevelType, GrayscaleType, GrayscaleMatteType, PaletteType,
-%      PaletteMatteType, TrueColorType, TrueColorMatteType,
-%      ColorSeparationType, ColorSeparationMatteType, OptimizeType
-%
-%  The format of the SetImageType method is:
-%
-%      MagickBooleanType SetImageType(Image *image,const ImageType type)
-%
-%  A description of each parameter follows:
-%
-%    o image: the image.
-%
-%    o type: Image type.
-%
-*/
-MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
-{
-  const char
-    *artifact;
-
-  ImageInfo
-    *image_info;
-
-  MagickBooleanType
-    status;
-
-  QuantizeInfo
-    *quantize_info;
-
-  assert(image != (Image *) NULL);
-  if (image->debug != MagickFalse)
-    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
-  status=MagickTrue;
-  image_info=AcquireImageInfo();
-  image_info->dither=image->dither;
-  artifact=GetImageArtifact(image,"dither");
-  if (artifact != (const char *) NULL)
-    (void) SetImageOption(image_info,"dither",artifact);
-  switch (type)
-  {
-    case BilevelType:
-    {
-      if (IsGrayImage(image,&image->exception) == MagickFalse)
-        status=TransformImageColorspace(image,GRAYColorspace);
-      if (IsMonochromeImage(image,&image->exception) == MagickFalse)
-        {
-          quantize_info=AcquireQuantizeInfo(image_info);
-          quantize_info->number_colors=2;
-          quantize_info->colorspace=GRAYColorspace;
-          status=QuantizeImage(quantize_info,image);
-          quantize_info=DestroyQuantizeInfo(quantize_info);
-        }
-      image->matte=MagickFalse;
-      break;
-    }
-    case GrayscaleType:
-    {
-      if (IsGrayImage(image,&image->exception) == MagickFalse)
-        status=TransformImageColorspace(image,GRAYColorspace);
-      image->matte=MagickFalse;
-      break;
-    }
-    case GrayscaleMatteType:
-    {
-      if (IsGrayImage(image,&image->exception) == MagickFalse)
-        status=TransformImageColorspace(image,GRAYColorspace);
-      if (image->matte == MagickFalse)
-        (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
-      break;
-    }
-    case PaletteType:
-    {
-      if (IssRGBColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
-      if ((image->storage_class == DirectClass) || (image->colors > 256))
-        {
-          quantize_info=AcquireQuantizeInfo(image_info);
-          quantize_info->number_colors=256;
-          status=QuantizeImage(quantize_info,image);
-          quantize_info=DestroyQuantizeInfo(quantize_info);
-        }
-      image->matte=MagickFalse;
-      break;
-    }
-    case PaletteBilevelMatteType:
-    {
-      if (IssRGBColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
-      if (image->matte == MagickFalse)
-        (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
-      (void) BilevelImageChannel(image,AlphaChannel,(double) QuantumRange/2.0);
-      quantize_info=AcquireQuantizeInfo(image_info);
-      status=QuantizeImage(quantize_info,image);
-      quantize_info=DestroyQuantizeInfo(quantize_info);
-      break;
-    }
-    case PaletteMatteType:
-    {
-      if (IssRGBColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
-      if (image->matte == MagickFalse)
-        (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
-      quantize_info=AcquireQuantizeInfo(image_info);
-      quantize_info->colorspace=TransparentColorspace;
-      status=QuantizeImage(quantize_info,image);
-      quantize_info=DestroyQuantizeInfo(quantize_info);
-      break;
-    }
-    case TrueColorType:
-    {
-      if (IssRGBColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
-      if (image->storage_class != DirectClass)
-        status=SetImageStorageClass(image,DirectClass);
-      image->matte=MagickFalse;
-      break;
-    }
-    case TrueColorMatteType:
-    {
-      if (IssRGBColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
-      if (image->storage_class != DirectClass)
-        status=SetImageStorageClass(image,DirectClass);
-      if (image->matte == MagickFalse)
-        (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
-      break;
-    }
-    case ColorSeparationType:
-    {
-      if (image->colorspace != CMYKColorspace)
-        {
-          if (IssRGBColorspace(image->colorspace) == MagickFalse)
-            status=TransformImageColorspace(image,sRGBColorspace);
-          status=TransformImageColorspace(image,CMYKColorspace);
-        }
-      if (image->storage_class != DirectClass)
-        status=SetImageStorageClass(image,DirectClass);
-      image->matte=MagickFalse;
-      break;
-    }
-    case ColorSeparationMatteType:
-    {
-      if (image->colorspace != CMYKColorspace)
-        {
-          if (IssRGBColorspace(image->colorspace) == MagickFalse)
-            status=TransformImageColorspace(image,sRGBColorspace);
-          status=TransformImageColorspace(image,CMYKColorspace);
-        }
-      if (image->storage_class != DirectClass)
-        status=SetImageStorageClass(image,DirectClass);
-      if (image->matte == MagickFalse)
-        (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
-      break;
-    }
-    case OptimizeType:
-    case UndefinedType:
-      break;
-  }
-  image->type=type;
-  image_info=DestroyImageInfo(image_info);
-  return(status);
-}
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
 %   S e t I m a g e V i r t u a l P i x e l M e t h o d                       %
 %                                                                             %
 %                                                                             %
@@ -4443,7 +4266,7 @@ MagickExport MagickBooleanType SyncImage(Image *image)
       status=MagickFalse;
   }
   image_view=DestroyCacheView(image_view);
-  if (range_exception != MagickFalse)
+  if ((image->ping == MagickFalse) && (range_exception != MagickFalse))
     (void) ThrowMagickException(&image->exception,GetMagickModule(),
       CorruptImageError,"InvalidColormapIndex","`%s'",image->filename);
   return(status);

@@ -141,7 +141,7 @@ testFilterCompare('input.miff',  q//, 'reference/filter/OilPaint.miff', 'OilPain
 testFilterCompare('input.miff', "fuzz=>$fuzz", 'reference/filter/Opaque.miff', 'Opaque', q/color=>"#e23834", fill=>"green"/, 0.03, 1.02);
 ++$test;
 
-testFilterCompare('input.miff',  q//, 'reference/filter/Quantize.miff', 'Quantize', q//, 0.09, 1.03);
+testFilterCompare('input.miff',  q//, 'reference/filter/Quantize.miff', 'Quantize', q//, 0.2, 1.03);
 ++$test;
 
 testFilterCompare('input.miff',  q//, 'reference/filter/RadialBlur.miff', 'RadialBlur', q/10/, 0.002, 0.02);
@@ -171,7 +171,7 @@ testFilterCompare('input.miff',  q//, 'reference/filter/Scale.miff', 'Scale', q/
 testFilterCompare('input.miff',  q//, 'reference/filter/Segment.miff', 'Segment', q//, 0.002, 0.02);
 ++$test;
 
-testFilterCompare('input.miff',  q//, 'reference/filter/Shade.miff', 'Shade', q/geometry=>'30x30',gray=>'true'/, 0.002, 0.02);
+testFilterCompare('input.miff',  q//, 'reference/filter/Shade.miff', 'Shade', q/geometry=>'30x30',gray=>'true'/, 0.08, 0.3);
 ++$test;
 
 testFilterCompare('input.miff',  q//, 'reference/filter/Sharpen.miff', 'Sharpen', q/'0.0x1.0'/, 0.05, 1.05);

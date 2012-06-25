@@ -1157,59 +1157,6 @@ static inline ssize_t MagickMin(const ssize_t x,const ssize_t y)
 
   return(y);
 }
-
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%   I m a g e I s G r a y                                                     %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%   Like IsGrayImage except does not change DirectClass to PseudoClass        %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-*/
-static MagickBooleanType ImageIsGray(Image *image)
-{
-  register const PixelPacket
-    *p;
-
-  register ssize_t
-    i,
-    x,
-    y;
-
-  assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
-  if (image->debug != MagickFalse)
-    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-
-  if (image->storage_class == PseudoClass)
-    {
-      for (i=0; i < (ssize_t) image->colors; i++)
-        if (IsGray(image->colormap+i) == MagickFalse)
-          return(MagickFalse);
-      return(MagickTrue);
-    }
-  for (y=0; y < (ssize_t) image->rows; y++)
-  {
-    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
-    if (p == (const PixelPacket *) NULL)
-      return(MagickFalse);
-    for (x=(ssize_t) image->columns-1; x >= 0; x--)
-    {
-       if (IsGray(p) == MagickFalse)
-          return(MagickFalse);
-       p++;
-    }
-  }
-  return(MagickTrue);
-}
 #endif /* PNG_LIBPNG_VER > 10011 */
 #endif /* MAGICKCORE_PNG_DELEGATE */
 
@@ -2295,6 +2242,14 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   image->depth=ping_bit_depth;
   image->depth=GetImageQuantumDepth(image,MagickFalse);
   image->interlace=ping_interlace_method != 0 ? PNGInterlace : NoInterlace;
+  if (((int) ping_color_type == PNG_COLOR_TYPE_GRAY) ||
+      ((int) ping_color_type == PNG_COLOR_TYPE_GRAY_ALPHA))
+    {
+      image->rendering_intent=UndefinedIntent;
+      image->gamma=1.000;
+      (void) ResetMagickMemory(&image->chromaticity,0,
+        sizeof(image->chromaticity));
+    }
   if (logging != MagickFalse)
     {
       (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -4426,7 +4381,7 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
 
              if (image->matte != MagickFalse)
                for (x=(ssize_t) image->columns; x != 0; x--,q++,s++)
-                  SetPixelOpacity(q,(Quantum) QuantumRange-
+                  SetPixelOpacity(q,QuantumRange-
                       GetPixelRed(s));
 
              else
@@ -7746,7 +7701,8 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
         }
     }
 
-  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+      (IsGrayImage(image,&image->exception) == MagickFalse))
     (void) TransformImageColorspace(image,sRGBColorspace);
 
   /*
@@ -8252,6 +8208,9 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
      if (mng_info->write_png_colortype != 7) /* We won't need this info */
        {
          ping_have_color=MagickFalse;
+         if ((IsGrayColorspace(image->colorspace) == MagickFalse) &&
+             (IsRGBColorspace(image->colorspace) == MagickFalse))
+           ping_have_color=MagickTrue;
          ping_have_non_bw=MagickFalse;
 
          if(image_colors > 256)
@@ -9417,7 +9376,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
                 (ScaleQuantumToShort(image->colormap[0].blue) & mask);
 
               ping_trans_color.gray=(png_uint_16)
-                (ScaleQuantumToShort(PixelIntensityToQuantum(
+                (ScaleQuantumToShort(PixelIntensityToQuantum(image,
                    image->colormap)) & mask);
 
               ping_trans_color.index=(png_byte) 0;
@@ -9604,7 +9563,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
                 ping_bit_depth=1;
                 one=1;
 
-                while ((one << ping_bit_depth) < (ssize_t) number_colors)
+                while ((one << ping_bit_depth) < number_colors)
                   ping_bit_depth <<= 1;
               }
 
@@ -9696,7 +9655,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
          {
 
          ping_background.gray=(png_uint_16)
-           ((maxval/65535.)*(ScaleQuantumToShort(
+           ((maxval/65535.)*(ScaleQuantumToShort((Quantum)
               PixelIntensity(&image->background_color)))+.5);
          if (logging != MagickFalse)
          {
@@ -10245,6 +10204,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
        png_error(ping,"WriteBlob Failed");
 
      ping_have_blob=MagickTrue;
+     (void) ping_have_blob;
   }
 
   png_write_info_before_PLTE(ping, ping_info);
@@ -11750,7 +11710,7 @@ static MagickBooleanType WriteOneJNGImage(MngInfo *mng_info,
 
   /* Check if image is grayscale. */
   if (image_info->type != TrueColorMatteType && image_info->type !=
-    TrueColorType && ImageIsGray(image))
+    TrueColorType && IsGrayImage(image,&image->exception))
     jng_color_type-=2;
 
   if (logging != MagickFalse)
@@ -12531,7 +12491,7 @@ static MagickBooleanType WriteMNGImage(const ImageInfo *image_info,Image *image)
 
         if (need_local_plte == 0)
           {
-            if (ImageIsGray(image) == MagickFalse)
+            if (IsGrayImage(image,&image->exception) == MagickFalse)
               all_images_are_gray=MagickFalse;
             mng_info->equal_palettes=PalettesAreEqual(image,next_image);
             if (use_global_plte == 0)

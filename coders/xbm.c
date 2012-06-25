@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -278,9 +279,9 @@ static Image *ReadXBMImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Initialize colormap.
   */
-  image->colormap[0].red=(Quantum) QuantumRange;
-  image->colormap[0].green=(Quantum) QuantumRange;
-  image->colormap[0].blue=(Quantum) QuantumRange;
+  image->colormap[0].red=QuantumRange;
+  image->colormap[0].green=QuantumRange;
+  image->colormap[0].blue=QuantumRange;
   image->colormap[1].red=(Quantum) 0;
   image->colormap[1].green=(Quantum) 0;
   image->colormap[1].blue=(Quantum) 0;
@@ -507,8 +508,9 @@ static MagickBooleanType WriteXBMImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (IssRGBColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+      (IsGrayImage(image,&image->exception) == MagickFalse))
+     (void) TransformImageColorspace(image,sRGBColorspace);
   /*
     Write X bitmap header.
   */

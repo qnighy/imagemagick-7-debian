@@ -697,7 +697,8 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
                       MagickFalse,options);
                     if (colorspace < 0)
                       break;
-                    image->colorspace=(ColorspaceType) colorspace;
+                    (void) SetImageColorspace(image,(ColorspaceType)
+                      colorspace);
                     break;
                   }
                 if (LocaleCompare(keyword,"compression") == 0)
@@ -1056,7 +1057,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
                     flags=ParseGeometry(options,&geometry_info);
                     image->chromaticity.white_point.x=geometry_info.rho;
                     image->chromaticity.white_point.y=geometry_info.sigma;
-                    if ((flags & SigmaValue) != 0)
+                    if ((flags & SigmaValue) == 0)
                       image->chromaticity.white_point.y=
                         image->chromaticity.white_point.x;
                     break;

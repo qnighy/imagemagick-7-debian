@@ -642,7 +642,7 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
         fuzz+=0.3;
       fuzz+=MagickEpsilon;
       difference_image=CompareImageChannels(reference_image,reconstruct_image,
-        CompositeChannels,MeanSquaredErrorMetric,&distortion,exception);
+        CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
       reference_image=DestroyImage(reference_image);
       if (difference_image == (Image *) NULL)
@@ -653,10 +653,10 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
           continue;
         }
       difference_image=DestroyImage(difference_image);
-      if ((distortion/QuantumRange) > fuzz)
+      if ((QuantumScale*distortion) > fuzz)
         {
           (void) FormatLocaleFile(stdout,"... fail (with distortion %g).\n",
-            distortion/QuantumRange);
+            QuantumScale*distortion);
           (*fail)++;
           continue;
         }
@@ -858,7 +858,7 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
         fuzz+=0.3;
       fuzz+=MagickEpsilon;
       difference_image=CompareImageChannels(reference_image,reconstruct_image,
-        CompositeChannels,MeanSquaredErrorMetric,&distortion,exception);
+        CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
       reference_image=DestroyImage(reference_image);
       if (difference_image == (Image *) NULL)
@@ -869,10 +869,10 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
           continue;
         }
       difference_image=DestroyImage(difference_image);
-      if ((distortion/QuantumRange) > fuzz)
+      if ((QuantumScale*distortion) > fuzz)
         {
           (void) FormatLocaleFile(stdout,"... fail (with distortion %g).\n",
-            distortion/QuantumRange);
+            QuantumScale*distortion);
           (*fail)++;
           continue;
         }
@@ -1036,7 +1036,7 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
         Compare reference to reconstruct image.
       */
       difference_image=CompareImageChannels(reference_image,reconstruct_image,
-        CompositeChannels,MeanSquaredErrorMetric,&distortion,exception);
+        CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
       reference_image=DestroyImage(reference_image);
       if (difference_image == (Image *) NULL)
@@ -1047,10 +1047,10 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
           continue;
         }
       difference_image=DestroyImage(difference_image);
-      if ((distortion/QuantumRange) > 0.0)
+      if ((QuantumScale*distortion) > 0.0)
         {
           (void) FormatLocaleFile(stdout,"... fail (with distortion %g).\n",
-            distortion/QuantumRange);
+            QuantumScale*distortion);
           (*fail)++;
           continue;
         }

@@ -421,7 +421,7 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
       {
         for (x=0; x < (ssize_t) image->columns; x++)
         {
-          SetPixelRed(q,(MagickRealType) PixelIntensityToQuantum(q) <=
+          SetPixelRed(q,(MagickRealType) PixelIntensityToQuantum(image,q) <=
             threshold ? 0 : QuantumRange);
           SetPixelGreen(q,GetPixelRed(q));
           SetPixelBlue(q,GetPixelRed(q));
@@ -540,6 +540,9 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
   MagickPixelPacket
     threshold;
 
+  MagickRealType
+    intensity;
+
   MagickStatusType
     flags;
 
@@ -554,8 +557,6 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
     return(MagickTrue);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
   GetMagickPixelPacket(image,&threshold);
   flags=ParseGeometry(thresholds,&geometry_info);
   threshold.red=geometry_info.rho;
@@ -579,6 +580,10 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
       threshold.opacity*=(QuantumRange/100.0);
       threshold.index*=(QuantumRange/100.0);
     }
+  intensity=MagickPixelIntensity(&threshold);
+  if ((IsMagickGray(&threshold) == MagickFalse) &&
+      (IsGrayColorspace(image->colorspace) != MagickFalse))
+    (void) TransformImageColorspace(image,sRGBColorspace);
   /*
     Black threshold image.
   */
@@ -613,7 +618,7 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
     {
       if (channel == DefaultChannels)
         {
-          if (PixelIntensity(q) < MagickPixelIntensity(&threshold))
+          if (PixelIntensity(q) < intensity)
             {
               SetPixelRed(q,0);
               SetPixelGreen(q,0);
@@ -1550,28 +1555,28 @@ printf("DEBUG levels  r=%u g=%u b=%u a=%u i=%u\n",
         if (levels.red) {
           t = (ssize_t) (QuantumScale*GetPixelRed(q)*(levels.red*d+1));
           l = t/d;  t = t-l*d;
-          SetPixelRed(q,RoundToQuantum((MagickRealType)
+          SetPixelRed(q,ClampToQuantum((MagickRealType)
             ((l+(t >= threshold))*(MagickRealType) QuantumRange/levels.red)));
         }
         if (levels.green) {
           t = (ssize_t) (QuantumScale*GetPixelGreen(q)*
             (levels.green*d+1));
           l = t/d;  t = t-l*d;
-          SetPixelGreen(q,RoundToQuantum((MagickRealType)
+          SetPixelGreen(q,ClampToQuantum((MagickRealType)
             ((l+(t >= threshold))*(MagickRealType) QuantumRange/levels.green)));
         }
         if (levels.blue) {
           t = (ssize_t) (QuantumScale*GetPixelBlue(q)*
             (levels.blue*d+1));
           l = t/d;  t = t-l*d;
-          SetPixelBlue(q,RoundToQuantum((MagickRealType)
+          SetPixelBlue(q,ClampToQuantum((MagickRealType)
             ((l+(t >= threshold))*(MagickRealType) QuantumRange/levels.blue)));
         }
         if (levels.opacity) {
           t = (ssize_t) ((1.0-QuantumScale*GetPixelOpacity(q))*
             (levels.opacity*d+1));
           l = t/d;  t = t-l*d;
-          SetPixelOpacity(q,RoundToQuantum((MagickRealType)
+          SetPixelOpacity(q,ClampToQuantum((MagickRealType)
             ((1.0-l-(t >= threshold))*(MagickRealType) QuantumRange/
             levels.opacity)));
         }
@@ -1579,7 +1584,7 @@ printf("DEBUG levels  r=%u g=%u b=%u a=%u i=%u\n",
           t = (ssize_t) (QuantumScale*GetPixelIndex(indexes+x)*
             (levels.index*d+1));
           l = t/d;  t = t-l*d;
-          SetPixelIndex(indexes+x,RoundToQuantum((MagickRealType) ((l+
+          SetPixelIndex(indexes+x,ClampToQuantum((MagickRealType) ((l+
             (t>=threshold))*(MagickRealType) QuantumRange/levels.index)));
         }
         q++;
@@ -1772,7 +1777,7 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
           MagickRealType
             intensity;
 
-          intensity=(MagickRealType) PixelIntensityToQuantum(q);
+          intensity=(MagickRealType) PixelIntensityToQuantum(image,q);
           if (intensity < min_threshold)
             threshold.index=min_threshold;
           else if (intensity > max_threshold)
@@ -1997,11 +2002,14 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
   MagickBooleanType
     status;
 
+  MagickOffsetType
+    progress;
+
   MagickPixelPacket
     threshold;
 
-  MagickOffsetType
-    progress;
+  MagickRealType
+    intensity;
 
   MagickStatusType
     flags;
@@ -2017,8 +2025,6 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
     return(MagickTrue);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
   flags=ParseGeometry(thresholds,&geometry_info);
   GetMagickPixelPacket(image,&threshold);
   threshold.red=geometry_info.rho;
@@ -2042,6 +2048,10 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
       threshold.opacity*=(QuantumRange/100.0);
       threshold.index*=(QuantumRange/100.0);
     }
+  intensity=MagickPixelIntensity(&threshold);
+  if ((IsMagickGray(&threshold) == MagickFalse) &&
+      (IsGrayColorspace(image->colorspace) != MagickFalse))
+    (void) TransformImageColorspace(image,sRGBColorspace);
   /*
     White threshold image.
   */
@@ -2076,7 +2086,7 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
     {
       if (channel == DefaultChannels)
         {
-          if (PixelIntensity(q) > MagickPixelIntensity(&threshold))
+          if (PixelIntensity(q) > intensity)
             {
               SetPixelRed(q,QuantumRange);
               SetPixelGreen(q,QuantumRange);

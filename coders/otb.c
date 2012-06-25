@@ -39,6 +39,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -331,7 +332,8 @@ static MagickBooleanType WriteOTBImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (IssRGBColorspace(image->colorspace) == MagickFalse)
+  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
+      (IsGrayImage(image,&image->exception) == MagickFalse))
     (void) TransformImageColorspace(image,sRGBColorspace);
   /*
     Convert image to a bi-level image.
@@ -361,7 +363,7 @@ static MagickBooleanType WriteOTBImage(const ImageInfo *image_info,Image *image)
     byte=0;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if (PixelIntensity(p) < ((Quantum) QuantumRange/2.0))
+      if (PixelIntensity(p) < (QuantumRange/2.0))
         byte|=0x1 << (7-bit);
       bit++;
       if (bit == 8)

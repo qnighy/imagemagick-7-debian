@@ -1202,7 +1202,7 @@ MagickExport MagickBooleanType ContrastStretchImageChannel(Image *image,
         Quantum
           intensity;
 
-        intensity=PixelIntensityToQuantum(p);
+        intensity=PixelIntensityToQuantum(image,p);
         histogram[ScaleQuantumToMap(intensity)].red++;
         histogram[ScaleQuantumToMap(intensity)].green++;
         histogram[ScaleQuantumToMap(intensity)].blue++;
@@ -2158,7 +2158,7 @@ MagickExport MagickBooleanType GammaImageChannel(Image *image,
               image->colormap[i].opacity=gamma_map[ScaleQuantumToMap(
                 image->colormap[i].opacity)];
             else
-              image->colormap[i].opacity=(Quantum) QuantumRange-gamma_map[
+              image->colormap[i].opacity=QuantumRange-gamma_map[
                 ScaleQuantumToMap((Quantum) (QuantumRange-
                 image->colormap[i].opacity))];
           }
@@ -2638,8 +2638,6 @@ MagickExport MagickBooleanType LevelImageChannel(Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) SetImageColorspace(image,sRGBColorspace);
   if (image->storage_class == PseudoClass)
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
     #pragma omp parallel for schedule(static,4) shared(progress,status) \
@@ -3106,7 +3104,7 @@ MagickExport MagickBooleanType LinearStretchImage(Image *image,
       break;
     for (x=(ssize_t) image->columns-1; x >= 0; x--)
     {
-      histogram[ScaleQuantumToMap(PixelIntensityToQuantum(p))]++;
+      histogram[ScaleQuantumToMap(PixelIntensityToQuantum(image,p))]++;
       p++;
     }
   }
@@ -3503,13 +3501,13 @@ MagickExport MagickBooleanType NegateImageChannel(Image *image,
               (image->colormap[i].green != image->colormap[i].blue))
             continue;
         if ((channel & RedChannel) != 0)
-          image->colormap[i].red=(Quantum) QuantumRange-
+          image->colormap[i].red=QuantumRange-
             image->colormap[i].red;
         if ((channel & GreenChannel) != 0)
-          image->colormap[i].green=(Quantum) QuantumRange-
+          image->colormap[i].green=QuantumRange-
             image->colormap[i].green;
         if ((channel & BlueChannel) != 0)
-          image->colormap[i].blue=(Quantum) QuantumRange-
+          image->colormap[i].blue=QuantumRange-
             image->colormap[i].blue;
       }
     }

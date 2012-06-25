@@ -1115,7 +1115,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               for (x=0; x < (ssize_t) mask_image->columns; x++)
               {
                 if (mask_image->matte == MagickFalse)
-                  SetPixelOpacity(q,PixelIntensityToQuantum(q));
+                  SetPixelOpacity(q,PixelIntensityToQuantum(mask_image,q));
                 SetPixelRed(q,GetPixelOpacity(q));
                 SetPixelGreen(q,GetPixelOpacity(q));
                 SetPixelBlue(q,GetPixelOpacity(q));
@@ -3352,6 +3352,7 @@ static MagickBooleanType MogrifyUsage(void)
       "                     evaluate an arithmetic, relational, or logical expression",
       "-extent geometry     set the image size",
       "-extract geometry    extract area from image",
+      "-features distance   analyze image features (e.g. contrast, correlation)",
       "-fft                 implements the discrete Fourier transform (DFT)",
       "-flip                flip image vertically",
       "-floodfill geometry color",
@@ -4590,6 +4591,17 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             i++;
             if (i == (ssize_t) (argc-1))
               ThrowMogrifyException(OptionError,"MissingArgument",option);
+            break;
+          }
+        if (LocaleCompare("features",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMogrifyInvalidArgumentException(option,argv[i]);
             break;
           }
         if (LocaleCompare("fill",option+1) == 0)

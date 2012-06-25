@@ -350,14 +350,15 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
           (void) GetFillColor(draw_info,x,y,&fill_color);
           SetMagickPixelPacket(image,&fill_color,(IndexPacket *) NULL,&fill);
           if (image->colorspace == CMYKColorspace)
-            ConvertRGBToCMYK(&fill);
+            ConvertsRGBToCMYK(&fill);
           if ((channel & RedChannel) != 0)
             SetPixelRed(q,ClampToQuantum(fill.red));
           if ((channel & GreenChannel) != 0)
             SetPixelGreen(q,ClampToQuantum(fill.green));
           if ((channel & BlueChannel) != 0)
             SetPixelBlue(q,ClampToQuantum(fill.blue));
-          if ((channel & OpacityChannel) != 0)
+          if (((channel & OpacityChannel) != 0) ||
+              (draw_info->fill.opacity != OpaqueOpacity))
             SetPixelOpacity(q,ClampToQuantum(fill.opacity));
           if (((channel & IndexChannel) != 0) &&
               (image->colorspace == CMYKColorspace))
@@ -482,9 +483,6 @@ MagickExport MagickBooleanType GradientImage(Image *image,
   */
   status=DrawGradientImage(image,draw_info);
   draw_info=DestroyDrawInfo(draw_info);
-  if ((start_color->opacity == OpaqueOpacity) &&
-      (stop_color->opacity == OpaqueOpacity))
-    image->matte=MagickFalse;
   return(status);
 }
 
@@ -677,7 +675,7 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
       {
         for (u=0; u < (ssize_t) width; u++)
         {
-          k=(ssize_t) ScaleQuantumToChar(PixelIntensityToQuantum(p+u+i));
+          k=(ssize_t) ScaleQuantumToChar(PixelIntensityToQuantum(image,p+u+i));
           histogram[k]++;
           if (histogram[k] > count)
             {

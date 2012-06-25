@@ -1227,7 +1227,7 @@
 
 /* Define to the system default library search path. */
 #ifndef MAGICKCORE_LT_DLSEARCH_PATH
-#define MAGICKCORE_LT_DLSEARCH_PATH "/lib64:/usr/lib64:/lib:/usr/lib:/usr/lib64/atlas:/usr/lib/llvm:/usr/lib64/llvm:/usr/local/lib:/usr/lib64/mysql:/usr/lib64/nvidia:/usr/lib64/qt-3.3/lib:/usr/lib64/tcl8.5/tclx8.4:/usr/lib64/tcl8.5:/usr/lib64/tracker-0.14:/usr/lib/wine/:/usr/lib64/wine/:/usr/lib64/xulrunner-2"
+#define MAGICKCORE_LT_DLSEARCH_PATH "/lib64:/usr/lib64:/lib:/usr/lib:/usr/lib64/atlas:/usr/lib64/freetype-freeworld:/usr/lib/llvm:/usr/lib64/llvm:/usr/local/lib:/usr/lib64/mysql:/usr/lib64/nvidia:/usr/lib64/qt-3.3/lib:/usr/lib64/tcl8.5/tclx8.4:/usr/lib64/tcl8.5:/usr/lib64/tracker-0.14:/usr/lib/wine/:/usr/lib64/wine/:/usr/lib64/xulrunner-2"
 #endif
 
 /* The archive extension */
@@ -1302,7 +1302,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.7-7"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.7-9"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1317,7 +1317,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.7.7-7"
+#define MAGICKCORE_PACKAGE_VERSION "6.7.7-9"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1507,7 +1507,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.7.7-7"
+#define MAGICKCORE_VERSION "6.7.7-9"
 #endif
 
 /* Define if you have WEBP library */

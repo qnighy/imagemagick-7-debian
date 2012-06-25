@@ -44,6 +44,7 @@
 #include "magick/artifact.h"
 #include "magick/cache.h"
 #include "magick/cache-view.h"
+#include "magick/color-private.h"
 #include "magick/colorspace.h"
 #include "magick/colorspace-private.h"
 #include "magick/composite-private.h"
@@ -2251,10 +2252,10 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
     output_scaling = 1.0;
     if (artifact != (const char *) NULL) {
       output_scaling = fabs(StringToDouble(artifact,(char **) NULL));
-      geometry.width  *= output_scaling;
-      geometry.height *= output_scaling;
-      geometry.x      *= output_scaling;
-      geometry.y      *= output_scaling;
+      geometry.width=(size_t) (output_scaling*geometry.width+0.5);
+      geometry.height=(size_t) (output_scaling*geometry.height+0.5);
+      geometry.x=(ssize_t) (output_scaling*geometry.x+0.5);
+      geometry.y=(ssize_t) (output_scaling*geometry.y+0.5);
       if ( output_scaling < 0.1 ) {
         coeff = (double *) RelinquishMagickMemory(coeff);
         (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
@@ -2283,10 +2284,13 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
       distort_image=DestroyImage(distort_image);
       return((Image *) NULL);
     }
-  distort_image->page.x=geometry.x;
-  distort_image->page.y=geometry.y;
+  if ((IsPixelGray(&distort_image->background_color) == MagickFalse) &&
+      (IsGrayColorspace(distort_image->colorspace) != MagickFalse))
+    (void) TransformImageColorspace(distort_image,sRGBColorspace);
   if (distort_image->background_color.opacity != OpaqueOpacity)
     distort_image->matte=MagickTrue;
+  distort_image->page.x=geometry.x;
+  distort_image->page.y=geometry.y;
 
   { /* ----- MAIN CODE -----
        Sample the source image to each pixel in the distort image.
@@ -2382,7 +2386,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
       SetMagickPixelPacket(distort_image,&distort_image->matte_color,
         (IndexPacket *) NULL, &invalid);
       if (distort_image->colorspace == CMYKColorspace)
-        ConvertRGBToCMYK(&invalid);   /* what about other color spaces? */
+        ConvertsRGBToCMYK(&invalid);   /* what about other color spaces? */
 
       for (i=0; i < (ssize_t) distort_image->columns; i++)
       {
@@ -2842,8 +2846,6 @@ MagickExport Image *RotateImage(const Image *image,const double degrees,
   distort_image=CloneImage(image,0,0,MagickTrue,exception);
   if (distort_image == (Image *) NULL)
     return((Image *) NULL);
-  if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(distort_image,sRGBColorspace);
   (void) SetImageVirtualPixelMethod(distort_image,BackgroundVirtualPixelMethod);
   rotate_image=DistortImage(distort_image,ScaleRotateTranslateDistortion,1,
     &degrees,MagickTrue,exception);

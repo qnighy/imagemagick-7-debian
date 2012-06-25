@@ -25,7 +25,7 @@ extern "C" {
 #include <magick/color.h>
 
 #define OpaqueOpacity  ((Quantum) 0UL)
-#define TransparentOpacity  ((Quantum) QuantumRange)
+#define TransparentOpacity  (QuantumRange)
 
 typedef enum
 {
@@ -536,7 +536,6 @@ extern MagickExport MagickBooleanType
   SetImageOpacity(Image *,const Quantum),
   SetImageChannels(Image *,const size_t),
   SetImageStorageClass(Image *,const ClassType),
-  SetImageType(Image *,const ImageType),
   StripImage(Image *),
   SyncImage(Image *),
   SyncImageSettings(const ImageInfo *,Image *),
