@@ -19,7 +19,7 @@ AC_PREREQ(2.67)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [7])
 m4_define([magick_micro_version], [7])
-m4_define([magick_patchlevel_version], [9])
+m4_define([magick_patchlevel_version], [10])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "svnversion | sed -r 's/([0-9]+).*/\1/'"]))
@@ -2028,10 +2028,10 @@ dnl ===========================================================================
 # Check for GVC delegate library.
 #
 AC_ARG_WITH(gvc,
-    [AC_HELP_STRING([--without-gvc],
+    [AC_HELP_STRING([--with-gvc],
                     [disable GVC support])],
     [with_gvc=$withval],
-    [with_gvc='yes'])
+    [with_gvc='no'])
 
 if test "$with_gvc" != 'yes'; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-gvc=$with_gvc "

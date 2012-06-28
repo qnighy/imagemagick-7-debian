@@ -508,9 +508,8 @@ static MagickBooleanType WriteXBMImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-      (IsGrayImage(image,&image->exception) == MagickFalse))
-     (void) TransformImageColorspace(image,sRGBColorspace);
+  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   /*
     Write X bitmap header.
   */

@@ -104,9 +104,7 @@
 /* #undef GS_DELEGATE */
 
 /* Define if you have GVC library */
-#ifndef MAGICKCORE_GVC_DELEGATE
-#define MAGICKCORE_GVC_DELEGATE 1
-#endif
+/* #undef GVC_DELEGATE */
 
 /* Define to 1 if you have the `acosh' function. */
 #ifndef MAGICKCORE_HAVE_ACOSH
@@ -1302,7 +1300,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.7-9"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.7.7-10"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1317,7 +1315,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.7.7-9"
+#define MAGICKCORE_PACKAGE_VERSION "6.7.7-10"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1507,7 +1505,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.7.7-9"
+#define MAGICKCORE_VERSION "6.7.7-10"
 #endif
 
 /* Define if you have WEBP library */

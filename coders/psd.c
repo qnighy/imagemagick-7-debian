@@ -706,7 +706,7 @@ static MagickBooleanType ReadPSDLayer(Image *image,const size_t channels,
         }
         case 4:
         {
-          if ((IssRGBColorspace(image->colorspace) == MagickTrue) &&
+          if ((IssRGBCompatibleColorspace(image->colorspace) != MagickFalse) &&
               (channels > 3))
             break;
           if (image->matte != MagickFalse)
@@ -2165,8 +2165,7 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,Image *image)
            (image->colorspace != CMYKColorspace)) &&
           (image_info->colorspace != CMYKColorspace))
         {
-          if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-              (IsGrayImage(image,&image->exception) == MagickFalse))
+          if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
             (void) TransformImageColorspace(image,sRGBColorspace);
           (void) WriteBlobMSBShort(image,(unsigned short)
             (image->storage_class == PseudoClass ? IndexedMode : RGBMode));

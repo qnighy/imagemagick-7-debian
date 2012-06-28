@@ -27,7 +27,7 @@ extern "C" {
 #include <magick/pixel.h>
 #include <magick/pixel-private.h>
 
-static inline void ConvertsRGBToCMYK(MagickPixelPacket *pixel)
+static inline void ConvertRGBToCMYK(MagickPixelPacket *pixel)
 {
   MagickRealType
     black,
@@ -38,10 +38,20 @@ static inline void ConvertsRGBToCMYK(MagickPixelPacket *pixel)
     red,
     yellow;
                                                                                 
-  red=DecompandsRGB(QuantumScale*pixel->red);
-  green=DecompandsRGB(QuantumScale*pixel->green);
-  blue=DecompandsRGB(QuantumScale*pixel->blue);
-  if ((red == 0) && (green == 0) && (blue == 0))
+  if (pixel->colorspace != sRGBColorspace)
+    {
+      red=QuantumScale*pixel->red;
+      green=QuantumScale*pixel->green;
+      blue=QuantumScale*pixel->blue;
+    }
+  else
+    {
+      red=QuantumRange*DecompandsRGB(QuantumScale*pixel->red);
+      green=QuantumRange*DecompandsRGB(QuantumScale*pixel->green);
+      blue=QuantumRange*DecompandsRGB(QuantumScale*pixel->blue);
+    }
+  if ((fabs(red) < MagickEpsilon) && (fabs(green) < MagickEpsilon) &&
+      (fabs(blue) < MagickEpsilon))
     {
       pixel->index=(MagickRealType) QuantumRange;
       return;
@@ -92,6 +102,14 @@ static inline MagickBooleanType IssRGBColorspace(
   const ColorspaceType colorspace)
 {
   if ((colorspace == sRGBColorspace) || (colorspace == TransparentColorspace))
+    return(MagickTrue);
+  return(MagickFalse);
+}
+
+static inline MagickBooleanType IssRGBCompatibleColorspace(
+  const ColorspaceType colorspace)
+{
+  if ((colorspace == sRGBColorspace) || (colorspace == TransparentColorspace) ||      (colorspace == RGBColorspace) || (colorspace == GRAYColorspace))
     return(MagickTrue);
   return(MagickFalse);
 }
