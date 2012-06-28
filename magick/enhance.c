@@ -617,8 +617,8 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
         double
           luma;
 
-        luma=0.2126*image->colormap[i].red+0.7152*image->colormap[i].green+
-          0.0722*image->colormap[i].blue;
+        luma=0.21267*image->colormap[i].red+0.71516*image->colormap[i].green+
+          0.07217*image->colormap[i].blue;
         image->colormap[i].red=ClampToQuantum(luma+color_correction.saturation*
           cdl_map[ScaleQuantumToMap(image->colormap[i].red)].red-luma);
         image->colormap[i].green=ClampToQuantum(luma+
@@ -660,8 +660,8 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
       }
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      luma=0.2126*GetPixelRed(q)+0.7152*GetPixelGreen(q)+
-        0.0722*GetPixelBlue(q);
+      luma=0.21267*GetPixelRed(q)+0.71516*GetPixelGreen(q)+
+        0.07217*GetPixelBlue(q);
       SetPixelRed(q,ClampToQuantum(luma+color_correction.saturation*
         (cdl_map[ScaleQuantumToMap(GetPixelRed(q))].red-luma)));
       SetPixelGreen(q,ClampToQuantum(luma+color_correction.saturation*
@@ -3285,6 +3285,8 @@ MagickExport MagickBooleanType ModulateImage(Image *image,const char *modulate)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (modulate == (char *) NULL)
     return(MagickFalse);
+  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
+    (void) TransformImageColorspace(image,sRGBColorspace);
   flags=ParseGeometry(modulate,&geometry_info);
   percent_brightness=geometry_info.rho;
   percent_saturation=geometry_info.sigma;
@@ -3308,31 +3310,38 @@ MagickExport MagickBooleanType ModulateImage(Image *image,const char *modulate)
         dynamic_number_threads(image,image->columns,1,1)
 #endif
       for (i=0; i < (ssize_t) image->colors; i++)
+      {
+        Quantum
+          blue,
+          green,
+          red;
+
+        red=image->colormap[i].red;
+        green=image->colormap[i].green;
+        blue=image->colormap[i].blue;
         switch (colorspace)
         {
           case HSBColorspace:
           {
             ModulateHSB(percent_hue,percent_saturation,percent_brightness,
-              &image->colormap[i].red,&image->colormap[i].green,
-              &image->colormap[i].blue);
+              &red,&green,&blue);
             break;
           }
           case HSLColorspace:
           default:
           {
             ModulateHSL(percent_hue,percent_saturation,percent_brightness,
-              &image->colormap[i].red,&image->colormap[i].green,
-              &image->colormap[i].blue);
+              &red,&green,&blue);
             break;
           }
           case HWBColorspace:
           {
             ModulateHWB(percent_hue,percent_saturation,percent_brightness,
-              &image->colormap[i].red,&image->colormap[i].green,
-              &image->colormap[i].blue);
+              &red,&green,&blue);
             break;
           }
         }
+      }
     }
   /*
     Modulate image.
@@ -3347,11 +3356,6 @@ MagickExport MagickBooleanType ModulateImage(Image *image,const char *modulate)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    Quantum
-      blue,
-      green,
-      red;
-
     register PixelPacket
       *restrict q;
 
@@ -3368,6 +3372,11 @@ MagickExport MagickBooleanType ModulateImage(Image *image,const char *modulate)
       }
     for (x=0; x < (ssize_t) image->columns; x++)
     {
+      Quantum
+        blue,
+        green,
+        red;
+
       red=GetPixelRed(q);
       green=GetPixelGreen(q);
       blue=GetPixelBlue(q);

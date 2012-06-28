@@ -1964,6 +1964,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
     num_text,
     num_text_total,
     num_passes,
+    number_colors,
     pass,
     ping_bit_depth,
     ping_color_type,
@@ -2083,6 +2084,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   transparent_color.blue=65537;
   transparent_color.opacity=65537;
 
+  number_colors=0;
   num_text = 0;
   num_text_total = 0;
   num_raw_profiles = 0;
@@ -2443,9 +2445,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
   if (png_get_valid(ping,ping_info,PNG_INFO_PLTE))
     {
-      int
-        number_colors;
-
       png_colorp
         palette;
 
@@ -2699,9 +2698,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 #endif
       if ((int) ping_color_type == PNG_COLOR_TYPE_PALETTE)
         {
-          int
-            number_colors;
-
           png_colorp
             palette;
 
@@ -2724,9 +2720,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
       if ((int) ping_color_type == PNG_COLOR_TYPE_PALETTE)
         {
-          int
-            number_colors;
-
           png_colorp
             palette;
 
@@ -2786,9 +2779,29 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
          Magick_ColorType_from_PNG_ColorType((int)ping_color_type));
      (void) SetImageProperty(image,"png:IHDR.color_type      ",msg);
 
-     (void) FormatLocaleString(msg,MaxTextExtent,"%d",
-        (int) ping_interlace_method);
+     if (ping_interlace_method == 0)
+       {
+         (void) FormatLocaleString(msg,MaxTextExtent,"%d (Not interlaced)",
+            (int) ping_interlace_method);
+       }
+     else if (ping_interlace_method == 1)
+       {
+         (void) FormatLocaleString(msg,MaxTextExtent,"%d (Adam7 method)",
+            (int) ping_interlace_method);
+       }
+     else
+       {
+         (void) FormatLocaleString(msg,MaxTextExtent,"%d (Unknown method)",
+            (int) ping_interlace_method);
+       }
      (void) SetImageProperty(image,"png:IHDR.interlace_method",msg);
+
+     if (number_colors != 0)
+       {
+         (void) FormatLocaleString(msg,MaxTextExtent,"%d",
+            (int) number_colors);
+         (void) SetImageProperty(image,"png:PLTE.number_colors   ",msg);
+       }
    }
 
   /*
@@ -3466,9 +3479,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
           if (png_get_valid(ping,ping_info,PNG_INFO_PLTE))
             {
-              int
-                number_colors;
-
               png_colorp
                 plte;
 
@@ -3709,6 +3719,9 @@ static Image *ReadPNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       ThrowReaderException(CorruptImageError,"CorruptImage");
     }
 
+  if ((IssRGBColorspace(image->colorspace) != MagickFalse) &&
+      (image->gamma == 1.0))
+    SetImageColorspace(image,RGBColorspace);
   if (LocaleCompare(image_info->magick,"PNG24") == 0)
     {
       (void) SetImageType(image,TrueColorType);
@@ -7701,9 +7714,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
         }
     }
 
-  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-      (IsRGBColorspace(image->colorspace) == MagickFalse) &&
-      (IsGrayImage(image,&image->exception) == MagickFalse))
+  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
     (void) TransformImageColorspace(image,sRGBColorspace);
 
   /*
@@ -8171,6 +8182,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
             {
                opaque[i] = image->background_color;
                ping_background.index = i;
+               number_opaque++;
                if (logging != MagickFalse)
                  {
                    (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -8209,9 +8221,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
      if (mng_info->write_png_colortype != 7) /* We won't need this info */
        {
          ping_have_color=MagickFalse;
-         if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-             (IsRGBColorspace(image->colorspace) == MagickFalse) &&
-             (IsGrayColorspace(image->colorspace) == MagickFalse))
+         if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
            ping_have_color=MagickTrue;
          ping_have_non_bw=MagickFalse;
 
@@ -9565,7 +9575,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
                 ping_bit_depth=1;
                 one=1;
 
-                while ((one << ping_bit_depth) < number_colors)
+                while ((one << ping_bit_depth) < (size_t) number_colors)
                   ping_bit_depth <<= 1;
               }
 
@@ -9819,7 +9829,11 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   if (mng_info->write_png_compression_strategy == 0)
     {
         if ((quality %10) == 8 || (quality %10) == 9)
-            mng_info->write_png_compression_strategy=Z_RLE;
+#ifdef Z_RLE  /* Z_RLE was added to zlib-1.2.0 */
+          mng_info->write_png_compression_strategy=Z_RLE+1;
+#else
+          mng_info->write_png_compression_strategy = Z_DEFAULT_STRATEGY+1;
+#endif
     }
 
   if (mng_info->write_png_compression_filter == 0)
