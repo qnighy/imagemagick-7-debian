@@ -4,7 +4,7 @@ imagemagick (8:6.7.7.10-1) unstable; urgency=low
     /usr/lib/x86_64-linux-gnu/ImageMagick-6.7.7/modules-Q16/coders/pango.so",
     thanks to Andreas Beckmann (Closes: #679188 and Closes: #679063).
   * New upstream version:
-  - Fix FTBS on arm.
+  - Fix FTBS on arm (closes: #679430). 
   - drop previous patch queue (merged upstream).
   - Fix pointer size missmatch.
   - Document feature: "SVG displayed in wrong size", thanks to Marc-Jano Knopp
