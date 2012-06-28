@@ -1,3 +1,17 @@
+imagemagick (8:6.7.7.10-1) unstable; urgency=low
+
+  * Bug fix: "fails to upgrade from wheezy - trying to overwrite
+    /usr/lib/x86_64-linux-gnu/ImageMagick-6.7.7/modules-Q16/coders/pango.so",
+    thanks to Andreas Beckmann (Closes: #679188 and Closes: #679063).
+  * New upstream version:
+  - Fix FTBS on arm.
+  - drop previous patch queue (merged upstream).
+  - Fix pointer size missmatch.
+  - Document feature: "SVG displayed in wrong size", thanks to Marc-Jano Knopp
+    (Closes: #632526).
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 28 Jun 2012 17:44:21 +0200
+
 imagemagick (8:6.7.7.9-1) unstable; urgency=low
   [ Bastien Roucariès ]
    
