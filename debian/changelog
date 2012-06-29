@@ -1,3 +1,9 @@
+imagemagick (8:6.7.7.10-2) unstable; urgency=low
+
+  * Really solve the upgrade problem (Closes: #679188, #679063).
+
+ -- Vincent Fourmond <fourmond@debian.org>  Fri, 29 Jun 2012 18:42:07 +0200
+
 imagemagick (8:6.7.7.10-1) unstable; urgency=low
 
   * Bug fix: "fails to upgrade from wheezy - trying to overwrite
