@@ -6,13 +6,17 @@ This package use gitpkg over quilt over git svn
 
 git clone git+ssh://login@git.debian.org/git/collab-maint/imagemagick.git
 git svn init -s --prefix=origin/  https://www.imagemagick.org/subversion/ImageMagick/
+git config gitpkg.orig-compressor bzip2
+git config gitpkg.deb-export-hook /usr/share/gitpkg/hooks/quilt-patches-deb-export-hook
+it config gitpkg.pre-export-hook /usr/share/gitpkg/hooks/pristine-tar-pre-export-hook
+
 
 * pull trunk
 
 git checkout -f trunk
 git svn fetch
 
-* new upstream version
+* new upstream version (or use the script under debian/script under the last commited debian version)
 
 git svn fetch #retrieve recent svn commit
 git checkout 9682bf563240ad971717554bab3f69f7252767f5 # git revision for svn commit 7980 aka version 6.7.7.0
@@ -75,4 +79,4 @@ debian/patches and applied during the build.
 
 More information: /usr/share/doc/quilt/README.source
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>, Wed, 13 Jun 2012 14:34:16 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>, Wed, 11 Jul 2012 17:57:00 +0200
