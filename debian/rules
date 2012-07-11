@@ -54,7 +54,8 @@ build-stamp: $(QUILT_STAMPFN)
 	--without-fpx \
 	--with-perl-options='INSTALLDIRS=vendor' \
 	--x-includes=/usr/include/X11 \
-	--x-libraries=/usr/lib/X11 
+	--x-libraries=/usr/lib/X11 \
+	--without-rsvg
 
 	# Patch the generated libtool to avoid passing -rpath when linking,
 	# and to explicitly link libraries against the libraries they
