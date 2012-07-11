@@ -77,8 +77,8 @@ build-stamp: $(QUILT_STAMPFN)
 	# build icons cache
 	while read SIZE; do \
 		mkdir -p $(CURDIR)/debian/icons/$$SIZE/apps/ ;\
-		echo $$SIZE | sed "s/^\([[:digit:]]*\)x\([[:digit:]]*\)$$/-w \1 -h \2/g" \
-		| xargs rsvg-convert $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg > $(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
+		$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize $$SIZE \
+			$(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
 	done < $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
 	# make xpm
 	$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize 32x32 \
