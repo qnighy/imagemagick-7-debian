@@ -24,10 +24,11 @@ NUMJOBS := $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 MAKEFLAGS += -j$(NUMJOBS)
 endif
 
-# This is very hackish, but should do the trick. For some reason, the
+# For some reason, the
 # libtools wrapper scripts don't work.
 # And for some reasons, the delegates are missing here.
-CONVERT = MAGICK_CONFIGURE_PATH=./config LD_LIBRARY_PATH=$(CURDIR)/magick/.libs:$(CURDIR)/wand/.libs MAGICK_CODER_MODULE_PATH=$(CURDIR)/coders/.libs  $(CURDIR)/utilities/.libs/convert
+# use the recently builded convert using upstream script
+CONVERT = $(CURDIR)/magick.sh convert
 
 # ARGH, we use graphicsmagick convert to avoid painful circular dependencies...
 # CONVERT = /usr/bin/convert
