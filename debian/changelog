@@ -1,3 +1,10 @@
+imagemagick (8:6.7.7.10-3) unstable; urgency=high
+
+  * Bug fix: "CVE-2012-3437", ImageMagick: Magick_png_malloc() size 
+    argument thanks to Moritz Muehlenhoff (Closes: #683285).
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 30 Jul 2012 22:47:47 +0200
+
 imagemagick (8:6.7.7.10-2) unstable; urgency=low
 
   * Really solve the upgrade problem (Closes: #679188, #679063).
