@@ -47,6 +47,7 @@
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
+#include "magick/channel.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colormap.h"
@@ -1116,6 +1117,28 @@ Magick_RenderingIntent_from_PNG_RenderingIntent(const int ping_intent)
     }
 }
 
+static char *
+Magick_RenderingIntentString_from_PNG_RenderingIntent(const int ping_intent)
+{
+  switch (ping_intent)
+  {
+    case 0:
+      return "Perceptual Intent";
+
+    case 1:
+      return "Relative Intent";
+
+    case 2:
+      return "Saturation Intent";
+
+    case 3:
+      return "Absolute Intent";
+
+    default:
+      return "Undefined Intent";
+    }
+}
+
 
 static char *
 Magick_ColorType_from_PNG_ColorType(const int ping_colortype)
@@ -1756,7 +1779,11 @@ static void MagickPNGWarningHandler(png_struct *ping,png_const_charp message)
 }
 
 #ifdef PNG_USER_MEM_SUPPORTED
-static png_voidp Magick_png_malloc(png_structp png_ptr,png_uint_32 size)
+#if PNG_LIBPNG_VER >= 14000
+static png_voidp Magick_png_malloc(png_structp png_ptr,png_alloc_size_t size)
+#else
+static png_voidp Magick_png_malloc(png_structp png_ptr,png_size_t size)
+#endif
 {
   (void) png_ptr;
   return((png_voidp) AcquireMagickMemory((size_t) size));
@@ -1959,11 +1986,12 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
     *image;
 
   int
-    intent,
+    intent, /* "PNG Rendering intent", which is ICC intent + 1 */
     num_raw_profiles,
     num_text,
     num_text_total,
     num_passes,
+    number_colors,
     pass,
     ping_bit_depth,
     ping_color_type,
@@ -1981,6 +2009,10 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
   MagickBooleanType
     logging,
+    ping_found_cHRM,
+    ping_found_gAMA,
+    ping_found_iCCP,
+    ping_found_sRGB,
     status;
 
   png_bytep
@@ -2074,8 +2106,14 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   image=mng_info->image;
 
   if (logging != MagickFalse)
+  {
     (void)LogMagickEvent(CoderEvent,GetMagickModule(),
       "  image->matte=%d",(int) image->matte);
+
+    (void)LogMagickEvent(CoderEvent,GetMagickModule(),
+      "  image->rendering_intent=%d",(int) image->rendering_intent);
+  }
+  intent=Magick_RenderingIntent_to_PNG_RenderingIntent(image->rendering_intent);
 
   /* Set to an out-of-range color unless tRNS chunk is present */
   transparent_color.red=65537;
@@ -2083,9 +2121,15 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   transparent_color.blue=65537;
   transparent_color.opacity=65537;
 
+  number_colors=0;
   num_text = 0;
   num_text_total = 0;
   num_raw_profiles = 0;
+
+  ping_found_cHRM = MagickFalse;
+  ping_found_gAMA = MagickFalse;
+  ping_found_iCCP = MagickFalse;
+  ping_found_sRGB = MagickFalse;
 
   /*
     Allocate the PNG structures
@@ -2242,14 +2286,17 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   image->depth=ping_bit_depth;
   image->depth=GetImageQuantumDepth(image,MagickFalse);
   image->interlace=ping_interlace_method != 0 ? PNGInterlace : NoInterlace;
+
   if (((int) ping_color_type == PNG_COLOR_TYPE_GRAY) ||
       ((int) ping_color_type == PNG_COLOR_TYPE_GRAY_ALPHA))
     {
       image->rendering_intent=UndefinedIntent;
+      intent=Magick_RenderingIntent_to_PNG_RenderingIntent(UndefinedIntent);
       image->gamma=1.000;
       (void) ResetMagickMemory(&image->chromaticity,0,
         sizeof(image->chromaticity));
     }
+
   if (logging != MagickFalse)
     {
       (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -2267,6 +2314,38 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
       (void) LogMagickEvent(CoderEvent,GetMagickModule(),
         "    PNG interlace_method: %d, filter_method: %d",
         ping_interlace_method,ping_filter_method);
+    }
+
+  if (png_get_valid(ping,ping_info,PNG_INFO_gAMA))
+    {
+      ping_found_gAMA=MagickTrue;
+      if (logging != MagickFalse)
+        (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+          "    Found PNG gAMA chunk.");
+    }
+
+  if (png_get_valid(ping,ping_info,PNG_INFO_cHRM))
+    {
+      ping_found_cHRM=MagickTrue;
+      if (logging != MagickFalse)
+        (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+          "    Found PNG cHRM chunk.");
+    }
+
+  if (png_get_valid(ping,ping_info,PNG_INFO_iCCP))
+    {
+      ping_found_iCCP=MagickTrue;
+      if (logging != MagickFalse)
+        (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+          "    Found PNG iCCP chunk.");
+    }
+
+  if (png_get_valid(ping,ping_info,PNG_INFO_sRGB))
+    {
+      ping_found_sRGB=MagickTrue;
+      if (logging != MagickFalse)
+        (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+          "    Found PNG sRGB chunk.");
     }
 
 #ifdef PNG_READ_iCCP_SUPPORTED
@@ -2348,6 +2427,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
              "    Reading PNG gAMA chunk: gamma: %f",file_gamma);
        }
   }
+
   if (!png_get_valid(ping,ping_info,PNG_INFO_cHRM))
     {
       if (mng_info->have_global_chrm != MagickFalse)
@@ -2376,9 +2456,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
         &image->chromaticity.blue_primary.x,
         &image->chromaticity.blue_primary.y);
 
-      if (logging != MagickFalse)
-        (void) LogMagickEvent(CoderEvent,GetMagickModule(),
-          "    Reading PNG cHRM chunk.");
     }
 
   if (image->rendering_intent != UndefinedIntent)
@@ -2443,9 +2520,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
   if (png_get_valid(ping,ping_info,PNG_INFO_PLTE))
     {
-      int
-        number_colors;
-
       png_colorp
         palette;
 
@@ -2699,9 +2773,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 #endif
       if ((int) ping_color_type == PNG_COLOR_TYPE_PALETTE)
         {
-          int
-            number_colors;
-
           png_colorp
             palette;
 
@@ -2724,9 +2795,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
       if ((int) ping_color_type == PNG_COLOR_TYPE_PALETTE)
         {
-          int
-            number_colors;
-
           png_colorp
             palette;
 
@@ -2786,9 +2854,29 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
          Magick_ColorType_from_PNG_ColorType((int)ping_color_type));
      (void) SetImageProperty(image,"png:IHDR.color_type      ",msg);
 
-     (void) FormatLocaleString(msg,MaxTextExtent,"%d",
-        (int) ping_interlace_method);
+     if (ping_interlace_method == 0)
+       {
+         (void) FormatLocaleString(msg,MaxTextExtent,"%d (Not interlaced)",
+            (int) ping_interlace_method);
+       }
+     else if (ping_interlace_method == 1)
+       {
+         (void) FormatLocaleString(msg,MaxTextExtent,"%d (Adam7 method)",
+            (int) ping_interlace_method);
+       }
+     else
+       {
+         (void) FormatLocaleString(msg,MaxTextExtent,"%d (Unknown method)",
+            (int) ping_interlace_method);
+       }
      (void) SetImageProperty(image,"png:IHDR.interlace_method",msg);
+
+     if (number_colors != 0)
+       {
+         (void) FormatLocaleString(msg,MaxTextExtent,"%d",
+            (int) number_colors);
+         (void) SetImageProperty(image,"png:PLTE.number_colors   ",msg);
+       }
    }
 
   /*
@@ -3335,12 +3423,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
            */
           SetImageColorspace(image,GRAYColorspace);
         }
-    
-      else
-        {
-          /* Use colorspace data from PNG ancillary chunks */
-          image->colorspace=GRAYColorspace;
-        }
     }
 
   for (j = 0; j < 2; j++)
@@ -3466,9 +3548,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
           if (png_get_valid(ping,ping_info,PNG_INFO_PLTE))
             {
-              int
-                number_colors;
-
               png_colorp
                 plte;
 
@@ -3519,7 +3598,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
          (void) SetImageProperty(image,"png:text-encoded profiles",msg);
        }
 
-     if (png_get_valid(ping,ping_info,PNG_INFO_cHRM))
+     if (ping_found_cHRM != MagickFalse)
        {
          (void) FormatLocaleString(msg,MaxTextExtent,"%s",
             "chunk was found (see Chromaticity, above)");
@@ -3536,23 +3615,24 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
      (void) FormatLocaleString(msg,MaxTextExtent,"%s",
         "chunk was found");
 
-     if (png_get_valid(ping,ping_info,PNG_INFO_iCCP))
+     if (ping_found_iCCP != MagickFalse)
         (void) SetImageProperty(image,"png:iCCP                 ",msg);
 
      if (png_get_valid(ping,ping_info,PNG_INFO_tRNS))
         (void) SetImageProperty(image,"png:tRNS                 ",msg);
 
 #if defined(PNG_sRGB_SUPPORTED)
-     if (png_get_valid(ping,ping_info,PNG_INFO_sRGB))
+     if (ping_found_sRGB != MagickFalse)
        {
          (void) FormatLocaleString(msg,MaxTextExtent,
-            "intent=%d (See Rendering intent)",
-            (int) intent);
+            "intent=%d (%s)",
+            (int) intent,
+            Magick_RenderingIntentString_from_PNG_RenderingIntent(intent));
          (void) SetImageProperty(image,"png:sRGB                 ",msg);
        }
 #endif
 
-     if (png_get_valid(ping,ping_info,PNG_INFO_gAMA))
+     if (ping_found_gAMA != MagickFalse)
        {
          (void) FormatLocaleString(msg,MaxTextExtent,
             "gamma=%.8g (See Gamma, above)", file_gamma);
@@ -3709,6 +3789,9 @@ static Image *ReadPNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       ThrowReaderException(CorruptImageError,"CorruptImage");
     }
 
+  if ((IssRGBColorspace(image->colorspace) != MagickFalse) &&
+      (image->gamma == 1.0))
+    SetImageColorspace(image,RGBColorspace);
   if (LocaleCompare(image_info->magick,"PNG24") == 0)
     {
       (void) SetImageType(image,TrueColorType);
@@ -7296,12 +7379,22 @@ Magick_png_write_raw_profile(const ImageInfo *image_info,png_struct *ping,
          (char *) profile_type, (double) length);
      }
 
-   text=(png_textp) png_malloc(ping,(png_uint_32) sizeof(png_text));
+#if PNG_LIBPNG_VER >= 14000
+   text=(png_textp) png_malloc(ping,(png_alloc_size_t) sizeof(png_text));
+#else
+   text=(png_textp) png_malloc(ping,(png_size_t) sizeof(png_text));
+#endif
    description_length=(png_uint_32) strlen((const char *) profile_description);
    allocated_length=(png_uint_32) (length*2 + (length >> 5) + 20
       + description_length);
-   text[0].text=(png_charp) png_malloc(ping,allocated_length);
-   text[0].key=(png_charp) png_malloc(ping, (png_uint_32) 80);
+#if PNG_LIBPNG_VER >= 14000
+   text[0].text=(png_charp) png_malloc(ping,
+      (png_alloc_size_t) allocated_length);
+   text[0].key=(png_charp) png_malloc(ping, (png_alloc_size_t) 80);
+#else
+   text[0].text=(png_charp) png_malloc(ping, (png_size_t) allocated_length);
+   text[0].key=(png_charp) png_malloc(ping, (png_size_t) 80);
+#endif
    text[0].key[0]='\0';
    (void) ConcatenateMagickString(text[0].key,
       "Raw profile type ",MaxTextExtent);
@@ -7701,9 +7794,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
         }
     }
 
-  if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-      (IsRGBColorspace(image->colorspace) == MagickFalse) &&
-      (IsGrayImage(image,&image->exception) == MagickFalse))
+  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
     (void) TransformImageColorspace(image,sRGBColorspace);
 
   /*
@@ -8171,6 +8262,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
             {
                opaque[i] = image->background_color;
                ping_background.index = i;
+               number_opaque++;
                if (logging != MagickFalse)
                  {
                    (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -8209,11 +8301,20 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
      if (mng_info->write_png_colortype != 7) /* We won't need this info */
        {
          ping_have_color=MagickFalse;
-         if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-             (IsRGBColorspace(image->colorspace) == MagickFalse) &&
-             (IsGrayColorspace(image->colorspace) == MagickFalse))
-           ping_have_color=MagickTrue;
          ping_have_non_bw=MagickFalse;
+
+         if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
+         {
+           ping_have_color=MagickTrue;
+           ping_have_non_bw=MagickFalse;
+         }
+
+         if (IssRGBColorspace(image->colorspace) != MagickFalse)
+         {
+           ping_have_color=MagickTrue;
+           ping_have_non_bw=MagickTrue;
+         }
+
 
          if(image_colors > 256)
            {
@@ -9565,7 +9666,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
                 ping_bit_depth=1;
                 one=1;
 
-                while ((one << ping_bit_depth) < number_colors)
+                while ((one << ping_bit_depth) < (size_t) number_colors)
                   ping_bit_depth <<= 1;
               }
 
@@ -9819,7 +9920,11 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   if (mng_info->write_png_compression_strategy == 0)
     {
         if ((quality %10) == 8 || (quality %10) == 9)
-            mng_info->write_png_compression_strategy=Z_RLE;
+#ifdef Z_RLE  /* Z_RLE was added to zlib-1.2.0 */
+          mng_info->write_png_compression_strategy=Z_RLE+1;
+#else
+          mng_info->write_png_compression_strategy = Z_DEFAULT_STRATEGY+1;
+#endif
     }
 
   if (mng_info->write_png_compression_filter == 0)
@@ -10653,7 +10758,13 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
         {
         if (value != (const char *) NULL)
           {
-            text=(png_textp) png_malloc(ping,(png_uint_32) sizeof(png_text));
+
+#if PNG_LIBPNG_VER >= 14000
+            text=(png_textp) png_malloc(ping,
+                 (png_alloc_size_t) sizeof(png_text));
+#else
+            text=(png_textp) png_malloc(ping,(png_size_t) sizeof(png_text));
+#endif
             text[0].key=(char *) property;
             text[0].text=(char *) value;
             text[0].text_length=strlen(value);

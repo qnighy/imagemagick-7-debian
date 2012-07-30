@@ -2649,6 +2649,9 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
       char
         colorspace[MaxTextExtent];
 
+      MagickBooleanType
+        icc_color;
+
       /*
         Parse color of the form rgb(100,255,0).
       */
@@ -2658,6 +2661,7 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
           break;
       colorspace[i--]='\0';
       scale=(MagickRealType) ScaleCharToQuantum(1);
+      icc_color=MagickFalse;
       if (LocaleCompare(colorspace,"icc-color") == 0)
         {
           register ssize_t
@@ -2670,6 +2674,7 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
           colorspace[j--]='\0';
           i+=j+3;
           scale=(MagickRealType) QuantumRange;
+          icc_color=MagickTrue;
         }
       LocaleLower(colorspace);
       color->matte=MagickFalse;
@@ -2686,74 +2691,94 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
           return(MagickFalse);
         }
       color->colorspace=(ColorspaceType) type;
-      if (color->colorspace == RGBColorspace)
+      if ((icc_color == MagickFalse) && (color->colorspace == RGBColorspace))
         color->colorspace=sRGBColorspace;  /* as required by SVG standard */
       SetGeometryInfo(&geometry_info);
       flags=ParseGeometry(name+i+1,&geometry_info);
-      if ((flags & PercentValue) != 0)
-        scale=(MagickRealType) (QuantumRange/100.0);
-      if ((flags & RhoValue) != 0)
-        color->red=(MagickRealType) ClampToQuantum(scale*geometry_info.rho);
-      if ((flags & SigmaValue) != 0)
-        color->green=(MagickRealType) ClampToQuantum(scale*geometry_info.sigma);
-      if ((flags & XiValue) != 0)
-        color->blue=(MagickRealType) ClampToQuantum(scale*geometry_info.xi);
-      color->opacity=(MagickRealType) OpaqueOpacity;
-      if ((flags & PsiValue) != 0)
+      if (flags == 0)
         {
-          if (color->colorspace == CMYKColorspace)
-            color->index=(MagickRealType) ClampToQuantum(scale*
-              geometry_info.psi);
-          else
-            if (color->matte != MagickFalse)
-              color->opacity=(MagickRealType) ClampToQuantum((MagickRealType)
-                (QuantumRange-QuantumRange*geometry_info.psi));
-        }
-      if (((flags & ChiValue) != 0) && (color->matte != MagickFalse))
-        color->opacity=(MagickRealType) ClampToQuantum((MagickRealType)
-          (QuantumRange-QuantumRange*geometry_info.chi));
-      if (LocaleCompare(colorspace,"gray") == 0)
-        {
-          color->colorspace=GRAYColorspace;
-          color->green=color->red;
-          color->blue=color->red;
-          if (((flags & SigmaValue) != 0) && (color->matte != MagickFalse))
-            color->opacity=(MagickRealType) ClampToQuantum((MagickRealType)
-              (QuantumRange-QuantumRange*geometry_info.sigma));
-        }
-      if ((LocaleCompare(colorspace,"HSB") == 0) ||
-          (LocaleCompare(colorspace,"HSL") == 0) ||
-          (LocaleCompare(colorspace,"HWB") == 0))
-        {
-          PixelPacket
-            pixel;
+          char
+            *colorname;
 
-          scale=1.0/360.0;
+          ColorspaceType
+            colorspace;
+
+          colorspace=color->colorspace;
+          colorname=AcquireString(name+i+1);
+          (void) SubstituteString(&colorname,")","");
+          (void) QueryMagickColor(colorname,color,exception);
+          colorname=DestroyString(colorname);
+          color->colorspace=colorspace;
+        }
+      else
+        {
           if ((flags & PercentValue) != 0)
-            scale=1.0/100.0;
-          geometry_info.rho*=360.0*scale;
-          scale=1.0/255.0;
-          if ((flags & PercentValue) != 0)
-            scale=1.0/100.0;
-          geometry_info.sigma*=scale;
-          geometry_info.xi*=scale;
-          if (LocaleCompare(colorspace,"HSB") == 0)
-            ConvertHSBToRGB(fmod(fmod(geometry_info.rho,360.0)+360.0,360.0)/
-              360.0,geometry_info.sigma,geometry_info.xi,&pixel.red,
-              &pixel.green,&pixel.blue);
-          else
-            if (LocaleCompare(colorspace,"HSL") == 0)
-              ConvertHSLToRGB(fmod(fmod(geometry_info.rho,360.0)+360.0,360.0)/
-                360.0,geometry_info.sigma,geometry_info.xi,&pixel.red,
-                &pixel.green,&pixel.blue);
-            else
-              ConvertHWBToRGB(fmod(fmod(geometry_info.rho,360.0)+360.0,360.0)/
-                360.0,geometry_info.sigma,geometry_info.xi,&pixel.red,
-                &pixel.green,&pixel.blue);
-          color->colorspace=sRGBColorspace;
-          color->red=(MagickRealType) pixel.red;
-          color->green=(MagickRealType) pixel.green;
-          color->blue=(MagickRealType) pixel.blue;
+            scale=(MagickRealType) (QuantumRange/100.0);
+          if ((flags & RhoValue) != 0)
+            color->red=(MagickRealType) ClampToQuantum(scale*geometry_info.rho);
+          if ((flags & SigmaValue) != 0)
+            color->green=(MagickRealType) ClampToQuantum(scale*
+              geometry_info.sigma);
+          if ((flags & XiValue) != 0)
+            color->blue=(MagickRealType) ClampToQuantum(scale*geometry_info.xi);
+          color->opacity=(MagickRealType) OpaqueOpacity;
+          if ((flags & PsiValue) != 0)
+            {
+              if (color->colorspace == CMYKColorspace)
+                color->index=(MagickRealType) ClampToQuantum(scale*
+                  geometry_info.psi);
+              else
+                if (color->matte != MagickFalse)
+                  color->opacity=(MagickRealType) ClampToQuantum(
+                    (MagickRealType) (QuantumRange-QuantumRange*
+                    geometry_info.psi));
+            }
+          if (((flags & ChiValue) != 0) && (color->matte != MagickFalse))
+            color->opacity=(MagickRealType) ClampToQuantum((MagickRealType)
+              (QuantumRange-QuantumRange*geometry_info.chi));
+          if (LocaleCompare(colorspace,"gray") == 0)
+            {
+              color->colorspace=GRAYColorspace;
+              color->green=color->red;
+              color->blue=color->red;
+              if (((flags & SigmaValue) != 0) && (color->matte != MagickFalse))
+                color->opacity=(MagickRealType) ClampToQuantum((MagickRealType)
+                  (QuantumRange-QuantumRange*geometry_info.sigma));
+            }
+          if ((LocaleCompare(colorspace,"HSB") == 0) ||
+              (LocaleCompare(colorspace,"HSL") == 0) ||
+              (LocaleCompare(colorspace,"HWB") == 0))
+            {
+              PixelPacket
+                pixel;
+
+              scale=1.0/360.0;
+              if ((flags & PercentValue) != 0)
+                scale=1.0/100.0;
+              geometry_info.rho*=360.0*scale;
+              scale=1.0/255.0;
+              if ((flags & PercentValue) != 0)
+                scale=1.0/100.0;
+              geometry_info.sigma*=scale;
+              geometry_info.xi*=scale;
+              if (LocaleCompare(colorspace,"HSB") == 0)
+                ConvertHSBToRGB(fmod(fmod(geometry_info.rho,360.0)+360.0,360.0)/
+                  360.0,geometry_info.sigma,geometry_info.xi,&pixel.red,
+                  &pixel.green,&pixel.blue);
+              else
+                if (LocaleCompare(colorspace,"HSL") == 0)
+                  ConvertHSLToRGB(fmod(fmod(geometry_info.rho,360.0)+360.0,
+                    360.0)/360.0,geometry_info.sigma,geometry_info.xi,
+                    &pixel.red,&pixel.green,&pixel.blue);
+                else
+                  ConvertHWBToRGB(fmod(fmod(geometry_info.rho,360.0)+360.0,
+                    360.0)/360.0,geometry_info.sigma,geometry_info.xi,
+                    &pixel.red,&pixel.green,&pixel.blue);
+              color->colorspace=sRGBColorspace;
+              color->red=(MagickRealType) pixel.red;
+              color->green=(MagickRealType) pixel.green;
+              color->blue=(MagickRealType) pixel.blue;
+            }
         }
       return(MagickTrue);
     }

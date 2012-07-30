@@ -658,8 +658,6 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
       next->magick_columns=next->columns;
     if (next->magick_rows == 0)
       next->magick_rows=next->rows;
-    if ((next->colorspace == sRGBColorspace) && (next->gamma == 1.0))
-      next->colorspace=RGBColorspace;
     value=GetImageProperty(next,"tiff:Orientation");
     if (value == (char *) NULL)
       value=GetImageProperty(next,"exif:Orientation");
@@ -1073,6 +1071,9 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
       errno=EPERM;
       ThrowBinaryException(PolicyError,"NotAuthorized",filename);
     }
+  /*
+    Call appropriate image reader based on image type.
+  */
   magick_info=GetMagickInfo(write_info->magick,sans_exception);
   sans_exception=DestroyExceptionInfo(sans_exception);
   if (magick_info != (const MagickInfo *) NULL)

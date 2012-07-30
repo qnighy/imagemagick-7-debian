@@ -49,6 +49,7 @@
 #include "magick/attribute.h"
 #include "magick/blob-private.h"
 #include "magick/cache-private.h"
+#include "magick/channel.h"
 #include "magick/color-private.h"
 #include "magick/colorspace-private.h"
 #include "magick/composite.h"
@@ -1419,7 +1420,7 @@ static MagickBooleanType XShearImage(Image *image,const MagickRealType degrees,
   SetMagickPixelPacket(image,&image->background_color,(IndexPacket *) NULL,
     &background);
   if (image->colorspace == CMYKColorspace)
-    ConvertsRGBToCMYK(&background);
+    ConvertRGBToCMYK(&background);
   /*
     X shear image.
   */
@@ -1640,7 +1641,7 @@ static MagickBooleanType YShearImage(Image *image,const MagickRealType degrees,
   SetMagickPixelPacket(image,&image->background_color,(IndexPacket *) NULL,
     &background);
   if (image->colorspace == CMYKColorspace)
-    ConvertsRGBToCMYK(&background);
+    ConvertRGBToCMYK(&background);
   /*
     Y Shear image.
   */

@@ -342,10 +342,8 @@ static MagickBooleanType JPEGWarningHandler(j_common_ptr jpeg_info,int level)
       (jpeg_info->err->format_message)(jpeg_info,message);
       if (jpeg_info->err->num_warnings++ > JPEGExcessiveWarnings)
         JPEGErrorHandler(jpeg_info);
-      if ((jpeg_info->err->num_warnings == 0) ||
-          (jpeg_info->err->trace_level >= 3))
-        ThrowBinaryException(CorruptImageWarning,(char *) message,
-          image->filename);
+      ThrowBinaryException(CorruptImageWarning,(char *) message,
+        image->filename);
     }
   else
     if ((image->debug != MagickFalse) &&
@@ -2081,8 +2079,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     }
     default:
     {
-      if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-          (IsRGBColorspace(image->colorspace) == MagickFalse))
+      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
         (void) TransformImageColorspace(image,sRGBColorspace);
       break;
     }
@@ -2276,6 +2273,30 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
 #endif
     }
   jpeg_set_quality(&jpeg_info,quality,MagickTrue);
+#if (JPEG_LIB_VERSION >= 70)
+  option=GetImageOption(image_info,"quality");
+  if (option != (const char *) NULL)
+    {
+      GeometryInfo
+        geometry_info;
+
+      int
+        flags;
+
+      /*
+        Set quality scaling for luminance and chrominance separately.
+      */
+      flags=ParseGeometry(option,&geometry_info);
+      if (((flags & RhoValue) != 0) && ((flags & SigmaValue) != 0))
+        {
+          jpeg_info.q_scale_factor[0]=jpeg_quality_scaling((int)
+            (geometry_info.rho+0.5));
+          jpeg_info.q_scale_factor[1]=jpeg_quality_scaling((int)
+            (geometry_info.sigma+0.5));
+          jpeg_default_qtables(&jpeg_info,MagickTrue);
+        }
+    }
+#endif
   sampling_factor=(const char *) NULL;
   value=GetImageProperty(image,"jpeg:sampling-factor");
   if (value != (char *) NULL)

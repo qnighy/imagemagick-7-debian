@@ -42,6 +42,7 @@
 #include "magick/studio.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
+#include "magick/channel.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colorspace-private.h"
@@ -96,6 +97,7 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
     colorname[MaxTextExtent];
 
   MagickBooleanType
+    icc_color,
     status;
 
   MagickPixelPacket
@@ -126,6 +128,13 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
   (void) CopyMagickString(image->filename,image_info->filename,MaxTextExtent);
   (void) CopyMagickString(colorname,image_info->filename,MaxTextExtent);
   (void) sscanf(image_info->filename,"%[^-]",colorname);
+  icc_color=MagickFalse;
+  if (LocaleCompare(colorname,"icc") == 0)
+    {
+      (void) ConcatenateMagickString(colorname,"-",MaxTextExtent);
+      (void) sscanf(image_info->filename,"%*[^-]-%[^-]",colorname+4);
+      icc_color=MagickTrue;
+    }
   if (QueryColorDatabase(colorname,&start_color,exception) == MagickFalse)
     {
       image=DestroyImage(image);
@@ -135,31 +144,17 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
   (void) CopyMagickString(colorname,"white",MaxTextExtent);
   if (PixelIntensityToQuantum(image,&start_color) > (Quantum) (QuantumRange/2))
     (void) CopyMagickString(colorname,"black",MaxTextExtent);
-  (void) sscanf(image_info->filename,"%*[^-]-%s",colorname);
+  if (icc_color == MagickFalse)
+    (void) sscanf(image_info->filename,"%*[^-]-%s",colorname);
+  else
+    (void) sscanf(image_info->filename,"%*[^-]-%*[^-]-%s",colorname);
   if (QueryColorDatabase(colorname,&stop_color,exception) == MagickFalse)
     {
       image=DestroyImage(image);
       return((Image *) NULL);
     }
   (void) QueryMagickColor(colorname,&stop_pixel,exception);
-  if (IssRGBColorspace(start_pixel.colorspace) != MagickFalse)
-    {
-      start_color.red=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
-        start_color.red));
-      start_color.green=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
-        start_color.green));
-      start_color.blue=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
-        start_color.blue));
-    }
-  if (IssRGBColorspace(stop_pixel.colorspace) != MagickFalse)
-    {
-      stop_color.red=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
-        stop_color.red));
-      stop_color.green=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
-        stop_color.green));
-      stop_color.blue=ClampToQuantum(QuantumRange*DecompandsRGB(QuantumScale*
-        stop_color.blue));
-    }
+  (void) SetImageColorspace(image,start_pixel.colorspace);
   status=GradientImage(image,LocaleCompare(image_info->magick,"GRADIENT") == 0 ?
     LinearGradient : RadialGradient,PadSpread,&start_color,&stop_color);
   if (status == MagickFalse)
@@ -167,14 +162,8 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  (void) SetImageColorspace(image,start_pixel.colorspace);
   if ((start_pixel.matte == MagickFalse) && (stop_pixel.matte == MagickFalse))
     (void) SetImageAlphaChannel(image,DeactivateAlphaChannel);
-  if (IssRGBColorspace(start_pixel.colorspace) != MagickFalse)
-    {
-      (void) SetImageColorspace(image,RGBColorspace);
-      (void) TransformImageColorspace(image,sRGBColorspace);
-    }
   return(GetFirstImageInList(image));
 }
 

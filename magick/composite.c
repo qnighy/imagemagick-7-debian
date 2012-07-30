@@ -43,6 +43,7 @@
 #include "magick/studio.h"
 #include "magick/artifact.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/client.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
@@ -1588,7 +1589,7 @@ MagickExport MagickBooleanType CompositeImage(Image *image,
 
 MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   const ChannelType channel,const CompositeOperator compose,
-  const Image *composite_image,const ssize_t x_offset,const ssize_t y_offset)
+  const Image *composite,const ssize_t x_offset,const ssize_t y_offset)
 {
 #define CompositeImageTag  "Composite/Image"
 
@@ -1606,6 +1607,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     geometry_info;
 
   Image
+    *composite_image,
     *destination_image;
 
   MagickBooleanType
@@ -1640,15 +1642,16 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(composite_image != (Image *) NULL);
-  assert(composite_image->signature == MagickSignature);
+  assert(composite != (Image *) NULL);
+  assert(composite->signature == MagickSignature);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
-      (IsGrayColorspace(composite_image->colorspace) == MagickFalse))
-    (void) TransformImageColorspace(image,sRGBColorspace);
-  GetMagickPixelPacket(image,&zero);
   exception=(&image->exception);
+  composite_image=CloneImage(composite,0,0,MagickTrue,exception);
+  if (composite_image == (const Image *) NULL)
+    return(MagickFalse);
+  (void) TransformImageColorspace(composite_image,image->colorspace);
+  GetMagickPixelPacket(image,&zero);
   destination_image=(Image *) NULL;
   amount=0.5;
   destination_dissolve=1.0;
@@ -1750,6 +1753,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       }
       composite_view=DestroyCacheView(composite_view);
       image_view=DestroyCacheView(image_view);
+      composite_image=DestroyImage(composite_image);
       return(status);
     }
     case CopyOpacityCompositeOp:
@@ -1794,7 +1798,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       destination_image=CloneImage(image,image->columns,image->rows,MagickTrue,
         exception);
       if (destination_image == (Image *) NULL)
-        return(MagickFalse);
+        {
+          composite_image=DestroyImage(composite_image);
+          return(MagickFalse);
+        }
       /*
         Gather the maximum blur sigma values from user.
       */
@@ -1807,6 +1814,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           (void) ThrowMagickException(exception,GetMagickModule(),
                OptionWarning,"InvalidGeometry","'%s' '%s'",
                "compose:args",value);
+          composite_image=DestroyImage(composite_image);
           destination_image=DestroyImage(destination_image);
           return(MagickFalse);
         }
@@ -1934,6 +1942,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       resample_filter=DestroyResampleFilter(resample_filter);
       composite_view=DestroyCacheView(composite_view);
       destination_view=DestroyCacheView(destination_view);
+      composite_image=DestroyImage(composite_image);
       composite_image=destination_image;
       break;
     }
@@ -1970,7 +1979,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       destination_image=CloneImage(image,image->columns,image->rows,MagickTrue,
         exception);
       if (destination_image == (Image *) NULL)
-        return(MagickFalse);
+        {
+          composite_image=DestroyImage(composite_image);
+          return(MagickFalse);
+        }
       SetGeometryInfo(&geometry_info);
       flags=NoValue;
       value=GetImageArtifact(composite_image,"compose:args");
@@ -2109,6 +2121,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       destination_view=DestroyCacheView(destination_view);
       composite_view=DestroyCacheView(composite_view);
       image_view=DestroyCacheView(image_view);
+      composite_image=DestroyImage(composite_image);
       composite_image=destination_image;
       break;
     }
@@ -2769,7 +2782,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         case CopyBlackCompositeOp:
         {
           if (source.colorspace != CMYKColorspace)
-            ConvertsRGBToCMYK(&source);
+            ConvertRGBToCMYK(&source);
           composite.index=source.index;
           break;
         }
@@ -2822,6 +2835,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   image_view=DestroyCacheView(image_view);
   if (destination_image != (Image * ) NULL)
     destination_image=DestroyImage(destination_image);
+  else
+    composite_image=DestroyImage(composite_image);
   return(status);
 }
 
@@ -2882,8 +2897,7 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
   texture_image=CloneImage(texture,0,0,MagickTrue,exception);
   if (texture_image == (const Image *) NULL)
     return(MagickFalse);
-  if (IsGrayColorspace(texture_image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(texture_image,sRGBColorspace);
+  (void) TransformImageColorspace(texture_image,image->colorspace);
   (void) SetImageVirtualPixelMethod(texture_image,TileVirtualPixelMethod);
   status=MagickTrue;
   if ((image->compose != CopyCompositeOp) &&
@@ -2972,7 +2986,8 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
     if (status == MagickFalse)
       continue;
     p=GetCacheViewVirtualPixels(texture_view,texture_image->tile_offset.x,(y+
-      texture_image->tile_offset.y) % texture_image->rows,texture_image->columns,1,exception);
+      texture_image->tile_offset.y) % texture_image->rows,
+      texture_image->columns,1,exception);
     q=QueueCacheViewAuthenticPixels(image_view,0,y,image->columns,1,
       exception);
     if ((p == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))

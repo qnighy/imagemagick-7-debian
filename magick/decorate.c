@@ -42,6 +42,7 @@
 */
 #include "magick/studio.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/color-private.h"
 #include "magick/colorspace-private.h"
 #include "magick/composite.h"
@@ -228,7 +229,7 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
     }
   if ((IsPixelGray(&frame_image->border_color) == MagickFalse) &&
       (IsGrayColorspace(frame_image->colorspace) != MagickFalse))
-    (void) SetImageColorspace(frame_image,sRGBColorspace);
+    (void) SetImageColorspace(frame_image,RGBColorspace);
   if ((frame_image->border_color.opacity != OpaqueOpacity) &&
       (frame_image->matte == MagickFalse))
     (void) SetImageAlphaChannel(frame_image,OpaqueAlphaChannel);
@@ -280,13 +281,13 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
   trough.opacity=matte.opacity;
   if (image->colorspace == CMYKColorspace)
     {
-      ConvertsRGBToCMYK(&interior);
-      ConvertsRGBToCMYK(&matte);
-      ConvertsRGBToCMYK(&border);
-      ConvertsRGBToCMYK(&accentuate);
-      ConvertsRGBToCMYK(&highlight);
-      ConvertsRGBToCMYK(&shadow);
-      ConvertsRGBToCMYK(&trough);
+      ConvertRGBToCMYK(&interior);
+      ConvertRGBToCMYK(&matte);
+      ConvertRGBToCMYK(&border);
+      ConvertRGBToCMYK(&accentuate);
+      ConvertRGBToCMYK(&highlight);
+      ConvertRGBToCMYK(&shadow);
+      ConvertRGBToCMYK(&trough);
     }
   status=MagickTrue;
   progress=0;

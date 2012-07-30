@@ -46,6 +46,7 @@
 #include "magick/attribute.h"
 #include "magick/cache.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colorspace.h"
@@ -195,6 +196,8 @@ MagickExport FxInfo *AcquireFxInfo(const Image *image,const char *expression)
     Force right-to-left associativity for unary negation.
   */
   (void) SubstituteString(&fx_info->expression,"-","-1.0*");
+  (void) SubstituteString(&fx_info->expression,"E-1.0*","E-");
+  (void) SubstituteString(&fx_info->expression,"e-1.0*","e-");
   /*
     Convert complex to simple operators.
   */
@@ -313,6 +316,8 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
       noise_image=DestroyImage(noise_image);
       return((Image *) NULL);
     }
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+    (void) TransformImageColorspace(noise_image,RGBColorspace);
   /*
     Add noise in each row.
   */
@@ -716,7 +721,7 @@ MagickExport Image *ColorizeImage(const Image *image,const char *opacity,
     }
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
       (IsPixelGray(&colorize) != MagickFalse))
-    (void) SetImageColorspace(colorize_image,sRGBColorspace);
+    (void) SetImageColorspace(colorize_image,RGBColorspace);
   if ((colorize_image->matte == MagickFalse) &&
       (colorize.opacity != OpaqueOpacity))
     (void) SetImageAlphaChannel(colorize_image,OpaqueAlphaChannel);
@@ -4247,7 +4252,7 @@ MagickExport Image *ShadowImage(const Image *image,const double opacity,
   if (clone_image == (Image *) NULL)
     return((Image *) NULL);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(clone_image,sRGBColorspace);
+    (void) TransformImageColorspace(clone_image,RGBColorspace);
   (void) SetImageVirtualPixelMethod(clone_image,EdgeVirtualPixelMethod);
   clone_image->compose=OverCompositeOp;
   border_info.width=(size_t) floor(2.0*sigma+0.5);
@@ -4882,6 +4887,7 @@ MagickExport Image *StereoAnaglyphImage(const Image *left_image,
       stereo_image=DestroyImage(stereo_image);
       return((Image *) NULL);
     }
+  (void) SetImageColorspace(stereo_image,sRGBColorspace);
   /*
     Copy left image to red channel and right image to blue channel.
   */
@@ -5206,7 +5212,7 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
     }
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
       (IsPixelGray(&tint) == MagickFalse))
-    (void) SetImageColorspace(tint_image,sRGBColorspace);
+    (void) SetImageColorspace(tint_image,RGBColorspace);
   if (opacity == (const char *) NULL)
     return(tint_image);
   /*

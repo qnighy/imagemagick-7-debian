@@ -44,6 +44,7 @@
 #include "magick/artifact.h"
 #include "magick/cache.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/color-private.h"
 #include "magick/colorspace.h"
 #include "magick/colorspace-private.h"
@@ -2286,7 +2287,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
     }
   if ((IsPixelGray(&distort_image->background_color) == MagickFalse) &&
       (IsGrayColorspace(distort_image->colorspace) != MagickFalse))
-    (void) TransformImageColorspace(distort_image,sRGBColorspace);
+    (void) TransformImageColorspace(distort_image,RGBColorspace);
   if (distort_image->background_color.opacity != OpaqueOpacity)
     distort_image->matte=MagickTrue;
   distort_image->page.x=geometry.x;
@@ -2386,7 +2387,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
       SetMagickPixelPacket(distort_image,&distort_image->matte_color,
         (IndexPacket *) NULL, &invalid);
       if (distort_image->colorspace == CMYKColorspace)
-        ConvertsRGBToCMYK(&invalid);   /* what about other color spaces? */
+        ConvertRGBToCMYK(&invalid);   /* what about other color spaces? */
 
       for (i=0; i < (ssize_t) distort_image->columns; i++)
       {

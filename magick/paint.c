@@ -40,7 +40,8 @@
  Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/color.h"
+#include "magick/cache.h"
+#include "magick/channel.h"
 #include "magick/color-private.h"
 #include "magick/colorspace-private.h"
 #include "magick/composite.h"
@@ -176,7 +177,7 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) TransformImageColorspace(image,RGBColorspace);
   if ((image->matte == MagickFalse) &&
       (draw_info->fill.opacity != OpaqueOpacity))
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
@@ -350,7 +351,7 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
           (void) GetFillColor(draw_info,x,y,&fill_color);
           SetMagickPixelPacket(image,&fill_color,(IndexPacket *) NULL,&fill);
           if (image->colorspace == CMYKColorspace)
-            ConvertsRGBToCMYK(&fill);
+            ConvertRGBToCMYK(&fill);
           if ((channel & RedChannel) != 0)
             SetPixelRed(q,ClampToQuantum(fill.red));
           if ((channel & GreenChannel) != 0)
@@ -799,7 +800,7 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
     return(MagickFalse);
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
       (IsMagickGray(fill) != MagickFalse))
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) TransformImageColorspace(image,RGBColorspace);
   if ((fill->opacity != OpaqueOpacity) && (image->matte == MagickFalse))
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
   /*

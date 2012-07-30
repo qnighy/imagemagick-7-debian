@@ -48,6 +48,7 @@
 #include "magick/cache.h"
 #include "magick/cache-view.h"
 #include "magick/client.h"
+#include "magick/channel.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colormap.h"
@@ -1195,8 +1196,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case PaletteType:
     {
-      if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-          (IsGrayImage(image,&image->exception) == MagickFalse))
+      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
         status=TransformImageColorspace(image,sRGBColorspace);
       if ((image->storage_class == DirectClass) || (image->colors > 256))
         {
@@ -1210,8 +1210,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case PaletteBilevelMatteType:
     {
-      if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-          (IsGrayImage(image,&image->exception) == MagickFalse))
+      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
         status=TransformImageColorspace(image,sRGBColorspace);
       if (image->matte == MagickFalse)
         (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
@@ -1223,8 +1222,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case PaletteMatteType:
     {
-      if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-          (IsGrayImage(image,&image->exception) == MagickFalse))
+      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
         status=TransformImageColorspace(image,sRGBColorspace);
       if (image->matte == MagickFalse)
         (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
@@ -1236,8 +1234,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case TrueColorType:
     {
-      if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-          (IsGrayImage(image,&image->exception) == MagickFalse))
+      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
         status=TransformImageColorspace(image,sRGBColorspace);
       if (image->storage_class != DirectClass)
         status=SetImageStorageClass(image,DirectClass);
@@ -1246,8 +1243,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case TrueColorMatteType:
     {
-      if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-          (IsGrayImage(image,&image->exception) == MagickFalse))
+      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
         status=TransformImageColorspace(image,sRGBColorspace);
       if (image->storage_class != DirectClass)
         status=SetImageStorageClass(image,DirectClass);
@@ -1259,8 +1255,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     {
       if (image->colorspace != CMYKColorspace)
         {
-          if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-              (IsGrayImage(image,&image->exception) == MagickFalse))
+          if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
             status=TransformImageColorspace(image,sRGBColorspace);
           status=TransformImageColorspace(image,CMYKColorspace);
         }
@@ -1273,8 +1268,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     {
       if (image->colorspace != CMYKColorspace)
         {
-          if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-              (IsGrayImage(image,&image->exception) == MagickFalse))
+          if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
             status=TransformImageColorspace(image,sRGBColorspace);
           status=TransformImageColorspace(image,CMYKColorspace);
         }

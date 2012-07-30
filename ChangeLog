@@ -1,5 +1,114 @@
+2012-07-28  6.7.8-7 Glenn Randers-Pehrson <glennrp@image...>
+  * Update certain typecasts for libpng < and >= 1.4.0 to allow memory
+    allocation > 4GB and prevent a DOS.
+
+2012-07-28  6.7.8-7 Cristy  <quetzlzacatenango@image...>
+  * Set DICOM grayscale images to the gray colorspace.
+  * Missing grestore from ps3.c (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=20445).
+
+2012-07-22  6.7.8-6 Glenn Randers-Pehrson <glennrp@image...>
+  * Only report sRGB, iCCP, gAMA, cHRM chunks in "identify" output when
+    these chunks were actually present in input, and not when they were
+    inserted by the PNG decoder.
+
+2012-07-22  6.7.8-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.8-6, SVN revision 8720.
+
+2012-07-21  6.7.8-6 Glenn Randers-Pehrson <glennrp@image...>
+  * Make sure "intent" is initialized in the PNG decoder.
+ 
+2012-07-21  6.7.8-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.8-5, SVN revision 8717.
+
+2012-07-20  6.7.8-5 Glenn Randers-Pehrson <glennrp@image...>
+  * Corrected an error in the logic introduced in 6.7.8-3 to always write
+    a color PNG when image->colorspace is sRGB.
+
+2012-07-19  6.7.8-5 Cristy  <quetzlzacatenango@image...>
+  * Inverse YUV colorspace now produces pure red as expected.
+  * Support halted streams:
+    cat image.pnm | convert 'pnm:fd:0[0]' 'pnm:fd:0[0]' x:.
+
+2012-07-18  6.7.8-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.8-4, SVN revision 8697.
+
+2012-07-17  6.7.8-4 Glenn Randers-Pehrson <glennrp@image...>
+  * Write ICON subimage as PNG32, only when its dimensions are 256x256
+    and image->compression is UndefinedCompression or ZipCompression.
+
+2012-07-16  6.7.8-4 Cristy  <quetzlzacatenango@image...>
+  * sRGB color gradients should be in a non-linear colorspace.
+  * Fix -fx to interpret scientific notation properly.
+  * The draw epsilon was too sensitive.
+
+2012-07-15  6.7.8-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.8-3, SVN revision 8675.
+
+2012-07-14  6.7.8-3 Glenn Randers-Pehrson <glennrp@image...>
+  * Always write a color PNG when image->colorspace is sRGB.
+
+2012-07-08  6.7.8-3 Cristy  <quetzlzacatenango@image...>
+  * Attenuate random noise (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=21387).
+  * Return linear grayscale for gradient:white-black.
+  * Promote linear grayscale to linear RGB when compositing.
+  * gradient:white-black is sRGB whereas gradient:'icc-color(rgb,255,255,255)-
+    icc-color(rgb,0,0,0)' is linear RGB whereas gradient:'gray(255)-gray(0)' is
+    linear grayscale.
+  * Revert sigmoidal contrast define (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=22&t=21415).
+
+2012-07-08  6.7.8-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.8-2, SVN revision 8621.
+
+2012-07-02  6.7.8-2 Cristy  <quetzlzacatenango@image...>
+  * Set the colorspace to linear gray when reading intensity values (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=21362).
+  * Don't overrun pixel buffer on inverse fourier for odd image widths.
+  * Change LAB encoding to permit blurring, resize, etc.
+    (signed A and B channel values now stored using a 50% bias)
+
+    Additional.. This removes a non-linear discontinuity from stored LAB space
+    values. As a result you can now Blur, Compose, Resize and Distort in LAB
+    colorspace, without problems that previously existed.
+
+2012-07-04  6.7.8-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.8-1, SVN revision 8595.
+
+2012-07-02  6.7.8-1 Cristy  <quetzlzacatenango@image...>
+  * A single argument -stereo option now works as documented (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=21348).
+  * The -separate option returns channels as linear grayscale.
+  * Remove the sRGB color profile when converting to grayscale (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=21355).
+
+2012-06-29  6.7.8-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.8-0, SVN revision 8554.
+
+2012-06-28  6.8.0-0 Cristy  <quetzlzacatenango@image...>
+  * Increase epsilon value, smallest difference between two points (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=15870).
+
+2012-06-28  6.7.7-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.7.7-10, SVN revision 8534.
+
+2012-06-26  6.7.7-10 Glenn Randers-Pehrson <glennrp@image...>
+  * Don't attempt to use Z_RLE compression strategy with old zlib (prior to
+    zlib-1.2.0) that does not support it.
+  * Increase PLTE chunk length to accommodate background color in indexed PNG
+    (reference www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=21288).
+  * Added png:PLTE.number_colors to verbose output
+
 2012-06-25  6.7.7-10 Cristy  <quetzlzacatenango@image...>
   * Permit linear RGB for PNM and TIFF image formats.
+  * Fix conflicting types for 'GenerateDifferentialNoise' (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=21286).
+  * Fix cast to pointer from integer of different size (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=21286).
+  * Fix broken MSL profile tag (reference
+    http://www.imagemagick.org/discourse-server/viewforum.php?f=9).
+  * Better recognition of a CMYK PDF.
 
 2012-06-24  6.7.7-9 Cristy  <quetzlzacatenango@image...>
   * New version 6.7.7-9, SVN revision 8460.
@@ -107,6 +216,7 @@
     previous to this version it was equivalent to 'Average16'.
     The 'Background' method is for showing 'resample errors' be it
     accidental, or on purpose.  See IM Examples, Cylindrical Filters.
+  * added -interpolative-resize added around this version
 
 2012-05-26  6.7.7-2 Cristy  <quetzlzacatenango@image...>
   * New version 6.7.7-2, SVN revision 8066.

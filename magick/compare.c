@@ -43,6 +43,7 @@
 #include "magick/studio.h"
 #include "magick/artifact.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/client.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
@@ -189,8 +190,8 @@ MagickExport Image *CompareImageChannels(Image *image,
     (void) QueryMagickColor(artifact,&lowlight,exception);
   if (highlight_image->colorspace == CMYKColorspace)
     {
-      ConvertsRGBToCMYK(&highlight);
-      ConvertsRGBToCMYK(&lowlight);
+      ConvertRGBToCMYK(&highlight);
+      ConvertRGBToCMYK(&lowlight);
     }
   /*
     Generate difference image.

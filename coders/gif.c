@@ -891,7 +891,10 @@ static ssize_t ReadBlobBlock(Image *image,unsigned char *data)
   count=ReadBlob(image,1,&block_count);
   if (count != 1)
     return(0);
-  return(ReadBlob(image,(size_t) block_count,data));
+  count=ReadBlob(image,(size_t) block_count,data);
+  if (count != (ssize_t) block_count)
+    return(0);
+  return(count);
 }
 
 /*
@@ -1337,11 +1340,14 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
         }
         colormap=(unsigned char *) RelinquishMagickMemory(colormap);
       }
-    for (i=0; i < (ssize_t) image->colors; i++)
-      if (IsGrayPixel(image->colormap+i) == MagickFalse)
-        break;
-    if ((i == (ssize_t) image->colors) && (image->gamma == 1.0))
-      SetImageColorspace(image,GRAYColorspace);
+    if (image->gamma == 1.0)
+      {
+        for (i=0; i < (ssize_t) image->colors; i++)
+          if (IsGrayPixel(image->colormap+i) == MagickFalse)
+            break;
+        (void) SetImageColorspace(image,i == (ssize_t) image->colors ?
+          GRAYColorspace : RGBColorspace);
+      }
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
@@ -1569,9 +1575,7 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
   one=1;
   do
   {
-    if ((IssRGBColorspace(image->colorspace) == MagickFalse) &&
-        (IsRGBColorspace(image->colorspace) == MagickFalse) &&
-        (IsGrayImage(image,&image->exception) == MagickFalse))
+    if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
       (void) TransformImageColorspace(image,sRGBColorspace);
     opacity=(-1);
     if (IsOpaqueImage(image,&image->exception) != MagickFalse)
