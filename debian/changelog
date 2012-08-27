@@ -1,7 +1,7 @@
 imagemagick (8:6.7.7.10-4) unstable; urgency=high
 
-  * Security Bug fix: "Fails an assertion due to OpenMP related problem", thanks to
-    Willi Mann (Closes: #685903).
+  * Security Bug fix: "Fails an assertion due to OpenMP related problem",
+    thanks to Willi Mann (Closes: #685903).
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 27 Aug 2012 11:50:22 +0200
 
