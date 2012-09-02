@@ -1,5 +1,15 @@
 #!/bin/bash
 
+if ! git status 2>&1 > /dev/null ; then
+    echo "not on a git directory";
+    exit 1;
+fi
+
+if ! git status -b -s | grep debian/ 2>&1 > /dev/null ; then
+    echo "not on a debian branch";
+    exit 1;
+fi
+
 DEB_UPSTREAM_MAJOR_VERSION=6
 
 DEHS_STATUS=`uscan --report --dehs`;
@@ -21,21 +31,25 @@ DEB_VERSION=`dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' '`
 DEB_NOEPOCH_VERSION=`echo $DEB_VERSION | cut -d: -f2-`
 NEW_DEBIAN_VERSION=$DEB_UPSTREAM_VERSION-1
 
-if git checkout "debian-patches/$NEW_DEBIAN_VERSION"; then
+if git checkout "debian-patches/$NEW_DEBIAN_VERSION" 2>&1 > /dev/null; then
     echo "Debian version for $DEB_UPSTREAM VERSION already commited";
     exit 1;
 fi
 
 
-
 #retrieve recent svn commit
 git svn fetch || exit 2
-git checkout "origin/ImageMagick-$DEB_UPSTREAM_MAJOR_VERSION" || exit 2
+git checkout "origin/Imagemagick-$DEB_UPSTREAM_MAJOR_VERSION" || exit 2
 SVN_REV=`grep "New version $DEB_UPSTREAM_VERSION_CHANGELOG" ChangeLog | sed "s/.*SVN revision \([0-9]*\).*/\1/g"`
+if test "z$SVN_REV" = "z"; then
+    echo "Could not found revision";
+    exit 3;
+fi
+
 echo "find git rev for svn r$SVN_REV:"
 GIT_SVN_REV=`git svn find-rev r$SVN_REV`
 echo "is $GIT_SVN_REV"
-git checkout $GIT_SVN_REV
+git checkout $GIT_SVN_REV || exit 5
 # git revision for svn commit 
 git checkout -b upstream/$DEB_UPSTREAM_VERSION
 # remove all exept git

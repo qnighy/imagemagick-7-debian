@@ -9,7 +9,7 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Vincent Fourmond <fourmond@debian.org>
 Standards-Version: 3.9.3
 Build-Depends: chrpath, debhelper (>= 9~), ghostscript, libbz2-dev,
- libdjvulibre-dev, libexif-dev, fftw-dev, libfreetype6-dev, 
+ libdjvulibre-dev, libexif-dev, libfftw3-dev, libfreetype6-dev, 
 # libgraphviz-dev, incompatible license against fftw
  libjasper-dev, libjpeg-dev, liblcms2-dev, liblqr-1-0-dev, libltdl-dev,
  libopenexr-dev, libperl-dev, libpng-dev, librsvg2-dev, libtiff-dev,
@@ -26,7 +26,8 @@ Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}, hicolor-icon-theme
 Recommends: libmagickcore5-extra, ghostscript, netpbm, ufraw-batch
 Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
- ffmpeg, gimp, gnuplot, grads, groff-base, hp2xx, html2ps, libwmf-bin, mplayer,
+ ffmpeg, gimp, gnuplot, grads, graphviz, groff-base, hp2xx, html2ps, 
+ libwmf-bin, mplayer,
  povray, radiance, sane-utils, texlive-base-bin, transfig, xdg-utils
 Description: image manipulation programs
  ImageMagick is a software suite to create, edit, and compose bitmap images.
