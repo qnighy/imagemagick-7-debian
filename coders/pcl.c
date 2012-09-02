@@ -62,9 +62,10 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
 #include "magick/profile.h"
-#include "magick/resource_.h"
 #include "magick/quantum-private.h"
+#include "magick/resource_.h"
 #include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/module.h"
@@ -165,6 +166,9 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
   ImageInfo
     *read_info;
 
+  int
+    c;
+
   MagickBooleanType
     cmyk,
     status;
@@ -178,9 +182,6 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   register char
     *p;
-
-  register ssize_t
-    c;
 
   SegmentInfo
     bounds;
@@ -324,8 +325,9 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
     (void) ParseAbsoluteGeometry(image_info->page,&page);
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",
     image->x_resolution,image->y_resolution);
-  page.width=(size_t) floor(page.width*image->x_resolution/delta.x+0.5);
-  page.height=(size_t) floor(page.height*image->y_resolution/delta.y+
+  page.width=(size_t) floor((double) page.width*image->x_resolution/delta.x+
+    0.5);
+  page.height=(size_t) floor((double) page.height*image->y_resolution/delta.y+
     0.5);
   (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
      page.width,(double) page.height);
@@ -539,7 +541,7 @@ static size_t PCLDeltaCompressImage(const size_t length,
         *q++=(*pixels++);
       if (i == 0)
         break;
-      delta=i;
+      delta=(int) i;
       if (i >= 8)
         delta=8;
       *q++=(unsigned char) ((delta-1) << 5);
@@ -856,7 +858,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image)
           for (x=0; x < (ssize_t) image->columns; x++)
           {
             byte<<=1;
-            if (PixelIntensity(p) < ((MagickRealType) QuantumRange/2.0))
+            if (GetPixelIntensity(image,p) < (QuantumRange/2.0))
               byte|=0x01;
             bit++;
             if (bit == 8)

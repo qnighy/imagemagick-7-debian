@@ -46,6 +46,7 @@
 #include "magick/annotate.h"
 #include "magick/attribute.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/client.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
@@ -63,6 +64,7 @@
 #include "magick/log.h"
 #include "magick/quantum.h"
 #include "magick/quantum-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/property.h"
 #include "magick/resource_.h"
 #include "magick/semaphore.h"
@@ -282,7 +284,7 @@ MagickExport MagickBooleanType AnnotateImage(Image *image,
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) TransformImageColorspace(image,RGBColorspace);
   status=MagickTrue;
   for (i=0; textlist[i] != (char *) NULL; i++)
   {
@@ -573,7 +575,7 @@ MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
     status=GetTypeMetrics(image,draw_info,metrics);
     if (status == MagickFalse)
       break;
-    width=(size_t) floor(metrics->width+0.5);
+    width=(size_t) floor(metrics->width+metrics->max_advance/2.0+0.5);
     if ((width <= image->columns) || (strcmp(text,draw_info->text) == 0))
       continue;
     (void) strcpy(text,draw_info->text);
@@ -1504,6 +1506,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       FT_Done_Glyph(glyph.image);
     }
   metrics->width-=metrics->bounds.x1/64.0;
+  metrics->width+=annotate_info->stroke_width;
   metrics->bounds.x1/=64.0;
   metrics->bounds.y1/=64.0;
   metrics->bounds.x2/=64.0;

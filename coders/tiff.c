@@ -66,10 +66,11 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
+#include "magick/profile.h"
 #include "magick/property.h"
 #include "magick/quantum.h"
 #include "magick/quantum-private.h"
-#include "magick/profile.h"
 #include "magick/resize.h"
 #include "magick/resource_.h"
 #include "magick/semaphore.h"
@@ -425,6 +426,58 @@ static Image *ReadGROUP4Image(const ImageInfo *image_info,
 %    o exception: return any errors or warnings in this structure.
 %
 */
+
+static MagickBooleanType DecodeLabImage(Image *image,ExceptionInfo *exception)
+{
+  CacheView
+    *image_view;
+
+  MagickBooleanType
+    status;
+
+  ssize_t
+    y;
+
+  status=MagickTrue;
+  image_view=AcquireAuthenticCacheView(image,exception);
+  for (y=0; y < (ssize_t) image->rows; y++)
+  {
+    register PixelPacket
+      *restrict q;
+
+    register ssize_t
+      x;
+
+    if (status == MagickFalse)
+      continue;
+    q=GetCacheViewAuthenticPixels(image_view,0,y,image->columns,1,exception);
+    if (q == (PixelPacket *) NULL)
+      {
+        status=MagickFalse;
+        continue;
+      }
+    for (x=0; x < (ssize_t) image->columns; x++)
+    {
+      double
+        a,
+        b;
+
+      a=QuantumScale*GetPixela(q)+0.5;
+      if (a > 1.0)
+        a-=1.0;
+      b=QuantumScale*GetPixelb(q)+0.5;
+      if (b > 1.0)
+        b-=1.0;
+      SetPixela(q,QuantumRange*a);
+      SetPixelb(q,QuantumRange*b);
+      q++;
+    }
+    if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
+      status=MagickFalse;
+  }
+  image_view=DestroyCacheView(image_view);
+  return(status);
+}
 
 static inline size_t MagickMax(const size_t x,const size_t y)
 {
@@ -1244,25 +1297,33 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
             /*
               Initialize colormap.
             */
+            red_colormap=(uint16 *) NULL;
+            green_colormap=(uint16 *) NULL;
+            blue_colormap=(uint16 *) NULL;
             (void) TIFFGetField(tiff,TIFFTAG_COLORMAP,&red_colormap,
               &green_colormap,&blue_colormap);
-            range=255;  /* might be old style 8-bit colormap */
-            for (i=0; i < (ssize_t) image->colors; i++)
-              if ((red_colormap[i] >= 256) || (green_colormap[i] >= 256) ||
-                  (blue_colormap[i] >= 256))
+            if ((red_colormap != (uint16 *) NULL) &&
+                (green_colormap != (uint16 *) NULL) &&
+                (blue_colormap != (uint16 *) NULL))
+              {
+                range=255;  /* might be old style 8-bit colormap */
+                for (i=0; i < (ssize_t) image->colors; i++)
+                  if ((red_colormap[i] >= 256) || (green_colormap[i] >= 256) ||
+                      (blue_colormap[i] >= 256))
+                    {
+                      range=65535;
+                      break;
+                    }
+                for (i=0; i < (ssize_t) image->colors; i++)
                 {
-                  range=65535;
-                  break;
+                  image->colormap[i].red=ClampToQuantum(((double)
+                    QuantumRange*red_colormap[i])/range);
+                  image->colormap[i].green=ClampToQuantum(((double)
+                    QuantumRange*green_colormap[i])/range);
+                  image->colormap[i].blue=ClampToQuantum(((double)
+                    QuantumRange*blue_colormap[i])/range);
                 }
-            for (i=0; i < (ssize_t) image->colors; i++)
-            {
-              image->colormap[i].red=ClampToQuantum(((double) QuantumRange*
-                red_colormap[i])/range);
-              image->colormap[i].green=ClampToQuantum(((double) QuantumRange*
-                green_colormap[i])/range);
-              image->colormap[i].blue=ClampToQuantum(((double) QuantumRange*
-                blue_colormap[i])/range);
-            }
+              }
           }
         quantum_type=IndexQuantum;
         pad=(size_t) MagickMax((size_t) samples_per_pixel-1,0);
@@ -1677,6 +1738,8 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
     SetQuantumImageType(image,quantum_type);
   next_tiff_frame:
     quantum_info=DestroyQuantumInfo(quantum_info);
+    if (photometric == PHOTOMETRIC_CIELAB)
+      DecodeLabImage(image,exception);
     if ((photometric == PHOTOMETRIC_LOGL) ||
         (photometric == PHOTOMETRIC_MINISBLACK) ||
         (photometric == PHOTOMETRIC_MINISWHITE))
@@ -2227,6 +2290,58 @@ static void DestroyTIFFInfo(TIFFInfo *tiff_info)
   if (tiff_info->pixels != (unsigned char *) NULL)
     tiff_info->pixels=(unsigned char *) RelinquishMagickMemory(
       tiff_info->pixels);
+}
+
+static MagickBooleanType EncodeLabImage(Image *image,ExceptionInfo *exception)
+{
+  CacheView
+    *image_view;
+
+  MagickBooleanType
+    status;
+
+  ssize_t
+    y;
+
+  status=MagickTrue;
+  image_view=AcquireAuthenticCacheView(image,exception);
+  for (y=0; y < (ssize_t) image->rows; y++)
+  {
+    register PixelPacket
+      *restrict q;
+
+    register ssize_t
+      x;
+
+    if (status == MagickFalse)
+      continue;
+    q=GetCacheViewAuthenticPixels(image_view,0,y,image->columns,1,exception);
+    if (q == (PixelPacket *) NULL)
+      {
+        status=MagickFalse;
+        continue;
+      }
+    for (x=0; x < (ssize_t) image->columns; x++)
+    {
+      double
+        a,
+        b;
+
+      a=QuantumScale*GetPixela(q)-0.5;
+      if (a < 0.0)
+        a+=1.0;
+      b=QuantumScale*GetPixelb(q)-0.5;
+      if (b < 0.0)
+        b+=1.0;
+      SetPixela(q,QuantumRange*a);
+      SetPixelb(q,QuantumRange*b);
+      q++;
+    }
+    if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
+      status=MagickFalse;
+  }
+  image_view=DestroyCacheView(image_view);
+  return(status);
 }
 
 static MagickBooleanType GetTIFFInfo(const ImageInfo *image_info,TIFF *tiff,
@@ -2780,7 +2895,10 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
           Full color TIFF raster.
         */
         if (image->colorspace == LabColorspace)
-          photometric=PHOTOMETRIC_CIELAB;
+          {
+            photometric=PHOTOMETRIC_CIELAB;
+            EncodeLabImage(image,&image->exception);
+          }
         else
           if (image->colorspace == YCbCrColorspace)
             {
@@ -3361,6 +3479,8 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
       }
     }
     quantum_info=DestroyQuantumInfo(quantum_info);
+    if (image->colorspace == LabColorspace)
+      DecodeLabImage(image,&image->exception);
     DestroyTIFFInfo(&tiff_info);
     if (0 && (image_info->verbose == MagickTrue))
       TIFFPrintDirectory(tiff,stdout,MagickFalse);

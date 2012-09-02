@@ -891,7 +891,10 @@ static ssize_t ReadBlobBlock(Image *image,unsigned char *data)
   count=ReadBlob(image,1,&block_count);
   if (count != 1)
     return(0);
-  return(ReadBlob(image,(size_t) block_count,data));
+  count=ReadBlob(image,(size_t) block_count,data);
+  if (count != (ssize_t) block_count)
+    return(0);
+  return(count);
 }
 
 /*
@@ -1100,14 +1103,8 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
               if (count == 0)
                 break;
               header[count]='\0';
-              comments=(char *) ResizeQuantumMemory(comments,length+count,
-                sizeof(*comments));
-              if (comments == (char *) NULL)
-                ThrowReaderException(ResourceLimitError,
-                  "MemoryAllocationFailed");
-              (void) CopyMagickMemory(comments+length,header,(size_t) count);
+              (void) ConcatenateString(&comments,(const char *) header);
             }
-            comments[length+count]='\0';
             (void) SetImageProperty(image,"comment",comments);
             comments=DestroyString(comments);
             break;

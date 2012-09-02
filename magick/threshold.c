@@ -192,7 +192,7 @@ MagickExport Image *AdaptiveThresholdImage(const Image *image,
   status=MagickTrue;
   progress=0;
   GetMagickPixelPacket(image,&zero);
-  number_pixels=(MagickRealType) width*height;
+  number_pixels=(MagickRealType) (width*height);
   image_view=AcquireVirtualCacheView(image,exception);
   threshold_view=AcquireAuthenticCacheView(threshold_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
@@ -417,7 +417,7 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
         continue;
       }
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
-    if (channel == DefaultChannels)
+    if ((channel & SyncChannels) != 0)
       {
         for (x=0; x < (ssize_t) image->columns; x++)
         {
@@ -574,16 +574,16 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
     threshold.index=threshold.red;
   if ((flags & PercentValue) != 0)
     {
-      threshold.red*=(QuantumRange/100.0);
-      threshold.green*=(QuantumRange/100.0);
-      threshold.blue*=(QuantumRange/100.0);
-      threshold.opacity*=(QuantumRange/100.0);
-      threshold.index*=(QuantumRange/100.0);
+      threshold.red*=(MagickRealType) (QuantumRange/100.0);
+      threshold.green*=(MagickRealType) (QuantumRange/100.0);
+      threshold.blue*=(MagickRealType) (QuantumRange/100.0);
+      threshold.opacity*=(MagickRealType) (QuantumRange/100.0);
+      threshold.index*=(MagickRealType) (QuantumRange/100.0);
     }
   intensity=MagickPixelIntensity(&threshold);
   if ((IsMagickGray(&threshold) == MagickFalse) &&
       (IsGrayColorspace(image->colorspace) != MagickFalse))
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) TransformImageColorspace(image,RGBColorspace);
   /*
     Black threshold image.
   */
@@ -616,9 +616,9 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if (channel == DefaultChannels)
+      if ((channel & SyncChannels) != 0)
         {
-          if (PixelIntensity(q) < intensity)
+          if (GetPixelIntensity(image,q) < intensity)
             {
               SetPixelRed(q,0);
               SetPixelGreen(q,0);
@@ -698,15 +698,11 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
 
 static inline Quantum ClampToUnsignedQuantum(const Quantum quantum)
 {
-#if defined(MAGICKCORE_HDRI_SUPPORT)
   if (quantum <= 0)
     return(0);
   if (quantum >= QuantumRange)
     return(QuantumRange);
   return(quantum);
-#else
-  return(quantum);
-#endif
 }
 
 MagickExport MagickBooleanType ClampImage(Image *image)
@@ -721,6 +717,9 @@ MagickExport MagickBooleanType ClampImage(Image *image)
 MagickExport MagickBooleanType ClampImageChannel(Image *image,
   const ChannelType channel)
 {
+#if defined(MAGICKCORE_HDRI_SUPPORT)
+  return(MagickTrue);
+#else
 #define ClampImageTag  "Clamp/Image"
 
   CacheView
@@ -825,6 +824,7 @@ MagickExport MagickBooleanType ClampImageChannel(Image *image,
   }
   image_view=DestroyCacheView(image_view);
   return(status);
+#endif
 }
 
 /*
@@ -2042,16 +2042,16 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
     threshold.index=threshold.red;
   if ((flags & PercentValue) != 0)
     {
-      threshold.red*=(QuantumRange/100.0);
-      threshold.green*=(QuantumRange/100.0);
-      threshold.blue*=(QuantumRange/100.0);
-      threshold.opacity*=(QuantumRange/100.0);
-      threshold.index*=(QuantumRange/100.0);
+      threshold.red*=(MagickRealType) (QuantumRange/100.0);
+      threshold.green*=(MagickRealType) (QuantumRange/100.0);
+      threshold.blue*=(MagickRealType) (QuantumRange/100.0);
+      threshold.opacity*=(MagickRealType) (QuantumRange/100.0);
+      threshold.index*=(MagickRealType) (QuantumRange/100.0);
     }
   intensity=MagickPixelIntensity(&threshold);
   if ((IsMagickGray(&threshold) == MagickFalse) &&
       (IsGrayColorspace(image->colorspace) != MagickFalse))
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) TransformImageColorspace(image,RGBColorspace);
   /*
     White threshold image.
   */
@@ -2084,9 +2084,9 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if (channel == DefaultChannels)
+      if ((channel & SyncChannels) != 0)
         {
-          if (PixelIntensity(q) > intensity)
+          if (GetPixelIntensity(image,q) > intensity)
             {
               SetPixelRed(q,QuantumRange);
               SetPixelGreen(q,QuantumRange);

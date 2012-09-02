@@ -946,8 +946,6 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             */
             (void) SyncImageSettings(mogrify_info,*image);
             flags=ParsePageGeometry(*image,argv[i+1],&geometry,exception);
-            if ((flags & SigmaValue) == 0)
-              geometry.height=geometry.width;
             mogrify_image=BorderImage(*image,&geometry,exception);
             break;
           }
@@ -1252,7 +1250,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             gamma=0.0;
             for (j=0; j < (ssize_t) (kernel->width*kernel->height); j++)
               gamma+=kernel->values[j];
-            gamma=MagickEpsilonReciprocal(gamma);
+            gamma=1.0/(fabs((double) gamma) <= MagickEpsilon ? 1.0 : gamma);
             for (j=0; j < (ssize_t) (kernel->width*kernel->height); j++)
               kernel->values[j]*=gamma;
             mogrify_image=FilterImageChannel(*image,channel,kernel,exception);
@@ -1672,8 +1670,6 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             flags=ParsePageGeometry(*image,argv[i+1],&geometry,exception);
             frame_info.width=geometry.width;
             frame_info.height=geometry.height;
-            if ((flags & HeightValue) == 0)
-              frame_info.height=geometry.width;
             frame_info.outer_bevel=geometry.x;
             frame_info.inner_bevel=geometry.y;
             frame_info.x=(ssize_t) frame_info.width;
@@ -2449,8 +2445,6 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               Surround image with a raise of solid color.
             */
             flags=ParsePageGeometry(*image,argv[i+1],&geometry,exception);
-            if ((flags & SigmaValue) == 0)
-              geometry.height=geometry.width;
             (void) RaiseImage(*image,&geometry,*option == '-' ? MagickTrue :
               MagickFalse);
             InheritException(exception,&(*image)->exception);
@@ -2829,8 +2823,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             (void) SyncImageSettings(mogrify_info,*image);
             threshold=StringToDoubleInterval(argv[i+1],(double) QuantumRange+
               1.0);
-            (void) SolarizeImage(*image,threshold);
-            InheritException(exception,&(*image)->exception);
+            (void) SolarizeImageChannel(*image,channel,threshold,exception);
             break;
           }
         if (LocaleCompare("sparse-color",option+1) == 0)

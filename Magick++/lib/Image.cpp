@@ -14,9 +14,6 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
-#if !defined(MAGICKCORE_WINDOWS_SUPPORT)
-#include <strings.h>
-#endif
 
 using namespace std;
 
@@ -1601,11 +1598,11 @@ void Magick::Image::read ( const std::string &imageSpec_ )
       DestroyImageList( next );
  
     }
-  replaceImage( image );
-  throwException( exceptionInfo );
   if ( image )
     throwException( image->exception );
+  throwException( exceptionInfo );
   (void) DestroyExceptionInfo( &exceptionInfo );
+  replaceImage( image );
 }
 
 // Read image of specified size into current object
@@ -2672,7 +2669,7 @@ void Magick::Image::colorSpace( const ColorspaceType colorSpace_ )
     return;
 
   modifyImage();
-  TransformRGBImage( image(), colorSpace_ );
+  TransformImageColorspace( image(), colorSpace_ );
   throwImageException();
 }
 Magick::ColorspaceType Magick::Image::colorSpace ( void ) const
@@ -2684,6 +2681,8 @@ Magick::ColorspaceType Magick::Image::colorSpace ( void ) const
 void Magick::Image::colorspaceType( const ColorspaceType colorSpace_ )
 {
   modifyImage();
+  SetImageColorspace( image(), colorSpace_ );
+  throwImageException();
   options()->colorspaceType( colorSpace_ );
 }
 Magick::ColorspaceType Magick::Image::colorspaceType ( void ) const

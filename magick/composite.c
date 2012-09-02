@@ -43,6 +43,7 @@
 #include "magick/studio.h"
 #include "magick/artifact.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/client.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
@@ -70,6 +71,7 @@
 #include "magick/resource_.h"
 #include "magick/string_.h"
 #include "magick/thread-private.h"
+#include "magick/threshold.h"
 #include "magick/token.h"
 #include "magick/utility.h"
 #include "magick/version.h"
@@ -625,51 +627,145 @@ static inline void CompositeHardLight(const MagickPixelPacket *p,
       q->index*Da,Da);
 }
 
-static void CompositeHSB(const MagickRealType red,const MagickRealType green,
-  const MagickRealType blue,double *hue,double *saturation,double *brightness)
+static inline MagickRealType ConvertHueToRGB(MagickRealType m1,
+  MagickRealType m2,MagickRealType hue)
 {
-  MagickRealType
-    delta,
-    max,
-    min;
-
-  /*
-    Convert RGB to HSB colorspace.
-  */
-  assert(hue != (double *) NULL);
-  assert(saturation != (double *) NULL);
-  assert(brightness != (double *) NULL);
-  max=(red > green ? red : green);
-  if (blue > max)
-    max=blue;
-  min=(red < green ? red : green);
-  if (blue < min)
-    min=blue;
-  *hue=0.0;
-  *saturation=0.0;
-  *brightness=(double) (QuantumScale*max);
-  if (max == 0.0)
-    return;
-  *saturation=(double) (1.0-min/max);
-  delta=max-min;
-  if (delta == 0.0)
-    return;
-  if (red == max)
-    *hue=(double) ((green-blue)/delta);
-  else
-    if (green == max)
-      *hue=(double) (2.0+(blue-red)/delta);
-    else
-      if (blue == max)
-        *hue=(double) (4.0+(red-green)/delta);
-  *hue/=6.0;
-  if (*hue < 0.0)
-    *hue+=1.0;
+  if (hue < 0.0)
+    hue+=1.0;
+  if (hue > 1.0)
+    hue-=1.0;
+  if ((6.0*hue) < 1.0)
+    return(m1+6.0*(m2-m1)*hue);
+  if ((2.0*hue) < 1.0)
+    return(m2);
+  if ((3.0*hue) < 2.0)
+    return(m1+6.0*(m2-m1)*(2.0/3.0-hue));
+  return(m1);
 }
 
-static inline MagickRealType In(const MagickRealType p,
-  const MagickRealType Sa,const MagickRealType magick_unused(q),
-  const MagickRealType Da)
+static void HCLComposite(const double hue,const double chroma,const double luma,
+  MagickRealType *red,MagickRealType *green,MagickRealType *blue)
+{
+  double
+    b,
+    c,
+    g,
+    h,
+    m,
+    r,
+    x,
+    z;
+
+  /*
+    Convert HCL to RGB colorspace.
+  */
+  assert(red != (MagickRealType *) NULL);
+  assert(green != (MagickRealType *) NULL);
+  assert(blue != (MagickRealType *) NULL);
+  h=6.0*hue;
+  c=chroma;
+  x=c*(1.0-fabs(fmod(h,2.0)-1.0));
+  r=0.0;
+  g=0.0;
+  b=0.0;
+  if ((0.0 <= h) && (h < 1.0))
+    {
+      r=c;
+      g=x;
+    }
+  else
+    if ((1.0 <= h) && (h < 2.0))
+      {
+        r=x;
+        g=c;
+      }
+    else
+      if ((2.0 <= h) && (h < 3.0))
+        {
+          g=c;
+          b=x;
+        }
+      else
+        if ((3.0 <= h) && (h < 4.0))
+          {
+            g=x;
+            b=c;
+          }
+        else
+          if ((4.0 <= h) && (h < 5.0))
+            {
+              r=x;
+              b=c;
+            }
+          else
+            if ((5.0 <= h) && (h < 6.0))
+              {
+                r=c;
+                b=x;
+              }
+  m=luma-(0.298839*r+0.586811*g+0.114350*b);
+  /*
+    Choose saturation strategy to clip it into the RGB cube; hue and luma are
+    preserved and chroma may be changed.
+  */
+  z=1.0;
+  if (m < 0.0)
+    {
+      z=luma/(luma-m);
+      m=0.0;
+    }
+  else
+    if (m+c > 1.0)
+      {
+        z=(1.0-luma)/(m+c-luma);
+        m=1.0-z*c;
+      }
+  *red=ClampToQuantum(QuantumRange*(z*r+m));
+  *green=ClampToQuantum(QuantumRange*(z*g+m));
+  *blue=ClampToQuantum(QuantumRange*(z*b+m));
+}
+
+static void CompositeHCL(const MagickRealType red,const MagickRealType green,
+  const MagickRealType blue,double *hue,double *chroma,double *luma)
+{
+  double
+    b,
+    c,
+    g,
+    h,
+    max,
+    r;
+
+  /*
+    Convert RGB to HCL colorspace.
+  */
+  assert(hue != (double *) NULL);
+  assert(chroma != (double *) NULL);
+  assert(luma != (double *) NULL);
+  r=(double) red;
+  g=(double) green;
+  b=(double) blue;
+  max=MagickMax(r,MagickMax(g,b));
+  c=max-(double) MagickMin(r,MagickMin(g,b));
+  h=0.0;
+  if (c == 0)
+    h=0.0;
+  else
+    if (red == (Quantum) max)
+      h=fmod(6.0+(g-b)/c,6.0);
+    else
+      if (green == (Quantum) max)
+        h=((b-r)/c)+2.0;
+      else
+        if (blue == (Quantum) max)
+          h=((r-g)/c)+4.0;
+  *hue=(h/6.0);
+  *chroma=QuantumScale*c;
+  *luma=QuantumScale*(0.298839*r+0.586811*g+0.114350*b);
+}
+
+static inline MagickRealType In(const MagickRealType p,const MagickRealType Sa,
+  const MagickRealType magick_unused(q),const MagickRealType Da)
 {
   return(Sa*p*Da);
 }
@@ -1311,7 +1407,8 @@ static inline void CompositeScreen(const MagickPixelPacket *p,
   if ( (channel & SyncChannels) != 0 ) {
     gamma=RoundToUnity(Sa+Da-Sa*Da); /* over blend, as per SVG doc */
     composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-    Sa*=QuantumScale; Da*=QuantumScale; /* optimization */
+    Sa*=(MagickRealType) QuantumScale;
+    Da*=(MagickRealType) QuantumScale; /* optimization */
     gamma=QuantumRange/(fabs(gamma) < MagickEpsilon ? MagickEpsilon : gamma);
     composite->red=gamma*Screen(p->red*Sa,q->red*Da);
     composite->green=gamma*Screen(p->green*Sa,q->green*Da);
@@ -1497,83 +1594,6 @@ static inline void CompositeXor(const MagickPixelPacket *p,
     composite->index=gamma*Xor(p->index*Sa,Sa,q->index*Da,Da);
 }
 
-static void HSBComposite(const double hue,const double saturation,
-  const double brightness,MagickRealType *red,MagickRealType *green,
-  MagickRealType *blue)
-{
-  MagickRealType
-    f,
-    h,
-    p,
-    q,
-    t;
-
-  /*
-    Convert HSB to RGB colorspace.
-  */
-  assert(red != (MagickRealType *) NULL);
-  assert(green != (MagickRealType *) NULL);
-  assert(blue != (MagickRealType *) NULL);
-  if (saturation == 0.0)
-    {
-      *red=(MagickRealType) QuantumRange*brightness;
-      *green=(*red);
-      *blue=(*red);
-      return;
-    }
-  h=6.0*(hue-floor(hue));
-  f=h-floor((double) h);
-  p=brightness*(1.0-saturation);
-  q=brightness*(1.0-saturation*f);
-  t=brightness*(1.0-saturation*(1.0-f));
-  switch ((int) h)
-  {
-    case 0:
-    default:
-    {
-      *red=(MagickRealType) QuantumRange*brightness;
-      *green=(MagickRealType) QuantumRange*t;
-      *blue=(MagickRealType) QuantumRange*p;
-      break;
-    }
-    case 1:
-    {
-      *red=(MagickRealType) QuantumRange*q;
-      *green=(MagickRealType) QuantumRange*brightness;
-      *blue=(MagickRealType) QuantumRange*p;
-      break;
-    }
-    case 2:
-    {
-      *red=(MagickRealType) QuantumRange*p;
-      *green=(MagickRealType) QuantumRange*brightness;
-      *blue=(MagickRealType) QuantumRange*t;
-      break;
-    }
-    case 3:
-    {
-      *red=(MagickRealType) QuantumRange*p;
-      *green=(MagickRealType) QuantumRange*q;
-      *blue=(MagickRealType) QuantumRange*brightness;
-      break;
-    }
-    case 4:
-    {
-      *red=(MagickRealType) QuantumRange*t;
-      *green=(MagickRealType) QuantumRange*p;
-      *blue=(MagickRealType) QuantumRange*brightness;
-      break;
-    }
-    case 5:
-    {
-      *red=(MagickRealType) QuantumRange*brightness;
-      *green=(MagickRealType) QuantumRange*p;
-      *blue=(MagickRealType) QuantumRange*q;
-      break;
-    }
-  }
-}
-
 MagickExport MagickBooleanType CompositeImage(Image *image,
   const CompositeOperator compose,const Image *composite_image,
   const ssize_t x_offset,const ssize_t y_offset)
@@ -1588,7 +1608,7 @@ MagickExport MagickBooleanType CompositeImage(Image *image,
 
 MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   const ChannelType channel,const CompositeOperator compose,
-  const Image *composite_image,const ssize_t x_offset,const ssize_t y_offset)
+  const Image *composite,const ssize_t x_offset,const ssize_t y_offset)
 {
 #define CompositeImageTag  "Composite/Image"
 
@@ -1606,6 +1626,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     geometry_info;
 
   Image
+    *composite_image,
     *destination_image;
 
   MagickBooleanType
@@ -1622,8 +1643,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     amount,
     destination_dissolve,
     midpoint,
-    percent_brightness,
-    percent_saturation,
+    percent_luma,
+    percent_chroma,
     source_dissolve,
     threshold;
 
@@ -1640,21 +1661,22 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(composite_image != (Image *) NULL);
-  assert(composite_image->signature == MagickSignature);
+  assert(composite != (Image *) NULL);
+  assert(composite->signature == MagickSignature);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
-      (IsGrayColorspace(composite_image->colorspace) == MagickFalse))
-    (void) TransformImageColorspace(image,sRGBColorspace);
-  GetMagickPixelPacket(image,&zero);
   exception=(&image->exception);
+  composite_image=CloneImage(composite,0,0,MagickTrue,exception);
+  if (composite_image == (const Image *) NULL)
+    return(MagickFalse);
+  (void) SetImageColorspace(composite_image,image->colorspace);
+  GetMagickPixelPacket(image,&zero);
   destination_image=(Image *) NULL;
   amount=0.5;
   destination_dissolve=1.0;
   clip_to_self=MagickTrue;
-  percent_brightness=100.0;
-  percent_saturation=100.0;
+  percent_luma=100.0;
+  percent_chroma=100.0;
   source_dissolve=1.0;
   threshold=0.05f;
   switch (compose)
@@ -1750,6 +1772,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       }
       composite_view=DestroyCacheView(composite_view);
       image_view=DestroyCacheView(image_view);
+      composite_image=DestroyImage(composite_image);
       return(status);
     }
     case CopyOpacityCompositeOp:
@@ -1794,7 +1817,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       destination_image=CloneImage(image,image->columns,image->rows,MagickTrue,
         exception);
       if (destination_image == (Image *) NULL)
-        return(MagickFalse);
+        {
+          composite_image=DestroyImage(composite_image);
+          return(MagickFalse);
+        }
       /*
         Gather the maximum blur sigma values from user.
       */
@@ -1807,6 +1833,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           (void) ThrowMagickException(exception,GetMagickModule(),
                OptionWarning,"InvalidGeometry","'%s' '%s'",
                "compose:args",value);
+          composite_image=DestroyImage(composite_image);
           destination_image=DestroyImage(destination_image);
           return(MagickFalse);
         }
@@ -1934,6 +1961,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       resample_filter=DestroyResampleFilter(resample_filter);
       composite_view=DestroyCacheView(composite_view);
       destination_view=DestroyCacheView(destination_view);
+      composite_image=DestroyImage(composite_image);
       composite_image=destination_image;
       break;
     }
@@ -1970,7 +1998,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       destination_image=CloneImage(image,image->columns,image->rows,MagickTrue,
         exception);
       if (destination_image == (Image *) NULL)
-        return(MagickFalse);
+        {
+          composite_image=DestroyImage(composite_image);
+          return(MagickFalse);
+        }
       SetGeometryInfo(&geometry_info);
       flags=NoValue;
       value=GetImageArtifact(composite_image,"compose:args");
@@ -2109,6 +2140,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       destination_view=DestroyCacheView(destination_view);
       composite_view=DestroyCacheView(composite_view);
       image_view=DestroyCacheView(image_view);
+      composite_image=DestroyImage(composite_image);
       composite_image=destination_image;
       break;
     }
@@ -2178,15 +2210,15 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     case ModulateCompositeOp:
     {
       /*
-        Determine the brightness and saturation scale.
+        Determine the luma and chroma scale.
       */
       value=GetImageArtifact(composite_image,"compose:args");
       if (value != (char *) NULL)
         {
           flags=ParseGeometry(value,&geometry_info);
-          percent_brightness=geometry_info.rho;
+          percent_luma=geometry_info.rho;
           if ((flags & SigmaValue) != 0)
-            percent_saturation=geometry_info.sigma;
+            percent_chroma=geometry_info.sigma;
         }
       break;
     }
@@ -2233,9 +2265,9 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       *pixels;
 
     double
-      brightness,
+      luma,
       hue,
-      saturation,
+      chroma,
       sans;
 
     MagickPixelPacket
@@ -2296,8 +2328,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     GetMagickPixelPacket(composite_image,&source);
     GetMagickPixelPacket(image,&destination);
     hue=0.0;
-    saturation=0.0;
-    brightness=0.0;
+    chroma=0.0;
+    luma=0.0;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       if (clip_to_self != MagickFalse)
@@ -2654,11 +2686,11 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           offset=(ssize_t) (MagickPixelIntensityToQuantum(&source)-midpoint);
           if (offset == 0)
             break;
-          CompositeHSB(destination.red,destination.green,destination.blue,&hue,
-            &saturation,&brightness);
-          brightness+=(0.01*percent_brightness*offset)/midpoint;
-          saturation*=0.01*percent_saturation;
-          HSBComposite(hue,saturation,brightness,&composite.red,
+          CompositeHCL(destination.red,destination.green,destination.blue,&hue,
+            &chroma,&luma);
+          luma+=(0.01*percent_luma*offset)/midpoint;
+          chroma*=0.01*percent_chroma;
+          HCLComposite(hue,chroma,luma,&composite.red,
             &composite.green,&composite.blue);
           break;
         }
@@ -2671,10 +2703,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
               composite=source;
               break;
             }
-          CompositeHSB(destination.red,destination.green,destination.blue,&hue,
-            &saturation,&brightness);
-          CompositeHSB(source.red,source.green,source.blue,&hue,&sans,&sans);
-          HSBComposite(hue,saturation,brightness,&composite.red,
+          CompositeHCL(destination.red,destination.green,destination.blue,&hue,
+            &chroma,&luma);
+          CompositeHCL(source.red,source.green,source.blue,&hue,&sans,&sans);
+          HCLComposite(hue,chroma,luma,&composite.red,
             &composite.green,&composite.blue);
           if (source.opacity < destination.opacity)
             composite.opacity=source.opacity;
@@ -2689,11 +2721,11 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
               composite=source;
               break;
             }
-          CompositeHSB(destination.red,destination.green,destination.blue,&hue,
-            &saturation,&brightness);
-          CompositeHSB(source.red,source.green,source.blue,&sans,&saturation,
+          CompositeHCL(destination.red,destination.green,destination.blue,&hue,
+            &chroma,&luma);
+          CompositeHCL(source.red,source.green,source.blue,&sans,&chroma,
             &sans);
-          HSBComposite(hue,saturation,brightness,&composite.red,
+          HCLComposite(hue,chroma,luma,&composite.red,
             &composite.green,&composite.blue);
           if (source.opacity < destination.opacity)
             composite.opacity=source.opacity;
@@ -2708,11 +2740,11 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
               composite=source;
               break;
             }
-          CompositeHSB(destination.red,destination.green,destination.blue,&hue,
-            &saturation,&brightness);
-          CompositeHSB(source.red,source.green,source.blue,&sans,&sans,
-            &brightness);
-          HSBComposite(hue,saturation,brightness,&composite.red,
+          CompositeHCL(destination.red,destination.green,destination.blue,&hue,
+            &chroma,&luma);
+          CompositeHCL(source.red,source.green,source.blue,&sans,&sans,
+            &luma);
+          HCLComposite(hue,chroma,luma,&composite.red,
             &composite.green,&composite.blue);
           if (source.opacity < destination.opacity)
             composite.opacity=source.opacity;
@@ -2727,11 +2759,11 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
               composite=source;
               break;
             }
-          CompositeHSB(destination.red,destination.green,destination.blue,&sans,
-            &sans,&brightness);
-          CompositeHSB(source.red,source.green,source.blue,&hue,&saturation,
+          CompositeHCL(destination.red,destination.green,destination.blue,&sans,
+            &sans,&luma);
+          CompositeHCL(source.red,source.green,source.blue,&hue,&chroma,
             &sans);
-          HSBComposite(hue,saturation,brightness,&composite.red,
+          HCLComposite(hue,chroma,luma,&composite.red,
             &composite.green,&composite.blue);
           if (source.opacity < destination.opacity)
             composite.opacity=source.opacity;
@@ -2822,6 +2854,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   image_view=DestroyCacheView(image_view);
   if (destination_image != (Image * ) NULL)
     destination_image=DestroyImage(destination_image);
+  else
+    composite_image=DestroyImage(composite_image);
+  if (status != MagickFalse)
+    (void) ClampImage(image);
   return(status);
 }
 
@@ -2882,8 +2918,7 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
   texture_image=CloneImage(texture,0,0,MagickTrue,exception);
   if (texture_image == (const Image *) NULL)
     return(MagickFalse);
-  if (IsGrayColorspace(texture_image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(texture_image,sRGBColorspace);
+  (void) TransformImageColorspace(texture_image,image->colorspace);
   (void) SetImageVirtualPixelMethod(texture_image,TileVirtualPixelMethod);
   status=MagickTrue;
   if ((image->compose != CopyCompositeOp) &&
@@ -2972,7 +3007,8 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
     if (status == MagickFalse)
       continue;
     p=GetCacheViewVirtualPixels(texture_view,texture_image->tile_offset.x,(y+
-      texture_image->tile_offset.y) % texture_image->rows,texture_image->columns,1,exception);
+      texture_image->tile_offset.y) % texture_image->rows,
+      texture_image->columns,1,exception);
     q=QueueCacheViewAuthenticPixels(image_view,0,y,image->columns,1,
       exception);
     if ((p == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))

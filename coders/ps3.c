@@ -45,6 +45,7 @@
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
+#include "magick/channel.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/compress.h"
@@ -61,6 +62,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
 #include "magick/property.h"
 #include "magick/quantum-private.h"
 #include "magick/resource_.h"
@@ -739,6 +741,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
       "",
       "/DisplayImage",
       "{",
+      "  gsave",
       "  /buffer 512 string def",
       "  % Translation.",
       "  currentfile buffer readline pop",
@@ -789,6 +792,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
       "  { NonMaskedImageDict }",
       "  ifelse",
       "  stencil { 0 setgray imagemask } { image } ifelse",
+      "  grestore",
       "  sp { showpage } if",
       "} bind def",
       (char *) NULL

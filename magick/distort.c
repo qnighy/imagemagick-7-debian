@@ -44,6 +44,7 @@
 #include "magick/artifact.h"
 #include "magick/cache.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/color-private.h"
 #include "magick/colorspace.h"
 #include "magick/colorspace-private.h"
@@ -60,6 +61,7 @@
 #include "magick/monitor-private.h"
 #include "magick/option.h"
 #include "magick/pixel.h"
+#include "magick/pixel-accessor.h"
 #include "magick/pixel-private.h"
 #include "magick/resample.h"
 #include "magick/resample-private.h"
@@ -2286,7 +2288,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
     }
   if ((IsPixelGray(&distort_image->background_color) == MagickFalse) &&
       (IsGrayColorspace(distort_image->colorspace) != MagickFalse))
-    (void) TransformImageColorspace(distort_image,sRGBColorspace);
+    (void) TransformImageColorspace(distort_image,RGBColorspace);
   if (distort_image->background_color.opacity != OpaqueOpacity)
     distort_image->matte=MagickTrue;
   distort_image->page.x=geometry.x;
@@ -2605,7 +2607,7 @@ if ( i == 0 && j == 0 ) {
 
             /* is pixel valid - horizon of a infinite Virtual-Pixel Plane
              * (see Anthony Thyssen's personal note) */
-            validity = (coeff[1]*MagickPI2 - fabs(d.x))/output_scaling + 0.5;
+            validity = (double) ((coeff[1]*MagickPI2 - fabs(d.x))/output_scaling + 0.5);
 
             if ( validity > 0.0 ) {
               double cx,tx;

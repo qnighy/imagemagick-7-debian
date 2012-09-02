@@ -46,6 +46,7 @@
 #include "magick/attribute.h"
 #include "magick/cache.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colorspace.h"
@@ -72,6 +73,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
 #include "magick/pixel-private.h"
 #include "magick/property.h"
 #include "magick/quantum.h"
@@ -195,6 +197,8 @@ MagickExport FxInfo *AcquireFxInfo(const Image *image,const char *expression)
     Force right-to-left associativity for unary negation.
   */
   (void) SubstituteString(&fx_info->expression,"-","-1.0*");
+  (void) SubstituteString(&fx_info->expression,"E-1.0*","E-");
+  (void) SubstituteString(&fx_info->expression,"e-1.0*","e-");
   /*
     Convert complex to simple operators.
   */
@@ -313,6 +317,8 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
       noise_image=DestroyImage(noise_image);
       return((Image *) NULL);
     }
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+    (void) TransformImageColorspace(noise_image,RGBColorspace);
   /*
     Add noise in each row.
   */
@@ -716,7 +722,7 @@ MagickExport Image *ColorizeImage(const Image *image,const char *opacity,
     }
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
       (IsPixelGray(&colorize) != MagickFalse))
-    (void) SetImageColorspace(colorize_image,sRGBColorspace);
+    (void) SetImageColorspace(colorize_image,RGBColorspace);
   if ((colorize_image->matte == MagickFalse) &&
       (colorize.opacity != OpaqueOpacity))
     (void) SetImageAlphaChannel(colorize_image,OpaqueAlphaChannel);
@@ -779,8 +785,11 @@ MagickExport Image *ColorizeImage(const Image *image,const char *opacity,
         colorize.green*pixel.green)/100.0));
       SetPixelBlue(q,((GetPixelBlue(p)*(100.0-pixel.blue)+
         colorize.blue*pixel.blue)/100.0));
-      SetPixelOpacity(q,((GetPixelOpacity(p)*(100.0-pixel.opacity)+
-        colorize.opacity*pixel.opacity)/100.0));
+      if (colorize_image->matte == MagickFalse)
+        SetPixelOpacity(q,GetPixelOpacity(p));
+      else
+        SetPixelOpacity(q,((GetPixelOpacity(p)*(100.0-pixel.opacity)+
+          colorize.opacity*pixel.opacity)/100.0));
       p++;
       q++;
     }
@@ -1140,16 +1149,13 @@ static MagickRealType FxChannelStatistics(FxInfo *fx_info,const Image *image,
 
   for (p=symbol; (*p != '.') && (*p != '\0'); p++) ;
   if (*p == '.')
-    switch (*++p)  /* e.g. depth.r */
     {
-      case 'r': channel=RedChannel; break;
-      case 'g': channel=GreenChannel; break;
-      case 'b': channel=BlueChannel; break;
-      case 'c': channel=CyanChannel; break;
-      case 'm': channel=MagentaChannel; break;
-      case 'y': channel=YellowChannel; break;
-      case 'k': channel=BlackChannel; break;
-      default: break;
+      ssize_t
+        option;
+
+      option=ParseCommandOption(MagickChannelOptions,MagickTrue,p+1);
+      if (option >= 0)
+        channel=(ChannelType) option;
     }
   (void) FormatLocaleString(key,MaxTextExtent,"%p.%.20g.%s",(void *) image,
     (double) channel,symbol);
@@ -1706,7 +1712,7 @@ static MagickRealType FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
           double
             luminence;
 
-          luminence=0.2126*pixel.red+0.7152*pixel.green+0.0722*pixel.blue;
+          luminence=0.21267*pixel.red+0.71516*pixel.green+0.07217*pixel.blue;
           return(QuantumScale*luminence);
         }
       break;
@@ -2978,7 +2984,7 @@ static FxInfo **AcquireFxThreadSet(const Image *image,const char *expression,
   size_t
     number_threads;
 
-  number_threads=GetOpenMPMaximumThreads();
+  number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
   fx_info=(FxInfo **) AcquireQuantumMemory(number_threads,sizeof(*fx_info));
   if (fx_info == (FxInfo **) NULL)
     return((FxInfo **) NULL);
@@ -4247,7 +4253,7 @@ MagickExport Image *ShadowImage(const Image *image,const double opacity,
   if (clone_image == (Image *) NULL)
     return((Image *) NULL);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(clone_image,sRGBColorspace);
+    (void) TransformImageColorspace(clone_image,RGBColorspace);
   (void) SetImageVirtualPixelMethod(clone_image,EdgeVirtualPixelMethod);
   clone_image->compose=OverCompositeOp;
   border_info.width=(size_t) floor(2.0*sigma+0.5);
@@ -4511,24 +4517,39 @@ MagickExport Image *SketchImage(const Image *image,const double radius,
 %  The format of the SolarizeImage method is:
 %
 %      MagickBooleanType SolarizeImage(Image *image,const double threshold)
+%      MagickBooleanType SolarizeImageChannel(Image *image,
+%        const ChannelType channel,const double threshold,
+%        ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
 %    o image: the image.
 %
+%    o channel: the channel type.
+%
 %    o threshold:  Define the extent of the solarization.
+%
+%    o exception: return any errors or warnings in this structure.
 %
 */
 MagickExport MagickBooleanType SolarizeImage(Image *image,
   const double threshold)
 {
+  MagickBooleanType
+    status;
+
+  status=SolarizeImageChannel(image,DefaultChannels,threshold,
+    &image->exception);
+  return(status);
+}
+
+MagickExport MagickBooleanType SolarizeImageChannel(Image *image,
+  const ChannelType channel,const double threshold,ExceptionInfo *exception)
+{
 #define SolarizeImageTag  "Solarize/Image"
 
   CacheView
     *image_view;
-
-  ExceptionInfo
-    *exception;
 
   MagickBooleanType
     status;
@@ -4553,14 +4574,14 @@ MagickExport MagickBooleanType SolarizeImage(Image *image,
       */
       for (i=0; i < (ssize_t) image->colors; i++)
       {
-        if ((MagickRealType) image->colormap[i].red > threshold)
-          image->colormap[i].red=QuantumRange-image->colormap[i].red;
-        if ((MagickRealType) image->colormap[i].green > threshold)
-          image->colormap[i].green=QuantumRange-
-            image->colormap[i].green;
-        if ((MagickRealType) image->colormap[i].blue > threshold)
-          image->colormap[i].blue=QuantumRange-
-            image->colormap[i].blue;
+        if ((channel & RedChannel) != 0)
+          if ((MagickRealType) image->colormap[i].red > threshold)
+            image->colormap[i].red=QuantumRange-image->colormap[i].red;
+        if ((channel & GreenChannel) != 0)
+          if ((MagickRealType) image->colormap[i].green > threshold)
+            image->colormap[i].green=QuantumRange-image->colormap[i].green;
+        if ((channel & BlueChannel) != 0)
+          image->colormap[i].blue=QuantumRange-image->colormap[i].blue;
       }
     }
   /*
@@ -4568,7 +4589,6 @@ MagickExport MagickBooleanType SolarizeImage(Image *image,
   */
   status=MagickTrue;
   progress=0;
-  exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
@@ -4593,12 +4613,15 @@ MagickExport MagickBooleanType SolarizeImage(Image *image,
       }
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if ((MagickRealType) GetPixelRed(q) > threshold)
-        SetPixelRed(q,QuantumRange-GetPixelRed(q));
-      if ((MagickRealType) GetPixelGreen(q) > threshold)
-        SetPixelGreen(q,QuantumRange-GetPixelGreen(q));
-      if ((MagickRealType) GetPixelBlue(q) > threshold)
-        SetPixelBlue(q,QuantumRange-GetPixelBlue(q));
+      if ((channel & RedChannel) != 0)
+        if ((MagickRealType) GetPixelRed(q) > threshold)
+          SetPixelRed(q,QuantumRange-GetPixelRed(q));
+      if ((channel & GreenChannel) != 0)
+        if ((MagickRealType) GetPixelGreen(q) > threshold)
+          SetPixelGreen(q,QuantumRange-GetPixelGreen(q));
+      if ((channel & BlueChannel) != 0)
+        if ((MagickRealType) GetPixelBlue(q) > threshold)
+          SetPixelBlue(q,QuantumRange-GetPixelBlue(q));
       q++;
     }
     if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
@@ -4882,6 +4905,7 @@ MagickExport Image *StereoAnaglyphImage(const Image *left_image,
       stereo_image=DestroyImage(stereo_image);
       return((Image *) NULL);
     }
+  (void) SetImageColorspace(stereo_image,sRGBColorspace);
   /*
     Copy left image to red channel and right image to blue channel.
   */
@@ -5206,7 +5230,7 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
     }
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
       (IsPixelGray(&tint) == MagickFalse))
-    (void) SetImageColorspace(tint_image,sRGBColorspace);
+    (void) SetImageColorspace(tint_image,RGBColorspace);
   if (opacity == (const char *) NULL)
     return(tint_image);
   /*
@@ -5227,11 +5251,11 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
   else
     pixel.opacity=(MagickRealType) OpaqueOpacity;
   color_vector.red=(MagickRealType) (pixel.red*tint.red/100.0-
-    PixelIntensity(&tint));
+    GetPixelIntensity(image,&tint));
   color_vector.green=(MagickRealType) (pixel.green*tint.green/100.0-
-    PixelIntensity(&tint));
+    GetPixelIntensity(image,&tint));
   color_vector.blue=(MagickRealType) (pixel.blue*tint.blue/100.0-
-    PixelIntensity(&tint));
+    GetPixelIntensity(image,&tint));
   /*
     Tint image.
   */

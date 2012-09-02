@@ -51,6 +51,7 @@
 #include "magick/cache-private.h"
 #include "magick/cache-view.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/resource_.h"
@@ -165,12 +166,13 @@ MagickExport CacheView *AcquireVirtualCacheView(const Image *image,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   (void) exception;
-  cache_view=(CacheView *) AcquireQuantumMemory(1,sizeof(*cache_view));
+  cache_view=(CacheView *) MagickAssumeAligned(AcquireAlignedMemory(1,
+    sizeof(*cache_view)));
   if (cache_view == (CacheView *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) ResetMagickMemory(cache_view,0,sizeof(*cache_view));
   cache_view->image=ReferenceImage((Image *) image);
-  cache_view->number_threads=GetOpenMPMaximumThreads();
+  cache_view->number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
   cache_view->nexus_info=AcquirePixelCacheNexus(cache_view->number_threads);
   cache_view->virtual_pixel_method=GetImageVirtualPixelMethod(image);
   cache_view->debug=IsEventLogging();
@@ -212,7 +214,8 @@ MagickExport CacheView *CloneCacheView(const CacheView *cache_view)
   if (cache_view->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       cache_view->image->filename);
-  clone_view=(CacheView *) AcquireMagickMemory(sizeof(*clone_view));
+  clone_view=(CacheView *) MagickAssumeAligned(AcquireAlignedMemory(1,
+    sizeof(*clone_view)));
   if (clone_view == (CacheView *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) ResetMagickMemory(clone_view,0,sizeof(*clone_view));
@@ -260,7 +263,7 @@ MagickExport CacheView *DestroyCacheView(CacheView *cache_view)
       cache_view->number_threads);
   cache_view->image=DestroyImage(cache_view->image);
   cache_view->signature=(~MagickSignature);
-  cache_view=(CacheView *) RelinquishMagickMemory(cache_view);
+  cache_view=(CacheView *) RelinquishAlignedMemory(cache_view);
   return(cache_view);
 }
 

@@ -25,7 +25,7 @@ extern "C" {
 #include <magick/image.h>
 #include <magick/image-private.h>
 #include <magick/pixel.h>
-#include <magick/pixel-private.h>
+#include <magick/pixel-accessor.h>
 
 static inline void ConvertRGBToCMYK(MagickPixelPacket *pixel)
 {
@@ -46,9 +46,9 @@ static inline void ConvertRGBToCMYK(MagickPixelPacket *pixel)
     }
   else
     {
-      red=QuantumRange*DecompandsRGB(QuantumScale*pixel->red);
-      green=QuantumRange*DecompandsRGB(QuantumScale*pixel->green);
-      blue=QuantumRange*DecompandsRGB(QuantumScale*pixel->blue);
+      red=InversesRGBCompandor(pixel->red);
+      green=InversesRGBCompandor(pixel->green);
+      blue=InversesRGBCompandor(pixel->blue);
     }
   if ((fabs(red) < MagickEpsilon) && (fabs(green) < MagickEpsilon) &&
       (fabs(blue) < MagickEpsilon))

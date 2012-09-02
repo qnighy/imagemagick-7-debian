@@ -51,6 +51,7 @@
 #include "magick/blob.h"
 #include "magick/cache.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colorspace.h"
@@ -72,6 +73,7 @@
 #include "magick/monitor-private.h"
 #include "magick/option.h"
 #include "magick/paint.h"
+#include "magick/pixel-accessor.h"
 #include "magick/pixel-private.h"
 #include "magick/property.h"
 #include "magick/resample.h"
@@ -980,7 +982,7 @@ static SegmentInfo AffineEdge(const Image *image,const AffineMatrix *affine,
   inverse_edge.x2=edge->x2;
   inverse_edge.y2=edge->y2;
   z=affine->ry*y+affine->tx;
-  if (affine->sx > MagickEpsilon)
+  if (affine->sx >= MagickEpsilon)
     {
       intercept=(-z/affine->sx);
       x=intercept;
@@ -1013,7 +1015,7 @@ static SegmentInfo AffineEdge(const Image *image,const AffineMatrix *affine,
     Determine top and bottom edges.
   */
   z=affine->sy*y+affine->ty;
-  if (affine->rx > MagickEpsilon)
+  if (affine->rx >= MagickEpsilon)
     {
       intercept=(-z/affine->rx);
       x=intercept;
@@ -3624,7 +3626,7 @@ static PolygonInfo **AcquirePolygonThreadSet(const DrawInfo *draw_info,
   size_t
     number_threads;
 
-  number_threads=GetOpenMPMaximumThreads();
+  number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
   polygon_info=(PolygonInfo **) AcquireQuantumMemory(number_threads,
     sizeof(*polygon_info));
   if (polygon_info == (PolygonInfo **) NULL)
@@ -3724,8 +3726,9 @@ static MagickRealType GetOpacityPixel(PolygonInfo *polygon_info,
             }
           else
             {
+              alpha=1.0/alpha;
               beta=delta.x*(y-q->y)-delta.y*(x-q->x);
-              distance=MagickEpsilonReciprocal(alpha)*beta*beta;
+              distance=alpha*beta*beta;
             }
         }
       /*
@@ -4199,7 +4202,7 @@ MagickExport MagickBooleanType DrawPrimitive(Image *image,
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
       ((IsPixelGray(&draw_info->fill) == MagickFalse) ||
        (IsPixelGray(&draw_info->stroke) == MagickFalse)))
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) TransformImageColorspace(image,RGBColorspace);
   status=MagickTrue;
   exception=(&image->exception);
   x=(ssize_t) ceil(primitive_info->point.x-0.5);
@@ -4555,7 +4558,7 @@ MagickExport MagickBooleanType DrawPrimitive(Image *image,
       scale=ExpandAffine(&draw_info->affine);
       if ((draw_info->dash_pattern != (double *) NULL) &&
           (draw_info->dash_pattern[0] != 0.0) &&
-          ((scale*draw_info->stroke_width) > MagickEpsilon) &&
+          ((scale*draw_info->stroke_width) >= MagickEpsilon) &&
           (draw_info->stroke.opacity != (Quantum) TransparentOpacity))
         {
           /*
@@ -5755,6 +5758,16 @@ static void TraceSquareLinecap(PrimitiveInfo *primitive_info,
     dy*(distance+offset)/distance);
 }
 
+static inline MagickRealType DrawEpsilonReciprocal(const MagickRealType x)
+{
+#define DrawEpsilon  ((MagickRealType) 1.0e-10)
+
+  MagickRealType sign = x < (MagickRealType) 0.0 ? (MagickRealType) -1.0 :
+    (MagickRealType) 1.0;
+  return((sign*x) >= DrawEpsilon ? (MagickRealType) 1.0/x : sign*(
+    (MagickRealType) 1.0/DrawEpsilon));
+}
+
 static PrimitiveInfo *TraceStrokePolygon(const DrawInfo *draw_info,
   const PrimitiveInfo *primitive_info)
 {
@@ -5848,28 +5861,8 @@ static PrimitiveInfo *TraceStrokePolygon(const DrawInfo *draw_info,
   }
   if (n == (ssize_t) number_vertices)
     n=(ssize_t) number_vertices-1L;
-  slope.p=0.0;
-  inverse_slope.p=0.0;
-  if (fabs(dx.p) < MagickEpsilon)
-    {
-      if (dx.p >= 0.0)
-        slope.p=dy.p < 0.0 ? -1.0/MagickEpsilon : 1.0/MagickEpsilon;
-      else
-        slope.p=dy.p < 0.0 ? 1.0/MagickEpsilon : -1.0/MagickEpsilon;
-    }
-  else
-    if (fabs(dy.p) < MagickEpsilon)
-      {
-        if (dy.p >= 0.0)
-          inverse_slope.p=dx.p < 0.0 ? -1.0/MagickEpsilon : 1.0/MagickEpsilon;
-        else
-          inverse_slope.p=dx.p < 0.0 ? 1.0/MagickEpsilon : -1.0/MagickEpsilon;
-      }
-    else
-      {
-        slope.p=dy.p/dx.p;
-        inverse_slope.p=(-1.0/slope.p);
-      }
+  slope.p=DrawEpsilonReciprocal(dx.p)*dy.p;
+  inverse_slope.p=(-1.0*DrawEpsilonReciprocal(slope.p));
   mid=ExpandAffine(&draw_info->affine)*draw_info->stroke_width/2.0;
   miterlimit=(MagickRealType) (draw_info->miterlimit*draw_info->miterlimit*
     mid*mid);
@@ -5916,28 +5909,8 @@ static PrimitiveInfo *TraceStrokePolygon(const DrawInfo *draw_info,
     dot_product=dx.q*dx.q+dy.q*dy.q;
     if (dot_product < 0.25)
       continue;
-    slope.q=0.0;
-    inverse_slope.q=0.0;
-    if (fabs(dx.q) < MagickEpsilon)
-      {
-        if (dx.q >= 0.0)
-          slope.q=dy.q < 0.0 ? -1.0/MagickEpsilon : 1.0/MagickEpsilon;
-        else
-          slope.q=dy.q < 0.0 ? 1.0/MagickEpsilon : -1.0/MagickEpsilon;
-      }
-    else
-      if (fabs(dy.q) < MagickEpsilon)
-        {
-          if (dy.q >= 0.0)
-            inverse_slope.q=dx.q < 0.0 ? -1.0/MagickEpsilon : 1.0/MagickEpsilon;
-          else
-            inverse_slope.q=dx.q < 0.0 ? 1.0/MagickEpsilon : -1.0/MagickEpsilon;
-        }
-      else
-        {
-          slope.q=dy.q/dx.q;
-          inverse_slope.q=(-1.0/slope.q);
-        }
+    slope.q=DrawEpsilonReciprocal(dx.q)*dy.q;
+    inverse_slope.q=(-1.0*DrawEpsilonReciprocal(slope.q));
     offset.x=sqrt((double) (mid*mid/(inverse_slope.q*inverse_slope.q+1.0)));
     offset.y=(double) (offset.x*inverse_slope.q);
     dot_product=dy.q*offset.x-dx.q*offset.y;

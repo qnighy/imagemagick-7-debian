@@ -46,7 +46,11 @@ typedef enum
   Rec709LumaColorspace,
   Rec709YCbCrColorspace,
   LogColorspace,
-  CMYColorspace
+  CMYColorspace,
+  LuvColorspace,
+  HCLColorspace,
+  LCHColorspace,
+  LMSColorspace
 } ColorspaceType;
 
 extern MagickExport MagickBooleanType

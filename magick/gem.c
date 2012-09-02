@@ -60,6 +60,115 @@
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%   C o n v e r t H C L T o R G B                                             %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ConvertHCLToRGB() transforms a (hue, chroma, luma) to a (red, green,
+%  blue) triple.
+%
+%  The format of the ConvertHCLToRGBImage method is:
+%
+%      void ConvertHCLToRGB(const double hue,const double chroma,
+%        const double luma,Quantum *red,Quantum *green,Quantum *blue)
+%
+%  A description of each parameter follows:
+%
+%    o hue, chroma, luma: A double value representing a
+%      component of the HCL color space.
+%
+%    o red, green, blue: A pointer to a pixel component of type Quantum.
+%
+*/
+MagickExport void ConvertHCLToRGB(const double hue,const double chroma,
+  const double luma,Quantum *red,Quantum *green,Quantum *blue)
+{
+  double
+    b,
+    c,
+    g,
+    h,
+    m,
+    r,
+    x,
+    z;
+
+  /*
+    Convert HCL to RGB colorspace.
+  */
+  assert(red != (Quantum *) NULL);
+  assert(green != (Quantum *) NULL);
+  assert(blue != (Quantum *) NULL);
+  h=6.0*hue;
+  c=chroma;
+  x=c*(1.0-fabs(fmod(h,2.0)-1.0));
+  r=0.0;
+  g=0.0;
+  b=0.0;
+  if ((0.0 <= h) && (h < 1.0))
+    {
+      r=c;
+      g=x;
+    }
+  else
+    if ((1.0 <= h) && (h < 2.0))
+      {
+        r=x;
+        g=c;
+      }
+    else
+      if ((2.0 <= h) && (h < 3.0))
+        {
+          g=c;
+          b=x;
+        }
+      else
+        if ((3.0 <= h) && (h < 4.0))
+          {
+            g=x;
+            b=c;
+          }
+        else
+          if ((4.0 <= h) && (h < 5.0))
+            {
+              r=x;
+              b=c;
+            }
+          else
+            if ((5.0 <= h) && (h < 6.0))
+              {
+                r=c;
+                b=x;
+              }
+  m=luma-(0.298839*r+0.586811*g+0.114350*b);
+  /*
+    Choose saturation strategy to clip it into the RGB cube; hue and luma are
+    preserved and chroma may be changed.
+  */
+  z=1.0;
+  if (m < 0.0)
+    {
+      z=luma/(luma-m);
+      m=0.0;
+    }
+  else
+    if ((m+c) > 1.0)
+      {
+        z=(1.0-luma)/(m+c-luma);
+        m=1.0-z*c;
+      }
+  *red=ClampToQuantum(QuantumRange*(z*r+m));
+  *green=ClampToQuantum(QuantumRange*(z*g+m));
+  *blue=ClampToQuantum(QuantumRange*(z*b+m));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   C o n v e r t H S B T o R G B                                             %
 %                                                                             %
 %                                                                             %
@@ -318,6 +427,88 @@ MagickExport void ConvertHWBToRGB(const double hue,const double whiteness,
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%   C o n v e r t R G B T o H C L                                             %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ConvertRGBToHCL() transforms a (red, green, blue) to a (hue, chroma,
+%  luma) triple.
+%
+%  The format of the ConvertRGBToHCL method is:
+%
+%      void ConvertRGBToHCL(const Quantum red,const Quantum green,
+%        const Quantum blue,double *hue,double *chroma,double *luma)
+%
+%  A description of each parameter follows:
+%
+%    o red, green, blue: A Quantum value representing the red, green, and
+%      blue component of a pixel.
+%
+%    o hue, chroma, luma: A pointer to a double value representing a
+%      component of the HCL color space.
+%
+*/
+
+static inline double MagickMax(const double x,const double y)
+{
+  if (x > y)
+    return(x);
+  return(y);
+}
+
+static inline double MagickMin(const double x,const double y)
+{
+  if (x < y)
+    return(x);
+  return(y);
+}
+
+MagickExport void ConvertRGBToHCL(const Quantum red,const Quantum green,
+  const Quantum blue,double *hue,double *chroma,double *luma)
+{
+  double
+    b,
+    c,
+    g,
+    h,
+    max,
+    r;
+
+  /*
+    Convert RGB to HCL colorspace.
+  */
+  assert(hue != (double *) NULL);
+  assert(chroma != (double *) NULL);
+  assert(luma != (double *) NULL);
+  r=(double) red;
+  g=(double) green;
+  b=(double) blue;
+  max=MagickMax(r,MagickMax(g,b));
+  c=max-(double) MagickMin(r,MagickMin(g,b));
+  h=0.0;
+  if (c == 0.0)
+    h=0.0;
+  else
+    if (red == (Quantum) max)
+      h=fmod((g-b)/c+6.0,6.0);
+    else
+      if (green == (Quantum) max)
+        h=((b-r)/c)+2.0;
+      else
+        if (blue == (Quantum) max)
+          h=((r-g)/c)+4.0;
+  *hue=(h/6.0);
+  *chroma=QuantumScale*c;
+  *luma=QuantumScale*(0.298839*r+0.586811*g+0.114350*b);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   C o n v e r t R G B T o H S B                                             %
 %                                                                             %
 %                                                                             %
@@ -417,21 +608,6 @@ MagickExport void ConvertRGBToHSB(const Quantum red,const Quantum green,
 %      component of the HSL color space.
 %
 */
-
-static inline double MagickMax(const double x,const double y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 MagickExport void ConvertRGBToHSL(const Quantum red,const Quantum green,
   const Quantum blue,double *hue,double *saturation,double *lightness)
 {
@@ -617,6 +793,7 @@ MagickExport double GenerateDifferentialNoise(RandomInfo *random_info,
 #define SigmaLaplacian (attenuate*0.0390625)
 #define SigmaMultiplicativeGaussian  (attenuate*0.5)
 #define SigmaPoisson  (attenuate*12.5)
+#define SigmaRandom  (attenuate)
 #define TauGaussian  (attenuate*0.078125)
 
   double
@@ -708,7 +885,7 @@ MagickExport double GenerateDifferentialNoise(RandomInfo *random_info,
     }
     case RandomNoise:
     {
-      noise=(double) (QuantumRange*alpha);
+      noise=(double) (QuantumRange*SigmaRandom*alpha);
       break;
     }
   }
@@ -732,13 +909,9 @@ MagickExport double GenerateDifferentialNoise(RandomInfo *random_info,
 %
 %  The format of the GetOptimalKernelWidth method is:
 %
-%      size_t GetOptimalKernelWidth(const double radius,
-%        const double sigma)
+%      size_t GetOptimalKernelWidth(const double radius,const double sigma)
 %
 %  A description of each parameter follows:
-%
-%    o width: Method GetOptimalKernelWidth returns the optimal width of
-%      a convolution kernel.
 %
 %    o radius: the radius of the Gaussian, in pixels, not counting the center
 %      pixel.
@@ -832,4 +1005,62 @@ MagickExport size_t  GetOptimalKernelWidth(const double radius,
   const double sigma)
 {
   return(GetOptimalKernelWidth1D(radius,sigma));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   I n v e r s e s R G B C o m p a n d o r                                   %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  InversesRGBCompandor() removes the gamma function from a sRGB pixel.
+%
+%  The format of the InversesRGBCompandor method is:
+%
+%      MagickRealType InversesRGBCompandor(const MagickRealType pixel)
+%
+%  A description of each parameter follows:
+%
+%    o pixel: the pixel.
+%
+*/
+MagickExport MagickRealType InversesRGBCompandor(const MagickRealType pixel)
+{
+  if (pixel <= (0.0404482362771076*QuantumRange))
+    return(pixel/12.92);
+  return(QuantumRange*pow((QuantumScale*pixel+0.055)/1.055,2.4));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   s R G B C o m p a n d o r                                                 %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  sRGBCompandor() adds the gamma function to a sRGB pixel.
+%
+%  The format of the sRGBCompandor method is:
+%
+%      MagickRealType sRGBCompandor(const MagickRealType pixel)
+%
+%  A description of each parameter follows:
+%
+%    o pixel: the pixel.
+%
+*/
+MagickExport MagickRealType sRGBCompandor(const MagickRealType pixel)
+{
+  if (pixel <= (0.0031306684425005883*QuantumRange))
+    return(12.92*pixel);
+  return(QuantumRange*(1.055*pow(QuantumScale*pixel,1.0/2.4)-0.055));
 }

@@ -56,6 +56,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
 #include "magick/resource_.h"
 #include "magick/string_.h"
 #if defined(MAGICKCORE_TIFF_DELEGATE)
@@ -809,8 +810,8 @@ MagickExport MagickBooleanType HuffmanEncodeImage(const ImageInfo *image_info,
       break;
     for (x=0; x < (ssize_t) huffman_image->columns; x++)
     {
-      *q++=(unsigned char) (PixelIntensity(p) >= ((MagickRealType)
-        QuantumRange/2.0) ? 0 : 1);
+      *q++=(unsigned char) (GetPixelIntensity(huffman_image,p) >=
+        ((MagickRealType) QuantumRange/2.0) ? 0 : 1);
       p++;
     }
     /*

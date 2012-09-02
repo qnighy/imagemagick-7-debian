@@ -160,7 +160,7 @@ static MagickPixelPacket **AcquirePixelThreadSet(const Image *image,
     length,
     number_threads;
 
-  number_threads=GetOpenMPMaximumThreads();
+  number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
   pixels=(MagickPixelPacket **) AcquireQuantumMemory(number_threads,
     sizeof(*pixels));
   if (pixels == (MagickPixelPacket **) NULL)
@@ -712,11 +712,11 @@ MagickExport Image *EvaluateImages(const Image *images,
 
             for (j=0; j < (ssize_t) (number_images-1); j++)
             {
-              evaluate_pixel[x].red*=QuantumScale;
-              evaluate_pixel[x].green*=QuantumScale;
-              evaluate_pixel[x].blue*=QuantumScale;
-              evaluate_pixel[x].opacity*=QuantumScale;
-              evaluate_pixel[x].index*=QuantumScale;
+              evaluate_pixel[x].red*=(MagickRealType) QuantumScale;
+              evaluate_pixel[x].green*=(MagickRealType) QuantumScale;
+              evaluate_pixel[x].blue*=(MagickRealType) QuantumScale;
+              evaluate_pixel[x].opacity*=(MagickRealType) QuantumScale;
+              evaluate_pixel[x].index*=(MagickRealType) QuantumScale;
             }
           }
         for (x=0; x < (ssize_t) image->columns; x++)
@@ -1509,8 +1509,8 @@ MagickExport MagickBooleanType GetImageChannelRange(const Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  *maxima=(-1.0E-37);
-  *minima=1.0E+37;
+  *maxima=(-MagickHuge);
+  *minima=MagickHuge;
   GetMagickPixelPacket(image,&pixel);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1646,8 +1646,8 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
   for (i=0; i <= (ssize_t) CompositeChannels; i++)
   {
     channel_statistics[i].depth=1;
-    channel_statistics[i].maxima=(-1.0E-37);
-    channel_statistics[i].minima=1.0E+37;
+    channel_statistics[i].maxima=(-MagickHuge);
+    channel_statistics[i].minima=MagickHuge;
   }
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2016,7 +2016,7 @@ static PixelList **AcquirePixelListThreadSet(const size_t width,
   size_t
     number_threads;
 
-  number_threads=GetOpenMPMaximumThreads();
+  number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
   pixel_list=(PixelList **) AcquireQuantumMemory(number_threads,
     sizeof(*pixel_list));
   if (pixel_list == (PixelList **) NULL)
@@ -2694,7 +2694,7 @@ MagickExport Image *StatisticImageChannel(const Image *image,
         SetPixelGreen(q,ClampToQuantum(pixel.green));
       if ((channel & BlueChannel) != 0)
         SetPixelBlue(q,ClampToQuantum(pixel.blue));
-      if (((channel & OpacityChannel) != 0) && (image->matte != MagickFalse))
+      if ((channel & OpacityChannel) != 0)
         SetPixelOpacity(q,ClampToQuantum(pixel.opacity));
       if (((channel & IndexChannel) != 0) &&
           (image->colorspace == CMYKColorspace))

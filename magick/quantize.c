@@ -654,7 +654,7 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
       q=image->colormap;
       for (i=0; i < (ssize_t) image->colors; i++)
       {
-        intensity=(Quantum) (PixelIntensity(q) < ((MagickRealType)
+        intensity=(Quantum) (GetPixelIntensity(image,q) < ((MagickRealType)
           QuantumRange/2.0) ? 0 : QuantumRange);
         SetPixelRed(q,intensity);
         SetPixelGreen(q,intensity);
@@ -1401,7 +1401,7 @@ static RealPixelPacket **AcquirePixelThreadSet(const size_t count)
   size_t
     number_threads;
 
-  number_threads=GetOpenMPMaximumThreads();
+  number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
   pixels=(RealPixelPacket **) AcquireQuantumMemory(number_threads,
     sizeof(*pixels));
   if (pixels == (RealPixelPacket **) NULL)
@@ -2690,11 +2690,13 @@ MagickExport MagickBooleanType QuantizeImage(const QuantizeInfo *quantize_info,
     maximum_colors=MaxColormapSize;
   if (maximum_colors > MaxColormapSize)
     maximum_colors=MaxColormapSize;
-  if ((image->columns*image->rows) <= maximum_colors)
-    (void) DirectToColormapImage(image,&image->exception);
-  if ((IsGrayImage(image,&image->exception) != MagickFalse) &&
-      (image->matte == MagickFalse))
-    (void) SetGrayscaleImage(image);
+  if (image->matte == MagickFalse)
+    {
+      if ((image->columns*image->rows) <= maximum_colors)
+        (void) DirectToColormapImage(image,&image->exception);
+      if (IsGrayImage(image,&image->exception) != MagickFalse)
+        (void) SetGrayscaleImage(image);
+    }
   if ((image->storage_class == PseudoClass) &&
       (image->colors <= maximum_colors))
     return(MagickTrue);

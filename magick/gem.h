@@ -30,18 +30,26 @@ extern MagickExport double
   GenerateDifferentialNoise(RandomInfo *,const Quantum,const NoiseType,
     const MagickRealType);
 
+extern MagickExport MagickRealType
+  InversesRGBCompandor(const MagickRealType),
+  sRGBCompandor(const MagickRealType);
+
 extern MagickExport size_t
   GetOptimalKernelWidth(const double,const double),
   GetOptimalKernelWidth1D(const double,const double),
   GetOptimalKernelWidth2D(const double,const double);
 
 extern MagickExport void
+  ConvertHCLToRGB(const double,const double,const double,Quantum *,Quantum *,
+    Quantum *),
   ConvertHSBToRGB(const double,const double,const double,Quantum *,Quantum *,
     Quantum *),
   ConvertHSLToRGB(const double,const double,const double,Quantum *,Quantum *,
     Quantum *),
   ConvertHWBToRGB(const double,const double,const double,Quantum *,Quantum *,
     Quantum *),
+  ConvertRGBToHCL(const Quantum,const Quantum,const Quantum,double *,double *,
+    double *),
   ConvertRGBToHSB(const Quantum,const Quantum,const Quantum,double *,double *,
     double *),
   ConvertRGBToHSL(const Quantum,const Quantum,const Quantum,double *,double *,

@@ -5104,7 +5104,7 @@ WandExport char *MagickGetImageFilename(MagickWand *wand)
 %
 %  The format of the MagickGetImageFormat method is:
 %
-%      const char *MagickGetImageFormat(MagickWand *wand)
+%      char *MagickGetImageFormat(MagickWand *wand)
 %
 %  A description of each parameter follows:
 %
@@ -7798,6 +7798,46 @@ WandExport MagickWand *MagickOptimizeImageLayers(MagickWand *wand)
   if (optimize_image == (Image *) NULL)
     return((MagickWand *) NULL);
   return(CloneMagickWandFromImages(wand,optimize_image));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   M a g i c k O p t i m i z e I m a g e T r a n s p a r e n c y             %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  MagickOptimizeImageTransparency() takes a frame optimized GIF animation, and
+%  compares the overlayed pixels against the disposal image resulting from all
+%  the previous frames in the animation.  Any pixel that does not change the
+%  disposal image (and thus does not effect the outcome of an overlay) is made
+%  transparent.
+%
+%  WARNING: This modifies the current images directly, rather than generate
+%  a new image sequence.
+%  The format of the MagickOptimizeImageTransparency method is:
+%
+%      MagickBooleanType MagickOptimizeImageTransparency(MagickWand *wand)
+%
+%  A description of each parameter follows:
+%
+%    o wand: the magick wand.
+%
+*/
+WandExport MagickBooleanType MagickOptimizeImageTransparency(MagickWand *wand)
+{
+  assert(wand != (MagickWand *) NULL);
+  assert(wand->signature == WandSignature);
+  if(wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  if (wand->images == (Image *) NULL)
+    return(MagickFalse);
+  OptimizeImageTransparency(wand->images,wand->exception);
+  return(MagickTrue);
 }
 
 /*
@@ -11668,10 +11708,14 @@ WandExport MagickWand *MagickSmushImages(MagickWand *wand,
 %
 %      MagickBooleanType MagickSolarizeImage(MagickWand *wand,
 %        const double threshold)
+%      MagickBooleanType MagickSolarizeImageChannel(MagickWand *wand,
+%        const ChannelType channel,const double threshold)
 %
 %  A description of each parameter follows:
 %
 %    o wand: the magick wand.
+%
+%    o channel: the image channel(s).
 %
 %    o threshold:  Define the extent of the solarization.
 %
@@ -11682,15 +11726,23 @@ WandExport MagickBooleanType MagickSolarizeImage(MagickWand *wand,
   MagickBooleanType
     status;
 
+  status=MagickSolarizeImageChannel(wand,DefaultChannels,threshold);
+  return(status);
+}
+
+WandExport MagickBooleanType MagickSolarizeImageChannel(MagickWand *wand,
+  const ChannelType channel,const double threshold)
+{
+  MagickBooleanType
+    status;
+
   assert(wand != (MagickWand *) NULL);
   assert(wand->signature == WandSignature);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   if (wand->images == (Image *) NULL)
     ThrowWandException(WandError,"ContainsNoImages",wand->name);
-  status=SolarizeImage(wand->images,threshold);
-  if (status == MagickFalse)
-    InheritException(wand->exception,&wand->images->exception);
+  status=SolarizeImageChannel(wand->images,channel,threshold,wand->exception);
   return(status);
 }
 

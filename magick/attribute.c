@@ -48,6 +48,7 @@
 #include "magick/cache.h"
 #include "magick/cache-view.h"
 #include "magick/client.h"
+#include "magick/channel.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colormap.h"
@@ -310,7 +311,7 @@ MagickExport size_t GetImageChannelDepth(const Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  number_threads=GetOpenMPMaximumThreads();
+  number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
   current_depth=(size_t *) AcquireQuantumMemory(number_threads,
     sizeof(*current_depth));
   if (current_depth == (size_t *) NULL)

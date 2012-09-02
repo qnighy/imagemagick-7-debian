@@ -57,6 +57,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
@@ -142,6 +143,8 @@ static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->columns=(size_t) ReadBlobLSBShort(image);
   (void) ReadBlobLSBShort(image);
   image->rows=(size_t) ReadBlobLSBShort(image);
+  if ((image->columns == 0) || (image->rows == 0))
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   /*
     Initialize image colormap.
   */

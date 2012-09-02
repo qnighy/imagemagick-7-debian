@@ -40,7 +40,8 @@
  Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/color.h"
+#include "magick/cache.h"
+#include "magick/channel.h"
 #include "magick/color-private.h"
 #include "magick/colorspace-private.h"
 #include "magick/composite.h"
@@ -176,7 +177,7 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) TransformImageColorspace(image,RGBColorspace);
   if ((image->matte == MagickFalse) &&
       (draw_info->fill.opacity != OpaqueOpacity))
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
@@ -538,7 +539,7 @@ static size_t **AcquireHistogramThreadSet(const size_t count)
     **histogram,
     number_threads;
 
-  number_threads=GetOpenMPMaximumThreads();
+  number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
   histogram=(size_t **) AcquireQuantumMemory(number_threads,
     sizeof(*histogram));
   if (histogram == (size_t **) NULL)
@@ -798,8 +799,8 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
-      (IsMagickGray(fill) != MagickFalse))
-    (void) TransformImageColorspace(image,sRGBColorspace);
+      (IsMagickGray(fill) == MagickFalse))
+    (void) TransformImageColorspace(image,RGBColorspace);
   if ((fill->opacity != OpaqueOpacity) && (image->matte == MagickFalse))
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
   /*

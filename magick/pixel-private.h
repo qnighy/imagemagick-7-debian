@@ -26,6 +26,7 @@ extern "C" {
 #include "magick/color.h"
 #include "magick/image-private.h"
 #include "magick/memory_.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 
 static inline MagickBooleanType IsGrayPixel(const PixelPacket *pixel)
@@ -78,22 +79,8 @@ static inline MagickRealType MagickEpsilonReciprocal(const MagickRealType x)
 {
   MagickRealType sign = x < (MagickRealType) 0.0 ? (MagickRealType) -1.0 : 
     (MagickRealType) 1.0;
-  return((sign*x) > MagickEpsilon ? (MagickRealType) 1.0/x : sign*(
+  return((sign*x) >= MagickEpsilon ? (MagickRealType) 1.0/x : sign*(
     (MagickRealType) 1.0/MagickEpsilon));
-}
-
-static inline double CompandsRGB(const double intensity)
-{
-  if (intensity <= 0.0031308)
-    return(intensity*12.92);
-  return(1.055*pow(intensity,1.0/2.4)-0.055);
-}
-
-static inline double DecompandsRGB(const double intensity)
-{
-  if (intensity <= 0.04045)
-    return(intensity/12.92);
-  return(pow((intensity+0.055)/1.055,2.4));
 }
 
 static inline void SetMagickPixelPacket(const Image *image,

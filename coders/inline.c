@@ -52,6 +52,7 @@
 #include "magick/magick.h"
 #include "magick/memory_.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
@@ -146,7 +147,7 @@ static Image *ReadINLINEImage(const ImageInfo *image_info,
         if (errno != EINTR)
           break;
       }
-    if (~(1UL*i) < (quantum+1))
+    if (~((size_t) i) < (quantum+1))
       {
         inline_image=(unsigned char *) RelinquishMagickMemory(inline_image);
         break;

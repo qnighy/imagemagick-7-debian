@@ -53,6 +53,7 @@
 #include "magick/artifact.h"
 #include "magick/cache-view.h"
 #include "magick/color-private.h"
+#include "magick/channel.h"
 #include "magick/enhance.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
@@ -63,6 +64,7 @@
 #include "magick/list.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/monitor-private.h"
 #include "magick/morphology.h"
 #include "magick/morphology-private.h"
@@ -111,6 +113,20 @@ static inline double MagickMax(const double x,const double y)
 }
 #define Minimize(assign,value) assign=MagickMin(assign,value)
 #define Maximize(assign,value) assign=MagickMax(assign,value)
+
+/* Integer Factorial Function - for a Binomial kernel */
+#if 1
+static inline size_t fact(size_t n)
+{
+  size_t l,f;
+  for(f=1, l=2; l <= n; f=f*l, l++);
+  return(f);
+}
+#elif 1 /* glibc floating point alternatives */
+#define fact(n) ((size_t)tgamma((double)n+1))
+#else
+#define fact(n) ((size_t)lgamma((double)n+1))
+#endif
 
 /* Currently these are only internal to this module */
 static void
@@ -316,8 +332,8 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
     }
 
   /* Read in the kernel values from rest of input string argument */
-  kernel->values=(double *) AcquireAlignedMemory(kernel->width,
-    kernel->height*sizeof(*kernel->values));
+  kernel->values=(double *) MagickAssumeAligned(AcquireAlignedMemory(
+    kernel->width,kernel->height*sizeof(*kernel->values)));
   if (kernel->values == (double *) NULL)
     return(DestroyKernelInfo(kernel));
   kernel->minimum = +MagickHuge;
@@ -630,6 +646,10 @@ MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
 %
 %       Note that the first argument is the width of the kernel and not the
 %       radius of the kernel.
+%
+%    Binomial:[{radius}]
+%       Generate a discrete kernel using a 2 dimentional Pascel's Triangle
+%       of values.  Used for special forma of image filters
 %
 %    # Still to be implemented...
 %    #
@@ -993,6 +1013,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
     case LoGKernel:
     case BlurKernel:
     case CometKernel:
+    case BinomialKernel:
     case DiamondKernel:
     case SquareKernel:
     case RectangleKernel:
@@ -1030,8 +1051,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
       {
         kernel->height = kernel->width = (size_t) 1;
         kernel->x = kernel->y = (ssize_t) 0;
-        kernel->values=(double *) AcquireAlignedMemory(1,
-          sizeof(*kernel->values));
+        kernel->values=(double *) MagickAssumeAligned(AcquireAlignedMemory(1,
+          sizeof(*kernel->values)));
         if (kernel->values == (double *) NULL)
           return(DestroyKernelInfo(kernel));
         kernel->maximum = kernel->values[0] = args->rho;
@@ -1054,8 +1075,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
           kernel->width = GetOptimalKernelWidth2D(args->rho,sigma2);
         kernel->height = kernel->width;
         kernel->x = kernel->y = (ssize_t) (kernel->width-1)/2;
-        kernel->values=(double *) AcquireAlignedMemory(kernel->width,
-          kernel->height*sizeof(*kernel->values));
+        kernel->values=(double *) MagickAssumeAligned(AcquireAlignedMemory(
+          kernel->width,kernel->height*sizeof(*kernel->values)));
         if (kernel->values == (double *) NULL)
           return(DestroyKernelInfo(kernel));
 
@@ -1285,6 +1306,37 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
 
         ScaleKernelInfo(kernel, 1.0, NormalizeValue); /* Normalize */
         RotateKernelInfo(kernel, args->xi); /* Rotate by angle */
+        break;
+      }
+    case BinomialKernel:
+      {
+        size_t
+          order_f;
+
+        if (args->rho < 1.0)
+          kernel->width = kernel->height = 3;  /* default radius = 1 */
+        else
+          kernel->width = kernel->height = ((size_t)args->rho)*2+1;
+        kernel->x = kernel->y = (ssize_t) (kernel->width-1)/2;
+
+        order_f = fact(kernel->width-1);
+
+        kernel->values=(double *) AcquireAlignedMemory(kernel->width,
+          kernel->height*sizeof(*kernel->values));
+        if (kernel->values == (double *) NULL)
+          return(DestroyKernelInfo(kernel));
+
+        /* set all kernel values within diamond area to scale given */
+        for ( i=0, v=0; v < (ssize_t)kernel->height; v++)
+          { size_t
+              alpha = order_f / ( fact((size_t) v) * fact(kernel->height-v-1) );
+            for ( u=0; u < (ssize_t)kernel->width; u++, i++)
+              kernel->positive_range += kernel->values[i] = (double)
+                (alpha * order_f / ( fact((size_t) u) * fact(kernel->height-u-1) ));
+          }
+        kernel->minimum = 1.0;
+        kernel->maximum = kernel->values[kernel->x+kernel->y*kernel->width];
+        kernel->negative_range = 0.0;
         break;
       }
 
@@ -3113,7 +3165,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
               for (u=0; u < (ssize_t) kernel->width; u++, k++) {
                 if ( IsNan(*k) || (*k) < 0.5 ) continue;
                 if ( result.red == 0.0 ||
-                     PixelIntensity(&(k_pixels[u])) < PixelIntensity(q) ) {
+                     GetPixelIntensity(image,&(k_pixels[u])) < GetPixelIntensity(result_image,q) ) {
                   /* copy the whole pixel - no channel selection */
                   *q = k_pixels[u];
                   if ( result.red > 0.0 ) changed++;
@@ -3143,7 +3195,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
               for (u=0; u < (ssize_t) kernel->width; u++, k--) {
                 if ( IsNan(*k) || (*k) < 0.5 ) continue; /* boolean kernel */
                 if ( result.red == 0.0 ||
-                     PixelIntensity(&(k_pixels[u])) > PixelIntensity(q) ) {
+                     GetPixelIntensity(image,&(k_pixels[u])) > GetPixelIntensity(result_image,q) ) {
                   /* copy the whole pixel - no channel selection */
                   *q = k_pixels[u];
                   if ( result.red > 0.0 ) changed++;

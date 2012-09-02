@@ -37,15 +37,11 @@ extern "C" {
 #endif
 
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
-#define MagickEpsilon  ((MagickRealType) 1.192093e-07)
 #define MaxColormapSize  256UL
 #define MaxMap  255UL
 
-#if defined __arm__ || defined __thumb__
-typedef float MagickRealType;
-#else
 typedef double MagickRealType;
-#endif
+typedef ssize_t SignedQuantum;
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
 #define QuantumRange  255.0
@@ -56,15 +52,11 @@ typedef unsigned char Quantum;
 #define QuantumFormat  "%u"
 #endif
 #elif (MAGICKCORE_QUANTUM_DEPTH == 16)
-#define MagickEpsilon  ((MagickRealType) 2.220446e-16)
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
-#if defined __arm__ || defined __thumb__
-typedef float MagickRealType;
-#else
 typedef double MagickRealType;
-#endif
+typedef ssize_t SignedQuantum;
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
 #define QuantumRange  65535.0
@@ -75,11 +67,11 @@ typedef unsigned short Quantum;
 #define QuantumFormat  "%u"
 #endif
 #elif (MAGICKCORE_QUANTUM_DEPTH == 32)
-#define MagickEpsilon  ((MagickRealType) 2.220446e-16)
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
 typedef double MagickRealType;
+typedef double SignedQuantum;
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
 #define QuantumRange  4294967295.0
@@ -90,11 +82,11 @@ typedef unsigned int Quantum;
 #define QuantumFormat  "%u"
 #endif
 #elif (MAGICKCORE_QUANTUM_DEPTH == 64) && defined(MAGICKCORE_HAVE_LONG_DOUBLE_WIDER)
-#define MagickEpsilon  ((MagickRealType) 2.220446e-16)
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
 typedef long double MagickRealType;
+typedef double SignedQuantum;
 typedef double Quantum;
 #define QuantumRange  18446744073709551615.0
 #define QuantumFormat  "%g"
@@ -103,7 +95,9 @@ typedef double Quantum;
 # error "MAGICKCORE_QUANTUM_DEPTH must be one of 8, 16, 32, or 64"
 #endif
 #endif
-#define MagickHuge  ((MagickRealType) 1.0/MagickEpsilon)
+#define MagickEpsilon  ((MagickRealType) 1.0e-16)
+#define MagickHuge  3.4e+38F
+#define QuantumScale  ((double) 1.0/(double) QuantumRange)
 
 /*
   Typedef declarations.
@@ -126,12 +120,6 @@ typedef __int64 MagickOffsetType;
 typedef unsigned __int64 MagickSizeType;
 #define MagickOffsetFormat  "I64i"
 #define MagickSizeFormat  "I64u"
-#endif
-
-#if QuantumDepth > 16
-  typedef double SignedQuantum;
-#else
-  typedef ssize_t SignedQuantum;
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER == 1200)

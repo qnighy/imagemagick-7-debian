@@ -15,29 +15,47 @@
 #  Makefile for the ImageMagick validation suite.
 
 TESTS_CHECK_PGRMS = \
-	tests/validate
+	tests/validate \
+	tests/drawtest \
+	tests/wandtest
 
 tests_validate_SOURCES = tests/validate.c tests/validate.h
 tests_validate_CPPFLAGS = $(AM_CPPFLAGS)
 tests_validate_LDADD = $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
 
+tests_drawtest_SOURCES = tests/drawtest.c
+tests_drawtest_LDFLAGS = $(LDFLAGS)
+tests_drawtest_LDADD = $(MAGICKWAND_LIBS)
+
+tests_wandtest_SOURCES = tests/wandtest.c
+tests_wandtest_LDFLAGS = $(LDFLAGS)
+tests_wandtest_LDADD = $(MAGICKWAND_LIBS)
+
 TESTS_XFAIL_TESTS = 
 
 TESTS_TESTS = \
-	tests/validate-compare.sh \
-	tests/validate-composite.sh \
-	tests/validate-convert.sh \
-	tests/validate-identify.sh \
-	tests/validate-import.sh \
-	tests/validate-montage.sh \
-	tests/validate-pipe.sh \
-	tests/validate-colorspace.sh \
-	tests/validate-stream.sh \
-	tests/validate-formats-in-memory.sh \
-	tests/validate-formats-on-disk.sh
+	tests/validate-compare.tap \
+	tests/validate-composite.tap \
+	tests/validate-convert.tap \
+	tests/validate-identify.tap \
+	tests/validate-import.tap \
+	tests/validate-montage.tap \
+	tests/validate-pipe.tap \
+	tests/validate-colorspace.tap \
+	tests/validate-stream.tap \
+	tests/validate-formats-in-memory.tap \
+	tests/validate-formats-on-disk.tap \
+	tests/drawtest.tap \
+	tests/wandtest.tap
 
 TESTS_EXTRA_DIST = \
-	tests/common.sh \
+	tests/common.shi.in \
+  tests/input_256c.miff \
+  tests/input_bilevel.miff \
+  tests/input_gray.miff \
+  tests/input_truecolor.miff \
+  tests/sequence.miff \
 	$(TESTS_TESTS)
 
 TESTS_CLEANFILES = 
+	tests/*_out.*

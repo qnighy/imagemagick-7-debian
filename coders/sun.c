@@ -58,6 +58,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
@@ -895,7 +896,7 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image)
             for (x=0; x < (ssize_t) image->columns; x++)
             {
               byte<<=1;
-              if (PixelIntensity(p) < (MagickRealType) (QuantumRange/2.0))
+              if (GetPixelIntensity(image,p) < (QuantumRange/2.0))
                 byte|=0x01;
               bit++;
               if (bit == 8)

@@ -55,6 +55,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/paint.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
@@ -2705,14 +2706,14 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   /* User specified resolution */
   resolution_y=DefaultResolution;
-  if (image->y_resolution > 0)
+  if (image->y_resolution != 0.0)
     {
       resolution_y = image->y_resolution;
       if (image->units == PixelsPerCentimeterResolution)
         resolution_y *= CENTIMETERS_PER_INCH;
     }
   resolution_x=DefaultResolution;
-  if (image->x_resolution > 0)
+  if (image->x_resolution != 0.0)
     {
       resolution_x = image->x_resolution;
       if (image->units == PixelsPerCentimeterResolution)

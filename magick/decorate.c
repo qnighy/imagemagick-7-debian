@@ -42,6 +42,7 @@
 */
 #include "magick/studio.h"
 #include "magick/cache-view.h"
+#include "magick/channel.h"
 #include "magick/color-private.h"
 #include "magick/colorspace-private.h"
 #include "magick/composite.h"
@@ -52,6 +53,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/pixel-private.h"
 #include "magick/quantum.h"
 #include "magick/resource_.h"
@@ -228,7 +230,7 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
     }
   if ((IsPixelGray(&frame_image->border_color) == MagickFalse) &&
       (IsGrayColorspace(frame_image->colorspace) != MagickFalse))
-    (void) SetImageColorspace(frame_image,sRGBColorspace);
+    (void) SetImageColorspace(frame_image,RGBColorspace);
   if ((frame_image->border_color.opacity != OpaqueOpacity) &&
       (frame_image->matte == MagickFalse))
     (void) SetImageAlphaChannel(frame_image,OpaqueAlphaChannel);
