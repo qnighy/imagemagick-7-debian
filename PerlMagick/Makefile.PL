@@ -158,7 +158,7 @@ foreach my $delegate (@tested_delegates) {
 # defaults for LIBS & INC & CCFLAGS params that we later pass to Writemakefile
 my $INC_magick = '-I../ -I.. -pthread -I/usr/include/pango-1.0 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng15 -I/usr/include/freetype2 -I/usr/include/libxml2 -I"' . $Config{'usrinc'} . '/ImageMagick"';
 my $LIBS_magick = '-L../magick/.libs -lMagickCore -lperl -lm';
-my $CCFLAGS_magick = "$Config{'ccflags'} -pthread -I/usr/include/OpenEXR -fopenmp -g -O2 -Wall -pthread";
+my $CCFLAGS_magick = "$Config{'ccflags'} -pthread -I/usr/include/OpenEXR -fopenmp -O3 -g -Wall -pthread";
 my $LDFLAGS_magick   = "-L../magick/.libs -lMagickCore $Config{'ldflags'} -L/usr/lib";
 my $LDDLFLAGS_magick = "-L../magick/.libs -lMagickCore $Config{'lddlflags'} -L/usr/lib";
 
@@ -216,7 +216,7 @@ WriteMakefile
    'LDDLFLAGS' => $LDDLFLAGS_magick,
 
    # Install PerlMagick binary into ImageMagick bin directory
-   'INSTALLBIN'	=> '/usr/local/bin',
+   'INSTALLBIN'	=> '/usr/bin',
 
    # Library specification
    'LIBS' => [ $LIBS_magick ],
@@ -233,7 +233,7 @@ WriteMakefile
    'LD' => '',
 
    # Set Perl installation prefix to ImageMagick installation prefix
-#   'PREFIX'	=> '/usr/local',
+#   'PREFIX'	=> '/usr',
 
    # Include delegate directories in tests
    test	=> { TESTS	=>	$delegate_tests},
@@ -255,6 +255,6 @@ sub MY::makeaperl {
      # tries to insert our library path first. Also, use the same compiler used
      # to build perlmain.c to link so that a C++ compiler may be used if
      # necessary.
-     $inherited =~ s:MAP_LINKCMD\s.*\s*\$\(CC\):MAP_LINKCMD   = \$(PERLMAINCC) -L/usr/local/lib: ;
+     $inherited =~ s:MAP_LINKCMD\s.*\s*\$\(CC\):MAP_LINKCMD   = \$(PERLMAINCC) -L/usr/lib: ;
      $inherited;
  }
