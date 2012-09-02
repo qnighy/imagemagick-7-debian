@@ -14,8 +14,7 @@ Build-Depends: chrpath, debhelper (>= 9~), ghostscript, libbz2-dev,
  libjasper-dev, libjpeg-dev, liblcms2-dev, liblqr-1-0-dev, libltdl-dev,
  libopenexr-dev, libperl-dev, libpng-dev, librsvg2-dev, libtiff-dev,
  libwmf-dev, libx11-dev, libxext-dev, libxml2-dev, libxt-dev, pkg-config,
- zlib1g-dev, liblzma-dev, libpango1.0-dev, librsvg2-bin,
- graphicsmagick-imagemagick-compat
+ zlib1g-dev, liblzma-dev, libpango1.0-dev, librsvg2-bin
 Vcs-Browser: http://git.debian.org/?p=collab-maint/imagemagick.git
 Vcs-Git: git://git.debian.org/collab-maint/imagemagick.git
 Homepage: http://www.imagemagick.org/
