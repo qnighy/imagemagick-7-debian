@@ -214,6 +214,7 @@ binary-arch: build check install
 	dh_fixperms
 	dh_perl
 	dh_makeshlibs -V
+	dh_shlibdeps
 	dh_installdeb
 	dh_shlibdeps
 	dh_gencontrol
