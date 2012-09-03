@@ -48,6 +48,7 @@ Priority: extra
 Depends: imagemagick (= ${binary:Version}), libmagick++5 (= ${binary:Version}),
  libmagickcore5-extra (= ${binary:Version}), perlmagick (= ${binary:Version}),
  ${misc:Depends}
+Suggests: libjpeg8-dbg, libwmf-bin, librsvg2-dbg, librsvg2-bin, inkscape
 Description: debugging symbols for ImageMagick
  This package contains the debugging symbols for ImageMagick, a software suite
  to create, edit, and compose bitmap images.
