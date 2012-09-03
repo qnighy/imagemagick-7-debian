@@ -4,7 +4,10 @@ imagemagick (8:6.7.9.3-1) UNRELEASED; urgency=low
   * Improve download and commit script.
   * Depend on libfftw3.
   * Suggest: graphviz, ufraw-batch.
-  * Drop build depend on graphicsmagick's convert. Use builded imagemagick one.
+  * New upstream version use inkscape delegate for svg. Suggest it. 
+    Rsvg one is still used as fallback.
+  * Drop build depend on graphicsmagick's convert. 
+    Use builded imagemagick one.
   * Use internal svg engine instead of rsvg one.
   * Improve icons aspect particularly for small size.
 
