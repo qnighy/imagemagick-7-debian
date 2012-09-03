@@ -1,0 +1,33 @@
+When reporting imagemagick errors, please provide the actual 
+input files (images) and options given to the tool 
+(convert, mogrify, identify) at run time.
+
+This can mean the difference between a pleasant debugging experience
+and a heisenbug that becomes unreproducible.
+
+Please notices, that imagemagick depends for converting some file 
+format on various package. These formats includes 
+svg, dots (graphviz), tiff, png, jpeg, wmf.
+
+Debugging imagemagick could be difficult and it is really helpful to
+follow the following steps:
+1. verify that you have installed imagemagick and not graphickmagick-compat:
+   - run under a terminal: convert 2>&1 | grep -i GraphicsMagick
+   - if you see graphicmagick on the output,  
+   please reportbug to graphickmagick
+2. install the imagemagick-dbg,libjpeg8-dbg,libwmf-bin,librsvg2-dbg,librsvg2-bin and
+   inkscape  package.
+3. Instead of running convert, mogrify, display or identify run
+   convert.im6, mogrify.im6, display.im6 or identify.im6 directly.
+4. if imagemagick coredump, could you please send a backtrace. See 
+   http://wiki.debian.org/HowToGetABacktrace to get it.
+5. if the input format is svg, run the following program:
+   - rsvg-convert yourinput.svg > outrsvg.png
+   - inkscape yourinput.svg --export-png=outputinkscape.png
+   - join to your bug report outrsvg.png and outputinkscape.png
+6. Document the exact command line used, and join the input files.
+
+
+ 
+
+
