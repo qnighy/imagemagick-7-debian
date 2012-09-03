@@ -11,10 +11,11 @@ imagemagick (8:6.7.9.3-1) experimental; urgency=low
   * Use internal svg engine instead of rsvg one.
   * Improve icons aspect particularly for small size.
   * Add guidance for bug submitting (thanks to Jonathan Nieder and
-    Justin B Rye)
-  * Suggests some debugging help for imagemagick-dbg
-  * Add symbols file
-  * Do not mess up MAKEFLAGS
+    Justin B Rye).
+  * Suggests some debugging package for imagemagick-dbg.
+  * Add symbols file.
+  * Do not mess up MAKEFLAGS.
+  * Fail to build in case of testcase failure.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 03 Sep 2012 11:59:37 +0200
 

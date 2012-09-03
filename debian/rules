@@ -96,14 +96,12 @@ check-stamp: build-stamp
 	dh_testdir
 
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-	# Only run the testsuite to get more info in the build logs for now,
-	# but don't make a failing testsuite fail the whole build. Change it
-	# to a fatal error only once we've got an estimate on how harmful
-	# that would be.
+	# run the testsuite to get more info in the build logs for now,
+	# Fail in case of error
 	@if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
 		unset DISPLAY; \
 		LD_LIBRARY_PATH="$(CURDIR)/magick/.libs:$(CURDIR)/wand/.libs:$(CURDIR)/Magick++/lib/.libs:$$LD_LIBRARY_PATH" \
-		$(MAKE) check LD_RUN_PATH= && echo "*** Testsuite succeeded ***" || echo "*** Testsuite failed ***"; \
+		$(MAKE) check LD_RUN_PATH= && echo "*** Testsuite succeeded ***" || (echo "*** Testsuite failed ***" ; exit 1) ; \
 		cat test-suite.log; \
 	else \
 		echo "Skipping regression tests because we appear to be cross-compiling"; \
