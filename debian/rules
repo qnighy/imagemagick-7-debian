@@ -29,6 +29,7 @@ endif
 # And for some reasons, the delegates are missing here.
 # use the recently builded convert using upstream script
 CONVERT = $(CURDIR)/magick.sh convert
+CONVERT_FLAGS = -background none -define filter:blur=0.75 -filter Gaussian
 
 # ARGH, we use graphicsmagick convert to avoid painful circular dependencies...
 # CONVERT = /usr/bin/convert
@@ -78,11 +79,11 @@ build-stamp: $(QUILT_STAMPFN)
 	# build icons cache
 	while read SIZE; do \
 		mkdir -p $(CURDIR)/debian/icons/$$SIZE/apps/ ;\
-		$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize $$SIZE \
+		$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize $$SIZE \
 			$(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
 	done < $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
 	# make xpm
-	$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg -resize 32x32 \
+	$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize 32x32 \
 		$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
 	mkdir -p $(CURDIR)/debian/icons/scalable/apps/
 	gzip -c -n -9 $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg \

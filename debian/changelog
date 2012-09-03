@@ -1,11 +1,12 @@
 imagemagick (8:6.7.9.3-1) UNRELEASED; urgency=low
 
-  * New upstream version
-  * Improve download and commit script
-  * Depend on libfftw3
-  * Suggest: graphviz, ufraw-batch
-  * Drop build depend on graphicsmagick's convert. Use builded imagemagick one
-  * Use internal svg engine instead of rsvg one
+  * New upstream version.
+  * Improve download and commit script.
+  * Depend on libfftw3.
+  * Suggest: graphviz, ufraw-batch.
+  * Drop build depend on graphicsmagick's convert. Use builded imagemagick one.
+  * Use internal svg engine instead of rsvg one.
+  * Improve icons aspect particularly for small size.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 09 Jul 2012 17:50:17 +0200
 
