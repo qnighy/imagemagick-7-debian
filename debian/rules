@@ -19,10 +19,6 @@ export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed 
 
 DESTDIR="$(CURDIR)/debian/tmp"
 
-ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
-NUMJOBS := $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
-MAKEFLAGS += -j$(NUMJOBS)
-endif
 
 # For some reason, the
 # libtools wrapper scripts don't work.
@@ -38,13 +34,13 @@ build: build-stamp
 build-stamp: $(QUILT_STAMPFN)
 	dh_testdir
         # NOTICE: remove EPL delegate lib gvc
-	MagickDocumentPath="/usr/share/doc/imagemagick" ./configure \
+	dh_auto_configure -- \
 	--prefix=/usr \
         --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
 	--sysconfdir=/etc \
 	--mandir=\$${prefix}/share/man \
 	--infodir=\$${prefix}/share/info \
-	$(shell dpkg-buildflags --export=configure) \
+	--docdir=\$${prefix}/share/doc/imagemagick \
 	--with-modules \
 	--with-gs-font-dir=/usr/share/fonts/type1/gsfonts \
 	--with-magick-plus-plus \
@@ -67,7 +63,7 @@ build-stamp: $(QUILT_STAMPFN)
 		-e 's/^hardcode_libdir_flag_spec.*$$/hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/' \
 		-e '/^archive_cmds="/s/"$$/ \\$$deplibs"/'
 
-	$(MAKE)
+	dh_auto_build
 
 	# Create Makefile after building main library, so it finds -lMagickCore (see #650417)
 	cd "$(CURDIR)/PerlMagick" && \
