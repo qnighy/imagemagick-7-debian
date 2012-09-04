@@ -33,6 +33,9 @@ CONVERT_FLAGS = -background none -define filter:blur=0.75 -filter Gaussian
 build: build-stamp
 build-stamp: $(QUILT_STAMPFN)
 	dh_testdir
+	# libtool link with depends lib by default autoreconf to avoid it, using debian patched version
+	dh_autoreconf
+
         # NOTICE: remove EPL delegate lib gvc
 	dh_auto_configure -- \
 	--prefix=/usr \
@@ -116,6 +119,8 @@ clean:
 	dh_testroot
 	rm -f build-stamp
 
+# revert autoreconf
+	dh_autoreconf_clean
 	# Commands to clean up after the build process
 	[ ! -f PerlMagick/Makefile ] || (cd PerlMagick && $(MAKE) distclean)
 	[ ! -f Makefile ] || $(MAKE) distclean

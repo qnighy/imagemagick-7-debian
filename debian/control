@@ -18,7 +18,9 @@ Build-Depends: chrpath, debhelper (>= 9~), ghostscript, libbz2-dev,
 # for converting svg
  inkscape,
 # for easy symbols of c++ lib
- pkg-kde-tools
+ pkg-kde-tools,
+# for libtool does not link to depends lib
+ dh-autoreconf
 Vcs-Browser: http://git.debian.org/?p=collab-maint/imagemagick.git
 Vcs-Git: git://git.debian.org/collab-maint/imagemagick.git
 Homepage: http://www.imagemagick.org/
