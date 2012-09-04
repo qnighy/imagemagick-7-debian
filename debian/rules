@@ -76,10 +76,12 @@ build-stamp: $(QUILT_STAMPFN)
 	while read SIZE; do \
 		mkdir -p $(CURDIR)/debian/icons/$$SIZE/apps/ ;\
 		$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize $$SIZE \
-			$(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
+	                   -gravity center -extent $$SIZE  \
+			   $(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
 	done < $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
 	# make xpm
 	$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize 32x32 \
+                -gravity center -extent 32x32  \
 		$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
 	mkdir -p $(CURDIR)/debian/icons/scalable/apps/
 	gzip -c -n -9 $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
