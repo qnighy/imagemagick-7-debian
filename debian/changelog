@@ -13,7 +13,7 @@ imagemagick (8:6.7.9.3-1) experimental; urgency=low
   * Add guidance for bug submitting (thanks to Jonathan Nieder and
     Justin B Rye).
   * Suggests some debugging package for imagemagick-dbg.
-  * Add symbols file.
+  * Add symbols file (except for libmagickcore5).
   * Do not mess up MAKEFLAGS.
   * Fail to build in case of testcase failure.
   * autoreconf package in order to avoid linking with depends lib 
