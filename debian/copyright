@@ -14,7 +14,8 @@ Comment: Apache-2.0 License with additionnal preamble
  Company.
  .
  As of 1999, E. I. du Pont de Nemours gave up all rights and 
- privileges to the ImageMagick software suite and assigned ownership to ImageMagick Studio LLC.
+ privileges to the ImageMagick software suite and assigned 
+ ownership to ImageMagick Studio LLC.
  .
  ImageMagick makes use of third-party "delegate" libraries to support
  certain optional features.  These libraries bear their own copyrights
@@ -394,16 +395,27 @@ License: ImageMagick
 Files: script/txt2html
 Copyright: 1994-2000 Seth Golub
 License: Perllikelicence
- Original txt2html script copyright (c) 1994-2000 Seth Golub seth AT aigeek.com
+ Original txt2html script copyright (c) 1994-2000 Seth Golub
  .
  Copyright (c) 2002-2005 Kathryn Andersen
  .
- This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+ This program is free software; you can redistribute it and/or modify 
+ it under the same terms as Perl itself.
  .
  On debian systems, the (double) licenses for Perl can be found at:
  /usr/share/common-licenses/Artistic and
- /usr/share/common-licenses/GPL
+ /usr/share/common-licenses/GPL-1
 Comment: retrieved from homepage of script http://txt2html.sourceforge.net/txt2html.html#copyright
+ Perl License is:
+ .
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of either:
+ .
+ a) the GNU General Public License as published by the Free Software
+    Foundation; either version 1, or (at your option) any later
+    version, or
+ .
+ b) the "Artistic License" which comes with Perl.
 
 Files: wand/draw*
 Copyright: 2002, Bob Friesenhahn
