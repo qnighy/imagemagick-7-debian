@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 9~),
 # for linking compiling ...
  pkg-config, libltdl-dev,
 # for libtool does not link to depends lib
- dh-autoreconf,
+ dh-autoreconf, chrpath, 
 # for special function
  libfftw3-dev, liblcms2-dev, liblqr-1-0-dev,
 # for fonts 

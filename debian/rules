@@ -58,6 +58,14 @@ build-stamp: $(QUILT_STAMPFN)
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg
 
+	# Patch the generated libtool to avoid passing -rpath when linking,
+	# and to explicitly link libraries against the libraries they
+	# depend on.
+
+	sed -i libtool \
+		-e 's/^hardcode_libdir_flag_spec.*$$/hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/' \
+		-e '/^archive_cmds="/s/"$$/ \\$$deplibs"/'
+
 	dh_auto_build
 
 	# Create Makefile after building main library, so it finds -lMagickCore (see #650417)
@@ -169,6 +177,9 @@ install: build check
 
 	# Remove empty directories in debian/tmp
 	-find $(DESTDIR) -type d -empty | xargs -r rmdir -p
+
+	# Remove RPATH from Magick.so
+	chrpath -d $(DESTDIR)/usr/lib/perl5/auto/Image/Magick/Magick.so
 
 	# empties dependency_libs from .la files
 	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
