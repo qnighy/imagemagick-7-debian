@@ -8,19 +8,29 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Bastien Roucariès <roucaries.bastien+debian@gmail.com>,
  Vincent Fourmond <fourmond@debian.org>
 Standards-Version: 3.9.3
-Build-Depends: chrpath, debhelper (>= 9~), ghostscript, libbz2-dev,
- libdjvulibre-dev, libexif-dev, libfftw3-dev, libfreetype6-dev, 
+Build-Depends: debhelper (>= 9~), 
+# for linking compiling ...
+ pkg-config, libltdl-dev,
+# for libtool does not link to depends lib
+ dh-autoreconf,
+# for special function
+ libfftw3-dev, liblcms2-dev, liblqr-1-0-dev,
+# for fonts 
+ libfreetype6-dev, libfontconfig1-dev,
+# for compression
+ zlib1g-dev, liblzma-dev, libbz2-dev,
+# for X
+ libx11-dev, libxext-dev, libxt-dev, 
+# for plugins
+ ghostscript, libdjvulibre-dev, libexif-dev,
+ libjasper-dev, libjpeg-dev, 
+ libopenexr-dev, libperl-dev, libpng-dev, libtiff-dev,
+ libwmf-dev, 
 # libgraphviz-dev, incompatible license against fftw
- libjasper-dev, libjpeg-dev, liblcms2-dev, liblqr-1-0-dev, libltdl-dev,
- libopenexr-dev, libperl-dev, libpng-dev, librsvg2-dev, libtiff-dev,
- libwmf-dev, libx11-dev, libxext-dev, libxml2-dev, libxt-dev, pkg-config,
- zlib1g-dev, liblzma-dev, libpango1.0-dev, librsvg2-bin,
 # for converting svg
- inkscape,
+ libpango1.0-dev, librsvg2-bin, inkscape,librsvg2-dev, libxml2-dev,
 # for easy symbols of c++ lib
  pkg-kde-tools,
-# for libtool does not link to depends lib
- dh-autoreconf
 Vcs-Browser: http://git.debian.org/?p=collab-maint/imagemagick.git
 Vcs-Git: git://git.debian.org/collab-maint/imagemagick.git
 Homepage: http://www.imagemagick.org/

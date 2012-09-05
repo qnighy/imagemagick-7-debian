@@ -19,6 +19,7 @@ imagemagick (8:6.7.9.3-1) experimental; urgency=low
   * autoreconf package in order to avoid linking with depends lib 
     (use debian patched libtool). Patch magick++ demo by adding 
     required libs.
+  * Remove old (obsolete) libtool hack for rpath.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 03 Sep 2012 11:59:37 +0200
 
