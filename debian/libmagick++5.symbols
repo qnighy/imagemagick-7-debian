@@ -1,4 +1,4 @@
-# SymbolsHelper-Confirmed: 6.7.4.0 amd64
+# SymbolsHelper-Confirmed: 6.7.4.0 amd64 armel armhf hurd-i386 i386 ia64 kfreebsd-i386 mips mipsel powerpc s390 s390x sparc
 libMagick++.so.5 libmagick++5 #MINVER#
  MagickPlusPlusDestroyMagick@Base 6.7.4.0
  _ZN6Magick10CoordinateD0Ev@Base 6.7.4.0
@@ -41,12 +41,12 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick10TypeMetricC2Ev@Base 6.7.4.0
  _ZN6Magick10TypeMetricD1Ev@Base 6.7.4.0
  _ZN6Magick10TypeMetricD2Ev@Base 6.7.4.0
- _ZN6Magick10depthImageC1Em@Base 6.7.4.0
- _ZN6Magick10depthImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick10depthImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick10depthImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick10frameImageC1ERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick10frameImageC1Emmll@Base 6.7.4.0
+ (subst)_ZN6Magick10frameImageC1E{size_t}{size_t}{ssize_t}{ssize_t}@Base 6.7.4.0
  _ZN6Magick10frameImageC2ERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick10frameImageC2Emmll@Base 6.7.4.0
+ (subst)_ZN6Magick10frameImageC2E{size_t}{size_t}{ssize_t}{ssize_t}@Base 6.7.4.0
  _ZN6Magick10gammaImageC1Ed@Base 6.7.4.0
  _ZN6Magick10gammaImageC1Eddd@Base 6.7.4.0
  _ZN6Magick10gammaImageC2Ed@Base 6.7.4.0
@@ -61,8 +61,8 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick10raiseImageC2ERKNS_8GeometryEb@Base 6.7.4.0
  _ZN6Magick10scaleImageC1ERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick10scaleImageC2ERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick10sceneImageC1Em@Base 6.7.4.0
- _ZN6Magick10sceneImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick10sceneImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick10sceneImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick10shadeImageC1Eddb@Base 6.7.4.0
  _ZN6Magick10shadeImageC2Eddb@Base 6.7.4.0
  _ZN6Magick10shaveImageC1ERKNS_8GeometryE@Base 6.7.4.0
@@ -139,12 +139,12 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick11rotateImageC2Ed@Base 6.7.4.0
  _ZN6Magick11sampleImageC1ERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick11sampleImageC2ERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick11shadowImageC1Eddll@Base 6.7.4.0
- _ZN6Magick11shadowImageC2Eddll@Base 6.7.4.0
+ (subst)_ZN6Magick11shadowImageC1Edd{ssize_t}{ssize_t}@Base 6.7.4.0
+ (subst)_ZN6Magick11shadowImageC2Edd{ssize_t}{ssize_t}@Base 6.7.4.0
  _ZN6Magick11spliceImageC1ERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick11spliceImageC2ERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick11spreadImageC1Em@Base 6.7.4.0
- _ZN6Magick11spreadImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick11spreadImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick11spreadImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick11stereoImageC1ERKNS_5ImageE@Base 6.7.4.0
  _ZN6Magick11stereoImageC2ERKNS_5ImageE@Base 6.7.4.0
  _ZN6Magick12DrawableBaseD0Ev@Base 6.7.4.0
@@ -211,10 +211,10 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick12composeImageC2EN10MagickCore17CompositeOperatorE@Base 6.7.4.0
  _ZN6Magick12densityImageC1ERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick12densityImageC2ERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick12distortImageC1EN10MagickCore18DistortImageMethodEmPKd@Base 6.7.4.0
- _ZN6Magick12distortImageC1EN10MagickCore18DistortImageMethodEmPKdb@Base 6.7.4.0
- _ZN6Magick12distortImageC2EN10MagickCore18DistortImageMethodEmPKd@Base 6.7.4.0
- _ZN6Magick12distortImageC2EN10MagickCore18DistortImageMethodEmPKdb@Base 6.7.4.0
+ (subst)_ZN6Magick12distortImageC1EN10MagickCore18DistortImageMethodE{size_t}PKd@Base 6.7.4.0
+ (subst)_ZN6Magick12distortImageC1EN10MagickCore18DistortImageMethodE{size_t}PKdb@Base 6.7.4.0
+ (subst)_ZN6Magick12distortImageC2EN10MagickCore18DistortImageMethodE{size_t}PKd@Base 6.7.4.0
+ (subst)_ZN6Magick12distortImageC2EN10MagickCore18DistortImageMethodE{size_t}PKdb@Base 6.7.4.0
  _ZN6Magick12enhanceImageC1Ev@Base 6.7.4.0
  _ZN6Magick12enhanceImageC2Ev@Base 6.7.4.0
  _ZN6Magick12implodeImageC1Ed@Base 6.7.4.0
@@ -225,8 +225,8 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick12magnifyImageC2Ev@Base 6.7.4.0
  _ZN6Magick12opacityImageC1Ej@Base 6.7.4.0
  _ZN6Magick12opacityImageC2Ej@Base 6.7.4.0
- _ZN6Magick12qualityImageC1Em@Base 6.7.4.0
- _ZN6Magick12qualityImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick12qualityImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick12qualityImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick12segmentImageC1Edd@Base 6.7.4.0
  _ZN6Magick12segmentImageC2Edd@Base 6.7.4.0
  _ZN6Magick12sharpenImageC1Edd@Base 6.7.4.0
@@ -344,14 +344,14 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick13boxColorImageC2ERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick13charcoalImageC1Edd@Base 6.7.4.0
  _ZN6Magick13charcoalImageC2Edd@Base 6.7.4.0
- _ZN6Magick13colorMapImageC1EmRKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick13colorMapImageC2EmRKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick13colorMapImageC1E{size_t}RKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick13colorMapImageC2E{size_t}RKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick13colorizeImageC1EjRKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick13colorizeImageC1EjjjRKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick13colorizeImageC2EjRKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick13colorizeImageC2EjjjRKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick13contrastImageC1Em@Base 6.7.4.0
- _ZN6Magick13contrastImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick13contrastImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick13contrastImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick13equalizeImageC1Ev@Base 6.7.4.0
  _ZN6Magick13equalizeImageC2Ev@Base 6.7.4.0
  _ZN6Magick13fileNameImageC1ERKSs@Base 6.7.4.0
@@ -368,10 +368,10 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick13quantizeImageC2Eb@Base 6.7.4.0
  _ZN6Magick13solarizeImageC1Ed@Base 6.7.4.0
  _ZN6Magick13solarizeImageC2Ed@Base 6.7.4.0
- _ZN6Magick13subImageImageC1Em@Base 6.7.4.0
- _ZN6Magick13subImageImageC2Em@Base 6.7.4.0
- _ZN6Magick13subRangeImageC1Em@Base 6.7.4.0
- _ZN6Magick13subRangeImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick13subImageImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick13subImageImageC2E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick13subRangeImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick13subRangeImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick13tileNameImageC1ERKSs@Base 6.7.4.0
  _ZN6Magick13tileNameImageC2ERKSs@Base 6.7.4.0
  _ZN6Magick14DrawableAffineC1Edddddd@Base 6.7.4.0
@@ -434,9 +434,9 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick14colorFuzzImageC1Ed@Base 6.7.4.0
  _ZN6Magick14colorFuzzImageC2Ed@Base 6.7.4.0
  _ZN6Magick14compositeImageC1ERKNS_5ImageERKNS_8GeometryEN10MagickCore17CompositeOperatorE@Base 6.7.4.0
- _ZN6Magick14compositeImageC1ERKNS_5ImageEllN10MagickCore17CompositeOperatorE@Base 6.7.4.0
+ (subst)_ZN6Magick14compositeImageC1ERKNS_5ImageE{ssize_t}{ssize_t}N10MagickCore17CompositeOperatorE@Base 6.7.4.0
  _ZN6Magick14compositeImageC2ERKNS_5ImageERKNS_8GeometryEN10MagickCore17CompositeOperatorE@Base 6.7.4.0
- _ZN6Magick14compositeImageC2ERKNS_5ImageEllN10MagickCore17CompositeOperatorE@Base 6.7.4.0
+ (subst)_ZN6Magick14compositeImageC2ERKNS_5ImageE{ssize_t}{ssize_t}N10MagickCore17CompositeOperatorE@Base 6.7.4.0
  _ZN6Magick14despeckleImageC1Ev@Base 6.7.4.0
  _ZN6Magick14despeckleImageC2Ev@Base 6.7.4.0
  _ZN6Magick14fillColorImageC1ERKNS_5ColorE@Base 6.7.4.0
@@ -504,8 +504,8 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick15monochromeImageC2Eb@Base 6.7.4.0
  _ZN6Magick15penTextureImageC1ERKNS_5ImageE@Base 6.7.4.0
  _ZN6Magick15penTextureImageC2ERKNS_5ImageE@Base 6.7.4.0
- _ZN6Magick15pixelColorImageC1EllRKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick15pixelColorImageC2EllRKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick15pixelColorImageC1E{ssize_t}{ssize_t}RKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick15pixelColorImageC2E{ssize_t}{ssize_t}RKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick15x11DisplayImageC1ERKSs@Base 6.7.4.0
  _ZN6Magick15x11DisplayImageC2ERKSs@Base 6.7.4.0
  _ZN6Magick16DrawableClipPathC1ERKS0_@Base 6.7.4.0
@@ -541,23 +541,23 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick16WarningUndefinedD2Ev@Base 6.7.4.0
  _ZN6Magick16borderColorImageC1ERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick16borderColorImageC2ERKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick16colorMatrixImageC1EmPKd@Base 6.7.4.0
- _ZN6Magick16colorMatrixImageC2EmPKd@Base 6.7.4.0
- _ZN6Magick16reduceNoiseImageC1Em@Base 6.7.4.0
+ (subst)_ZN6Magick16colorMatrixImageC1E{size_t}PKd@Base 6.7.4.0
+ (subst)_ZN6Magick16colorMatrixImageC2E{size_t}PKd@Base 6.7.4.0
  _ZN6Magick16reduceNoiseImageC1Ev@Base 6.7.4.0
- _ZN6Magick16reduceNoiseImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick16reduceNoiseImageC1E{size_t}@Base 6.7.4.0
  _ZN6Magick16reduceNoiseImageC2Ev@Base 6.7.4.0
+ (subst)_ZN6Magick16reduceNoiseImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick16strokeColorImageC1ERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick16strokeColorImageC2ERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick16transparentImageC1ERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick16transparentImageC2ERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick17DrawableDashArray9dasharrayEPKd@Base 6.7.4.0
- _ZN6Magick17DrawableDashArray9dasharrayEPKm@Base 6.7.4.0
+ (subst)_ZN6Magick17DrawableDashArray9dasharrayEPK{size_t}@Base 6.7.4.0
  _ZN6Magick17DrawableDashArrayC1EPKd@Base 6.7.4.0
- _ZN6Magick17DrawableDashArrayC1EPKm@Base 6.7.4.0
+ (subst)_ZN6Magick17DrawableDashArrayC1EPK{size_t}@Base 6.7.4.0
  _ZN6Magick17DrawableDashArrayC1ERKS0_@Base 6.7.4.0
  _ZN6Magick17DrawableDashArrayC2EPKd@Base 6.7.4.0
- _ZN6Magick17DrawableDashArrayC2EPKm@Base 6.7.4.0
+ (subst)_ZN6Magick17DrawableDashArrayC2EPK{size_t}@Base 6.7.4.0
  _ZN6Magick17DrawableDashArrayC2ERKS0_@Base 6.7.4.0
  _ZN6Magick17DrawableDashArrayD0Ev@Base 6.7.4.0
  _ZN6Magick17DrawableDashArrayD1Ev@Base 6.7.4.0
@@ -605,10 +605,10 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick18ErrorResourceLimitD0Ev@Base 6.7.4.0
  _ZN6Magick18ErrorResourceLimitD1Ev@Base 6.7.4.0
  _ZN6Magick18ErrorResourceLimitD2Ev@Base 6.7.4.0
- _ZN6Magick18cycleColormapImageC1El@Base 6.7.4.0
- _ZN6Magick18cycleColormapImageC2El@Base 6.7.4.0
- _ZN6Magick18fontPointsizeImageC1Em@Base 6.7.4.0
- _ZN6Magick18fontPointsizeImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick18cycleColormapImageC1E{ssize_t}@Base 6.7.4.0
+ (subst)_ZN6Magick18cycleColormapImageC2E{ssize_t}@Base 6.7.4.0
+ (subst)_ZN6Magick18fontPointsizeImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick18fontPointsizeImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick18interlaceTypeImageC1EN10MagickCore13InterlaceTypeE@Base 6.7.4.0
  _ZN6Magick18interlaceTypeImageC2EN10MagickCore13InterlaceTypeE@Base 6.7.4.0
  _ZN6Magick19DrawableFillOpacityD0Ev@Base 6.7.4.0
@@ -618,9 +618,9 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick19DrawablePopClipPathD1Ev@Base 6.7.4.0
  _ZN6Magick19DrawablePopClipPathD2Ev@Base 6.7.4.0
  _ZN6Magick19DrawablePushPatternC1ERKS0_@Base 6.7.4.0
- _ZN6Magick19DrawablePushPatternC1ERKSsllmm@Base 6.7.4.0
+ (subst)_ZN6Magick19DrawablePushPatternC1ERKSs{ssize_t}{ssize_t}{size_t}{size_t}@Base 6.7.4.0
  _ZN6Magick19DrawablePushPatternC2ERKS0_@Base 6.7.4.0
- _ZN6Magick19DrawablePushPatternC2ERKSsllmm@Base 6.7.4.0
+ (subst)_ZN6Magick19DrawablePushPatternC2ERKSs{ssize_t}{ssize_t}{size_t}{size_t}@Base 6.7.4.0
  _ZN6Magick19DrawablePushPatternD0Ev@Base 6.7.4.0
  _ZN6Magick19DrawablePushPatternD1Ev@Base 6.7.4.0
  _ZN6Magick19DrawablePushPatternD2Ev@Base 6.7.4.0
@@ -642,20 +642,20 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick19WarningCorruptImageD0Ev@Base 6.7.4.0
  _ZN6Magick19WarningCorruptImageD1Ev@Base 6.7.4.0
  _ZN6Magick19WarningCorruptImageD2Ev@Base 6.7.4.0
- _ZN6Magick19animationDelayImageC1Em@Base 6.7.4.0
- _ZN6Magick19animationDelayImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick19animationDelayImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick19animationDelayImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick19floodFillColorImageC1ERKNS_8GeometryERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick19floodFillColorImageC1ERKNS_8GeometryERKNS_5ColorES6_@Base 6.7.4.0
- _ZN6Magick19floodFillColorImageC1EllRKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick19floodFillColorImageC1EllRKNS_5ColorES3_@Base 6.7.4.0
+ (subst)_ZN6Magick19floodFillColorImageC1E{ssize_t}{ssize_t}RKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick19floodFillColorImageC1E{ssize_t}{ssize_t}RKNS_5ColorES3_@Base 6.7.4.0
  _ZN6Magick19floodFillColorImageC2ERKNS_8GeometryERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick19floodFillColorImageC2ERKNS_8GeometryERKNS_5ColorES6_@Base 6.7.4.0
- _ZN6Magick19floodFillColorImageC2EllRKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick19floodFillColorImageC2EllRKNS_5ColorES3_@Base 6.7.4.0
- _ZN6Magick19matteFloodfillImageC1ERKNS_5ColorEjllN10MagickCore11PaintMethodE@Base 6.7.4.0
- _ZN6Magick19matteFloodfillImageC2ERKNS_5ColorEjllN10MagickCore11PaintMethodE@Base 6.7.4.0
- _ZN6Magick19quantizeColorsImageC1Em@Base 6.7.4.0
- _ZN6Magick19quantizeColorsImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick19floodFillColorImageC2E{ssize_t}{ssize_t}RKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick19floodFillColorImageC2E{ssize_t}{ssize_t}RKNS_5ColorES3_@Base 6.7.4.0
+ (subst)_ZN6Magick19matteFloodfillImageC1ERKNS_5ColorEj{ssize_t}{ssize_t}N10MagickCore11PaintMethodE@Base 6.7.4.0
+ (subst)_ZN6Magick19matteFloodfillImageC2ERKNS_5ColorEj{ssize_t}{ssize_t}N10MagickCore11PaintMethodE@Base 6.7.4.0
+ (subst)_ZN6Magick19quantizeColorsImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick19quantizeColorsImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick19quantizeDitherImageC1Eb@Base 6.7.4.0
  _ZN6Magick19quantizeDitherImageC2Eb@Base 6.7.4.0
  _ZN6Magick20DrawablePushClipPathC1ERKS0_@Base 6.7.4.0
@@ -729,14 +729,14 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick21chromaWhitePointImageC2Edd@Base 6.7.4.0
  _ZN6Magick21floodFillTextureImageC1ERKNS_8GeometryERKNS_5ImageE@Base 6.7.4.0
  _ZN6Magick21floodFillTextureImageC1ERKNS_8GeometryERKNS_5ImageERKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick21floodFillTextureImageC1EllRKNS_5ImageE@Base 6.7.4.0
- _ZN6Magick21floodFillTextureImageC1EllRKNS_5ImageERKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick21floodFillTextureImageC1E{ssize_t}{ssize_t}RKNS_5ImageE@Base 6.7.4.0
+ (subst)_ZN6Magick21floodFillTextureImageC1E{ssize_t}{ssize_t}RKNS_5ImageERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick21floodFillTextureImageC2ERKNS_8GeometryERKNS_5ImageE@Base 6.7.4.0
  _ZN6Magick21floodFillTextureImageC2ERKNS_8GeometryERKNS_5ImageERKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick21floodFillTextureImageC2EllRKNS_5ImageE@Base 6.7.4.0
- _ZN6Magick21floodFillTextureImageC2EllRKNS_5ImageERKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick21gifDisposeMethodImageC1Em@Base 6.7.4.0
- _ZN6Magick21gifDisposeMethodImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick21floodFillTextureImageC2E{ssize_t}{ssize_t}RKNS_5ImageE@Base 6.7.4.0
+ (subst)_ZN6Magick21floodFillTextureImageC2E{ssize_t}{ssize_t}RKNS_5ImageERKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick21gifDisposeMethodImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick21gifDisposeMethodImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick22DrawableCompositeImage5imageERKNS_5ImageE@Base 6.7.4.0
  _ZN6Magick22DrawableCompositeImage6magickESs@Base 6.7.4.0
  _ZN6Magick22DrawableCompositeImage6magickEv@Base 6.7.4.0
@@ -784,14 +784,14 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick22WarningMissingDelegateD0Ev@Base 6.7.4.0
  _ZN6Magick22WarningMissingDelegateD1Ev@Base 6.7.4.0
  _ZN6Magick22WarningMissingDelegateD2Ev@Base 6.7.4.0
- _ZN6Magick22adaptiveThresholdImageC1Emml@Base 6.7.4.0
- _ZN6Magick22adaptiveThresholdImageC2Emml@Base 6.7.4.0
+ (subst)_ZN6Magick22adaptiveThresholdImageC1E{size_t}{size_t}{ssize_t}@Base 6.7.4.0
+ (subst)_ZN6Magick22adaptiveThresholdImageC2E{size_t}{size_t}{ssize_t}@Base 6.7.4.0
  _ZN6Magick22backgroundTextureImageC1ERKSs@Base 6.7.4.0
  _ZN6Magick22backgroundTextureImageC2ERKSs@Base 6.7.4.0
  _ZN6Magick22chromaBluePrimaryImageC1Edd@Base 6.7.4.0
  _ZN6Magick22chromaBluePrimaryImageC2Edd@Base 6.7.4.0
- _ZN6Magick22quantizeTreeDepthImageC1Em@Base 6.7.4.0
- _ZN6Magick22quantizeTreeDepthImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick22quantizeTreeDepthImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick22quantizeTreeDepthImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick22throwExceptionExplicitEN10MagickCore13ExceptionTypeEPKcS3_@Base 6.7.4.0
  _ZN6Magick23DrawableStrokeAntialiasD0Ev@Base 6.7.4.0
  _ZN6Magick23DrawableStrokeAntialiasD1Ev@Base 6.7.4.0
@@ -832,8 +832,8 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick24PathQuadraticCurvetoArgsC2Ev@Base 6.7.4.0
  _ZN6Magick24PathQuadraticCurvetoArgsD1Ev@Base 6.7.4.0
  _ZN6Magick24PathQuadraticCurvetoArgsD2Ev@Base 6.7.4.0
- _ZN6Magick24animationIterationsImageC1Em@Base 6.7.4.0
- _ZN6Magick24animationIterationsImageC2Em@Base 6.7.4.0
+ (subst)_ZN6Magick24animationIterationsImageC1E{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick24animationIterationsImageC2E{size_t}@Base 6.7.4.0
  _ZN6Magick25DrawablePopGraphicContextD0Ev@Base 6.7.4.0
  _ZN6Magick25DrawablePopGraphicContextD1Ev@Base 6.7.4.0
  _ZN6Magick25DrawablePopGraphicContextD2Ev@Base 6.7.4.0
@@ -860,14 +860,14 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick29PathSmoothQuadraticCurvetoRelD0Ev@Base 6.7.4.0
  _ZN6Magick29PathSmoothQuadraticCurvetoRelD1Ev@Base 6.7.4.0
  _ZN6Magick29PathSmoothQuadraticCurvetoRelD2Ev@Base 6.7.4.0
- _ZN6Magick4Blob12updateNoCopyEPvmNS0_9AllocatorE@Base 6.7.4.0
+ (subst)_ZN6Magick4Blob12updateNoCopyEPv{size_t}NS0_9AllocatorE@Base 6.7.4.0
  _ZN6Magick4Blob6base64ESs@Base 6.7.4.0
  _ZN6Magick4Blob6base64Ev@Base 6.7.4.0
- _ZN6Magick4Blob6updateEPKvm@Base 6.7.4.0
- _ZN6Magick4BlobC1EPKvm@Base 6.7.4.0
+ (subst)_ZN6Magick4Blob6updateEPKv{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick4BlobC1EPKv{size_t}@Base 6.7.4.0
  _ZN6Magick4BlobC1ERKS0_@Base 6.7.4.0
  _ZN6Magick4BlobC1Ev@Base 6.7.4.0
- _ZN6Magick4BlobC2EPKvm@Base 6.7.4.0
+ (subst)_ZN6Magick4BlobC2EPKv{size_t}@Base 6.7.4.0
  _ZN6Magick4BlobC2ERKS0_@Base 6.7.4.0
  _ZN6Magick4BlobC2Ev@Base 6.7.4.0
  _ZN6Magick4BlobD0Ev@Base 6.7.4.0
@@ -911,14 +911,14 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image10monochromeEb@Base 6.7.4.0
  _ZN6Magick5Image10motionBlurEddd@Base 6.7.4.0
  _ZN6Magick5Image10penTextureERKS0_@Base 6.7.4.0
- _ZN6Magick5Image10pixelColorEllRKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick5Image10pixelColorE{ssize_t}{ssize_t}RKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick5Image10readPixelsEN10MagickCore11QuantumTypeEPKh@Base 6.7.4.0
  _ZN6Magick5Image10registerIdEv@Base 6.7.4.0
  _ZN6Magick5Image10syncPixelsEv@Base 6.7.4.0
  _ZN6Magick5Image10x11DisplayERKSs@Base 6.7.4.0
  _ZN6Magick5Image11blurChannelEN10MagickCore11ChannelTypeEdd@Base 6.7.4.0
  _ZN6Magick5Image11borderColorERKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick5Image11colorMatrixEmPKd@Base 6.7.4.0
+ (subst)_ZN6Magick5Image11colorMatrixE{size_t}PKd@Base 6.7.4.0
  _ZN6Magick5Image11defineValueERKSsS2_S2_@Base 6.7.4.0
  _ZN6Magick5Image11exifProfileERKNS_4BlobE@Base 6.7.4.0
  _ZN6Magick5Image11fillPatternERKS0_@Base 6.7.4.0
@@ -926,7 +926,7 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image11modifyImageEv@Base 6.7.4.0
  _ZN6Magick5Image11orientationEN10MagickCore15OrientationTypeE@Base 6.7.4.0
  _ZN6Magick5Image11reduceNoiseEd@Base 6.7.4.0
- _ZN6Magick5Image11sparseColorEN10MagickCore11ChannelTypeENS1_17SparseColorMethodEmPKd@Base 6.7.4.0
+ (subst)_ZN6Magick5Image11sparseColorEN10MagickCore11ChannelTypeENS1_17SparseColorMethodE{size_t}PKd@Base 6.7.4.0
  _ZN6Magick5Image11strokeColorERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick5Image11strokeWidthEd@Base 6.7.4.0
  _ZN6Magick5Image11totalColorsEv@Base 6.7.4.0
@@ -935,32 +935,32 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image11writePixelsEN10MagickCore11QuantumTypeEPh@Base 6.7.4.0
  _ZN6Magick5Image12adaptiveBlurEdd@Base 6.7.4.0
  _ZN6Magick5Image12channelDepthEN10MagickCore11ChannelTypeE@Base 6.7.4.0
- _ZN6Magick5Image12channelDepthEN10MagickCore11ChannelTypeEm@Base 6.7.4.0
- _ZN6Magick5Image12colorMapSizeEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image12channelDepthEN10MagickCore11ChannelTypeE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image12colorMapSizeEv@Base 6.7.4.0
+ (subst)_ZN6Magick5Image12colorMapSizeE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image12compressTypeEN10MagickCore15CompressionTypeE@Base 6.7.4.0
  _ZN6Magick5Image12gaussianBlurEdd@Base 6.7.4.0
  _ZN6Magick5Image12levelChannelEN10MagickCore11ChannelTypeEddd@Base 6.7.4.0
  _ZN6Magick5Image12medianFilterEd@Base 6.7.4.0
- _ZN6Magick5Image12modulusDepthEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image12modulusDepthE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image12quantizeInfoEv@Base 6.7.4.0
  _ZN6Magick5Image12replaceImageEPN10MagickCore6_ImageE@Base 6.7.4.0
  _ZN6Magick5Image12textEncodingERKSs@Base 6.7.4.0
  _ZN6Magick5Image12unregisterIdEv@Base 6.7.4.0
- _ZN6Magick5Image13cycleColormapEl@Base 6.7.4.0
+ (subst)_ZN6Magick5Image13cycleColormapE{ssize_t}@Base 6.7.4.0
  _ZN6Magick5Image13fontPointsizeEd@Base 6.7.4.0
  _ZN6Magick5Image13interlaceTypeEN10MagickCore13InterlaceTypeE@Base 6.7.4.0
  _ZN6Magick5Image13strokeLineCapEN10MagickCore7LineCapE@Base 6.7.4.0
  _ZN6Magick5Image13strokePatternERKS0_@Base 6.7.4.0
- _ZN6Magick5Image14animationDelayEm@Base 6.7.4.0
- _ZN6Magick5Image14cacheThresholdEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image14animationDelayE{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick5Image14cacheThresholdE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image14colorspaceTypeEN10MagickCore14ColorspaceTypeE@Base 6.7.4.0
  _ZN6Magick5Image14floodFillColorERKNS_8GeometryERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick5Image14floodFillColorERKNS_8GeometryERKNS_5ColorES6_@Base 6.7.4.0
- _ZN6Magick5Image14floodFillColorEllRKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick5Image14floodFillColorEllRKNS_5ColorES3_@Base 6.7.4.0
- _ZN6Magick5Image14matteFloodfillERKNS_5ColorEjllN10MagickCore11PaintMethodE@Base 6.7.4.0
- _ZN6Magick5Image14quantizeColorsEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image14floodFillColorE{ssize_t}{ssize_t}RKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick5Image14floodFillColorE{ssize_t}{ssize_t}RKNS_5ColorES3_@Base 6.7.4.0
+ (subst)_ZN6Magick5Image14matteFloodfillERKNS_5ColorEj{ssize_t}{ssize_t}N10MagickCore11PaintMethodE@Base 6.7.4.0
+ (subst)_ZN6Magick5Image14quantizeColorsE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image14quantizeDitherEb@Base 6.7.4.0
  _ZN6Magick5Image14sharpenChannelEN10MagickCore11ChannelTypeEdd@Base 6.7.4.0
  _ZN6Magick5Image14strokeLineJoinEN10MagickCore8LineJoinE@Base 6.7.4.0
@@ -974,7 +974,7 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image15fontTypeMetricsERKSsPNS_10TypeMetricE@Base 6.7.4.0
  _ZN6Magick5Image15iccColorProfileERKNS_4BlobE@Base 6.7.4.0
  _ZN6Magick5Image15quantumOperatorEN10MagickCore11ChannelTypeENS1_22MagickEvaluateOperatorEd@Base 6.7.4.0
- _ZN6Magick5Image15quantumOperatorEllmmN10MagickCore11ChannelTypeENS1_22MagickEvaluateOperatorEd@Base 6.7.4.0
+ (subst)_ZN6Magick5Image15quantumOperatorE{ssize_t}{ssize_t}{size_t}{size_t}N10MagickCore11ChannelTypeENS1_22MagickEvaluateOperatorEd@Base 6.7.4.0
  _ZN6Magick5Image15randomThresholdERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5Image15renderingIntentEN10MagickCore15RenderingIntentE@Base 6.7.4.0
  _ZN6Magick5Image15resolutionUnitsEN10MagickCore14ResolutionTypeE@Base 6.7.4.0
@@ -983,26 +983,26 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image15transformOriginEdd@Base 6.7.4.0
  _ZN6Magick5Image16chromaRedPrimaryEdd@Base 6.7.4.0
  _ZN6Magick5Image16chromaWhitePointEdd@Base 6.7.4.0
- _ZN6Magick5Image16floodFillOpacityElljN10MagickCore11PaintMethodE@Base 6.7.4.0
+ (subst)_ZN6Magick5Image16floodFillOpacityE{ssize_t}{ssize_t}jN10MagickCore11PaintMethodE@Base 6.7.4.0
  _ZN6Magick5Image16floodFillTextureERKNS_8GeometryERKS0_@Base 6.7.4.0
  _ZN6Magick5Image16floodFillTextureERKNS_8GeometryERKS0_RKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick5Image16floodFillTextureEllRKS0_@Base 6.7.4.0
- _ZN6Magick5Image16floodFillTextureEllRKS0_RKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick5Image16gifDisposeMethodEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image16floodFillTextureE{ssize_t}{ssize_t}RKS0_@Base 6.7.4.0
+ (subst)_ZN6Magick5Image16floodFillTextureE{ssize_t}{ssize_t}RKS0_RKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick5Image16gifDisposeMethodE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image16strokeDashOffsetEd@Base 6.7.4.0
- _ZN6Magick5Image16strokeMiterLimitEm@Base 6.7.4.0
- _ZN6Magick5Image17adaptiveThresholdEmml@Base 6.7.4.0
+ (subst)_ZN6Magick5Image16strokeMiterLimitE{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick5Image17adaptiveThresholdE{size_t}{size_t}{ssize_t}@Base 6.7.4.0
  _ZN6Magick5Image17backgroundTextureERKSs@Base 6.7.4.0
  _ZN6Magick5Image17chromaBluePrimaryEdd@Base 6.7.4.0
- _ZN6Magick5Image17quantizeTreeDepthEm@Base 6.7.4.0
- _ZN6Magick5Image17sigmoidalContrastEmdd@Base 6.7.4.0
+ (subst)_ZN6Magick5Image17quantizeTreeDepthE{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick5Image17sigmoidalContrastE{size_t}dd@Base 6.7.4.0
  _ZN6Magick5Image17transformRotationEd@Base 6.7.4.0
  _ZN6Magick5Image17transparentChromaERKNS_5ColorES3_@Base 6.7.4.0
  _ZN6Magick5Image18chromaGreenPrimaryEdd@Base 6.7.4.0
  _ZN6Magick5Image18quantizeColorSpaceEN10MagickCore14ColorspaceTypeE@Base 6.7.4.0
  _ZN6Magick5Image18unsharpmaskChannelEN10MagickCore11ChannelTypeEdddd@Base 6.7.4.0
  _ZN6Magick5Image18virtualPixelMethodEN10MagickCore18VirtualPixelMethodE@Base 6.7.4.0
- _ZN6Magick5Image19animationIterationsEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image19animationIterationsE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image19gaussianBlurChannelEN10MagickCore11ChannelTypeEdd@Base 6.7.4.0
  _ZN6Magick5Image22randomThresholdChannelERKNS_8GeometryEN10MagickCore11ChannelTypeE@Base 6.7.4.0
  _ZN6Magick5Image23inverseFourierTransformERKS0_@Base 6.7.4.0
@@ -1026,13 +1026,13 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image4readERKNS_4BlobE@Base 6.7.4.0
  _ZN6Magick5Image4readERKNS_4BlobERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5Image4readERKNS_4BlobERKNS_8GeometryERKSs@Base 6.7.4.0
- _ZN6Magick5Image4readERKNS_4BlobERKNS_8GeometryEm@Base 6.7.4.0
- _ZN6Magick5Image4readERKNS_4BlobERKNS_8GeometryEmRKSs@Base 6.7.4.0
+ (subst)_ZN6Magick5Image4readERKNS_4BlobERKNS_8GeometryE{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick5Image4readERKNS_4BlobERKNS_8GeometryE{size_t}RKSs@Base 6.7.4.0
  _ZN6Magick5Image4readERKNS_8GeometryERKSs@Base 6.7.4.0
  _ZN6Magick5Image4readERKSs@Base 6.7.4.0
- _ZN6Magick5Image4readEmmRKSsN10MagickCore11StorageTypeEPKv@Base 6.7.4.0
+ (subst)_ZN6Magick5Image4readE{size_t}{size_t}RKSsN10MagickCore11StorageTypeEPKv@Base 6.7.4.0
  _ZN6Magick5Image4rollERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick5Image4rollEmm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image4rollE{size_t}{size_t}@Base 6.7.4.0
  _ZN6Magick5Image4sizeERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5Image4trimEv@Base 6.7.4.0
  _ZN6Magick5Image4typeEN10MagickCore9ImageTypeE@Base 6.7.4.0
@@ -1040,10 +1040,10 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image4waveEdd@Base 6.7.4.0
  _ZN6Magick5Image4zoomERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5Image5debugEb@Base 6.7.4.0
- _ZN6Magick5Image5depthEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image5depthE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image5eraseEv@Base 6.7.4.0
  _ZN6Magick5Image5frameERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick5Image5frameEmmll@Base 6.7.4.0
+ (subst)_ZN6Magick5Image5frameE{size_t}{size_t}{ssize_t}{ssize_t}@Base 6.7.4.0
  _ZN6Magick5Image5gammaEd@Base 6.7.4.0
  _ZN6Magick5Image5gammaEddd@Base 6.7.4.0
  _ZN6Magick5Image5imageEv@Base 6.7.4.0
@@ -1052,7 +1052,7 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image5matteEb@Base 6.7.4.0
  _ZN6Magick5Image5raiseERKNS_8GeometryEb@Base 6.7.4.0
  _ZN6Magick5Image5scaleERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick5Image5sceneEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image5sceneE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image5shadeEddb@Base 6.7.4.0
  _ZN6Magick5Image5shaveERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5Image5shearEdd@Base 6.7.4.0
@@ -1060,9 +1060,9 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image5swirlEd@Base 6.7.4.0
  _ZN6Magick5Image5writeEPNS_4BlobE@Base 6.7.4.0
  _ZN6Magick5Image5writeEPNS_4BlobERKSs@Base 6.7.4.0
- _ZN6Magick5Image5writeEPNS_4BlobERKSsm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image5writeEPNS_4BlobERKSs{size_t}@Base 6.7.4.0
  _ZN6Magick5Image5writeERKSs@Base 6.7.4.0
- _ZN6Magick5Image5writeEllmmRKSsN10MagickCore11StorageTypeEPv@Base 6.7.4.0
+ (subst)_ZN6Magick5Image5writeE{ssize_t}{ssize_t}{size_t}{size_t}RKSsN10MagickCore11StorageTypeEPv@Base 6.7.4.0
  _ZN6Magick5Image6adjoinEb@Base 6.7.4.0
  _ZN6Magick5Image6borderERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5Image6embossEdd@Base 6.7.4.0
@@ -1078,9 +1078,9 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image6resizeERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5Image6rotateEd@Base 6.7.4.0
  _ZN6Magick5Image6sampleERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick5Image6shadowEddll@Base 6.7.4.0
+ (subst)_ZN6Magick5Image6shadowEdd{ssize_t}{ssize_t}@Base 6.7.4.0
  _ZN6Magick5Image6spliceERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick5Image6spreadEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image6spreadE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image6stereoERKS0_@Base 6.7.4.0
  _ZN6Magick5Image7channelEN10MagickCore11ChannelTypeE@Base 6.7.4.0
  _ZN6Magick5Image7commentERKSs@Base 6.7.4.0
@@ -1088,16 +1088,16 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image7composeEN10MagickCore17CompositeOperatorE@Base 6.7.4.0
  _ZN6Magick5Image7densityERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5Image7displayEv@Base 6.7.4.0
- _ZN6Magick5Image7distortEN10MagickCore18DistortImageMethodEmPKdb@Base 6.7.4.0
+ (subst)_ZN6Magick5Image7distortEN10MagickCore18DistortImageMethodE{size_t}PKdb@Base 6.7.4.0
  _ZN6Magick5Image7enhanceEv@Base 6.7.4.0
  _ZN6Magick5Image7implodeEd@Base 6.7.4.0
  _ZN6Magick5Image7isValidEb@Base 6.7.4.0
  _ZN6Magick5Image7magnifyEv@Base 6.7.4.0
  _ZN6Magick5Image7opacityEj@Base 6.7.4.0
  _ZN6Magick5Image7optionsEv@Base 6.7.4.0
- _ZN6Magick5Image7processESslPPKc@Base 6.7.4.0
+ (subst)_ZN6Magick5Image7processESs{ssize_t}PPKc@Base 6.7.4.0
  _ZN6Magick5Image7profileESsRKNS_4BlobE@Base 6.7.4.0
- _ZN6Magick5Image7qualityEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image7qualityE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image7segmentEdd@Base 6.7.4.0
  _ZN6Magick5Image7sharpenEdd@Base 6.7.4.0
  _ZN6Magick5Image7steganoERKS0_@Base 6.7.4.0
@@ -1111,11 +1111,11 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image8boxColorERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick5Image8charcoalEdd@Base 6.7.4.0
  _ZN6Magick5Image8clipMaskERKS0_@Base 6.7.4.0
- _ZN6Magick5Image8colorMapEmRKNS_5ColorE@Base 6.7.4.0
+ (subst)_ZN6Magick5Image8colorMapE{size_t}RKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick5Image8colorizeEjRKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick5Image8colorizeEjjjRKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick5Image8contrastEm@Base 6.7.4.0
- _ZN6Magick5Image8convolveEmPKd@Base 6.7.4.0
+ (subst)_ZN6Magick5Image8contrastE{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick5Image8convolveE{size_t}PKd@Base 6.7.4.0
  _ZN6Magick5Image8equalizeEv@Base 6.7.4.0
  _ZN6Magick5Image8fileNameERKSs@Base 6.7.4.0
  _ZN6Magick5Image8fillRuleERKN10MagickCore8FillRuleE@Base 6.7.4.0
@@ -1125,8 +1125,8 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image8penColorERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick5Image8quantizeEb@Base 6.7.4.0
  _ZN6Magick5Image8solarizeEd@Base 6.7.4.0
- _ZN6Magick5Image8subImageEm@Base 6.7.4.0
- _ZN6Magick5Image8subRangeEm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image8subImageE{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick5Image8subRangeE{size_t}@Base 6.7.4.0
  _ZN6Magick5Image8tileNameERKSs@Base 6.7.4.0
  _ZN6Magick5Image9antiAliasEb@Base 6.7.4.0
  _ZN6Magick5Image9antiAliasEv@Base 6.7.4.0
@@ -1136,14 +1136,14 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5Image9colorFuzzEd@Base 6.7.4.0
  _ZN6Magick5Image9compositeERKS0_N10MagickCore11GravityTypeENS3_17CompositeOperatorE@Base 6.7.4.0
  _ZN6Magick5Image9compositeERKS0_RKNS_8GeometryEN10MagickCore17CompositeOperatorE@Base 6.7.4.0
- _ZN6Magick5Image9compositeERKS0_llN10MagickCore17CompositeOperatorE@Base 6.7.4.0
+ (subst)_ZN6Magick5Image9compositeERKS0_{ssize_t}{ssize_t}N10MagickCore17CompositeOperatorE@Base 6.7.4.0
  _ZN6Magick5Image9defineSetERKSsS2_b@Base 6.7.4.0
  _ZN6Magick5Image9despeckleEv@Base 6.7.4.0
  _ZN6Magick5Image9fillColorERKNS_5ColorE@Base 6.7.4.0
- _ZN6Magick5Image9getPixelsEllmm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image9getPixelsE{ssize_t}{ssize_t}{size_t}{size_t}@Base 6.7.4.0
  _ZN6Magick5Image9imageInfoEv@Base 6.7.4.0
  _ZN6Magick5Image9normalizeEv@Base 6.7.4.0
- _ZN6Magick5Image9setPixelsEllmm@Base 6.7.4.0
+ (subst)_ZN6Magick5Image9setPixelsE{ssize_t}{ssize_t}{size_t}{size_t}@Base 6.7.4.0
  _ZN6Magick5Image9thresholdEd@Base 6.7.4.0
  _ZN6Magick5Image9transformERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5Image9transformERKNS_8GeometryES3_@Base 6.7.4.0
@@ -1151,24 +1151,24 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5ImageC1ERKNS_4BlobE@Base 6.7.4.0
  _ZN6Magick5ImageC1ERKNS_4BlobERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5ImageC1ERKNS_4BlobERKNS_8GeometryERKSs@Base 6.7.4.0
- _ZN6Magick5ImageC1ERKNS_4BlobERKNS_8GeometryEm@Base 6.7.4.0
- _ZN6Magick5ImageC1ERKNS_4BlobERKNS_8GeometryEmRKSs@Base 6.7.4.0
+ (subst)_ZN6Magick5ImageC1ERKNS_4BlobERKNS_8GeometryE{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick5ImageC1ERKNS_4BlobERKNS_8GeometryE{size_t}RKSs@Base 6.7.4.0
  _ZN6Magick5ImageC1ERKNS_8GeometryERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick5ImageC1ERKS0_@Base 6.7.4.0
  _ZN6Magick5ImageC1ERKSs@Base 6.7.4.0
- _ZN6Magick5ImageC1EmmRKSsN10MagickCore11StorageTypeEPKv@Base 6.7.4.0
  _ZN6Magick5ImageC1Ev@Base 6.7.4.0
+ (subst)_ZN6Magick5ImageC1E{size_t}{size_t}RKSsN10MagickCore11StorageTypeEPKv@Base 6.7.4.0
  _ZN6Magick5ImageC2EPN10MagickCore6_ImageE@Base 6.7.4.0
  _ZN6Magick5ImageC2ERKNS_4BlobE@Base 6.7.4.0
  _ZN6Magick5ImageC2ERKNS_4BlobERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick5ImageC2ERKNS_4BlobERKNS_8GeometryERKSs@Base 6.7.4.0
- _ZN6Magick5ImageC2ERKNS_4BlobERKNS_8GeometryEm@Base 6.7.4.0
- _ZN6Magick5ImageC2ERKNS_4BlobERKNS_8GeometryEmRKSs@Base 6.7.4.0
+ (subst)_ZN6Magick5ImageC2ERKNS_4BlobERKNS_8GeometryE{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick5ImageC2ERKNS_4BlobERKNS_8GeometryE{size_t}RKSs@Base 6.7.4.0
  _ZN6Magick5ImageC2ERKNS_8GeometryERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick5ImageC2ERKS0_@Base 6.7.4.0
  _ZN6Magick5ImageC2ERKSs@Base 6.7.4.0
- _ZN6Magick5ImageC2EmmRKSsN10MagickCore11StorageTypeEPKv@Base 6.7.4.0
  _ZN6Magick5ImageC2Ev@Base 6.7.4.0
+ (subst)_ZN6Magick5ImageC2E{size_t}{size_t}RKSsN10MagickCore11StorageTypeEPKv@Base 6.7.4.0
  _ZN6Magick5ImageD0Ev@Base 6.7.4.0
  _ZN6Magick5ImageD1Ev@Base 6.7.4.0
  _ZN6Magick5ImageD2Ev@Base 6.7.4.0
@@ -1183,17 +1183,17 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick5VPathD1Ev@Base 6.7.4.0
  _ZN6Magick5VPathD2Ev@Base 6.7.4.0
  _ZN6Magick5VPathaSERKS0_@Base 6.7.4.0
- _ZN6Magick6Pixels3getEllmm@Base 6.7.4.0
- _ZN6Magick6Pixels3setEllmm@Base 6.7.4.0
+ (subst)_ZN6Magick6Pixels3getE{ssize_t}{ssize_t}{size_t}{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick6Pixels3setE{ssize_t}{ssize_t}{size_t}{size_t}@Base 6.7.4.0
  _ZN6Magick6Pixels4syncEv@Base 6.7.4.0
  _ZN6Magick6Pixels7indexesEv@Base 6.7.4.0
- _ZN6Magick6Pixels8getConstEllmm@Base 6.7.4.0
+ (subst)_ZN6Magick6Pixels8getConstE{ssize_t}{ssize_t}{size_t}{size_t}@Base 6.7.4.0
  _ZN6Magick6PixelsC1ERNS_5ImageE@Base 6.7.4.0
  _ZN6Magick6PixelsC2ERNS_5ImageE@Base 6.7.4.0
  _ZN6Magick6PixelsD1Ev@Base 6.7.4.0
  _ZN6Magick6PixelsD2Ev@Base 6.7.4.0
- _ZN6Magick7BlobRefC1EPKvm@Base 6.7.4.0
- _ZN6Magick7BlobRefC2EPKvm@Base 6.7.4.0
+ (subst)_ZN6Magick7BlobRefC1EPKv{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick7BlobRefC2EPKv{size_t}@Base 6.7.4.0
  _ZN6Magick7BlobRefD1Ev@Base 6.7.4.0
  _ZN6Magick7BlobRefD2Ev@Base 6.7.4.0
  _ZN6Magick7MontageC1Ev@Base 6.7.4.0
@@ -1216,7 +1216,7 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick7Options13strokeLineCapEN10MagickCore7LineCapE@Base 6.7.4.0
  _ZN6Magick7Options13strokePatternEPKN10MagickCore6_ImageE@Base 6.7.4.0
  _ZN6Magick7Options14colorspaceTypeEN10MagickCore14ColorspaceTypeE@Base 6.7.4.0
- _ZN6Magick7Options14quantizeColorsEm@Base 6.7.4.0
+ (subst)_ZN6Magick7Options14quantizeColorsE{size_t}@Base 6.7.4.0
  _ZN6Magick7Options14quantizeDitherEb@Base 6.7.4.0
  _ZN6Magick7Options14samplingFactorERKSs@Base 6.7.4.0
  _ZN6Magick7Options14strokeLineJoinEN10MagickCore8LineJoinE@Base 6.7.4.0
@@ -1230,9 +1230,9 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick7Options15strokeDashArrayEPKd@Base 6.7.4.0
  _ZN6Magick7Options15transformOriginEdd@Base 6.7.4.0
  _ZN6Magick7Options16strokeDashOffsetEd@Base 6.7.4.0
- _ZN6Magick7Options16strokeMiterLimitEm@Base 6.7.4.0
+ (subst)_ZN6Magick7Options16strokeMiterLimitE{size_t}@Base 6.7.4.0
  _ZN6Magick7Options17backgroundTextureERKSs@Base 6.7.4.0
- _ZN6Magick7Options17quantizeTreeDepthEm@Base 6.7.4.0
+ (subst)_ZN6Magick7Options17quantizeTreeDepthE{size_t}@Base 6.7.4.0
  _ZN6Magick7Options17transformRotationEd@Base 6.7.4.0
  _ZN6Magick7Options18quantizeColorSpaceEN10MagickCore14ColorspaceTypeE@Base 6.7.4.0
  _ZN6Magick7Options18virtualPixelMethodEN10MagickCore18VirtualPixelMethodE@Base 6.7.4.0
@@ -1243,19 +1243,19 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick7Options4typeEN10MagickCore9ImageTypeE@Base 6.7.4.0
  _ZN6Magick7Options4viewERKSs@Base 6.7.4.0
  _ZN6Magick7Options5debugEb@Base 6.7.4.0
- _ZN6Magick7Options5depthEm@Base 6.7.4.0
+ (subst)_ZN6Magick7Options5depthE{size_t}@Base 6.7.4.0
  _ZN6Magick7Options6adjoinEb@Base 6.7.4.0
  _ZN6Magick7Options6endianEN10MagickCore10EndianTypeE@Base 6.7.4.0
  _ZN6Magick7Options6magickERKSs@Base 6.7.4.0
  _ZN6Magick7Options7densityERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick7Options7qualityEm@Base 6.7.4.0
+ (subst)_ZN6Magick7Options7qualityE{size_t}@Base 6.7.4.0
  _ZN6Magick7Options7verboseEb@Base 6.7.4.0
  _ZN6Magick7Options8boxColorERKNS_5ColorE@Base 6.7.4.0
  _ZN6Magick7Options8drawInfoEv@Base 6.7.4.0
  _ZN6Magick7Options8fileNameERKSs@Base 6.7.4.0
  _ZN6Magick7Options8fillRuleERKN10MagickCore8FillRuleE@Base 6.7.4.0
- _ZN6Magick7Options8subImageEm@Base 6.7.4.0
- _ZN6Magick7Options8subRangeEm@Base 6.7.4.0
+ (subst)_ZN6Magick7Options8subImageE{size_t}@Base 6.7.4.0
+ (subst)_ZN6Magick7Options8subRangeE{size_t}@Base 6.7.4.0
  _ZN6Magick7Options8tileNameERKSs@Base 6.7.4.0
  _ZN6Magick7Options9antiAliasEb@Base 6.7.4.0
  _ZN6Magick7Options9colorFuzzEd@Base 6.7.4.0
@@ -1323,20 +1323,20 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick8GeometryC1ERKN10MagickCore14_RectangleInfoE@Base 6.7.4.0
  _ZN6Magick8GeometryC1ERKS0_@Base 6.7.4.0
  _ZN6Magick8GeometryC1ERKSs@Base 6.7.4.0
- _ZN6Magick8GeometryC1Emmllbb@Base 6.7.4.0
  _ZN6Magick8GeometryC1Ev@Base 6.7.4.0
+ (subst)_ZN6Magick8GeometryC1E{size_t}{size_t}{ssize_t}{ssize_t}bb@Base 6.7.4.0
  _ZN6Magick8GeometryC2EPKc@Base 6.7.4.0
  _ZN6Magick8GeometryC2ERKN10MagickCore14_RectangleInfoE@Base 6.7.4.0
  _ZN6Magick8GeometryC2ERKS0_@Base 6.7.4.0
  _ZN6Magick8GeometryC2ERKSs@Base 6.7.4.0
- _ZN6Magick8GeometryC2Emmllbb@Base 6.7.4.0
  _ZN6Magick8GeometryC2Ev@Base 6.7.4.0
+ (subst)_ZN6Magick8GeometryC2E{size_t}{size_t}{ssize_t}{ssize_t}bb@Base 6.7.4.0
  _ZN6Magick8GeometryD1Ev@Base 6.7.4.0
  _ZN6Magick8GeometryD2Ev@Base 6.7.4.0
  _ZN6Magick8GeometryaSEPKc@Base 6.7.4.0
  _ZN6Magick8GeometryaSERKS0_@Base 6.7.4.0
  _ZN6Magick8GeometryaSERKSs@Base 6.7.4.0
- _ZN6Magick8ImageRef2idEl@Base 6.7.4.0
+ (subst)_ZN6Magick8ImageRef2idE{ssize_t}@Base 6.7.4.0
  _ZN6Magick8ImageRef5imageEPN10MagickCore6_ImageE@Base 6.7.4.0
  _ZN6Magick8ImageRef7optionsEPNS_7OptionsE@Base 6.7.4.0
  _ZN6Magick8ImageRefC1EPN10MagickCore6_ImageE@Base 6.7.4.0
@@ -1437,9 +1437,9 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZN6Magick9pageImageC1ERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick9pageImageC2ERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick9rollImageC1ERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick9rollImageC1Ell@Base 6.7.4.0
+ (subst)_ZN6Magick9rollImageC1E{ssize_t}{ssize_t}@Base 6.7.4.0
  _ZN6Magick9rollImageC2ERKNS_8GeometryE@Base 6.7.4.0
- _ZN6Magick9rollImageC2Ell@Base 6.7.4.0
+ (subst)_ZN6Magick9rollImageC2E{ssize_t}{ssize_t}@Base 6.7.4.0
  _ZN6Magick9sizeImageC1ERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick9sizeImageC2ERKNS_8GeometryE@Base 6.7.4.0
  _ZN6Magick9trimImageC1Ev@Base 6.7.4.0
@@ -1769,7 +1769,7 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZNK6Magick5Image10matteColorEv@Base 6.7.4.0
  _ZNK6Magick5Image10monochromeEv@Base 6.7.4.0
  _ZNK6Magick5Image10penTextureEv@Base 6.7.4.0
- _ZNK6Magick5Image10pixelColorEll@Base 6.7.4.0
+ (subst)_ZNK6Magick5Image10pixelColorE{ssize_t}{ssize_t}@Base 6.7.4.0
  _ZNK6Magick5Image10statisticsEPNS0_16_ImageStatisticsE@Base 6.7.4.0
  _ZNK6Magick5Image10x11DisplayEv@Base 6.7.4.0
  _ZNK6Magick5Image11baseColumnsEv@Base 6.7.4.0
@@ -1796,7 +1796,7 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZNK6Magick5Image14animationDelayEv@Base 6.7.4.0
  _ZNK6Magick5Image14colorspaceTypeEv@Base 6.7.4.0
  _ZNK6Magick5Image14constImageInfoEv@Base 6.7.4.0
- _ZNK6Magick5Image14getConstPixelsEllmm@Base 6.7.4.0
+ (subst)_ZNK6Magick5Image14getConstPixelsE{ssize_t}{ssize_t}{size_t}{size_t}@Base 6.7.4.0
  _ZNK6Magick5Image14quantizeColorsEv@Base 6.7.4.0
  _ZNK6Magick5Image14quantizeDitherEv@Base 6.7.4.0
  _ZNK6Magick5Image14strokeLineJoinEv@Base 6.7.4.0
@@ -1850,7 +1850,7 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZNK6Magick5Image8baseRowsEv@Base 6.7.4.0
  _ZNK6Magick5Image8boxColorEv@Base 6.7.4.0
  _ZNK6Magick5Image8clipMaskEv@Base 6.7.4.0
- _ZNK6Magick5Image8colorMapEm@Base 6.7.4.0
+ (subst)_ZNK6Magick5Image8colorMapE{size_t}@Base 6.7.4.0
  _ZNK6Magick5Image8fileNameEv@Base 6.7.4.0
  _ZNK6Magick5Image8fileSizeEv@Base 6.7.4.0
  _ZNK6Magick5Image8fillRuleEv@Base 6.7.4.0
@@ -1953,12 +1953,24 @@ libMagick++.so.5 libmagick++5 #MINVER#
  _ZNK6Magick9viewImageclERNS_5ImageE@Base 6.7.4.0
  _ZNK6Magick9waveImageclERNS_5ImageE@Base 6.7.4.0
  _ZNK6Magick9zoomImageclERNS_5ImageE@Base 6.7.4.0
- (optional=templinst)_ZNSt10_List_baseIN6Magick10CoordinateESaIS1_EE8_M_clearEv@Base 6.7.4.0
- (optional=templinst)_ZNSt10_List_baseIN6Magick11PathArcArgsESaIS1_EE8_M_clearEv@Base 6.7.4.0
- (optional=templinst)_ZNSt10_List_baseIN6Magick15PathCurvetoArgsESaIS1_EE8_M_clearEv@Base 6.7.4.0
- (optional=templinst)_ZNSt10_List_baseIN6Magick24PathQuadraticCurvetoArgsESaIS1_EE8_M_clearEv@Base 6.7.4.0
- (optional=templinst)_ZNSt10_List_baseIN6Magick5VPathESaIS1_EE8_M_clearEv@Base 6.7.4.0
- (optional=templinst)_ZNSt10_List_baseIN6Magick8DrawableESaIS1_EE8_M_clearEv@Base 6.7.4.0
+ (optional=templinst|arch=amd64 hurd-i386 i386 kfreebsd-i386)_ZNSt10_List_baseIN6Magick10CoordinateESaIS1_EE8_M_clearEv@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick10CoordinateESaIS1_EED1Ev@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick10CoordinateESaIS1_EED2Ev@Base 6.7.4.0
+ (optional=templinst|arch=amd64 hurd-i386 i386 kfreebsd-i386)_ZNSt10_List_baseIN6Magick11PathArcArgsESaIS1_EE8_M_clearEv@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick11PathArcArgsESaIS1_EED1Ev@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick11PathArcArgsESaIS1_EED2Ev@Base 6.7.4.0
+ (optional=templinst|arch=amd64 hurd-i386 i386 kfreebsd-i386)_ZNSt10_List_baseIN6Magick15PathCurvetoArgsESaIS1_EE8_M_clearEv@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick15PathCurvetoArgsESaIS1_EED1Ev@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick15PathCurvetoArgsESaIS1_EED2Ev@Base 6.7.4.0
+ (optional=templinst|arch=amd64 hurd-i386 i386 kfreebsd-i386)_ZNSt10_List_baseIN6Magick24PathQuadraticCurvetoArgsESaIS1_EE8_M_clearEv@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick24PathQuadraticCurvetoArgsESaIS1_EED1Ev@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick24PathQuadraticCurvetoArgsESaIS1_EED2Ev@Base 6.7.4.0
+ (optional=templinst|arch=amd64 hurd-i386 i386 kfreebsd-i386)_ZNSt10_List_baseIN6Magick5VPathESaIS1_EE8_M_clearEv@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick5VPathESaIS1_EED1Ev@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick5VPathESaIS1_EED2Ev@Base 6.7.4.0
+ (optional=templinst|arch=amd64 hurd-i386 i386 kfreebsd-i386)_ZNSt10_List_baseIN6Magick8DrawableESaIS1_EE8_M_clearEv@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick8DrawableESaIS1_EED1Ev@Base 6.7.4.0
+ (optional=templinst|arch=!amd64 !hurd-i386 !i386 !kfreebsd-i386)_ZNSt10_List_baseIN6Magick8DrawableESaIS1_EED2Ev@Base 6.7.4.0
  (optional=templinst)_ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_S8_@Base 6.7.4.0
  _ZTIN6Magick10CoordinateE@Base 6.7.4.0
  _ZTIN6Magick10ErrorCacheE@Base 6.7.4.0

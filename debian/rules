@@ -19,6 +19,10 @@ export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed 
 
 DESTDIR="$(CURDIR)/debian/tmp"
 
+# for better pkg-symbols for c++
+ifneq (/usr/share/pkg-kde-tools/bin,$(filter /usr/share/pkg-kde-tools/bin,$(subst :, ,$(PATH))))
+    export PATH := /usr/share/pkg-kde-tools/bin:$(PATH)
+endif
 
 # For some reason, the
 # libtools wrapper scripts don't work.
