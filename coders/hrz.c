@@ -54,6 +54,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
@@ -143,7 +144,7 @@ static Image *ReadHRZImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->depth=8;
   pixels=(unsigned char *) AcquireQuantumMemory(image->columns,3*
     sizeof(*pixels));
-  if (pixels == (unsigned char *) NULL) 
+  if (pixels == (unsigned char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   length=(size_t) (3*image->columns);
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -157,9 +158,9 @@ static Image *ReadHRZImage(const ImageInfo *image_info,ExceptionInfo *exception)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      SetPixelRed(q,4*ScaleCharToQuantum(*p++));
-      SetPixelGreen(q,4*ScaleCharToQuantum(*p++));
-      SetPixelBlue(q,4*ScaleCharToQuantum(*p++));
+      SetPixelRed(q,ScaleCharToQuantum(4**p++));
+      SetPixelGreen(q,ScaleCharToQuantum(4**p++));
+      SetPixelBlue(q,ScaleCharToQuantum(4**p++));
       SetPixelOpacity(q,OpaqueOpacity);
       q++;
     }
@@ -324,9 +325,9 @@ static MagickBooleanType WriteHRZImage(const ImageInfo *image_info,Image *image)
     q=pixels;
     for (x=0; x < (ssize_t) hrz_image->columns; x++)
     {
-      *q++=ScaleQuantumToChar(GetPixelRed(p))/4;
-      *q++=ScaleQuantumToChar(GetPixelGreen(p))/4;
-      *q++=ScaleQuantumToChar(GetPixelBlue(p))/4;
+      *q++=ScaleQuantumToChar(GetPixelRed(p)/4);
+      *q++=ScaleQuantumToChar(GetPixelGreen(p)/4);
+      *q++=ScaleQuantumToChar(GetPixelBlue(p)/4);
       p++;
     }
     count=WriteBlob(image,(size_t) (q-pixels),pixels);

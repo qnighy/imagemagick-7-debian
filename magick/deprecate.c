@@ -3107,7 +3107,7 @@ MagickExport Image *GetNextImage(const Image *images)
 %
 %    const char *property;
 %    property=GetNextImageProperty(image);
-%    if (property != (const char *) NULL) 
+%    if (property != (const char *) NULL)
 %      GetImageAttribute(image,property);
 %
 %  The format of the GetNextImageAttribute method is:
@@ -3568,7 +3568,7 @@ MagickExport MagickPixelPacket InterpolatePixelColor(const Image *image,
               pixels[i].index*=alpha[i];
           }
         gamma=alpha[i];
-        gamma=MagickEpsilonReciprocal(gamma);
+        gamma=PerceptibleReciprocal(gamma);
         pixel.red+=gamma*0.0625*pixels[i].red;
         pixel.green+=gamma*0.0625*pixels[i].green;
         pixel.blue+=gamma*0.0625*pixels[i].blue;
@@ -3657,7 +3657,7 @@ MagickExport MagickPixelPacket InterpolatePixelColor(const Image *image,
       delta.y=y-floor(y);
       gamma=(((1.0-delta.y)*((1.0-delta.x)*alpha[0]+delta.x*alpha[1])+delta.y*
         ((1.0-delta.x)*alpha[2]+delta.x*alpha[3])));
-      gamma=MagickEpsilonReciprocal(gamma);
+      gamma=PerceptibleReciprocal(gamma);
       pixel.red=gamma*((1.0-delta.y)*((1.0-delta.x)*pixels[0].red+delta.x*
         pixels[1].red)+delta.y*((1.0-delta.x)*pixels[2].red+delta.x*
         pixels[3].red));
@@ -3776,7 +3776,7 @@ MagickExport MagickPixelPacket InterpolatePixelColor(const Image *image,
               */
               delta.y=1.0-delta.y;
               gamma=MeshInterpolate(&delta,alpha[2],alpha[3],alpha[0]);
-              gamma=MagickEpsilonReciprocal(gamma);
+              gamma=PerceptibleReciprocal(gamma);
               pixel.red=gamma*MeshInterpolate(&delta,pixels[2].red,
                 pixels[3].red,pixels[0].red);
               pixel.green=gamma*MeshInterpolate(&delta,pixels[2].green,
@@ -3796,7 +3796,7 @@ MagickExport MagickPixelPacket InterpolatePixelColor(const Image *image,
               */
               delta.x=1.0-delta.x;
               gamma=MeshInterpolate(&delta,alpha[1],alpha[0],alpha[3]);
-              gamma=MagickEpsilonReciprocal(gamma);
+              gamma=PerceptibleReciprocal(gamma);
               pixel.red=gamma*MeshInterpolate(&delta,pixels[1].red,
                 pixels[0].red,pixels[3].red);
               pixel.green=gamma*MeshInterpolate(&delta,pixels[1].green,
@@ -3821,7 +3821,7 @@ MagickExport MagickPixelPacket InterpolatePixelColor(const Image *image,
                 Top-left triangle (pixel 0, diagonal: 1-2).
               */
               gamma=MeshInterpolate(&delta,alpha[0],alpha[1],alpha[2]);
-              gamma=MagickEpsilonReciprocal(gamma);
+              gamma=PerceptibleReciprocal(gamma);
               pixel.red=gamma*MeshInterpolate(&delta,pixels[0].red,
                 pixels[1].red,pixels[2].red);
               pixel.green=gamma*MeshInterpolate(&delta,pixels[0].green,
@@ -3842,7 +3842,7 @@ MagickExport MagickPixelPacket InterpolatePixelColor(const Image *image,
               delta.x=1.0-delta.x;
               delta.y=1.0-delta.y;
               gamma=MeshInterpolate(&delta,alpha[3],alpha[2],alpha[1]);
-              gamma=MagickEpsilonReciprocal(gamma);
+              gamma=PerceptibleReciprocal(gamma);
               pixel.red=gamma*MeshInterpolate(&delta,pixels[3].red,
                 pixels[2].red,pixels[1].red);
               pixel.green=gamma*MeshInterpolate(&delta,pixels[3].green,
@@ -3918,7 +3918,7 @@ MagickExport MagickPixelPacket InterpolatePixelColor(const Image *image,
             }
           dx=CubicWeightingFunction(delta.x-(MagickRealType) j);
           gamma=alpha[n];
-          gamma=MagickEpsilonReciprocal(gamma);
+          gamma=PerceptibleReciprocal(gamma);
           pixel.red+=gamma*dx*dy*pixels[n].red;
           pixel.green+=gamma*dx*dy*pixels[n].green;
           pixel.blue+=gamma*dx*dy*pixels[n].blue;
@@ -3974,6 +3974,35 @@ MagickExport char *InterpretImageAttributes(const ImageInfo *image_info,
 {
   (void) LogMagickEvent(DeprecateEvent,GetMagickModule(),"last use: v6.3.1");
   return(InterpretImageProperties(image_info,image,embed_text));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   I n v e r s e s R G B C o m p a n d o r                                   %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  InversesRGBCompandor() removes the gamma function from a sRGB pixel.
+%
+%  The format of the InversesRGBCompandor method is:
+%
+%      MagickRealType InversesRGBCompandor(const MagickRealType pixel)
+%
+%  A description of each parameter follows:
+%
+%    o pixel: the pixel.
+%
+*/
+MagickExport MagickRealType InversesRGBCompandor(const MagickRealType pixel)
+{
+  if (pixel <= (0.0404482362771076*QuantumRange))
+    return(pixel/12.92);
+  return(QuantumRange*pow((QuantumScale*pixel+0.055)/1.055,2.4));
 }
 
 /*
@@ -6581,6 +6610,35 @@ MagickExport Image *SpliceImageList(Image *images,const ssize_t offset,
   }
   (void) SpliceImageIntoList(&images,length,clone);
   return(images);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   s R G B C o m p a n d o r                                                 %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  sRGBCompandor() adds the gamma function to a sRGB pixel.
+%
+%  The format of the sRGBCompandor method is:
+%
+%      MagickRealType sRGBCompandor(const MagickRealType pixel)
+%
+%  A description of each parameter follows:
+%
+%    o pixel: the pixel.
+%
+*/
+MagickExport MagickRealType sRGBCompandor(const MagickRealType pixel)
+{
+  if (pixel <= (0.0031306684425005883*QuantumRange))
+    return(12.92*pixel);
+  return(QuantumRange*(1.055*pow(QuantumScale*pixel,1.0/2.4)-0.055));
 }
 
 /*

@@ -54,6 +54,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
@@ -159,7 +160,7 @@ static Image *ReadAAIImage(const ImageInfo *image_info,ExceptionInfo *exception)
         break;
     pixels=(unsigned char *) AcquireQuantumMemory(image->columns,
       4*sizeof(*pixels));
-    if (pixels == (unsigned char *) NULL) 
+    if (pixels == (unsigned char *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
     length=(size_t) 4*image->columns;
     for (y=0; y < (ssize_t) image->rows; y++)

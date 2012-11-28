@@ -1904,6 +1904,8 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             */
             (void) SyncImageSettings(mogrify_info,*image);
             flags=ParseGeometry(argv[i+1],&geometry_info);
+            if ((flags & SigmaValue) == 0)
+              geometry_info.sigma=1.0;
             if ((flags & PercentValue) != 0)
               geometry_info.xi=(double) QuantumRange*geometry_info.xi/100.0;
             mogrify_image=AdaptiveThresholdImage(*image,(size_t)
@@ -2283,6 +2285,17 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             (void) QueryColorDatabase(argv[i+1],&draw_info->fill,exception);
             break;
           }
+        if (LocaleCompare("perceptible",option+1) == 0)
+          {
+            /*
+              Perceptible image.
+            */
+            (void) SyncImageSettings(mogrify_info,*image);
+            (void) PerceptibleImageChannel(*image,channel,StringToDouble(
+              argv[i+1],(char **) NULL));
+            InheritException(exception,&(*image)->exception);
+            break;
+          }
         if (LocaleCompare("pointsize",option+1) == 0)
           {
             if (*option == '+')
@@ -2339,8 +2352,8 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             if (*option == '+')
               preview_type=UndefinedPreview;
             else
-              preview_type=(PreviewType) ParseCommandOption(MagickPreviewOptions,
-                MagickFalse,argv[i+1]);
+              preview_type=(PreviewType) ParseCommandOption(
+                MagickPreviewOptions,MagickFalse,argv[i+1]);
             mogrify_image=PreviewImage(*image,preview_type,exception);
             break;
           }
@@ -3240,7 +3253,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
   quantize_info=DestroyQuantizeInfo(quantize_info);
   draw_info=DestroyDrawInfo(draw_info);
   mogrify_info=DestroyImageInfo(mogrify_info);
-  status=(MagickStatusType) ((*image)->exception.severity == 
+  status=(MagickStatusType) ((*image)->exception.severity ==
     UndefinedException ? 1 : 0);
   return(status == 0 ? MagickFalse : MagickTrue);
 }
@@ -3318,7 +3331,7 @@ static MagickBooleanType MogrifyUsage(void)
       "-cdl filename        color correct with a color decision list",
       "-charcoal radius     simulate a charcoal drawing",
       "-chop geometry       remove pixels from the image interior",
-      "-clamp               restrict pixel range from 0 to the quantum depth",
+      "-clamp               keep pixel values in range (0-QuantumRange)",
       "-clip                clip along the first path from the 8BIM profile",
       "-clip-mask filename  associate a clip mask with the image",
       "-clip-path id        clip along a named path from the 8BIM profile",
@@ -3371,7 +3384,8 @@ static MagickBooleanType MogrifyUsage(void)
       "-liquid-rescale geometry",
       "                     rescale image with seam-carving",
       "-median geometry     apply a median filter to the image",
-      "-mode geometry       make each pixel the 'predominant color' of the neighborhood",
+      "-mode geometry       make each pixel the 'predominant color' of the",
+      "                     neighborhood",
       "-modulate value      vary the brightness, saturation, and hue",
       "-monochrome          transform image to black and white",
       "-morphology method kernel",
@@ -3386,6 +3400,9 @@ static MagickBooleanType MogrifyUsage(void)
       "                     add a noise pattern to the image with specific",
       "                     amplitudes",
       "-paint radius        simulate an oil painting",
+      "-perceptible epsilon",
+      "                     pixel value less than |epsilon| become epsilon or",
+      "                     -epsilon",
       "-polaroid angle      simulate a Polaroid picture",
       "-posterize levels    reduce the image to a limited number of color levels",
       "-profile filename    add, delete, or apply an image profile",
@@ -3415,7 +3432,8 @@ static MagickBooleanType MogrifyUsage(void)
       "-shave geometry      shave pixels from the image edges",
       "-shear geometry      slide one edge of the image along the X or Y axis",
       "-sigmoidal-contrast geometry",
-      "                     increase the contrast without saturating highlights or shadows",
+      "                     increase the contrast without saturating highlights or",
+      "                     shadows",
       "-sketch geometry     simulate a pencil sketch",
       "-solarize threshold  negate all pixels above the threshold level",
       "-sparse-color method args",
@@ -3460,6 +3478,8 @@ static MagickBooleanType MogrifyUsage(void)
       "-hald-clut           apply a Hald color lookup table to the image",
       "-morph value         morph an image sequence",
       "-mosaic              create a mosaic from an image sequence",
+      "-poly terms          build a polynomial from the image sequence and the corresponding",
+      "                     terms (coefficients and degree pairs).",
       "-print string        interpret string and print to console",
       "-process arguments   process the image with a custom image filter",
       "-separate            separate an image channel into a grayscale image",
@@ -3844,6 +3864,8 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             i++;
             if (i == (ssize_t) argc)
               ThrowMogrifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMogrifyInvalidArgumentException(option,argv[i]);
             break;
           }
         if (LocaleCompare("alpha",option+1) == 0)
@@ -5268,6 +5290,17 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             (void) CloneString(&path,argv[i]);
             break;
           }
+        if (LocaleCompare("perceptible",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMogrifyInvalidArgumentException(option,argv[i]);
+            break;
+          }
         if (LocaleCompare("pointsize",option+1) == 0)
           {
             if (*option == '+')
@@ -5280,6 +5313,17 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             break;
           }
         if (LocaleCompare("polaroid",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMogrifyInvalidArgumentException(option,argv[i]);
+            break;
+          }
+        if (LocaleCompare("poly",option+1) == 0)
           {
             if (*option == '+')
               break;
@@ -8058,6 +8102,71 @@ This has been merged completely into MogrifyImage()
       }
       case 'p':
       {
+        if (LocaleCompare("poly",option+1) == 0)
+          {
+            char
+              *args,
+              token[MaxTextExtent];
+
+            const char
+              *p;
+
+            double
+              *arguments;
+
+            Image
+              *polynomial_image;
+
+            register ssize_t
+              x;
+
+            size_t
+              number_arguments;
+
+            /*
+              Polynomial image.
+            */
+            (void) SyncImageSettings(mogrify_info,*images);
+            args=InterpretImageProperties(mogrify_info,*images,argv[i+1]);
+            InheritException(exception,&(*images)->exception);
+            if (args == (char *) NULL)
+              break;
+            p=(char *) args;
+            for (x=0; *p != '\0'; x++)
+            {
+              GetMagickToken(p,&p,token);
+              if (*token == ',')
+                GetMagickToken(p,&p,token);
+            }
+            number_arguments=(size_t) x;
+            arguments=(double *) AcquireQuantumMemory(number_arguments,
+              sizeof(*arguments));
+            if (arguments == (double *) NULL)
+              ThrowWandFatalException(ResourceLimitFatalError,
+                "MemoryAllocationFailed",(*images)->filename);
+            (void) ResetMagickMemory(arguments,0,number_arguments*
+              sizeof(*arguments));
+            p=(char *) args;
+            for (x=0; (x < (ssize_t) number_arguments) && (*p != '\0'); x++)
+            {
+              GetMagickToken(p,&p,token);
+              if (*token == ',')
+                GetMagickToken(p,&p,token);
+              arguments[x]=StringToDouble(token,(char **) NULL);
+            }
+            args=DestroyString(args);
+            polynomial_image=PolynomialImageChannel(*images,channel,
+              number_arguments >> 1,arguments,exception);
+            arguments=(double *) RelinquishMagickMemory(arguments);
+            if (polynomial_image == (Image *) NULL)
+              {
+                status=MagickFalse;
+                break;
+              }
+            *images=DestroyImageList(*images);
+            *images=polynomial_image;
+            break;
+          }
         if (LocaleCompare("print",option+1) == 0)
           {
             char

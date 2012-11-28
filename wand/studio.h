@@ -98,12 +98,6 @@ extern "C" {
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && defined(_DEBUG)
 #define _CRTDBG_MAP_ALLOC
 #endif
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
-# include <direct.h>
-# if !defined(MAGICKCORE_HAVE_STRERROR)
-#  define HAVE_STRERROR
-# endif
-#endif
 
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && defined(_DEBUG)
 #define _CRTDBG_MAP_ALLOC
@@ -212,6 +206,9 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 # endif
 # if defined(MAGICKCORE_HAVE_SYS_RESOURCE_H)
 #  include <sys/resource.h>
+# endif
+# if defined(MAGICKCORE_HAVE_SYS_MMAN_H)
+#  include <sys/mman.h>
 # endif
 #endif
 #else

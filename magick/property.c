@@ -675,13 +675,13 @@ static inline unsigned short ReadPropertyShort(const EndianType endian,
   unsigned short
     value;
 
-  if (endian == MSBEndian)
+  if (endian == LSBEndian)
     {
-      value=(unsigned short) ((((unsigned char *) buffer)[0] << 8) |
-        ((unsigned char *) buffer)[1]);
+      value=(unsigned short) ((buffer[1] << 8) | buffer[0]);
       return((unsigned short) (value & 0xffff));
     }
-  value=(unsigned short) ((buffer[1] << 8) | buffer[0]);
+  value=(unsigned short) ((((unsigned char *) buffer)[0] << 8) |
+    ((unsigned char *) buffer)[1]);
   return((unsigned short) (value & 0xffff));
 }
 
@@ -691,14 +691,14 @@ static inline size_t ReadPropertyLong(const EndianType endian,
   size_t
     value;
 
-  if (endian == MSBEndian)
+  if (endian == LSBEndian)
     {
-      value=(size_t) ((buffer[0] << 24) | (buffer[1] << 16) |
-        (buffer[2] << 8) | buffer[3]);
+      value=(size_t) ((buffer[3] << 24) | (buffer[2] << 16) |
+        (buffer[1] << 8 ) | (buffer[0]));
       return((size_t) (value & 0xffffffff));
     }
-  value=(size_t) ((buffer[3] << 24) | (buffer[2] << 16) |
-    (buffer[1] << 8 ) | (buffer[0]));
+  value=(size_t) ((buffer[0] << 24) | (buffer[1] << 16) |
+    (buffer[2] << 8) | buffer[3]);
   return((size_t) (value & 0xffffffff));
 }
 
@@ -1070,7 +1070,7 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
       { 0x1001c, "exif:GPSAreaInformation" },
       { 0x1001d, "exif:GPSDateStamp" },
       { 0x1001e, "exif:GPSDifferential" },
-      {  0x0000, NULL}
+      { 0x00000, NULL}
     };
 
   const StringInfo
@@ -1400,12 +1400,14 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
           if (value != (char *) NULL)
             {
               char
-                key[MaxTextExtent];
+                *key;
 
               register const char
                 *p;
 
-              (void) CopyMagickString(key,property,MaxTextExtent);
+              key=AcquireString(property);
+              if (level == 2)
+                (void) SubstituteString(&key,"exif:","exif:thumbnail:");
               switch (all)
               {
                 case 1:
@@ -1451,6 +1453,7 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
               if (p == (const char *) NULL)
                 (void) SetImageProperty((Image *) image,key,value);
               value=DestroyString(value);
+              key=DestroyString(key);
               status=MagickTrue;
             }
         }
@@ -2925,6 +2928,48 @@ MagickExport char *GetNextImageProperty(const Image *image)
 %      formatting characters.
 %
 */
+
+/* common inline code to expand the interpreted text string */
+#define ExtendInterpretText(string_length)  do { \
+    size_t length=(string_length); \
+    if ((size_t) (q-interpret_text+length+1) >= extent) \
+     { extent+=length; \
+       interpret_text=(char *) ResizeQuantumMemory(interpret_text, \
+             extent+MaxTextExtent,sizeof(*interpret_text)); \
+       if (interpret_text == (char *) NULL) \
+         return((char *)NULL); \
+       q=interpret_text+strlen(interpret_text); \
+   } } while (0)  /* no trailing ; */
+
+/* same but append the given string */
+#define AppendString2Text(string)  do { \
+    size_t length=strlen((string)); \
+    if ((size_t) (q-interpret_text+length+1) >= extent) \
+     { extent+=length; \
+       interpret_text=(char *) ResizeQuantumMemory(interpret_text, \
+             extent+MaxTextExtent,sizeof(*interpret_text)); \
+       if (interpret_text == (char *) NULL) \
+         return((char *)NULL); \
+       q=interpret_text+strlen(interpret_text); \
+      } \
+     (void) CopyMagickString(q,(string),extent); \
+     q+=length; \
+   } while (0)  /* no trailing ; */
+
+/* same but append a 'key' and 'value' pair */
+#define AppendKeyValue2Text(key,value)  do { \
+    size_t length=strlen(key)+strlen(value)+2; \
+    if ((size_t) (q-interpret_text+length+1) >= extent) \
+     { extent+=length; \
+      interpret_text=(char *) ResizeQuantumMemory(interpret_text, \
+              extent+MaxTextExtent,sizeof(*interpret_text)); \
+      if (interpret_text == (char *) NULL) \
+        return((char *)NULL); \
+      q=interpret_text+strlen(interpret_text); \
+     } \
+     q+=FormatLocaleString(q,extent,"%s=%s\n",(key),(value)); \
+   } while (0)  /* no trailing ; */
+
 MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
   Image *image,const char *embed_text)
 {
@@ -2932,14 +2977,13 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
     *interpret_text;
 
   register char
-    *q;
+    *q;     /* current position in interpret_text */
 
   register const char
-    *p;
+    *p;     /* position in embed_text string being expanded */
 
   size_t
-    extent,
-    length;
+    extent; /* allocated length of interpret_text */
 
   MagickBooleanType
     number;
@@ -2974,18 +3018,10 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
   extent=MaxTextExtent;                     /* how many extra space */
   number=MagickFalse;                       /* is last char a number? */
   for (q=interpret_text; *p!='\0';
-          number=(isdigit(*p))?MagickTrue:MagickFalse,p++)
+          number=(isdigit((int) ((unsigned char) *p))) ? MagickTrue : MagickFalse,p++)
   {
     *q='\0';
-    if ((size_t) (q-interpret_text+MaxTextExtent) >= extent)
-      {
-        extent+=MaxTextExtent;
-        interpret_text=(char *) ResizeQuantumMemory(interpret_text,extent+
-          MaxTextExtent+1,sizeof(*interpret_text));
-        if (interpret_text == (char *) NULL)
-          return((char *) NULL);
-        q=interpret_text+strlen(interpret_text);
-      }
+    ExtendInterpretText(MaxTextExtent);
     /*
       Look for the various escapes, (and handle other specials)
     */
@@ -3045,7 +3081,7 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
       }
 
     /*
-      Do Single letter escapes  %c
+      Single letter escapes  %c
     */
     if ( *p != '[' ) {
       const char
@@ -3059,18 +3095,7 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
       }
       value=GetMagickPropertyLetter(image_info,image,*p);
       if (value != (char *) NULL) {
-        length=strlen(value);
-        if ((size_t) (q-interpret_text+length+1) >= extent)
-          {
-            extent+=length;
-            interpret_text=(char *) ResizeQuantumMemory(interpret_text,
-              extent+MaxTextExtent,sizeof(*interpret_text));
-            if (interpret_text == (char *) NULL)
-              return((char *)NULL);
-            q=interpret_text+strlen(interpret_text);
-          }
-        (void) CopyMagickString(q,value,extent);
-        q+=length;
+        AppendString2Text(value);
         continue;
       }
       (void) ThrowMagickException(&image->exception,GetMagickModule(),
@@ -3135,25 +3160,64 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
       }
 
       /*
-        Special Property Prefixes
-        such as: %[exif:...] %[fx:...] %[pixel:...]
-        Otherwise a free-form property string
+        Special Lookup Prefixes %[prefix:...]
       */
+      /* option - direct global option lookup (with globbing) */
+      if (LocaleNCompare("option:",pattern,7) == 0)
+      {
+        if (image_info == (ImageInfo *) NULL)
+          continue; /* no global options available */
+        if (IsGlob(pattern+7) != MagickFalse)
+        {
+          ResetImageOptionIterator(image_info);
+          while ((key=GetNextImageOption(image_info)) != (const char *) NULL)
+            if( GlobExpression(key,pattern+7,MagickTrue) != MagickFalse)
+              {
+                value=GetImageOption(image_info,key);
+                if (value != (const char *) NULL)
+                  AppendKeyValue2Text(key,value);
+                /* else - assertion failure? key but no value! */
+              }
+          continue;
+        }
+        value=GetImageOption(image_info,pattern+7);
+        if (value != (char *) NULL)
+          AppendString2Text(value);
+        /* else - no global option of this specifc name */
+        continue;
+      }
+      /* artifact - direct image artifact lookup (with glob) */
+      if (LocaleNCompare("artifact:",pattern,9) == 0)
+      {
+        if (image == (Image *) NULL)
+          continue; /* else no image to retrieve artifact */
+        if (IsGlob(pattern+9) != MagickFalse)
+        {
+          ResetImageArtifactIterator(image);
+          while ((key=GetNextImageArtifact(image)) != (const char *) NULL)
+            if( GlobExpression(key,pattern+9,MagickTrue) != MagickFalse)
+              {
+                value=GetImageArtifact(image,key);
+                if (value != (const char *) NULL)
+                  AppendKeyValue2Text(key,value);
+                /* else - assertion failure? key but no value! */
+              }
+          continue;
+        }
+        value=GetImageArtifact(image,pattern+9);
+        if (value != (char *) NULL)
+          AppendString2Text(value);
+        /* else - no artifact of this specifc name */
+        continue;
+      }
+      /* FUTURE: handle %[property:...] prefix - abort other lookups */
+
+      /* handle special image properties */
+      /* For example:  %[exif:...] %[fx:...] %[pixel:...] */
       value=GetImageProperty(image,pattern);
       if (value != (const char *) NULL)
         {
-          length=strlen(value);
-          if ((size_t) (q-interpret_text+length+1) >= extent)
-            {
-              extent+=length;
-              interpret_text=(char *) ResizeQuantumMemory(interpret_text,
-                extent+MaxTextExtent,sizeof(*interpret_text));
-              if (interpret_text == (char *) NULL)
-                return((char *)NULL);
-              q=interpret_text+strlen(interpret_text);
-            }
-          (void) CopyMagickString(q,value,extent);
-          q+=length;
+          AppendString2Text(value);
           continue;
         }
       /*
@@ -3163,52 +3227,25 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
       if (IsGlob(pattern) != MagickFalse)
         {
           ResetImagePropertyIterator(image);
-          key=GetNextImageProperty(image);
-          while (key != (const char *) NULL)
-          {
+          while ((key=GetNextImageProperty(image)) != (const char *) NULL)
             if (GlobExpression(key,pattern,MagickTrue) != MagickFalse)
               {
                 value=GetImageProperty(image,key);
                 if (value != (const char *) NULL)
-                  {
-                    length=strlen(key)+strlen(value)+2;
-                    if ((size_t) (q-interpret_text+length+1) >= extent)
-                      {
-                        extent+=length;
-                        interpret_text=(char *) ResizeQuantumMemory(
-                          interpret_text,extent+MaxTextExtent,
-                          sizeof(*interpret_text));
-                        if (interpret_text == (char *) NULL)
-                          return((char *)NULL);
-                        q=interpret_text+strlen(interpret_text);
-                      }
-                    q+=FormatLocaleString(q,extent,"%s=%s\n",key,value);
-                  }
+                  AppendKeyValue2Text(key,value);
+                /* else - assertion failure? */
               }
-            key=GetNextImageProperty(image);
-          }
           continue;
         }
       /*
         Look for a known property or image attribute
         Such as  %[basename]  %[denisty]  %[delay]
-        Also does wrapped single letters:  %[b] %[G] %[g]
+        Also handles a braced single letter:  %[b] %[G] %[g]
       */
       value=GetMagickProperty(image_info,image,pattern);
       if (value != (const char *) NULL)
         {
-          length=strlen(value);
-          if ((size_t) (q-interpret_text+length+1) >= extent)
-            {
-              extent+=length;
-              interpret_text=(char *) ResizeQuantumMemory(interpret_text,
-                extent+MaxTextExtent,sizeof(*interpret_text));
-              if (interpret_text == (char *) NULL)
-                return((char *)NULL);
-              q=interpret_text+strlen(interpret_text);
-            }
-          (void) CopyMagickString(q,value,extent);
-          q+=length;
+          AppendString2Text(value);
           continue;
         }
       /*
@@ -3217,18 +3254,7 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
       value=GetImageArtifact(image,pattern);
       if (value != (char *) NULL)
         {
-          length=strlen(value);
-          if ((size_t) (q-interpret_text+length+1) >= extent)
-            {
-              extent+=length;
-              interpret_text=(char *) ResizeQuantumMemory(interpret_text,
-                extent+MaxTextExtent,sizeof(*interpret_text));
-              if (interpret_text == (char *) NULL)
-                return((char *)NULL);
-              q=interpret_text+strlen(interpret_text);
-            }
-          (void) CopyMagickString(q,value,extent);
-          q+=length;
+          AppendString2Text(value);
           continue;
         }
       /*
@@ -3238,18 +3264,7 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
         value=GetImageOption(image_info,pattern);
         if (value != (char *) NULL)
           {
-            length=strlen(value);
-            if ((size_t) (q-interpret_text+length+1) >= extent)
-              {
-                extent+=length;
-                interpret_text=(char *) ResizeQuantumMemory(interpret_text,
-                  extent+MaxTextExtent,sizeof(*interpret_text));
-                if (interpret_text == (char *) NULL)
-                  return((char *)NULL);
-                q=interpret_text+strlen(interpret_text);
-              }
-            (void) CopyMagickString(q,value,extent);
-            q+=length;
+            AppendString2Text(value);
             continue;
           }
         }
@@ -3285,6 +3300,9 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
 %
 %  RemoveImageProperty() removes a property from the image and returns its
 %  value.
+%
+%  In this case the ConstantString() value returned should be freed by the
+%  caller when finished.
 %
 %  The format of the RemoveImageProperty method is:
 %

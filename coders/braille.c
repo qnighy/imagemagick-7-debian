@@ -55,6 +55,7 @@
 #include "magick/module.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/property.h"
 #include "magick/quantize.h"
 #include "magick/static.h"
@@ -230,13 +231,13 @@ static MagickBooleanType WriteBRAILLEImage(const ImageInfo *image_info,
         }
       if (image->page.x != 0)
         {
-          (void) FormatLocaleString(buffer,MaxTextExtent,"X: %.20g\n",(double) 
+          (void) FormatLocaleString(buffer,MaxTextExtent,"X: %.20g\n",(double)
             image->page.x);
           (void) WriteBlobString(image,buffer);
         }
       if (image->page.y != 0)
         {
-          (void) FormatLocaleString(buffer,MaxTextExtent,"Y: %.20g\n",(double) 
+          (void) FormatLocaleString(buffer,MaxTextExtent,"Y: %.20g\n",(double)
             image->page.y);
           (void) WriteBlobString(image,buffer);
         }
@@ -278,7 +279,7 @@ static MagickBooleanType WriteBRAILLEImage(const ImageInfo *image_info,
           cell |= (GetPixelIndex(indexes+x+dx+dy*image->columns) == polarity) << bit; \
         else \
           cell |= (GetPixelGreen(p+x+dx+dy*image->columns) == 0) << bit; \
-} while (0) 
+} while (0)
 
         do_cell(0,0,0);
         if (two_columns)

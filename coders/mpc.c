@@ -63,6 +63,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
 #include "magick/profile.h"
 #include "magick/property.h"
 #include "magick/quantum-private.h"
@@ -325,7 +326,7 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
               }
             *p='\0';
             if (*options == '{')
-              (void) strcpy(options,options+1);
+              (void) CopyMagickString(options,options+1,strlen(options));
             /*
               Assign a value to the specified keyword.
             */

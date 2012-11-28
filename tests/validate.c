@@ -84,8 +84,8 @@
 %
 */
 static size_t ValidateCompareCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -175,8 +175,8 @@ static size_t ValidateCompareCommand(ImageInfo *image_info,
 %
 */
 static size_t ValidateCompositeCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -267,8 +267,8 @@ static size_t ValidateCompositeCommand(ImageInfo *image_info,
 %
 */
 static size_t ValidateConvertCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -358,8 +358,8 @@ static size_t ValidateConvertCommand(ImageInfo *image_info,
 %
 */
 static size_t ValidateIdentifyCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -450,8 +450,8 @@ static size_t ValidateIdentifyCommand(ImageInfo *image_info,
 %
 */
 static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     size[MaxTextExtent];
@@ -703,8 +703,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
 %
 */
 static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     size[MaxTextExtent];
@@ -919,8 +919,8 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
 %
 */
 static size_t ValidateImportExportPixels(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   double
     distortion;
@@ -1097,8 +1097,8 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
 %
 */
 static size_t ValidateMontageCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -1189,8 +1189,8 @@ static size_t ValidateMontageCommand(ImageInfo *image_info,
 %
 */
 static size_t ValidateStreamCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -1332,6 +1332,10 @@ int main(int argc,char **argv)
   MagickBooleanType
     regard_warnings,
     status;
+
+  MagickSizeType
+    memory_resource,
+    map_resource;
 
   register ssize_t
     i;
@@ -1493,11 +1497,37 @@ int main(int argc,char **argv)
             tests+=ValidateConvertCommand(image_info,reference_filename,
               output_filename,&fail,exception);
           if ((type & FormatsInMemoryValidate) != 0)
-            tests+=ValidateImageFormatsInMemory(image_info,reference_filename,
-              output_filename,&fail,exception);
+            {
+              (void) FormatLocaleFile(stdout,"[pixel-cache: memory] ");
+              tests+=ValidateImageFormatsInMemory(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) FormatLocaleFile(stdout,"[pixel-cache: memory-mapped] ");
+              memory_resource=SetMagickResourceLimit(MemoryResource,0);
+              tests+=ValidateImageFormatsInMemory(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) FormatLocaleFile(stdout,"[pixel-cache: disk] ");
+              map_resource=SetMagickResourceLimit(MapResource,0);
+              tests+=ValidateImageFormatsInMemory(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) SetMagickResourceLimit(MemoryResource,memory_resource);
+              (void) SetMagickResourceLimit(MapResource,map_resource);
+            }
           if ((type & FormatsOnDiskValidate) != 0)
-            tests+=ValidateImageFormatsOnDisk(image_info,reference_filename,
-              output_filename,&fail,exception);
+            {
+              (void) FormatLocaleFile(stdout,"[pixel-cache: memory] ");
+              tests+=ValidateImageFormatsOnDisk(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) FormatLocaleFile(stdout,"[pixel-cache: memory-mapped] ");
+              memory_resource=SetMagickResourceLimit(MemoryResource,0);
+              tests+=ValidateImageFormatsOnDisk(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) FormatLocaleFile(stdout,"[pixel-cache: disk] ");
+              map_resource=SetMagickResourceLimit(MapResource,0);
+              tests+=ValidateImageFormatsOnDisk(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) SetMagickResourceLimit(MemoryResource,memory_resource);
+              (void) SetMagickResourceLimit(MapResource,map_resource);
+            }
           if ((type & IdentifyValidate) != 0)
             tests+=ValidateIdentifyCommand(image_info,reference_filename,
               output_filename,&fail,exception);

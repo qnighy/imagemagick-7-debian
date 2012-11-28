@@ -21,9 +21,9 @@
 AC_PREREQ(2.69)
 
 m4_define([magick_major_version], [6])
-m4_define([magick_minor_version], [7])
-m4_define([magick_micro_version], [9])
-m4_define([magick_patchlevel_version], [3])
+m4_define([magick_minor_version], [8])
+m4_define([magick_micro_version], [0])
+m4_define([magick_patchlevel_version], [8])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -33,15 +33,16 @@ AC_CONFIG_SRCDIR([magick/MagickCore.h])
 AC_CONFIG_AUX_DIR([config])
 AC_REQUIRE_AUX_FILE([tap-driver.sh])
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_LIBOBJ_DIR([ltdl])
 AC_CONFIG_HEADERS([config/config.h])
 AX_PREFIX_CONFIG_H([magick/magick-config.h],[MagickCore])
 AC_CONFIG_FILES([\
+    common.shi \
     config/configure.xml \
     config/delegates.xml \
     config/ImageMagick.rdf \
     config/MagickCore.dox \
     config/MagickWand.dox \
+    config/Magick++.dox \
     config/type-dejavu.xml \
     config/type-ghostscript.xml \
     config/type-windows.xml \
@@ -60,7 +61,6 @@ AC_CONFIG_FILES([\
     PerlMagick/Magick.pm \
     PerlMagick/Makefile.PL \
     PerlMagick/check.sh \
-    tests/common.shi \
     utilities/animate.1 \
     utilities/compare.1 \
     utilities/composite.1 \
@@ -138,7 +138,7 @@ AC_SUBST(PACKAGE_VERSION_ADDENDUM)dnl
 # Ensure that make can run correctly
 AM_SANITY_CHECK
 
-AM_INIT_AUTOMAKE([1.11 color-tests foreign parallel-tests silent-rules subdir-objects dist-bzip2 dist-lzip dist-xz dist-zip])
+AM_INIT_AUTOMAKE([1.12 color-tests foreign parallel-tests silent-rules subdir-objects dist-bzip2 dist-lzip dist-xz dist-zip])
 
 # Enable support for silent build rules
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -504,10 +504,6 @@ LT_INIT([win32-dll])
 LT_LANG([C++])
 AC_SUBST(LIBTOOL_DEPS)
 
-# Configure libltdl
-LT_CONFIG_LTDL_DIR([ltdl])
-LTDL_INIT([convenience nonrecursive])
-
 # Check to see if building shared libraries
 libtool_build_shared_libs='no'
 if test "$enable_shared" = 'yes'; then
@@ -524,6 +520,7 @@ AM_CONDITIONAL(WITH_SHARED_LIBS, test "${libtool_build_shared_libs}" = 'yes')
 #
 # Enable support for building loadable modules
 #
+build_modules='no'
 AC_ARG_WITH([modules],
     [AC_HELP_STRING([--with-modules],
                     [enable building dynamically loadable modules])],
@@ -534,31 +531,15 @@ AC_ARG_WITH([modules],
 if test "$with_modules" != 'no' ; then
     if test "$libtool_build_shared_libs" = 'no'; then
         AC_MSG_WARN([Modules may only be built if building shared libraries is enabled.])
-        with_modules='no'
+        build_modules='no'
+    else
+        build_modules='yes'
     fi
 fi
-if test "$with_modules" != 'no'; then
+if test "$build_modules" != 'no' ; then
     AC_DEFINE(BUILD_MODULES,1,Define if coders and filters are to be built as modules.)
 fi
-AM_CONDITIONAL(WITH_MODULES, test "$with_modules" != 'no')
-
-# Enable building/use of libltdl if we are building shared libraries regardless
-# of whether modules are built or not.
-with_ltdl='no'
-if test "$libtool_build_shared_libs" != 'no'; then
-    with_ltdl='yes'
-fi
-
-AM_CONDITIONAL(WITH_LTDL, test "$with_ltdl" != 'no')
-if test "$with_ltdl" != 'no'; then
-    AC_DEFINE(LTDL_DELEGATE,1,Define if using libltdl to support dynamically loadable modules)
-
-    # Set DLLDFLAGS
-    if test X"$enable_shared" = Xyes; then
-        DLLDFLAGS=-export-dynamic
-        AC_SUBST(DLLDFLAGS)
-    fi
-fi
+AM_CONDITIONAL(WITH_MODULES, test "$build_modules" != 'no')
 
 # Enable build using delegate libraries built in subdirectories rather than installed
 # delegate libraries (bzlib fftw fpx gslib jp2 jbig jpeg lcms lzma png tiff ttf wmf xml zlib)
@@ -570,7 +551,7 @@ AC_ARG_ENABLE([delegate-build],
 
 AC_ARG_ENABLE([deprecated],
     [AC_HELP_STRING([--disable-deprecated],
-                    [exclude deprecated methods in MagickCore and MagickWand API's])],
+                    [exclude deprecated methods in MagickCore and MagickWand APIs])],
     [enable_deprecated=$enableval],
     [enable_deprecated='no'])
 
@@ -752,6 +733,13 @@ AC_ARG_WITH([magick-plus-plus],
     [with_magick_plus_plus=$withval],
     [with_magick_plus_plus='yes'])
 
+# Encode the this name into the shared library.
+AC_ARG_WITH([package-release-name],
+    [AC_HELP_STRING([--with-package-release-name=NAME],
+                    [encode this name into the shared library])],
+[MAGICK_LT_RELEASE_OPTS="-release $withval"])
+AC_SUBST(MAGICK_LT_RELEASE_OPTS)
+
 # Disable build/install of PerlMagick.
 AC_ARG_WITH([perl],
     [AC_HELP_STRING([--with-perl],
@@ -811,7 +799,7 @@ if test "${native_win32_build}" = 'yes'; then
         MAGICK_CPPFLAGS="$MAGICK_CPPFLAGS -D_DLL"
         MAGICK_PCFLAGS="$MAGICK_PCFLAGS -D_DLL"
         LIBRARY_EXTRA_CPPFLAGS="$LIBRARY_EXTRA_CPPFLAGS -D_MAGICKLIB_"
-        if test "$with_modules" = 'yes'; then
+        if test "$build_modules" = 'yes'; then
             LIBRARY_EXTRA_CPPFLAGS="$LIBRARY_EXTRA_CPPFLAGS -D_MAGICKMOD_"
         else
             MODULE_EXTRA_CPPFLAGS="$MODULE_EXTRA_CPPFLAGS -D_MAGICKLIB_"
@@ -841,7 +829,7 @@ AC_HEADER_ASSERT
 AC_HEADER_DIRENT
 
 # Check additional headers
-AC_CHECK_HEADERS(arm/limits.h complex.h errno.h fcntl.h limits.h linux/unistd.h locale.h machine/param.h mach-o/dyld.h OS.h process.h stdarg.h sys/ipc.h sys/resource.h sys/syslimits.h sys/time.h sys/timeb.h sys/times.h sys/wait.h wchar.h xlocale.h)
+AC_CHECK_HEADERS(arm/limits.h complex.h errno.h fcntl.h limits.h linux/unistd.h locale.h machine/param.h mach-o/dyld.h OS.h process.h sun_prefetch.h stdarg.h sys/ipc.h sys/mman.h sys/resource.h sys/syslimits.h sys/time.h sys/timeb.h sys/times.h sys/wait.h wchar.h xlocale.h)
 
 ########
 #
@@ -900,6 +888,10 @@ AC_TYPE_UNSIGNED_LONG_LONG_INT
 # If the C type char is unsigned, define __CHAR_UNSIGNED__, unless the
 # C compiler predefines it.
 AC_C_CHAR_UNSIGNED
+
+# float_t and double_t are intended to be the the most efficient type
+AC_CHECK_TYPES([float_t], [], [], [[#include <math.h>]])
+AC_CHECK_TYPES([double_t], [], [], [[#include <math.h>]])
 
 # Obtain size of an 'signed short' and define as SIZEOF_SIGNED_SHORT
 AC_CHECK_SIZEOF(signed short)
@@ -1557,6 +1549,39 @@ fi
 AM_CONDITIONAL(ZLIB_DELEGATE, test "$have_zlib" = 'yes')
 AC_SUBST(ZLIB_LIBS)
 
+dnl ImageMagick requires LTDL to support modules.
+with_ltdl='yes'
+have_ltdl='no'
+LTDL_LIBS=''
+if test "$build_modules" != 'no' ; then
+  AC_MSG_RESULT([-------------------------------------------------------------])
+  AC_MSG_CHECKING([for libltdl])
+  AC_MSG_RESULT([])
+  failed=0
+  passed=0
+  AC_CHECK_HEADER([ltdl.h],[passed=`expr $passed + 1`],[failed=`expr $failed + 1`])
+  AC_CHECK_LIB([ltdl],[lt_dlinit],[passed=`expr $passed + 1`],[failed=`expr $failed + 1`],)
+  AC_MSG_CHECKING([if libltdl package is complete])
+  if test $passed -gt 0 ; then
+    if test $failed -gt 0 ; then
+      AC_MSG_RESULT([no -- some components failed test])
+      have_ltdl='no (failed tests)'
+    else
+      LTDL_LIBS='-lltdl'
+      LIBS="$LTDL_LIBS $LIBS"
+      AC_DEFINE(LTDL_DELEGATE,1,[Define if using libltdl to support dynamically loadable modules])
+      AC_MSG_RESULT([yes])
+      have_ltdl='yes'
+    fi
+  else
+    AC_MSG_RESULT([no])
+  fi
+  if test "$have_ltdl" != 'yes' ; then
+    AC_MSG_FAILURE([libltdl is required for modules build],[1])
+  fi
+fi
+AM_CONDITIONAL(WITH_LTDL, test "$have_ltdl" != 'no')
+
 #
 # If profiling, then check for -ldl and dlopen (required for Solaris & gcc)
 #
@@ -1595,7 +1620,7 @@ fi
 if test "$have_autotrace" = 'yes'; then
     failed=0
     AC_DEFINE(AUTOTRACE_DELEGATE,1,Define if you have AUTOTRACE library)
-    if test "$with_modules" = 'no'; then
+    if test "$build_modules" = 'no'; then
     CPPFLAGS="$AUTOTRACE_CFLAGS $CPPFLAGS"
     fi
 fi
@@ -1849,7 +1874,7 @@ fi
 
 if test "$have_fontconfig" = 'yes'; then
   AC_DEFINE(FONTCONFIG_DELEGATE,1,Define if you have FONTCONFIG library)
-  if test "$with_modules" = 'no'; then
+  if test "$build_modules" = 'no'; then
     CPPFLAGS="$FONTCONFIG_CFLAGS $CPPFLAGS"
   fi
 fi
@@ -2056,7 +2081,7 @@ fi
 
 if test "$have_gvc" = 'yes'; then
     AC_DEFINE(GVC_DELEGATE,1,Define if you have GVC library)
-    if test "$with_modules" = 'no'; then
+    if test "$build_modules" = 'no'; then
         CPPFLAGS="$GVC_CFLAGS $CPPFLAGS"
     fi
 fi
@@ -2405,7 +2430,7 @@ fi
 
 if test "$have_lzma" = 'yes'; then
     AC_DEFINE(LZMA_DELEGATE,1,Define if you have LZMA library)
-    if test "$with_modules" = 'no'; then
+    if test "$build_modules" = 'no'; then
         CPPFLAGS="$LZMA_CFLAGS $CPPFLAGS"
     fi
 fi
@@ -2441,7 +2466,7 @@ fi
 
 if test "$have_openexr" = 'yes'; then
     AC_DEFINE(OPENEXR_DELEGATE,1,Define if you have OPENEXR library)
-    if test "$with_modules" = 'no'; then
+    if test "$build_modules" = 'no'; then
         CFLAGS="$OPENEXR_CFLAGS $CFLAGS"
     fi
 fi
@@ -2480,14 +2505,14 @@ fi
 
 if test "$have_pango" = 'yes'; then
     AC_DEFINE(PANGO_DELEGATE,1,Define if you have PANGO library)
-    if test "$with_modules" = 'no'; then
+    if test "$build_modules" = 'no'; then
         CPPFLAGS="$PANGO_CFLAGS $CPPFLAGS"
     fi
 fi
 
 if test "$have_pangocairo" = 'yes'; then
     AC_DEFINE(PANGOCAIRO_DELEGATE,1,Define if you have PANGOCAIRO library)
-    if test "$with_modules" = 'no'; then
+    if test "$build_modules" = 'no'; then
         CPPFLAGS="$PANGOCAIRO_CFLAGS $CPPFLAGS"
     fi
 fi
@@ -2643,14 +2668,14 @@ fi
 
 if test "$have_rsvg" = 'yes'; then
     AC_DEFINE(RSVG_DELEGATE,1,Define if you have RSVG library)
-    if test "$with_modules" = 'no'; then
+    if test "$build_modules" = 'no'; then
         CPPFLAGS="$RSVG_CFLAGS $CPPFLAGS"
     fi
 fi
 
 if test "$have_cairo" = 'yes'; then
     AC_DEFINE(CAIRO_DELEGATE,1,Define if you have CAIRO library)
-    if test "$with_modules" = 'no'; then
+    if test "$build_modules" = 'no'; then
         CPPFLAGS="$CAIRO_SVG_CFLAGS $CPPFLAGS"
     fi
 fi
@@ -3097,7 +3122,7 @@ ZipDelegateDefault='gzip'
 AC_PATH_PROG(AutotraceDecodeDelegate, "$AutotraceDecodeDelegateDefault", "$AutotraceDecodeDelegateDefault")
 AC_PATH_PROG(BlenderDecodeDelegate, "$BlenderDecodeDelegateDefault", "$BlenderDecodeDelegateDefault")
 AC_PATH_PROG(BZIPDelegate, "$BZIPDelegateDefault", "$BZIPDelegateDefault")
-AC_PATH_PROG(BrowseDelegate, "$BrowseDelegateDefault" mozilla firefox netscape, "$BrowseDelegateDefault")
+AC_PATH_PROGS(BrowseDelegate, "$BrowseDelegateDefault" google-chrome firefox konqueror mozilla lynx, "$BrowseDelegateDefault")
 AC_PATH_PROG(CGMDecodeDelegate, "$CGMDecodeDelegateDefault", "$CGMDecodeDelegateDefault")
 AC_PATH_PROG(CatDelegate, "$CatDelegateDefault", "$CatDelegateDefault")
 AC_PATH_PROG(DNGDecodeDelegate, "$DNGDecodeDelegateDefault", "$DNGDecodeDelegateDefault")
@@ -3698,24 +3723,10 @@ fi
 # Build library dependency list for libMagickCore
 #
 
-MAGICK_LIBLTDL='' # Libltdl for build
-MAGICK_API_LIBLTDL=''   # libltdl for dependent application (API) build
-MAGICK_LTDLDEPS=''      # extra libltdl dependencies
-if test "$with_ltdl" != 'no'
-then
-  if test \( "$with_included_ltdl" = 'no' -o "$enable_ltdl_convenience" = 'no' \) -o "$enable_ltdl_install" = 'yes'; then
-    MAGICK_API_LIBLTDL='-lltdl'
-  fi
-  MAGICK_LIBLTDL=${LIBLTDL}
-  MAGICK_LTDLDEPS=${LTDLDEPS}
-fi
-AC_SUBST(MAGICK_LIBLTDL)
-AC_SUBST(MAGICK_LTDLDEPS)
-
-if test "$with_modules" != 'no'; then
-    MAGICK_DEP_LIBS="$LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JPEG_LIBS $LQR_LIBS $FFTW_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $CCMALLOC_LIBS $EFENCE_LIBS $UMEM_LIBS $GOMP_LIBS $CL_LIBS $THREAD_LIBS"
+if test "$build_modules" != 'no'; then
+    MAGICK_DEP_LIBS="$LCMS_LIBS $FREETYPE_LIBS $LQR_LIBS $FFTW_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
 else
-    MAGICK_DEP_LIBS="$JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JP2_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $CCMALLOC_LIBS $EFENCE_LIBS $UMEM_LIBS $GOMP_LIBS $CL_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JP2_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
 fi
 AC_SUBST(MAGICK_DEP_LIBS)
 
@@ -3753,7 +3764,7 @@ MAGICK_CXXFLAGS="$CXXFLAGS"
 MAGICK_CPPFLAGS=`echo $MAGICK_CPPFLAGS | sed -e 's/  */ /g'`
 MAGICK_PCFLAGS=`echo $MAGICK_PCFLAGS | sed -e 's/  */ /g'`
 MAGICK_LDFLAGS="-L$LIB_DIR $LDFLAGS"
-MAGICK_LIBS="-lMagickCore $MAGICK_DEP_LIBS $MAGICK_API_LIBLTDL"
+MAGICK_LIBS="-lMagickCore $MAGICK_DEP_LIBS"
 
 AC_SUBST(MAGICK_CFLAGS)
 AC_SUBST(MAGICK_CXXFLAGS)
@@ -3805,7 +3816,7 @@ Build system type: $build
 -------------------------------------------------------------------------------
 Shared libraries  --enable-shared=$enable_shared		$libtool_build_shared_libs
 Static libraries  --enable-static=$enable_static		$libtool_build_static_libs
-Module support    --with-modules=$with_modules		$with_modules
+Module support    --with-modules=$build_modules		$build_modules
 GNU ld            --with-gnu-ld=$with_gnu_ld		$lt_cv_prog_gnu_ld
 Quantum depth     --with-quantum-depth=$with_quantum_depth	$with_quantum_depth
 High Dynamic Range Imagery
@@ -3833,6 +3844,7 @@ JPEG-2000         --with-jp2=$with_jp2		$have_jp2
 LCMS v1           --with-lcms=$with_lcms		$have_lcms
 LCMS v2           --with-lcms2=$with_lcms2		$have_lcms2
 LQR               --with-lqr=$with_lqr		$have_lqr
+LTDL              --with-ltdl=$with_ltdl		$have_ltdl
 LZMA              --with-lzma=$with_lzma		$have_lzma
 Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
 OpenEXR           --with-openexr=$with_openexr		$have_openexr
@@ -3843,7 +3855,7 @@ RSVG              --with-rsvg=$with_rsvg		$have_rsvg
 TIFF              --with-tiff=$with_tiff		$have_tiff
 WEBP              --with-webp=$with_webp		$have_webp
 Windows fonts     --with-windows-font-dir=$with_windows_font_dir	$result_windows_font_dir
-WMF               --with-wmf=$with_wmf		$have_wmf
+WMF               --with-wmf=$with_wmf			$have_wmf
 X11               --with-x=$with_x			$have_x
 XML               --with-xml=$with_xml		$have_xml
 ZLIB              --with-zlib=$with_zlib		$have_zlib

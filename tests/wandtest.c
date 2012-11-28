@@ -5228,14 +5228,14 @@ int main(int argc,char **argv)
       path[MaxTextExtent];
 
     path[0]=0;
-    p=getenv("top_srcdir");
+    p=getenv("SRCDIR");
     if (p != (char *) NULL)
       {
         (void) strcpy(path,p);
         if (path[strlen(path)-1] != '/')
           (void) strcat(path,"/");
       }
-    (void) strcat(path,"tests/sequence.miff");
+    (void) strcat(path,"sequence.miff");
     status=MagickReadImage(magick_wand,path);
   }
   if (status == MagickFalse)
@@ -5319,9 +5319,6 @@ int main(int argc,char **argv)
   (void) PopDrawingWand(drawing_wand);
   (void) MagickSetIteratorIndex(magick_wand,1);
   status=MagickDrawImage(magick_wand,drawing_wand);
-  if (status == MagickFalse)
-    ThrowAPIException(magick_wand);
-  status=MagickAnnotateImage(magick_wand,drawing_wand,70,5,90,"Image");
   if (status == MagickFalse)
     ThrowAPIException(magick_wand);
   drawing_wand=DestroyDrawingWand(drawing_wand);

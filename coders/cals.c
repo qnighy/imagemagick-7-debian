@@ -60,6 +60,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/resource_.h"
 #include "magick/static.h"
@@ -536,7 +537,7 @@ static MagickBooleanType WriteCALSImage(const ImageInfo *image_info,
   count=WriteCALSRecord(image,header);
   (void) FormatLocaleString(header,MaxTextExtent,"rpelcnt: %06lu,%06lu",
     (unsigned long) image->columns,(unsigned long) image->rows);
-  count=WriteCALSRecord(image,header);  
+  count=WriteCALSRecord(image,header);
   density=200;
   if (image_info->density != (char *) NULL)
     {

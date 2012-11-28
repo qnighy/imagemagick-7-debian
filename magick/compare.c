@@ -1078,7 +1078,7 @@ static MagickBooleanType GetNormalizedCrossCorrelationDistortion(
 
     gamma=image_statistics[i].standard_deviation*
       reconstruct_statistics[i].standard_deviation;
-    gamma=MagickEpsilonReciprocal(gamma);
+    gamma=PerceptibleReciprocal(gamma);
     distortion[i]=QuantumRange*gamma*distortion[i];
   }
   distortion[CompositeChannels]=0.0;
@@ -1218,7 +1218,7 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
       q++;
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp critical (MagickCore_GetPeakAbsoluteError) 
+    #pragma omp critical (MagickCore_GetPeakAbsoluteError)
 #endif
     for (i=0; i <= (ssize_t) CompositeChannels; i++)
       if (channel_distortion[i] > distortion[i])

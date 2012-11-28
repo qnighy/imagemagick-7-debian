@@ -92,8 +92,7 @@ MagickExport void ConvertHCLToRGB(const double hue,const double chroma,
     h,
     m,
     r,
-    x,
-    z;
+    x;
 
   /*
     Convert HCL to RGB colorspace.
@@ -142,26 +141,10 @@ MagickExport void ConvertHCLToRGB(const double hue,const double chroma,
                 r=c;
                 b=x;
               }
-  m=luma-(0.298839*r+0.586811*g+0.114350*b);
-  /*
-    Choose saturation strategy to clip it into the RGB cube; hue and luma are
-    preserved and chroma may be changed.
-  */
-  z=1.0;
-  if (m < 0.0)
-    {
-      z=luma/(luma-m);
-      m=0.0;
-    }
-  else
-    if ((m+c) > 1.0)
-      {
-        z=(1.0-luma)/(m+c-luma);
-        m=1.0-z*c;
-      }
-  *red=ClampToQuantum(QuantumRange*(z*r+m));
-  *green=ClampToQuantum(QuantumRange*(z*g+m));
-  *blue=ClampToQuantum(QuantumRange*(z*b+m));
+  m=luma-(0.298839f*r+0.586811f*g+0.114350f*b);
+  *red=ClampToQuantum(QuantumRange*(r+m));
+  *green=ClampToQuantum(QuantumRange*(g+m));
+  *blue=ClampToQuantum(QuantumRange*(b+m));
 }
 
 /*
@@ -501,7 +484,7 @@ MagickExport void ConvertRGBToHCL(const Quantum red,const Quantum green,
           h=((r-g)/c)+4.0;
   *hue=(h/6.0);
   *chroma=QuantumScale*c;
-  *luma=QuantumScale*(0.298839*r+0.586811*g+0.114350*b);
+  *luma=QuantumScale*(0.298839f*r+0.586811f*g+0.114350f*b);
 }
 
 /*
@@ -909,13 +892,9 @@ MagickExport double GenerateDifferentialNoise(RandomInfo *random_info,
 %
 %  The format of the GetOptimalKernelWidth method is:
 %
-%      size_t GetOptimalKernelWidth(const double radius,
-%        const double sigma)
+%      size_t GetOptimalKernelWidth(const double radius,const double sigma)
 %
 %  A description of each parameter follows:
-%
-%    o width: Method GetOptimalKernelWidth returns the optimal width of
-%      a convolution kernel.
 %
 %    o radius: the radius of the Gaussian, in pixels, not counting the center
 %      pixel.
@@ -948,8 +927,8 @@ MagickExport size_t GetOptimalKernelWidth1D(const double radius,
   gamma=fabs(sigma);
   if (gamma <= MagickEpsilon)
     return(3UL);
-  alpha=MagickEpsilonReciprocal(2.0*gamma*gamma);
-  beta=(double) MagickEpsilonReciprocal((MagickRealType) MagickSQ2PI*gamma);
+  alpha=PerceptibleReciprocal(2.0*gamma*gamma);
+  beta=(double) PerceptibleReciprocal(MagickSQ2PI*gamma);
   for (width=5; ; )
   {
     normalize=0.0;
@@ -988,8 +967,8 @@ MagickExport size_t GetOptimalKernelWidth2D(const double radius,
   gamma=fabs(sigma);
   if (gamma <= MagickEpsilon)
     return(3UL);
-  alpha=MagickEpsilonReciprocal(2.0*gamma*gamma);
-  beta=(double) MagickEpsilonReciprocal((MagickRealType) Magick2PI*gamma*gamma);
+  alpha=PerceptibleReciprocal(2.0*gamma*gamma);
+  beta=(double) PerceptibleReciprocal(Magick2PI*gamma*gamma);
   for (width=5; ; )
   {
     normalize=0.0;

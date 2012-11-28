@@ -55,6 +55,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
@@ -160,7 +161,7 @@ static Image *ReadMACImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   length=(image->columns+7)/8;
   pixels=(unsigned char *) AcquireQuantumMemory(length+1,sizeof(*pixels));
-  if (pixels == (unsigned char *) NULL) 
+  if (pixels == (unsigned char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   p=pixels;
   offset=0;

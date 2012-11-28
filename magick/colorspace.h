@@ -48,7 +48,9 @@ typedef enum
   LogColorspace,
   CMYColorspace,
   LuvColorspace,
-  HCLColorspace
+  HCLColorspace,
+  LCHColorspace,
+  LMSColorspace
 } ColorspaceType;
 
 extern MagickExport MagickBooleanType

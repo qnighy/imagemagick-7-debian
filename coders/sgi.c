@@ -57,6 +57,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/property.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
@@ -497,7 +498,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
           {
             MagickOffsetType
               position;
-           
+
             position=TellBlob(image);
             p=iris_pixels;
             for (y=0; y < (ssize_t) iris_info.rows; y++)

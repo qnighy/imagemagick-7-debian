@@ -65,6 +65,7 @@
 #include "magick/monitor-private.h"
 #include "magick/option.h"
 #include "magick/pixel.h"
+#include "magick/pixel-accessor.h"
 #include "magick/profile.h"
 #include "magick/property.h"
 #include "magick/quantum-private.h"
@@ -522,6 +523,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
   *id='\0';
   (void) ResetMagickMemory(keyword,0,sizeof(keyword));
   version=0.0;
+  (void) version;
   do
   {
     /*
@@ -634,7 +636,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
               }
             *p='\0';
             if (*options == '{')
-              (void) strcpy(options,options+1);
+              (void) CopyMagickString(options,options+1,strlen(options));
             /*
               Assign a value to the specified keyword.
             */

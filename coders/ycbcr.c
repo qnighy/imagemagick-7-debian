@@ -55,6 +55,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/pixel-private.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
@@ -233,7 +234,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
             quantum_info,quantum_type,pixels,exception);
           if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
             break;
-          if (((y-image->extract_info.y) >= 0) && 
+          if (((y-image->extract_info.y) >= 0) &&
               ((y-image->extract_info.y) < (ssize_t) image->rows))
             {
               p=GetVirtualPixels(canvas_image,canvas_image->extract_info.x,0,
@@ -305,7 +306,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
               quantum_info,quantum_type,pixels,exception);
             if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
               break;
-            if (((y-image->extract_info.y) >= 0) && 
+            if (((y-image->extract_info.y) >= 0) &&
                 ((y-image->extract_info.y) < (ssize_t) image->rows))
               {
                 p=GetVirtualPixels(canvas_image,canvas_image->extract_info.x,
@@ -386,7 +387,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
             quantum_info,RedQuantum,pixels,exception);
           if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
             break;
-          if (((y-image->extract_info.y) >= 0) && 
+          if (((y-image->extract_info.y) >= 0) &&
               ((y-image->extract_info.y) < (ssize_t) image->rows))
             {
               p=GetVirtualPixels(canvas_image,canvas_image->extract_info.x,0,
@@ -429,7 +430,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
             quantum_info,GreenQuantum,pixels,exception);
           if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
             break;
-          if (((y-image->extract_info.y) >= 0) && 
+          if (((y-image->extract_info.y) >= 0) &&
               ((y-image->extract_info.y) < (ssize_t) image->rows))
             {
               p=GetVirtualPixels(canvas_image,canvas_image->extract_info.x,0,
@@ -472,7 +473,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
             quantum_info,BlueQuantum,pixels,exception);
           if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
             break;
-          if (((y-image->extract_info.y) >= 0) && 
+          if (((y-image->extract_info.y) >= 0) &&
               ((y-image->extract_info.y) < (ssize_t) image->rows))
             {
               p=GetVirtualPixels(canvas_image,canvas_image->extract_info.x,0,
@@ -517,7 +518,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
                 quantum_info,AlphaQuantum,pixels,exception);
               if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
                 break;
-              if (((y-image->extract_info.y) >= 0) && 
+              if (((y-image->extract_info.y) >= 0) &&
                   ((y-image->extract_info.y) < (ssize_t) image->rows))
                 {
                   p=GetVirtualPixels(canvas_image,
@@ -596,7 +597,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
             quantum_info,RedQuantum,pixels,exception);
           if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
             break;
-          if (((y-image->extract_info.y) >= 0) && 
+          if (((y-image->extract_info.y) >= 0) &&
               ((y-image->extract_info.y) < (ssize_t) image->rows))
             {
               p=GetVirtualPixels(canvas_image,canvas_image->extract_info.x,0,
@@ -658,7 +659,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
             quantum_info,GreenQuantum,pixels,exception);
           if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
             break;
-          if (((y-image->extract_info.y) >= 0) && 
+          if (((y-image->extract_info.y) >= 0) &&
               ((y-image->extract_info.y) < (ssize_t) image->rows))
             {
               p=GetVirtualPixels(canvas_image,canvas_image->extract_info.x,0,
@@ -720,7 +721,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
             quantum_info,BlueQuantum,pixels,exception);
           if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
             break;
-          if (((y-image->extract_info.y) >= 0) && 
+          if (((y-image->extract_info.y) >= 0) &&
               ((y-image->extract_info.y) < (ssize_t) image->rows))
             {
               p=GetVirtualPixels(canvas_image,canvas_image->extract_info.x,0,
@@ -784,7 +785,7 @@ static Image *ReadYCBCRImage(const ImageInfo *image_info,
                 quantum_info,BlueQuantum,pixels,exception);
               if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
                 break;
-              if (((y-image->extract_info.y) >= 0) && 
+              if (((y-image->extract_info.y) >= 0) &&
                   ((y-image->extract_info.y) < (ssize_t) image->rows))
                 {
                   p=GetVirtualPixels(canvas_image,

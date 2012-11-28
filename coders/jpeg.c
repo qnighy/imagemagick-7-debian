@@ -67,6 +67,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
 #include "magick/profile.h"
 #include "magick/property.h"
 #include "magick/quantum-private.h"
@@ -83,8 +84,6 @@
 #define JPEG_INTERNAL_OPTIONS
 #if defined(__MINGW32__)
 # define XMD_H 1  /* Avoid conflicting typedef for INT32 */
-typedef unsigned char boolean;
-#define HAVE_BOOLEAN
 #endif
 #undef HAVE_STDLIB_H
 #include "jpeglib.h"
@@ -123,6 +122,9 @@ typedef struct _ErrorManager
 
   MagickBooleanType
     finished;
+
+  StringInfo
+    *profile;
 
   jmp_buf
     error_recovery;
@@ -361,16 +363,13 @@ static MagickBooleanType JPEGWarningHandler(j_common_ptr jpeg_info,int level)
 
 static boolean ReadComment(j_decompress_ptr jpeg_info)
 {
-  char
-    *comment;
-
   ErrorManager
     *error_manager;
 
   Image
     *image;
 
-  register char
+  register unsigned char
     *p;
 
   register ssize_t
@@ -378,6 +377,9 @@ static boolean ReadComment(j_decompress_ptr jpeg_info)
 
   size_t
     length;
+
+  StringInfo
+    *comment;
 
   /*
     Determine length of comment.
@@ -389,22 +391,22 @@ static boolean ReadComment(j_decompress_ptr jpeg_info)
   length-=2;
   if (length <= 0)
     return(MagickTrue);
-  comment=(char *) NULL;
-  if (~length >= (MaxTextExtent-1))
-    comment=(char *) AcquireQuantumMemory(length+MaxTextExtent,
-      sizeof(*comment));
-  if (comment == (char *) NULL)
+  comment=BlobToStringInfo((const void *) NULL,length);
+  if (comment == (StringInfo *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   /*
     Read comment.
   */
-  i=(ssize_t) length-1;
-  for (p=comment; i-- >= 0; p++)
-    *p=(char) GetCharacter(jpeg_info);
+  error_manager->profile=comment;
+  p=GetStringInfoDatum(comment);
+  for (i=0; i < (ssize_t) GetStringInfoLength(comment); i++)
+    *p++=(unsigned char) GetCharacter(jpeg_info);
   *p='\0';
-  (void) SetImageProperty(image,"comment",comment);
-  comment=DestroyString(comment);
+  error_manager->profile=NULL;
+  p=GetStringInfoDatum(comment);
+  (void) SetImageProperty(image,"comment",(const char *) p);
+  comment=DestroyStringInfo(comment);
   return(MagickTrue);
 }
 
@@ -467,9 +469,11 @@ static boolean ReadICCProfile(j_decompress_ptr jpeg_info)
   if (profile == (StringInfo *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
+  error_manager->profile=profile;
   p=GetStringInfoDatum(profile);
   for (i=(ssize_t) GetStringInfoLength(profile)-1; i >= 0; i--)
     *p++=(unsigned char) GetCharacter(jpeg_info);
+  error_manager->profile=NULL;
   icc_profile=(StringInfo *) GetImageProfile(image,"icc");
   if (icc_profile != (StringInfo *) NULL)
     {
@@ -563,9 +567,11 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
   if (profile == (StringInfo *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
+  error_manager->profile=profile;
   p=GetStringInfoDatum(profile);
   for (i=0;  i < (ssize_t) GetStringInfoLength(profile); i++)
     *p++=(unsigned char) GetCharacter(jpeg_info);
+  error_manager->profile=NULL;
   iptc_profile=(StringInfo *) GetImageProfile(image,"8bim");
   if (iptc_profile != (StringInfo *) NULL)
     {
@@ -634,9 +640,11 @@ static boolean ReadProfile(j_decompress_ptr jpeg_info)
   if (profile == (StringInfo *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
+  error_manager->profile=profile;
   p=GetStringInfoDatum(profile);
   for (i=0; i < (ssize_t) GetStringInfoLength(profile); i++)
     *p++=(unsigned char) GetCharacter(jpeg_info);
+  error_manager->profile=NULL;
   if (marker == 1)
     {
       p=GetStringInfoDatum(profile);
@@ -949,7 +957,7 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
     index;
 
   JSAMPLE
-    *jpeg_pixels;
+    *volatile jpeg_pixels;
 
   JSAMPROW
     scanline[1];
@@ -1013,6 +1021,8 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   if (setjmp(error_manager.error_recovery) != 0)
     {
       jpeg_destroy_decompress(&jpeg_info);
+      if (error_manager.profile != (StringInfo *) NULL)
+        error_manager.profile=DestroyStringInfo(error_manager.profile);
       (void) CloseBlob(image);
       number_pixels=(MagickSizeType) image->columns*image->rows;
       if (number_pixels != 0)
@@ -1106,21 +1116,17 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   image->compression=JPEGCompression;
   image->interlace=JPEGInterlace;
 #endif
-  if ((image_info->colors > 8) && (image_info->colors <= 256))
+  option=GetImageOption(image_info,"jpeg:colors");
+  if (option != (const char *) NULL)
     {
       /*
         Let the JPEG library quantize for us.
       */
       jpeg_info.quantize_colors=MagickTrue;
-      jpeg_info.desired_number_of_colors=(int) image_info->colors;
+      jpeg_info.desired_number_of_colors=(int) StringToUnsignedLong(option);
     }
   option=GetImageOption(image_info,"jpeg:block-smoothing");
-  if (option != (const char *) NULL)
-    {
-      jpeg_info.do_block_smoothing=MagickFalse;
-      if (IsMagickTrue(option) != MagickFalse)
-        jpeg_info.do_block_smoothing=MagickTrue;
-    }
+  jpeg_info.do_block_smoothing=IsStringTrue(option);
   jpeg_info.dct_method=JDCT_FLOAT;
   option=GetImageOption(image_info,"jpeg:dct-method");
   if (option != (const char *) NULL)
@@ -1153,12 +1159,7 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
       }
     }
   option=GetImageOption(image_info,"jpeg:fancy-upsampling");
-  if (option != (const char *) NULL)
-    {
-      jpeg_info.do_fancy_upsampling=MagickFalse;
-      if (IsMagickTrue(option) != MagickFalse)
-        jpeg_info.do_fancy_upsampling=MagickTrue;
-    }
+  jpeg_info.do_fancy_upsampling=IsStringTrue(option);
   (void) jpeg_start_decompress(&jpeg_info);
   image->columns=jpeg_info.output_width;
   image->rows=jpeg_info.output_height;
@@ -1168,32 +1169,32 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
     case JCS_RGB:
     default:
     {
-      SetImageColorspace(image,sRGBColorspace);
+      (void) SetImageColorspace(image,sRGBColorspace);
       break;
     }
     case JCS_GRAYSCALE:
     {
-      SetImageColorspace(image,GRAYColorspace);
+      (void) SetImageColorspace(image,GRAYColorspace);
       break;
     }
     case JCS_YCbCr:
     {
-      SetImageColorspace(image,YCbCrColorspace);
+      (void) SetImageColorspace(image,YCbCrColorspace);
       break;
     }
     case JCS_CMYK:
     {
-      SetImageColorspace(image,CMYKColorspace);
+      (void) SetImageColorspace(image,CMYKColorspace);
       break;
     }
   }
   if (IsITUFaxImage(image) != MagickFalse)
     {
-      SetImageColorspace(image,LabColorspace);
+      (void) SetImageColorspace(image,LabColorspace);
       jpeg_info.out_color_space=JCS_YCbCr;
     }
-  if ((image_info->colors != 0) && (image_info->colors <= 256))
-    if (AcquireImageColormap(image,image_info->colors) == MagickFalse)
+  if (option != (const char *) NULL)
+    if (AcquireImageColormap(image,StringToUnsignedLong(option)) == MagickFalse)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   if ((jpeg_info.output_components == 1) &&
       (jpeg_info.quantize_colors == MagickFalse))
@@ -1238,8 +1239,8 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   */
   if (setjmp(error_manager.error_recovery) != 0)
     {
-      if (jpeg_pixels != (unsigned char *) NULL)
-        jpeg_pixels=(unsigned char *) RelinquishMagickMemory(jpeg_pixels);
+      if (jpeg_pixels != (JSAMPLE *) NULL)
+        jpeg_pixels=(JSAMPLE *) RelinquishMagickMemory(jpeg_pixels);
       jpeg_destroy_decompress(&jpeg_info);
       (void) CloseBlob(image);
       number_pixels=(MagickSizeType) image->columns*image->rows;
@@ -1393,7 +1394,7 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
     Free jpeg resources.
   */
   jpeg_destroy_decompress(&jpeg_info);
-  jpeg_pixels=(unsigned char *) RelinquishMagickMemory(jpeg_pixels);
+  jpeg_pixels=(JSAMPLE *) RelinquishMagickMemory(jpeg_pixels);
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
 }
@@ -1990,7 +1991,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     quality;
 
   JSAMPLE
-    *jpeg_pixels;
+    *volatile jpeg_pixels;
 
   JSAMPROW
     scanline[1];
@@ -2147,11 +2148,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     }
   option=GetImageOption(image_info,"jpeg:optimize-coding");
   if (option != (const char *) NULL)
-    {
-      jpeg_info.optimize_coding=MagickFalse;
-      if (IsMagickTrue(option) != MagickFalse)
-        jpeg_info.optimize_coding=MagickTrue;
-    }
+    jpeg_info.optimize_coding=IsStringTrue(option);
   else
     {
       MagickSizeType
@@ -2165,9 +2162,8 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
             Perform optimization only if available memory resources permit it.
           */
           status=AcquireMagickResource(MemoryResource,length);
-          if (status != MagickFalse)
-            jpeg_info.optimize_coding=MagickTrue;
           RelinquishMagickResource(MemoryResource,length);
+          jpeg_info.optimize_coding=status;
         }
     }
 #if (JPEG_LIB_VERSION >= 61) && defined(C_PROGRESSIVE_SUPPORTED)
@@ -2298,7 +2294,9 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     }
 #endif
   sampling_factor=(const char *) NULL;
-  value=GetImageProperty(image,"jpeg:sampling-factor");
+  value=GetImageOption(image_info,"jpeg:sampling-factor");
+  if (value == (char *) NULL)
+    value=GetImageProperty(image,"jpeg:sampling-factor");
   if (value != (char *) NULL)
     {
       sampling_factor=value;
@@ -2535,8 +2533,8 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
   if (setjmp(error_manager.error_recovery) != 0)
     {
       jpeg_destroy_compress(&jpeg_info);
-      if (jpeg_pixels != (unsigned char *) NULL)
-        jpeg_pixels=(unsigned char *) RelinquishMagickMemory(jpeg_pixels);
+      if (jpeg_pixels != (JSAMPLE *) NULL)
+        jpeg_pixels=(JSAMPLE *) RelinquishMagickMemory(jpeg_pixels);
       (void) CloseBlob(image);
       return(MagickFalse);
     }
@@ -2732,7 +2730,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     Relinquish resources.
   */
   jpeg_destroy_compress(&jpeg_info);
-  jpeg_pixels=(unsigned char *) RelinquishMagickMemory(jpeg_pixels);
+  jpeg_pixels=(JSAMPLE *) RelinquishMagickMemory(jpeg_pixels);
   (void) CloseBlob(image);
   return(MagickTrue);
 }

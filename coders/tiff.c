@@ -66,10 +66,12 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
+#include "magick/pixel-private.h"
+#include "magick/profile.h"
 #include "magick/property.h"
 #include "magick/quantum.h"
 #include "magick/quantum-private.h"
-#include "magick/profile.h"
 #include "magick/resize.h"
 #include "magick/resource_.h"
 #include "magick/semaphore.h"
@@ -601,6 +603,8 @@ static void TIFFGetProfiles(TIFF *tiff,Image *image)
   length=0;
   if (TIFFGetField(tiff,37724,&length,&profile) == 1)
     (void) ReadProfile(image,"tiff:37724",profile,(ssize_t) length);
+  if (TIFFGetField(tiff,34118,&length,&profile) == 1)
+    (void) ReadProfile(image,"tiff:34118",profile,(ssize_t) length);
 }
 
 static void TIFFGetProperties(TIFF *tiff,Image *image)
@@ -1073,8 +1077,8 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_YRESOLUTION,&y_resolution);
     image->x_resolution=x_resolution;
     image->y_resolution=y_resolution;
-    x_position=(float) image->page.x/x_resolution;
-    y_position=(float) image->page.y/y_resolution;
+    x_position=(float) PerceptibleReciprocal(x_resolution)*image->page.x;
+    y_position=(float) PerceptibleReciprocal(y_resolution)*image->page.y;
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_XPOSITION,&x_position);
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_YPOSITION,&y_position);
     image->page.x=(ssize_t) ceil(x_position*x_resolution-0.5);
@@ -1131,12 +1135,6 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
              sampling_factor);
            (void) LogMagickEvent(CoderEvent,GetMagickModule(),
              "Sampling Factors: %s",sampling_factor);
-           if ((samples_per_pixel > 1) && (photometric == PHOTOMETRIC_YCBCR))
-             {
-               (void) TIFFSetField(tiff,TIFFTAG_JPEGCOLORMODE,
-                 JPEGCOLORMODE_RGB);
-               photometric=PHOTOMETRIC_RGB;
-             }
          }
 #endif
         break;
@@ -1749,14 +1747,6 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
       }
     if (image->storage_class == PseudoClass)
       image->depth=GetImageDepth(image,exception);
-    if ((photometric == PHOTOMETRIC_LOGL) ||
-        (photometric == PHOTOMETRIC_MINISBLACK) ||
-        (photometric == PHOTOMETRIC_MINISWHITE))
-      {
-         image->type=GrayscaleType;
-         if (bits_per_sample == 1)
-           image->type=BilevelType;
-      }
     /*
       Proceed to next image.
     */
@@ -1822,10 +1812,10 @@ static void TIFFTagExtender(TIFF *tiff)
   static const TIFFFieldInfo
     TIFFExtensions[] =
     {
-      {
-        37724, -3, -3, TIFF_UNDEFINED, FIELD_CUSTOM, 1, 1,
-          (char *) "PhotoshopLayerData"
-      }
+      { 37724, -3, -3, TIFF_UNDEFINED, FIELD_CUSTOM, 1, 1,
+        (char *) "PhotoshopLayerData" },
+      { 34118, -3, -3, TIFF_UNDEFINED, FIELD_CUSTOM, 1, 1,
+        (char *) "Microscope" }
     };
 
   TIFFMergeFieldInfo(tiff,TIFFExtensions,sizeof(TIFFExtensions)/
@@ -2510,6 +2500,9 @@ static void TIFFSetProfiles(TIFF *tiff,Image *image)
     if (LocaleCompare(name,"tiff:37724") == 0)
       (void) TIFFSetField(tiff,37724,(uint32) GetStringInfoLength(profile),
         GetStringInfoDatum(profile));
+    if (LocaleCompare(name,"tiff:34118") == 0)
+      (void) TIFFSetField(tiff,34118,(uint32) GetStringInfoLength(profile),
+        GetStringInfoDatum(profile));
     name=GetNextImageProfile(image);
   }
 }
@@ -3180,7 +3173,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
         (void) TIFFSetField(tiff,TIFFTAG_RESOLUTIONUNIT,(uint16) units);
         (void) TIFFSetField(tiff,TIFFTAG_XRESOLUTION,image->x_resolution);
         (void) TIFFSetField(tiff,TIFFTAG_YRESOLUTION,image->y_resolution);
-        if ((image->page.x != 0) || (image->page.y != 0))
+        if ((image->page.x > 0) && (image->page.y > 0))
           {
             /*
               Set image position.

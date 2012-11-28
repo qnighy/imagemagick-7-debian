@@ -61,6 +61,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
@@ -1140,7 +1141,7 @@ static MagickBooleanType WriteDIBImage(const ImageInfo *image_info,Image *image)
       unsigned short
         word;
       /*
-        Convert PseudoClass packet to DIB pixel. 
+        Convert PseudoClass packet to DIB pixel.
       */
       for (y=0; y < (ssize_t) image->rows; y++)
       {

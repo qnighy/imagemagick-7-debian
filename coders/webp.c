@@ -54,6 +54,7 @@
 #include "magick/monitor-private.h"
 #include "magick/memory_.h"
 #include "magick/option.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
@@ -346,13 +347,10 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
   picture.stats=(&statistics);
   picture.width=(int) image->columns;
   picture.height=(int) image->rows;
-  if (image->quality != UndefinedCompressionQuality)
-    configure.quality=(float) image->quality;
   if (WebPConfigInit(&configure) == 0)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
-  /*
-    Future: set custom configuration parameters here.
-  */
+  if (image->quality != UndefinedCompressionQuality)
+    configure.quality=(float) image->quality;
   if (WebPValidateConfig(&configure) == 0)
     ThrowWriterException(ResourceLimitError,"UnableToEncodeImageFile");
   /*
@@ -391,6 +389,7 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
     webp_status=WebPPictureImportRGBA(&picture,pixels,4*picture.width);
   pixels=(unsigned char *) RelinquishMagickMemory(pixels);
   webp_status=WebPEncode(&configure,&picture);
+  WebPPictureFree(&picture);
   (void) CloseBlob(image);
   return(webp_status == 0 ? MagickFalse : MagickTrue);
 }

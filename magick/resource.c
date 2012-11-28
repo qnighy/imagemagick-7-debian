@@ -108,7 +108,7 @@ static ResourceInfo
     MagickULLConstant(3072)*1024*1024,
     MagickResourceInfinity,
     MagickULLConstant(768),
-    MagickULLConstant(4),
+    MagickULLConstant(1),
     MagickResourceInfinity
   };
 
@@ -353,7 +353,8 @@ static MagickBooleanType GetPathTemplate(char *path)
   struct stat
     attributes;
 
-  (void) CopyMagickString(path,"magick-XXXXXXXX",MaxTextExtent);
+  (void) FormatLocaleString(path,MaxTextExtent,"magick-%.20gXXXXXXXXXXXX",
+    (double) getpid());
   exception=AcquireExceptionInfo();
   directory=(char *) GetImageRegistry(StringRegistryType,"temporary-path",
     exception);
@@ -382,7 +383,7 @@ static MagickBooleanType GetPathTemplate(char *path)
 #endif
   if (directory == (char *) NULL)
     return(MagickTrue);
-  if (strlen(directory) > (MaxTextExtent-15))
+  if (strlen(directory) > (MaxTextExtent-25))
     {
       directory=DestroyString(directory);
       return(MagickTrue);
@@ -394,10 +395,11 @@ static MagickBooleanType GetPathTemplate(char *path)
       return(MagickTrue);
     }
   if (directory[strlen(directory)-1] == *DirectorySeparator)
-    (void) FormatLocaleString(path,MaxTextExtent,"%smagick-XXXXXXXX",directory);
+    (void) FormatLocaleString(path,MaxTextExtent,"%smagick-%.20gXXXXXXXXXXXX",
+      directory,(double) getpid());
   else
-    (void) FormatLocaleString(path,MaxTextExtent,"%s%smagick-XXXXXXXX",
-      directory,DirectorySeparator);
+    (void) FormatLocaleString(path,MaxTextExtent,"%s%smagick-%.20gXXXXXXXXXXXX",
+      directory,DirectorySeparator,(double) getpid());
   directory=DestroyString(directory);
   if (*DirectorySeparator != '/')
     for (p=path; *p != '\0'; p++)
@@ -446,8 +448,8 @@ MagickExport int AcquireUniqueFileResource(char *path)
       Get temporary pathname.
     */
     (void) GetPathTemplate(path);
-    key=GetRandomKey(random_info,2);
-    p=path+strlen(path)-8;
+    key=GetRandomKey(random_info,6);
+    p=path+strlen(path)-12;
     datum=GetStringInfoDatum(key);
     for (i=0; i < (ssize_t) GetStringInfoLength(key); i++)
     {
@@ -463,8 +465,8 @@ MagickExport int AcquireUniqueFileResource(char *path)
     if (file != -1)
       break;
 #endif
-    key=GetRandomKey(random_info,6);
-    p=path+strlen(path)-6;
+    key=GetRandomKey(random_info,12);
+    p=path+strlen(path)-12;
     datum=GetStringInfoDatum(key);
     for (i=0; i < (ssize_t) GetStringInfoLength(key); i++)
     {
@@ -472,7 +474,8 @@ MagickExport int AcquireUniqueFileResource(char *path)
       *p++=portable_filename[c];
     }
     key=DestroyStringInfo(key);
-    file=open_utf8(path,O_RDWR | O_CREAT | O_EXCL | O_BINARY | O_NOFOLLOW,S_MODE);
+    file=open_utf8(path,O_RDWR | O_CREAT | O_EXCL | O_BINARY | O_NOFOLLOW,
+      S_MODE);
     if ((file >= 0) || (errno != EEXIST))
       break;
   }
@@ -689,12 +692,12 @@ MagickExport MagickBooleanType ListMagickResourceInfo(FILE *file,
   if (resource_info.time_limit != MagickResourceInfinity)
     (void) FormatLocaleString(time_limit,MaxTextExtent,"%.20g",(double)
       ((MagickOffsetType) resource_info.time_limit));
-  (void) FormatLocaleFile(file,"File         Area       Memory          Map"
+  (void) FormatLocaleFile(file,"  File        Area      Memory          Map"
     "         Disk    Thread         Time\n");
   (void) FormatLocaleFile(file,
     "--------------------------------------------------------"
     "-----------------------\n");
-  (void) FormatLocaleFile(file,"%4g   %10s   %10s   %10s   %10s    %6g  %11s\n",
+  (void) FormatLocaleFile(file,"%6g  %10s  %10s   %10s   %10s    %6g  %11s\n",
     (double) ((MagickOffsetType) resource_info.file_limit),area_limit,
     memory_limit,map_limit,disk_limit,(double) ((MagickOffsetType)
     resource_info.thread_limit),time_limit);

@@ -59,6 +59,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/profile.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
@@ -712,6 +713,7 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
         bmp_info.blue_mask=ReadBlobLSBLong(image);
         if (bmp_info.size > 40)
           {
+
             double
               sum;
 
@@ -723,27 +725,38 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Decode 2^30 fixed point formatted CIE primaries.
             */
-            bmp_info.red_primary.x=(double) ReadBlobLSBLong(image)/0x40000000;
-            bmp_info.red_primary.y=(double) ReadBlobLSBLong(image)/0x40000000;
-            bmp_info.red_primary.z=(double) ReadBlobLSBLong(image)/0x40000000;
-            bmp_info.green_primary.x=(double) ReadBlobLSBLong(image)/0x40000000;
-            bmp_info.green_primary.y=(double) ReadBlobLSBLong(image)/0x40000000;
-            bmp_info.green_primary.z=(double) ReadBlobLSBLong(image)/0x40000000;
-            bmp_info.blue_primary.x=(double) ReadBlobLSBLong(image)/0x40000000;
-            bmp_info.blue_primary.y=(double) ReadBlobLSBLong(image)/0x40000000;
-            bmp_info.blue_primary.z=(double) ReadBlobLSBLong(image)/0x40000000;
+#           define BMP_DENOM ((double) 0x40000000)
+            bmp_info.red_primary.x=(double) ReadBlobLSBLong(image)/BMP_DENOM;
+            bmp_info.red_primary.y=(double) ReadBlobLSBLong(image)/BMP_DENOM;
+            bmp_info.red_primary.z=(double) ReadBlobLSBLong(image)/BMP_DENOM;
+            bmp_info.green_primary.x=(double) ReadBlobLSBLong(image)/BMP_DENOM;
+            bmp_info.green_primary.y=(double) ReadBlobLSBLong(image)/BMP_DENOM;
+            bmp_info.green_primary.z=(double) ReadBlobLSBLong(image)/BMP_DENOM;
+            bmp_info.blue_primary.x=(double) ReadBlobLSBLong(image)/BMP_DENOM;
+            bmp_info.blue_primary.y=(double) ReadBlobLSBLong(image)/BMP_DENOM;
+            bmp_info.blue_primary.z=(double) ReadBlobLSBLong(image)/BMP_DENOM;
+
             sum=bmp_info.red_primary.x+bmp_info.red_primary.y+
               bmp_info.red_primary.z;
-            image->chromaticity.red_primary.x/=sum;
-            image->chromaticity.red_primary.y/=sum;
+            bmp_info.red_primary.x/=sum;
+            bmp_info.red_primary.y/=sum;
+            image->chromaticity.red_primary.x=bmp_info.red_primary.x;
+            image->chromaticity.red_primary.y=bmp_info.red_primary.y;
+
             sum=bmp_info.green_primary.x+bmp_info.green_primary.y+
               bmp_info.green_primary.z;
-            image->chromaticity.green_primary.x/=sum;
-            image->chromaticity.green_primary.y/=sum;
+            bmp_info.green_primary.x/=sum;
+            bmp_info.green_primary.y/=sum;
+            image->chromaticity.green_primary.x=bmp_info.green_primary.x;
+            image->chromaticity.green_primary.y=bmp_info.green_primary.y;
+
             sum=bmp_info.blue_primary.x+bmp_info.blue_primary.y+
               bmp_info.blue_primary.z;
-            image->chromaticity.blue_primary.x/=sum;
-            image->chromaticity.blue_primary.y/=sum;
+            bmp_info.blue_primary.x/=sum;
+            bmp_info.blue_primary.y/=sum;
+            image->chromaticity.blue_primary.x=bmp_info.blue_primary.x;
+            image->chromaticity.blue_primary.y=bmp_info.blue_primary.y;
+
             /*
               Decode 16^16 fixed point formatted gamma_scales.
             */
@@ -756,6 +769,7 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
             image->gamma=(bmp_info.gamma_scale.x+bmp_info.gamma_scale.y+
               bmp_info.gamma_scale.z)/3.0;
           }
+
         if (bmp_info.size > 108)
           {
             size_t
@@ -813,11 +827,11 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
         (bmp_info.bits_per_pixel != 8) && (bmp_info.bits_per_pixel != 16) &&
         (bmp_info.bits_per_pixel != 24) && (bmp_info.bits_per_pixel != 32))
       ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
-    if (bmp_info.number_colors > (1U << bmp_info.bits_per_pixel))
+    if (bmp_info.bits_per_pixel < 16 &&
+        bmp_info.number_colors > (1U << bmp_info.bits_per_pixel))
       {
-        if (bmp_info.bits_per_pixel < 24)
-          ThrowReaderException(CorruptImageError,"UnrecognizedNumberOfColors");
-        bmp_info.number_colors=0;
+        ThrowReaderException(CorruptImageError,
+            "UnrecognizedNumberOfColors");
       }
     if ((bmp_info.compression == 1) && (bmp_info.bits_per_pixel != 8))
       ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
@@ -842,9 +856,9 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->columns=(size_t) MagickAbsoluteValue(bmp_info.width);
     image->rows=(size_t) MagickAbsoluteValue(bmp_info.height);
     image->depth=bmp_info.bits_per_pixel <= 8 ? bmp_info.bits_per_pixel : 8;
-    if ((bmp_info.bits_per_pixel == 16) || (bmp_info.bits_per_pixel == 32))
-      image->matte=bmp_info.alpha_mask != 0 ? MagickTrue : MagickFalse;
-    if ((bmp_info.number_colors != 0) || (bmp_info.bits_per_pixel < 16))
+    image->matte=(bmp_info.alpha_mask != 0) &&
+      (bmp_info.compression == BI_BITFIELDS) ? MagickTrue : MagickFalse;
+    if (bmp_info.bits_per_pixel < 16)
       {
         size_t
           one;
@@ -948,7 +962,7 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
     */
     if (bmp_info.compression == BI_RGB)
       {
-        bmp_info.alpha_mask=0;
+        bmp_info.alpha_mask=image->matte != MagickFalse ? 0xff000000L : 0L;
         bmp_info.red_mask=0x00ff0000U;
         bmp_info.green_mask=0x0000ff00U;
         bmp_info.blue_mask=0x000000ffU;

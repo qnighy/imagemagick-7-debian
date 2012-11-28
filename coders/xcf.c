@@ -53,6 +53,7 @@
 #include "magick/magick.h"
 #include "magick/memory_.h"
 #include "magick/pixel.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantize.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
@@ -914,7 +915,7 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
     return(MagickFalse);
   /* clear the image based on the layer opacity */
   outLayer->image->background_color.opacity=
-    ScaleCharToQuantum((unsigned char) (255-outLayer->alpha));    
+    ScaleCharToQuantum((unsigned char) (255-outLayer->alpha));
   (void) SetImageBackgroundColor(outLayer->image);
 
   outLayer->image->page.x=outLayer->offset_x;
@@ -1276,8 +1277,8 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       XCFLayerInfo
         *layer_info;
 
-      /* 
-        the read pointer
+      /*
+        The read pointer.
       */
       do
       {

@@ -385,7 +385,7 @@ static inline void CompositeDarken(const MagickPixelPacket *p,
   if ( (channel & SyncChannels) != 0 ) {
     composite->opacity=QuantumScale*p->opacity*q->opacity; /* Over Blend */
     gamma=1.0-QuantumScale*composite->opacity;
-    gamma=MagickEpsilonReciprocal(gamma);
+    gamma=PerceptibleReciprocal(gamma);
     composite->red=gamma*Darken(p->red,p->opacity,q->red,q->opacity);
     composite->green=gamma*Darken(p->green,p->opacity,q->green,q->opacity);
     composite->blue=gamma*Darken(p->blue,p->opacity,q->blue,q->opacity);
@@ -461,7 +461,7 @@ static inline void CompositeDifference(const MagickPixelPacket *p,
   if ( (channel & SyncChannels) != 0 ) {
     gamma=RoundToUnity(Sa+Da-Sa*Da); /* over blend, as per SVG doc */
     composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-    gamma=MagickEpsilonReciprocal(gamma);
+    gamma=PerceptibleReciprocal(gamma);
     /* Values are not normalized as an optimization.  */
     composite->red=gamma*Difference(p->red,Sa,q->red,Da);
     composite->green=gamma*Difference(p->green,Sa,q->green,Da);
@@ -703,7 +703,7 @@ static void HCLComposite(const double hue,const double chroma,const double luma,
                 r=c;
                 b=x;
               }
-  m=luma-(0.298839*r+0.586811*g+0.114350*b);
+  m=luma-(0.298839f*r+0.586811f*g+0.114350f*b);
   /*
     Choose saturation strategy to clip it into the RGB cube; hue and luma are
     preserved and chroma may be changed.
@@ -761,7 +761,7 @@ static void CompositeHCL(const MagickRealType red,const MagickRealType green,
           h=((r-g)/c)+4.0;
   *hue=(h/6.0);
   *chroma=QuantumScale*c;
-  *luma=QuantumScale*(0.298839*r+0.586811*g+0.114350*b);
+  *luma=QuantumScale*(0.298839f*r+0.586811f*g+0.114350f*b);
 }
 
 static inline MagickRealType In(const MagickRealType p,const MagickRealType Sa,
@@ -782,7 +782,7 @@ static inline void CompositeIn(const MagickPixelPacket *p,
   Da=1.0-QuantumScale*q->opacity;
   gamma=Sa*Da;
   composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-  gamma=MagickEpsilonReciprocal(gamma);
+  gamma=PerceptibleReciprocal(gamma);
   composite->red=gamma*In(p->red,Sa,q->red,Da);
   composite->green=gamma*In(p->green,Sa,q->green,Da);
   composite->blue=gamma*In(p->blue,Sa,q->blue,Da);
@@ -813,7 +813,7 @@ static inline void CompositeLighten(const MagickPixelPacket *p,
   if ( (channel & SyncChannels) != 0 ) {
     composite->opacity=QuantumScale*p->opacity*q->opacity; /* Over Blend */
     gamma=1.0-QuantumScale*composite->opacity;
-    gamma=MagickEpsilonReciprocal(gamma);
+    gamma=PerceptibleReciprocal(gamma);
     composite->red=gamma*Lighten(p->red,p->opacity,q->red,q->opacity);
     composite->green=gamma*Lighten(p->green,p->opacity,q->green,q->opacity);
     composite->blue=gamma*Lighten(p->blue,p->opacity,q->blue,q->opacity);
@@ -893,7 +893,7 @@ static inline void CompositeLinearDodge(const MagickPixelPacket *p,
   Da=1.0-QuantumScale*q->opacity;
   gamma=RoundToUnity(Sa+Da-Sa*Da); /* over blend, as per SVG doc */
   composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-  gamma=MagickEpsilonReciprocal(gamma);
+  gamma=PerceptibleReciprocal(gamma);
   composite->red=gamma*(p->red*Sa+q->red*Da);
   composite->green=gamma*(p->green*Sa+q->green*Da);
   composite->blue=gamma*(p->blue*Sa+q->blue*Da);
@@ -1115,7 +1115,7 @@ static inline void CompositeMinus(const MagickPixelPacket *p,
   if ( (channel & SyncChannels) != 0 ) {
     gamma=RoundToUnity(Sa+Da-Sa*Da); /* over blend, as per SVG doc */
     composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-    gamma=MagickEpsilonReciprocal(gamma);
+    gamma=PerceptibleReciprocal(gamma);
     composite->red=gamma*Minus(p->red*Sa,Sa,q->red*Da,Da);
     composite->green=gamma*Minus(p->green*Sa,Sa,q->green*Da,Da);
     composite->blue=gamma*Minus(p->blue*Sa,Sa,q->blue*Da,Da);
@@ -1162,7 +1162,7 @@ static inline void CompositeModulusAdd(const MagickPixelPacket *p,
     Da=1.0-QuantumScale*q->opacity;
     gamma=RoundToUnity(Sa+Da-Sa*Da); /* over blend, as per SVG doc */
     composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-    gamma=MagickEpsilonReciprocal(gamma);
+    gamma=PerceptibleReciprocal(gamma);
     composite->red=ModulusAdd(p->red,Sa,q->red,Da);
     composite->green=ModulusAdd(p->green,Sa,q->green,Da);
     composite->blue=ModulusAdd(p->blue,Sa,q->blue,Da);
@@ -1210,7 +1210,7 @@ static inline void CompositeModulusSubtract(const MagickPixelPacket *p,
     Da=1.0-QuantumScale*q->opacity;
     gamma = RoundToUnity(Sa+Da-Sa*Da);
     composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-    gamma=MagickEpsilonReciprocal(gamma);
+    gamma=PerceptibleReciprocal(gamma);
     composite->red=ModulusSubtract(p->red,Sa,q->red,Da);
     composite->green=ModulusSubtract(p->green,Sa,q->green,Da);
     composite->blue=ModulusSubtract(p->blue,Sa,q->blue,Da);
@@ -1296,7 +1296,7 @@ static inline void CompositeOut(const MagickPixelPacket *p,
   Da=1.0-QuantumScale*q->opacity;
   gamma=Sa*(1.0-Da);
   composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-  gamma=MagickEpsilonReciprocal(gamma);
+  gamma=PerceptibleReciprocal(gamma);
   composite->red=gamma*Out(p->red,Sa,q->red,Da);
   composite->green=gamma*Out(p->green,Sa,q->green,Da);
   composite->blue=gamma*Out(p->blue,Sa,q->blue,Da);
@@ -1586,7 +1586,7 @@ static inline void CompositeXor(const MagickPixelPacket *p,
   Da=1.0-QuantumScale*q->opacity;
   gamma=Sa+Da-2*Sa*Da;        /* Xor blend mode X=0,Y=1,Z=1 */
   composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-  gamma=MagickEpsilonReciprocal(gamma);
+  gamma=PerceptibleReciprocal(gamma);
   composite->red=gamma*Xor(p->red*Sa,Sa,q->red*Da,Da);
   composite->green=gamma*Xor(p->green*Sa,Sa,q->green*Da,Da);
   composite->blue=gamma*Xor(p->blue*Sa,Sa,q->blue*Da,Da);
@@ -1669,6 +1669,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   composite_image=CloneImage(composite,0,0,MagickTrue,exception);
   if (composite_image == (const Image *) NULL)
     return(MagickFalse);
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+    (void) SetImageColorspace(image,RGBColorspace);
   (void) SetImageColorspace(composite_image,image->colorspace);
   GetMagickPixelPacket(image,&zero);
   destination_image=(Image *) NULL;
@@ -2856,8 +2858,6 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     destination_image=DestroyImage(destination_image);
   else
     composite_image=DestroyImage(composite_image);
-  if (status != MagickFalse)
-    (void) ClampImage(image);
   return(status);
 }
 
@@ -2928,8 +2928,8 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
       /*
         Tile texture onto the image background.
       */
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static) shared(status) \
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
+      #pragma omp parallel for schedule(static,4) shared(status) \
         dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y+=(ssize_t) texture_image->rows)
@@ -2957,7 +2957,7 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
             MagickBooleanType
               proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
             #pragma omp critical (MagickCore_TextureImage)
 #endif
             proceed=SetImageProgress(image,TextureImageTag,(MagickOffsetType)
@@ -2977,8 +2977,8 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
   status=MagickTrue;
   texture_view=AcquireVirtualCacheView(texture_image,exception);
   image_view=AcquireAuthenticCacheView(image,exception);
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static) shared(status) \
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
+  #pragma omp parallel for schedule(static,4) shared(status) \
     dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -3041,7 +3041,7 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
         MagickBooleanType
           proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
         #pragma omp critical (MagickCore_TextureImage)
 #endif
         proceed=SetImageProgress(image,TextureImageTag,(MagickOffsetType) y,
