@@ -17,7 +17,13 @@ export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -n
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
 
+SOVERSION=7
+
 DESTDIR="$(CURDIR)/debian/tmp"
+
+QUANTUMDEPTH="Q16"
+LOWERQUANTUMDEPTH=$(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/')
+
 
 # for better pkg-symbols for c++
 ifneq (/usr/share/pkg-kde-tools/bin,$(filter /usr/share/pkg-kde-tools/bin,$(subst :, ,$(PATH))))
@@ -60,7 +66,8 @@ build-stamp: $(QUILT_STAMPFN)
 	--with-perl-options='INSTALLDIRS=vendor' \
 	--x-includes=/usr/include/X11 \
 	--x-libraries=/usr/lib/X11 \
-	--without-rsvg
+	--without-rsvg \
+	--program-suffix=".${LOWERQUANTUMDEPTH}.im$(DEB_UPSTREAM_VERSION_MAJOR)"
 
 	# Patch the generated libtool to avoid passing -rpath when linking,
 	# and to explicitly link libraries against the libraries they
@@ -118,10 +125,12 @@ ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 endif
 
 	touch check-stamp
+
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-stamp
+	[ ! -f build-stamp ] || rm -f build-stamp
+	[ ! -f check-stamp ] || rm -f check-stamp
 
 # revert autoreconf
 	dh_autoreconf_clean
@@ -167,17 +176,16 @@ install: build check
 
         # Add a suffix to binaries, and to the corresponding manual
         # page
-	while read FILE; do \
-		if echo $$FILE | grep usr/bin > /dev/null; then \
-			filename=`echo "$$FILE"|sed s/*//g`; \
-			basename=`basename $$filename`; \
-	    		mv $(CURDIR)/debian/tmp/$$filename $(CURDIR)/debian/tmp/$$filename.im$(DEB_UPSTREAM_VERSION_MAJOR); \
-			mv $(CURDIR)/debian/tmp/usr/share/man/man1/$$basename.1 \
-			  $(CURDIR)/debian/tmp/usr/share/man/man1/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR).1 ;\
-		else \
-			true; \
-		fi \
-	done < debian/imagemagick.install
+	# while read FILE; do \
+	# 	if echo $$FILE | grep usr/bin > /dev/null; then \
+	# 		filename=`echo "$$FILE"|sed s/*//g`; \
+	# 		basename=`basename $$filename`; \
+	# 		mv $(CURDIR)/debian/tmp/usr/share/man/man1/$$basename.1 \
+	# 		   $(CURDIR)/debian/tmp/usr/share/man/man1/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR).1 ;\
+	# 	else \
+	# 		true; \
+	# 	fi \
+	# done < debian/imagemagick.install
 
 	# Remove empty directories in debian/tmp
 	-find $(DESTDIR) -type d -empty | xargs -r rmdir -p
@@ -204,8 +212,8 @@ binary-arch: build check install
 	dh_install
 	# Remove extra coders
 	while read FILE; do \
-		rm -f debian/libmagickcore5/$$FILE; \
-	done < debian/libmagickcore5-extra.install
+		rm -f debian/libmagickcore-${LOWERQUANTUMDEPTH}-${SOVERSION}/$$FILE; \
+	done < debian/libmagickcore-${LOWERQUANTUMDEPTH}-${SOVERSION}-extra.install
 	dh_installmenu
 	dh_installman
 	dh_installmime
@@ -214,7 +222,7 @@ binary-arch: build check install
 	dh_link
 	dh_bugfiles --all
 	dh_strip --dbg-package=imagemagick-dbg
-# fix #611125
+	# fix #611125
 	dh_compress -X/usr/share/doc/imagemagick/www
 	dh_fixperms
 	dh_perl

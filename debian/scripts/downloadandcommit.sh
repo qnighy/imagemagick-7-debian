@@ -11,6 +11,7 @@ if ! git status -b -s | grep debian/ 2>&1 > /dev/null ; then
 fi
 
 DEB_UPSTREAM_MAJOR_VERSION=6
+UPSTREAMBRANCH="ImageMagick-$DEB_UPSTREAM_MAJOR_VERSION"
 
 DEHS_STATUS=`uscan --report --dehs`;
 if echo $DEHS_STATUS | grep "<status>Newer version available</status>" > /dev/null ; then
@@ -39,7 +40,7 @@ fi
 
 #retrieve recent svn commit
 git svn fetch || exit 2
-git checkout "origin/Imagemagick-$DEB_UPSTREAM_MAJOR_VERSION" || exit 2
+git checkout "origin/$UPSTREAMBRANCH" || exit 2
 SVN_REV=`grep "New version $DEB_UPSTREAM_VERSION_CHANGELOG" ChangeLog | sed "s/.*SVN revision \([0-9]*\).*/\1/g"`
 if test "z$SVN_REV" = "z"; then
     echo "Could not found revision";

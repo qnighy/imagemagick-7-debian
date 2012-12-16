@@ -89,14 +89,14 @@ Description: document files of ImageMagick
  This package contains the document files shipped with ImageMagick, a software
  suite to create, edit, and compose bitmap images.
 
-Package: libmagickcore5
+Package: libmagickcore-q16-7
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, imagemagick-common
 Recommends: ghostscript, gsfonts
-Suggests: libmagickcore5-extra
+Suggests: libmagickcore7-extra
 Description: low-level image manipulation library
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -107,16 +107,16 @@ Description: low-level image manipulation library
  This package contains the C libraries needed to run executables that make
  use of MagickCore.
 
-Package: libmagickcore5-extra
+Package: libmagickcore-q16-7-extra
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Enhances: libmagickcore5
+Enhances: libmagickcore-q16-7
 Provides: libmagickcore-extra
-Breaks: libmagickcore5 (<< 8:6.7.7.10-1)
-Replaces: libmagickcore5 (<< 8:6.7.7.10-1)
+Breaks: libmagickcore7 (<< 8:6.7.7.10-1)
+Replaces: libmagickcore7 (<< 8:6.7.7.10-1)
 Suggests: inkscape
 Description: low-level image manipulation library - extra codecs
  This package adds support for SVG, WMF, OpenEXR, DjVu and Graphviz to
@@ -127,8 +127,8 @@ Architecture: any
 # not yet due to magick-config.h to put in include/triplet
 #Multi-Arch: same
 Section: libdevel
-Depends: libmagickcore5 (= ${binary:Version}),
- libmagickcore5-extra (= ${binary:Version}), libbz2-dev, libdjvulibre-dev,
+Depends: libmagickcore-q16-7 (= ${binary:Version}),
+ libmagickcore7-extra (= ${binary:Version}), libbz2-dev, libdjvulibre-dev,
  libexif-dev, libfreetype6-dev, libgraphviz-dev, libjasper-dev, libjpeg-dev,
  liblcms-dev, liblqr-1-0-dev, libltdl-dev, libopenexr-dev, libpng-dev,
  librsvg2-dev, libtiff-dev, libwmf-dev, libx11-dev, libxext-dev, libxml2-dev,
@@ -139,7 +139,7 @@ Description: low-level image manipulation library - development files
  This package includes header files and static libraries needed to compile
  programs using MagickCore.
 
-Package: libmagickwand5
+Package: libmagickwand-q16-7
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -159,15 +159,15 @@ Architecture: any
 # not yet due to magick-config.h to put in include/triplet
 #Multi-Arch: same
 Section: libdevel
-Depends: libmagickwand5 (= ${binary:Version}),
- libmagickcore5-extra (= ${binary:Version}),
+Depends: libmagickwand-q16-7 (= ${binary:Version}),
+ libmagickcore-q16-7-extra (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}), ${misc:Depends},
  pkg-config
 Description: image manipulation library - development files
  This package includes header files and static libraries needed to compile
  programs using MagickWand.
 
-Package: libmagick++5
+Package: libmagick++-q16-7
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -185,7 +185,7 @@ Architecture: any
 # not yet due to magick-config.h to put in include/triplet
 #Multi-Arch: same
 Section: libdevel
-Depends: libmagick++5 (= ${binary:Version}),
+Depends: libmagick++-q16-7 (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}),
  libmagickwand-dev (= ${binary:Version}), ${misc:Depends}, 
  pkg-config

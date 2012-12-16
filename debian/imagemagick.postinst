@@ -9,9 +9,9 @@ then
     for prog in compare animate convert composite conjure \
         import identify stream display montage mogrify; do 
         update-alternatives --install /usr/bin/$prog \
-            $prog /usr/bin/$prog.im6 100 \
+            $prog /usr/bin/$prog.q16.im6 100 \
             --slave /usr/share/man/man1/$prog.1.gz \
-            $prog.1.gz /usr/share/man/man1/$prog.im6.1.gz
+            $prog.1.gz /usr/share/man/man1/$prog.q16.im6.1.gz
     done
 fi
 
