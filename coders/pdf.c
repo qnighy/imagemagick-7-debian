@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -549,7 +549,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       continue;
     hires_bounds=bounds;
   }
-  if ((fabs(hires_bounds.x2-hires_bounds.x1) >= MagickEpsilon) && 
+  if ((fabs(hires_bounds.x2-hires_bounds.x1) >= MagickEpsilon) &&
       (fabs(hires_bounds.y2-hires_bounds.y1) >= MagickEpsilon))
     {
       /*
@@ -638,7 +638,6 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       " -sPDFPassword=%s",read_info->authenticate);
   (void) CopyMagickString(filename,read_info->filename,MaxTextExtent);
   (void) AcquireUniqueFilename(filename);
-  (void) ConcatenateMagickString(filename,"-%08d",MaxTextExtent);
   (void) FormatLocaleString(command,MaxTextExtent,
     GetDelegateCommands(delegate_info),
     read_info->antialias != MagickFalse ? 4 : 1,

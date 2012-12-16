@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -593,7 +593,7 @@ static inline MagickRealType XPixelIntensity(const XColor *pixel)
 
   if ((pixel->red  == pixel->green) && (pixel->green == pixel->blue))
     return((MagickRealType) pixel->red);
-  intensity=0.298839*pixel->red+0.586811*pixel->green+0.114350*pixel->blue;
+  intensity=0.298839f*pixel->red+0.586811f*pixel->green+0.114350f*pixel->blue;
   return(intensity);
 }
 

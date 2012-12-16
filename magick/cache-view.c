@@ -23,7 +23,7 @@
 %                               February 2000                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -50,6 +50,7 @@
 #include "magick/cache.h"
 #include "magick/cache-private.h"
 #include "magick/cache-view.h"
+#include "magick/magick.h"
 #include "magick/memory_.h"
 #include "magick/memory-private.h"
 #include "magick/exception.h"
@@ -113,13 +114,8 @@ MagickExport CacheView *AcquireAuthenticCacheView(const Image *image,
   CacheView
     *cache_view;
 
-  MagickBooleanType
-    status;
-
   cache_view=AcquireVirtualCacheView(image,exception);
-  status=SyncImagePixelCache(cache_view->image,exception);
-  if (status == MagickFalse)
-    ThrowFatalException(CacheFatalError,"UnableToAcquireCacheView");
+  (void) SyncImagePixelCache(cache_view->image,exception);
   return(cache_view);
 }
 
@@ -172,7 +168,11 @@ MagickExport CacheView *AcquireVirtualCacheView(const Image *image,
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) ResetMagickMemory(cache_view,0,sizeof(*cache_view));
   cache_view->image=ReferenceImage((Image *) image);
-  cache_view->number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
+  cache_view->number_threads=GetOpenMPMaximumThreads();
+  if (GetMagickResourceLimit(ThreadResource) > cache_view->number_threads)
+    cache_view->number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
+  if (cache_view->number_threads == 0)
+    cache_view->number_threads=1;
   cache_view->nexus_info=AcquirePixelCacheNexus(cache_view->number_threads);
   cache_view->virtual_pixel_method=GetImageVirtualPixelMethod(image);
   cache_view->debug=IsEventLogging();

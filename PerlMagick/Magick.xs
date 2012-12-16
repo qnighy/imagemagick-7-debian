@@ -23,7 +23,7 @@
 %                             February 1997                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -537,7 +537,11 @@ static struct
       {"channel", MagickChannelOptions} } },
     { "Statistic", { {"geometry", StringReference},
       {"width", IntegerReference},{"height", IntegerReference},
-      {"channel", MagickChannelOptions}, {"type", MagickStatisticOptions} } }
+      {"channel", MagickChannelOptions}, {"type", MagickStatisticOptions} } },
+    { "Perceptible", { {"epsilon", RealReference},
+      {"channel", MagickChannelOptions} } },
+    { "Poly", { {"terms", ArrayReference},
+      {"channel", MagickChannelOptions} } }
   };
 
 static SplayTreeInfo
@@ -7271,6 +7275,10 @@ Mogrify(ref,...)
     ModeImage          = 272
     Statistic          = 273
     StatisticImage     = 274
+    Perceptible        = 275 
+    PerceptibleImage   = 276 
+    Poly               = 277 
+    PolyImage          = 278 
     MogrifyRegion      = 666
   PPCODE:
   {
@@ -10667,6 +10675,50 @@ Mogrify(ref,...)
             statistic=(StatisticType) argument_list[4].integer_reference;
           image=StatisticImageChannel(image,channel,statistic,
             (size_t) geometry_info.rho,(size_t) geometry_info.sigma,exception);
+          break;
+        }
+        case 138:  /* Perceptible */
+        {
+          double
+            epsilon;
+
+          epsilon=MagickEpsilon;
+          if (attribute_flag[0] != 0)
+            epsilon=argument_list[0].real_reference;
+          if (attribute_flag[1] != 0)
+            channel=(ChannelType) argument_list[1].integer_reference;
+          (void) PerceptibleImageChannel(image,channel,epsilon);
+          break;
+        }
+        case 139:  /* Poly */
+        {
+          AV
+            *av;
+
+          double
+            *terms;
+
+          size_t
+            number_terms;
+
+          if (attribute_flag[0] == 0)
+            break;
+          if (attribute_flag[1] != 0)
+            channel=(ChannelType) argument_list[1].integer_reference;
+          av=(AV *) argument_list[0].array_reference;
+          number_terms=(size_t) av_len(av);
+          terms=(double *) AcquireQuantumMemory(number_terms,sizeof(*terms));
+          if (terms == (double *) NULL)
+            {
+              ThrowPerlException(exception,ResourceLimitFatalError,
+                "MemoryAllocationFailed",PackageName);
+              goto PerlException;
+            }
+          for (j=0; j < av_len(av); j++)
+            terms[j]=(double) SvNV(*(av_fetch(av,j,0)));
+          image=PolynomialImageChannel(image,channel,number_terms >> 1,terms,
+            exception);
+          terms=(double *) RelinquishMagickMemory(terms);
           break;
         }
       }

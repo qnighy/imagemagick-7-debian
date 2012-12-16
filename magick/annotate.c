@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -76,7 +76,7 @@
 #include "magick/utility.h"
 #include "magick/xwindow-private.h"
 #if defined(MAGICKCORE_FREETYPE_DELEGATE)
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(__MINGW64__)
 #  undef interface
 #endif
 #if defined(MAGICKCORE_HAVE_FT2BUILD_H)

@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -294,8 +294,8 @@ static const OptionInfo
     { "-decipher", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+deconstruct", 0L, FireOptionFlag | DeprecateOptionFlag, MagickFalse },
     { "-deconstruct", 0L, ListOperatorOptionFlag | FireOptionFlag, MagickFalse },
-    { "+define", 1L, ImageInfoOptionFlag, MagickFalse },
-    { "-define", 1L, ImageInfoOptionFlag, MagickFalse },
+    { "+define", 1L, ImageInfoOptionFlag | FireOptionFlag, MagickFalse },
+    { "-define", 1L, ImageInfoOptionFlag | FireOptionFlag, MagickFalse },
     { "+delay", 0L, ImageInfoOptionFlag, MagickFalse },
     { "-delay", 1L, ImageInfoOptionFlag, MagickFalse },
     { "+delete", 0L, ListOperatorOptionFlag | FireOptionFlag, MagickFalse },
@@ -520,6 +520,8 @@ static const OptionInfo
     { "-pen", 1L, ImageInfoOptionFlag | DrawInfoOptionFlag | DeprecateOptionFlag, MagickFalse },
     { "+ping", 0L, ImageInfoOptionFlag, MagickFalse },
     { "-ping", 0L, ImageInfoOptionFlag, MagickFalse },
+    { "+poly", 1L, DeprecateOptionFlag | FireOptionFlag, MagickFalse },
+    { "-poly", 1L, ListOperatorOptionFlag | FireOptionFlag, MagickFalse },
     { "+pointsize", 0L, ImageInfoOptionFlag | DrawInfoOptionFlag, MagickFalse },
     { "-pointsize", 1L, ImageInfoOptionFlag | DrawInfoOptionFlag, MagickFalse },
     { "+polaroid", 0L, SimpleOperatorOptionFlag, MagickFalse },
@@ -1016,9 +1018,10 @@ static const OptionInfo
     { "Kaiser", KaiserFilter, UndefinedOptionFlag, MagickFalse },
     { "Lagrange", LagrangeFilter, UndefinedOptionFlag, MagickFalse },
     { "Lanczos", LanczosFilter, UndefinedOptionFlag, MagickFalse },
-    { "LanczosSharp", LanczosSharpFilter, UndefinedOptionFlag, MagickFalse },
     { "Lanczos2", Lanczos2Filter, UndefinedOptionFlag, MagickFalse },
     { "Lanczos2Sharp", Lanczos2SharpFilter, UndefinedOptionFlag, MagickFalse },
+    { "LanczosRadius", LanczosRadiusFilter, UndefinedOptionFlag, MagickFalse },
+    { "LanczosSharp", LanczosSharpFilter, UndefinedOptionFlag, MagickFalse },
     { "Mitchell", MitchellFilter, UndefinedOptionFlag, MagickFalse },
     { "Parzen", ParzenFilter, UndefinedOptionFlag, MagickFalse },
     { "Point", PointFilter, UndefinedOptionFlag, MagickFalse },

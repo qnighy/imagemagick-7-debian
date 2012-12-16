@@ -1325,6 +1325,20 @@ void Magick::Image::medianFilter ( const double radius_ )
   (void) DestroyExceptionInfo( &exceptionInfo );
 }
 
+// Merge layers
+void Magick::Image::mergeLayers( const ImageLayerMethod layerMethod_ )
+{
+  ExceptionInfo exceptionInfo;
+  GetExceptionInfo( &exceptionInfo );
+  MagickCore::Image* newImage =
+    MergeImageLayers ( image(),
+        layerMethod_,
+        &exceptionInfo );
+  replaceImage( newImage );
+  throwException( exceptionInfo );
+  (void) DestroyExceptionInfo( &exceptionInfo );
+}
+
 // Reduce image by integral size
 void Magick::Image::minify ( void )
 {
@@ -1599,7 +1613,10 @@ void Magick::Image::read ( const std::string &imageSpec_ )
  
     }
   if ( image )
-    throwException( image->exception );
+    {
+      (void) DestroyExceptionInfo( &exceptionInfo );
+      throwException( image->exception );
+    }
   throwException( exceptionInfo );
   (void) DestroyExceptionInfo( &exceptionInfo );
   replaceImage( image );
@@ -1624,9 +1641,9 @@ void Magick::Image::read ( const Blob &blob_ )
 		 blob_.length(), &exceptionInfo );
   replaceImage( image );
   throwException( exceptionInfo );
+  (void) DestroyExceptionInfo( &exceptionInfo );
   if ( image )
     throwException( image->exception );
-  (void) DestroyExceptionInfo( &exceptionInfo );
 }
 
 // Read image of specified size from in-memory BLOB
@@ -1699,9 +1716,9 @@ void Magick::Image::read ( const size_t width_,
                      &exceptionInfo );
   replaceImage( image );
   throwException( exceptionInfo );
+  (void) DestroyExceptionInfo( &exceptionInfo );
   if ( image )
     throwException( image->exception );
-  (void) DestroyExceptionInfo( &exceptionInfo );
 }
 
 // Reduce noise in image

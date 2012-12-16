@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -220,7 +220,8 @@ static inline double MagickMin(const double x,const double y)
 }
 
 static MagickRealType ApplyEvaluateOperator(RandomInfo *random_info,
-  Quantum pixel,const MagickEvaluateOperator op,const MagickRealType value)
+  const Quantum pixel,const MagickEvaluateOperator op,
+  const MagickRealType value)
 {
   MagickRealType
     result;
@@ -428,9 +429,6 @@ MagickExport Image *EvaluateImages(const Image *images,
   CacheView
     *evaluate_view;
 
-  const Image
-    *next;
-
   Image
     *image;
 
@@ -453,28 +451,17 @@ MagickExport Image *EvaluateImages(const Image *images,
   ssize_t
     y;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   unsigned long
     key;
+#endif
 
-  /*
-    Ensure the image are the same size.
-  */
   assert(images != (Image *) NULL);
   assert(images->signature == MagickSignature);
   if (images->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  for (next=images; next != (Image *) NULL; next=GetNextImageInList(next))
-    if ((next->columns != images->columns) || (next->rows != images->rows))
-      {
-        (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-          "ImageWidthsOrHeightsDiffer","`%s'",images->filename);
-        return((Image *) NULL);
-      }
-  /*
-    Initialize evaluate next attributes.
-  */
   image=CloneImage(images,images->columns,images->rows,MagickTrue,exception);
   if (image == (Image *) NULL)
     return((Image *) NULL);
@@ -500,12 +487,14 @@ MagickExport Image *EvaluateImages(const Image *images,
   progress=0;
   GetMagickPixelPacket(images,&zero);
   random_info=AcquireRandomInfoThreadSet();
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   key=GetRandomSecretKey(random_info[0]);
+#endif
   evaluate_view=AcquireAuthenticCacheView(image,exception);
   if (op == MedianEvaluateOperator)
     {
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static) shared(progress,status) \
+      #pragma omp parallel for schedule(static,4) shared(progress,status) \
         dynamic_number_threads(image,image->columns,image->rows,key == ~0UL)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
@@ -615,7 +604,7 @@ MagickExport Image *EvaluateImages(const Image *images,
   else
     {
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static) shared(progress,status) \
+      #pragma omp parallel for schedule(static,4) shared(progress,status) \
         dynamic_number_threads(image,image->columns,image->rows,key == ~0UL)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
@@ -777,8 +766,10 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
   ssize_t
     y;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   unsigned long
     key;
+#endif
 
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
@@ -794,7 +785,9 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
   status=MagickTrue;
   progress=0;
   random_info=AcquireRandomInfoThreadSet();
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   key=GetRandomSecretKey(random_info[0]);
+#endif
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
@@ -1887,6 +1880,236 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%     P o l y n o m i a l I m a g e                                           %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  PolynomialImage() returns a new image where each pixel is the sum of the
+%  pixels in the image sequence after applying its corresponding terms
+%  (coefficient and degree pairs).
+%
+%  The format of the PolynomialImage method is:
+%
+%      Image *PolynomialImage(const Image *images,const size_t number_terms,
+%        const double *terms,ExceptionInfo *exception)
+%      Image *PolynomialImageChannel(const Image *images,
+%        const size_t number_terms,const ChannelType channel,
+%        const double *terms,ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o images: the image sequence.
+%
+%    o channel: the channel.
+%
+%    o number_terms: the number of terms in the list.  The actual list length
+%      is 2 x number_terms + 1 (the constant).
+%
+%    o terms: the list of polynomial coefficients and degree pairs and a
+%      constant.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+MagickExport Image *PolynomialImage(const Image *images,
+  const size_t number_terms,const double *terms,ExceptionInfo *exception)
+{
+  Image
+    *polynomial_image;
+
+  polynomial_image=PolynomialImageChannel(images,DefaultChannels,number_terms,
+    terms,exception);
+  return(polynomial_image);
+}
+
+MagickExport Image *PolynomialImageChannel(const Image *images,
+  const ChannelType channel,const size_t number_terms,const double *terms,
+  ExceptionInfo *exception)
+{
+#define PolynomialImageTag  "Polynomial/Image"
+
+  CacheView
+    *polynomial_view;
+
+  Image
+    *image;
+
+  MagickBooleanType
+    status;
+
+  MagickOffsetType
+    progress;
+
+  MagickPixelPacket
+    **restrict polynomial_pixels,
+    zero;
+
+  size_t
+    number_images;
+
+  ssize_t
+    y;
+
+  assert(images != (Image *) NULL);
+  assert(images->signature == MagickSignature);
+  if (images->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickSignature);
+  image=CloneImage(images,images->columns,images->rows,MagickTrue,exception);
+  if (image == (Image *) NULL)
+    return((Image *) NULL);
+  if (SetImageStorageClass(image,DirectClass) == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      image=DestroyImage(image);
+      return((Image *) NULL);
+    }
+  number_images=GetImageListLength(images);
+  polynomial_pixels=AcquirePixelThreadSet(images,number_images);
+  if (polynomial_pixels == (MagickPixelPacket **) NULL)
+    {
+      image=DestroyImage(image);
+      (void) ThrowMagickException(exception,GetMagickModule(),
+        ResourceLimitError,"MemoryAllocationFailed","`%s'",images->filename);
+      return((Image *) NULL);
+    }
+  /*
+    Polynomial image pixels.
+  */
+  status=MagickTrue;
+  progress=0;
+  GetMagickPixelPacket(images,&zero);
+  polynomial_view=AcquireAuthenticCacheView(image,exception);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    dynamic_number_threads(image,image->columns,image->rows,1)
+#endif
+  for (y=0; y < (ssize_t) image->rows; y++)
+  {
+    CacheView
+      *image_view;
+
+    const Image
+      *next;
+
+    const int
+      id = GetOpenMPThreadId();
+
+    register IndexPacket
+      *restrict polynomial_indexes;
+
+    register MagickPixelPacket
+      *polynomial_pixel;
+
+    register PixelPacket
+      *restrict q;
+
+    register ssize_t
+      i,
+      x;
+
+    if (status == MagickFalse)
+      continue;
+    q=QueueCacheViewAuthenticPixels(polynomial_view,0,y,image->columns,1,
+      exception);
+    if (q == (PixelPacket *) NULL)
+      {
+        status=MagickFalse;
+        continue;
+      }
+    polynomial_indexes=GetCacheViewAuthenticIndexQueue(polynomial_view);
+    polynomial_pixel=polynomial_pixels[id];
+    for (x=0; x < (ssize_t) image->columns; x++)
+      polynomial_pixel[x]=zero;
+    next=images;
+    for (i=0; i < (ssize_t) number_images; i++)
+    {
+      register const IndexPacket
+        *indexes;
+
+      register const PixelPacket
+        *p;
+
+      if (i >= (ssize_t) number_terms)
+        break;
+      image_view=AcquireVirtualCacheView(next,exception);
+      p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
+      if (p == (const PixelPacket *) NULL)
+        {
+          image_view=DestroyCacheView(image_view);
+          break;
+        }
+      indexes=GetCacheViewVirtualIndexQueue(image_view);
+      for (x=0; x < (ssize_t) image->columns; x++)
+      {
+        double
+          coefficient,
+          degree;
+
+        coefficient=terms[i << 1];
+        degree=terms[(i << 1)+1];
+        polynomial_pixel[x].red+=coefficient*pow(QuantumScale*p->red,degree);
+        polynomial_pixel[x].green+=coefficient*pow(QuantumScale*p->green,
+          degree);
+        polynomial_pixel[x].blue+=coefficient*pow(QuantumScale*p->blue,degree);
+        polynomial_pixel[x].opacity+=coefficient*pow(QuantumScale*p->opacity,
+          degree);
+        if (image->colorspace == CMYKColorspace)
+          polynomial_pixel[x].index+=coefficient*pow(QuantumScale*indexes[x],
+            degree);
+        p++;
+      }
+      image_view=DestroyCacheView(image_view);
+      next=GetNextImageInList(next);
+    }
+    for (x=0; x < (ssize_t) image->columns; x++)
+    {
+      SetPixelRed(q,ClampToQuantum(QuantumRange*polynomial_pixel[x].red));
+      SetPixelGreen(q,ClampToQuantum(QuantumRange*polynomial_pixel[x].green));
+      SetPixelBlue(q,ClampToQuantum(QuantumRange*polynomial_pixel[x].blue));
+      if (image->matte == MagickFalse)
+        SetPixelOpacity(q,ClampToQuantum(QuantumRange*
+          polynomial_pixel[x].opacity));
+      else
+        SetPixelAlpha(q,ClampToQuantum(QuantumRange*
+          polynomial_pixel[x].opacity));
+      if (image->colorspace == CMYKColorspace)
+        SetPixelIndex(polynomial_indexes+x,ClampToQuantum(QuantumRange*
+          polynomial_pixel[x].index));
+      q++;
+    }
+    if (SyncCacheViewAuthenticPixels(polynomial_view,exception) == MagickFalse)
+      status=MagickFalse;
+    if (images->progress_monitor != (MagickProgressMonitor) NULL)
+      {
+        MagickBooleanType
+          proceed;
+
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+        #pragma omp critical (MagickCore_PolynomialImages)
+#endif
+        proceed=SetImageProgress(images,PolynomialImageTag,progress++,
+          image->rows);
+        if (proceed == MagickFalse)
+          status=MagickFalse;
+      }
+  }
+  polynomial_view=DestroyCacheView(polynomial_view);
+  polynomial_pixels=DestroyPixelThreadSet(polynomial_pixels);
+  if (status == MagickFalse)
+    image=DestroyImage(image);
+  return(image);
+}
+
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %     S t a t i s t i c I m a g e                                             %
 %                                                                             %
 %                                                                             %
@@ -2721,5 +2944,7 @@ MagickExport Image *StatisticImageChannel(const Image *image,
   statistic_view=DestroyCacheView(statistic_view);
   image_view=DestroyCacheView(image_view);
   pixel_list=DestroyPixelListThreadSet(pixel_list);
+  if (status == MagickFalse)
+    statistic_image=DestroyImage(statistic_image);
   return(statistic_image);
 }

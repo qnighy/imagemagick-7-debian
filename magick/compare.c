@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1078,7 +1078,7 @@ static MagickBooleanType GetNormalizedCrossCorrelationDistortion(
 
     gamma=image_statistics[i].standard_deviation*
       reconstruct_statistics[i].standard_deviation;
-    gamma=MagickEpsilonReciprocal(gamma);
+    gamma=PerceptibleReciprocal(gamma);
     distortion[i]=QuantumRange*gamma*distortion[i];
   }
   distortion[CompositeChannels]=0.0;
@@ -1218,7 +1218,7 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
       q++;
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp critical (MagickCore_GetPeakAbsoluteError) 
+    #pragma omp critical (MagickCore_GetPeakAbsoluteError)
 #endif
     for (i=0; i <= (ssize_t) CompositeChannels; i++)
       if (channel_distortion[i] > distortion[i])
@@ -1868,5 +1868,7 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
       }
   }
   similarity_view=DestroyCacheView(similarity_view);
+  if (status == MagickFalse)
+    similarity_image=DestroyImage(similarity_image);
   return(similarity_image);
 }

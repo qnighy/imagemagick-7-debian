@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -423,7 +423,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
     /*
-      Convert PNM pixels to runextent-encoded MIFF packets.
+      Convert PNM pixels.
     */
     status=MagickTrue;
     row=0;
@@ -781,6 +781,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         quantum_info=AcquireQuantumInfo(image_info,image);
         if (quantum_info == (QuantumInfo *) NULL)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        (void) SetQuantumEndian(image,quantum_info,MSBEndian);
         for (y=0; y < (ssize_t) image->rows; y++)
         {
           MagickBooleanType
@@ -1167,6 +1168,8 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Convert PFM raster image to pixel packets.
         */
+        if (format == 'f')
+          SetImageColorspace(image,GRAYColorspace);
         quantum_type=format == 'f' ? GrayQuantum : RGBQuantum;
         image->endian=quantum_scale < 0.0 ? LSBEndian : MSBEndian;
         image->depth=32;
@@ -1614,7 +1617,7 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         (void) WriteBlobString(image,buffer);
       }
     /*
-      Convert runextent encoded to PNM raster pixels.
+      Convert to PNM raster pixels.
     */
     switch (format)
     {
@@ -1936,6 +1939,7 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         quantum_info=AcquireQuantumInfo((const ImageInfo *) NULL,image);
         if (quantum_info == (QuantumInfo *) NULL)
           ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+        (void) SetQuantumEndian(image,quantum_info,MSBEndian);
         pixels=GetQuantumPixels(quantum_info);
         extent=GetQuantumExtent(image,quantum_info,quantum_type);
         range=GetQuantumRange(image->depth);
@@ -2166,8 +2170,8 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
       case 'F':
       case 'f':
       {
-        (void) WriteBlobString(image,image->endian != LSBEndian ? "1.0\n" :
-          "-1.0\n");
+        (void) WriteBlobString(image,image->endian == LSBEndian ? "-1.0\n" :
+          "1.0\n");
         image->depth=32;
         quantum_type=format == 'f' ? GrayQuantum : RGBQuantum;
         quantum_info=AcquireQuantumInfo((const ImageInfo *) NULL,image);

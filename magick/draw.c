@@ -18,7 +18,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -222,8 +222,8 @@ MagickExport DrawInfo *AcquireDrawInfo(void)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  CloneDrawInfo() makes a copy of the given draw_info structure.  If NULL
-%  is specified, a new draw_info structure is created initialized to
-%  default values, according to the given image_info.
+%  is specified, a new DrawInfo structure is created initialized to default
+%  values.
 %
 %  The format of the CloneDrawInfo method is:
 %
@@ -1055,7 +1055,7 @@ static AffineMatrix InverseAffineMatrix(const AffineMatrix *affine)
   double
     determinant;
 
-  determinant=MagickEpsilonReciprocal(affine->sx*affine->sy-affine->rx*
+  determinant=PerceptibleReciprocal(affine->sx*affine->sy-affine->rx*
     affine->ry);
   inverse_affine.sx=determinant*affine->sy;
   inverse_affine.rx=determinant*(-affine->rx);
@@ -1120,9 +1120,11 @@ MagickExport MagickBooleanType DrawAffineImage(Image *image,
   SegmentInfo
     edge;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
   size_t
     height,
     width;
+#endif
 
   ssize_t
     start,
@@ -1181,12 +1183,14 @@ MagickExport MagickBooleanType DrawAffineImage(Image *image,
   exception=(&image->exception);
   start=(ssize_t) ceil(edge.y1-0.5);
   stop=(ssize_t) floor(edge.y2+0.5);
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
   height=(size_t) (floor(edge.y2+0.5)-ceil(edge.y1-0.5));
   width=(size_t) (floor(edge.x2+0.5)-ceil(edge.x1-0.5));
+#endif
   source_view=AcquireVirtualCacheView(source,exception);
   image_view=AcquireAuthenticCacheView(image,exception);
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static) shared(status) \
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
+  #pragma omp parallel for schedule(static,4) shared(status) \
     dynamic_number_threads(image,width,height,1)
 #endif
   for (y=start; y <= stop; y++)
@@ -1217,8 +1221,8 @@ MagickExport MagickBooleanType DrawAffineImage(Image *image,
     if (inverse_edge.x2 < inverse_edge.x1)
       continue;
     q=GetCacheViewAuthenticPixels(image_view,(ssize_t) ceil(inverse_edge.x1-
-      0.5),y,(size_t) ((ssize_t) floor(inverse_edge.x2+0.5)-(ssize_t) floor(
-      inverse_edge.x1+0.5)+1),1,exception);
+      0.5),y,(size_t) (floor(inverse_edge.x2+0.5)-ceil(inverse_edge.x1-0.5)),1,
+      exception);
     if (q == (PixelPacket *) NULL)
       continue;
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
@@ -1786,7 +1790,7 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
       ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
         image->filename);
     }
-  number_points=2047;
+  number_points=6553;
   primitive_info=(PrimitiveInfo *) AcquireQuantumMemory((size_t) number_points,
     sizeof(*primitive_info));
   if (primitive_info == (PrimitiveInfo *) NULL)
@@ -3215,7 +3219,7 @@ static inline MagickRealType GetStopColorOffset(const GradientInfo *gradient,
       q.y=(double) y-gradient_vector->y1;
       length=sqrt(q.x*q.x+q.y*q.y);
       gamma=sqrt(p.x*p.x+p.y*p.y)*length;
-      gamma=MagickEpsilonReciprocal(gamma);
+      gamma=PerceptibleReciprocal(gamma);
       scale=p.x*q.x+p.y*q.y;
       offset=gamma*scale*length;
       return(offset);
@@ -3271,9 +3275,11 @@ MagickExport MagickBooleanType DrawGradientImage(Image *image,
   RectangleInfo
     bounding_box;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
   size_t
     height,
     width;
+#endif
 
   ssize_t
     y;
@@ -3295,11 +3301,13 @@ MagickExport MagickBooleanType DrawGradientImage(Image *image,
   status=MagickTrue;
   exception=(&image->exception);
   GetMagickPixelPacket(image,&zero);
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
   height=(size_t) (bounding_box.height-bounding_box.y);
   width=(size_t) (bounding_box.width-bounding_box.x);
+#endif
   image_view=AcquireAuthenticCacheView(image,exception);
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static) shared(status) \
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
+  #pragma omp parallel for schedule(static,4) shared(status) \
     dynamic_number_threads(image,width,height,1)
 #endif
   for (y=bounding_box.y; y < (ssize_t) bounding_box.height; y++)
@@ -3648,7 +3656,7 @@ static PolygonInfo **AcquirePolygonThreadSet(const DrawInfo *draw_info,
 
 static MagickRealType GetOpacityPixel(PolygonInfo *polygon_info,
   const MagickRealType mid,const MagickBooleanType fill,
-  const FillRule fill_rule,const double x,const double y,
+  const FillRule fill_rule,const ssize_t x,const ssize_t y,
   MagickRealType *stroke_opacity)
 {
   MagickRealType
@@ -3681,25 +3689,26 @@ static MagickRealType GetOpacityPixel(PolygonInfo *polygon_info,
   p=polygon_info->edges;
   for (j=0; j < (ssize_t) polygon_info->number_edges; j++, p++)
   {
-    if (y <= (p->bounds.y1-mid-0.5))
+    if ((double) y <= (p->bounds.y1-mid-0.5))
       break;
-    if (y > (p->bounds.y2+mid+0.5))
+    if ((double) y > (p->bounds.y2+mid+0.5))
       {
         (void) DestroyEdge(polygon_info,(size_t) j);
         continue;
       }
-    if ((x <= (p->bounds.x1-mid-0.5)) || (x > (p->bounds.x2+mid+0.5)))
+    if (((double) x <= (p->bounds.x1-mid-0.5)) ||
+        ((double) x > (p->bounds.x2+mid+0.5)))
       continue;
     i=(ssize_t) MagickMax((double) p->highwater,1.0);
     for ( ; i < (ssize_t) p->number_points; i++)
     {
-      if (y <= (p->points[i-1].y-mid-0.5))
+      if ((double) y <= (p->points[i-1].y-mid-0.5))
         break;
-      if (y > (p->points[i].y+mid+0.5))
+      if ((double) y > (p->points[i].y+mid+0.5))
         continue;
-      if (p->scanline != y)
+      if (p->scanline != (double) y)
         {
-          p->scanline=y;
+          p->scanline=(double) y;
           p->highwater=(size_t) i;
         }
       /*
@@ -3711,8 +3720,8 @@ static MagickRealType GetOpacityPixel(PolygonInfo *polygon_info,
       beta=delta.x*(x-q->x)+delta.y*(y-q->y);
       if (beta < 0.0)
         {
-          delta.x=x-q->x;
-          delta.y=y-q->y;
+          delta.x=(double) x-q->x;
+          delta.y=(double) y-q->y;
           distance=delta.x*delta.x+delta.y*delta.y;
         }
       else
@@ -3720,13 +3729,13 @@ static MagickRealType GetOpacityPixel(PolygonInfo *polygon_info,
           alpha=delta.x*delta.x+delta.y*delta.y;
           if (beta > alpha)
             {
-              delta.x=x-(q+1)->x;
-              delta.y=y-(q+1)->y;
+              delta.x=(double) x-(q+1)->x;
+              delta.y=(double) y-(q+1)->y;
               distance=delta.x*delta.x+delta.y*delta.y;
             }
           else
             {
-              alpha=1.0/alpha;
+              alpha=PerceptibleReciprocal(alpha);
               beta=delta.x*(y-q->y)-delta.y*(x-q->x);
               distance=alpha*beta*beta;
             }
@@ -3789,18 +3798,18 @@ static MagickRealType GetOpacityPixel(PolygonInfo *polygon_info,
   p=polygon_info->edges;
   for (j=0; j < (ssize_t) polygon_info->number_edges; j++, p++)
   {
-    if (y <= p->bounds.y1)
+    if ((double) y <= p->bounds.y1)
       break;
-    if ((y > p->bounds.y2) || (x <= p->bounds.x1))
+    if (((double) y > p->bounds.y2) || ((double) x <= p->bounds.x1))
       continue;
-    if (x > p->bounds.x2)
+    if ((double) x > p->bounds.x2)
       {
         winding_number+=p->direction ? 1 : -1;
         continue;
       }
     i=(ssize_t) MagickMax((double) p->highwater,1.0);
     for ( ; i < (ssize_t) p->number_points; i++)
-      if (y <= p->points[i].y)
+      if ((double) y <= p->points[i].y)
         break;
     q=p->points+i-1;
     if ((((q+1)->x-q->x)*(y-q->y)) <= (((q+1)->y-q->y)*(x-q->x)))
@@ -3845,9 +3854,11 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
   SegmentInfo
     bounds;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   size_t
     height,
     width;
+#endif
 
   ssize_t
     start,
@@ -3891,20 +3902,22 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
   }
   bounds.x1-=(mid+1.0);
   bounds.x1=bounds.x1 < 0.0 ? 0.0 : (size_t) ceil(bounds.x1-0.5) >=
-    image->columns ? (double) image->columns-1.0 : bounds.x1;
+    image->columns ? (double) image->columns-1 : bounds.x1;
   bounds.y1-=(mid+1.0);
   bounds.y1=bounds.y1 < 0.0 ? 0.0 : (size_t) ceil(bounds.y1-0.5) >=
-    image->rows ? (double) image->rows-1.0 : bounds.y1;
+    image->rows ? (double) image->rows-1 : bounds.y1;
   bounds.x2+=(mid+1.0);
   bounds.x2=bounds.x2 < 0.0 ? 0.0 : (size_t) floor(bounds.x2+0.5) >=
-    image->columns ? (double) image->columns-1.0 : bounds.x2;
+    image->columns ? (double) image->columns-1 : bounds.x2;
   bounds.y2+=(mid+1.0);
   bounds.y2=bounds.y2 < 0.0 ? 0.0 : (size_t) floor(bounds.y2+0.5) >=
-    image->rows ? (double) image->rows-1.0 : bounds.y2;
+    image->rows ? (double) image->rows-1 : bounds.y2;
   status=MagickTrue;
   exception=(&image->exception);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (floor(bounds.y2+0.5)-ceil(bounds.y1-0.5));
   width=(size_t) (floor(bounds.x2+0.5)-ceil(bounds.x1-0.5));
+#endif
   image_view=AcquireAuthenticCacheView(image,exception);
   if (primitive_info->coordinates == 1)
     {
@@ -3913,20 +3926,20 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
       */
       start=(ssize_t) ceil(bounds.y1-0.5);
       stop=(ssize_t) floor(bounds.y2+0.5);
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static) shared(status) \
-        dynamic_number_threads(image,width,height,1)
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
+      #pragma omp parallel for schedule(static,4) shared(status) \
+        dynamic_number_threads(image,width,height,0)
 #endif
       for (y=start; y <= stop; y++)
       {
         MagickBooleanType
           sync;
 
-        register ssize_t
-          x;
-
         register PixelPacket
           *restrict q;
+
+        register ssize_t
+          x;
 
         ssize_t
           start,
@@ -3970,7 +3983,7 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
   start=(ssize_t) ceil(bounds.y1-0.5);
   stop=(ssize_t) floor(bounds.y2+0.5);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static) shared(status) \
+  #pragma omp parallel for schedule(static,4) shared(status) \
     dynamic_number_threads(image,width,height,1)
 #endif
   for (y=start; y <= stop; y++)
@@ -4013,7 +4026,7 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
         Fill and/or stroke.
       */
       fill_opacity=GetOpacityPixel(polygon_info[id],mid,fill,
-        draw_info->fill_rule,(double) x,(double) y,&stroke_opacity);
+        draw_info->fill_rule,x,y,&stroke_opacity);
       if (draw_info->stroke_antialias == MagickFalse)
         {
           fill_opacity=fill_opacity > 0.25 ? 1.0 : 0.0;
@@ -4993,7 +5006,7 @@ static void TraceArcPath(PrimitiveInfo *primitive_info,const PointInfo start,
   points[1].y=(double) (cosine*end.y/radii.y-sine*end.x/radii.y);
   alpha=points[1].x-points[0].x;
   beta=points[1].y-points[0].y;
-  factor=MagickEpsilonReciprocal(alpha*alpha+beta*beta)-0.25;
+  factor=PerceptibleReciprocal(alpha*alpha+beta*beta)-0.25;
   if (factor <= 0.0)
     factor=0.0;
   else

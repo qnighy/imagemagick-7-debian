@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -537,7 +537,7 @@ static MagickBooleanType WriteCALSImage(const ImageInfo *image_info,
   count=WriteCALSRecord(image,header);
   (void) FormatLocaleString(header,MaxTextExtent,"rpelcnt: %06lu,%06lu",
     (unsigned long) image->columns,(unsigned long) image->rows);
-  count=WriteCALSRecord(image,header);  
+  count=WriteCALSRecord(image,header);
   density=200;
   if (image_info->density != (char *) NULL)
     {

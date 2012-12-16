@@ -17,7 +17,7 @@
 %                                 March 2011                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -347,13 +347,10 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
   picture.stats=(&statistics);
   picture.width=(int) image->columns;
   picture.height=(int) image->rows;
-  if (image->quality != UndefinedCompressionQuality)
-    configure.quality=(float) image->quality;
   if (WebPConfigInit(&configure) == 0)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
-  /*
-    Future: set custom configuration parameters here.
-  */
+  if (image->quality != UndefinedCompressionQuality)
+    configure.quality=(float) image->quality;
   if (WebPValidateConfig(&configure) == 0)
     ThrowWriterException(ResourceLimitError,"UnableToEncodeImageFile");
   /*
@@ -392,6 +389,7 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
     webp_status=WebPPictureImportRGBA(&picture,pixels,4*picture.width);
   pixels=(unsigned char *) RelinquishMagickMemory(pixels);
   webp_status=WebPEncode(&configure,&picture);
+  WebPPictureFree(&picture);
   (void) CloseBlob(image);
   return(webp_status == 0 ? MagickFalse : MagickTrue);
 }

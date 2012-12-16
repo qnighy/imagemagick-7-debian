@@ -17,7 +17,7 @@
 %                               September 2002                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -108,7 +108,7 @@ static ResourceInfo
     MagickULLConstant(3072)*1024*1024,
     MagickResourceInfinity,
     MagickULLConstant(768),
-    MagickULLConstant(4),
+    MagickULLConstant(1),
     MagickResourceInfinity
   };
 
@@ -336,10 +336,11 @@ static void *DestroyTemporaryResources(void *temporary_resource)
   return((void *) NULL);
 }
 
-static MagickBooleanType GetPathTemplate(char *path)
+MagickExport MagickBooleanType GetPathTemplate(char *path)
 {
   char
-    *directory;
+    *directory,
+    *value;
 
   ExceptionInfo
     *exception;
@@ -353,7 +354,8 @@ static MagickBooleanType GetPathTemplate(char *path)
   struct stat
     attributes;
 
-  (void) CopyMagickString(path,"magick-XXXXXXXX",MaxTextExtent);
+  (void) FormatLocaleString(path,MaxTextExtent,"magick-%.20gXXXXXXXXXXXX",
+    (double) getpid());
   exception=AcquireExceptionInfo();
   directory=(char *) GetImageRegistry(StringRegistryType,"temporary-path",
     exception);
@@ -362,10 +364,6 @@ static MagickBooleanType GetPathTemplate(char *path)
     directory=GetEnvironmentValue("MAGICK_TEMPORARY_PATH");
   if (directory == (char *) NULL)
     directory=GetEnvironmentValue("MAGICK_TMPDIR");
-  if (directory == (char *) NULL)
-    directory=GetPolicyValue("temporary-path");
-  if (directory == (char *) NULL)
-    directory=GetEnvironmentValue("TMPDIR");
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__OS2__)
   if (directory == (char *) NULL)
     directory=GetEnvironmentValue("TMP");
@@ -381,23 +379,29 @@ static MagickBooleanType GetPathTemplate(char *path)
     directory=ConstantString(P_tmpdir);
 #endif
   if (directory == (char *) NULL)
+    directory=GetEnvironmentValue("TMPDIR");
+  if (directory == (char *) NULL)
     return(MagickTrue);
-  if (strlen(directory) > (MaxTextExtent-15))
+  value=GetPolicyValue("temporary-path");
+  if (value != (char *) NULL)
+    (void) CloneString(&directory,value);
+  if (strlen(directory) > (MaxTextExtent-25))
     {
       directory=DestroyString(directory);
-      return(MagickTrue);
+      return(MagickFalse);
     }
   status=GetPathAttributes(directory,&attributes);
   if ((status == MagickFalse) || !S_ISDIR(attributes.st_mode))
     {
       directory=DestroyString(directory);
-      return(MagickTrue);
+      return(MagickFalse);
     }
   if (directory[strlen(directory)-1] == *DirectorySeparator)
-    (void) FormatLocaleString(path,MaxTextExtent,"%smagick-XXXXXXXX",directory);
+    (void) FormatLocaleString(path,MaxTextExtent,"%smagick-%.20gXXXXXXXXXXXX",
+      directory,(double) getpid());
   else
-    (void) FormatLocaleString(path,MaxTextExtent,"%s%smagick-XXXXXXXX",
-      directory,DirectorySeparator);
+    (void) FormatLocaleString(path,MaxTextExtent,"%s%smagick-%.20gXXXXXXXXXXXX",
+      directory,DirectorySeparator,(double) getpid());
   directory=DestroyString(directory);
   if (*DirectorySeparator != '/')
     for (p=path; *p != '\0'; p++)
@@ -436,7 +440,7 @@ MagickExport int AcquireUniqueFileResource(char *path)
     *datum;
 
   assert(path != (char *) NULL);
-  (void) LogMagickEvent(ResourceEvent,GetMagickModule(),"%s",path);
+  (void) LogMagickEvent(ResourceEvent,GetMagickModule(),"Acquire %s",path);
   if (random_info == (RandomInfo *) NULL)
     random_info=AcquireRandomInfo();
   file=(-1);
@@ -446,8 +450,8 @@ MagickExport int AcquireUniqueFileResource(char *path)
       Get temporary pathname.
     */
     (void) GetPathTemplate(path);
-    key=GetRandomKey(random_info,2);
-    p=path+strlen(path)-8;
+    key=GetRandomKey(random_info,6);
+    p=path+strlen(path)-12;
     datum=GetStringInfoDatum(key);
     for (i=0; i < (ssize_t) GetStringInfoLength(key); i++)
     {
@@ -463,8 +467,8 @@ MagickExport int AcquireUniqueFileResource(char *path)
     if (file != -1)
       break;
 #endif
-    key=GetRandomKey(random_info,6);
-    p=path+strlen(path)-6;
+    key=GetRandomKey(random_info,12);
+    p=path+strlen(path)-12;
     datum=GetStringInfoDatum(key);
     for (i=0; i < (ssize_t) GetStringInfoLength(key); i++)
     {
@@ -472,11 +476,12 @@ MagickExport int AcquireUniqueFileResource(char *path)
       *p++=portable_filename[c];
     }
     key=DestroyStringInfo(key);
-    file=open_utf8(path,O_RDWR | O_CREAT | O_EXCL | O_BINARY | O_NOFOLLOW,S_MODE);
+    file=open_utf8(path,O_RDWR | O_CREAT | O_EXCL | O_BINARY | O_NOFOLLOW,
+      S_MODE);
     if ((file >= 0) || (errno != EEXIST))
       break;
   }
-  (void) LogMagickEvent(ResourceEvent,GetMagickModule(),"%s",path);
+  (void) LogMagickEvent(ResourceEvent,GetMagickModule(),"Acquire %s",path);
   if (file == -1)
     return(file);
   if (resource_semaphore == (SemaphoreInfo *) NULL)
@@ -689,12 +694,12 @@ MagickExport MagickBooleanType ListMagickResourceInfo(FILE *file,
   if (resource_info.time_limit != MagickResourceInfinity)
     (void) FormatLocaleString(time_limit,MaxTextExtent,"%.20g",(double)
       ((MagickOffsetType) resource_info.time_limit));
-  (void) FormatLocaleFile(file,"File         Area       Memory          Map"
+  (void) FormatLocaleFile(file,"  File        Area      Memory          Map"
     "         Disk    Thread         Time\n");
   (void) FormatLocaleFile(file,
     "--------------------------------------------------------"
     "-----------------------\n");
-  (void) FormatLocaleFile(file,"%4g   %10s   %10s   %10s   %10s    %6g  %11s\n",
+  (void) FormatLocaleFile(file,"%6g  %10s  %10s   %10s   %10s    %6g  %11s\n",
     (double) ((MagickOffsetType) resource_info.file_limit),area_limit,
     memory_limit,map_limit,disk_limit,(double) ((MagickOffsetType)
     resource_info.thread_limit),time_limit);
@@ -841,7 +846,7 @@ MagickExport MagickBooleanType RelinquishUniqueFileResource(const char *path)
     cache_path[MaxTextExtent];
 
   assert(path != (const char *) NULL);
-  (void) LogMagickEvent(ResourceEvent,GetMagickModule(),"%s",path);
+  (void) LogMagickEvent(ResourceEvent,GetMagickModule(),"Relinquish %s",path);
   if (temporary_resources != (SplayTreeInfo *) NULL)
     {
       register char

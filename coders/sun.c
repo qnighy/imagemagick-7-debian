@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -398,7 +398,7 @@ static Image *ReadSUNImage(const ImageInfo *image_info,ExceptionInfo *exception)
         sun_info.length || !sun_info.length)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
     number_pixels=(MagickSizeType) image->columns*image->rows;
-    if ((sun_info.depth >= 8) &&
+    if ((sun_info.type != RT_ENCODED) && (sun_info.depth >= 8) &&
         ((number_pixels*((sun_info.depth+7)/8)) > sun_info.length))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     sun_data=(unsigned char *) AcquireQuantumMemory((size_t) sun_info.length,
@@ -764,8 +764,8 @@ static MagickBooleanType WriteSUNImage(const ImageInfo *image_info,Image *image)
       ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
     sun_info.width=(unsigned int) image->columns;
     sun_info.height=(unsigned int) image->rows;
-    sun_info.type=(unsigned int) 
-      (image->storage_class == DirectClass ? RT_FORMAT_RGB : RT_STANDARD);
+    sun_info.type=(unsigned int) (image->storage_class == DirectClass ?
+      RT_FORMAT_RGB : RT_STANDARD);
     sun_info.maptype=RMT_NONE;
     sun_info.maplength=0;
     number_pixels=(MagickSizeType) image->columns*image->rows;

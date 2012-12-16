@@ -16,7 +16,7 @@
 %                              December 2001                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -44,7 +44,7 @@
 #if defined(__VMS)
 #include <time.h>
 #endif
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(__MINGW64__)
 #include <sys/time.h>
 #endif
 #include "magick/studio.h"

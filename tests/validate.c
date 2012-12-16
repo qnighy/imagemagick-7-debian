@@ -18,7 +18,7 @@
 %                               March 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -45,8 +45,10 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include <locale.h>
 #include "wand/MagickWand.h"
 #include "magick/colorspace-private.h"
+#include "magick/resource_.h"
 #include "magick/string-private.h"
 #include "validate.h"
 
@@ -84,8 +86,8 @@
 %
 */
 static size_t ValidateCompareCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -175,8 +177,8 @@ static size_t ValidateCompareCommand(ImageInfo *image_info,
 %
 */
 static size_t ValidateCompositeCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -267,8 +269,8 @@ static size_t ValidateCompositeCommand(ImageInfo *image_info,
 %
 */
 static size_t ValidateConvertCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -358,8 +360,8 @@ static size_t ValidateConvertCommand(ImageInfo *image_info,
 %
 */
 static size_t ValidateIdentifyCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -449,11 +451,22 @@ static size_t ValidateIdentifyCommand(ImageInfo *image_info,
 %    o exception: return any errors or warnings in this structure.
 %
 */
+
+/*
+  Enable this to count remaining $TMPDIR/magick-* files.  Note that the count
+  includes any files left over from other runs.
+*/
+#undef MagickCountTempFiles
+
 static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
+#ifdef MagickCountTempFiles
+    SystemCommand[MaxTextExtent],
+    path[MaxTextExtent],
+#endif
     size[MaxTextExtent];
 
   const MagickInfo
@@ -487,6 +500,14 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
 
   test=0;
   (void) FormatLocaleFile(stdout,"validate image formats in memory:\n");
+
+#ifdef MagickCountTempFiles
+  (void)GetPathTemplate(path);
+  /* Remove file template except for the leading "magick-" */
+  path[strlen(path)-17]='\0';
+  (void) FormatLocaleFile(stdout," tmp path is '%s*'\n",path);
+#endif
+
   for (i=0; reference_formats[i].magick != (char *) NULL; i++)
   {
     magick_info=GetMagickInfo(reference_formats[i].magick,exception);
@@ -660,7 +681,19 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
           (*fail)++;
           continue;
         }
-      (void) FormatLocaleFile(stdout,"... pass.\n");
+
+#ifdef MagickCountTempFiles
+      (void) FormatLocaleFile(stdout,"... pass, ");
+      (void) fflush(stdout);
+      SystemCommand[0]='\0';
+      (void)strncat(SystemCommand,"echo `ls ",9);
+      (void)strncat(SystemCommand,path,MaxTextExtent-31);
+      (void)strncat(SystemCommand,"* | wc -w` tmp files.",20);
+      (void)system(SystemCommand);
+      (void) fflush(stdout);
+#else
+      (void) FormatLocaleFile(stdout,"... pass\n");
+#endif
     }
   }
   (void) FormatLocaleFile(stdout,
@@ -703,8 +736,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
 %
 */
 static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     size[MaxTextExtent];
@@ -919,8 +952,8 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
 %
 */
 static size_t ValidateImportExportPixels(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   double
     distortion;
@@ -1097,8 +1130,8 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
 %
 */
 static size_t ValidateMontageCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -1189,8 +1222,8 @@ static size_t ValidateMontageCommand(ImageInfo *image_info,
 %
 */
 static size_t ValidateStreamCommand(ImageInfo *image_info,
-  const char *reference_filename,const char *output_filename,
-  size_t *fail,ExceptionInfo *exception)
+  const char *reference_filename,const char *output_filename,size_t *fail,
+  ExceptionInfo *exception)
 {
   char
     **arguments,
@@ -1333,6 +1366,10 @@ int main(int argc,char **argv)
     regard_warnings,
     status;
 
+  MagickSizeType
+    memory_resource,
+    map_resource;
+
   register ssize_t
     i;
 
@@ -1350,7 +1387,9 @@ int main(int argc,char **argv)
   /*
     Validate the ImageMagick image processing suite.
   */
-  MagickCoreGenesis(*argv,MagickFalse);
+  MagickCoreGenesis(*argv,MagickTrue);
+  (void) setlocale(LC_ALL,"");
+  (void) setlocale(LC_NUMERIC,"C");
   iterations=1;
   status=MagickFalse;
   type=AllValidate;
@@ -1493,11 +1532,37 @@ int main(int argc,char **argv)
             tests+=ValidateConvertCommand(image_info,reference_filename,
               output_filename,&fail,exception);
           if ((type & FormatsInMemoryValidate) != 0)
-            tests+=ValidateImageFormatsInMemory(image_info,reference_filename,
-              output_filename,&fail,exception);
+            {
+              (void) FormatLocaleFile(stdout,"[pixel-cache: memory] ");
+              tests+=ValidateImageFormatsInMemory(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) FormatLocaleFile(stdout,"[pixel-cache: memory-mapped] ");
+              memory_resource=SetMagickResourceLimit(MemoryResource,0);
+              tests+=ValidateImageFormatsInMemory(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) FormatLocaleFile(stdout,"[pixel-cache: disk] ");
+              map_resource=SetMagickResourceLimit(MapResource,0);
+              tests+=ValidateImageFormatsInMemory(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) SetMagickResourceLimit(MemoryResource,memory_resource);
+              (void) SetMagickResourceLimit(MapResource,map_resource);
+            }
           if ((type & FormatsOnDiskValidate) != 0)
-            tests+=ValidateImageFormatsOnDisk(image_info,reference_filename,
-              output_filename,&fail,exception);
+            {
+              (void) FormatLocaleFile(stdout,"[pixel-cache: memory] ");
+              tests+=ValidateImageFormatsOnDisk(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) FormatLocaleFile(stdout,"[pixel-cache: memory-mapped] ");
+              memory_resource=SetMagickResourceLimit(MemoryResource,0);
+              tests+=ValidateImageFormatsOnDisk(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) FormatLocaleFile(stdout,"[pixel-cache: disk] ");
+              map_resource=SetMagickResourceLimit(MapResource,0);
+              tests+=ValidateImageFormatsOnDisk(image_info,reference_filename,
+                output_filename,&fail,exception);
+              (void) SetMagickResourceLimit(MemoryResource,memory_resource);
+              (void) SetMagickResourceLimit(MapResource,map_resource);
+            }
           if ((type & IdentifyValidate) != 0)
             tests+=ValidateIdentifyCommand(image_info,reference_filename,
               output_filename,&fail,exception);

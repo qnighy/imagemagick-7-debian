@@ -18,7 +18,7 @@
 %                                 June 2007                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -107,7 +107,7 @@ static void InvertAffineCoefficients(const double *coeff,double *inverse)
   /* From "Digital Image Warping" by George Wolberg, page 50 */
   double determinant;
 
-  determinant=MagickEpsilonReciprocal(coeff[0]*coeff[4]-coeff[1]*coeff[3]);
+  determinant=PerceptibleReciprocal(coeff[0]*coeff[4]-coeff[1]*coeff[3]);
   inverse[0]=determinant*coeff[4];
   inverse[1]=determinant*(-coeff[1]);
   inverse[2]=determinant*(coeff[1]*coeff[5]-coeff[2]*coeff[4]);
@@ -122,7 +122,7 @@ static void InvertPerspectiveCoefficients(const double *coeff,
   /* From "Digital Image Warping" by George Wolberg, page 53 */
   double determinant;
 
-  determinant=MagickEpsilonReciprocal(coeff[0]*coeff[4]-coeff[3]*coeff[1]);
+  determinant=PerceptibleReciprocal(coeff[0]*coeff[4]-coeff[3]*coeff[1]);
   inverse[0]=determinant*(coeff[4]-coeff[7]*coeff[5]);
   inverse[1]=determinant*(coeff[7]*coeff[2]-coeff[1]);
   inverse[2]=determinant*(coeff[1]*coeff[5]-coeff[4]*coeff[2]);
@@ -473,7 +473,7 @@ static double *GenerateCoefficients(const Image *image,
 #endif
       break;
     case ShepardsDistortion:
-      number_coeff=1;  /* not used, but provide some type of return */
+      number_coeff=1;  /* The power factor to use */
       break;
     case ArcDistortion:
       number_coeff=5;
@@ -1410,10 +1410,24 @@ static double *GenerateCoefficients(const Image *image,
       if ( number_arguments%cp_size != 0 ||
            number_arguments < cp_size ) {
         (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-              "InvalidArgument", "%s : 'require at least %.20g CPs'",
-              CommandOptionToMnemonic(MagickDistortOptions, *method), 1.0);
+              "InvalidArgument", "%s : 'requires CP's (4 numbers each)'",
+              CommandOptionToMnemonic(MagickDistortOptions, *method));
         coeff=(double *) RelinquishMagickMemory(coeff);
         return((double *) NULL);
+      }
+      /* User defined weighting power for Shepard's Method */
+      { const char *artifact=GetImageArtifact(image,"shepards:power");
+        if ( artifact != (const char *) NULL ) {
+          coeff[0]=StringToDouble(artifact,(char **) NULL) / 2.0;
+          if ( coeff[0] < MagickEpsilon ) {
+            (void) ThrowMagickException(exception,GetMagickModule(),
+                OptionError,"InvalidArgument","%s", "-define shepards:power" );
+            coeff=(double *) RelinquishMagickMemory(coeff);
+            return((double *) NULL);
+          }
+        }
+        else
+          coeff[0]=1.0;  /* Default power of 2 (Inverse Squared) */
       }
       return(coeff);
     }
@@ -1577,10 +1591,6 @@ MagickExport Image *DistortResizeImage(const Image *image,
   tmp_image=resize_image;
   resize_image=CropImage(tmp_image,&crop_area,exception);
   tmp_image=DestroyImage(tmp_image);
-
-  if ( resize_image == (Image *) NULL )
-    return((Image *) NULL);
-
   return(resize_image);
 }
 
@@ -1802,28 +1812,28 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
         s.x = (double) image->page.x;
         s.y = (double) image->page.y;
         scale=inverse[6]*s.x+inverse[7]*s.y+1.0;
-        scale=MagickEpsilonReciprocal(scale);
+        scale=PerceptibleReciprocal(scale);
         d.x = scale*(inverse[0]*s.x+inverse[1]*s.y+inverse[2]);
         d.y = scale*(inverse[3]*s.x+inverse[4]*s.y+inverse[5]);
         InitalBounds(d);
         s.x = (double) image->page.x+image->columns;
         s.y = (double) image->page.y;
         scale=inverse[6]*s.x+inverse[7]*s.y+1.0;
-        scale=MagickEpsilonReciprocal(scale);
+        scale=PerceptibleReciprocal(scale);
         d.x = scale*(inverse[0]*s.x+inverse[1]*s.y+inverse[2]);
         d.y = scale*(inverse[3]*s.x+inverse[4]*s.y+inverse[5]);
         ExpandBounds(d);
         s.x = (double) image->page.x;
         s.y = (double) image->page.y+image->rows;
         scale=inverse[6]*s.x+inverse[7]*s.y+1.0;
-        scale=MagickEpsilonReciprocal(scale);
+        scale=PerceptibleReciprocal(scale);
         d.x = scale*(inverse[0]*s.x+inverse[1]*s.y+inverse[2]);
         d.y = scale*(inverse[3]*s.x+inverse[4]*s.y+inverse[5]);
         ExpandBounds(d);
         s.x = (double) image->page.x+image->columns;
         s.y = (double) image->page.y+image->rows;
         scale=inverse[6]*s.x+inverse[7]*s.y+1.0;
-        scale=MagickEpsilonReciprocal(scale);
+        scale=PerceptibleReciprocal(scale);
         d.x = scale*(inverse[0]*s.x+inverse[1]*s.y+inverse[2]);
         d.y = scale*(inverse[3]*s.x+inverse[4]*s.y+inverse[5]);
         ExpandBounds(d);
@@ -2260,8 +2270,8 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
       geometry.y=(ssize_t) (output_scaling*geometry.y+0.5);
       if ( output_scaling < 0.1 ) {
         coeff = (double *) RelinquishMagickMemory(coeff);
-        (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-                "InvalidArgument","%s", "-set option:distort:scale" );
+        (void) ThrowMagickException(exception,GetMagickModule(),
+                OptionError,"InvalidArgument","%s","-define distort:scale" );
         return((Image *) NULL);
       }
       output_scaling = 1/output_scaling;
@@ -2678,10 +2688,13 @@ if ( d.x == 0.5 && d.y == 0.5 ) {
           }
           case ShepardsDistortion:
           { /* Shepards Method, or Inverse Weighted Distance for
-              displacement around the destination image control points
-              The input arguments are the coefficents to the function.
-              This is more of a 'displacement' function rather than an
-              absolute distortion function.
+               displacement around the destination image control points
+               The input arguments are the coefficents to the function.
+               This is more of a 'displacement' function rather than an
+               absolute distortion function.
+
+               Note: We can not determine derivatives using shepards method
+               so only a point sample interpolatation can be used.
             */
             size_t
               i;
@@ -2693,10 +2706,8 @@ if ( d.x == 0.5 && d.y == 0.5 ) {
               double weight =
                   ((double)d.x-arguments[i+2])*((double)d.x-arguments[i+2])
                 + ((double)d.y-arguments[i+3])*((double)d.y-arguments[i+3]);
-              if ( weight != 0 )
-                weight = 1/weight;
-              else
-                weight = 1;
+              weight = pow(weight,coeff[0]); /* shepards power factor */
+              weight = ( weight < 1.0 ) ? 1.0 : 1.0/weight;
 
               s.x += (arguments[ i ]-arguments[i+2])*weight;
               s.y += (arguments[i+1]-arguments[i+3])*weight;
@@ -2704,11 +2715,8 @@ if ( d.x == 0.5 && d.y == 0.5 ) {
             }
             s.x /= denominator;
             s.y /= denominator;
-            s.x += d.x;
+            s.x += d.x;   /* make it as relative displacement */
             s.y += d.y;
-
-            /* We can not determine derivatives using shepards method
-               only color interpolatation, not area-resampling */
             break;
           }
           default:
@@ -2953,7 +2961,9 @@ MagickExport Image *SparseColorImage(const Image *image,
     */
     sparse_method = (SparseColorMethod) distort_method;
     if ( distort_method == ShepardsDistortion )
-      sparse_method = method;   /* return non-distiort methods to normal */
+      sparse_method = method;   /* return non-distort methods to normal */
+    if ( sparse_method == InverseColorInterpolate )
+      coeff[0]=0.5;            /* sqrt() the squared distance for inverse */
   }
 
   /* Verbose output */
@@ -3138,8 +3148,7 @@ MagickExport Image *SparseColorImage(const Image *image,
               double weight =
                   ((double)i-arguments[ k ])*((double)i-arguments[ k ])
                 + ((double)j-arguments[k+1])*((double)j-arguments[k+1]);
-              if ( method == InverseColorInterpolate )
-                weight = sqrt(weight);  /* inverse, not inverse squared */
+              weight = pow(weight,coeff[0]); /* inverse of power factor */
               weight = ( weight < 1.0 ) ? 1.0 : 1.0/weight;
               if ( channel & RedChannel )
                 pixel.red     += arguments[x++]*weight;

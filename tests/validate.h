@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -261,8 +261,8 @@ static const struct ReferenceFormats
     { "GIF", UndefinedCompression, 0.0 },
     { "GIF87", UndefinedCompression, 0.0 },
     { "GRAY", UndefinedCompression, 0.003 },
-    { "HTM", UndefinedCompression, 0.0 },
     { "HRZ", UndefinedCompression, 0.0 },
+    { "HTM", UndefinedCompression, 0.0 },
     { "HTML", UndefinedCompression, 0.0 },
     { "ICB", UndefinedCompression, 0.0 },
     { "ICO", UndefinedCompression, 0.0 },
@@ -271,6 +271,7 @@ static const struct ReferenceFormats
     { "INLINE", UndefinedCompression, 0.0 },
     { "JBG", UndefinedCompression, 0.0 },
     { "JNG", UndefinedCompression, 0.003 },
+    { "JNG", JPEGCompression, 0.003 },
     { "JP2", UndefinedCompression, 0.003 },
     { "JPC", UndefinedCompression, 0.003 },
     { "JPEG", UndefinedCompression, 0.003 },
@@ -305,6 +306,7 @@ static const struct ReferenceFormats
     { "PJPEG", UndefinedCompression, 0.003 },
     { "PLASMA", UndefinedCompression, 0.0 },
     { "PNG", UndefinedCompression, 0.0 },
+    { "PNG8", UndefinedCompression, 0.0 },
     { "PNG24", UndefinedCompression, 0.0 },
     { "PNG32", UndefinedCompression, 0.0 },
     { "PNM", UndefinedCompression, 0.0 },

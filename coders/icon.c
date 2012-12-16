@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -68,7 +68,7 @@
 /*
   Define declarations.
 */
-#if !defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__MINGW32__)
+#if !defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__MINGW32__) || defined(__MINGW64__)
 #define BI_RGB  0
 #define BI_RLE8  1
 #define BI_BITFIELDS  3
@@ -747,9 +747,9 @@ ModuleExport void UnregisterICONImage(void)
 %  image format, version 3 for Windows or (if the image has a matte channel)
 %  version 4.
 %
-%  It encodes any subimage as a compressed PNG image ("BI_PNG)",
-%  only when its dimensions are 256x256 and image->compression is
-%  undefined or is defined as ZipCompression.
+%  It encodes any subimage as a compressed PNG image ("BI_PNG)", only when its
+%  dimensions are 256x256 and image->compression is undefined or is defined as
+%  ZipCompression.
 %
 %  The format of the WriteICONImage method is:
 %
@@ -774,7 +774,7 @@ static MagickBooleanType WriteICONImage(const ImageInfo *image_info,
 
   Image
     *next;
-  
+
   MagickBooleanType
     status;
 

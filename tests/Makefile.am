@@ -1,4 +1,4 @@
-# Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
+# Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
 # dedicated to making software imaging solutions freely available.
 #
 # You may not use this file except in compliance with the License.
@@ -21,27 +21,27 @@ TESTS_CHECK_PGRMS = \
 
 tests_validate_SOURCES = tests/validate.c tests/validate.h
 tests_validate_CPPFLAGS = $(AM_CPPFLAGS)
-tests_validate_LDADD = $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
+tests_validate_LDADD = $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS) $(MATH_LIBS)
 
 tests_drawtest_SOURCES = tests/drawtest.c
 tests_drawtest_LDFLAGS = $(LDFLAGS)
-tests_drawtest_LDADD = $(MAGICKWAND_LIBS)
+tests_drawtest_LDADD = $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
 
 tests_wandtest_SOURCES = tests/wandtest.c
 tests_wandtest_LDFLAGS = $(LDFLAGS)
-tests_wandtest_LDADD = $(MAGICKWAND_LIBS)
+tests_wandtest_LDADD = $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
 
 TESTS_XFAIL_TESTS = 
 
 TESTS_TESTS = \
+	tests/cli-pipe.tap \
+	tests/cli-colorspace.tap \
 	tests/validate-compare.tap \
 	tests/validate-composite.tap \
 	tests/validate-convert.tap \
 	tests/validate-identify.tap \
 	tests/validate-import.tap \
 	tests/validate-montage.tap \
-	tests/validate-pipe.tap \
-	tests/validate-colorspace.tap \
 	tests/validate-stream.tap \
 	tests/validate-formats-in-memory.tap \
 	tests/validate-formats-on-disk.tap \
@@ -49,7 +49,8 @@ TESTS_TESTS = \
 	tests/wandtest.tap
 
 TESTS_EXTRA_DIST = \
-	tests/common.shi.in \
+	tests/common.shi \
+  tests/rose.pnm \
   tests/input_256c.miff \
   tests/input_bilevel.miff \
   tests/input_gray.miff \
@@ -57,5 +58,5 @@ TESTS_EXTRA_DIST = \
   tests/sequence.miff \
 	$(TESTS_TESTS)
 
-TESTS_CLEANFILES = 
-	tests/*_out.*
+TESTS_CLEANFILES = \
+  tests/*_out.*

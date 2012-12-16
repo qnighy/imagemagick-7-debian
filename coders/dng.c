@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -76,7 +76,7 @@
 %
 %  ReadDNGImage() reads an binary file in the Digital Negative format and
 %  returns it.  It allocates the memory necessary for the new Image structure
-%  and returns a pointer to the new image. 
+%  and returns a pointer to the new image.
 %
 %  The format of the ReadDNGImage method is:
 %
@@ -164,7 +164,7 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             *ufraw;
 
           /*
-            Inject 
+            Inject.
           */
           ufraw=NewXMLTree(xml,sans);
           if (ufraw != (XMLTreeInfo *) NULL)
@@ -190,7 +190,7 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 if (tag == (char *) NULL)
                   tag="unknown";
                 (void) FormatLocaleString(property,MaxTextExtent,"dng:%s",tag);
-                content=ConstantString(GetXMLTreeContent(next)); 
+                content=ConstantString(GetXMLTreeContent(next));
                 StripString(content);
                 if ((LocaleCompare(tag,"log") != 0) &&
                     (LocaleCompare(tag,"InputFilename") != 0) &&
@@ -368,6 +368,14 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->description=ConstantString("Fuji CCD-RAW Graphic File");
   entry->module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
+  entry=SetMagickInfo("RW2");
+  entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->blob_support=MagickFalse;
+  entry->seekable_stream=MagickTrue;
+  entry->format_type=ExplicitFormatType;
+  entry->description=ConstantString("Panasonic Lumix Raw Image");
+  entry->module=ConstantString("DNG");
+  (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("SRF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
   entry->blob_support=MagickFalse;
@@ -419,6 +427,7 @@ ModuleExport void UnregisterDNGImage(void)
   (void) UnregisterMagickInfo("X3F");
   (void) UnregisterMagickInfo("SR2");
   (void) UnregisterMagickInfo("SRF");
+  (void) UnregisterMagickInfo("RW2");
   (void) UnregisterMagickInfo("RAF");
   (void) UnregisterMagickInfo("PEF");
   (void) UnregisterMagickInfo("ORF");

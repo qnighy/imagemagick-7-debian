@@ -1,12 +1,12 @@
 /*
-  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-  
+
     http://www.imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,7 +28,7 @@ extern "C" {
 #define MAGICKCORE_QUANTUM_DEPTH  16
 #endif
 
-#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #  define MagickLLConstant(c)  (MagickOffsetType) (c ## i64)
 #  define MagickULLConstant(c)  (MagickSizeType) (c ## ui64)
 #else
@@ -40,7 +40,21 @@ extern "C" {
 #define MaxColormapSize  256UL
 #define MaxMap  255UL
 
+/*
+  Float_t is not an ABI type.
+*/
+#if MAGICKCORE_SIZEOF_FLOAT_T == 0
+typedef float MagickRealType;
+#elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_FLOAT)
+typedef float MagickRealType;
+#elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_DOUBLE)
 typedef double MagickRealType;
+#elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_LONG_DOUBLE)
+typedef long double MagickRealType;
+#else
+# error Your float_t type is neither a float, nor a double, nor a long double
+#endif
+
 typedef ssize_t SignedQuantum;
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
@@ -55,7 +69,21 @@ typedef unsigned char Quantum;
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
+/*
+  Float_t is not an ABI type.
+*/
+#if MAGICKCORE_SIZEOF_FLOAT_T == 0
+typedef float MagickRealType;
+#elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_FLOAT)
+typedef float MagickRealType;
+#elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_DOUBLE)
 typedef double MagickRealType;
+#elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_LONG_DOUBLE)
+typedef long double MagickRealType;
+#else
+# error Your float_t type is neither a float, nor a double, nor a long double
+#endif
+
 typedef ssize_t SignedQuantum;
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
@@ -70,7 +98,19 @@ typedef unsigned short Quantum;
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
+/*
+  Double_t is not an ABI type.
+*/
+#if MAGICKCORE_SIZEOF_DOUBLE_T == 0
 typedef double MagickRealType;
+#elif (MAGICKCORE_SIZEOF_DOUBLE_T == MAGICKCORE_SIZEOF_DOUBLE)
+typedef double MagickRealType;
+#elif (MAGICKCORE_SIZEOF_DOUBLE_T == MAGICKCORE_SIZEOF_LONG_DOUBLE)
+typedef long double MagickRealType;
+#else
+# error Your double_t type is neither a float, nor a double, nor a long double
+#endif
+
 typedef double SignedQuantum;
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 typedef float Quantum;
@@ -81,7 +121,8 @@ typedef unsigned int Quantum;
 #define QuantumRange  ((Quantum) 4294967295)
 #define QuantumFormat  "%u"
 #endif
-#elif (MAGICKCORE_QUANTUM_DEPTH == 64) && defined(MAGICKCORE_HAVE_LONG_DOUBLE_WIDER)
+#elif (MAGICKCORE_QUANTUM_DEPTH == 64)
+#define MAGICKCORE_HDRI_SUPPORT
 #define MaxColormapSize  65536UL
 #define MaxMap  65535UL
 
@@ -95,7 +136,7 @@ typedef double Quantum;
 # error "MAGICKCORE_QUANTUM_DEPTH must be one of 8, 16, 32, or 64"
 #endif
 #endif
-#define MagickEpsilon  ((MagickRealType) 1.0e-16)
+#define MagickEpsilon  ((MagickRealType) 1.0e-15)
 #define MagickHuge  3.4e+38F
 #define QuantumScale  ((double) 1.0/(double) QuantumRange)
 

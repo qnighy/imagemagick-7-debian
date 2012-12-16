@@ -17,7 +17,7 @@
 %                                July 1993                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -288,14 +288,12 @@ static void DefaultErrorHandler(const ExceptionType magick_unused(severity),
 %
 %    o severity: Specifies the numeric error category.
 %
-%    o reason: Specifies the reason to display before terminating the
-%      program.
+%    o reason: Specifies the reason to display before terminating the program.
 %
 %    o description: Specifies any description to the reason.
 %
 */
-static void DefaultFatalErrorHandler(
-  const ExceptionType magick_unused(severity),
+static void DefaultFatalErrorHandler(const ExceptionType severity,
   const char *reason,const char *description)
 {
   if (reason == (char *) NULL)
@@ -306,7 +304,7 @@ static void DefaultFatalErrorHandler(
   (void) FormatLocaleFile(stderr,".\n");
   (void) fflush(stderr);
   MagickCoreTerminus();
-  exit(1);
+  exit((int) (severity-FatalErrorException)+1);
 }
 
 /*

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -527,7 +527,7 @@ MagickExport Image *AppendImages(const Image *images,
       y_offset-=geometry.y;
     image_view=AcquireVirtualCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp parallel for schedule(static) shared(status) \
+    #pragma omp parallel for schedule(static,4) shared(status) \
       dynamic_number_threads(image,image->columns,image->rows,1)
 #endif
     for (y=0; y < (ssize_t) image->rows; y++)
@@ -2879,8 +2879,7 @@ MagickExport void SetImageInfoFile(ImageInfo *image_info,FILE *file)
 %    o mask: the image mask.
 %
 */
-MagickExport MagickBooleanType SetImageMask(Image *image,
-  const Image *mask)
+MagickExport MagickBooleanType SetImageMask(Image *image,const Image *mask)
 {
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)

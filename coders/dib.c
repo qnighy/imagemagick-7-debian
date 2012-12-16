@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -153,7 +153,7 @@ static inline size_t MagickMin(const size_t x,const size_t y)
 static MagickBooleanType DecodeImage(Image *image,
   const MagickBooleanType compression,unsigned char *pixels)
 {
-#if !defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__MINGW32__)
+#if !defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__MINGW32__) || defined(__MINGW64__)
 #define BI_RGB  0
 #define BI_RLE8  1
 #define BI_RLE4  2
@@ -1141,7 +1141,7 @@ static MagickBooleanType WriteDIBImage(const ImageInfo *image_info,Image *image)
       unsigned short
         word;
       /*
-        Convert PseudoClass packet to DIB pixel. 
+        Convert PseudoClass packet to DIB pixel.
       */
       for (y=0; y < (ssize_t) image->rows; y++)
       {

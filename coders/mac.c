@@ -18,7 +18,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -161,7 +161,7 @@ static Image *ReadMACImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   length=(image->columns+7)/8;
   pixels=(unsigned char *) AcquireQuantumMemory(length+1,sizeof(*pixels));
-  if (pixels == (unsigned char *) NULL) 
+  if (pixels == (unsigned char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   p=pixels;
   offset=0;

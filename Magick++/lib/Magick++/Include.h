@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 #if defined(MAGICKCORE_HAVE_SYS_TYPES_H)
 # include <sys/types.h>
@@ -359,8 +360,24 @@ namespace Magick
   using MagickCore::PartitionInterlace;
 
   // Layer method
+  using MagickCore::ImageLayerMethod;
+  using MagickCore::UndefinedLayer;
+  using MagickCore::CoalesceLayer;
+  using MagickCore::CompareAnyLayer;
+  using MagickCore::CompareClearLayer;
+  using MagickCore::CompareOverlayLayer;
+  using MagickCore::DisposeLayer;
+  using MagickCore::OptimizeLayer;
+  using MagickCore::OptimizeImageLayer;
+  using MagickCore::OptimizePlusLayer;
+  using MagickCore::OptimizeTransLayer;
+  using MagickCore::RemoveDupsLayer;
+  using MagickCore::RemoveZeroLayer;
+  using MagickCore::CompositeLayer;
+  using MagickCore::MergeLayer;
   using MagickCore::FlattenLayer;
   using MagickCore::MosaicLayer;
+  using MagickCore::TrimBoundsLayer;
 
   // Line cap types
   using MagickCore::LineCap;

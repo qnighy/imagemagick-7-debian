@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -187,6 +187,7 @@ static Image *ReadGRAYImage(const ImageInfo *image_info,
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
+    SetImageColorspace(image,GRAYColorspace);
     if (scene == 0)
       {
         length=GetQuantumExtent(canvas_image,quantum_info,quantum_type);
@@ -216,7 +217,7 @@ static Image *ReadGRAYImage(const ImageInfo *image_info,
         quantum_type,pixels,exception);
       if (SyncAuthenticPixels(canvas_image,exception) == MagickFalse)
         break;
-      if (((y-image->extract_info.y) >= 0) && 
+      if (((y-image->extract_info.y) >= 0) &&
           ((y-image->extract_info.y) < (ssize_t) image->rows))
         {
           p=GetVirtualPixels(canvas_image,canvas_image->extract_info.x,0,

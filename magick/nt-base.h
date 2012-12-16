@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ extern "C" {
 #include "magick/delegate.h"
 #include "magick/delegate-private.h"
 #include "magick/exception.h"
+#include "magick/geometry.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
@@ -38,7 +39,7 @@ extern "C" {
 #include <io.h>
 #include <process.h>
 #include <errno.h>
-#if defined(_DEBUG) && !defined(__MINGW32__)
+#if defined(_DEBUG) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #include <crtdbg.h>
 #endif
 
@@ -96,7 +97,7 @@ extern "C" {
 #if !defined(fileno)
 #  define fileno  _fileno
 #endif
-#if !defined(fseek) && !defined(__MINGW32__)
+#if !defined(fseek) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
   !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
 #  define fseek  _fseeki64
@@ -113,7 +114,7 @@ extern "C" {
 #if !defined(fsync)
 #  define fsync  _commit
 #endif
-#if !defined(ftell) && !defined(__MINGW32__)
+#if !defined(ftell) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
   !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
 #  define ftell  _ftelli64
@@ -325,7 +326,7 @@ typedef struct _NTMEMORYSTATUSEX
     ullAvailExtendedVirtual;
 } NTMEMORYSTATUSEX;
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
 struct timezone
 {
   int
@@ -373,7 +374,7 @@ extern MagickExport double
 
 extern MagickExport int
   Exit(int),
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
   gettimeofday(struct timeval *,struct timezone *),
 #endif
   IsWindows95(),

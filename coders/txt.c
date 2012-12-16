@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -472,6 +472,11 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
           else
             count=(ssize_t) sscanf(text,"%ld,%ld: (%u,%u,%u",&x_offset,
               &y_offset,&pixel.red,&pixel.green,&pixel.blue);
+        if (image->colorspace == LabColorspace)
+          {
+            pixel.green+=(range+1)/2.0;
+            pixel.blue+=(range+1)/2.0;
+          }
         if (count < 5)
           continue;
         q=GetAuthenticPixels(image,x_offset,y_offset,1,1,exception);
@@ -483,8 +488,7 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (image->colorspace == CMYKColorspace)
           {
             indexes=GetAuthenticIndexQueue(image);
-            SetPixelIndex(indexes,ScaleAnyToQuantum(pixel.index,
-              range));
+            SetPixelIndex(indexes,ScaleAnyToQuantum(pixel.index,range));
           }
         if (image->matte != MagickFalse)
           SetPixelAlpha(q,ScaleAnyToQuantum(pixel.opacity,range));
@@ -677,6 +681,11 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
           x,(double) y);
         (void) WriteBlobString(image,buffer);
         SetMagickPixelPacket(image,p,indexes+x,&pixel);
+        if (pixel.colorspace == LabColorspace)
+          {
+            pixel.green-=(QuantumRange+1)/2.0;
+            pixel.blue-=(QuantumRange+1)/2.0;
+          }
         (void) CopyMagickString(tuple,"(",MaxTextExtent);
         ConcatenateColorComponent(&pixel,RedChannel,X11Compliance,tuple);
         (void) ConcatenateMagickString(tuple,",",MaxTextExtent);

@@ -17,7 +17,7 @@
 %                              July 1992                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1217,7 +1217,7 @@ static size_t DefineImageColormap(Image *image,CubeInfo *cube_info,
       */
       q=image->colormap+image->colors;
       alpha=(MagickRealType) ((MagickOffsetType) node_info->number_unique);
-      alpha=MagickEpsilonReciprocal(alpha);
+      alpha=PerceptibleReciprocal(alpha);
       if (cube_info->associate_alpha == MagickFalse)
         {
           SetPixelRed(q,ClampToQuantum((MagickRealType) (alpha*
@@ -1252,7 +1252,7 @@ static size_t DefineImageColormap(Image *image,CubeInfo *cube_info,
 
               gamma=(MagickRealType) (QuantumScale*(QuantumRange-
                 (MagickRealType) q->opacity));
-              gamma=MagickEpsilonReciprocal(gamma);
+              gamma=PerceptibleReciprocal(gamma);
               SetPixelRed(q,ClampToQuantum((MagickRealType) (alpha*
                 gamma*QuantumRange*node_info->total_color.red)));
               SetPixelGreen(q,ClampToQuantum((MagickRealType) (alpha*
@@ -1991,7 +1991,7 @@ static CubeInfo *GetCubeInfo(const QuantizeInfo *quantize_info,
   weight=1.0;
   for (i=0; i < ErrorQueueLength; i++)
   {
-    cube_info->weights[ErrorQueueLength-i-1]=MagickEpsilonReciprocal(weight);
+    cube_info->weights[ErrorQueueLength-i-1]=PerceptibleReciprocal(weight);
     weight*=exp(log(((double) QuantumRange+1.0))/(ErrorQueueLength-1.0));
   }
   /*

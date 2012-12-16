@@ -18,7 +18,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -76,7 +76,7 @@
 #include "magick/utility.h"
 #if defined(MAGICKCORE_XML_DELEGATE)
 #  if defined(MAGICKCORE_WINDOWS_SUPPORT)
-#    if defined(__MINGW32__)
+#    if defined(__MINGW32__) || defined(__MINGW64__)
 #      define _MSC_VER
 #    else
 #      include <win32config.h>
@@ -184,12 +184,6 @@ typedef struct _SVGInfo
     document;
 #endif
 } SVGInfo;
-
-/*
-  Static declarations.
-*/
-static char
-  SVGDensityGeometry[] = "90.0x90.0";
 
 /*
   Forward declarations.
@@ -343,7 +337,7 @@ static double GetUserSpaceCoordinateValue(const SVGInfo *svg_info,int type,
   if (LocaleNCompare(token,"pc",2) == 0)
     return(DefaultResolution*svg_info->scale[0]/6.0*value);
   if (LocaleNCompare(token,"pt",2) == 0)
-    return(svg_info->scale[0]*value);
+    return(1.25*svg_info->scale[0]*value);
   if (LocaleNCompare(token,"px",2) == 0)
     return(value);
   return(value);
@@ -2745,6 +2739,12 @@ static void SVGExternalSubset(void *context,const xmlChar *name,
 }
 #endif
 
+/*
+  Static declarations.
+*/
+static char
+  SVGDensityGeometry[] = "90.0x90.0";
+
 static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   char
@@ -2792,7 +2792,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  if ((image->x_resolution < MagickEpsilon) || (image->y_resolution < MagickEpsilon))
+  if ((image->x_resolution < MagickEpsilon) ||
+      (image->y_resolution < MagickEpsilon))
     {
       GeometryInfo
         geometry_info;
@@ -2837,8 +2838,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             100.0*QuantumScale*image->background_color.red,
             100.0*QuantumScale*image->background_color.green,
             100.0*QuantumScale*image->background_color.blue);
-          (void) FormatLocaleString(opacity,MaxTextExtent,"%.20g",
-            QuantumScale*(QuantumRange-image->background_color.opacity));
+          (void) FormatLocaleString(opacity,MaxTextExtent,"%.20g",QuantumScale*
+            (QuantumRange-image->background_color.opacity));
           (void) FormatLocaleString(command,MaxTextExtent,
             GetDelegateCommands(delegate_info),image->filename,filename,density,
               background,opacity,unique);
@@ -3015,7 +3016,7 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     gamma;
 
                   gamma=1.0-QuantumScale*fill_color.opacity;
-                  gamma=MagickEpsilonReciprocal(gamma);
+                  gamma=PerceptibleReciprocal(gamma);
                   fill_color.blue*=gamma;
                   fill_color.green*=gamma;
                   fill_color.red*=gamma;

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -697,7 +697,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     hires_bounds=bounds;
     priority=i;
   }
-  if ((fabs(hires_bounds.x2-hires_bounds.x1) >= MagickEpsilon) && 
+  if ((fabs(hires_bounds.x2-hires_bounds.x1) >= MagickEpsilon) &&
       (fabs(hires_bounds.y2-hires_bounds.y1) >= MagickEpsilon))
     {
       /*
@@ -777,12 +777,12 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (read_info->scenes != (char *) NULL)
         *read_info->scenes='\0';
     }
-  option=GetImageOption(image_info,"ps:use-cropbox");
-  if ((option != (const char *) NULL) && (IsMagickTrue(option) != MagickFalse))
+  option=GetImageOption(image_info,"eps:use-cropbox");
+  if ((*image_info->magick == 'E') && ((option == (const char *) NULL) ||
+      (IsMagickTrue(option) != MagickFalse)))
     (void) ConcatenateMagickString(options,"-dEPSCrop ",MaxTextExtent);
   (void) CopyMagickString(filename,read_info->filename,MaxTextExtent);
   (void) AcquireUniqueFilename(filename);
-  (void) ConcatenateMagickString(filename,"-%08d",MaxTextExtent);
   (void) FormatLocaleString(command,MaxTextExtent,
     GetDelegateCommands(delegate_info),
     read_info->antialias != MagickFalse ? 4 : 1,
@@ -1547,8 +1547,8 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
               ceil(bounds.y1-0.5),floor(bounds.x2+0.5),floor(bounds.y2+0.5));
             (void) WriteBlobString(image,buffer);
             (void) FormatLocaleString(buffer,MaxTextExtent,
-              "%%%%HiResBoundingBox: %g %g %g %g\n",bounds.x1,
-              bounds.y1,bounds.x2,bounds.y2);
+              "%%%%HiResBoundingBox: %g %g %g %g\n",bounds.x1,bounds.y1,
+              bounds.x2,bounds.y2);
           }
         (void) WriteBlobString(image,buffer);
         profile=GetImageProfile(image,"8bim");

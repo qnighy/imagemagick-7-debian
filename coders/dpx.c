@@ -371,9 +371,9 @@ static MagickBooleanType IsDPX(const unsigned char *magick,const size_t extent)
 %
 */
 
-static size_t GetBytesPerRow(size_t columns,
-  size_t samples_per_pixel,size_t bits_per_pixel,
-  MagickBooleanType pad)
+static size_t GetBytesPerRow(const size_t columns,
+  const size_t samples_per_pixel,const size_t bits_per_pixel,
+  const MagickBooleanType pad)
 {
   size_t
     bytes_per_row;
@@ -382,23 +382,23 @@ static size_t GetBytesPerRow(size_t columns,
   {
     case 1:
     {
-      bytes_per_row=4*(((size_t) samples_per_pixel*columns*
-        bits_per_pixel+31)/32);
+      bytes_per_row=4*(((size_t) samples_per_pixel*columns*bits_per_pixel+31)/
+        32);
       break;
     }
     case 8:
     default:
     {
-      bytes_per_row=4*(((size_t) samples_per_pixel*columns*
-        bits_per_pixel+31)/32);
+      bytes_per_row=4*(((size_t) samples_per_pixel*columns*bits_per_pixel+31)/
+        32);
       break;
     }
     case 10:
     {
       if (pad == MagickFalse)
         {
-          bytes_per_row=4*(((size_t) samples_per_pixel*columns*
-            bits_per_pixel+31)/32);
+          bytes_per_row=4*(((size_t) samples_per_pixel*columns*bits_per_pixel+
+            31)/32);
           break;
         }
       bytes_per_row=4*(((size_t) (32*((samples_per_pixel*columns+2)/3))+31)/32);
@@ -408,8 +408,8 @@ static size_t GetBytesPerRow(size_t columns,
     {
       if (pad == MagickFalse)
         {
-          bytes_per_row=4*(((size_t) samples_per_pixel*columns*
-            bits_per_pixel+31)/32);
+          bytes_per_row=4*(((size_t) samples_per_pixel*columns*bits_per_pixel+
+            31)/32);
           break;
         }
       bytes_per_row=2*(((size_t) (16*samples_per_pixel*columns)+15)/16);
@@ -417,20 +417,20 @@ static size_t GetBytesPerRow(size_t columns,
     }
     case 16:
     {
-      bytes_per_row=2*(((size_t) samples_per_pixel*columns*
-        bits_per_pixel+8)/16);
+      bytes_per_row=2*(((size_t) samples_per_pixel*columns*bits_per_pixel+8)/
+        16);
       break;
     }
     case 32:
     {
-      bytes_per_row=4*(((size_t) samples_per_pixel*columns*
-        bits_per_pixel+31)/32);
+      bytes_per_row=4*(((size_t) samples_per_pixel*columns*bits_per_pixel+31)/
+        32);
       break;
     }
     case 64:
     {
-      bytes_per_row=8*(((size_t) samples_per_pixel*columns*
-        bits_per_pixel+63)/64);
+      bytes_per_row=8*(((size_t) samples_per_pixel*columns*bits_per_pixel+63)/
+        64);
       break;
     }
   }
@@ -571,6 +571,7 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   ssize_t
     count,
+    n,
     row,
     y;
 
@@ -736,12 +737,8 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (unsigned char *) dpx.image.image_element[i].description);
   }
   SetImageColorspace(image,RGBColorspace);
-  SetPrimaryChromaticity((DPXColorimetric)
-    dpx.image.image_element[0].colorimetric,&image->chromaticity);
   offset+=ReadBlob(image,sizeof(dpx.image.reserve),(unsigned char *)
     dpx.image.reserve);
-  component_type=dpx.image.image_element[0].descriptor;
-  image->depth=dpx.image.image_element[0].bit_size;
   if (dpx.file.image_offset >= 1664U)
     {
       /*
@@ -1010,138 +1007,160 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (void) CloseBlob(image);
       return(GetFirstImageInList(image));
     }
-  /*
-    Convert DPX raster image to pixel packets.
-  */
-  samples_per_pixel=1;
-  quantum_type=GrayQuantum;
-  switch (component_type)
+  for (n=0; n < (ssize_t) dpx.image.number_elements; n++)
   {
-    case CbYCrY422ComponentType:
-    {
-      samples_per_pixel=2;
-      quantum_type=CbYCrYQuantum;
-      break;
-    }
-    case CbYACrYA4224ComponentType:
-    case CbYCr444ComponentType:
-    {
-      samples_per_pixel=3;
-      quantum_type=CbYCrQuantum;
-      break;
-    }
-    case RGBComponentType:
-    {
-      samples_per_pixel=3;
-      quantum_type=RGBQuantum;
-      break;
-    }
-    case ABGRComponentType:
-    case RGBAComponentType:
-    {
-      image->matte=MagickTrue;
-      samples_per_pixel=4;
-      quantum_type=RGBAQuantum;
-      break;
-    }
-    default:
-      break;
-  }
-  switch (component_type)
-  {
-    case CbYCrY422ComponentType:
-    case CbYACrYA4224ComponentType:
-    case CbYCr444ComponentType:
-    {
-      SetImageColorspace(image,Rec709YCbCrColorspace);
-      break;
-    }
-    case LumaComponentType:
-    {
-      SetImageColorspace(image,RGBColorspace);
-      break;
-    }
-    default:
-    {
-      SetImageColorspace(image,RGBColorspace);
-      if (dpx.image.image_element[0].transfer == LogarithmicColorimetric)
-        SetImageColorspace(image,LogColorspace);
-      if (dpx.image.image_element[0].transfer == PrintingDensityColorimetric)
-        SetImageColorspace(image,LogColorspace);
-      break;
-    }
-  }
-  extent=GetBytesPerRow(image->columns,samples_per_pixel,image->depth,
-    dpx.image.image_element[0].packing == 0 ? MagickFalse : MagickTrue);
-  /*
-    DPX any-bit pixel format.
-  */
-  status=MagickTrue;
-  row=0;
-  quantum_info=AcquireQuantumInfo(image_info,image);
-  if (quantum_info == (QuantumInfo *) NULL)
-    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-  SetQuantumQuantum(quantum_info,32);
-  SetQuantumPack(quantum_info,dpx.image.image_element[0].packing == 0 ?
-    MagickTrue : MagickFalse);
-  for (y=0; y < (ssize_t) image->rows; y++)
-  {
-    MagickBooleanType
-      sync;
-
-    register PixelPacket
-      *q;
-
-    size_t
-      length;
-
-    ssize_t
-      count,
-      offset;
-
-    unsigned char
-      *pixels;
-
-    if (status == MagickFalse)
-      continue;
-    pixels=GetQuantumPixels(quantum_info);
-    {
-      count=ReadBlob(image,extent,pixels);
-      if ((image->progress_monitor != (MagickProgressMonitor) NULL) &&
-          (image->previous == (Image *) NULL))
-        {
-          MagickBooleanType
-            proceed;
-
-          proceed=SetImageProgress(image,LoadImageTag,(MagickOffsetType) row,
-            image->rows);
-          if (proceed == MagickFalse)
-            status=MagickFalse;
-        }
-      offset=row++;
-    }
-    if (count != (ssize_t) extent)
-      status=MagickFalse;
-    q=QueueAuthenticPixels(image,0,offset,image->columns,1,exception);
-    if (q == (PixelPacket *) NULL)
+    /*
+      Convert DPX raster image to pixel packets.
+    */
+    if ((dpx.image.image_element[n].data_offset != (unsigned int) (~0U)) &&
+        (dpx.image.image_element[n].data_offset != 0U))
       {
-        status=MagickFalse;
-        continue;
+         MagickOffsetType
+           data_offset;
+
+         data_offset=(MagickOffsetType) dpx.image.image_element[n].data_offset;
+         if (data_offset < offset)
+           offset=SeekBlob(image,data_offset,SEEK_SET);
+         else
+           for ( ; offset < data_offset; offset++)
+             (void) ReadBlobByte(image);
+          if (offset != data_offset)
+            ThrowReaderException(CorruptImageError,"UnableToReadImageData");
+       }
+    SetPrimaryChromaticity((DPXColorimetric)
+      dpx.image.image_element[n].colorimetric,&image->chromaticity);
+    image->depth=dpx.image.image_element[n].bit_size;
+    samples_per_pixel=1;
+    quantum_type=GrayQuantum;
+    component_type=dpx.image.image_element[n].descriptor;
+    switch (component_type)
+    {
+      case CbYCrY422ComponentType:
+      {
+        samples_per_pixel=2;
+        quantum_type=CbYCrYQuantum;
+        break;
       }
-    length=ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
-      quantum_type,pixels,exception);
-    (void) length;
-    sync=SyncAuthenticPixels(image,exception);
-    if (sync == MagickFalse)
-      status=MagickFalse;
+      case CbYACrYA4224ComponentType:
+      case CbYCr444ComponentType:
+      {
+        samples_per_pixel=3;
+        quantum_type=CbYCrQuantum;
+        break;
+      }
+      case RGBComponentType:
+      {
+        samples_per_pixel=3;
+        quantum_type=RGBQuantum;
+        break;
+      }
+      case ABGRComponentType:
+      case RGBAComponentType:
+      {
+        image->matte=MagickTrue;
+        samples_per_pixel=4;
+        quantum_type=RGBAQuantum;
+        break;
+      }
+      default:
+        break;
+    }
+    switch (component_type)
+    {
+      case CbYCrY422ComponentType:
+      case CbYACrYA4224ComponentType:
+      case CbYCr444ComponentType:
+      {
+        SetImageColorspace(image,Rec709YCbCrColorspace);
+        break;
+      }
+      case LumaComponentType:
+      {
+        SetImageColorspace(image,GRAYColorspace);
+        break;
+      }
+      default:
+      {
+        SetImageColorspace(image,RGBColorspace);
+        if (dpx.image.image_element[n].transfer == LogarithmicColorimetric)
+          SetImageColorspace(image,LogColorspace);
+        if (dpx.image.image_element[n].transfer == PrintingDensityColorimetric)
+          SetImageColorspace(image,LogColorspace);
+        break;
+      }
+    }
+    extent=GetBytesPerRow(image->columns,samples_per_pixel,image->depth,
+      dpx.image.image_element[n].packing == 0 ? MagickFalse : MagickTrue);
+    /*
+      DPX any-bit pixel format.
+    */
+    status=MagickTrue;
+    row=0;
+    quantum_info=AcquireQuantumInfo(image_info,image);
+    if (quantum_info == (QuantumInfo *) NULL)
+      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    SetQuantumQuantum(quantum_info,32);
+    SetQuantumPack(quantum_info,dpx.image.image_element[n].packing == 0 ?
+      MagickTrue : MagickFalse);
+    for (y=0; y < (ssize_t) image->rows; y++)
+    {
+      MagickBooleanType
+        sync;
+
+      register PixelPacket
+        *q;
+
+      size_t
+        length;
+
+      ssize_t
+        count,
+        offset;
+
+      unsigned char
+        *pixels;
+
+      if (status == MagickFalse)
+        continue;
+      pixels=GetQuantumPixels(quantum_info);
+      {
+        count=ReadBlob(image,extent,pixels);
+        if ((image->progress_monitor != (MagickProgressMonitor) NULL) &&
+            (image->previous == (Image *) NULL))
+          {
+            MagickBooleanType
+              proceed;
+
+            proceed=SetImageProgress(image,LoadImageTag,(MagickOffsetType) row,
+              image->rows);
+            if (proceed == MagickFalse)
+              status=MagickFalse;
+          }
+        offset=row++;
+      }
+      if (count != (ssize_t) extent)
+        status=MagickFalse;
+      q=QueueAuthenticPixels(image,0,offset,image->columns,1,exception);
+      if (q == (PixelPacket *) NULL)
+        {
+          status=MagickFalse;
+          continue;
+        }
+      length=ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
+        quantum_type,pixels,exception);
+      (void) length;
+      sync=SyncAuthenticPixels(image,exception);
+      if (sync == MagickFalse)
+        status=MagickFalse;
+    }
+    quantum_info=DestroyQuantumInfo(quantum_info);
+    if (status == MagickFalse)
+      ThrowReaderException(CorruptImageError,"UnableToReadImageData");
+    SetQuantumImageType(image,quantum_type);
+    if (EOFBlob(image) != MagickFalse)
+      ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
+        image->filename);
   }
-  quantum_info=DestroyQuantumInfo(quantum_info);
-  if (status == MagickFalse)
-    ThrowReaderException(CorruptImageError,"UnableToReadImageData");
-  SetQuantumImageType(image,quantum_type);
-  if (EOFBlob(image) != MagickFalse)
-    ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
-      image->filename);
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
 }

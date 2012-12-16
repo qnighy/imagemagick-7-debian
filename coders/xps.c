@@ -17,7 +17,7 @@
 %                               January 2008                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -249,8 +249,8 @@ static Image *ReadXPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     /*
       Set XPS render geometry.
     */
-    width=(size_t) floor(bounds.x2-bounds.x1+0.5);
-    height=(size_t) floor(bounds.y2-bounds.y1+0.5);
+    width=(size_t) (floor(bounds.x2+0.5)-ceil(bounds.x1-0.5));
+    height=(size_t) (floor(bounds.y2+0.5)-ceil(bounds.y1-0.5));
     if (width > page.width)
       page.width=width;
     if (height > page.height)
@@ -281,8 +281,7 @@ static Image *ReadXPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (image_info->page != (char *) NULL)
     (void) ParseAbsoluteGeometry(image_info->page,&page);
   page.width=(size_t) floor(page.width*image->y_resolution/delta.x+0.5);
-  page.height=(size_t) floor(page.height*image->y_resolution/delta.y+
-    0.5);
+  page.height=(size_t) floor(page.height*image->y_resolution/delta.y+0.5);
   (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
     page.width,(double) page.height);
   image=DestroyImage(image);
@@ -353,7 +352,7 @@ static Image *ReadXPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  RegisterXPSImage() adds attributes for the Microsoft XML Paper Specification 
+%  RegisterXPSImage() adds attributes for the Microsoft XML Paper Specification
 %  format to the list of supported formats.  The attributes include the image
 %  format tag, a method to read and/or write the format, whether the format
 %  supports the saving of more than one frame to the same file or blob,

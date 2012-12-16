@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -523,6 +523,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
   *id='\0';
   (void) ResetMagickMemory(keyword,0,sizeof(keyword));
   version=0.0;
+  (void) version;
   do
   {
     /*
@@ -635,7 +636,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
               }
             *p='\0';
             if (*options == '{')
-              (void) strcpy(options,options+1);
+              (void) CopyMagickString(options,options+1,strlen(options));
             /*
               Assign a value to the specified keyword.
             */

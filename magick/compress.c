@@ -17,7 +17,7 @@
 %                              May  1993                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -59,15 +59,6 @@
 #include "magick/pixel-accessor.h"
 #include "magick/resource_.h"
 #include "magick/string_.h"
-#if defined(MAGICKCORE_TIFF_DELEGATE)
-#if defined(MAGICKCORE_HAVE_TIFFCONF_H)
-#include "tiffconf.h"
-#endif
-#include "tiffio.h"
-#define CCITTParam  "-1"
-#else
-#define CCITTParam  "0"
-#endif
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
 #include "zlib.h"
 #endif

@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -63,9 +63,6 @@
 #include "magick/token.h"
 #include "magick/utility.h"
 #include "magick/utility-private.h"
-#if defined(MAGICKCORE_HAVE_MMAP_FILEIO) && !defined(MAGICKCORE_WINDOWS_SUPPORT)
-# include <sys/mman.h>
-#endif
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
 #include "zlib.h"
 #endif
@@ -2786,7 +2783,22 @@ MagickExport ssize_t ReadBlob(Image *image,const size_t length,
       break;
     case StandardStream:
     {
-      count=(ssize_t) read(fileno(image->blob->file_info.file),q,length);
+      register ssize_t
+        i;
+
+      count=0;
+      for (i=0; i < (ssize_t) length; i+=count)
+      {
+        count=read(fileno(image->blob->file_info.file),q+i,(size_t) MagickMin(
+          length-i,SSIZE_MAX));
+        if (count <= 0)
+          {
+            count=0;
+            if (errno != EINTR)
+              break;
+          }
+      }
+      count=i;
       break;
     }
     case FileStream:
@@ -3729,8 +3741,8 @@ MagickExport MagickBooleanType SetBlobExtent(Image *image,
     {
       if (extent != (MagickSizeType) ((off_t) extent))
         return(MagickFalse);
-#if !defined(MAGICKCORE_POSIX_FALLOCATE)
-        return(MagickFalse);
+#if !defined(MAGICKCORE_HAVE_POSIX_FALLOCATE)
+      return(MagickFalse);
 #else
       {
         int
@@ -3740,8 +3752,8 @@ MagickExport MagickBooleanType SetBlobExtent(Image *image,
           offset;
 
         offset=TellBlob(image);
-        status=posix_fallocate(fileno(image->blob->file_info.file),
-          (off_t) offset,(off_t) (extent-offset));
+        status=posix_fallocate(fileno(image->blob->file_info.file),offset,
+           extent-offset);
         if (status != 0)
           return(MagickFalse);
       }
@@ -3762,7 +3774,7 @@ MagickExport MagickBooleanType SetBlobExtent(Image *image,
           if (image->blob->file_info.file == (FILE *) NULL)
             return(MagickFalse);
           (void) UnmapBlob(image->blob->data,image->blob->length);
-#if !defined(MAGICKCORE_POSIX_FALLOCATE)
+#if !defined(MAGICKCORE_HAVE_POSIX_FALLOCATE)
           return(MagickFalse);
 #else
           {
@@ -3773,8 +3785,8 @@ MagickExport MagickBooleanType SetBlobExtent(Image *image,
               offset;
 
             offset=TellBlob(image);
-            status=posix_fallocate(fileno(image->blob->file_info.file),
-              (off_t) offset,(off_t) (extent-offset));
+            status=posix_fallocate(fileno(image->blob->file_info.file),offset,
+              extent-offset);
             if (status != 0)
               return(MagickFalse);
           }
@@ -4040,7 +4052,22 @@ MagickExport ssize_t WriteBlob(Image *image,const size_t length,
       break;
     case StandardStream:
     {
-      count=(ssize_t) write(fileno(image->blob->file_info.file),data,length);
+      register ssize_t
+        i;
+
+      count=0;
+      for (i=0; i < (MagickOffsetType) length; i+=count)
+      {
+        count=write(fileno(image->blob->file_info.file),data+i,(size_t)
+          MagickMin(length-i,SSIZE_MAX));
+        if (count <= 0)
+          {
+            count=0;
+            if (errno != EINTR)
+              break;
+          }
+      }
+      count=i;
       break;
     }
     case FileStream:

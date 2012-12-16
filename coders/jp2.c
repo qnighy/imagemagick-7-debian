@@ -17,7 +17,7 @@
 %                                 June 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -356,12 +356,12 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     pixel,
     range[4];
 
+  register PixelPacket
+    *q;
+
   register ssize_t
     i,
     x;
-
-  register PixelPacket
-    *q;
 
   size_t
     maximum_component_depth,
@@ -614,8 +614,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
         for (x=0; x < (ssize_t) image->columns; x++)
         {
           pixel=(QuantumAny) jas_matrix_getv(pixels[0],x/x_step[0]);
-          SetPixelRed(q,ScaleAnyToQuantum((QuantumAny) pixel,
-            range[0]));
+          SetPixelRed(q,ScaleAnyToQuantum((QuantumAny) pixel,range[0]));
           pixel=(QuantumAny) jas_matrix_getv(pixels[1],x/x_step[1]);
           SetPixelGreen(q,ScaleAnyToQuantum((QuantumAny) pixel,range[1]));
           pixel=(QuantumAny) jas_matrix_getv(pixels[2],x/x_step[2]);
@@ -648,12 +647,12 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
           (jas_iccprof_save(icc_profile,icc_stream) == 0) &&
           (jas_stream_flush(icc_stream) == 0))
         {
+          jas_stream_memobj_t
+            *blob;
+
           StringInfo
             *icc_profile,
             *profile;
-
-          jas_stream_memobj_t
-            *blob;
 
           /*
             Extract the icc profile, handle errors without much noise.

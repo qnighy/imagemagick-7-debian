@@ -17,7 +17,7 @@
 %                               January 2010                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -194,7 +194,7 @@ static char
     "#endif\n"
     "}\n"
     "\n"
-    "static inline float MagickEpsilonReciprocal(const float x)\n"
+    "static inline float PerceptibleReciprocal(const float x)\n"
     "{\n"
     "  float sign = x < (float) 0.0 ? (float) -1.0 : (float) 1.0;\n"
     "  return((sign*x) >= MagickEpsilon ? (float) 1.0/x : sign*((float) 1.0/\n"
@@ -301,7 +301,7 @@ static char
     "      break;\n"
     "    }\n"
     "  }\n"
-    "  gamma=MagickEpsilonReciprocal(gamma);\n"
+    "  gamma=PerceptibleReciprocal(gamma);\n"
     "  const unsigned long index = y*columns+x;\n"
     "  output[index].x=ClampToQuantum(gamma*sum.x);\n"
     "  output[index].y=ClampToQuantum(gamma*sum.y);\n"

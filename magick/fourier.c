@@ -19,7 +19,7 @@
 %                                 July 2009                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -237,11 +237,11 @@ static MagickBooleanType ForwardFourier(const FourierInfo *fourier_info,
   register IndexPacket
     *indexes;
 
-  register ssize_t
-    x;
-
   register PixelPacket
     *q;
+
+  register ssize_t
+    x;
 
   ssize_t
     i,
@@ -273,6 +273,8 @@ static MagickBooleanType ForwardFourier(const FourierInfo *fourier_info,
       magnitude_source=(double *) RelinquishMagickMemory(magnitude_source);
       return(MagickFalse);
     }
+  (void) ResetMagickMemory(phase_source,0,fourier_info->height*
+    fourier_info->width*sizeof(*phase_source));
   status=ForwardQuadrantSwap(fourier_info->height,fourier_info->height,
     magnitude,magnitude_source);
   if (status != MagickFalse)
@@ -511,7 +513,7 @@ static MagickBooleanType ForwardFourierTransform(FourierInfo *fourier_info,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp critical (MagickCore_ForwardFourierTransform)
 #endif
-  fftw_r2c_plan=fftw_plan_dft_r2c_2d(fourier_info->width,fourier_info->width,
+  fftw_r2c_plan=fftw_plan_dft_r2c_2d(fourier_info->width,fourier_info->height,
     source,fourier,FFTW_ESTIMATE);
   fftw_execute(fftw_r2c_plan);
   fftw_destroy_plan(fftw_r2c_plan);

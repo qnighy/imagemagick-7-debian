@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -296,8 +296,10 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
   ssize_t
     y;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   unsigned long
     key;
+#endif
 
   /*
     Initialize noise image attributes.
@@ -329,7 +331,9 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
   status=MagickTrue;
   progress=0;
   random_info=AcquireRandomInfoThreadSet();
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   key=GetRandomSecretKey(random_info[0]);
+#endif
   image_view=AcquireVirtualCacheView(image,exception);
   noise_view=AcquireAuthenticCacheView(noise_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
@@ -1712,7 +1716,7 @@ static MagickRealType FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
           double
             luminence;
 
-          luminence=0.21267*pixel.red+0.71516*pixel.green+0.07217*pixel.blue;
+          luminence=0.21267f*pixel.red+0.71516f*pixel.green+0.07217f*pixel.blue;
           return(QuantumScale*luminence);
         }
       break;
@@ -2987,7 +2991,11 @@ static FxInfo **AcquireFxThreadSet(const Image *image,const char *expression,
   number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
   fx_info=(FxInfo **) AcquireQuantumMemory(number_threads,sizeof(*fx_info));
   if (fx_info == (FxInfo **) NULL)
-    return((FxInfo **) NULL);
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),
+        ResourceLimitError,"MemoryAllocationFailed","`%s'",image->filename);
+      return((FxInfo **) NULL);
+    }
   (void) ResetMagickMemory(fx_info,0,number_threads*sizeof(*fx_info));
   if (*expression != '@')
     fx_expression=ConstantString(expression);
@@ -2995,12 +3003,19 @@ static FxInfo **AcquireFxThreadSet(const Image *image,const char *expression,
     fx_expression=FileToString(expression+1,~0,exception);
   for (i=0; i < (ssize_t) number_threads; i++)
   {
+    MagickBooleanType
+      status;
+
     fx_info[i]=AcquireFxInfo(image,fx_expression);
     if (fx_info[i] == (FxInfo *) NULL)
-      return(DestroyFxThreadSet(fx_info));
-    (void) FxPreprocessExpression(fx_info[i],&alpha,fx_info[i]->exception);
+      break;
+    status=FxPreprocessExpression(fx_info[i],&alpha,exception);
+    if (status == MagickFalse)
+      break;
   }
   fx_expression=DestroyString(fx_expression);
+  if (i < (ssize_t) number_threads)
+    fx_info=DestroyFxThreadSet(fx_info);
   return(fx_info);
 }
 
@@ -3034,9 +3049,6 @@ MagickExport Image *FxImageChannel(const Image *image,const ChannelType channel,
   MagickOffsetType
     progress;
 
-  MagickRealType
-    alpha;
-
   ssize_t
     y;
 
@@ -3044,26 +3056,20 @@ MagickExport Image *FxImageChannel(const Image *image,const ChannelType channel,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  fx_info=AcquireFxThreadSet(image,expression,exception);
+  if (fx_info == (FxInfo **) NULL)
+    return((Image *) NULL);
   fx_image=CloneImage(image,0,0,MagickTrue,exception);
   if (fx_image == (Image *) NULL)
-    return((Image *) NULL);
+    {
+      fx_info=DestroyFxThreadSet(fx_info);
+      return((Image *) NULL);
+    }
   if (SetImageStorageClass(fx_image,DirectClass) == MagickFalse)
     {
       InheritException(exception,&fx_image->exception);
-      fx_image=DestroyImage(fx_image);
-      return((Image *) NULL);
-    }
-  fx_info=AcquireFxThreadSet(image,expression,exception);
-  if (fx_info == (FxInfo **) NULL)
-    {
-      fx_image=DestroyImage(fx_image);
-      ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
-    }
-  status=FxPreprocessExpression(fx_info[0],&alpha,exception);
-  if (status == MagickFalse)
-    {
-      fx_image=DestroyImage(fx_image);
       fx_info=DestroyFxThreadSet(fx_info);
+      fx_image=DestroyImage(fx_image);
       return((Image *) NULL);
     }
   /*
@@ -4399,8 +4405,10 @@ MagickExport Image *SketchImage(const Image *image,const double radius,
   ssize_t
     y;
 
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   unsigned long
     key;
+#endif
 
   /*
     Sketch image.
@@ -4412,7 +4420,9 @@ MagickExport Image *SketchImage(const Image *image,const double radius,
   status=MagickTrue;
   GetMagickPixelPacket(random_image,&zero);
   random_info=AcquireRandomInfoThreadSet();
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   key=GetRandomSecretKey(random_info[0]);
+#endif
   random_view=AcquireAuthenticCacheView(random_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
@@ -4564,6 +4574,8 @@ MagickExport MagickBooleanType SolarizeImageChannel(Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+    (void) TransformImageColorspace(image,RGBColorspace);
   if (image->storage_class == PseudoClass)
     {
       register ssize_t
@@ -4808,10 +4820,7 @@ MagickExport Image *SteganoImage(const Image *image,const Image *watermark,
   if (stegano_image->storage_class == PseudoClass)
     (void) SyncImage(stegano_image);
   if (status == MagickFalse)
-    {
-      stegano_image=DestroyImage(stegano_image);
-      return((Image *) NULL);
-    }
+    stegano_image=DestroyImage(stegano_image);
   return(stegano_image);
 }
 
@@ -4953,10 +4962,7 @@ MagickExport Image *StereoAnaglyphImage(const Image *left_image,
       }
   }
   if (status == MagickFalse)
-    {
-      stereo_image=DestroyImage(stereo_image);
-      return((Image *) NULL);
-    }
+    stereo_image=DestroyImage(stereo_image);
   return(stereo_image);
 }
 

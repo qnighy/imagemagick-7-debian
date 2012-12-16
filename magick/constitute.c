@@ -17,7 +17,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -345,6 +345,11 @@ MagickExport Image *PingImages(const ImageInfo *image_info,
       sans=AcquireExceptionInfo();
       (void) SetImageInfo(read_info,0,sans);
       sans=DestroyExceptionInfo(sans);
+      if (read_info->number_scenes == 0)
+        {
+          read_info=DestroyImageInfo(read_info);
+          return(PingImage(image_info,exception));
+        }
       (void) CopyMagickString(filename,read_info->filename,MaxTextExtent);
       images=NewImageList();
       extent=(ssize_t) (read_info->scene+read_info->number_scenes);
@@ -453,6 +458,7 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
       errno=EPERM;
       (void) ThrowMagickException(exception,GetMagickModule(),PolicyError,
         "NotAuthorized","`%s'",read_info->filename);
+      read_info=DestroyImageInfo(read_info);
       return((Image *) NULL);
     }
   /*
@@ -1056,6 +1062,7 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
         {
           (void) ThrowMagickException(&image->exception,GetMagickModule(),
             OptionError,"NoClipPathDefined","`%s'",image->filename);
+          write_info=DestroyImageInfo(write_info);
           return(MagickFalse);
         }
       image=image->clip_mask;
@@ -1068,6 +1075,7 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
   if (IsRightsAuthorized(domain,rights,write_info->magick) == MagickFalse)
     {
       sans_exception=DestroyExceptionInfo(sans_exception);
+      write_info=DestroyImageInfo(write_info);
       errno=EPERM;
       ThrowBinaryException(PolicyError,"NotAuthorized",filename);
     }

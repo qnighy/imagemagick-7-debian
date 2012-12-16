@@ -1,4 +1,4 @@
-#  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -23,6 +23,8 @@ ACLOCAL_AMFLAGS = -I m4
 
 MODULECOMMONFLAGS = -no-undefined -export-symbols-regex ".*" -shared -module -avoid-version
 
+SUBDIRS = .
+
 # Options to pass when running configure in the distcheck target.
 #
 # We want to preserve user-provided option variables so the same
@@ -33,7 +35,6 @@ DISTCLEANFILES = _configs.sed magick/magick-config.h
 
 ## Make sure these will be cleaned even when they're not built by default.
 CLEANFILES = \
-	$(LTDL_CLEANFILES) \
 	$(WAND_CLEANFILES) \
 	$(MAGICKPP_CLEANFILES) \
 	$(UTILITIES_CLEANFILES) \
@@ -48,12 +49,10 @@ bin_SCRIPTS = \
 	$(WAND_BIN_SCRPTS) \
 	$(MAGICKPP_SCRPTS)
 
-include_HEADERS = \
-	$(LTDL_INSTALLHEADERS)
+include_HEADERS =
 
 # Headers which are not installed but which are distributed
 noinst_HEADERS = \
-	$(LIBLTDL_NOINST_HDRS) \
 	$(MAGICK_NOINST_HDRS)
 
 if WIN32_NATIVE_BUILD
@@ -135,7 +134,6 @@ check_PROGRAMS = \
 
 include m4/Makefile.am
 include config/Makefile.am
-include ltdl/Makefile.inc
 include coders/Makefile.am
 include magick/Makefile.am
 include filters/Makefile.am
@@ -153,6 +151,10 @@ pkgconfig_DATA = \
 	$(MAGICK_PKGCONFIG) \
 	$(WAND_PKGCONFIG) \
 	$(MAGICKPP_PKGCONFIG)
+
+# create a copy for pc file (ideally the non abi should be symlinked)
+%-@MAGICK_ABI_SUFFIX@.pc: %.pc
+	cp -f $^ $@
 
 # Manual pages to install
 man_MANS = \
@@ -277,6 +279,7 @@ libtool: $(LIBTOOL_DEPS)
 html:
 	doxygen config/MagickCore.dox
 	doxygen config/MagickWand.dox
+	doxygen config/Magick++.dox
 
 #
 # Build Windows source Zip and 7Zip balls

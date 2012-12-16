@@ -17,7 +17,7 @@
 %                                  July 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -3587,7 +3587,7 @@ MagickExport void XGetResourceInfo(const ImageInfo *image_info,
   resource_info->title=XGetResourceClass(database,client_name,"title",
     (char *) NULL);
   resource_value=XGetResourceClass(database,client_name,"undoCache",
-    (char *) "16");
+    (char *) "256");
   resource_info->undo_cache=(unsigned int) StringToUnsignedLong(resource_value);
   resource_value=XGetResourceClass(database,client_name,"update",
     (char *) "False");
@@ -7631,7 +7631,7 @@ static inline MagickRealType DiversityPixelIntensity(
   MagickRealType
     intensity;
 
-  intensity=0.298839*pixel->red+0.586811*pixel->green+0.114350*pixel->blue;
+  intensity=0.298839f*pixel->red+0.586811f*pixel->green+0.114350f*pixel->blue;
   return(intensity);
 }
 

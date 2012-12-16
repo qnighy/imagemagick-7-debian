@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -274,10 +274,10 @@ MagickExport Image *CombineImages(const Image *image,const ChannelType channel,
       }
   }
   combine_view=DestroyCacheView(combine_view);
-  if (status == MagickFalse)
-    combine_image=DestroyImage(combine_image);
   if (IsGrayColorspace(combine_image->colorspace) != MagickFalse)
     (void) TransformImageColorspace(combine_image,RGBColorspace);
+  if (status == MagickFalse)
+    combine_image=DestroyImage(combine_image);
   return(combine_image);
 }
 
@@ -621,7 +621,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(image->signature == MagickSignature);
-  status=MagickFalse;
+  status=MagickTrue;
   switch (alpha_type)
   {
     case ActivateAlphaChannel:
@@ -823,7 +823,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
 
           gamma=1.0-QuantumScale*QuantumScale*q->opacity*pixel.opacity;
           opacity=(MagickRealType) QuantumRange*(1.0-gamma);
-          gamma=MagickEpsilonReciprocal(gamma);
+          gamma=PerceptibleReciprocal(gamma);
           q->red=ClampToQuantum(gamma*MagickOver_((MagickRealType) q->red,
             (MagickRealType) q->opacity,(MagickRealType) pixel.red,
             (MagickRealType) pixel.opacity));
