@@ -1,4 +1,4 @@
-imagemagick (8:6.8.0.10-1) experimental; urgency=low
+imagemagick (8:6.8.1.0-1) experimental; urgency=low
 
   * New upstream version
   * .so bump due to:
