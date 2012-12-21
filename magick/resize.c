@@ -1634,7 +1634,7 @@ MagickExport Image *InterpolativeResizeImage(const Image *image,
   scale.y=(double) image->rows/resize_image->rows;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,resize_image,resize_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) resize_image->rows; y++)
   {
@@ -2225,7 +2225,7 @@ static MagickBooleanType HorizontalFilter(const ResizeFilter *resize_filter,
   resize_view=AcquireAuthenticCacheView(resize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,resize_image,resize_image->columns,1)
 #endif
   for (x=0; x < (ssize_t) resize_image->columns; x++)
   {
@@ -2465,7 +2465,7 @@ static MagickBooleanType VerticalFilter(const ResizeFilter *resize_filter,
   resize_view=AcquireAuthenticCacheView(resize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,resize_image,resize_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) resize_image->rows; y++)
   {
@@ -2649,8 +2649,6 @@ MagickExport Image *ResizeImage(const Image *image,const size_t columns,
   const size_t rows,const FilterTypes filter,const double blur,
   ExceptionInfo *exception)
 {
-#define WorkLoadFactor  0.265
-
   FilterTypes
     filter_type;
 
@@ -2696,7 +2694,7 @@ MagickExport Image *ResizeImage(const Image *image,const size_t columns,
   */
   x_factor=(MagickRealType) columns/(MagickRealType) image->columns;
   y_factor=(MagickRealType) rows/(MagickRealType) image->rows;
-  if ((x_factor*y_factor) > WorkLoadFactor)
+  if (x_factor > y_factor)
     filter_image=CloneImage(image,columns,image->rows,MagickTrue,exception);
   else
     filter_image=CloneImage(image,image->columns,rows,MagickTrue,exception);
@@ -2718,7 +2716,7 @@ MagickExport Image *ResizeImage(const Image *image,const size_t columns,
     Resize image.
   */
   offset=0;
-  if ((x_factor*y_factor) > WorkLoadFactor)
+  if (x_factor > y_factor)
     {
       span=(MagickSizeType) (filter_image->columns+rows);
       status=HorizontalFilter(resize_filter,image,filter_image,x_factor,span,
@@ -2831,8 +2829,8 @@ MagickExport Image *SampleImage(const Image *image,const size_t columns,
       ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
     }
   for (x=0; x < (ssize_t) sample_image->columns; x++)
-    x_offset[x]=(ssize_t) (((MagickRealType) x+0.5)*image->columns/
-      sample_image->columns);
+    x_offset[x]=(ssize_t) (((MagickRealType) x*image->columns)/
+      sample_image->columns+0.5);
   /*
     Sample each row.
   */
@@ -2841,8 +2839,7 @@ MagickExport Image *SampleImage(const Image *image,const size_t columns,
   image_view=AcquireVirtualCacheView(image,exception);
   sample_view=AcquireAuthenticCacheView(sample_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+  #pragma omp parallel for schedule(static,sample_image->rows/2) shared(status)
 #endif
   for (y=0; y < (ssize_t) sample_image->rows; y++)
   {
@@ -2866,8 +2863,8 @@ MagickExport Image *SampleImage(const Image *image,const size_t columns,
 
     if (status == MagickFalse)
       continue;
-    y_offset=(ssize_t) (((MagickRealType) y+0.5)*image->rows/
-      sample_image->rows);
+    y_offset=(ssize_t) (((MagickRealType) y*image->rows)/sample_image->rows+
+      0.5);
     p=GetCacheViewVirtualPixels(image_view,0,y_offset,image->columns,1,
       exception);
     q=QueueCacheViewAuthenticPixels(sample_view,0,y,sample_image->columns,1,

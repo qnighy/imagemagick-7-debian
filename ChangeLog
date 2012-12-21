@@ -1,3 +1,10 @@
+2012-12-16  6.8.1-0 Cristy  <quetzlzacatenango@image...>
+  * Return non-zero exit status if two images differ for the compare utility.
+  * Large image performance tuning.
+
+2012-12-15  6.8.0-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.0-10, SVN revision 10236.
+
 2012-12-13  6.8.0-10 Cristy  <quetzlzacatenango@image...>
   * Improve exception reporting when AcquireAuthenticCacheView() fails.
 
@@ -277,6 +284,8 @@ http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=21884).
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=21663).
   * Utilize inkscape if it is in your execution path otherwise RSVG.  If
     neither is available, revert to the internal SVG renderer.
+  * Initialize image->x_resolution and y_resolution to 0 in image.c
+    (previously they were initialized to DefaultResolution, which is 72.0).
 
 2012-08-12  6.7.8-10 Cristy  <quetzlzacatenango@image...>
   * New version 6.7.8-10, SVN revision 8915.

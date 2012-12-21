@@ -203,7 +203,7 @@ MagickExport Image *CompareImageChannels(Image *image,
   highlight_view=AcquireAuthenticCacheView(highlight_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,highlight_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -321,7 +321,7 @@ MagickExport Image *CompareImageChannels(Image *image,
 %  GetImageChannelDistortion() compares one or more image channels of an image
 %  to a reconstructed image and returns the specified distortion metric.
 %
-%  The format of the CompareImageChannels method is:
+%  The format of the GetImageChannelDistortion method is:
 %
 %      MagickBooleanType GetImageChannelDistortion(const Image *image,
 %        const Image *reconstruct_image,const ChannelType channel,
@@ -381,7 +381,7 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -498,7 +498,7 @@ static MagickBooleanType GetFuzzDistortion(const Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -619,7 +619,7 @@ static MagickBooleanType GetMeanAbsoluteDistortion(const Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -866,7 +866,7 @@ static MagickBooleanType GetMeanSquaredDistortion(const Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1129,7 +1129,7 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1395,11 +1395,11 @@ MagickExport MagickBooleanType GetImageChannelDistortion(Image *image,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  GetImageChannelDistrortion() compares the image channels of an image to a
+%  GetImageChannelDistortions() compares the image channels of an image to a
 %  reconstructed image and returns the specified distortion metric for each
 %  channel.
 %
-%  The format of the CompareImageChannels method is:
+%  The format of the GetImageChannelDistortions method is:
 %
 %      double *GetImageChannelDistortions(const Image *image,
 %        const Image *reconstruct_image,const MetricType metric,
@@ -1471,8 +1471,8 @@ MagickExport double *GetImageChannelDistortions(Image *image,
     }
     case MeanAbsoluteErrorMetric:
     {
-      status=GetMeanAbsoluteDistortion(image,reconstruct_image,CompositeChannels,
-        channel_distortion,exception);
+      status=GetMeanAbsoluteDistortion(image,reconstruct_image,
+        CompositeChannels,channel_distortion,exception);
       break;
     }
     case MeanErrorPerPixelMetric:
@@ -1496,20 +1496,20 @@ MagickExport double *GetImageChannelDistortions(Image *image,
     }
     case PeakAbsoluteErrorMetric:
     {
-      status=GetPeakAbsoluteDistortion(image,reconstruct_image,CompositeChannels,
-        channel_distortion,exception);
+      status=GetPeakAbsoluteDistortion(image,reconstruct_image,
+        CompositeChannels,channel_distortion,exception);
       break;
     }
     case PeakSignalToNoiseRatioMetric:
     {
-      status=GetPeakSignalToNoiseRatio(image,reconstruct_image,CompositeChannels,
-        channel_distortion,exception);
+      status=GetPeakSignalToNoiseRatio(image,reconstruct_image,
+        CompositeChannels,channel_distortion,exception);
       break;
     }
     case RootMeanSquaredErrorMetric:
     {
-      status=GetRootMeanSquaredDistortion(image,reconstruct_image,CompositeChannels,
-        channel_distortion,exception);
+      status=GetRootMeanSquaredDistortion(image,reconstruct_image,
+        CompositeChannels,channel_distortion,exception);
       break;
     }
   }
@@ -1811,7 +1811,7 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
   similarity_view=AcquireVirtualCacheView(similarity_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) (image->rows-reference->rows+1); y++)
   {

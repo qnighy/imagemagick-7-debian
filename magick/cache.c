@@ -3904,12 +3904,13 @@ static inline void AllocatePixelCachePixels(CacheInfo *cache_info)
     }
 }
 
-static MagickBooleanType ExtendCache(Image *image,MagickSizeType length)
+static MagickBooleanType SetPixelCacheExtent(Image *image,MagickSizeType length)
 {
   CacheInfo
     *cache_info;
 
   MagickOffsetType
+    count,
     extent,
     offset;
 
@@ -3934,26 +3935,8 @@ static MagickBooleanType ExtendCache(Image *image,MagickSizeType length)
   if ((MagickSizeType) offset >= length)
     return(MagickTrue);
   extent=(MagickOffsetType) length-1;
-#if !defined(MAGICKCORE_HAVE_POSIX_FALLOCATE)
-  {
-    MagickOffsetType
-      count;
-
-    count=WritePixelCacheRegion(cache_info,extent,1,(const unsigned char *) "");
-    if (count != (MagickOffsetType) 1)
-      return(MagickFalse);
-  }
-#else
-  {
-    int
-      status;
-
-    status=posix_fallocate(cache_info->file,offset+1,extent-offset);
-    if (status != 0)
-      return(MagickFalse);
-  }
-#endif
-  return(MagickTrue);
+  count=WritePixelCacheRegion(cache_info,extent,1,(const unsigned char *) "");
+  return(count != (MagickOffsetType) 1 ? MagickFalse : MagickTrue);
 }
 
 static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
@@ -4085,7 +4068,7 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
         image->filename);
       return(MagickFalse);
     }
-  status=ExtendCache(image,(MagickSizeType) cache_info->offset+
+  status=SetPixelCacheExtent(image,(MagickSizeType) cache_info->offset+
     cache_info->length);
   if (status == MagickFalse)
     {
@@ -5138,9 +5121,9 @@ static MagickBooleanType SetCacheAlphaChannel(Image *image,
   image->matte=MagickTrue;
   status=MagickTrue;
   image_view=AcquireVirtualCacheView(image,&image->exception);  /* must be virtual */
-#if defined(MAGICKCORE_OPENMP_SUPPORT) && defined(NoBenefitFromParallelism)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    dynamic_number_threads(image,image->columns,image->rows,1)
+    magick_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

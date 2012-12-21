@@ -856,17 +856,6 @@ NEXT_FRAME:
       }
 
 
-    /* ----- Create gray palette ----- */
-
-    if (CellType==miUINT8 && z!=3)
-    {
-      if(image->colors>256) image->colors = 256;
-
-      if (!AcquireImageColormap(image, image->colors))
-      {
- NoMemory:ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");}
-    }
-
     /*
       If ping is true, then only set image size and colors without
       reading any image data.
@@ -882,7 +871,7 @@ NEXT_FRAME:
   /* ----- Load raster data ----- */
     BImgBuff = (unsigned char *) AcquireQuantumMemory((size_t) (ldblk),sizeof(unsigned char *));    /* Ldblk was set in the check phase */
     if (BImgBuff == NULL)
-      goto NoMemory;
+      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
 
     MinVal = 0;
     MaxVal = 0;
