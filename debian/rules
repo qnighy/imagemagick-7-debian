@@ -3,9 +3,9 @@
 # GNU copyright 1997 to 1999 by Joey Hess.
 
 # Uncomment this to turn on verbose mode.
-# export DH_VERBOSE=1
+export DH_VERBOSE=1
 
-export QUANTUMDEPTH ?= "Q16"
+export QUANTUMDEPTH?=Q16
 export SOVERSION ?= 7
 
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
@@ -20,9 +20,8 @@ export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -n
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
 
-export LOWERQUANTUMDEPTH ?= $(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/')
-export QUANTUMDEPTHBITS ?= $(shell echo $(QUANTUMDEPTH) | sed -r 's/Q?([[:digit:]]*)(HDRI)?/\1/gi')
-
+##	$(shell echo $* | sed -e 's/\(.*\)/\L\1/') 
+##	$(shell echo $* | sed -r 's/Q?([[:digit:]]*)(HDRI)?/\1/gi')
 
 DESTDIR="$(CURDIR)/debian/tmp"
 
@@ -41,12 +40,17 @@ CONVERT_FLAGS = -background none -define filter:blur=0.75 -filter Gaussian
 # ARGH, we use graphicsmagick convert to avoid painful circular dependencies...
 # CONVERT = /usr/bin/convert
 
-build: build-stamp
-build-stamp: $(QUILT_STAMPFN)
+build-prerequest:
 	dh_testdir
+
 	# libtool link with depends lib by default autoreconf to avoid it, using debian patched version
 	dh_autoreconf
 
+build-quantum-%: build-prerequest build-quantum-stamp-% ;
+build-quantum-stamp-%: $(QUILT_STAMPFN) 
+	echo "Build Imagemagick for quantum depth $*"
+
+	dh_testdir
         # NOTICE: remove EPL delegate lib gvc (license problem)
 	dh_auto_configure -- \
 	--prefix=/usr \
@@ -68,8 +72,8 @@ build-stamp: $(QUILT_STAMPFN)
 	--x-includes=/usr/include/X11 \
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg \
-	--program-suffix=".${LOWERQUANTUMDEPTH}.im$(DEB_UPSTREAM_VERSION_MAJOR)" \
-	--with-quantum-depth=${QUANTUMDEPTHBITS}
+	--program-suffix=".$(shell echo $* | sed -e 's/\(.*\)/\L\1/').im$(DEB_UPSTREAM_VERSION_MAJOR)" \
+	--with-quantum-depth=$*
 
 	# Patch the generated libtool to avoid passing -rpath when linking,
 	# and to explicitly link libraries against the libraries they
@@ -80,7 +84,9 @@ build-stamp: $(QUILT_STAMPFN)
 		-e '/^archive_cmds="/s/"$$/ \\$$deplibs"/'
 
 	dh_auto_build
+	dh_autoreconf_clean
 
+build: build-prerequest $(QUANTUMDEPTH:%=build-quantum-%)
 	# Create Makefile after building main library, so it finds -lMagickCore (see #650417)
 	cd "$(CURDIR)/PerlMagick" && \
 		perl Makefile.PL INSTALLDIRS=vendor
