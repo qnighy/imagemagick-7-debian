@@ -6,8 +6,10 @@ imagemagick (8:6.8.1.0-1) experimental; urgency=low
      allow to compile hdri and other quantum depth.
    - lib versionning.
   * Remove configure script
+  * Due tu some headers file calling pow() -lm is needed 
+    when compiling with imagemagick
 
- -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Sun, 16 Dec 2012 21:59:47 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 16 Dec 2012 21:59:47 +0100
 
 imagemagick (8:6.7.9.3-2) experimental; urgency=low
 
