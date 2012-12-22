@@ -3,10 +3,11 @@
 # GNU copyright 1997 to 1999 by Joey Hess.
 
 # Uncomment this to turn on verbose mode.
-export DH_VERBOSE=1
+#export DH_VERBOSE=1
 
 export QUANTUMDEPTH?=Q16
 export SOVERSION ?= 7
+export IMVERSION ?= 6
 
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
@@ -20,45 +21,27 @@ export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -n
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
 
-##	$(shell echo $* | sed -e 's/\(.*\)/\L\1/') 
-##	$(shell echo $* | sed -r 's/Q?([[:digit:]]*)(HDRI)?/\1/gi')
+export INDEP_PKG ?= imagemagick-doc imagemagick-common
+# name of package in generic form QUANTUM will be replaced by sed by the current quantum depth
+export ARCH_QUANTUM_PKG ?= libmagickcore-QUANTUM-$(SOVERSION)-extra libmagickcore-QUANTUM-$(SOVERSION) \
+	                   libmagick++-QUANTUM-$(SOVERSION) libmagickwand-QUANTUM-$(SOVERSION) \
+	 		   imagemagick-QUANTUM-$(IMVERSION) 
+export ARCH_NOQUANTUM_PKG ?= libmagickcore-dev libmagick++-dev libmagickwand-dev perlmagick
 
-DESTDIR="$(CURDIR)/debian/tmp"
-
-# for better pkg-symbols for c++
-ifneq (/usr/share/pkg-kde-tools/bin,$(filter /usr/share/pkg-kde-tools/bin,$(subst :, ,$(PATH))))
-    export PATH := /usr/share/pkg-kde-tools/bin:$(PATH)
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+NUMJOBS := $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+PASS_MAKEFLAGS += -j$(NUMJOBS)
 endif
 
-# For some reason, the
-# libtools wrapper scripts don't work.
-# And for some reasons, the delegates are missing here.
-# use the recently builded convert using upstream script
-CONVERT = $(CURDIR)/magick.sh convert
-CONVERT_FLAGS = -background none -define filter:blur=0.75 -filter Gaussian
 
-# ARGH, we use graphicsmagick convert to avoid painful circular dependencies...
-# CONVERT = /usr/bin/convert
-
-build-prerequest:
-	dh_testdir
-
-	# libtool link with depends lib by default autoreconf to avoid it, using debian patched version
-	dh_autoreconf
-
-build-quantum-%: build-prerequest build-quantum-stamp-% ;
-build-quantum-stamp-%: $(QUILT_STAMPFN) 
-	echo "Build Imagemagick for quantum depth $*"
-
-	dh_testdir
-        # NOTICE: remove EPL delegate lib gvc (license problem)
-	dh_auto_configure -- \
+# NOTICE: remove EPL delegate lib gvc (license problem)
+export CONFIGURE_OPTIONS ?= \
 	--prefix=/usr \
-        --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
+        --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
 	--sysconfdir=/etc \
-	--mandir=\$${prefix}/share/man \
-	--infodir=\$${prefix}/share/info \
-	--docdir=\$${prefix}/share/doc/imagemagick \
+	--mandir=/usr/share/man \
+	--infodir=/usr/share/info \
+	--docdir=/usr/share/doc/imagemagick \
 	--with-modules \
 	--with-gs-font-dir=/usr/share/fonts/type1/gsfonts \
 	--with-magick-plus-plus \
@@ -71,9 +54,56 @@ build-quantum-stamp-%: $(QUILT_STAMPFN)
 	--with-perl-options='INSTALLDIRS=vendor' \
 	--x-includes=/usr/include/X11 \
 	--x-libraries=/usr/lib/X11 \
-	--without-rsvg \
-	--program-suffix=".$(shell echo $* | sed -e 's/\(.*\)/\L\1/').im$(DEB_UPSTREAM_VERSION_MAJOR)" \
-	--with-quantum-depth=$*
+	--without-rsvg
+
+##	$(shell echo $* | sed -e 's/\(.*\)/\L\1/') 
+##	$(shell echo $* | sed -r 's/Q?([[:digit:]]*)(HDRI)?/\1/gi')
+
+#DESTDIR="$(CURDIR)/debian/tmp"
+
+# for better pkg-symbols for c++
+ifneq (/usr/share/pkg-kde-tools/bin,$(filter /usr/share/pkg-kde-tools/bin,$(subst :, ,$(PATH))))
+    export PATH := /usr/share/pkg-kde-tools/bin:$(PATH)
+endif
+
+# For some reason, the
+# libtools wrapper scripts don't work.
+# And for some reasons, the delegates are missing here.
+# use the recently builded convert using upstream script
+CONVERT ?= $(CURDIR)/magick.sh convert
+CONVERT_FLAGS ?= -background none -define filter:blur=0.75 -filter Gaussian
+
+
+# libtool link with depends lib by default autoreconf to avoid it, using debian patched version
+autoreconf: autoreconf-stamp
+autoreconf-stamp:
+	dh_testdir
+	dh_autoreconf
+	touch autoreconf-stamp
+
+# build a binaries and lib associated
+build-arch-bin-%:  autoreconf build-arch-bin-stamp-% 
+	@echo ""
+	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+	@echo "Build Imagemagick for quantum depth  $* : DONE"
+	@echo ""
+build-arch-bin-stamp-%: $(QUILT_STAMPFN)
+	@echo ""
+	@echo "-------------------------------------------"
+	@echo "Build Imagemagick for quantum depth  $*    "  
+	@echo "-------------------------------------------"
+	@echo ""
+	dh_testdir
+	[ ! -d $(CURDIR)/debian/tmp-$* ] || rm -rf $(CURDIR)/debian/tmp-$*
+	dh_installdirs
+
+	[ ! -f Makefile ] || $(MAKE) $(PASS_MAKEFLAGS) clean
+
+	# use cache for speeding test
+	dh_auto_configure -- $(CONFIGURE_OPTIONS) \
+		--program-suffix=".$(shell echo $* | sed -e 's/\(.*\)/\L\1/').im$(DEB_UPSTREAM_VERSION_MAJOR)" \
+		--with-quantum-depth=$(shell echo $* | sed -r 's/Q?([[:digit:]]*)(HDRI)?/\1/gi') \
+		-C
 
 	# Patch the generated libtool to avoid passing -rpath when linking,
 	# and to explicitly link libraries against the libraries they
@@ -81,166 +111,455 @@ build-quantum-stamp-%: $(QUILT_STAMPFN)
 
 	sed -i libtool \
 		-e 's/^hardcode_libdir_flag_spec.*$$/hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/' \
-		-e '/^archive_cmds="/s/"$$/ \\$$deplibs"/'
+	 	-e '/^archive_cmds="/s/"$$/ \\$$deplibs"/'
 
-	dh_auto_build
-	dh_autoreconf_clean
+	$(MAKE) $(PASS_MAKEFLAGS)
 
-build: build-prerequest $(QUANTUMDEPTH:%=build-quantum-%)
+	# now build perl
 	# Create Makefile after building main library, so it finds -lMagickCore (see #650417)
 	cd "$(CURDIR)/PerlMagick" && \
 		perl Makefile.PL INSTALLDIRS=vendor
-
 	cd "$(CURDIR)/PerlMagick" && \
-		$(MAKE) OPTIMIZE="-O2 -g -Wall"
+		$(MAKE) $(PASS_MAKEFLAGS) OPTIMIZE="-O2 -g -Wall"
 
-	# build icons cache
-	while read SIZE; do \
-		mkdir -p $(CURDIR)/debian/icons/$$SIZE/apps/ ;\
-		$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize $$SIZE \
-	                   -gravity center -extent $$SIZE  \
-			   $(CURDIR)/debian/icons/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
-	done < $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
-	# make xpm
-	$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize 32x32 \
-                -gravity center -extent 32x32  \
-		$(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
-	mkdir -p $(CURDIR)/debian/icons/scalable/apps/
-	gzip -c -n -9 $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
-		> $(CURDIR)/debian/icons/scalable/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svgz
-
-	touch build-stamp
-
-# This package does not currently split building of architecture dependent and independent packages
-build-arch: build
-build-indep: build
-
-check: check-stamp
-check-stamp: build-stamp
+	touch $@
+clean-build-arch-bin-%:
 	dh_testdir
+	[ ! -f build-arch-bin-stamp-$* ] || rm -f build-arch-bin-stamp-$*
 
-ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-	# run the testsuite to get more info in the build logs for now,
-	# Fail in case of error
+#
+
+# check a binary
+check-arch-bin-%: build-arch-bin-stamp-% check-arch-bin-stamp-% 
+	@echo ""
+	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+	@echo " Test Imagemagick for quantum depth  $* : DONE"
+	@echo ""
+check-arch-bin-stamp-%: 
+	@echo ""
+	@echo "-------------------------------------------"
+	@echo " Test Imagemagick for quantum depth  $*    "  
+	@echo "-------------------------------------------"
+	@echo ""
+
+	dh_testdir
+	#dh_auto_test
+#ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	@if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
-		unset DISPLAY; \
-		LD_LIBRARY_PATH="$(CURDIR)/magick/.libs:$(CURDIR)/wand/.libs:$(CURDIR)/Magick++/lib/.libs:$$LD_LIBRARY_PATH" \
-		$(MAKE) check LD_RUN_PATH= && echo "*** Testsuite succeeded ***" || (echo "*** Testsuite failed ***" ; exit 1) ; \
-		cat test-suite.log; \
-	else \
-		echo "Skipping regression tests because we appear to be cross-compiling"; \
-	fi
-endif
-
-	touch check-stamp
-
-clean:
+           unset DISPLAY; \
+           LD_LIBRARY_PATH="$(CURDIR)/magick/.libs:$(CURDIR)/wand/.libs:$(CURDIR)/Magick++/lib/.libs:$$LD_LIBRARY_PATH" \
+           $(MAKE) check LD_RUN_PATH= && echo "*** Testsuite succeeded ***" || (echo "*** Testsuite failed ***" ; exit 1) ; \
+           cat test-suite.log; \
+        else \
+           echo "Skipping regression tests because we appear to be cross-compiling"; \
+        fi
+#endif
+	touch $@
+clean-check-arch-bin-%:
 	dh_testdir
-	dh_testroot
-	[ ! -f build-stamp ] || rm -f build-stamp
-	[ ! -f check-stamp ] || rm -f check-stamp
+	[ ! -f check-arch-bin-stamp-$* ] || rm -f check-bin-stamp-$*
 
-# revert autoreconf
-	dh_autoreconf_clean
-	# Commands to clean up after the build process
-	[ ! -f PerlMagick/Makefile ] || (cd PerlMagick && $(MAKE) distclean)
-	[ ! -f Makefile ] || $(MAKE) distclean
-	[ ! -f Magick++/Makefile ] || (cd Magick++ && $(MAKE) distclean)
-	rm -f "$(CURDIR)/utilities/.libs/*" "$(CURDIR)/_configs.sed" #\
-#		"$(CURDIR)/magick/magick-config.h"
-
-	# remove icons cache
-	[ ! -d $(CURDIR)/debian/icons ] || rm -rf $(CURDIR)/debian/icons
-	[ ! -f $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm ] || rm -rf $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
-
-	dh_clean build-stamp
-
-install: build check
+# build quantum by quantum (serialize by qantum depth)
+build-arch-quantum-%: build-arch-quantum-stamp-%
+	@echo "Building/testing/installing a quantum version : DONE";
+log-begin-build-arch-quantum-%: 
+	@echo "Building/testing/installing a quantum version"
+build-arch-quantum-stamp-%: log-begin-build-arch-quantum-% build-arch-bin-% check-arch-bin-% build-arch-install-destdir-% 
 	dh_testdir
-	dh_testroot
-	dh_prep
-	dh_installdirs
+	[ ! -f Makefile ] || $(MAKE) $(PASS_MAKEFLAGS) clean
+	touch $@
+clean-build-arch-quantum-%: clean-build-arch-bin-% clean-check-arch-bin-% clean-build-arch-install-destdir-stamp-%
+	dh_testdir
+	[ ! -f Makefile ] || $(MAKE) clean
+	[ ! -f PerlMagick/Makefile ] || (cd PerlMagick && $(MAKE) clean)
+	[ ! -f build-arch-quantum-stamp-$* ] || rm -f build-arch-quantum-stamp-$*
 
-	$(MAKE) install \
-		DESTDIR="$(CURDIR)/debian/tmp" \
-		pkgdocdir=/usr/share/doc/imagemagick
 
-	cd "$(CURDIR)/PerlMagick" && \
-		$(MAKE) install \
-		DESTDIR="$(CURDIR)/debian/tmp" \
-		pkgdocdir=/usr/share/doc/imagemagick
+# install to destdir
+build-arch-install-destdir-%: build-arch-install-destdir-stamp-%
+	@echo ""
+	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+	@echo " Install Imagemagick for quantum depth  $* to (CURDIR)/debian/tmp-$*   : DONE"
+	@echo ""
+build-arch-install-destdir-stamp-%: build-arch-bin-% check-arch-bin-%
+	@echo ""
+	@echo "-----------------------------------------------------------------------"
+	@echo " Install Imagemagick for quantum depth  $* to (CURDIR)/debian/tmp-$*   "  
+	@echo "-----------------------------------------------------------------------"
+	@echo ""
 
-	-find "$(CURDIR)/debian" -type f -name .packlist | xargs rm -f
+
+	dh_testdir
+	$(MAKE) $(PASS_MAKEFLAGS) install DESTDIR="$(CURDIR)/debian/tmp-$*" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
 
 	# Fix HTML location inside manpages
 	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick/' \
-		$(DESTDIR)/usr/share/man/man*/*
+		$(CURDIR)/debian/tmp-$*/usr/share/man/man*/*
 	sed -i 's/doc\/ImageMagick\\-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick/' \
-		$(DESTDIR)/usr/share/man/man*/*
+		$(CURDIR)/debian/tmp-$*/usr/share/man/man*/*
 
-	# Use x-terminal emulator for editing (Bug #132947)
-	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
-		$(DESTDIR)/etc/ImageMagick/delegates.xml
+	# perl now
+	cd "$(CURDIR)/PerlMagick" && \
+		$(MAKE) install \
+		DESTDIR="$(CURDIR)/debian/tmp-$*" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
 
-        # Add a suffix to binaries, and to the corresponding manual
-        # page
-	# while read FILE; do \
-	# 	if echo $$FILE | grep usr/bin > /dev/null; then \
-	# 		filename=`echo "$$FILE"|sed s/*//g`; \
-	# 		basename=`basename $$filename`; \
-	# 		mv $(CURDIR)/debian/tmp/usr/share/man/man1/$$basename.1 \
-	# 		   $(CURDIR)/debian/tmp/usr/share/man/man1/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR).1 ;\
-	# 	else \
-	# 		true; \
-	# 	fi \
-	# done < debian/imagemagick.install
-
-	# Remove empty directories in debian/tmp
-	-find $(DESTDIR) -type d -empty | xargs -r rmdir -p
-
-	# Remove RPATH from Magick.so
-	chrpath -d $(DESTDIR)/usr/lib/perl5/auto/Image/Magick/Magick.so
+	# Remove RPATH from Magick.so (perl)
+	chmod u+w $(CURDIR)/debian/tmp-$*/usr/lib/perl5/auto/Image/Magick/Magick.so
+	chrpath -d $(CURDIR)/debian/tmp-$*/usr/lib/perl5/auto/Image/Magick/Magick.so
+	chmod u-w $(CURDIR)/debian/tmp-$*/usr/lib/perl5/auto/Image/Magick/Magick.so
 
 	# empties dependency_libs from .la files
 	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
-	find $(DESTDIR)/usr/lib -name '*.la' -exec \
+	find $(CURDIR)/debian/tmp-$*/usr/lib -name '*.la' -exec \
 		sed -i "s,^dependency_libs=.*,dependency_libs=''," {} \;
 
+	# Remove empty directories in debian/tmp
+	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
 
-# Build architecture-independent files here.
-binary-indep: build install
-# We have nothing to do by default.
+	touch $@
+clean-build-arch-install-destdir-%: 
+	dh_testdir
+	[ ! -f build-arch-install-destdir-stamp-$* ] || rm -f build-arch-install-destdir-stamp-$*
 
-# Build architecture-dependent files here.
-binary-arch: build check install
+# build quantum
+build-arch-quantums: build-arch-quantums-stamp
+	@echo "quantum dispatching done"
+build-arch-quantums-stamp: autoreconf
+	@echo "quantum dispatching run"
+	dh_testdir
+	for QDEPTH in $(QUANTUMDEPTH); do \
+		$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules build-arch-quantum-$$QDEPTH || exit 2; \
+	done
+	touch build-arch-quantums-stamp
+clean-build-arch-quantums:
+	dh_testdir
+	for QDEPTH in $(QUANTUMDEPTH); do \
+		$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules clean-build-arch-quantum-$$QDEPTH || exit 2; \
+	done
+	[ ! -f build-arch-quantums-stamp ] || rm -f build-arch-quantums-stamp
+
+
+# build arch run build then check then install to destdir
+build-arch: build-arch-stamp
+	@echo ""
+	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+	@echo "Build-arch target: DONE"
+	@echo
+build-arch-log-begin:
+	@echo ""
+	@echo "---------------------------------------------"
+	@echo "Build-arch target 			    "
+	@echo "---------------------------------------------"
+	@echo ""
+build-arch-stamp: build-arch-log-begin #build-arch-quantums
+	dh_testdir
+	touch build-arch-stamp
+clean-build-arch: clean-build-arch-quantums
+	dh_testdir
+	[ ! -f build-arch-stamp ] || rm -f build-arch-stamp
+
+# build indep: build the independant part of the configure
+build-indep: build-indep-stamp autoreconf
+	@echo ""
+	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+	@echo "Build Imagemagick indep (set Quantum to Q16) : DONE "
+	@echo ""
+build-indep-stamp:
+	@echo ""
+	@echo "---------------------------------------------"
+	@echo "Build Imagemagick indep (set Quantum to Q16) "
+	@echo "---------------------------------------------"
+	@echo ""
+	dh_testdir
+
+	[ ! -f Makefile ] || $(MAKE) clean
+
+	# build with basic configuration and cache
+	dh_auto_configure -- $(CONFIGURE_OPTIONS) \
+		--with-quantum-depth=16 \
+		-C
+
+	$(MAKE) $(PASS_MAKEFLAGS) install-configlibDATA DESTDIR="$(CURDIR)/debian/tmp-indep" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
+	$(MAKE) $(PASS_MAKEFLAGS) install-data-html DESTDIR="$(CURDIR)/debian/tmp-indep" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
+
+	# Use x-terminal emulator for editing (Bug #132947)
+	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
+		$(CURDIR)/debian/tmp-indep/etc/ImageMagick/delegates.xml
+
+	# Remove empty directories in debian/tmp
+	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
+
+	$(MAKE)  clean
+
+	touch $@
+clean-build-indep:
+	dh_testdir
+	[ ! -f Makefile ] || $(MAKE) clean
+	[ ! -f build-indep-stamp ] || rm -f  build-indep-stamp
+
+# run build indep after build-arch
+build: build-stamp
+	@echo ""
+	@echo "*******************************************"
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "Build : DONE"  
+	@echo ""
+build-stamp:
+	@echo ""
+	@echo "*******************************************"
+	@echo "Build                                      "  
+	@echo "*******************************************"
+	@echo ""
+	$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules "build-indep" || exit 2
+	$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules "build-arch" || exit 2
+	touch build-stamp
+clean-build: clean-build-arch clean-build-indep
+	[ ! -f build-stamp ] || rm -f  build-stamp
+
+
+# install target
+install-common: install-common-stamp
+install-common-log-begin:
+	@echo ""
+	@echo "--------------------------------------"
+	@echo " Install common part (normally empty) "
+	@echo "--------------------------------------"
+	@echo ""
+install-common-stamp: 
 	dh_testdir
 	dh_testroot
-	dh_installdocs
-	dh_installexamples
-	dh_install
+	dh_installdirs
+	touch install-common-stamp
+clean-install-common:
+	[ ! -f install-common-stamp ] || rm -f install-common-stamp
+install-arch: install-arch-stamp
+install-arch-log-begin:
+	@echo ""
+	@echo "--------------------------------------"
+	@echo " install-arch (normally empty) "
+	@echo "--------------------------------------"
+	@echo ""
+install-arch-stamp: install-arch-log-begin build-arch install-common
+	touch install-arch-stamp
+clean-install-arch:
+	[ ! -f install-arch-stamp ] || rm -f install-arch-stamp
+install-indep: install-indep-stamp
+install-indep-log-begin:
+	@echo ""
+	@echo "--------------------------------------"
+	@echo " install-indep (normally empty) "
+	@echo "--------------------------------------"
+	@echo ""
+install-indep-stamp: install-indep-log-begin build-indep install-common
+	touch install-indep-stamp
+clean-install-indep:
+	[ ! -f install-indep-stamp ] || rm -f install-indep-stamp
+install: install-stamp
+install-log-begin:
+	@echo ""
+	@echo "--------------------------"
+	@echo " Install (normally empty) "
+	@echo "--------------------------"
+	@echo ""
+install-stamp: install-log-begin install-arch install-indep
+	touch install-stamp
+clean-install: clean-install-arch clean-install-indep clean-install-common
+	[ ! -f install-stamp ] || rm -f install-stamp
+
+
+binary-arch-log:
+	@echo ""
+	@echo "*******************************************"
+	@echo " Binary-arch                               "  
+	@echo "*******************************************"
+	@echo ""
+# binary-arch quantum
+binary-arch: binary-arch-log build-arch install-arch
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+
+	# dh_installdoc
+	for pkg in $(ARCH_NOQUANTUM_PKG); do \
+		dh_installdocs --link-doc=imagemagick-common -p$$pkg; \
+	done;
+	for pkg in $(ARCH_QUANTUM_PKG); do \
+	   	for Q in $(QUANTUM_DEPTH); do \
+			dh_installdocs --link-doc=imagemagick-common -p$(shell echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"); \
+		done; \
+	done;
+
+	# dh_installchangelogs
+	for pkg in $(ARCH_NOQUANTUM_PKG); do \
+		dh_installchangelogs -p$$pkg; \
+	done;
+	for pkg in $(ARCH_QUANTUM_PKG); do \
+	   	for Q in $(QUANTUM_DEPTH); do \
+			dh_installchangelogs --link-doc=imagemagick-common -p$(shell echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"); \
+		done; \
+	done;
+
+	# dh_install
+	for pkg in $(ARCH_NOQUANTUM_PKG); do \
+		# TODO: hack please remove and use default
+		dh_install -p$$pkg --sourcedir=debian/tmp-Q16 ;\
+	done;
+	for pkg in $(ARCH_QUANTUM_PKG); do \
+	   	for Q in $(QUANTUM_DEPTH); do \
+			dh_install -p$(shell echo $$pkg | sed -r "s/QUANTUM/$$Q/gi") --sourcedir="debian/tmp-$$Q" ; \
+		done; \
+	done;
 	# Remove extra coders
-	while read FILE; do \
-		rm -f debian/libmagickcore-${LOWERQUANTUMDEPTH}-${SOVERSION}/$$FILE; \
-	done < debian/libmagickcore-${LOWERQUANTUMDEPTH}-${SOVERSION}-extra.install
+	for Q in $(QUANTUM_DEPTH); do \
+		while read FILE; do \
+			rm -f debian/libmagickcore-$(shell echo $$Q | sed -r 's/(.*)/\1/gi')-${SOVERSION}/$$FILE; \
+		done < debian/libmagickcore-$(shell echo $$Q | sed -r 's/(.*)/\1/gi')-${SOVERSION}-extra.install; \
+	done;
+
+	dh_perl
+
 	dh_installmenu
-	dh_installman
 	dh_installmime
-	dh_installinfo
-	dh_installchangelogs
+
+	# TODO not yet
+	# dh_installmanual
+	# dh_installinfo
 	dh_link
+
 	dh_bugfiles --all
+
 	dh_strip --dbg-package=imagemagick-dbg
 	# fix #611125
 	dh_compress -X/usr/share/doc/imagemagick/www
 	dh_fixperms
-	dh_perl
+
 	dh_makeshlibs -V
 	dh_shlibdeps
 	dh_installdeb
-	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
 
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install
+binary-indep-log:
+	@echo ""
+	@echo "*******************************************"
+	@echo " Binary-indep                              "  
+	@echo "*******************************************"
+	@echo ""
+binary-indep: binary-indep-log build-indep install-indep
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+
+	for pkg in $(INDEP_PKG); do \
+		dh_installdocs --link-doc=imagemagick-common -p$$pkg; \
+	done;
+	for pkg in $(INDEP_PKG); do \
+		dh_install -p$$pkg --sourcedir=debian/tmp-indep ;\
+	done;
+
+	dh_bugfiles --all
+	# fix #611125
+	dh_compress -X/usr/share/doc/imagemagick/www
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+binary: build
+	$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules "binary-indep" || exit 2
+	$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules "binary-arch" || exit 2
+
+# # Build architecture-dependent files here.
+# binary-arch: build check install
+# 	dh_testdir
+# 	dh_testroot
+# 	dh_installdocs
+# 	dh_installexamples
+# 	dh_install
+# 	# Remove extra coders
+# 	while read FILE; do \
+# 		rm -f debian/libmagickcore-${LOWERQUANTUMDEPTH}-${SOVERSION}/$$FILE; \
+# 	done < debian/libmagickcore-${LOWERQUANTUMDEPTH}-${SOVERSION}-extra.install
+# 	dh_installmenu
+# 	dh_installman
+# 	dh_installmime
+# 	dh_installinfo
+# 	dh_installchangelogs
+# 	dh_link
+# 	dh_bugfiles --all
+# 	dh_strip --dbg-package=imagemagick-dbg
+# 	# fix #611125
+# 	dh_compress -X/usr/share/doc/imagemagick/www
+# 	dh_fixperms
+# 	dh_perl
+# 	dh_makeshlibs -V
+# 	dh_shlibdeps
+# 	dh_installdeb
+# 	dh_shlibdeps
+# 	dh_gencontrol
+# 	dh_md5sums
+# 	dh_builddeb
+
+# binary: binary-indep binary-arch
+
+# # We have nothing to do by default.
+
+
+# install: build 
+# 	dh_testdir
+# 	dh_testroot
+# 	dh_prep
+# 	dh_installdirs
+
+
+clean:
+	@echo ""
+	@echo "*******************************************"
+	@echo " Clean                                     "  
+	@echo "*******************************************"
+	@echo ""
+
+	dh_testdir
+	dh_testroot
+
+	$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules "clean-build" || exit 2; 
+
+	[ ! -d $(CURDIR)/debian/tmp-indep ] || rm -rf $(CURDIR)/debian/tmp-indep
+	for Q in $(QUANTUMDEPTH); do \
+		[ ! -d $(CURDIR)/debian/tmp-$$Q ] || rm -rf $(CURDIR)/debian/tmp-$$Q ; \
+	done;
+	# Commands to clean up after the build process
+	[ ! -f PerlMagick/Makefile ] || (cd PerlMagick && $(MAKE) distclean)
+	[ ! -f Magick++/Makefile ] || (cd Magick++ && $(MAKE) distclean)
+	[ ! -f Makefile ] || $(MAKE) distclean
+
+	[ ! -f config.cache ] || rm -f config.cache
+
+	# left over report upstream
+	[ ! -d "$(CURDIR)/utilities/.libs" ] || rm -rf "$(CURDIR)/utilities/.libs"
+	[ ! -f "$(CURDIR)/_configs.sed" ] || rm -f "$(CURDIR)/_configs.sed" 
+	[ ! -f "$(CURDIR)/magick/magick-baseconfig.h" ] || rm -f "$(CURDIR)/magick/magick-baseconfig.h"
+	for Q in $(QUANTUMDEPTH); do \
+		[ ! -f "$(CURDIR)/Magick++/lib/ImageMagick++-$$Q.pc" ] || rm -f "$(CURDIR)/Magick++/lib/ImageMagick++-$$Q.pc" ; \
+	        [ ! -f "$(CURDIR)/Magick++/lib/Magick++-$$Q.pc" ] || rm -f "$(CURDIR)/Magick++/lib/Magick++-$$Q.pc" ;\
+		[ ! -f "$(CURDIR)/magick/ImageMagick-$$Q.pc" ] || rm -f "$(CURDIR)/magick/ImageMagick-$$Q.pc" ;\
+		[ ! -f "$(CURDIR)/magick/MagickCore-$$Q.pc" ] || rm -f "$(CURDIR)/magick/MagickCore-$$Q.pc" ;\
+		[ ! -f "$(CURDIR)/wand/MagickWand-$$Q.pc" ] || rm -f "$(CURDIR)/wand/MagickWand-$$Q.pc" ;\
+		[ ! -f "$(CURDIR)/wand/Wand-$$Q.pc" ] || rm -f "$(CURDIR)/wand/Wand-$$Q.pc" ;\
+	done;
+
+# 	# remove icons cache
+# 	[ ! -d $(CURDIR)/debian/icons ] || rm -rf $(CURDIR)/debian/icons
+# 	[ ! -f $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm ] || rm -rf $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
+
+	dh_autoreconf_clean
+	dh_clean
+
+
+.PHONY: autoreconf build clean binary-indep binary-arch binary install

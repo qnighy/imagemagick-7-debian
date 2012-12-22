@@ -35,11 +35,11 @@ Vcs-Browser: http://git.debian.org/?p=collab-maint/imagemagick.git
 Vcs-Git: git://git.debian.org/collab-maint/imagemagick.git
 Homepage: http://www.imagemagick.org/
 
-Package: imagemagick
+Package: imagemagick-q16-6
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}, hicolor-icon-theme
-Recommends: libmagickcore5-extra, ghostscript, netpbm
+Recommends: libmagickcore7-extra, ghostscript, netpbm
 Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  ffmpeg, gimp, gnuplot, grads, graphviz, groff-base, hp2xx, html2ps, 
  libwmf-bin, mplayer,
@@ -59,9 +59,8 @@ Package: imagemagick-dbg
 Architecture: any
 Section: debug
 Priority: extra
-Depends: imagemagick (= ${binary:Version}), libmagick++5 (= ${binary:Version}),
- libmagickcore5-extra (= ${binary:Version}), perlmagick (= ${binary:Version}),
- ${misc:Depends}
+Depends: imagemagick-q16-6 (= ${binary:Version}), libmagick++7 (= ${binary:Version}),
+ libmagickcore7-extra (= ${binary:Version}), perlmagick (= ${binary:Version}),
 Suggests: libjpeg8-dbg, libwmf-bin, librsvg2-dbg, librsvg2-bin, inkscape
 Description: debugging symbols for ImageMagick
  This package contains the debugging symbols for ImageMagick, a software suite
