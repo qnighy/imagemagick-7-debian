@@ -5,6 +5,9 @@
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
 
+export QUANTUMDEPTH ?= "Q16"
+export SOVERSION ?= 7
+
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
@@ -17,13 +20,11 @@ export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -n
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
 
-SOVERSION=7
+export LOWERQUANTUMDEPTH ?= $(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/')
+export QUANTUMDEPTHBITS ?= $(shell echo $(QUANTUMDEPTH) | sed -r 's/Q?([[:digit:]]*)(HDRI)?/\1/gi')
+
 
 DESTDIR="$(CURDIR)/debian/tmp"
-
-QUANTUMDEPTH="Q16"
-LOWERQUANTUMDEPTH=$(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/')
-
 
 # for better pkg-symbols for c++
 ifneq (/usr/share/pkg-kde-tools/bin,$(filter /usr/share/pkg-kde-tools/bin,$(subst :, ,$(PATH))))
@@ -46,7 +47,7 @@ build-stamp: $(QUILT_STAMPFN)
 	# libtool link with depends lib by default autoreconf to avoid it, using debian patched version
 	dh_autoreconf
 
-        # NOTICE: remove EPL delegate lib gvc
+        # NOTICE: remove EPL delegate lib gvc (license problem)
 	dh_auto_configure -- \
 	--prefix=/usr \
         --libdir=\$${prefix}/lib/$(DEB_HOST_MULTIARCH) \
@@ -67,7 +68,8 @@ build-stamp: $(QUILT_STAMPFN)
 	--x-includes=/usr/include/X11 \
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg \
-	--program-suffix=".${LOWERQUANTUMDEPTH}.im$(DEB_UPSTREAM_VERSION_MAJOR)"
+	--program-suffix=".${LOWERQUANTUMDEPTH}.im$(DEB_UPSTREAM_VERSION_MAJOR)" \
+	--with-quantum-depth=${QUANTUMDEPTHBITS}
 
 	# Patch the generated libtool to avoid passing -rpath when linking,
 	# and to explicitly link libraries against the libraries they
