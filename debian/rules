@@ -5,7 +5,7 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-export QUANTUMDEPTH?=Q16
+export QUANTUMDEPTH?=q16
 export SOVERSION ?= 7
 export IMVERSION ?= 6
 
@@ -27,6 +27,10 @@ export ARCH_QUANTUM_PKG ?= libmagickcore-QUANTUM-$(SOVERSION)-extra libmagickcor
 	                   libmagick++-QUANTUM-$(SOVERSION) libmagickwand-QUANTUM-$(SOVERSION) \
 	 		   imagemagick-QUANTUM-$(IMVERSION) 
 export ARCH_NOQUANTUM_PKG ?= libmagickcore-dev libmagick++-dev libmagickwand-dev perlmagick
+
+# put QUANTUMDEPTH in lower case for package name
+#export QUANTUMDEPTH_LOWER ?= $(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'))
+
 
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 NUMJOBS := $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
@@ -82,7 +86,7 @@ autoreconf-stamp:
 	touch autoreconf-stamp
 
 # build a binaries and lib associated
-build-arch-bin-%:  autoreconf build-arch-bin-stamp-% 
+build-arch-bin-%: autoreconf build-arch-bin-stamp-% 
 	@echo ""
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo "Build Imagemagick for quantum depth  $* : DONE"
@@ -102,7 +106,7 @@ build-arch-bin-stamp-%: $(QUILT_STAMPFN)
 	# use cache for speeding test
 	dh_auto_configure -- $(CONFIGURE_OPTIONS) \
 		--program-suffix=".$(shell echo $* | sed -e 's/\(.*\)/\L\1/').im$(DEB_UPSTREAM_VERSION_MAJOR)" \
-		--with-quantum-depth=$(shell echo $* | sed -r 's/Q?([[:digit:]]*)(HDRI)?/\1/gi') \
+		--with-quantum-depth=$(shell echo $* | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi') \
 		-C
 
 	# Patch the generated libtool to avoid passing -rpath when linking,
@@ -135,7 +139,7 @@ check-arch-bin-%: build-arch-bin-stamp-% check-arch-bin-stamp-%
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo " Test Imagemagick for quantum depth  $* : DONE"
 	@echo ""
-check-arch-bin-stamp-%: 
+check-arch-bin-stamp-%:
 	@echo ""
 	@echo "-------------------------------------------"
 	@echo " Test Imagemagick for quantum depth  $*    "  
@@ -193,10 +197,10 @@ build-arch-install-destdir-stamp-%: build-arch-bin-% check-arch-bin-%
 	$(MAKE) $(PASS_MAKEFLAGS) install DESTDIR="$(CURDIR)/debian/tmp-$*" \
 		pkgdocdir=/usr/share/doc/imagemagick-common
 
-	# Fix HTML location inside manpages
-	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick/' \
+	# Fix HTML location inside manpages (TODO proper patch please)
+	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
 		$(CURDIR)/debian/tmp-$*/usr/share/man/man*/*
-	sed -i 's/doc\/ImageMagick\\-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick/' \
+	sed -i 's/doc\/ImageMagick\\-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
 		$(CURDIR)/debian/tmp-$*/usr/share/man/man*/*
 
 	# perl now
@@ -218,21 +222,45 @@ build-arch-install-destdir-stamp-%: build-arch-bin-% check-arch-bin-%
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
 
+	# build icons cache (build for each arch in order to get more testing)
+	while read SIZE; do \
+		mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/ ;\
+		$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize $$SIZE \
+	                   -gravity center -extent $$SIZE  \
+			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
+	done < $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
+	# make xpm
+	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/pixmaps/
+	$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize 32x32 \
+                -gravity center -extent 32x32  \
+		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
+	# do not forget svgz
+	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/
+	gzip -c -n -9 $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
+		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svgz
+
+	# add desktop
+	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/applications/
+	sed < $(CURDIR)/debian/display.desktop.in \
+		-e s/\$$\(QUANTUMDEPTH\)/$*/g \
+		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
+		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display.$*.im$(IMVERSION)
+
 	touch $@
 clean-build-arch-install-destdir-%: 
 	dh_testdir
 	[ ! -f build-arch-install-destdir-stamp-$* ] || rm -f build-arch-install-destdir-stamp-$*
 
 # build quantum
-build-arch-quantums: build-arch-quantums-stamp
+build-arch-quantums:  autoreconf build-arch-quantums-stamp
 	@echo "quantum dispatching done"
-build-arch-quantums-stamp: autoreconf
+build-arch-quantums-stamp:
 	@echo "quantum dispatching run"
 	dh_testdir
 	for QDEPTH in $(QUANTUMDEPTH); do \
 		$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules build-arch-quantum-$$QDEPTH || exit 2; \
 	done
-	touch build-arch-quantums-stamp
+	touch $@
 clean-build-arch-quantums:
 	dh_testdir
 	for QDEPTH in $(QUANTUMDEPTH); do \
@@ -253,15 +281,15 @@ build-arch-log-begin:
 	@echo "Build-arch target 			    "
 	@echo "---------------------------------------------"
 	@echo ""
-build-arch-stamp: build-arch-log-begin #build-arch-quantums
+build-arch-stamp: build-arch-log-begin build-arch-quantums
 	dh_testdir
-	touch build-arch-stamp
+	touch $@
 clean-build-arch: clean-build-arch-quantums
 	dh_testdir
 	[ ! -f build-arch-stamp ] || rm -f build-arch-stamp
 
 # build indep: build the independant part of the configure
-build-indep: build-indep-stamp autoreconf
+build-indep: autoreconf build-indep-stamp 
 	@echo ""
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo "Build Imagemagick indep (set Quantum to Q16) : DONE "
@@ -286,7 +314,7 @@ build-indep-stamp:
 	$(MAKE) $(PASS_MAKEFLAGS) install-data-html DESTDIR="$(CURDIR)/debian/tmp-indep" \
 		pkgdocdir=/usr/share/doc/imagemagick-common
 
-	# Use x-terminal emulator for editing (Bug #132947)
+	# Use x-terminal emulator for editing (Bug #132947) TODO: proper patch please
 	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
 		$(CURDIR)/debian/tmp-indep/etc/ImageMagick/delegates.xml
 
@@ -389,8 +417,8 @@ binary-arch: binary-arch-log build-arch install-arch
 		dh_installdocs --link-doc=imagemagick-common -p$$pkg; \
 	done;
 	for pkg in $(ARCH_QUANTUM_PKG); do \
-	   	for Q in $(QUANTUM_DEPTH); do \
-			dh_installdocs --link-doc=imagemagick-common -p$(shell echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"); \
+	   	for Q in $(QUANTUMDEPTH); do \
+			dh_installdocs --link-doc=imagemagick-common -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"`; \
 		done; \
 	done;
 
@@ -399,26 +427,25 @@ binary-arch: binary-arch-log build-arch install-arch
 		dh_installchangelogs -p$$pkg; \
 	done;
 	for pkg in $(ARCH_QUANTUM_PKG); do \
-	   	for Q in $(QUANTUM_DEPTH); do \
-			dh_installchangelogs --link-doc=imagemagick-common -p$(shell echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"); \
+	   	for Q in $(QUANTUMDEPTH); do \
+			dh_installchangelogs -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"`; \
 		done; \
 	done;
 
-	# dh_install
+	# dh_install (# TODO: hack please remove and use default)
 	for pkg in $(ARCH_NOQUANTUM_PKG); do \
-		# TODO: hack please remove and use default
-		dh_install -p$$pkg --sourcedir=debian/tmp-Q16 ;\
+		dh_install -p$$pkg --sourcedir=debian/tmp-q16 ;\
 	done;
 	for pkg in $(ARCH_QUANTUM_PKG); do \
-	   	for Q in $(QUANTUM_DEPTH); do \
-			dh_install -p$(shell echo $$pkg | sed -r "s/QUANTUM/$$Q/gi") --sourcedir="debian/tmp-$$Q" ; \
+	   	for Q in $(QUANTUMDEPTH); do \
+			dh_install -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` --sourcedir="debian/tmp-$$Q" ; \
 		done; \
 	done;
 	# Remove extra coders
-	for Q in $(QUANTUM_DEPTH); do \
+	for Q in $(QUANTUMDEPTH); do \
 		while read FILE; do \
-			rm -f debian/libmagickcore-$(shell echo $$Q | sed -r 's/(.*)/\1/gi')-${SOVERSION}/$$FILE; \
-		done < debian/libmagickcore-$(shell echo $$Q | sed -r 's/(.*)/\1/gi')-${SOVERSION}-extra.install; \
+			rm -f debian/libmagickcore-`echo $$Q | sed -r 's/(.*)/\1/gi'`-${SOVERSION}/$$FILE; \
+		done < debian/libmagickcore-`echo $$Q | sed -r 's/(.*)/\1/gi'`-${SOVERSION}-extra.install; \
 	done;
 
 	dh_perl
@@ -435,7 +462,7 @@ binary-arch: binary-arch-log build-arch install-arch
 
 	dh_strip --dbg-package=imagemagick-dbg
 	# fix #611125
-	dh_compress -X/usr/share/doc/imagemagick/www
+	dh_compress -X/www/
 	dh_fixperms
 
 	dh_makeshlibs -V
@@ -456,21 +483,19 @@ binary-indep: binary-indep-log build-indep install-indep
 	dh_testroot
 	dh_installdirs
 
+	# installdocs 
 	for pkg in $(INDEP_PKG); do \
 		dh_installdocs --link-doc=imagemagick-common -p$$pkg; \
-	done;
-	for pkg in $(INDEP_PKG); do \
+		dh_installchangelogs -p$$pkg; \
 		dh_install -p$$pkg --sourcedir=debian/tmp-indep ;\
+		dh_bugfiles -p$$pkg -A; \
+		dh_compress -p$$pkg -X/www/ ;\
+		dh_fixperms -p$$pkg ;\
+		dh_installdeb -p$$pkg ;\
+		dh_gencontrol -p$$pkg ;\
+		dh_md5sums -p$$pkg ;\
+		dh_builddeb -p$$pkg ;\
 	done;
-
-	dh_bugfiles --all
-	# fix #611125
-	dh_compress -X/usr/share/doc/imagemagick/www
-	dh_fixperms
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
 binary: build
 	$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules "binary-indep" || exit 2
 	$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules "binary-arch" || exit 2

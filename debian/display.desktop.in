@@ -1,10 +1,10 @@
 [Desktop Entry]
 Version=1.0
-Name=ImageMagick (display)
+Name=ImageMagick (display $(QUANTUMDEPTH))
 Comment=Display and edit image files
 Comment[fr]=Affiche et édite des fichiers images
 Comment[pt]=Exiba e edite arquivos de imagem
-Exec=/usr/bin/display.q16.im6 %f
+Exec=/usr/bin/display.$(QUANTUMDEPTH).im$(IMVERSION) %f
 Terminal=false
 Icon=display.im6
 Type=Application
