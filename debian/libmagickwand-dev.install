@@ -1,7 +1,5 @@
-usr/include/ImageMagick/wand
 usr/lib/*/libMagickWand-Q16.a
 usr/lib/*/libMagickWand-Q16.la
 usr/lib/*/libMagickWand-Q16.so
 usr/lib/*/pkgconfig/MagickWand.pc
 usr/lib/*/pkgconfig/Wand.pc
-

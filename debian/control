@@ -35,9 +35,95 @@ Vcs-Browser: http://git.debian.org/?p=collab-maint/imagemagick.git
 Vcs-Git: git://git.debian.org/collab-maint/imagemagick.git
 Homepage: http://www.imagemagick.org/
 
+Package: imagemagick-common
+Architecture: all
+Multi-Arch: foreign
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends}
+Description: image manipulation programs -- infrastructure
+ imagemagick-common contains the filesystem infrastructure required for
+ further installation of imagemagick in any configuration; it does not provide
+ a full installation of binaries, libraries, and utilities
+ required to run imagemagick.
+ 
+Package: imagemagick-doc
+Architecture: all
+Multi-Arch: foreign
+Section: doc
+Depends: ${misc:Depends}
+Recommends: www-browser
+Suggests: imagemagick
+Conflicts: imagemagick (<= 7:6.4.0)
+Description: document files of ImageMagick
+ This package contains the document files shipped with ImageMagick, a software
+ suite to create, edit, and compose bitmap images.
+
+Package: libmagickcore-arch-config
+Architecture: any
+Multi-Arch: same
+Section: libdevel
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends},
+	 imagemagick-common (= ${binary:Version})
+ The MagickCore API is a low-level interface between the C programming language
+ and the ImageMagick image processing libraries and is recommended for
+ wizard-level programmers only. Unlike the MagickWand C API which uses only a
+ few opaque types and accessors, with MagickCore you almost exclusively access
+ the structure members directly.
+ .
+ This package includes the architecture dependant part of the 
+ headers files used by MagickCore.
+
+Package: libmagickcore-headers
+Architecture: all
+Multi-Arch: foreign
+Section: libdevel
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends}, 
+	 libmagickcore-arch-config (= ${binary:Version})
+Description: low-level image manipulation library - header files 
+ The MagickCore API is a low-level interface between the C programming language
+ and the ImageMagick image processing libraries and is recommended for
+ wizard-level programmers only. Unlike the MagickWand C API which uses only a
+ few opaque types and accessors, with MagickCore you almost exclusively access
+ the structure members directly.
+ .
+ This package includes the architecture independent header files
+ needed to compile programs using MagickCore.
+
+Package: libmagickwand-headers
+Architecture: all
+Multi-Arch: foreign
+Section: libdevel
+Depends: libmagickcore-headers (= ${binary:Version}),
+ ${misc:Depends}
+Description: image manipulation library - headers files
+ The MagickWand API is the recommended interface between the C programming
+ language and the ImageMagick image processing libraries. Unlike the
+ MagickCore C API, MagickWand uses only a few opaque types. Accessors are
+ available to set or get important wand properties.
+ .
+ This package includes header files needed to compile
+ programs using MagickWand.
+
+Package: libmagick++-headers
+Architecture: all
+Multi-Arch: foreign
+Section: libdevel
+Depends: libmagickwand-headers (= ${binary:Version}),
+ libmagickcore-headers (= ${binary:Version}),
+ ${misc:Depends}
+Description: object-oriented C++ interface to ImageMagick - header files
+ The Magick++ library is a set of C++ wrapper classes that provides access
+ to the ImageMagick package functionality from within a C++ application.
+ .
+ This package includes header files needed to compile
+ programs using Magick++.
+
+
 Package: imagemagick-q16-6
 Architecture: any
-Multi-Arch: foreign
+Multi-Arch: allowed
 Depends: ${shlibs:Depends}, ${misc:Depends}, hicolor-icon-theme
 Recommends: libmagickcore7-extra, ghostscript, netpbm
 Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
@@ -65,29 +151,6 @@ Suggests: libjpeg8-dbg, libwmf-bin, librsvg2-dbg, librsvg2-bin, inkscape
 Description: debugging symbols for ImageMagick
  This package contains the debugging symbols for ImageMagick, a software suite
  to create, edit, and compose bitmap images.
-
-Package: imagemagick-common
-Architecture: all
-Multi-Arch: foreign
-Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends}
-Description: image manipulation programs -- infrastructure
- imagemagick-common contains the filesystem infrastructure required for
- further installation of imagemagick in any configuration; it does not provide
- a full installation of binaries, libraries, and utilities
- required to run imagemagick.
- 
-Package: imagemagick-doc
-Architecture: all
-Multi-Arch: foreign
-Section: doc
-Depends: ${misc:Depends}
-Recommends: www-browser
-Suggests: imagemagick
-Conflicts: imagemagick (<= 7:6.4.0)
-Description: document files of ImageMagick
- This package contains the document files shipped with ImageMagick, a software
- suite to create, edit, and compose bitmap images.
 
 Package: libmagickcore-q16-7
 Architecture: any
@@ -122,32 +185,14 @@ Description: low-level image manipulation library - extra codecs
  This package adds support for SVG, WMF, OpenEXR, DjVu and Graphviz to
  MagickCore.
 
-Package: libmagickcore-headers
-Architecture: all
-Multi-Arch: foreign
-Section: libdevel
-Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends} libmagickcore-arch-config
-Description: low-level image manipulation library - headers files 
- This package includes the architecture independant header files
- needed to compile programs using MagickCore.
-
-Package: libmagickcore-arch-config
+Package: libmagickcore-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
-Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends}
- This package includes the architecture dependant part of the 
- headers files used by MagickCore.
-
-Package: libmagickcore-dev
-Architecture: any
-# not yet due to magick-config.h to put in include/triplet
-#Multi-Arch: same
-Section: libdevel
-Depends: libmagickcore-q16-7 (= ${binary:Version}),
- libmagickcore7-extra (= ${binary:Version}), libbz2-dev, libdjvulibre-dev,
+Depends: libmagickcore-headers (= ${binary:Version}),
+ libmagickcore-q16-7 (= ${binary:Version}),
+ libmagickcore7-extra (= ${binary:Version}), 
+ libbz2-dev, libdjvulibre-dev,
  libexif-dev, libfreetype6-dev, libgraphviz-dev, libjasper-dev, libjpeg-dev,
  liblcms-dev, liblqr-1-0-dev, libltdl-dev, libopenexr-dev, libpng-dev,
  librsvg2-dev, libtiff-dev, libwmf-dev, libx11-dev, libxext-dev, libxml2-dev,
@@ -175,10 +220,10 @@ Description: image manipulation library
 
 Package: libmagickwand-dev
 Architecture: any
-# not yet due to magick-config.h to put in include/triplet
-#Multi-Arch: same
+Multi-Arch: same
 Section: libdevel
-Depends: libmagickwand-q16-7 (= ${binary:Version}),
+Depends: libmagickwand-headers (= ${binary:Version}),
+ libmagickwand-q16-7 (= ${binary:Version}),
  libmagickcore-q16-7-extra (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}), ${misc:Depends},
  pkg-config
@@ -201,8 +246,7 @@ Description: object-oriented C++ interface to ImageMagick
 
 Package: libmagick++-dev
 Architecture: any
-# not yet due to magick-config.h to put in include/triplet
-#Multi-Arch: same
+Multi-Arch: same
 Section: libdevel
 Depends: libmagick++-q16-7 (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}),

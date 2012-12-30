@@ -21,12 +21,15 @@ export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -n
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
 
-export INDEP_PKG ?= imagemagick-doc imagemagick-common libmagickcore-headers
+export INDEP_PKG ?= imagemagick-doc imagemagick-common libmagickcore-headers libmagickwand-headers libmagick++-headers 
 # name of package in generic form QUANTUM will be replaced by sed by the current quantum depth
 export ARCH_QUANTUM_PKG ?= libmagickcore-QUANTUM-$(SOVERSION)-extra libmagickcore-QUANTUM-$(SOVERSION) \
 	                   libmagick++-QUANTUM-$(SOVERSION) libmagickwand-QUANTUM-$(SOVERSION) \
-	 		   imagemagick-QUANTUM-$(IMVERSION) libmagickcore-dev libmagick++-dev libmagickwand-dev perlmagick
-export ARCH_NOQUANTUM_PKG ?= libmagickcore-arch-config
+	 		   imagemagick-QUANTUM-$(IMVERSION) libmagickcore-dev libmagick++-dev libmagickwand-dev 
+export ARCH_NOQUANTUM_PKG ?= libmagickcore-arch-config perlmagick
+
+# quantum depth used by quantum independant package (first one of QUANTUMDEPTH)
+export NOQUANTUMDEPTH ?= $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
 
 
 # put QUANTUMDEPTH in lower case for package name
@@ -44,7 +47,7 @@ export CONFIGURE_OPTIONS ?= \
 	--prefix=/usr \
         --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
 	--sysconfdir=/etc \
-	--with-includearch-dir=/usr/include/$(DEB_HOST_MULTIARCH) \
+	--with-includearch-dir=/usr/include/$(DEB_HOST_MULTIARCH)/ \
 	--mandir=/usr/share/man \
 	--infodir=/usr/share/info \
 	--docdir=/usr/share/doc/imagemagick \
@@ -88,12 +91,12 @@ autoreconf-stamp:
 	touch autoreconf-stamp
 
 # build a binaries and lib associated
-build-arch-bin-%: autoreconf build-arch-bin-stamp-% 
+build-arch-bin-quantum-%: autoreconf build-arch-bin-quantum-stamp-% 
 	@echo ""
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo "Build Imagemagick for quantum depth  $* : DONE"
 	@echo ""
-build-arch-bin-stamp-%: $(QUILT_STAMPFN)
+build-arch-bin-quantum-stamp-%: $(QUILT_STAMPFN)
 	@echo ""
 	@echo "-------------------------------------------"
 	@echo "Build Imagemagick for quantum depth  $*    "  
@@ -129,19 +132,19 @@ build-arch-bin-stamp-%: $(QUILT_STAMPFN)
 		$(MAKE) $(PASS_MAKEFLAGS) OPTIMIZE="-O2 -g -Wall"
 
 	touch $@
-clean-build-arch-bin-%:
+clean-build-arch-bin-quantum-%:
 	dh_testdir
-	[ ! -f build-arch-bin-stamp-$* ] || rm -f build-arch-bin-stamp-$*
+	[ ! -f build-arch-bin-quantum-stamp-$* ] || rm -f build-arch-bin-quantum-stamp-$*
 
 #
 
 # check a binary
-check-arch-bin-%: build-arch-bin-stamp-% check-arch-bin-stamp-% 
+check-arch-bin-quantum-%: build-arch-bin-quantum-stamp-% check-arch-bin-quantum-stamp-% 
 	@echo ""
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo " Test Imagemagick for quantum depth  $* : DONE"
 	@echo ""
-check-arch-bin-stamp-%:
+check-arch-bin-quantum-stamp-%:
 	@echo ""
 	@echo "-------------------------------------------"
 	@echo " Test Imagemagick for quantum depth  $*    "  
@@ -161,33 +164,18 @@ check-arch-bin-stamp-%:
         fi
 #endif
 	touch $@
-clean-check-arch-bin-%:
+clean-check-arch-bin-quantum-%:
 	dh_testdir
 	[ ! -f check-arch-bin-stamp-$* ] || rm -f check-bin-stamp-$*
 
-# build quantum by quantum (serialize by qantum depth)
-build-arch-quantum-%: build-arch-quantum-stamp-%
-	@echo "Building/testing/installing a quantum version : DONE";
-log-begin-build-arch-quantum-%: 
-	@echo "Building/testing/installing a quantum version"
-build-arch-quantum-stamp-%: log-begin-build-arch-quantum-% build-arch-bin-% check-arch-bin-% build-arch-install-destdir-% 
-	dh_testdir
-	[ ! -f Makefile ] || $(MAKE) $(PASS_MAKEFLAGS) clean
-	touch $@
-clean-build-arch-quantum-%: clean-build-arch-bin-% clean-check-arch-bin-% clean-build-arch-install-destdir-stamp-%
-	dh_testdir
-	[ ! -f Makefile ] || $(MAKE) clean
-	[ ! -f PerlMagick/Makefile ] || (cd PerlMagick && $(MAKE) clean)
-	[ ! -f build-arch-quantum-stamp-$* ] || rm -f build-arch-quantum-stamp-$*
-
 
 # install to destdir
-build-arch-install-destdir-%: build-arch-install-destdir-stamp-%
+build-arch-quantum-install-destdir-%: build-arch-quantum-install-destdir-stamp-%
 	@echo ""
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo " Install Imagemagick for quantum depth  $* to (CURDIR)/debian/tmp-$*   : DONE"
 	@echo ""
-build-arch-install-destdir-stamp-%: build-arch-bin-% check-arch-bin-%
+build-arch-quantum-install-destdir-stamp-%: build-arch-bin-% check-arch-bin-%
 	@echo ""
 	@echo "-----------------------------------------------------------------------"
 	@echo " Install Imagemagick for quantum depth  $* to (CURDIR)/debian/tmp-$*   "  
@@ -249,14 +237,30 @@ build-arch-install-destdir-stamp-%: build-arch-bin-% check-arch-bin-%
 		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display.$*.im$(IMVERSION)
 
 	touch $@
-clean-build-arch-install-destdir-%: 
+clean-build-arch-quantum-install-destdir-%: 
 	dh_testdir
 	[ ! -f build-arch-install-destdir-stamp-$* ] || rm -f build-arch-install-destdir-stamp-$*
 
+# build quantum by quantum (serialize by qantum depth)
+build-arch-quantum-%: build-arch-quantum-stamp-%
+	@echo "Building/testing/installing a quantum version : DONE";
+log-begin-build-arch-quantum-%: 
+	@echo "Building/testing/installing a quantum version"
+build-arch-quantum-stamp-%: log-begin-build-arch-quantum-% build-arch-bin-quantum-% check-arch-bin-quantum-% build-arch-quantum-install-destdir-% 
+	dh_testdir
+	[ ! -f Makefile ] || $(MAKE) $(PASS_MAKEFLAGS) clean
+	touch $@
+clean-build-arch-quantum-%: clean-build-arch-bin-quantum-% clean-check-arch-bin-quantum-% clean-build-arch-quantum-install-destdir-%
+	dh_testdir
+	[ ! -f Makefile ] || $(MAKE) clean
+	[ ! -f PerlMagick/Makefile ] || (cd PerlMagick && $(MAKE) clean)
+	[ ! -f build-arch-quantum-stamp-$* ] || rm -f build-arch-quantum-stamp-$*
+
+
 # build quantum
-build-arch-quantums:  autoreconf build-arch-quantums-stamp
+build-arch-quantums: build-arch-quantums-stamp
 	@echo "quantum dispatching done"
-build-arch-quantums-stamp:
+build-arch-quantums-stamp: autoreconf-stamp
 	@echo "quantum dispatching run"
 	dh_testdir
 	for QDEPTH in $(QUANTUMDEPTH); do \
@@ -270,61 +274,8 @@ clean-build-arch-quantums:
 	done
 	[ ! -f build-arch-quantums-stamp ] || rm -f build-arch-quantums-stamp
 
-
-build-arch-bin-noquantum: build-arch-bin-noquantum-log-begin autoreconf build-arch-bin-noquantum-stamp
-	@echo ""
-	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-	@echo "Build-arch-bin target no quantum : DONE"
-	@echo
-build-arch-bin-noquantum-log-begin:
-	@echo ""
-	@echo "---------------------------------------------"
-	@echo "Build-arch-bin target no quantum (q16)   	    "
-	@echo "---------------------------------------------"
-	@echo ""
-build-arch-bin-noquantum-stamp:
-	dh_testdir
-	[ ! -d $(CURDIR)/debian/tmp-$* ] || rm -rf $(CURDIR)/debian/tmp-$*
-	dh_installdirs
-
-	[ ! -f Makefile ] || $(MAKE) $(PASS_MAKEFLAGS) clean
-
-	# use cache for speeding test
-	dh_auto_configure -- $(CONFIGURE_OPTIONS) \
-		--with-quantum-depth=16 \
-		-C
-	touch $@
-clean-build-arch-bin-noquantum:
-	dh_testdir
-	[ ! -f  build-arch-bin-noquantum-stamp ] || rm -f build-arch-bin-noquantum-stamp
-
-build-arch-install-destdir-noquantum: autoreconf build-arch-bin-noquantum build-arch-install-destdir-noquantum-stamp
-build-arch-install-destdir-noquantum-stamp:
-	@echo ""
-	@echo "------------------------------------------------------------------------------"
-	@echo " Install Imagemagick for quantum independant $(CURDIR)/debian/tmp-noquantum   "  
-	@echo "------------------------------------------------------------------------------"
-	@echo ""
-
-	dh_testdir
-	$(MAKE) $(PASS_MAKEFLAGS) install-magickincarchHEADERS DESTDIR="$(CURDIR)/debian/tmp-noquantum" \
-		pkgdocdir=/usr/share/doc/imagemagick-common
-
-	touch $@
-clean-build-arch-install-destdir-noquantum:
-	dh_testdir
-	[ ! -f  build-arch-install-destdir-noquantum-stamp ] || rm -f build-arch-install-destdir-noquantum-stamp
-
-
-build-arch-noquantum: build-arch-bin-noquantum build-arch-install-destdir-noquantum
-build-arch-noquantum-stamp:
-	touch $@
-clean-build-arch-noquantum: clean-build-arch-bin-noquantum clean-build-arch-install-destdir-noquantum
-	dh_testdir
-	[ ! -f  build-arch-noquantum-stamp ] || rm -f build-arch-noquantum-stamp
-
 # build arch run build then check then install to destdir
-build-arch: build-arch-stamp
+build-arch: build-arch-log-begin build-arch-quantums build-arch-stamp
 	@echo ""
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo "Build-arch target: DONE"
@@ -335,10 +286,10 @@ build-arch-log-begin:
 	@echo "Build-arch target 			    "
 	@echo "---------------------------------------------"
 	@echo ""
-build-arch-stamp: build-arch-log-begin build-arch-quantums
+build-arch-stamp: 
 	dh_testdir
 	touch $@
-clean-build-arch: clean-build-arch-noquantum clean-build-arch-quantums 
+clean-build-arch: clean-build-arch-quantums 
 	dh_testdir
 	[ ! -f build-arch-stamp ] || rm -f build-arch-stamp
 
@@ -368,6 +319,12 @@ build-indep-stamp:
 	$(MAKE) $(PASS_MAKEFLAGS) install-data-html DESTDIR="$(CURDIR)/debian/tmp-indep" \
 		pkgdocdir=/usr/share/doc/imagemagick-common
 	$(MAKE) $(PASS_MAKEFLAGS)  install-magickincHEADERS DESTDIR="$(CURDIR)/debian/tmp-indep" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
+	$(MAKE) $(PASS_MAKEFLAGS)  install-wandincHEADERS DESTDIR="$(CURDIR)/debian/tmp-indep" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
+	$(MAKE) $(PASS_MAKEFLAGS)  install-magickppincHEADERS DESTDIR="$(CURDIR)/debian/tmp-indep" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
+	$(MAKE) $(PASS_MAKEFLAGS)  install-magickpptopincHEADERS DESTDIR="$(CURDIR)/debian/tmp-indep" \
 		pkgdocdir=/usr/share/doc/imagemagick-common
 
 	# Use x-terminal emulator for editing (Bug #132947) TODO: proper patch please
@@ -462,41 +419,52 @@ binary-arch-log:
 	@echo " Binary-arch                               "  
 	@echo "*******************************************"
 	@echo ""
+
+# binary-arch no quantum
+binary-arch-noquantum-pkg-%: build-arch install-arch
+	dh_testdir
+	dh_testroot
+	dh_installdocs --link-doc=imagemagick-common -p$*;
+	dh_installchangelogs -p$*
+	dh_install -p$* --sourcedir=debian/tmp-$(NOQUANTUMDEPTH)
+	dh_perl -p$*
+	dh_installmenu -p$*
+	dh_installmime -p$*
+	dh_link -p$*
+	dh_bugfiles --all -p$*
+	dh_strip --dbg-package=imagemagick-dbg -p$*
+	# fix #611125 
+	dh_compress -X/www/ -p$*
+	dh_fixperms -p$*
+
+	dh_makeshlibs -V -p$*
+	dh_shlibdeps -p$*
+	dh_installdeb -p$*
+	dh_gencontrol -p$*
+	dh_md5sums -p$*
+	dh_builddeb -$*
+
+binary-arch-noquantum: build-arch install-arch
+	dh_testdir
+	dh_testroot
+	for pkg in $(ARCH_NOQUANTUM_PKG); do \
+		$(MAKE) $(PASS_MAKEFLAGS) -f $(CURDIR)/debian/rules binary-arch-noquantum-pkg-$$pkg || exit 2; \
+	done;
+
 # binary-arch quantum
-binary-arch: binary-arch-log build-arch install-arch
+binary-arch: binary-arch-log build-arch install-arch binary-arch-noquantum
 	dh_testdir
 	dh_testroot
 	dh_installdirs
 
-	# dh_installdoc
-	for pkg in $(ARCH_NOQUANTUM_PKG); do \
-		dh_installdocs --link-doc=imagemagick-common -p$$pkg; \
-	done;
 	for pkg in $(ARCH_QUANTUM_PKG); do \
 	   	for Q in $(QUANTUMDEPTH); do \
 			dh_installdocs --link-doc=imagemagick-common -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"`; \
-		done; \
-	done;
-
-	# dh_installchangelogs
-	for pkg in $(ARCH_NOQUANTUM_PKG); do \
-		dh_installchangelogs -p$$pkg; \
-	done;
-	for pkg in $(ARCH_QUANTUM_PKG); do \
-	   	for Q in $(QUANTUMDEPTH); do \
 			dh_installchangelogs -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"`; \
-		done; \
-	done;
-
-	# dh_install
-	for pkg in $(ARCH_NOQUANTUM_PKG); do \
-		dh_install -p$$pkg --sourcedir=debian/tmp-noquantum ;\
-	done;
-	for pkg in $(ARCH_QUANTUM_PKG); do \
-	   	for Q in $(QUANTUMDEPTH); do \
 			dh_install -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` --sourcedir="debian/tmp-$$Q" ; \
 		done; \
 	done;
+
 	# Remove extra coders
 	for Q in $(QUANTUMDEPTH); do \
 		while read FILE; do \
@@ -504,29 +472,29 @@ binary-arch: binary-arch-log build-arch install-arch
 		done < debian/libmagickcore-`echo $$Q | sed -r 's/(.*)/\1/gi'`-${SOVERSION}-extra.install; \
 	done;
 
-	dh_perl
-
-	dh_installmenu
-	dh_installmime
-
+	for pkg in $(ARCH_QUANTUM_PKG); do \
+	   	for Q in $(QUANTUMDEPTH); do \
+			dh_perl -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_installmenu -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_installmime -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_link	 -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_bugfiles --all -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_strip --dbg-package=imagemagick-dbg -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			# fix #611125
+			dh_compress -X/www/ -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_fixperms -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_makeshlibs -V -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_shlibdeps -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_installdeb -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_gencontrol -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_md5sums -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+			dh_builddeb -p`echo $$pkg | sed -r "s/QUANTUM/$$Q/gi"` \
+		done ;\
+	done; \
 	# TODO not yet
 	# dh_installmanual
 	# dh_installinfo
-	dh_link
 
-	dh_bugfiles --all
-
-	dh_strip --dbg-package=imagemagick-dbg
-	# fix #611125
-	dh_compress -X/www/
-	dh_fixperms
-
-	dh_makeshlibs -V
-	dh_shlibdeps
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
 
 binary-indep-log:
 	@echo ""
