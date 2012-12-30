@@ -96,7 +96,7 @@ build-arch-bin-quantum-%: autoreconf build-arch-bin-quantum-stamp-%
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo "Build Imagemagick for quantum depth  $* : DONE"
 	@echo ""
-build-arch-bin-quantum-stamp-%: $(QUILT_STAMPFN)
+build-arch-bin-quantum-stamp-%: $(QUILT_STAMPFN) autoreconf-stamp
 	@echo ""
 	@echo "-------------------------------------------"
 	@echo "Build Imagemagick for quantum depth  $*    "  
@@ -139,12 +139,12 @@ clean-build-arch-bin-quantum-%:
 #
 
 # check a binary
-check-arch-bin-quantum-%: build-arch-bin-quantum-stamp-% check-arch-bin-quantum-stamp-% 
+check-arch-bin-quantum-%: check-arch-bin-quantum-stamp-% 
 	@echo ""
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo " Test Imagemagick for quantum depth  $* : DONE"
 	@echo ""
-check-arch-bin-quantum-stamp-%:
+check-arch-bin-quantum-stamp-%: build-arch-bin-quantum-stamp-%
 	@echo ""
 	@echo "-------------------------------------------"
 	@echo " Test Imagemagick for quantum depth  $*    "  
@@ -175,7 +175,7 @@ build-arch-quantum-install-destdir-%: build-arch-quantum-install-destdir-stamp-%
 	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
 	@echo " Install Imagemagick for quantum depth  $* to (CURDIR)/debian/tmp-$*   : DONE"
 	@echo ""
-build-arch-quantum-install-destdir-stamp-%: build-arch-bin-% check-arch-bin-%
+build-arch-quantum-install-destdir-stamp-%: build-arch-bin-quantum-stamp-% check-arch-bin-quantum-stamp-%
 	@echo ""
 	@echo "-----------------------------------------------------------------------"
 	@echo " Install Imagemagick for quantum depth  $* to (CURDIR)/debian/tmp-$*   "  
@@ -234,7 +234,7 @@ build-arch-quantum-install-destdir-stamp-%: build-arch-bin-% check-arch-bin-%
 	sed < $(CURDIR)/debian/display.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/$*/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
-		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display.$*.im$(IMVERSION)
+		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display.$*.im$(IMVERSION).desktop
 
 	touch $@
 clean-build-arch-quantum-install-destdir-%: 

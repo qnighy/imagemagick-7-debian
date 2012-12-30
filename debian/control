@@ -65,6 +65,7 @@ Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
 	 imagemagick-common (= ${binary:Version})
+Description: low-level image manipulation library - architecture header files
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
  wizard-level programmers only. Unlike the MagickWand C API which uses only a
