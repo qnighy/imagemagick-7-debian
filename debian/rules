@@ -21,7 +21,7 @@ export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -n
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
 
-export INDEP_PKG ?= imagemagick-doc imagemagick-common
+export INDEP_PKG ?= imagemagick-doc imagemagick-common libmagickcore-headers
 # name of package in generic form QUANTUM will be replaced by sed by the current quantum depth
 export ARCH_QUANTUM_PKG ?= libmagickcore-QUANTUM-$(SOVERSION)-extra libmagickcore-QUANTUM-$(SOVERSION) \
 	                   libmagick++-QUANTUM-$(SOVERSION) libmagickwand-QUANTUM-$(SOVERSION) \
@@ -43,6 +43,7 @@ export CONFIGURE_OPTIONS ?= \
 	--prefix=/usr \
         --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
 	--sysconfdir=/etc \
+	--with-includearch-dir=/usr/include/$(DEB_HOST_MULTIARCH) \
 	--mandir=/usr/share/man \
 	--infodir=/usr/share/info \
 	--docdir=/usr/share/doc/imagemagick \
@@ -269,6 +270,58 @@ clean-build-arch-quantums:
 	[ ! -f build-arch-quantums-stamp ] || rm -f build-arch-quantums-stamp
 
 
+build-arch-bin-noquantum: build-arch-bin-noquantum-log-begin autoreconf build-arch-bin-noquantum-stamp
+	@echo ""
+	@echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+	@echo "Build-arch-bin target no quantum : DONE"
+	@echo
+build-arch-bin-noquantum-log-begin:
+	@echo ""
+	@echo "---------------------------------------------"
+	@echo "Build-arch-bin target no quantum (q16)   	    "
+	@echo "---------------------------------------------"
+	@echo ""
+build-arch-bin-noquantum-stamp:
+	dh_testdir
+	[ ! -d $(CURDIR)/debian/tmp-$* ] || rm -rf $(CURDIR)/debian/tmp-$*
+	dh_installdirs
+
+	[ ! -f Makefile ] || $(MAKE) $(PASS_MAKEFLAGS) clean
+
+	# use cache for speeding test
+	dh_auto_configure -- $(CONFIGURE_OPTIONS) \
+		--with-quantum-depth=16 \
+		-C
+	touch $@
+clean-build-arch-bin-noquantum:
+	dh_testdir
+	[ ! -f  build-arch-bin-noquantum-stamp ] || rm -f build-arch-bin-noquantum-stamp
+
+build-arch-install-destdir-noquantum: autoreconf build-arch-bin-noquantum build-arch-install-destdir-noquantum-stamp
+build-arch-install-destdir-noquantum-stamp:
+	@echo ""
+	@echo "------------------------------------------------------------------------------"
+	@echo " Install Imagemagick for quantum independant $(CURDIR)/debian/tmp-noquantum   "  
+	@echo "------------------------------------------------------------------------------"
+	@echo ""
+
+	dh_testdir
+	$(MAKE) $(PASS_MAKEFLAGS) install-magickincarchHEADERS DESTDIR="$(CURDIR)/debian/tmp-noquantum" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
+
+	touch $@
+clean-build-arch-install-destdir-noquantum:
+	dh_testdir
+	[ ! -f  build-arch-install-destdir-noquantum-stamp ] || rm -f build-arch-install-destdir-noquantum-stamp
+
+
+build-arch-noquantum: build-arch-bin-noquantum build-arch-install-destdir-noquantum
+build-arch-noquantum-stamp:
+	touch $@
+clean-build-arch-noquantum: clean-build-arch-bin-noquantum clean-build-arch-install-destdir-noquantum
+	dh_testdir
+	[ ! -f  build-arch-noquantum-stamp ] || rm -f build-arch-noquantum-stamp
+
 # build arch run build then check then install to destdir
 build-arch: build-arch-stamp
 	@echo ""
@@ -284,7 +337,7 @@ build-arch-log-begin:
 build-arch-stamp: build-arch-log-begin build-arch-quantums
 	dh_testdir
 	touch $@
-clean-build-arch: clean-build-arch-quantums
+clean-build-arch: clean-build-arch-noquantum clean-build-arch-quantums 
 	dh_testdir
 	[ ! -f build-arch-stamp ] || rm -f build-arch-stamp
 
@@ -312,6 +365,8 @@ build-indep-stamp:
 	$(MAKE) $(PASS_MAKEFLAGS) install-configlibDATA DESTDIR="$(CURDIR)/debian/tmp-indep" \
 		pkgdocdir=/usr/share/doc/imagemagick-common
 	$(MAKE) $(PASS_MAKEFLAGS) install-data-html DESTDIR="$(CURDIR)/debian/tmp-indep" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
+	$(MAKE) $(PASS_MAKEFLAGS)  install-magickincHEADERS DESTDIR="$(CURDIR)/debian/tmp-indep" \
 		pkgdocdir=/usr/share/doc/imagemagick-common
 
 	# Use x-terminal emulator for editing (Bug #132947) TODO: proper patch please
