@@ -25,8 +25,9 @@ export INDEP_PKG ?= imagemagick-doc imagemagick-common libmagickcore-headers
 # name of package in generic form QUANTUM will be replaced by sed by the current quantum depth
 export ARCH_QUANTUM_PKG ?= libmagickcore-QUANTUM-$(SOVERSION)-extra libmagickcore-QUANTUM-$(SOVERSION) \
 	                   libmagick++-QUANTUM-$(SOVERSION) libmagickwand-QUANTUM-$(SOVERSION) \
-	 		   imagemagick-QUANTUM-$(IMVERSION) 
-export ARCH_NOQUANTUM_PKG ?= libmagickcore-dev libmagick++-dev libmagickwand-dev perlmagick
+	 		   imagemagick-QUANTUM-$(IMVERSION) libmagickcore-dev libmagick++-dev libmagickwand-dev perlmagick
+export ARCH_NOQUANTUM_PKG ?= libmagickcore-arch-config
+
 
 # put QUANTUMDEPTH in lower case for package name
 #export QUANTUMDEPTH_LOWER ?= $(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'))
@@ -487,9 +488,9 @@ binary-arch: binary-arch-log build-arch install-arch
 		done; \
 	done;
 
-	# dh_install (# TODO: hack please remove and use default)
+	# dh_install
 	for pkg in $(ARCH_NOQUANTUM_PKG); do \
-		dh_install -p$$pkg --sourcedir=debian/tmp-q16 ;\
+		dh_install -p$$pkg --sourcedir=debian/tmp-noquantum ;\
 	done;
 	for pkg in $(ARCH_QUANTUM_PKG); do \
 	   	for Q in $(QUANTUMDEPTH); do \
