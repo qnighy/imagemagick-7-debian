@@ -79,6 +79,7 @@ Description: image manipulation programs -- infrastructure
  
 Package: imagemagick-doc
 Architecture: all
+Multi-Arch: foreign
 Section: doc
 Depends: ${misc:Depends}
 Recommends: www-browser
@@ -120,6 +121,25 @@ Suggests: inkscape
 Description: low-level image manipulation library - extra codecs
  This package adds support for SVG, WMF, OpenEXR, DjVu and Graphviz to
  MagickCore.
+
+Package: libmagickcore-headers
+Architecture: all
+Multi-Arch: foreign
+Section: libdevel
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends} libmagickcore-arch-config
+Description: low-level image manipulation library - headers files 
+ This package includes the architecture independant header files
+ needed to compile programs using MagickCore.
+
+Package: libmagickcore-arch-config
+Architecture: any
+Multi-Arch: same
+Section: libdevel
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends}
+ This package includes the architecture dependant part of the 
+ headers files used by MagickCore.
 
 Package: libmagickcore-dev
 Architecture: any

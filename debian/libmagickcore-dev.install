@@ -1,4 +1,3 @@
-usr/include/ImageMagick/magick
 usr/lib/*/libMagickCore-Q16.a
 usr/lib/*/libMagickCore-Q16.la
 usr/lib/*/libMagickCore-Q16.so
