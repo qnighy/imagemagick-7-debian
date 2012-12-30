@@ -23,7 +23,7 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
 m4_define([magick_micro_version], [1])
-m4_define([magick_patchlevel_version], [0])
+m4_define([magick_patchlevel_version], [5])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -686,7 +686,7 @@ AC_ARG_WITH([method-prefix],
 
 if test "$with_method_prefix" != 'no'; then
     AC_DEFINE_UNQUOTED(NAMESPACE_PREFIX,$with_method_prefix,[Magick API method prefix])
-  DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-method-prefix "
+    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-method-prefix "
 fi
 
 # Number of bits in a Quantum
@@ -2441,9 +2441,9 @@ fi
 
 LZMA_PKG=""
 if test "x$with_lzma" = "xyes"; then
-    AC_MSG_NOTICE([-------------------------------------------------------------])
+    AC_MSG_RESULT([-------------------------------------------------------------])
     PKG_CHECK_MODULES(LZMA,[liblzma >= 2.9.0], have_lzma=yes, have_lzma=no)
-    AC_MSG_NOTICE([])
+    AC_MSG_RESULT([])
 fi
 
 if test "$have_lzma" = 'yes'; then
@@ -3690,90 +3690,69 @@ fi
 AC_SUBST(MAGICKCORE_PATH)
 
 # Create a simple string containing format names for all delegate libraries.
-DELEGATES=''
+MAGICK_DELEGATES=''
 if test "$have_autotrace"  = 'yes' ; then
-   DELEGATES="$DELEGATES autotrace"
-   MAGICK_FEATURES="$MAGICK_FEATURES Autotrace"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES autotrace"
 fi
 if test "$have_bzlib"  = 'yes' ; then
-   DELEGATES="$DELEGATES bzlib"
-   MAGICK_FEATURES="$MAGICK_FEATURES BZLIB"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES bzlib"
 fi
 if test "$have_dps"    = 'yes' ; then
-   DELEGATES="$DELEGATES dps"
-   MAGICK_FEATURES="$MAGICK_FEATURES DPS"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES dps"
 fi
 if test "$have_djvu"    = 'yes' ; then
-   DELEGATES="$DELEGATES djvu"
-   MAGICK_FEATURES="$MAGICK_FEATURES DJVU"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES djvu"
 fi
 if test "$have_ffmpeg"   = 'yes' ; then
-   DELEGATES="$DELEGATES mpeg"
-   MAGICK_FEATURES="$MAGICK_FEATURES MPEG"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES mpeg"
 fi
 if test "$have_fftw"    = 'yes' ; then
-   DELEGATES="$DELEGATES fftw"
-   MAGICK_FEATURES="$MAGICK_FEATURES FFTW"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES fftw"
 fi
 if test "$have_fig2dev" = 'yes' && test "$have_ps" = 'yes'  ; then
-   DELEGATES="$DELEGATES xfig"
-   MAGICK_FEATURES="$MAGICK_FEATURES XFIG"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES xfig"
 fi
 if test "$have_fpx"    = 'yes' ; then
-   DELEGATES="$DELEGATES fpx"
-   MAGICK_FEATURES="$MAGICK_FEATURES FPX"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES fpx"
 fi
 if test "$have_fontconfig"    = 'yes' ; then
-   DELEGATES="$DELEGATES fontconfig"
-   MAGICK_FEATURES="$MAGICK_FEATURES Fontconfig"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES fontconfig"
 fi
 if test "$have_freetype"    = 'yes' ; then
-   DELEGATES="$DELEGATES freetype"
-   MAGICK_FEATURES="$MAGICK_FEATURES Freetype"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES freetype"
 fi
 if test "$have_gslib"    = 'yes' ; then
-   DELEGATES="$DELEGATES gslib"
-   MAGICK_FEATURES="$MAGICK_FEATURES Ghostscript"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES gslib"
 fi
 if test "$have_jbig"    = 'yes' ; then
-   DELEGATES="$DELEGATES jbig"
-   MAGICK_FEATURES="$MAGICK_FEATURES JBIG"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES jbig"
 fi
 if test "$have_png$have_jpeg" = 'yesyes' ; then
-   DELEGATES="$DELEGATES jng"
-   MAGICK_FEATURES="$MAGICK_FEATURES JNG"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES jng"
 fi
 if test "$have_jp2"   = 'yes' ; then
-   DELEGATES="$DELEGATES jp2"
-   MAGICK_FEATURES="$MAGICK_FEATURES JP2"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES jp2"
 fi
 if test "$have_jpeg"   = 'yes' ; then
-   DELEGATES="$DELEGATES jpeg"
-   MAGICK_FEATURES="$MAGICK_FEATURES JPEG"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES jpeg"
 fi
 if test "$have_lcms" = 'yes' || test "$have_lcms2" = 'yes' ; then
-   DELEGATES="$DELEGATES lcms"
-   MAGICK_FEATURES="$MAGICK_FEATURES LCMS"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES lcms"
 fi
 if test "$have_lqr"    = 'yes' ; then
-   DELEGATES="$DELEGATES lqr"
-   MAGICK_FEATURES="$MAGICK_FEATURES LQR"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES lqr"
 fi
 if test "$have_lzma"    = 'yes' ; then
-   DELEGATES="$DELEGATES lzma"
-   MAGICK_FEATURES="$MAGICK_FEATURES LZMA"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES lzma"
 fi
 if test "$have_openexr"    = 'yes' ; then
-   DELEGATES="$DELEGATES openexr"
-   MAGICK_FEATURES="$MAGICK_FEATURES OpenEXR"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES openexr"
 fi
 if test "$have_pango"    = 'yes' ; then
-   DELEGATES="$DELEGATES pango"
-   MAGICK_FEATURES="$MAGICK_FEATURES Pango"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES pango"
 fi
 if test "$have_png"    = 'yes' ; then
-   DELEGATES="$DELEGATES png"
-   MAGICK_FEATURES="$MAGICK_FEATURES PNG"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES png"
 fi
 have_ps='no'
 if test "$have_dps"    = 'yes' || \
@@ -3782,49 +3761,39 @@ if test "$have_dps"    = 'yes' || \
    have_ps='yes'
 fi
 if test "$have_ps"     = 'yes' ; then
-   DELEGATES="$DELEGATES ps"
-   MAGICK_FEATURES="$MAGICK_FEATURES PS"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES ps"
 fi
 if test "$have_ralcgm" = 'yes' ; then
-   DELEGATES="$DELEGATES cgm"
-   MAGICK_FEATURES="$MAGICK_FEATURES CGM"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES cgm"
 fi
 if test "$have_ra_ppm" = 'yes' ; then
-   DELEGATES="$DELEGATES rad"
-   MAGICK_FEATURES="$MAGICK_FEATURES RAD"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES rad"
 fi
 if test "$have_rsvg"   = 'yes' ; then
-   DELEGATES="$DELEGATES rsvg"
-   MAGICK_FEATURES="$MAGICK_FEATURES RSVG"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES rsvg"
 fi
 if test "$have_tiff"   = 'yes' ; then
-   DELEGATES="$DELEGATES tiff"
-   MAGICK_FEATURES="$MAGICK_FEATURES TIFF"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES tiff"
 fi
 if test "$have_ttf"    = 'yes' ; then
-   DELEGATES="$DELEGATES ttf"
-   MAGICK_FEATURES="$MAGICK_FEATURES TTF"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES ttf"
 fi
 if test "$have_wmf"    = 'yes' ; then
-   DELEGATES="$DELEGATES wmf"
-   MAGICK_FEATURES="$MAGICK_FEATURES WMF"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES wmf"
 fi
 if test "$have_x"      = 'yes' ; then
-   DELEGATES="$DELEGATES x"
-   MAGICK_FEATURES="$MAGICK_FEATURES X"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES x"
 fi
 if test "$have_xml"      = 'yes' ; then
-   DELEGATES="$DELEGATES xml"
-   MAGICK_FEATURES="$MAGICK_FEATURES XML"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES xml"
 fi
 if test "$have_zlib"   = 'yes' ; then
-   DELEGATES="$DELEGATES zlib"
-   MAGICK_FEATURES="$MAGICK_FEATURES ZLIB"
+   MAGICK_DELEGATES="$MAGICK_DELEGATES zlib"
 fi
 # Remove extraneous spaces from output variables (asthetic)
-DELEGATES=`echo $DELEGATES | sed -e 's/  */ /g'`
+MAGICK_DELEGATES=`echo $MAGICK_DELEGATES | sed -e 's/  */ /g'`
 MAGICK_FEATURES=`echo $MAGICK_FEATURES | sed -e 's/  */ /g'`
-AC_SUBST(DELEGATES)
+AC_SUBST(MAGICK_DELEGATES)
 AC_SUBST(MAGICK_FEATURES)
 
 #
@@ -3991,8 +3960,8 @@ LTDL              --with-ltdl=$with_ltdl		$have_ltdl
 LZMA              --with-lzma=$with_lzma		$have_lzma
 Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
 OpenEXR           --with-openexr=$with_openexr		$have_openexr
-PERL              --with-perl=$with_perl		$have_perl
 PANGO             --with-pango=$with_pango		$have_pango
+PERL              --with-perl=$with_perl		$have_perl
 PNG               --with-png=$with_png		$have_png
 RSVG              --with-rsvg=$with_rsvg		$have_rsvg
 TIFF              --with-tiff=$with_tiff		$have_tiff
@@ -4024,4 +3993,5 @@ Options used to compile and link:
   CXX             = $CXX
   CXXFLAGS        = $CXXFLAGS
   FEATURES        = $MAGICK_FEATURES
+  DELEGATES       = $MAGICK_DELEGATES
 ])

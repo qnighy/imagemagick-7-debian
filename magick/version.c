@@ -80,6 +80,31 @@ MagickExport const char *GetMagickCopyright(void)
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%   G e t M a g i c k D e l e g a t e s                                       %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetMagickDelegates() returns the ImageMagick delegate libraries.
+%
+%  The format of the GetMagickDelegates method is:
+%
+%      const char *GetMagickDelegates(void)
+%
+%  No parameters are required.
+%
+*/
+MagickExport const char *GetMagickDelegates(void)
+{
+  return(MagickDelegates);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   G e t M a g i c k F e a t u r e s                                         %
 %                                                                             %
 %                                                                             %
@@ -285,4 +310,37 @@ MagickExport const char *GetMagickVersion(size_t *version)
   if (version != (size_t *) NULL)
     *version=MagickLibVersion;
   return(MagickVersion);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   L i s t M a g i c k V e r s i o n                                         %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ListMagickVersion() identifies the ImageMagick version by printing its
+%  attributes to the file.  Attributes include the copyright, features, and
+%  delegates.
+%
+%  The format of the ListMagickVersion method is:
+%
+%      void ListMagickVersion(FILE *file)
+%
+%  A description of each parameter follows:
+%
+%    o file: the file, typically stdout.
+%
+*/
+MagickExport void ListMagickVersion(FILE *file)
+{
+  (void) FormatLocaleFile(file,"Version: %s\n",
+    GetMagickVersion((size_t *) NULL));
+  (void) FormatLocaleFile(file,"Copyright: %s\n",GetMagickCopyright());
+  (void) FormatLocaleFile(file,"Features: %s\n",GetMagickFeatures());
+  (void) FormatLocaleFile(file,"Delegates: %s\n\n",GetMagickDelegates());
 }

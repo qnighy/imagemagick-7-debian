@@ -3595,9 +3595,7 @@ static MagickBooleanType MogrifyUsage(void)
   const char
     **p;
 
-  (void) printf("Version: %s\n",GetMagickVersion((size_t *) NULL));
-  (void) printf("Copyright: %s\n",GetMagickCopyright());
-  (void) printf("Features: %s\n\n",GetMagickFeatures());
+  ListMagickVersion(stdout);
   (void) printf("Usage: %s [options ...] file [ [options ...] file ...]\n",
     GetClientName());
   (void) printf("\nImage Settings:\n");
@@ -3699,12 +3697,7 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
       if ((LocaleCompare("version",option+1) == 0) ||
           (LocaleCompare("-version",option+1) == 0))
         {
-          (void) FormatLocaleFile(stdout,"Version: %s\n",
-            GetMagickVersion((size_t *) NULL));
-          (void) FormatLocaleFile(stdout,"Copyright: %s\n",
-            GetMagickCopyright());
-          (void) FormatLocaleFile(stdout,"Features: %s\n\n",
-            GetMagickFeatures());
+          ListMagickVersion(stdout);
           return(MagickFalse);
         }
     }
@@ -6057,12 +6050,7 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
         if ((LocaleCompare("version",option+1) == 0) ||
             (LocaleCompare("-version",option+1) == 0))
           {
-            (void) FormatLocaleFile(stdout,"Version: %s\n",
-              GetMagickVersion((size_t *) NULL));
-            (void) FormatLocaleFile(stdout,"Copyright: %s\n",
-              GetMagickCopyright());
-            (void) FormatLocaleFile(stdout,"Features: %s\n\n",
-              GetMagickFeatures());
+            ListMagickVersion(stdout);
             break;
           }
         if (LocaleCompare("view",option+1) == 0)

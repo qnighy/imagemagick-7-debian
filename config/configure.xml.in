@@ -16,7 +16,7 @@
   <configure name="CXXFLAGS" value="@CXXFLAGS@"/>
   <configure name="CXX" value="@CXX@"/>
   <configure name="DEFS" value="@DEFS@"/>
-  <configure name="DELEGATES" value="@DELEGATES@"/>
+  <configure name="DELEGATES" value="@MAGICK_DELEGATES@"/>
   <configure name="DISTCHECK_CONFIG_FLAGS" value="@DISTCHECK_CONFIG_FLAGS@"/>
   <configure name="DOCUMENTATION_PATH" value="@DOCUMENTATION_PATH@"/>
   <configure name="EXEC-PREFIX" value="@EXEC_PREFIX_DIR@"/>
@@ -37,7 +37,7 @@
   <configure name="RELEASE_DATE" value="@PACKAGE_RELEASE_DATE@"/>
   <configure name="SHAREARCH_PATH" value="@SHAREARCH_PATH@"/>
   <configure name="SHARE_PATH" value="@SHARE_PATH@"/>
-  <configure name="SVN_REVISION" value="10327" />
+  <configure name="SVN_REVISION" value="10429" />
   <configure name="TARGET_CPU" value="@MAGICK_TARGET_CPU@"/>
   <configure name="TARGET_OS" value="@MAGICK_TARGET_OS@"/>
   <configure name="TARGET_VENDOR" value="@MAGICK_TARGET_VENDOR@"/>

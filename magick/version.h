@@ -31,34 +31,15 @@ extern "C" {
 #define MagickLibVersion  0x681
 #define MagickLibVersionText  "6.8.1"
 #define MagickLibVersionNumber  7,0,0
-#define MagickLibAddendum  "-0"
+#define MagickLibAddendum  "-5"
 #define MagickLibInterface  7
 #define MagickLibMinInterface  7
-#define MagickReleaseDate  "2012-12-19"
-#define MagickChangeDate   "20121216"
-#define MagickAuthoritativeURL  "http://www.imagemagick.org"
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-#define MagickOpenMPFeature  "OpenMP "
-#else
-#define MagickOpenMPFeature  " "
-#endif
-#if defined(MAGICKCORE_OPENCL_SUPPORT)
-#define MagickOpenCLFeature  "OpenCL "
-#else
-#define MagickOpenCLFeature  " "
-#endif
-#if defined(MAGICKCORE_HDRI_SUPPORT)
-#define MagickHDRIFeature  "HDRI "
-#else
-#define MagickHDRIFeature  " "
-#endif
-#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
-#define MagickZeroConfigurationFeature  "Zero-Configuration "
-#else
-#define MagickZeroConfigurationFeature  " "
-#endif
-#define MagickFeatures MagickOpenMPFeature MagickOpenCLFeature MagickHDRIFeature MagickZeroConfigurationFeature
+#define MagickReleaseDate  "2012-12-29"
+#define MagickChangeDate   "20121230"
+#define MagickFeatures "OpenMP"
+#define MagickDelegates "bzlib freetype jp2 jpeg lcms ps tiff x zlib"
 #define MagickHomeURL  "file:///usr/share/doc/ImageMagick-6.8.1/index.html"
+#define MagickAuthoritativeURL  "http://www.imagemagick.org"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
 #define MagickQuantumDepth  "Q8"
 #define MagickQuantumRange  "255"
@@ -84,12 +65,16 @@ extern MagickExport char
 
 extern MagickExport const char
   *GetMagickCopyright(void),
+  *GetMagickDelegates(void),
   *GetMagickFeatures(void),
   *GetMagickPackageName(void),
   *GetMagickQuantumDepth(size_t *),
   *GetMagickQuantumRange(size_t *),
   *GetMagickReleaseDate(void),
   *GetMagickVersion(size_t *);
+
+extern MagickExport void
+  ListMagickVersion(FILE *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

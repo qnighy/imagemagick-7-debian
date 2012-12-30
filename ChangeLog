@@ -1,3 +1,43 @@
+2012-12-30  6.8.1-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-5, SVN revision 10428.
+
+2012-12-29  6.8.1-4 Cristy  <quetzlzacatenango@image...>
+  * Correction to scientific notation for the -evaluate log option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22496).
+
+2012-12-29  6.8.1-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-4, SVN revision 10420.
+
+2012-12-28  6.8.1-4 Cristy  <quetzlzacatenango@image...>
+  * Support scientific notation for the -evaluate log option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22496).
+
+2012-12-25  6.8.1-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-3, SVN revision 10394.
+
+2012-12-25  6.8.1-3 Cristy  <quetzlzacatenango@image...>
+  * Remove pow() dependency from public header.
+
+2012-12-24  6.8.1-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-2, SVN revision 10385.
+
+2012-12-23  6.8.1-2 Cristy  <quetzlzacatenango@image...>
+  * Magickcore headers recently used pow() in the inline functions inside
+    public headers.  Thus is order to avoid library depends problem, put -lm
+    in library depends (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22483).
+  * Negative exponentiation bug fix (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22484).
+
+2012-12-23  6.8.1-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-1, SVN revision 10350.
+
+2012-12-23  6.8.1-1 Cristy  <quetzlzacatenango@image...>
+  * More large image performance tuning.
+
+2012-12-20  6.8.1-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-0, SVN revision 10327.
+
 2012-12-16  6.8.1-0 Cristy  <quetzlzacatenango@image...>
   * Return non-zero exit status if two images differ for the compare utility.
   * Large image performance tuning.
