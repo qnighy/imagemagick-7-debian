@@ -47,6 +47,7 @@
 #include "magick/color-private.h"
 #include "magick/colorspace-private.h"
 #include "magick/composite.h"
+#include "magick/distort.h"
 #include "magick/draw.h"
 #include "magick/effect.h"
 #include "magick/exception.h"
@@ -65,6 +66,95 @@
 #include "magick/string_.h"
 #include "magick/thread-private.h"
 #include "magick/transform.h"
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   A u t o O r i e n t I m a g e                                             %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  AutoOrientImage() adjusts an image so that its orientation is suitable for
+%  viewing (i.e. top-left orientation).
+%
+%  The format of the AutoOrientImage method is:
+%
+%      Image *AutoOrientImage(const Image *image,
+%        const OrientationType orientation,ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: The image.
+%
+%    o orientation: Current image orientation.
+%
+%    o exception: Return any errors or warnings in this structure.
+%
+*/
+MagickExport Image *AutoOrientImage(const Image *image,
+  const OrientationType orientation,ExceptionInfo *exception)
+{
+  Image
+    *orient_image;
+
+  assert(image != (const Image *) NULL);
+  assert(image->signature == MagickSignature);
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickSignature);
+  orient_image=(Image *) NULL;
+  switch(orientation)
+  {
+    case UndefinedOrientation:
+    case TopLeftOrientation:
+    default:
+    {
+      orient_image=CloneImage(image,0,0,MagickTrue,exception);
+      break;
+    }
+    case TopRightOrientation:
+    {
+      orient_image=FlopImage(image,exception);
+      break;
+    }
+    case BottomRightOrientation:
+    {
+      orient_image=RotateImage(image,180.0,exception);
+      break;
+    }
+    case BottomLeftOrientation:
+    {
+      orient_image=FlipImage(image,exception);
+      break;
+    }
+    case LeftTopOrientation:
+    {
+      orient_image=TransposeImage(image,exception);
+      break;
+    }
+    case RightTopOrientation:
+    {
+      orient_image=RotateImage(image,90.0,exception);
+      break;
+    }
+    case RightBottomOrientation:
+    {
+      orient_image=TransverseImage(image,exception);
+      break;
+    }
+    case LeftBottomOrientation:
+    {
+      orient_image=RotateImage(image,270.0,exception);
+      break;
+    }
+  }
+  if (orient_image != (Image *) NULL)
+    orient_image->orientation=TopLeftOrientation;
+  return(orient_image);
+}
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,11 +205,6 @@ MagickExport Image *ChopImage(const Image *image,const RectangleInfo *chop_info,
   RectangleInfo
     extent;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  size_t
-    height;
-#endif
-
   ssize_t
     y;
 
@@ -165,7 +250,8 @@ MagickExport Image *ChopImage(const Image *image,const RectangleInfo *chop_info,
   image_view=AcquireVirtualCacheView(image,exception);
   chop_view=AcquireAuthenticCacheView(chop_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,extent.y/2) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    magick_threads(image,chop_image,1,1)
 #endif
   for (y=0; y < (ssize_t) extent.y; y++)
   {
@@ -227,8 +313,8 @@ MagickExport Image *ChopImage(const Image *image,const RectangleInfo *chop_info,
     Extract chop image.
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  height=image->rows-(extent.y+extent.height);
-  #pragma omp parallel for schedule(static,height/2) shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    magick_threads(image,image,1,1)
 #endif
   for (y=0; y < (ssize_t) (image->rows-(extent.y+extent.height)); y++)
   {
@@ -655,8 +741,8 @@ MagickExport Image *CropImage(const Image *image,const RectangleInfo *geometry,
   image_view=AcquireVirtualCacheView(image,exception);
   crop_view=AcquireAuthenticCacheView(crop_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,crop_image->rows/2) \
-    shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    magick_threads(image,crop_image,1,1)
 #endif
   for (y=0; y < (ssize_t) crop_image->rows; y++)
   {
@@ -1183,8 +1269,8 @@ MagickExport Image *FlipImage(const Image *image,ExceptionInfo *exception)
   image_view=AcquireVirtualCacheView(image,exception);
   flip_view=AcquireAuthenticCacheView(flip_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,flip_image->rows/2) \
-    shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    magick_threads(image,flip_image,1,1)
 #endif
   for (y=0; y < (ssize_t) flip_image->rows; y++)
   {
@@ -1311,8 +1397,8 @@ MagickExport Image *FlopImage(const Image *image,ExceptionInfo *exception)
   image_view=AcquireVirtualCacheView(image,exception);
   flop_view=AcquireAuthenticCacheView(flop_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,flop_image->rows/2) \
-    shared(progress,status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    magick_threads(image,flop_image,1,1)
 #endif
   for (y=0; y < (ssize_t) flop_image->rows; y++)
   {
@@ -1651,11 +1737,6 @@ MagickExport Image *SpliceImage(const Image *image,
   RectangleInfo
     splice_geometry;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  size_t
-    height;
-#endif
-
   ssize_t
     y;
 
@@ -1745,7 +1826,7 @@ MagickExport Image *SpliceImage(const Image *image,
   splice_view=AcquireAuthenticCacheView(splice_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,splice_image,splice_geometry.y,1)
+    magick_threads(image,splice_image,1,1)
 #endif
   for (y=0; y < (ssize_t) splice_geometry.y; y++)
   {
@@ -1821,9 +1902,8 @@ MagickExport Image *SpliceImage(const Image *image,
       }
   }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  height=splice_image->rows-2*splice_geometry.height;
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,splice_image,height,1)
+    magick_threads(image,splice_image,1,1)
 #endif
   for (y=(ssize_t) (splice_geometry.y+splice_geometry.height);
        y < (ssize_t) splice_image->rows; y++)

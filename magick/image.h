@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-#include <magick/color.h>
+#include "magick/color.h"
 
 #define OpaqueOpacity  ((Quantum) 0UL)
 #define TransparentOpacity  (QuantumRange)
@@ -342,6 +342,9 @@ struct _Image
 
   size_t
     channels;
+
+  time_t
+    timestamp;
 };
 
 struct _ImageInfo

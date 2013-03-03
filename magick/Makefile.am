@@ -16,10 +16,13 @@
 # 
 
 magickincdir = $(INCLUDE_PATH)/magick
+magickincarchdir = $(INCLUDEARCH_PATH)/magick
 
 # Headers which are installed
 magickinc_HEADERS = \
 	$(MAGICK_INCLUDE_HDRS)
+magickincarch_HEADERS = \
+	$(MAGICK_INCLUDEARCH_HDRS)
 
 MAGICK_BIN_SCRPTS = \
   magick/Magick-config \
@@ -28,8 +31,8 @@ MAGICK_BIN_SCRPTS = \
 MAGICK_PKGCONFIG = \
   magick/ImageMagick.pc \
   magick/MagickCore.pc \
-  magick/ImageMagick-@MAGICK_ABI_SUFFIX@.pc \
-  magick/MagickCore-@MAGICK_ABI_SUFFIX@.pc 
+  magick/ImageMagick-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.pc \
+  magick/MagickCore-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.pc
 
 OSX_GCOV_LDFLAG = @OSX_GCOV_LDFLAG@
 
@@ -37,30 +40,28 @@ MAGICK_MANS = \
   magick/Magick-config.1 \
   magick/MagickCore-config.1
 
-MAGICKCORE_LIBS = magick/libMagickCore-@MAGICK_ABI_SUFFIX@.la
+MAGICKCORE_LIBS = magick/libMagickCore-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.la
 
 if WITH_MODULES
-magick_libMagickCore_@MAGICK_ABI_SUFFIX@_la_SOURCES = $(MAGICK_BASE_SRCS) $(MAGICK_PLATFORM_SRCS)
-magick_libMagickCore_@MAGICK_ABI_SUFFIX@_la_LIBADD = $(MAGICK_DEP_LIBS)
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_SOURCES = $(MAGICK_BASE_SRCS) $(MAGICK_PLATFORM_SRCS)
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_LIBADD = $(MAGICK_DEP_LIBS)
 else
-magick_libMagickCore_@MAGICK_ABI_SUFFIX@_la_SOURCES = $(MAGICK_BASE_SRCS) $(MAGICK_PLATFORM_SRCS) $(MAGICK_CODER_SRCS) $(MAGICK_FILTER_SRCS)
-magick_libMagickCore_@MAGICK_ABI_SUFFIX@_la_LIBADD = $(MAGICK_DEP_LIBS)
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_SOURCES = $(MAGICK_BASE_SRCS) $(MAGICK_PLATFORM_SRCS) $(MAGICK_CODER_SRCS) $(MAGICK_FILTER_SRCS)
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_LIBADD = $(MAGICK_DEP_LIBS)
 endif # WITH_MODULES
-magick_libMagickCore_@MAGICK_ABI_SUFFIX@_la_CPPFLAGS = -I$(top_builddir)/ltdl -I$(top_srcdir)/ltdl $(LIBRARY_EXTRA_CPPFLAGS)
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_CPPFLAGS = -I$(top_builddir)/ltdl -I$(top_srcdir)/ltdl $(LIBRARY_EXTRA_CPPFLAGS)
 
 if HAVE_LD_VERSION_SCRIPT
-magick_libMagickCore_@MAGICK_ABI_SUFFIX@_la_LDFLAGS_VERSION =  -Wl,--version-script=$(top_srcdir)/magick/libMagickCore.map
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_LDFLAGS_VERSION =  -Wl,--version-script=$(top_srcdir)/magick/libMagickCore.map
 else
-magick_libMagickCore_@MAGICK_ABI_SUFFIX@_la_LDFLAGS_VERSION = -export-symbols-regex ".*"
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_LDFLAGS_VERSION = -export-symbols-regex ".*"
 endif
 
-magick_libMagickCore_@MAGICK_ABI_SUFFIX@_la_LDFLAGS = -no-undefined \
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_LDFLAGS = -no-undefined \
   $(magick_libMagickCore_la_LDFLAGS_VERSION) \
-  $(OSX_GCOV_LDFLAG) $(MAGICK_LT_RELEASE_OPTS) \
-  -version-info \
+  $(OSX_GCOV_LDFLAG) $(MAGICK_LT_RELEASE_OPTS) -version-info \
   $(MAGICK_LIBRARY_CURRENT):$(MAGICK_LIBRARY_REVISION):$(MAGICK_LIBRARY_AGE)
-
-magick_libMagickCore_@MAGICK_ABI_SUFFIX@_la_DEPENDENCIES =
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_DEPENDENCIES =
 
 # Library base sources
 MAGICK_BASE_SRCS = \
@@ -116,6 +117,9 @@ MAGICK_BASE_SRCS = \
 	magick/constitute.h \
 	magick/decorate.c \
 	magick/decorate.h \
+	magick/distribute-cache.c \
+	magick/distribute-cache.h \
+	magick/distribute-cache-private.h \
 	magick/delegate.c \
 	magick/delegate.h \
 	magick/delegate-private.h \
@@ -170,8 +174,8 @@ MAGICK_BASE_SRCS = \
 	magick/magic.c \
 	magick/magic.h \
 	magick/magick.c \
-	magick/magick-config.h \
 	magick/magick-baseconfig.h \
+	magick/magick-config.h \
 	magick/magick-type.h \
 	magick/magick.h \
 	magick/matrix.c \
@@ -275,6 +279,7 @@ MAGICK_BASE_SRCS = \
 	magick/utility-private.h \
 	magick/version.c \
 	magick/version.h \
+	magick/version-private.h \
 	magick/vms.h \
 	magick/widget.c \
 	magick/widget.h \
@@ -328,6 +333,7 @@ MAGICK_INCLUDE_HDRS = \
 	magick/delegate.h \
 	magick/deprecate.h \
 	magick/display.h \
+	magick/distribute-cache.h \
 	magick/distort.h \
 	magick/draw.h \
 	magick/effect.h \
@@ -350,7 +356,6 @@ MAGICK_INCLUDE_HDRS = \
 	magick/magic.h \
 	magick/magick.h \
 	magick/magick-config.h \
-	magick/magick-baseconfig.h \
 	magick/magick-type.h \
 	magick/matrix.h \
 	magick/memory_.h \
@@ -405,6 +410,7 @@ MAGICK_NOINST_HDRS = \
 	magick/composite-private.h \
 	magick/delegate-private.h \
 	magick/display-private.h \
+	magick/distribute-cache-private.h \
 	magick/draw-private.h \
 	magick/exception-private.h \
 	magick/fx-private.h \
@@ -431,8 +437,12 @@ MAGICK_NOINST_HDRS = \
 	magick/thread-private.h \
 	magick/token-private.h \
 	magick/utility-private.h \
+	magick/version-private.h \
 	magick/xwindow-private.h \
 	magick/vms.h
+
+MAGICK_INCLUDEARCH_HDRS = \
+	magick/magick-baseconfig.h
 
 MAGICK_EXTRA_DIST = \
 	magick/Magick-config.in \
@@ -451,11 +461,11 @@ MAGICK_EXTRA_DIST = \
 # Install magick-baseconfig.h
 MAGICK_INSTALL_DATA_LOCAL_TARGETS = magick-install-data-local
 magick-install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(magickincdir)
-	$(INSTALL_HEADER) magick/magick-baseconfig.h $(DESTDIR)$(magickincdir)/magick-baseconfig.h
+	$(mkinstalldirs) $(DESTDIR)$(magickincarchdir)
+	$(INSTALL_HEADER) magick/magick-baseconfig.h $(DESTDIR)$(magickincarchdir)/magick-baseconfig.h
 
 # Uninstall magick-config.h
 MAGICK_UNINSTALL_LOCAL_TARGETS = magick-uninstall-local
 magick-uninstall-local:
-	rm -f $(DESTDIR)$(magickincdir)/magick-baseconfig.h
+	rm -f $(DESTDIR)$(magickincarchdir)/magick-baseconfig.h
 

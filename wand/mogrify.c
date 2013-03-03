@@ -151,6 +151,11 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
       concurrent=MagickTrue;
     if (LocaleCompare("debug",option+1) == 0)
       (void) SetLogEventMask(argv[++i]);
+    if (LocaleCompare("distribute-cache",option+1) == 0)
+      {
+        DistributePixelCacheServer(StringToInteger(argv[++i]),exception);
+        exit(0);
+      }
     if (LocaleCompare("duration",option+1) == 0)
       duration=StringToDouble(argv[++i],(char **) NULL);
     if (LocaleCompare("regard-warnings",option+1) == 0)
@@ -855,48 +860,8 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
         if (LocaleCompare("auto-orient",option+1) == 0)
           {
             (void) SyncImageSettings(mogrify_info,*image);
-            switch ((*image)->orientation)
-            {
-              case TopRightOrientation:
-              {
-                mogrify_image=FlopImage(*image,exception);
-                break;
-              }
-              case BottomRightOrientation:
-              {
-                mogrify_image=RotateImage(*image,180.0,exception);
-                break;
-              }
-              case BottomLeftOrientation:
-              {
-                mogrify_image=FlipImage(*image,exception);
-                break;
-              }
-              case LeftTopOrientation:
-              {
-                mogrify_image=TransposeImage(*image,exception);
-                break;
-              }
-              case RightTopOrientation:
-              {
-                mogrify_image=RotateImage(*image,90.0,exception);
-                break;
-              }
-              case RightBottomOrientation:
-              {
-                mogrify_image=TransverseImage(*image,exception);
-                break;
-              }
-              case LeftBottomOrientation:
-              {
-                mogrify_image=RotateImage(*image,270.0,exception);
-                break;
-              }
-              default:
-                break;
-            }
-            if (mogrify_image != (Image *) NULL)
-              mogrify_image->orientation=TopLeftOrientation;
+            mogrify_image=AutoOrientImage(*image,(*image)->orientation,
+              exception);
             break;
           }
         break;
@@ -1016,9 +981,9 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
         if (LocaleCompare("channel",option+1) == 0)
           {
             if (*option == '+')
-                channel=DefaultChannels;
+              channel=DefaultChannels;
             else
-                channel=(ChannelType) ParseChannelOption(argv[i+1]);
+              channel=(ChannelType) ParseChannelOption(argv[i+1]);
             break;
           }
         if (LocaleCompare("charcoal",option+1) == 0)
@@ -3298,6 +3263,8 @@ static MagickBooleanType MogrifyUsage(void)
     *miscellaneous[]=
     {
       "-debug events        display copious debugging information",
+      "-distribute-cache port",
+      "                     distributed pixel cache spanning one or more servers",
       "-help                print program options",
       "-list type           print a list of supported option arguments",
       "-log format          format of debugging information",

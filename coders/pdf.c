@@ -181,6 +181,8 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
     }
   code=0;
   argv=StringToArgv(command,&argc);
+  if (argv == (char **) NULL)
+    return(MagickFalse);
   status=(ghost_info->init_with_args)(interpreter,argc-1,argv+1);
   if (status == 0)
     status=(ghost_info->run_string)(interpreter,"systemdict /start get exec\n",
@@ -638,6 +640,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       " -sPDFPassword=%s",read_info->authenticate);
   (void) CopyMagickString(filename,read_info->filename,MaxTextExtent);
   (void) AcquireUniqueFilename(filename);
+  (void) ConcatenateMagickString(filename,"%d",MaxTextExtent);
   (void) FormatLocaleString(command,MaxTextExtent,
     GetDelegateCommands(delegate_info),
     read_info->antialias != MagickFalse ? 4 : 1,
@@ -763,7 +766,6 @@ ModuleExport size_t RegisterPDFImage(void)
   entry->adjoin=MagickFalse;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=EncoderThreadSupport;
   entry->description=ConstantString("Adobe Illustrator CS2");
   entry->module=ConstantString("PDF");
   (void) RegisterMagickInfo(entry);
@@ -773,7 +775,6 @@ ModuleExport size_t RegisterPDFImage(void)
   entry->adjoin=MagickFalse;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=EncoderThreadSupport;
   entry->description=ConstantString("Encapsulated Portable Document Format");
   entry->module=ConstantString("PDF");
   (void) RegisterMagickInfo(entry);
@@ -783,7 +784,6 @@ ModuleExport size_t RegisterPDFImage(void)
   entry->magick=(IsImageFormatHandler *) IsPDF;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=EncoderThreadSupport;
   entry->description=ConstantString("Portable Document Format");
   entry->module=ConstantString("PDF");
   (void) RegisterMagickInfo(entry);
@@ -793,7 +793,6 @@ ModuleExport size_t RegisterPDFImage(void)
   entry->magick=(IsImageFormatHandler *) IsPDF;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=EncoderThreadSupport;
   entry->description=ConstantString("Portable Document Archive Format");
   entry->module=ConstantString("PDF");
   (void) RegisterMagickInfo(entry);
@@ -2320,13 +2319,15 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
     (void) FormatLocaleString(buffer,MaxTextExtent,"%.20g 0 obj\n",(double)
       object);
     (void) WriteBlobString(image,buffer);
-    if ((image->storage_class != DirectClass) && (image->colors <= 256) &&
-        (compression != FaxCompression) && (compression != Group4Compression))
+    (void) WriteBlobString(image,"<<\n");
+    if ((image->storage_class == DirectClass) || (image->colors > 256) ||
+        (compression == FaxCompression) || (compression == Group4Compression))
+      (void) WriteBlobString(image,">>\n");
+    else
       {
         /*
           Write Colormap object.
         */
-        (void) WriteBlobString(image,"<<\n");
         if (compression == NoCompression)
           (void) WriteBlobString(image,"/Filter [ /ASCII85Decode ]\n");
         (void) FormatLocaleString(buffer,MaxTextExtent,"/Length %.20g 0 R\n",

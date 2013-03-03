@@ -1,7 +1,207 @@
+2013-02-25  6.8.3-6 Cristy  <quetzlzacatenango@image...>
+   * Support built-in 1x1 and 2x1 threshold maps (reference
+     http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22861).
+   * Check for webp version (reference
+     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22867).
+
+2013-02-25  6.8.2-6 Glenn Randers-Pehrson <glennrp@image...>
+  * Relocated png_set_bKGD(), etc., after png_set_IHDR() because they
+    might depend on members of info_ptr that are set by png_set_IHDR().
+
+2013-02-25  6.8.3-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.3-5, SVN revision 11170.
+
+2013-02-23  6.8.3-5 Cristy  <quetzlzacatenango@image...>
+  * Read the WebP extended file format (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22809).
+  * Add arch annotation to include path to distinquish ImageMagick versions
+    6 & 7.
+
+2013-02-22  6.8.3-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.3-4, SVN revision 11127.
+
+2013-02-22  6.8.3-4 Cristy  <quetzlzacatenango@image...>
+  * Reduce default memory resource limit under Windows.
+
+2013-02-19  6.8.3-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.3-3, SVN revision 11105.
+
+2013-02-19  6.8.3-3 Cristy  <quetzlzacatenango@image...>
+  * Set WEBP lossless / lossy property properly (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22809).
+
+2013-02-18  6.8.3-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.3-2, SVN revision 11087.
+
+2013-02-17  6.8.3-2 Cristy  <quetzlzacatenango@image...>
+  * Semaphore is now unlocked when an X11 annotation exception is thrown.
+  * WEBP coder enhancement and memory leak patch (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22809).
+
+2013-02-16  6.8.3-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.3-1, SVN revision 11060.
+
+2013-02-16  6.8.3-1 Cristy  <quetzlzacatenango@image...>
+   * Disable FORTIFY_SOURCE to fix a bug in LVVM / OpenMP support.
+
+2013-02-15  6.8.3-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.3-0, SVN revision 11045.
+
+2013-02-14  6.8.3-0 Cristy  <quetzlzacatenango@image...>
+   * Webp requires alpha, not opacity (reference
+     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22793).
+
+2013-02-12  6.8.3-0 Bastien Roucaries  <roucaries.basti...>
+  * Allow PerlMagick to be multi-quantum (e.g. Image::Magick::Q16).
+
+2013-02-11  6.8.2-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-10, SVN revision 11004.
+
+2013-02-11  6.8.2-10 Cristy  <quetzlzacatenango@image...>
+   * The XPM regression tests passes now.
+
+2013-02-09  6.8.2-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-9, SVN revision 10995.
+
+2013-02-09  6.8.2-9 Bastien Roucaries  <roucaries.basti...>
+  * Export versioning to automake in order to use it for library prefix.
+  * So bump was incomplete due to no changing map file.
+  * Change abi name by adding major version to lib name (will simplify
+    next imagemagick major version release work) and reset release version
+    to 1 (due to changing abi name).
+
+2013-02-09  6.8.2-9 Cristy  <quetzlzacatenango@image...>
+  * The DOT coders now compiles with GraphViz 2.30 (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22767).
+
+2013-02-09  6.8.2-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-8, SVN revision 10986.
+
+2013-02-09  6.8.2-8 Cristy  <quetzlzacatenango@image...>
+  * MagickStatisticImage() method signature was corrected, SO bump required.
+
+2013-02-08  6.8.2-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-7, SVN revision 10965.
+
+2013-02-08  6.8.2-7 Cristy  <quetzlzacatenango@image...>
+  * Ensure MagickCore compiles with a C++ compiler.
+
+2013-02-07  6.8.2-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-6, SVN revision 10961.
+
+2013-02-07  6.8.2-6 Cristy  <quetzlzacatenango@image...>
+  * Don't destroy an image that's already destroyed (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22747).
+  * Montage is now invarient to the font when no label image label exists.
+
+2013-02-06  6.8.2-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-5, SVN revision 10952.
+
+2013-02-05  6.8.2-5 Cristy  <quetzlzacatenango@image...>
+  * FITS now properly renders the 16 bit signed integer format.
+
+2013-02-04  6.8.2-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-4, SVN revision 10909.
+
+2013-02-02  6.8.2-4 Cristy  <quetzlzacatenango@image...>
+  * Do not subsample raw CMYK JPEG images (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22731).
+
+2013-02-02  6.8.2-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-3, SVN revision 10894.
+
+2013-02-01  6.8.2-3 Cristy  <quetzlzacatenango@image...>
+  * Respect endian for FITS image format.
+  * Remove artifact when drawing a circle (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22724).
+
+2013-02-01  6.8.2-3 Glenn Randers-Pehrson <glennrp@image...>
+  * Deleted some code added to the PNG decoder in SVN revision 10825; it
+    was failing to handle transparency in paletted images (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22720).
+  * Compare alpha to "QuantumRange-OpaqueOpacity" not just "OpaqueOpacity"
+    when detecting transparency in the PNG encoder.
+
+2013-02-01  6.8.2-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-2, SVN revision 10883.
+
+2013-01-30  6.8.2-2 Cristy  <quetzlzacatenango@image...>
+  * Properly initialize new throttle resource limit.
+
+2013-01-29  6.8.2-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-1, SVN revision 10859.
+
+2013-01-28  6.8.2-1 Cristy  <quetzlzacatenango@image...>
+  * Fix 'format not a string literal' problem (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22656).
+
+2013-01-28  6.8.2-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.2-0, SVN revision 10831.
+
+2013-01-21  6.8.2-0 Glenn Randers-Pehrson <glennrp@image...>
+  * Impose a 32k limit on the number of text chunks that will be read.
+  * Implemented PNG00, PNG48 and PNG64 PNG subformats.
+  * Avoid reading back PNG pixel rows while reading a transparent PNG (
+    by using a local "alpha" value instead of GetPixelOpacity()).
+
+2013-01-21  6.8.2-0 Cristy  <quetzlzacatenango@image...>
+  * Avoid a rare thread lock for timeout event (e.g. MAGICK_TIME_LIMIT=30).
+  * Support a distributed pixel cache.
+  * Fix numerical stability problem for convolution.
+  * Increase segment stack size for -draw option.
+
+2013-01-18  6.8.1-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-10, SVN revision 10667.
+
+2013-01-08  6.8.1-10 Cristy  <quetzlzacatenango@image...>
+  * Add the same noise value to each channel of a grayscale image (+noise).
+  * Fix recursive descent within XGetWindowImage() (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22550).
+  * Multi-plane MatLab images now render properly (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22586).
+
+2013-01-06  6.8.1-10 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed LBR01 (left-bit-replication) macro in coders/png.c; problem reported
+    by the clang compiler.
+  * Chromaticity values were read in the wrong order in the cHRM chunk
+    when it accompanied the sRGB chunk. Libpng applications built with
+    libpng16 and later will detect this and issue a warning (PNG files
+    previously written with the cHRM chunk are OK).  Removed the
+    troublesome redundant png_set_cHRM() and png_set_sRGB() calls.
+  * Look for libpng17 and libpng16 while configuring PNG support.
+
+2013-01-06  6.8.1-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-9, SVN revision 10518.
+
+2013-01-06  6.8.1-9 Cristy  <quetzlzacatenango@image...>
+  * Type correction in blob code.
+
+2013-01-02  6.8.1-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-8, SVN revision 10481.
+
+2013-01-02  6.8.1-8 Cristy  <quetzlzacatenango@image...>
+  * Check for a density of zero when rendering with Pango (reference
+    http://www.imagemagick.org/discourse-server/viewforum.php?f=3).
+
+2013-01-01  6.8.1-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-7, SVN revision 10468.
+
+2013-01-01  6.8.1-7 Cristy  <quetzlzacatenango@image...>
+  * magick-baseconfig.h is architecture dependant;
+    make headers quantum depth neutral ( reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22509).
+
+2013-01-01  6.8.1-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.1-6, SVN revision 10461.
+
+2012-12-31  6.8.1-6 Cristy  <quetzlzacatenango@image...>
+  * Repair numerical stability issue with gradients (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22507).
+
 2012-12-30  6.8.1-5 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.1-5, SVN revision 10428.
 
-2012-12-29  6.8.1-4 Cristy  <quetzlzacatenango@image...>
+2012-12-29  6.8.1-5 Cristy  <quetzlzacatenango@image...>
   * Correction to scientific notation for the -evaluate log option (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22496).
 
@@ -23,7 +223,7 @@
 
 2012-12-23  6.8.1-2 Cristy  <quetzlzacatenango@image...>
   * Magickcore headers recently used pow() in the inline functions inside
-    public headers.  Thus is order to avoid library depends problem, put -lm
+    public headers.  Thus in order to avoid library depends problem, put -lm
     in library depends (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22483).
   * Negative exponentiation bug fix (reference

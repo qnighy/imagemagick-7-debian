@@ -453,7 +453,7 @@ static inline void AssociateAlphaPixel(const CubeInfo *cube_info,
 static inline Quantum ClampPixel(const MagickRealType value)
 {
   if (value < 0.0f)
-    return(0.0f);
+    return(0);
   if (value >= (MagickRealType) QuantumRange)
     return((Quantum) QuantumRange);
 #if !defined(MAGICKCORE_HDRI_SUPPORT)
@@ -868,11 +868,12 @@ static MagickBooleanType ClassifyImageColors(CubeInfo *cube_info,
         Sum RGB for this leaf for later derivation of the mean cube color.
       */
       node_info->number_unique+=count;
-      node_info->total_color.red+=count*QuantumScale*pixel.red;
-      node_info->total_color.green+=count*QuantumScale*pixel.green;
-      node_info->total_color.blue+=count*QuantumScale*pixel.blue;
+      node_info->total_color.red+=count*QuantumScale*ClampPixel(pixel.red);
+      node_info->total_color.green+=count*QuantumScale*ClampPixel(pixel.green);
+      node_info->total_color.blue+=count*QuantumScale*ClampPixel(pixel.blue);
       if (cube_info->associate_alpha != MagickFalse)
-        node_info->total_color.opacity+=count*QuantumScale*pixel.opacity;
+        node_info->total_color.opacity+=count*QuantumScale*
+          ClampPixel(pixel.opacity);
       p+=count;
     }
     if (cube_info->colors > cube_info->maximum_colors)
@@ -957,11 +958,12 @@ static MagickBooleanType ClassifyImageColors(CubeInfo *cube_info,
         Sum RGB for this leaf for later derivation of the mean cube color.
       */
       node_info->number_unique+=count;
-      node_info->total_color.red+=count*QuantumScale*pixel.red;
-      node_info->total_color.green+=count*QuantumScale*pixel.green;
-      node_info->total_color.blue+=count*QuantumScale*pixel.blue;
+      node_info->total_color.red+=count*QuantumScale*ClampPixel(pixel.red);
+      node_info->total_color.green+=count*QuantumScale*ClampPixel(pixel.green);
+      node_info->total_color.blue+=count*QuantumScale*ClampPixel(pixel.blue);
       if (cube_info->associate_alpha != MagickFalse)
-        node_info->total_color.opacity+=count*QuantumScale*pixel.opacity;
+        node_info->total_color.opacity+=count*QuantumScale*ClampPixel(
+          pixel.opacity);
       p+=count;
     }
     proceed=SetImageProgress(image,ClassifyImageTag,(MagickOffsetType) y,
@@ -1250,18 +1252,17 @@ static size_t DefineImageColormap(Image *image,CubeInfo *cube_info,
             }
           else
             {
-              MagickRealType
+              double
                 gamma;
 
-              gamma=(MagickRealType) (QuantumScale*(QuantumRange-
-                (MagickRealType) q->opacity));
+              gamma=(double) (QuantumScale*(QuantumRange-(double) q->opacity));
               gamma=PerceptibleReciprocal(gamma);
               SetPixelRed(q,ClampToQuantum((MagickRealType) (alpha*
                 gamma*QuantumRange*node_info->total_color.red)));
               SetPixelGreen(q,ClampToQuantum((MagickRealType) (alpha*
                 gamma*QuantumRange*node_info->total_color.green)));
-              SetPixelBlue(q,ClampToQuantum((MagickRealType) (
-                alpha*gamma*QuantumRange*node_info->total_color.blue)));
+              SetPixelBlue(q,ClampToQuantum((MagickRealType) (alpha*
+                gamma*QuantumRange*node_info->total_color.blue)));
               if (node_info->number_unique > cube_info->transparent_pixels)
                 {
                   cube_info->transparent_pixels=node_info->number_unique;
@@ -2327,7 +2328,7 @@ MagickExport MagickBooleanType PosterizeImageChannel(Image *image,
   if (image->storage_class == PseudoClass)
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
     #pragma omp parallel for schedule(static,4) shared(progress,status) \
-      magick_threads(image,image,image->colors,1)
+      magick_threads(image,image,1,1)
 #endif
     for (i=0; i < (ssize_t) image->colors; i++)
     {

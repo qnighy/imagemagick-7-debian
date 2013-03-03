@@ -24,6 +24,7 @@ extern "C" {
 
 #include <time.h>
 #include "magick/cache.h"
+#include "magick/distribute-cache.h"
 #include "magick/random_.h"
 #include "magick/thread-private.h"
 #include "magick/semaphore.h"
@@ -165,6 +166,12 @@ typedef struct _CacheInfo
 
   RandomInfo
     *random_info;
+
+  size_t
+    number_connections;
+
+  void
+    *server_info;
 
   MagickBooleanType
     synchronize,

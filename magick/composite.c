@@ -379,7 +379,7 @@ static inline void CompositeDarken(const MagickPixelPacket *p,
     OR a greyscale version of a binary 'Or'
     OR the 'Intersection' of pixel sets.
   */
-  MagickRealType
+  double
     gamma;
 
   if ( (channel & SyncChannels) != 0 ) {
@@ -451,9 +451,11 @@ static inline void CompositeDifference(const MagickPixelPacket *p,
   const MagickPixelPacket *q,const ChannelType channel,
   MagickPixelPacket *composite)
 {
+  double
+    gamma;
+
   MagickRealType
     Da,
-    gamma,
     Sa;
 
   Sa=1.0-QuantumScale*p->opacity;  /* simplify and speed up equations */
@@ -653,8 +655,7 @@ static void HCLComposite(const double hue,const double chroma,const double luma,
     h,
     m,
     r,
-    x,
-    z;
+    x;
 
   /*
     Convert HCL to RGB colorspace.
@@ -704,25 +705,9 @@ static void HCLComposite(const double hue,const double chroma,const double luma,
                 b=x;
               }
   m=luma-(0.298839f*r+0.586811f*g+0.114350f*b);
-  /*
-    Choose saturation strategy to clip it into the RGB cube; hue and luma are
-    preserved and chroma may be changed.
-  */
-  z=1.0;
-  if (m < 0.0)
-    {
-      z=luma/(luma-m);
-      m=0.0;
-    }
-  else
-    if (m+c > 1.0)
-      {
-        z=(1.0-luma)/(m+c-luma);
-        m=1.0-z*c;
-      }
-  *red=ClampToQuantum(QuantumRange*(z*r+m));
-  *green=ClampToQuantum(QuantumRange*(z*g+m));
-  *blue=ClampToQuantum(QuantumRange*(z*b+m));
+  *red=(MagickRealType) ClampToQuantum(QuantumRange*(r+m));
+  *green=(MagickRealType) ClampToQuantum(QuantumRange*(g+m));
+  *blue=(MagickRealType) ClampToQuantum(QuantumRange*(b+m));
 }
 
 static void CompositeHCL(const MagickRealType red,const MagickRealType green,
@@ -751,13 +736,13 @@ static void CompositeHCL(const MagickRealType red,const MagickRealType green,
   if (c == 0)
     h=0.0;
   else
-    if (red == (Quantum) max)
+    if (red == (MagickRealType) max)
       h=fmod(6.0+(g-b)/c,6.0);
     else
-      if (green == (Quantum) max)
+      if (green == (MagickRealType) max)
         h=((b-r)/c)+2.0;
       else
-        if (blue == (Quantum) max)
+        if (blue == (MagickRealType) max)
           h=((r-g)/c)+4.0;
   *hue=(h/6.0);
   *chroma=QuantumScale*c;
@@ -773,8 +758,10 @@ static inline MagickRealType In(const MagickRealType p,const MagickRealType Sa,
 static inline void CompositeIn(const MagickPixelPacket *p,
   const MagickPixelPacket *q,MagickPixelPacket *composite)
 {
+  double
+    gamma;
+
   MagickRealType
-    gamma,
     Sa,
     Da;
 
@@ -807,7 +794,7 @@ static inline void CompositeLighten(const MagickPixelPacket *p,
     OR a greyscale version of a binary 'And'
     OR the 'Union' of pixel sets.
   */
-  MagickRealType
+  double
     gamma;
 
   if ( (channel & SyncChannels) != 0 ) {
@@ -884,9 +871,11 @@ static inline MagickRealType LinearDodge(const MagickRealType Sca,
 static inline void CompositeLinearDodge(const MagickPixelPacket *p,
   const MagickPixelPacket *q,MagickPixelPacket *composite)
 {
+  double
+    gamma;
+
   MagickRealType
     Da,
-    gamma,
     Sa;
 
   Sa=1.0-QuantumScale*p->opacity;  /* simplify and speed up equations */
@@ -1012,10 +1001,12 @@ static inline void CompositeMathematics(const MagickPixelPacket *p,
   const MagickPixelPacket *q,const ChannelType channel, const GeometryInfo
   *args, MagickPixelPacket *composite)
 {
-  MagickRealType
-    Sa,
-    Da,
+  double
     gamma;
+
+  MagickRealType
+    Da,
+    Sa;
 
   Sa=1.0-QuantumScale*p->opacity; /* ??? - AT */
   Da=1.0-QuantumScale*q->opacity;
@@ -1105,10 +1096,12 @@ static inline void CompositeMinus(const MagickPixelPacket *p,
   const MagickPixelPacket *q,const ChannelType channel,
   MagickPixelPacket *composite)
 {
-  MagickRealType
-    Sa,
-    Da,
+  double
     gamma;
+
+  MagickRealType
+    Da,
+    Sa;
 
   Sa=1.0-QuantumScale*p->opacity;  /* simplify and speed up equations */
   Da=1.0-QuantumScale*q->opacity;
@@ -1153,10 +1146,12 @@ static inline void CompositeModulusAdd(const MagickPixelPacket *p,
   MagickPixelPacket *composite)
 {
   if ( (channel & SyncChannels) != 0 ) {
+    double
+      gamma;
+
     MagickRealType
       Sa,
-      Da,
-      gamma;
+      Da;
 
     Sa=1.0-QuantumScale*p->opacity;  /* simplify and speed up equations */
     Da=1.0-QuantumScale*q->opacity;
@@ -1201,10 +1196,12 @@ static inline void CompositeModulusSubtract(const MagickPixelPacket *p,
   MagickPixelPacket *composite)
 {
   if ( (channel & SyncChannels) != 0 ) {
-    MagickRealType
-      Sa,
-      Da,
+    double
       gamma;
+
+    MagickRealType
+      Da,
+      Sa;
 
     Sa=1.0-QuantumScale*p->opacity;  /* simplify and speed up equations */
     Da=1.0-QuantumScale*q->opacity;
@@ -1287,10 +1284,12 @@ static inline MagickRealType Out(const MagickRealType p,
 static inline void CompositeOut(const MagickPixelPacket *p,
   const MagickPixelPacket *q,MagickPixelPacket *composite)
 {
-  MagickRealType
-    Sa,
-    Da,
+  double
     gamma;
+
+  MagickRealType
+    Da,
+    Sa;
 
   Sa=1.0-QuantumScale*p->opacity;  /* simplify and speed up equations */
   Da=1.0-QuantumScale*q->opacity;
@@ -1397,10 +1396,12 @@ static inline void CompositeScreen(const MagickPixelPacket *p,
   const MagickPixelPacket *q,const ChannelType channel,
   MagickPixelPacket *composite)
 {
-  MagickRealType
-    Sa,
-    Da,
+  double
     gamma;
+
+  MagickRealType
+    Da,
+    Sa;
 
   Sa=1.0-QuantumScale*p->opacity;  /* simplify and speed up equations */
   Da=1.0-QuantumScale*q->opacity;
@@ -2057,23 +2058,23 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         {
           if ((flags & XValue) == 0)
             if ((flags & AspectValue) == 0)
-              center.x=(MagickRealType) x_offset+(composite_image->columns-1)/
-                2.0;
+              center.x=(MagickRealType) (x_offset+(composite_image->columns-1)/
+                2.0);
             else
               center.x=((MagickRealType) image->columns-1)/2.0;
           else
             if ((flags & AspectValue) == 0)
-              center.x=(MagickRealType) x_offset+geometry_info.xi;
+              center.x=(MagickRealType) (x_offset+geometry_info.xi);
             else
               center.x=geometry_info.xi;
           if ((flags & YValue) == 0)
             if ((flags & AspectValue) == 0)
-              center.y=(MagickRealType) y_offset+(composite_image->rows-1)/2.0;
+              center.y=(MagickRealType) (y_offset+(composite_image->rows-1)/2.0);
             else
               center.y=((MagickRealType) image->rows-1)/2.0;
           else
             if ((flags & AspectValue) == 0)
-              center.y=(MagickRealType) y_offset+geometry_info.psi;
+              center.y=(MagickRealType) (y_offset+geometry_info.psi);
             else
               center.y=geometry_info.psi;
         }
@@ -2115,14 +2116,14 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           /*
             Displace the offset.
           */
-          offset.x=(horizontal_scale*(GetPixelRed(p)-
+          offset.x=(double) ((horizontal_scale*(GetPixelRed(p)-
             (((MagickRealType) QuantumRange+1.0)/2.0)))/(((MagickRealType)
             QuantumRange+1.0)/2.0)+center.x+((compose == DisplaceCompositeOp) ?
-            x : 0);
-          offset.y=(vertical_scale*(GetPixelGreen(p)-
+            x : 0));
+          offset.y=(double) ((vertical_scale*(GetPixelGreen(p)-
             (((MagickRealType) QuantumRange+1.0)/2.0)))/(((MagickRealType)
             QuantumRange+1.0)/2.0)+center.y+((compose == DisplaceCompositeOp) ?
-            y : 0);
+            y : 0));
           (void) InterpolateMagickPixelPacket(image,image_view,
             UndefinedInterpolatePixel,(double) offset.x,(double) offset.y,
             &pixel,exception);
@@ -2971,7 +2972,8 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
   texture_view=AcquireVirtualCacheView(texture_image,exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for magick_schedule(static,image->rows/2) shared(status)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    magick_threads(image,texture_image,1,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

@@ -153,7 +153,7 @@ pkgconfig_DATA = \
 	$(MAGICKPP_PKGCONFIG)
 
 # create a copy for pc file (ideally the non abi should be symlinked)
-%-@MAGICK_ABI_SUFFIX@.pc: %.pc
+%-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.pc: %.pc
 	cp -f $^ $@
 
 # Manual pages to install
@@ -214,14 +214,14 @@ ptrcheck:
 	$(MAKE) MEMCHECK='valgrind --tool=exp-ptrcheck --quiet $(VALGRIND_EXTRA_OPTS)' check
 
 # Non-Automake subdirectories to distribute
-DISTDIRS = images scenes scripts www PerlMagick
+DISTDIRS = images scripts www PerlMagick
 dist-hook:
 	( \
 	  builddir=`pwd` ; \
 	  cd $(srcdir) && \
 	  ( \
 	    for dir in $(DISTDIRS) ; do \
-	      find $$dir -depth -print | egrep -v '(~$$)|(/CVS)|(/\.#)|(/\.deps)|(/\.svn)' \
+	      find $$dir -depth -print | egrep -v '(~$$)|(/.svn)|(/\.#)|(/\.deps)|(/\.svn)' \
 	        | cpio -pdum $$builddir/$(distdir) 2> /dev/null ; \
 	    done \
 	  ) \

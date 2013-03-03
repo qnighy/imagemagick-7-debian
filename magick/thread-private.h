@@ -22,22 +22,20 @@
 extern "C" {
 #endif
 
-#include <magick/cache.h>
-#include <magick/resource_.h>
-#include <magick/thread_.h>
+#include "magick/cache.h"
+#include "magick/resource_.h"
+#include "magick/thread_.h"
 
 /*
   Single threaded unless workload justifies the threading overhead.
 */
-#define WorkloadThreshold()  (16*GetMagickResourceLimit(ThreadResource))
-#define magick_threads(source,destination,rows,expression) \
-  if (((rows) > WorkloadThreshold()) && (expression)) \
-    num_threads((source) != (destination) ? \
+#define magick_threads(source,destination,chunk,expression) \
+  num_threads((expression) == 0 ? 1 : \
+    (((chunk) > (16*GetMagickResourceLimit(ThreadResource))) && \
+     (GetImagePixelCacheType(source) != DiskCache)) && \
+    (GetImagePixelCacheType(destination) != DiskCache) ? \
       GetMagickResourceLimit(ThreadResource) : \
-      GetImagePixelCacheType(source) == DiskCache ? 2 : \
-      GetMagickResourceLimit(ThreadResource))
-#define magick_schedule(type,chunk) \
-  schedule(type,(chunk) < 1 ? 1 : (chunk))
+      GetMagickResourceLimit(ThreadResource) < 2 ? 1 : 2)
 
 #if (__GNUC__ > 3) || ((__GNUC__ == 3) && (__GNUC_MINOR__ > 10))
 #define MagickCachePrefetch(address,mode,locality) \

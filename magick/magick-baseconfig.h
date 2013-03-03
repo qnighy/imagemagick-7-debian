@@ -37,13 +37,13 @@
 
 /* Directory where architecture-dependent configuration files live. */
 #ifndef MAGICKCORE_CONFIGURE_PATH
-#define MAGICKCORE_CONFIGURE_PATH "/usr/etc/ImageMagick/"
+#define MAGICKCORE_CONFIGURE_PATH "/usr/etc/ImageMagick-6.8/"
 #endif
 
 /* Subdirectory of lib where architecture-dependent configuration files live.
    */
 #ifndef MAGICKCORE_CONFIGURE_RELATIVE_PATH
-#define MAGICKCORE_CONFIGURE_RELATIVE_PATH "ImageMagick"
+#define MAGICKCORE_CONFIGURE_RELATIVE_PATH "ImageMagick-6.8"
 #endif
 
 /* Define if you have DJVU library */
@@ -51,7 +51,7 @@
 
 /* Directory where ImageMagick documents live. */
 #ifndef MAGICKCORE_DOCUMENTATION_PATH
-#define MAGICKCORE_DOCUMENTATION_PATH "/usr/share/doc/ImageMagick-6.8.1/"
+#define MAGICKCORE_DOCUMENTATION_PATH "/usr/share/doc/ImageMagick-6.8/"
 #endif
 
 /* Define if you have Display Postscript */
@@ -74,12 +74,14 @@
 #endif
 
 /* Define if you have FONTCONFIG library */
-/* #undef FONTCONFIG_DELEGATE */
+#ifndef MAGICKCORE_FONTCONFIG_DELEGATE
+#define MAGICKCORE_FONTCONFIG_DELEGATE 1
+#endif
 
 /* Define if you have FlashPIX library */
 /* #undef FPX_DELEGATE */
 
-/* Define if you have FreeType (TrueType font) library */
+/* Define if you have FREETYPE library */
 #ifndef MAGICKCORE_FREETYPE_DELEGATE
 #define MAGICKCORE_FREETYPE_DELEGATE 1
 #endif
@@ -97,6 +99,11 @@
 
 /* Define to 1 if you have the <arm/limits.h> header file. */
 /* #undef HAVE_ARM_LIMITS_H */
+
+/* Define to 1 if you have the <arpa/inet.h> header file. */
+#ifndef MAGICKCORE_HAVE_ARPA_INET_H
+#define MAGICKCORE_HAVE_ARPA_INET_H 1
+#endif
 
 /* Define to 1 if you have the `asinh' function. */
 #ifndef MAGICKCORE_HAVE_ASINH
@@ -265,11 +272,6 @@
 /* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
 #ifndef MAGICKCORE_HAVE_FSEEKO
 #define MAGICKCORE_HAVE_FSEEKO 1
-#endif
-
-/* Define to 1 if you have the <ft2build.h> header file. */
-#ifndef MAGICKCORE_HAVE_FT2BUILD_H
-#define MAGICKCORE_HAVE_FT2BUILD_H 1
 #endif
 
 /* Define to 1 if you have the `ftime' function. */
@@ -485,6 +487,11 @@
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
 
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#ifndef MAGICKCORE_HAVE_NETINET_IN_H
+#define MAGICKCORE_HAVE_NETINET_IN_H 1
+#endif
+
 /* Define to 1 if you have the `newlocale' function. */
 #ifndef MAGICKCORE_HAVE_NEWLOCALE
 #define MAGICKCORE_HAVE_NEWLOCALE 1
@@ -632,6 +639,11 @@
 /* Define to 1 if you have the `sigemptyset' function. */
 #ifndef MAGICKCORE_HAVE_SIGEMPTYSET
 #define MAGICKCORE_HAVE_SIGEMPTYSET 1
+#endif
+
+/* Define to 1 if you have the `socket' function. */
+#ifndef MAGICKCORE_HAVE_SOCKET
+#define MAGICKCORE_HAVE_SOCKET 1
 #endif
 
 /* Define to 1 if you have the `spawnvp' function. */
@@ -1060,15 +1072,22 @@
 #define MAGICKCORE_HAVE___ATTRIBUTE__ 1
 #endif
 
-/* accurately represent the wide range of intensity levels in real scenes */
-/* #undef HDRI_SUPPORT */
+/* Whether hdri is enabled or not */
+#ifndef MAGICKCORE_HDRI_ENABLE_OBSOLETE_IN_H
+#define MAGICKCORE_HDRI_ENABLE_OBSOLETE_IN_H 0
+#endif
 
 /* Define if you have umem memory allocation library */
 /* #undef HasUMEM */
 
+/* Directory where ImageMagick architecture headers live. */
+#ifndef MAGICKCORE_INCLUDEARCH_PATH
+#define MAGICKCORE_INCLUDEARCH_PATH "/usr/include/ImageMagick-6.8/"
+#endif
+
 /* Directory where ImageMagick headers live. */
 #ifndef MAGICKCORE_INCLUDE_PATH
-#define MAGICKCORE_INCLUDE_PATH "/usr/include/ImageMagick/"
+#define MAGICKCORE_INCLUDE_PATH "/usr/include/ImageMagick-6.8/"
 #endif
 
 /* ImageMagick is formally installed under prefix */
@@ -1096,13 +1115,13 @@
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/usr/lib/ImageMagick-6.8.1/"
+#define MAGICKCORE_LIBRARY_PATH "/usr/lib/ImageMagick-6.8.3/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
    installed */
 #ifndef MAGICKCORE_LIBRARY_RELATIVE_PATH
-#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.8.1"
+#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.8.3"
 #endif
 
 /* Define if you have LQR library */
@@ -1118,7 +1137,9 @@
 #endif
 
 /* Define if you have LZMA library */
-/* #undef LZMA_DELEGATE */
+#ifndef MAGICKCORE_LZMA_DELEGATE
+#define MAGICKCORE_LZMA_DELEGATE 1
+#endif
 
 /* Define to prepend to default font search path. */
 /* #undef MAGICK_FONT_PATH */
@@ -1175,7 +1196,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.8.1-5"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.8.3-6"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1190,17 +1211,23 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.8.1-5"
+#define MAGICKCORE_PACKAGE_VERSION "6.8.3-6"
 #endif
 
 /* Define if you have PANGOCAIRO library */
-/* #undef PANGOCAIRO_DELEGATE */
+#ifndef MAGICKCORE_PANGOCAIRO_DELEGATE
+#define MAGICKCORE_PANGOCAIRO_DELEGATE 1
+#endif
 
 /* Define if you have PANGO library */
-/* #undef PANGO_DELEGATE */
+#ifndef MAGICKCORE_PANGO_DELEGATE
+#define MAGICKCORE_PANGO_DELEGATE 1
+#endif
 
 /* Define if you have PNG library */
-/* #undef PNG_DELEGATE */
+#ifndef MAGICKCORE_PNG_DELEGATE
+#define MAGICKCORE_PNG_DELEGATE 1
+#endif
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -1210,8 +1237,8 @@
 /* #undef PixelCacheThreshold */
 
 /* Number of bits in a pixel Quantum (8/16/32/64) */
-#ifndef MAGICKCORE_QUANTUM_DEPTH
-#define MAGICKCORE_QUANTUM_DEPTH 16
+#ifndef MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H
+#define MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H 16
 #endif
 
 /* Define as the return type of signal handlers (`int' or `void'). */
@@ -1247,13 +1274,13 @@
 
 /* Directory where architecture-independent configuration files live. */
 #ifndef MAGICKCORE_SHARE_PATH
-#define MAGICKCORE_SHARE_PATH "/usr/share/ImageMagick-6.8.1/"
+#define MAGICKCORE_SHARE_PATH "/usr/share/ImageMagick-6.8/"
 #endif
 
 /* Subdirectory of lib where architecture-independent configuration files
    live. */
 #ifndef MAGICKCORE_SHARE_RELATIVE_PATH
-#define MAGICKCORE_SHARE_RELATIVE_PATH "ImageMagick-6.8.1"
+#define MAGICKCORE_SHARE_RELATIVE_PATH "ImageMagick-6.8"
 #endif
 
 /* The size of `double', as computed by sizeof. */
@@ -1396,7 +1423,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.8.1-5"
+#define MAGICKCORE_VERSION "6.8.3-6"
 #endif
 
 /* Define if you have WEBP library */
@@ -1437,7 +1464,9 @@
 #endif
 
 /* Define if you have XML library */
-/* #undef XML_DELEGATE */
+#ifndef MAGICKCORE_XML_DELEGATE
+#define MAGICKCORE_XML_DELEGATE 1
+#endif
 
 /* Define to 1 if the X Window System is missing or not being used. */
 /* #undef X_DISPLAY_MISSING */
@@ -1502,6 +1531,9 @@
 
 /* Define to appropriate substitue if compiler does not have __func__ */
 /* #undef __func__ */
+
+/* Define to empty if `const' does not conform to ANSI C. */
+/* #undef const */
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 /* #undef gid_t */

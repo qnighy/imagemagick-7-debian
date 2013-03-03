@@ -10,11 +10,11 @@ PACKAGE_NAME='ImageMagick'
 #
 # Package version.  This is is the numeric version suffix applied to
 # PACKAGE_NAME (e.g. "1.0.0").
-PACKAGE_VERSION='6.8.1'
-PACKAGE_PERL_VERSION='6.81'
-PACKAGE_LIB_VERSION="0x681"
-PACKAGE_RELEASE="5"
-PACKAGE_LIB_VERSION_NUMBER="6,8,1,${PACKAGE_RELEASE}"
+PACKAGE_VERSION='6.8.3'
+PACKAGE_PERL_VERSION='6.83'
+PACKAGE_LIB_VERSION="0x683"
+PACKAGE_RELEASE="6"
+PACKAGE_LIB_VERSION_NUMBER="6,8,3,${PACKAGE_RELEASE}"
 PACKAGE_RELEASE_DATE=`date +%F`
 PACKAGE_STRING="$PACKAGE_NAME $PACKAGE_VERSION"
 
@@ -35,6 +35,10 @@ PACKAGE_VERSION_ADDENDUM="-${PACKAGE_RELEASE}"
 # source and binary compatibility with older minor versions, and changes
 # in the PATCH level are perfectly compatible, forwards and backwards.
 # See http://apr.apache.org/versioning.html.
-MAGICK_LIBRARY_CURRENT=7
+#
+# PLEASE NOTE that doing a SO BUMP aka raising the CURRENT REVISION
+# could be avoided using libversioning aka map files.  You MUST change .map
+# files if you raise these versions.
+MAGICK_LIBRARY_CURRENT=1
 MAGICK_LIBRARY_REVISION=0
 MAGICK_LIBRARY_AGE=0

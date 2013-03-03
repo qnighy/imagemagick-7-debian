@@ -201,6 +201,7 @@ MagickExport Image *AcquireImage(const ImageInfo *image_info)
   image->ping=MagickFalse;
   image->cache=AcquirePixelCache(0);
   image->blob=CloneBlobInfo((BlobInfo *) NULL);
+  image->timestamp=time((time_t *) NULL);
   image->debug=IsEventLogging();
   image->reference_count=1;
   image->semaphore=AllocateSemaphoreInfo();
@@ -434,7 +435,6 @@ MagickExport Image *AppendImages(const Image *images,
 
   MagickBooleanType
     matte,
-    proceed,
     status;
 
   MagickOffsetType
@@ -512,6 +512,9 @@ MagickExport Image *AppendImages(const Image *images,
 
     Image
       *image;
+
+    MagickBooleanType
+      proceed;
 
     image=CloneImage(next,0,0,MagickTrue,exception);
     if (image == (Image *) NULL)
@@ -2756,7 +2759,7 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
         }
       (void) ResetMagickMemory(magick,0,sizeof(magick));
       count=ReadBlob(image,2*MaxTextExtent,magick);
-      (void) SeekBlob(image,(MagickOffsetType) -count,SEEK_CUR);
+      (void) SeekBlob(image,-((MagickOffsetType) count),SEEK_CUR);
       (void) CloseBlob(image);
       image=DestroyImage(image);
       /*

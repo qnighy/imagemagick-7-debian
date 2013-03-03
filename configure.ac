@@ -22,8 +22,8 @@ AC_PREREQ(2.69)
 
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
-m4_define([magick_micro_version], [1])
-m4_define([magick_patchlevel_version], [5])
+m4_define([magick_micro_version], [3])
+m4_define([magick_patchlevel_version], [6])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -58,9 +58,13 @@ AC_CONFIG_FILES([\
     magick/version.h \
     Makefile \
     magick.sh \
+    PerlMagick/check.sh \
     PerlMagick/Magick.pm \
     PerlMagick/Makefile.PL \
-    PerlMagick/check.sh \
+    PerlMagick/quantum/Makefile.PL \
+    PerlMagick/quantum/quantum.pm \
+    PerlMagick/quantum/quantum.xs \
+    PerlMagick/quantum/typemap \
     utilities/animate.1 \
     utilities/compare.1 \
     utilities/composite.1 \
@@ -115,6 +119,15 @@ MAGICK_TARGET_OS=$host_os
 AC_SUBST(MAGICK_TARGET_OS)
 AC_DEFINE_UNQUOTED(MAGICK_TARGET_OS,$MAGICK_TARGET_OS,[Target Host OS])
 
+
+# Substitute versioning
+AC_SUBST([MAGICK_MAJOR_VERSION],[magick_major_version])
+AC_SUBST([MAGICK_MINOR_VERSION],[magick_minor_version])
+AC_SUBST([MAGICK_MICRO_VERSION],[magick_micro_version])
+AC_SUBST([MAGICK_PATCHLEVEL_VERSION],[magick_patchlevel_version])
+AC_SUBST([MAGICK_VERSION],[magick_version])
+AC_SUBST([MAGICK_SVN_REVISION],[magick_svn_revision])
+
 # Substitute library versioning
 AC_SUBST(MAGICK_LIBRARY_CURRENT)dnl
 AC_SUBST(MAGICK_LIBRARY_REVISION)dnl
@@ -123,7 +136,8 @@ AC_SUBST([MAGICK_LIBRARY_CURRENT_MIN],
          [`expr $MAGICK_LIBRARY_CURRENT - $MAGICK_LIBRARY_AGE`])
 AC_SUBST([MAGICK_LIBRARY_VERSION_INFO],
          [$MAGICK_LIBRARY_CURRENT:$MAGICK_LIBRARY_REVISION:$MAGICK_LIBRARY_AGE])
-AC_SUBST([MAGICK_SVN_REVISION],[magick_svn_revision])
+
+
 
 AC_SUBST(PACKAGE_NAME)dnl
 AC_SUBST(PACKAGE_VERSION)dnl
@@ -373,25 +387,27 @@ fi
 
 dnl Platform-specific stuff
 case "$host" in
-*darwin* | *-macos10*)
-  dnl OS X universal binary support, requires --disable-dependency-tracking
-  AC_ARG_ENABLE([osx-universal-binary],
+  *darwin* | *-macos10*)
+    dnl Disable FORTIFY_SOURCE to fix a bug in LVVM / OpenMP support
+    CFLAGS="${CFLAGS} -D_FORTIFY_SOURCE=0"
+    dnl OS X universal binary support, requires --disable-dependency-tracking
+    AC_ARG_ENABLE([osx-universal-binary],
         AC_HELP_STRING([--enable-osx-universal-binary],
            [build universal binary on OS X [[default=no]]]),
         [build_osxuniversal="${enableval}"], [build_osxuniversal=no])
 
-  if test "${build_osxuniversal}" != no ; then
-    if test "$enable_dependency_tracking" != no ; then
-      AC_MSG_ERROR([--enable-osx-universal-binary requires --disable-dependency-tracking.
+    if test "${build_osxuniversal}" != no ; then
+      if test "$enable_dependency_tracking" != no ; then
+        AC_MSG_ERROR([--enable-osx-universal-binary requires --disable-dependency-tracking.
 Please re-run configure with these options:
   --disable-dependency-tracking --enable-osx-universal-binary
         ])
+      fi
+      CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386"
+      CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386"
+      LDFLAGS="$LDFLAGS -Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386"
     fi
-    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386"
-    CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386"
-    LDFLAGS="$LDFLAGS -Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386"
-  fi
-  ;;
+    ;;
 esac
 
 #
@@ -417,6 +433,12 @@ AC_ARG_WITH([sharearch-dir],
 
 eval "eval SHAREARCH_DIR=$sharearch_dir"
 AC_SUBST(SHAREARCH_DIR)
+
+# Path to the pkgconfig folder 
+AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=DIR],
+            [Path to the pkgconfig directory @<:@LIBDIR/pkgconfig@:>@]),
+            [pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
+AC_SUBST([pkgconfigdir])
 
 # Enable support for threads
 AC_ARG_WITH([threads],
@@ -612,10 +634,16 @@ AC_ARG_ENABLE([hdri],
 MAGICK_HDRI=""
 if test "$enable_hdri" = 'yes'; then
     MAGICK_HDRI="HDRI"
-    AC_DEFINE(HDRI_SUPPORT,1,[accurately represent the wide range of intensity levels in real scenes])
+    magick_hdri_enable='1';
     MAGICK_FEATURES="HDRI $MAGICK_FEATURES"
+else
+    magick_hdri_enable='0'
 fi
+AC_DEFINE_UNQUOTED(HDRI_ENABLE_OBSOLETE_IN_H,$magick_hdri_enable,[Whether hdri is enabled or not])
 AC_SUBST(MAGICK_HDRI)dnl
+MAGICK_PCFLAGS="$MAGICK_PCFLAGS -DMAGICKCORE_HDRI_ENABLE=$magick_hdri_enable"
+CFLAGS="$CFLAGS -DMAGICKCORE_HDRI_ENABLE=$magick_hdri_enable"
+CPPFLAGS="$CPPFLAGS -DMAGICKCORE_HDRI_ENABLE=$magick_hdri_enable"
 
 # Build a version of ImageMagick with assert statements.
 AC_ARG_ENABLE([assert],
@@ -708,8 +736,11 @@ case "${with_quantum_depth}" in
     * ) AC_MSG_ERROR("Pixel quantum depth must have value of 8, 16, 32, or 64") ;;
 esac
 QUANTUM_DEPTH="$with_quantum_depth"
-AC_DEFINE_UNQUOTED(QUANTUM_DEPTH,$QUANTUM_DEPTH,[Number of bits in a pixel Quantum (8/16/32/64)])
+AC_DEFINE_UNQUOTED(QUANTUM_DEPTH_OBSOLETE_IN_H,$QUANTUM_DEPTH,[Number of bits in a pixel Quantum (8/16/32/64)])
 AC_SUBST(QUANTUM_DEPTH)dnl
+MAGICK_PCFLAGS="$MAGICK_PCFLAGS -DMAGICKCORE_QUANTUM_DEPTH=$QUANTUM_DEPTH"
+CFLAGS="$CFLAGS -DMAGICKCORE_QUANTUM_DEPTH=$QUANTUM_DEPTH"
+CPPFLAGS="$CPPFLAGS -DMAGICKCORE_QUANTUM_DEPTH=$QUANTUM_DEPTH"
 
 # define a lib suffix for abi purpose
 MAGICK_ABI_SUFFIX="Q${QUANTUM_DEPTH}"
@@ -840,7 +871,7 @@ AC_HEADER_ASSERT
 AC_HEADER_DIRENT
 
 # Check additional headers
-AC_CHECK_HEADERS(arm/limits.h complex.h errno.h fcntl.h limits.h linux/unistd.h locale.h machine/param.h mach-o/dyld.h OS.h process.h sun_prefetch.h stdarg.h sys/ipc.h sys/mman.h sys/resource.h sys/syslimits.h sys/time.h sys/timeb.h sys/times.h sys/wait.h wchar.h xlocale.h)
+AC_CHECK_HEADERS(arm/limits.h arpa/inet.h complex.h errno.h fcntl.h limits.h linux/unistd.h locale.h machine/param.h mach-o/dyld.h netinet/in.h OS.h process.h sun_prefetch.h stdarg.h sys/ipc.h sys/mman.h sys/resource.h sys/socket.h sys/syslimits.h sys/time.h sys/timeb.h sys/times.h sys/wait.h wchar.h xlocale.h)
 
 ########
 #
@@ -857,15 +888,14 @@ AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 AC_SYS_INTERPRETER
 
-# If the C compiler supports the keyword inline, do nothing. Otherwise
-# define inline to __inline__ or __inline if it accepts one of those,
-# otherwise define inline to be empty.
+#
+# Checks for language qualifiers and semantics.
+#
+AC_C_CHAR_UNSIGNED
+AC_C_CONST
 AC_C_INLINE
-
-# If the C compiler supports the keyword restrict, do nothing. Otherwise
-# define restrict to __restrict__ or __restrict if it accepts one of those,
-# otherwise define restrict to be empty.
 AC_C_RESTRICT
+AC_C_VOLATILE
 
 # If words are stored with the most significant byte first (like
 # Motorola and SPARC CPUs), define `WORDS_BIGENDIAN'.
@@ -1108,7 +1138,17 @@ AC_CHECK_LIB(m,sqrt,MATH_LIBS="-lm",,)
 LIBS="$MATH_LIBS $LIBS"
 AC_SUBST(MATH_LIBS)
 
-AC_CHECK_FUNCS([acosh _aligned_malloc asinh atanh atoll atexit cabs carg cimag creal clock ctime_r directio _exit execvp fchmod floor fork ftime ftruncate getc_unlocked getcwd getpid getexecname getdtablesize getpagesize getrlimit getrusage gettimeofday gmtime_r isnan j0 j1 lltostr localtime_r lstat memmove memset mkstemp munmap nanosleep newlocale _NSGetExecutablePath pclose _pclose poll popen _popen posix_fadvise posix_fallocate posix_madvise posix_memalign posix_spawnp pow pread pwrite qsort_r raise rand_r readlink readdir_r realpath select seekdir setlocale sqrt setvbuf stat strchr strerror_r strrchr strcspn strdup strpbrk strspn strstr strtod strtod_l strtol strtoul symlink sysconf sigemptyset sigaction spawnvp strerror strlcat strlcpy strcasecmp strncasecmp telldir tempnam times ulltostr uselocale usleep utime vfprintf vfprintf_l vsprintf vsnprintf vsnprintf_l waitpid _wfopen _wstat])
+#
+# Find socket library
+#
+AC_SEARCH_LIBS(gethostbyname, resolv nsl)
+AC_SEARCH_LIBS(socket, socket,
+[
+  AC_DEFINE([HAVE_SOCKET],[1],[Define to 1 if you have socket support.])
+  MAGICK_FEATURES="DPC $MAGICK_FEATURES"
+])
+
+AC_CHECK_FUNCS([acosh _aligned_malloc asinh atanh atoll atexit cabs carg cimag creal clock ctime_r directio _exit execvp fchmod floor fork ftime ftruncate getc_unlocked getcwd getpid getexecname getdtablesize getpagesize getrlimit getrusage gettimeofday gmtime_r isnan j0 j1 lltostr localtime_r lstat memmove memset mkstemp munmap nanosleep newlocale _NSGetExecutablePath pclose _pclose poll popen _popen posix_fadvise posix_fallocate posix_madvise posix_memalign posix_spawnp pow pread pwrite qsort_r raise rand_r readlink readdir_r realpath select seekdir setlocale socket sqrt setvbuf stat strchr strerror_r strrchr strcspn strdup strpbrk strspn strstr strtod strtod_l strtol strtoul symlink sysconf sigemptyset sigaction spawnvp strerror strlcat strlcpy strcasecmp strncasecmp telldir tempnam times ulltostr uselocale usleep utime vfprintf vfprintf_l vsprintf vsnprintf vsnprintf_l waitpid _wfopen _wstat])
 
 #
 # Check for clock_gettime().
@@ -1231,7 +1271,7 @@ fi
 
 # Assume that delegate headers reside under same directory as ImageMagick
 # installation prefix.
-MAGICK_CPPFLAGS="-I$INCLUDE_DIR/ImageMagick $MAGICK_CPPFLAGS"
+MAGICK_CPPFLAGS="-I$INCLUDE_DIR/${PACKAGE_NAME}-$MAGICK_MAJOR_VERSION.$MAGICK_MINOR_VERSION $MAGICK_CPPFLAGS"
 
 #
 # Find the X11 RGB database
@@ -1904,7 +1944,7 @@ AC_SUBST(FONTCONFIG_LIBS)
 dnl ===========================================================================
 
 #
-# Check for freetype delegate library.
+# Check for the Freetype delegate library.
 #
 AC_ARG_WITH([freetype],
     [AC_HELP_STRING([--without-freetype],
@@ -1912,82 +1952,29 @@ AC_ARG_WITH([freetype],
     [with_freetype=$withval],
     [with_freetype='yes'])
 
-
 if test "$with_freetype" != 'yes'; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-freetype=$with_freetype "
 fi
 
 have_freetype='no'
-FREETYPE_LIBS=''
-if test "$with_freetype" != 'no'; then
+FREETYPE_CFLAGS=""
+FREETYPE_LIBS=""
+FREETYPE_PKG=""
+if test "x$with_freetype" = "xyes"; then
     AC_MSG_RESULT([-------------------------------------------------------------])
-    AC_MSG_CHECKING(for FreeType 2.0 )
-    AC_MSG_RESULT()
-    failed=0
-    passed=0
-    PERSIST_LDFLAGS="$LDFLAGS"
-    PERSIST_CPPFLAGS="$CPPFLAGS"
-    freetype_config=''
-    # Allow the user to specify the location of freetype.
-    if test "$with_freetype" != 'yes'; then
-      if test -x "${with_freetype}/bin/freetype-config"; then
-        freetype_config="${with_freetype}/bin/freetype-config"
-      elif test -x "${with_freetype}"; then
-        freetype_config=${with_freetype}
-      fi
-    fi
-    if test -z "$freetype_config"; then
-      AC_PATH_PROG(freetype_config,freetype-config,)dnl
-    fi
-    if test -n "$freetype_config"; then
-      freetype_prefix=`${freetype_config} --prefix`
-      freetype_exec_prefix=`${freetype_config} --exec-prefix`
-      LDFLAGS="$LDFLAGS -L${freetype_exec_prefix}/lib"
-      CPPFLAGS="$CPPFLAGS -I${freetype_prefix}/include/freetype2"
-    fi
-
-dnl First see if there is a library
-    if test "$FREETYPE_LIBS" = ''; then
-      AC_CHECK_LIB(freetype,FT_Init_FreeType,FREETYPE_LIBS='-lfreetype',,)
-      if test "$FREETYPE_LIBS" != ''; then
-        passed=`expr $passed + 1`
-      else
-        failed=`expr $failed + 1`
-        LDFLAGS="$PERSIST_LDFLAGS"
-      fi
-    fi
-
-dnl Now test for the headers
-    AC_CHECK_HEADER([ft2build.h],[FT2BUILD_H='#include <ft2build.h>'],[ft2build=''],[])
-    AC_CHECK_HEADER(freetype/freetype.h,[have_freetype_h='yes'],[have_freetype_h='no'],[$FT2BUILD_H])
-    if test "$have_freetype_h" = 'yes'; then
-      passed=`expr $passed + 1`
-    else
-      failed=`expr $failed + 1`
-      CPPFLAGS="$PERSIST_CPPFLAGS"
-    fi
-
-    AC_MSG_CHECKING(if FreeType package is complete)
-    if test $passed -gt 0; then
-      if test $failed -gt 0; then
-        FREETYPE_LIBS=''
-        AC_MSG_RESULT(no -- some components failed test)
-        have_freetype='no (failed tests)'
-      else
-        LIBS="$FREETYPE_LIBS $LIBS"
-        AC_DEFINE(FREETYPE_DELEGATE,1,Define if you have FreeType (TrueType font) library)
-        if test "$ac_cv_header_ft2build_h" = 'yes'; then
-          AC_DEFINE([HAVE_FT2BUILD_H],[1],[Define to 1 if you have the <ft2build.h> header file.])
-        fi
-        AC_MSG_RESULT(yes)
-        have_freetype='yes'
-      fi
-    else
-      AC_MSG_RESULT(no)
-    fi
+    PKG_CHECK_MODULES(FREETYPE,[freetype2], have_freetype=yes, have_freetype=no)
+    AC_MSG_RESULT([])
 fi
+
+if test "$have_freetype" = 'yes'; then
+    AC_DEFINE(FREETYPE_DELEGATE,1,Define if you have FREETYPE library)
+    CFLAGS="$FREETYPE_CFLAGS $CFLAGS"
+fi
+
 AM_CONDITIONAL(FREETYPE_DELEGATE, test "$have_freetype" = 'yes')
+AC_SUBST(FREETYPE_CFLAGS)
 AC_SUBST(FREETYPE_LIBS)
+
 
 dnl ===========================================================================
 
@@ -2568,7 +2555,7 @@ if test "$with_png" != 'no' -a  "$have_zlib" != 'no' ; then
      failed=`expr $failed + 1`,)
 
   if test $passed -gt 0; then
-    for var in 5 4 2 '' ; do
+    for var in 7 6 5 4 2 '' ; do
       if test "$have_png" = 'no' ; then
         if test "x${var}" = 'x' ; then
           pnglib='png'
@@ -2612,6 +2599,18 @@ return 0;
         fi
 
         if test $passed -gt 0 -a $failed -le 0; then
+          if test "1${var}" = '17' ; then
+            AC_CHECK_LIB(png17,png_get_io_ptr,passed=`expr $passed + 1`,
+               failed=`expr $failed + 1`,)
+            AC_CHECK_LIB(png17,png_image_free,passed=`expr $passed + 1`,
+               failed=`expr $failed + 1`,)
+          fi
+          if test "1${var}" = '16' ; then
+            AC_CHECK_LIB(png16,png_get_io_ptr,passed=`expr $passed + 1`,
+               failed=`expr $failed + 1`,)
+            AC_CHECK_LIB(png16,png_image_free,passed=`expr $passed + 1`,
+               failed=`expr $failed + 1`,)
+          fi
           if test "1${var}" = '15' ; then
             AC_CHECK_LIB(png15,png_get_io_ptr,passed=`expr $passed + 1`,
                failed=`expr $failed + 1`,)
@@ -2766,7 +2765,7 @@ AC_ARG_WITH(webp,
     [AC_HELP_STRING([--without-webp],
                     [disable WEBP support])],
     [with_webp=$withval],
-    [with_webp='yes'])
+    [with_webp='no'])
 
 if test "$with_webp" != 'yes'; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-webp=$with_webp "
@@ -2781,7 +2780,7 @@ if test "$with_webp" != 'no'; then
     failed=0
     passed=0
     AC_CHECK_HEADER(webp/decode.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-    AC_CHECK_LIB(webp,WebPDecodeRGB,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
+    AC_CHECK_LIB(webp,WebPPictureInit,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_MSG_CHECKING([if WEBP package is complete])
     if test $passed -gt 0; then
         if test $failed -gt 0; then
@@ -2960,9 +2959,9 @@ AC_SUBST(PERLMAINCC)
 #
 
 # Path to ImageMagick header files
-INCLUDE_RELATIVE_PATH="ImageMagick"
-INCLUDE_PATH="${INCLUDEARCH_DIR}/${INCLUDE_RELATIVE_PATH}"
-DEFINE_INCLUDE_PATH="${INCLUDEARCH_DIR}/${INCLUDE_RELATIVE_PATH}/"
+INCLUDE_RELATIVE_PATH="${PACKAGE_NAME}-${MAGICK_MAJOR_VERSION}.${MAGICK_MINOR_VERSION}"
+INCLUDE_PATH="${INCLUDE_DIR}/${INCLUDE_RELATIVE_PATH}"
+DEFINE_INCLUDE_PATH="${INCLUDE_DIR}/${INCLUDE_RELATIVE_PATH}/"
 case "${build_os}" in
   mingw* )
     DEFINE_INCLUDE_PATH=`$WinPathScript "$DEFINE_INCLUDE_PATH" 1`
@@ -2970,6 +2969,17 @@ case "${build_os}" in
 esac
 AC_DEFINE_UNQUOTED(INCLUDE_PATH,"$DEFINE_INCLUDE_PATH",[Directory where ImageMagick headers live.])
 AC_SUBST(INCLUDE_PATH)
+
+# Path to ImageMagick header files (arch part)
+INCLUDEARCH_PATH="${INCLUDEARCH_DIR}/${INCLUDE_RELATIVE_PATH}"
+DEFINE_INCLUDEARCH_PATH="${INCLUDEARCH_DIR}/${INCLUDE_RELATIVE_PATH}/"
+case "${build_os}" in
+  mingw* )
+    DEFINE_INCLUDEARCH_PATH=`$WinPathScript "$DEFINE_INCLUDEARCH_PATH" 1`
+    ;;
+esac
+AC_DEFINE_UNQUOTED(INCLUDEARCH_PATH,"$DEFINE_INCLUDE_PATH",[Directory where ImageMagick architecture headers live.])
+AC_SUBST(INCLUDEARCH_PATH)
 
 # Subdirectory under lib to place ImageMagick lib files
 LIBRARY_RELATIVE_PATH="${PACKAGE_NAME}-${PACKAGE_VERSION}"
@@ -3045,7 +3055,7 @@ AC_SUBST(FILTER_PATH)
 
 #
 # Path to ImageMagick documentation files
-DOCUMENTATION_RELATIVE_PATH="${PACKAGE_NAME}-${PACKAGE_VERSION}"
+DOCUMENTATION_RELATIVE_PATH="${PACKAGE_NAME}-${MAGICK_MAJOR_VERSION}.${MAGICK_MINOR_VERSION}"
 DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}"
 DEFINE_DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}/"
 case "${build_os}" in
@@ -3057,7 +3067,7 @@ AC_DEFINE_UNQUOTED(DOCUMENTATION_PATH,"$DEFINE_DOCUMENTATION_PATH",[Directory wh
 AC_SUBST(DOCUMENTATION_PATH)
 
 # Subdirectory to place architecture-dependent configuration files
-CONFIGURE_RELATIVE_PATH="${PACKAGE_NAME}"
+CONFIGURE_RELATIVE_PATH="${PACKAGE_NAME}-${MAGICK_MAJOR_VERSION}.${MAGICK_MINOR_VERSION}"
 AC_DEFINE_UNQUOTED(CONFIGURE_RELATIVE_PATH,"$CONFIGURE_RELATIVE_PATH",[Subdirectory of lib where architecture-dependent configuration files live.])
 CONFIGURE_PATH="${SYSCONF_DIR}/${CONFIGURE_RELATIVE_PATH}/"
 DEFINE_CONFIGURE_PATH="${SYSCONF_DIR}/${CONFIGURE_RELATIVE_PATH}/"
@@ -3070,7 +3080,7 @@ AC_DEFINE_UNQUOTED(CONFIGURE_PATH,"$DEFINE_CONFIGURE_PATH",[Directory where arch
 AC_SUBST(CONFIGURE_PATH)
 
 # Subdirectory to place architecture-independent configuration files
-SHARE_RELATIVE_PATH="${LIBRARY_RELATIVE_PATH}"
+SHARE_RELATIVE_PATH="${PACKAGE_NAME}-${MAGICK_MAJOR_VERSION}.${MAGICK_MINOR_VERSION}"
 AC_DEFINE_UNQUOTED(SHARE_RELATIVE_PATH,"$SHARE_RELATIVE_PATH",[Subdirectory of lib where architecture-independent configuration files live.])
 SHARE_PATH="${DATA_DIR}/${SHARE_RELATIVE_PATH}"
 DEFINE_SHARE_PATH="${DATA_DIR}/${SHARE_RELATIVE_PATH}/"

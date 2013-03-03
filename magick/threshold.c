@@ -109,6 +109,28 @@ struct _ThresholdMap
 };
 
 /*
+ *   Static declarations.
+ *   */
+static const char
+  *MinimalThresholdMap =
+    "<?xml version=\"1.0\"?>"
+    "<thresholds>"
+    "  <threshold map=\"threshold\" alias=\"1x1\">"
+    "    <description>Threshold 1x1 (non-dither)</description>"
+    "    <levels width=\"1\" height=\"1\" divisor=\"2\">"
+    "        1"
+    "    </levels>"
+    "  </threshold>"
+    "  <threshold map=\"checks\" alias=\"2x1\">"
+    "    <description>Checkerboard 2x1 (dither)</description>"
+    "    <levels width=\"2\" height=\"2\" divisor=\"3\">"
+    "       1 2"
+    "       2 1"
+    "    </levels>"
+    "  </threshold>"
+    "</thresholds>";
+
+/*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 %                                                                             %
@@ -419,6 +441,8 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+    (void) TransformImageColorspace(image,RGBColorspace);
   /*
     Bilevel threshold image.
   */
@@ -1136,14 +1160,21 @@ MagickExport ThresholdMap *GetThresholdMap(const char *map_id,
   ThresholdMap
     *map;
 
-  map=(ThresholdMap *)NULL;
+  map=GetThresholdMapFile(MinimalThresholdMap,"built-in",map_id,exception);
+  if (map != (ThresholdMap *) NULL)
+    return(map);
   options=GetConfigureOptions(ThresholdsFilename,exception);
-  while (( option=(const StringInfo *) GetNextValueInLinkedList(options) )
-          != (const StringInfo *) NULL && map == (ThresholdMap *)NULL )
+  option=(const StringInfo *) GetNextValueInLinkedList(options);
+  while (option != (const StringInfo *) NULL)
+  {
     map=GetThresholdMapFile((const char *) GetStringInfoDatum(option),
       GetStringInfoPath(option),map_id,exception);
+    if (map != (ThresholdMap *) NULL)
+      return(map);
+    option=(const StringInfo *) GetNextValueInLinkedList(options);
+  }
   options=DestroyConfigureOptions(options);
-  return(map);
+  return((ThresholdMap *) NULL);
 }
 
 /*
@@ -1270,15 +1301,15 @@ MagickExport MagickBooleanType ListThresholdMaps(FILE *file,
   if ( file == (FILE *)NULL )
     file = stdout;
   options=GetConfigureOptions(ThresholdsFilename,exception);
-
   (void) FormatLocaleFile(file,
     "\n   Threshold Maps for Ordered Dither Operations\n");
-  while ( ( option=(const StringInfo *) GetNextValueInLinkedList(options) )
-          != (const StringInfo *) NULL)
+  option=(const StringInfo *) GetNextValueInLinkedList(options);
+  while (option != (const StringInfo *) NULL)
   {
-    (void) FormatLocaleFile(file,"\nPATH: %s\n\n",GetStringInfoPath(option));
+    (void) FormatLocaleFile(file,"\nPath: %s\n\n",GetStringInfoPath(option));
     status|=ListThresholdMapFile(file,(const char *) GetStringInfoDatum(option),
       GetStringInfoPath(option),exception);
+    option=(const StringInfo *) GetNextValueInLinkedList(options);
   }
   options=DestroyConfigureOptions(options);
   return(status != 0 ? MagickTrue : MagickFalse);

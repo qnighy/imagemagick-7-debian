@@ -307,6 +307,9 @@ static const struct ReferenceFormats
     { "PNG8", UndefinedCompression, 0.0 },
     { "PNG24", UndefinedCompression, 0.0 },
     { "PNG32", UndefinedCompression, 0.0 },
+    { "PNG48", UndefinedCompression, 0.0 },
+    { "PNG64", UndefinedCompression, 0.0 },
+    { "PNG00", UndefinedCompression, 0.0 },
     { "PNM", UndefinedCompression, 0.0 },
     { "PPM", UndefinedCompression, 0.0 },
     { "PREVIEW", UndefinedCompression, 0.0 },
@@ -348,7 +351,7 @@ static const struct ReferenceFormats
     { "X3F", UndefinedCompression, 0.0 },
     { "XBM", UndefinedCompression, 0.0 },
     { "XCF", UndefinedCompression, 0.0 },
-    { "XPM", UndefinedCompression, 0.0 },
+    { "XPM", UndefinedCompression, 0.003 },
     { "XPS", UndefinedCompression, 0.0 },
     { "XV", UndefinedCompression, 0.0 },
 #if !defined(MAGICKCORE_WINDOWS_SUPPORT)
