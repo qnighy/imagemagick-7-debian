@@ -10,9 +10,7 @@ export SOVERSION ?= 7
 export IMVERSION ?= 6
 
 # for hardening
-export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-DPKG_EXPORT_BUILDFLAGS = 1
-include /usr/share/dpkg/buildflags.mk
+# export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
@@ -36,6 +34,9 @@ export ARCH_NOQUANTUM_PKG ?= libmagickcore-arch-config perlmagick
 # quantum depth used by quantum independant package (first one of QUANTUMDEPTH)
 export NOQUANTUMDEPTH ?= $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
 
+# convert 
+export CONVERT ?= ./magick.sh convert
+export CONVERT_FLAGS ?= -background none -define filter:blur=0.75 -filter Gaussian
 
 # put QUANTUMDEPTH in lower case for package name
 #export QUANTUMDEPTH_LOWER ?= $(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'))
@@ -64,8 +65,113 @@ export CONFIGURE_OPTIONS ?= \
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg
 
-override_dh_auto_configure:
-	./configure ${CONFIGURE_OPTIONS}
-
 %:
 	dh $@ --parallel --with autoreconf
+
+# configure in build directory
+quantum_override_dh_auto_configure-arch_%: 
+	[ -d $(CURDIR)/debian/build-quantum-$* ] || mkdir -p debian/build-quantum-$*
+	cd $(CURDIR)/debian/build-quantum-$* ; \
+	$(CURDIR)/configure ${CONFIGURE_OPTIONS} \
+		--program-suffix=".${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.im$(DEB_UPSTREAM_VERSION_MAJOR)" \
+		--with-quantum-depth=${shell echo $* | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
+
+
+override_dh_auto_configure-arch: quantum_override_dh_auto_configure-arch_Q16
+
+override_dh_auto_configure-indep:
+	[ -d $(CURDIR)/debian/build-quantum-indep ] || mkdir -p debian/build-quantum-indep
+	cd $(CURDIR)/debian/build-quantum-indep ; \
+	$(CURDIR)/configure ${CONFIGURE_OPTIONS} \
+		--program-suffix=".${shell echo $(NOQUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'}.im$(DEB_UPSTREAM_VERSION_MAJOR)" \
+		--with-quantum-depth=${shell echo $(NOQUANTUMDEPTH)  | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
+
+# dh_auto_build in build directory
+# build icons cache build for each arch in order to get more testing 
+quantum_override_dh_auto_build-arch_%:
+	cd $(CURDIR)/debian/build-quantum-$*; $(MAKE) all perl-build 
+
+override_dh_auto_build-arch: quantum_override_dh_auto_build-arch_Q16
+override_dh_auto_build-indep:
+
+# dh_auto_test in build directory
+quantum_override_dh_auto_test-arch_%:
+	if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
+            unset DISPLAY; \
+            cd $(CURDIR)/debian/build-quantum-$* ; $(MAKE) check ; \
+	else \
+           echo "Skipping regression tests because we appear to be cross-compiling"; \
+        fi
+
+override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_Q16
+override_dh_auto_test-indep:
+
+
+# dh_auto_install in build directory
+quantum_override_dh_auto_install-arch_%:
+	cd $(CURDIR)/debian/build-quantum-$*; \
+	$(MAKE) $(PASS_MAKEFLAGS) install DESTDIR="$(CURDIR)/debian/tmp-$*" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
+
+	# Fix HTML location inside manpages (TODO proper patch please)
+	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
+		$(CURDIR)/debian/tmp-$*/usr/share/man/man*/*
+	sed -i 's/doc\/ImageMagick\\-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
+		$(CURDIR)/debian/tmp-$*/usr/share/man/man*/*
+
+	# empties dependency_libs from .la files
+	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
+	find $(CURDIR)/debian/tmp-$*/usr/lib -name '*.la' -exec \
+		sed -i "s,^dependency_libs=.*,dependency_libs=''," {} \;
+
+	# Remove empty directories in debian/tmp
+	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
+
+	# build icons cache (build for each arch in order to get more testing)
+	while read SIZE; do \
+		mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/ ;\
+		cd $(CURDIR)/debian/build-quantum-$*; \
+		$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize $$SIZE \
+	                   -gravity center -extent $$SIZE  \
+			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).png; \
+	done < $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
+	# make xpm
+	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/pixmaps/
+	cd $(CURDIR)/debian/build-quantum-$*; \
+	$(CONVERT) $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize 32x32 \
+                -gravity center -extent 32x32  \
+		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).xpm
+	# do not forget svgz
+	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/
+	gzip -c -n -9 $(CURDIR)/debian/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
+		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display.im$(DEB_UPSTREAM_VERSION_MAJOR).svgz
+
+	# add desktop
+	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/applications/
+	sed < $(CURDIR)/debian/display.desktop.in \
+		-e s/\$$\(QUANTUMDEPTH\)/$*/g \
+		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
+		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display.$*.im$(IMVERSION).desktop
+
+
+override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
+override_dh_auto_install-indep:
+	cd $(CURDIR)/debian/build-quantum-indep ; \
+	$(MAKE) install-configlibDATA install-data-html \
+	        install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
+	        DESTDIR="$(CURDIR)/debian/tmp-indep" \
+		pkgdocdir=/usr/share/doc/imagemagick-common
+
+	# Use x-terminal emulator for editing (Bug #132947) TODO: proper patch please
+	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
+		$(CURDIR)/debian/tmp-indep/etc/ImageMagick/delegates.xml
+
+	# Remove empty directories in debian/tmp
+	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
+
+# clean rules
+quantum_override_dh_clean_%:
+	[ ! -d debian/build-quantum-$* ] || rm -rf debian/build-quantum-$*
+
+override_dh_clean-arch: quantum_override_dh_clean_Q16 quantum_override_dh_clean_indep
+	dh_clean
