@@ -1,11 +1,10 @@
-imagemagick (8:6.8.3.6-1) experimental; urgency=low
+imagemagick (8:6.8.3.7-1) experimental; urgency=low
 
   * New upstream version
   * .so bump due to:
    - encoding quantum depth in the library name. This will
      allow to compile hdri and other quantum depth.
    - lib versionning.
-  * Remove configure script
   * Use dh
   
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 16 Dec 2012 21:59:47 +0100
