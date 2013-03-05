@@ -110,7 +110,7 @@ override_dh_auto_test-indep:
 # dh_auto_install in build directory
 quantum_override_dh_auto_install-arch_%:
 	cd $(CURDIR)/debian/build-quantum-$*; \
-	$(MAKE) $(PASS_MAKEFLAGS) install DESTDIR="$(CURDIR)/debian/tmp-$*" \
+	$(MAKE) $(MAKEFLAGS) install DESTDIR="$(CURDIR)/debian/tmp-$*" \
 		pkgdocdir=/usr/share/doc/imagemagick-common
 
 	# Fix HTML location inside manpages (TODO proper patch please)
@@ -164,7 +164,7 @@ override_dh_auto_install-indep:
 
 	# Use x-terminal emulator for editing (Bug #132947) TODO: proper patch please
 	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
-		$(CURDIR)/debian/tmp-indep/etc/ImageMagick/delegates.xml
+		$(CURDIR)/debian/tmp-indep/etc/ImageMagick-$(DEB_UPSTREAM_VERSION_MAJOR)/delegates.xml
 
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
