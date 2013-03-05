@@ -1,5 +1,5 @@
-debian/tmp-Q16/usr/lib/*/libMagickCore*.Q16.a
-debian/tmp-Q16/usr/lib/*/libMagickCore*.Q16.la
-debian/tmp-Q16/usr/lib/*/libMagickCore*.Q16.so
-debian/tmp-Q16/usr/lib/*/pkgconfig/ImageMagick.pc
-debian/tmp-Q16/usr/lib/*/pkgconfig/MagickCore.pc
+usr/lib/*/libMagickCore*.Q16.a
+usr/lib/*/libMagickCore*.Q16.la
+usr/lib/*/libMagickCore*.Q16.so
+usr/lib/*/pkgconfig/ImageMagick.pc
+usr/lib/*/pkgconfig/MagickCore.pc
