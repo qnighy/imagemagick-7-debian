@@ -1,1 +1,1 @@
-usr/lib/*/libMagick++-Q16.so.*
+debian/tmp-Q16/usr/lib/*/libMagick++*.Q16.so.*

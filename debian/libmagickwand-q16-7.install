@@ -1,1 +1,1 @@
-usr/lib/*/libMagickWand-Q16.so.*
+debian/tmp-Q16/usr/lib/*/libMagickWand*.Q16.so.*

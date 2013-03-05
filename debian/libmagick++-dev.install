@@ -1,5 +1,5 @@
-usr/lib/*/libMagick++-Q16.a
-usr/lib/*/libMagick++-Q16.la
-usr/lib/*/libMagick++-Q16.so
-usr/lib/*/pkgconfig/ImageMagick++.pc
-usr/lib/*/pkgconfig/Magick++.pc
+debian/tmp-Q16/usr/lib/*/libMagick++*.Q16.a
+debian/tmp-Q16/usr/lib/*/libMagick++*.Q16.la
+debian/tmp-Q16/usr/lib/*/libMagick++*.Q16.so
+debian/tmp-Q16/usr/lib/*/pkgconfig/ImageMagick++.pc
+debian/tmp-Q16/usr/lib/*/pkgconfig/Magick++.pc

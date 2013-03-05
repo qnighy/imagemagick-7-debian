@@ -1,5 +1,5 @@
-usr/lib/*/libMagickWand-Q16.a
-usr/lib/*/libMagickWand-Q16.la
-usr/lib/*/libMagickWand-Q16.so
-usr/lib/*/pkgconfig/MagickWand.pc
-usr/lib/*/pkgconfig/Wand.pc
+debian/tmp-Q16/usr/lib/*/libMagickWand*.Q16.a
+debian/tmp-Q16/usr/lib/*/libMagickWand*.Q16.la
+debian/tmp-Q16/usr/lib/*/libMagickWand*.Q16.so
+debian/tmp-Q16/usr/lib/*/pkgconfig/MagickWand.pc
+debian/tmp-Q16/usr/lib/*/pkgconfig/Wand.pc
