@@ -169,6 +169,16 @@ override_dh_auto_install-indep:
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
 
+override_dh_compress:
+	# fix #611125
+	dh_compress -X/usr/share/doc/imagemagick/www
+
+override_dh_bugfiles:
+	dh_bugfiles --all
+
+override_dh_installdocs:
+	dh_installdocs --link-doc=imagemagick-common
+
 # clean rules
 quantum_override_dh_clean_%:
 	[ ! -d debian/build-quantum-$* ] || rm -rf debian/build-quantum-$*
