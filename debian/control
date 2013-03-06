@@ -72,7 +72,7 @@ Description: low-level image manipulation library - architecture header files
  few opaque types and accessors, with MagickCore you almost exclusively access
  the structure members directly.
  .
- This package includes the architecture dependant part of the 
+ This package includes the architecture dependent part of the 
  headers files used by MagickCore.
 
 Package: libmagickcore-headers
@@ -146,7 +146,8 @@ Package: imagemagick-dbg
 Architecture: any
 Section: debug
 Priority: extra
-Depends: imagemagick-q16-6 (= ${binary:Version}), libmagick++7 (= ${binary:Version}),
+Depends: ${misc:Depends}, 
+ imagemagick-q16-6 (= ${binary:Version}), libmagick++7 (= ${binary:Version}),
  libmagickcore7-extra (= ${binary:Version}), perlmagick (= ${binary:Version}),
 Suggests: libjpeg8-dbg, libwmf-bin, librsvg2-dbg, librsvg2-bin, inkscape
 Description: debugging symbols for ImageMagick
