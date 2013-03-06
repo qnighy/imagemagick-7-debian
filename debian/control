@@ -81,7 +81,7 @@ Multi-Arch: foreign
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}, 
-	 libmagickcore-arch-config (= ${binary:Version})
+	 libmagickcore-6-arch-config (= ${binary:Version})
 Description: low-level image manipulation library - header files 
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -96,7 +96,7 @@ Package: libmagickwand-6-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
-Depends: libmagickcore-headers (= ${binary:Version}),
+Depends: libmagickcore-6-headers (= ${binary:Version}),
  ${misc:Depends}
 Description: image manipulation library - headers files
  The MagickWand API is the recommended interface between the C programming
@@ -111,8 +111,8 @@ Package: libmagick++-6-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
-Depends: libmagickwand-headers (= ${binary:Version}),
- libmagickcore-headers (= ${binary:Version}),
+Depends: libmagickwand-6-headers (= ${binary:Version}),
+ libmagickcore-6-headers (= ${binary:Version}),
  ${misc:Depends}
 Description: object-oriented C++ interface to ImageMagick - header files
  The Magick++ library is a set of C++ wrapper classes that provides access
@@ -191,7 +191,7 @@ Package: libmagickcore-6.q16-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
-Depends: libmagickcore-headers (= ${binary:Version}),
+Depends: libmagickcore-6-headers (= ${binary:Version}),
  libmagickcore-6.q16-1 (= ${binary:Version}),
  libmagickcore-6.q16-1-extra (= ${binary:Version}), 
  libbz2-dev, libdjvulibre-dev,
@@ -224,7 +224,7 @@ Package: libmagickwand-6.q16-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
-Depends: libmagickwand-headers (= ${binary:Version}),
+Depends: libmagickwand-6-headers (= ${binary:Version}),
  libmagickwand-6.q16-1 (= ${binary:Version}),
  libmagickcore-6.q16-1-extra (= ${binary:Version}),
  libmagickcore-6.q16-dev (= ${binary:Version}), ${misc:Depends},
