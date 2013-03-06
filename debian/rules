@@ -5,7 +5,7 @@
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
 
-export QUANTUMDEPTH?=q16
+export QUANTUMDEPTH?= Q16
 export SOVERSION ?= 7
 export IMVERSION ?= 6
 
@@ -170,6 +170,7 @@ override_dh_auto_install-indep:
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
 
+# install quantim package
 quantum_override_dh_install-arch_%:
 	dh_install --package=imagemagick-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-$(IMVERSION) \
 		--sourcedir=debian/tmp-$* --autodest
@@ -191,6 +192,7 @@ quantum_override_dh_install-arch_%:
 	dh_install --package=libmagick++-dev \
 		--sourcedir=debian/tmp-$* --autodest
 
+# install arch package
 override_dh_install-arch: quantum_override_dh_install-arch_Q16
 	# take arch include in default quantum
 	dh_install --package=libmagickcore-arch-config --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
@@ -212,9 +214,19 @@ override_dh_bugfiles:
 override_dh_installdocs:
 	dh_installdocs --link-doc=imagemagick-common
 
+# prep rules
+quantum_override_dh_prep_%:
+	[ ! -d debian/build-quantum-$* ] || rm -rf debian/build-quantum-$*
+	[ ! -d debian/tmp-$* ] || rm -rf debian/tmp-$*
+
+override_dh_prep: quantum_override_dh_prep_Q16 quantum_override_dh_prep_indep
+	dh_prep
+
+
 # clean rules
 quantum_override_dh_clean_%:
 	[ ! -d debian/build-quantum-$* ] || rm -rf debian/build-quantum-$*
+	[ ! -d debian/tmp-$* ] || rm -rf debian/tmp-$*
 
-override_dh_clean-arch: quantum_override_dh_clean_Q16 quantum_override_dh_clean_indep
+override_dh_clean: quantum_override_dh_clean_Q16 quantum_override_dh_clean_indep
 	dh_clean
