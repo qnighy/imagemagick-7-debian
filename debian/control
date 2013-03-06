@@ -58,7 +58,7 @@ Description: document files of ImageMagick
  This package contains the document files shipped with ImageMagick, a software
  suite to create, edit, and compose bitmap images.
 
-Package: libmagickcore-arch-config
+Package: libmagickcore-6-arch-config
 Architecture: any
 Multi-Arch: same
 Section: libdevel
@@ -75,7 +75,7 @@ Description: low-level image manipulation library - architecture header files
  This package includes the architecture dependent part of the 
  headers files used by MagickCore.
 
-Package: libmagickcore-headers
+Package: libmagickcore-6-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
@@ -92,7 +92,7 @@ Description: low-level image manipulation library - header files
  This package includes the architecture independent header files
  needed to compile programs using MagickCore.
 
-Package: libmagickwand-headers
+Package: libmagickwand-6-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
@@ -107,7 +107,7 @@ Description: image manipulation library - headers files
  This package includes header files needed to compile
  programs using MagickWand.
 
-Package: libmagick++-headers
+Package: libmagick++-6-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
@@ -187,7 +187,7 @@ Description: low-level image manipulation library - extra codecs
  This package adds support for SVG, WMF, OpenEXR, DjVu and Graphviz to
  MagickCore.
 
-Package: libmagickcore-dev
+Package: libmagickcore-6.q16-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
@@ -220,14 +220,14 @@ Description: image manipulation library
  This package contains the C libraries needed to run executables that make
  use of MagickWand.
 
-Package: libmagickwand-dev
+Package: libmagickwand-6.q16-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagickwand-headers (= ${binary:Version}),
  libmagickwand-6.q16-1 (= ${binary:Version}),
  libmagickcore-6.q16-1-extra (= ${binary:Version}),
- libmagickcore-dev (= ${binary:Version}), ${misc:Depends},
+ libmagickcore-6.q16-dev (= ${binary:Version}), ${misc:Depends},
  pkg-config
 Description: image manipulation library - development files
  This package includes header files and static libraries needed to compile
@@ -246,13 +246,13 @@ Description: object-oriented C++ interface to ImageMagick
  This package contains the C++ libraries needed to run executables that make
  use of libMagick++.
 
-Package: libmagick++-dev
+Package: libmagick++-6.q16-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagick++-6.q16-1 (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}),
- libmagickwand-dev (= ${binary:Version}), ${misc:Depends}, 
+ libmagickwand-6.q16-dev (= ${binary:Version}), ${misc:Depends}, 
  pkg-config
 Description: object-oriented C++ interface to ImageMagick - development files
  This package includes header files and static libraries needed to compile

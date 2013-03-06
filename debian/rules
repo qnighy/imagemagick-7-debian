@@ -179,12 +179,12 @@ quantum_override_dh_install-arch_%:
 		--sourcedir=debian/tmp-$* --autodest
 	dh_install --package=libmagick++-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
-	# todo versionnize
-	dh_install --package=libmagick++-dev \
+	# dev package
+	dh_install --package=libmagick++-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-dev \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-dev \
+	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-dev \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickwand-dev \
+	dh_install --package=libmagickwand-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-dev \
 		--sourcedir=debian/tmp-$* --autodest
 
 	# Remove extra coders from libmagickcore
@@ -195,7 +195,7 @@ quantum_override_dh_install-arch_%:
 # install arch package
 override_dh_install-arch: quantum_override_dh_install-arch_Q16
 	# take arch include in default quantum
-	dh_install --package=libmagickcore-arch-config --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
+	dh_install --package=libmagickcore-6-arch-config --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 	# TODO: move perlmagick
 	dh_install --package=perlmagick --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 	# TODO: move to quantum package
@@ -207,6 +207,9 @@ override_dh_install-indep:
 override_dh_compress:
 	# fix #611125
 	dh_compress -X/usr/share/doc/imagemagick/www
+
+override_dh_strip:
+	dh_strip --dbg-package=imagemagick-dbg
 
 override_dh_bugfiles:
 	dh_bugfiles --all
