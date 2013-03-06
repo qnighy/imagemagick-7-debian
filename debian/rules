@@ -161,7 +161,9 @@ override_dh_auto_install-indep:
 	$(MAKE) install-configlibDATA install-data-html \
 	        install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 	        DESTDIR="$(CURDIR)/debian/tmp-indep" \
-		pkgdocdir=/usr/share/doc/imagemagick-common
+		pkgdocdir=/usr/share/doc/imagemagick-doc
+	        # TODO not yet see override_dh_installdocs:
+		# pkgdocdir=/usr/share/doc/imagemagick-common
 
 	# Use x-terminal emulator for editing (Bug #132947) TODO: proper patch please
 	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
@@ -212,7 +214,10 @@ override_dh_bugfiles:
 	dh_bugfiles --all
 
 override_dh_installdocs:
-	dh_installdocs --link-doc=imagemagick-common
+	dh_installdocs
+	# not yet due to lack of support in debhelper #659044
+        # and perlmagick example problem
+	# dh_installdocs --link-doc=imagemagick-common
 
 # prep rules
 quantum_override_dh_prep_%:
