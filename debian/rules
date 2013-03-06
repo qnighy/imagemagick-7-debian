@@ -6,7 +6,7 @@
 export DH_VERBOSE=1
 
 export QUANTUMDEPTH?= Q16
-export SOVERSION ?= 7
+export SOVERSION ?= 1
 export IMVERSION ?= 6
 
 # for hardening
@@ -23,13 +23,6 @@ export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -n
 
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
-
-export INDEP_PKG ?= imagemagick-doc imagemagick-common libmagickcore-headers libmagickwand-headers libmagick++-headers 
-# name of package in generic form QUANTUM will be replaced by sed by the current quantum depth
-export ARCH_QUANTUM_PKG ?= libmagickcore-QUANTUM-$(SOVERSION)-extra libmagickcore-QUANTUM-$(SOVERSION) \
-	                   libmagick++-QUANTUM-$(SOVERSION) libmagickwand-QUANTUM-$(SOVERSION) \
-	 		   imagemagick-QUANTUM-$(IMVERSION) libmagickcore-dev libmagick++-dev libmagickwand-dev 
-export ARCH_NOQUANTUM_PKG ?= libmagickcore-arch-config perlmagick
 
 # quantum depth used by default and by quantum independant package (first one of QUANTUMDEPTH)
 export DEFAULTQUANTUMDEPTH = $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
@@ -174,30 +167,28 @@ override_dh_auto_install-indep:
 
 # install quantim package
 quantum_override_dh_install-arch_%:
-	dh_install --package=imagemagick-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-$(IMVERSION) \
+	dh_install --package=imagemagick-$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
+	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION}-extra \
+	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION}-extra \
 		--sourcedir=debian/tmp-$* --autodest
-	# todo versionnize
-	dh_install --package=libmagickcore-dev \
+	dh_install --package=libmagickwand-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickwand-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
-		--sourcedir=debian/tmp-$* --autodest
-	# todo versionnize
-	dh_install --package=libmagickwand-dev \
-		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagick++-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
+	dh_install --package=libmagick++-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
 	# todo versionnize
 	dh_install --package=libmagick++-dev \
 		--sourcedir=debian/tmp-$* --autodest
+	dh_install --package=libmagickcore-dev \
+		--sourcedir=debian/tmp-$* --autodest
+	dh_install --package=libmagickwand-dev \
+		--sourcedir=debian/tmp-$* --autodest
 
 	# Remove extra coders from libmagickcore
 	while read FILE; do \
-		rm -f debian/libmagickcore-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION}/$$FILE; \
-	done < debian/libmagickcore-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION}-extra.install
+		rm -f debian/libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION}/$$FILE; \
+	done < debian/libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION}-extra.install
 
 # install arch package
 override_dh_install-arch: quantum_override_dh_install-arch_Q16

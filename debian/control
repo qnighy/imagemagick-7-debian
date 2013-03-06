@@ -122,11 +122,11 @@ Description: object-oriented C++ interface to ImageMagick - header files
  programs using Magick++.
 
 
-Package: imagemagick-q16-6
+Package: imagemagick-6.q16
 Architecture: any
 Multi-Arch: allowed
 Depends: ${shlibs:Depends}, ${misc:Depends}, hicolor-icon-theme
-Recommends: libmagickcore7-extra, ghostscript, netpbm
+Recommends: libmagickcore-6.q16-1-extra, ghostscript, netpbm
 Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  ffmpeg, gimp, gnuplot, grads, graphviz, groff-base, hp2xx, html2ps, 
  libwmf-bin, mplayer,
@@ -147,21 +147,21 @@ Architecture: any
 Section: debug
 Priority: extra
 Depends: ${misc:Depends}, 
- imagemagick-q16-6 (= ${binary:Version}), libmagick++7 (= ${binary:Version}),
- libmagickcore7-extra (= ${binary:Version}), perlmagick (= ${binary:Version}),
+ imagemagick-6.q16 (= ${binary:Version}), libmagick++-6.q16-1 (= ${binary:Version}),
+ libmagickcore-6.q16-1-extra (= ${binary:Version}), perlmagick (= ${binary:Version}),
 Suggests: libjpeg8-dbg, libwmf-bin, librsvg2-dbg, librsvg2-bin, inkscape
 Description: debugging symbols for ImageMagick
  This package contains the debugging symbols for ImageMagick, a software suite
  to create, edit, and compose bitmap images.
 
-Package: libmagickcore-q16-7
+Package: libmagickcore-6.q16-1
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, imagemagick-common
 Recommends: ghostscript, gsfonts
-Suggests: libmagickcore7-extra
+Suggests: libmagickcore-6.q16-1-extra
 Description: low-level image manipulation library
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -172,13 +172,13 @@ Description: low-level image manipulation library
  This package contains the C libraries needed to run executables that make
  use of MagickCore.
 
-Package: libmagickcore-q16-7-extra
+Package: libmagickcore-6.q16-1-extra
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Enhances: libmagickcore-q16-7
+Enhances: libmagickcore-6.q16-1
 Provides: libmagickcore-extra
 Breaks: libmagickcore7 (<< 8:6.7.7.10-1)
 Replaces: libmagickcore7 (<< 8:6.7.7.10-1)
@@ -192,8 +192,8 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagickcore-headers (= ${binary:Version}),
- libmagickcore-q16-7 (= ${binary:Version}),
- libmagickcore7-extra (= ${binary:Version}), 
+ libmagickcore-6.q16-1 (= ${binary:Version}),
+ libmagickcore-6.q16-1-extra (= ${binary:Version}), 
  libbz2-dev, libdjvulibre-dev,
  libexif-dev, libfreetype6-dev, libgraphviz-dev, libjasper-dev, libjpeg-dev,
  liblcms-dev, liblqr-1-0-dev, libltdl-dev, libopenexr-dev, libpng-dev,
@@ -205,7 +205,7 @@ Description: low-level image manipulation library - development files
  This package includes header files and static libraries needed to compile
  programs using MagickCore.
 
-Package: libmagickwand-q16-7
+Package: libmagickwand-6.q16-1
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -225,15 +225,15 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagickwand-headers (= ${binary:Version}),
- libmagickwand-q16-7 (= ${binary:Version}),
- libmagickcore-q16-7-extra (= ${binary:Version}),
+ libmagickwand-6.q16-1 (= ${binary:Version}),
+ libmagickcore-6.q16-1-extra (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}), ${misc:Depends},
  pkg-config
 Description: image manipulation library - development files
  This package includes header files and static libraries needed to compile
  programs using MagickWand.
 
-Package: libmagick++-q16-7
+Package: libmagick++-6.q16-1
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -250,7 +250,7 @@ Package: libmagick++-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
-Depends: libmagick++-q16-7 (= ${binary:Version}),
+Depends: libmagick++-6.q16-1 (= ${binary:Version}),
  libmagickcore-dev (= ${binary:Version}),
  libmagickwand-dev (= ${binary:Version}), ${misc:Depends}, 
  pkg-config
