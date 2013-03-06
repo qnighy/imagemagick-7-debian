@@ -221,7 +221,6 @@ override_dh_installdocs:
 
 # prep rules
 quantum_override_dh_prep_%:
-	[ ! -d debian/build-quantum-$* ] || rm -rf debian/build-quantum-$*
 	[ ! -d debian/tmp-$* ] || rm -rf debian/tmp-$*
 
 override_dh_prep: quantum_override_dh_prep_Q16 quantum_override_dh_prep_indep
