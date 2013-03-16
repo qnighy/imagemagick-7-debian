@@ -65,48 +65,40 @@ export CONFIGURE_OPTIONS ?= \
 
 # configure in build directory
 quantum_override_dh_auto_configure-arch_%: 
-	[ -d $(CURDIR)/debian/build-quantum-$* ] || mkdir -p debian/build-quantum-$*
-	cd $(CURDIR)/debian/build-quantum-$* ; \
-	$(CURDIR)/configure ${CONFIGURE_OPTIONS} \
-		--program-suffix="-im$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}" \
+	dh_auto_configure --builddirectory="$(CURDIR)/debian/build-quantum-$*" -- \
+		 ${CONFIGURE_OPTIONS} \
 		--with-quantum-depth=${shell echo $* | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
-
 
 override_dh_auto_configure-arch: quantum_override_dh_auto_configure-arch_Q16
 
 override_dh_auto_configure-indep:
-	[ -d $(CURDIR)/debian/build-quantum-indep ] || mkdir -p debian/build-quantum-indep
-	cd $(CURDIR)/debian/build-quantum-indep ; \
-	$(CURDIR)/configure ${CONFIGURE_OPTIONS} \
-		--program-suffix="-im$(IMVERSION).${shell echo $(NOQUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'}" \
+	dh_auto_configure --builddirectory="$(CURDIR)/debian/build-quantum-indep" -- \
+		 ${CONFIGURE_OPTIONS} \
 		--with-quantum-depth=${shell echo $(NOQUANTUMDEPTH)  | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
 
 # dh_auto_build in build directory
 # build icons cache build for each arch in order to get more testing 
 quantum_override_dh_auto_build-arch_%:
-	cd $(CURDIR)/debian/build-quantum-$*; $(MAKE) all perl-build 
+	dh_auto_build --builddirectory="$(CURDIR)/debian/build-quantum-$*" -- all perl-build
 
 override_dh_auto_build-arch: quantum_override_dh_auto_build-arch_Q16
 override_dh_auto_build-indep:
 
 # dh_auto_test in build directory
 quantum_override_dh_auto_test-arch_%:
-	if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
+	@if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
             unset DISPLAY; \
-            cd $(CURDIR)/debian/build-quantum-$* ; $(MAKE) check ; \
-	else \
-           echo "Skipping regression tests because we appear to be cross-compiling"; \
-        fi
-
+	    dh_auto_test --builddirectory="$(CURDIR)/debian/build-quantum-$*"
+	fi
 override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_Q16
 override_dh_auto_test-indep:
 
 
 # dh_auto_install in build directory
 quantum_override_dh_auto_install-arch_%:
-	cd $(CURDIR)/debian/build-quantum-$*; \
-	$(MAKE) install DESTDIR="$(CURDIR)/debian/tmp-$*" \
-		pkgdocdir=/usr/share/doc/imagemagick-common
+	dh_auto_install --builddirectory="$(CURDIR)/debian/build-quantum-$*" \
+	                --destdir="$(CURDIR)/debian/tmp-$*" \
+		        -- install pkgdocdir=/usr/share/doc/imagemagick-common
 
 	# Fix HTML location inside manpages (TODO proper patch please)
 	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
@@ -152,11 +144,11 @@ quantum_override_dh_auto_install-arch_%:
 
 override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 override_dh_auto_install-indep:
-	cd $(CURDIR)/debian/build-quantum-indep ; \
-	$(MAKE) install-configlibDATA install-data-html \
-	        install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
-	        DESTDIR="$(CURDIR)/debian/tmp-indep" \
-		pkgdocdir=/usr/share/doc/imagemagick-doc
+	dh_auto_install --builddirectory="$(CURDIR)/debian/build-quantum-indep" \
+	                --destdir="$(CURDIR)/debian/tmp-indep" \
+		        --  install-configlibDATA install-data-html \
+	                    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
+	  		    pkgdocdir=/usr/share/doc/imagemagick-doc
 	        # TODO not yet see override_dh_installdocs:
 		# pkgdocdir=/usr/share/doc/imagemagick-common
 
