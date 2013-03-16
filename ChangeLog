@@ -1,7 +1,38 @@
-2013-02-28  6.8.3-7 Cristy  <quetzlzacatenango@image...>
+
+2013-03-15  6.8.3-10 Glenn Randers-Pehrson <glennrp@image...>
+  * Added IM, libpng, and zlib version info to debug output.
+
+2013-03-10  6.8.3-10 Bastien Roucaries  <roucaries.basti...>
+  * Move PerlMagick arch independant part to 'default' folder.
+  * Move binaries to lib subdirectory and link are created from binary package.
+
+2013-03-10  6.8.3-10 Cristy  <quetzlzacatenango@image...>
+  * The TXT image format can now generate output compatible with the
+    -sparse-color option (e.g. -define txt:sparse-color=true txt:-).
+  * Support -intensity option: method to generate an intensity value from a
+    pixel.
+  * Add -similarity-threshold option to the compare utility, the minimum
+    distortion for a (sub)image match.
+
+2013-03-10  6.8.3-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.3-9, SVN revision 11294.
+
+2013-03-09  6.8.3-9 Cristy  <quetzlzacatenango@image...>
+  * Add a space after the LastPage option in coders/ps.c (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22940).
+
+2013-03-08  6.8.3-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.3-8, SVN revision 11283.
+
+2013-03-05  6.8.3-8 Cristy  <quetzlzacatenango@image...>
+  * GIF comments are no longer displaced by 1 for animated GIFs (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22901).
+  * A blur kernel with a zero sigma is unity.
+
+2013-03-03  6.8.3-7 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.3-7, SVN revision 11249.
 
-2013-03-02  6.8.2-7 Glenn Randers-Pehrson <glennrp@image...>
+2013-03-02  6.8.3-7 Glenn Randers-Pehrson <glennrp@image...>
   * Do not replace gAMA found in input with 1/2.2
   * Avoid a libpng16 warning about storing unknown chunks.
 
@@ -19,7 +50,7 @@
    * Check for webp version (reference
      http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22867).
 
-2013-02-25  6.8.2-6 Glenn Randers-Pehrson <glennrp@image...>
+2013-02-25  6.8.3-6 Glenn Randers-Pehrson <glennrp@image...>
   * Relocated png_set_bKGD(), etc., after png_set_IHDR() because they
     might depend on members of info_ptr that are set by png_set_IHDR().
 

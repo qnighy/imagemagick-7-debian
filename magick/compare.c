@@ -64,6 +64,7 @@
 #include "magick/pixel-private.h"
 #include "magick/resource_.h"
 #include "magick/string_.h"
+#include "magick/string-private.h"
 #include "magick/statistic.h"
 #include "magick/thread-private.h"
 #include "magick/transform.h"
@@ -1640,22 +1641,19 @@ MagickExport MagickBooleanType IsImagesEqual(Image *image,
       MagickRealType
         distance;
 
-      distance=fabs(GetPixelRed(p)-(double)
-        GetPixelRed(q));
+      distance=fabs(GetPixelRed(p)-(double) GetPixelRed(q));
       mean_error_per_pixel+=distance;
       mean_error+=distance*distance;
       if (distance > maximum_error)
         maximum_error=distance;
       area++;
-      distance=fabs(GetPixelGreen(p)-(double)
-        GetPixelGreen(q));
+      distance=fabs(GetPixelGreen(p)-(double) GetPixelGreen(q));
       mean_error_per_pixel+=distance;
       mean_error+=distance*distance;
       if (distance > maximum_error)
         maximum_error=distance;
       area++;
-      distance=fabs(GetPixelBlue(p)-(double)
-        GetPixelBlue(q));
+      distance=fabs(GetPixelBlue(p)-(double) GetPixelBlue(q));
       mean_error_per_pixel+=distance;
       mean_error+=distance*distance;
       if (distance > maximum_error)
@@ -1663,8 +1661,7 @@ MagickExport MagickBooleanType IsImagesEqual(Image *image,
       area++;
       if (image->matte != MagickFalse)
         {
-          distance=fabs(GetPixelOpacity(p)-(double)
-            GetPixelOpacity(q));
+          distance=fabs(GetPixelOpacity(p)-(double) GetPixelOpacity(q));
           mean_error_per_pixel+=distance;
           mean_error+=distance*distance;
           if (distance > maximum_error)
@@ -1781,6 +1778,12 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
   CacheView
     *similarity_view;
 
+  const char
+    *artifact;
+
+  double
+    similarity_threshold;
+
   Image
     *similarity_image;
 
@@ -1818,11 +1821,16 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
   /*
     Measure similarity of reference image against image.
   */
+  similarity_threshold=0.0;
+  artifact=GetImageArtifact(image,"compare:similarity-threshold");
+  if (artifact != (const char *) NULL)
+    similarity_threshold=StringToDouble(artifact,(char **) NULL);
   status=MagickTrue;
   progress=0;
   similarity_view=AcquireVirtualCacheView(similarity_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static,4) \
+    shared(progress,status,similarity_metric) \
     magick_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) (image->rows-reference->rows+1); y++)
@@ -1838,6 +1846,8 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
 
     if (status == MagickFalse)
       continue;
+    if (*similarity_metric <= similarity_threshold)
+      continue;
     q=GetCacheViewAuthenticPixels(similarity_view,0,y,similarity_image->columns,
       1,exception);
     if (q == (const PixelPacket *) NULL)
@@ -1847,6 +1857,8 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
       }
     for (x=0; x < (ssize_t) (image->columns-reference->columns+1); x++)
     {
+      if (*similarity_metric <= similarity_threshold)
+        break;
       similarity=GetSimilarityMetric(image,reference,metric,x,y,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp critical (MagickCore_SimilarityImage)
