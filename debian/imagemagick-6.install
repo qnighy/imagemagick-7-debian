@@ -9,6 +9,4 @@ usr/bin/stream*
 usr/bin/display*
 usr/bin/montage*
 usr/bin/mogrify*
-usr/share/icons/hicolor/*
-usr/share/pixmaps/*
 usr/share/applications/*

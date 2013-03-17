@@ -100,12 +100,6 @@ quantum_override_dh_auto_install-arch_%:
 	                --destdir="debian/tmp-$*" \
 		        -- install pkgdocdir=/usr/share/doc/imagemagick-common
 
-	# Fix HTML location inside manpages (TODO proper patch please)
-	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
-		$(CURDIR)/debian/tmp-$*/usr/share/man/man*/*
-	sed -i 's/doc\/ImageMagick\\-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
-		$(CURDIR)/debian/tmp-$*/usr/share/man/man*/*
-
 	# empties dependency_libs from .la files
 	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
 	find $(CURDIR)/debian/tmp-$*/usr/lib -name '*.la' -exec \
@@ -134,12 +128,12 @@ quantum_override_dh_auto_install-arch_%:
 	gzip -c -n -9 $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
 		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.svgz
 
-	# add desktop
+	# add desktop for default
 	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/applications/
 	sed < $(CURDIR)/debian/display.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/${shell echo $* | sed -e 's/\(.*\)/\L\1/'}/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
-		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.desktop
+		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).${shell echo $(DEFAULTQUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'}.desktop
 
 override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 override_dh_auto_install-indep:
@@ -152,9 +146,38 @@ override_dh_auto_install-indep:
 	        # TODO not yet see override_dh_installdocs:
 		# pkgdocdir=/usr/share/doc/imagemagick-common
 
+	# Fix HTML location inside manpages (TODO proper patch please)
+	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
+		$(CURDIR)/debian/tmp-indep/usr/share/man/man*/*
+	sed -i 's/doc\/ImageMagick\\-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
+		$(CURDIR)/debian/tmp-indep/usr/share/man/man*/*
+
 	# Use x-terminal emulator for editing (Bug #132947) TODO: proper patch please
 	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
 		$(CURDIR)/debian/tmp-indep/etc/ImageMagick-$(DEB_UPSTREAM_VERSION_MAJOR)/delegates.xml
+
+	# add desktop for default version
+	mkdir -p $(CURDIR)/debian/tmp-indep/usr/share/applications/
+	sed < $(CURDIR)/debian/display.desktop.in \
+		-e s/\$$\(QUANTUMDEPTH\)/${shell echo $(DEFAULTQUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'}/g \
+		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
+		> $(CURDIR)/debian/tmp-indep/usr/share/applications/display-im$(IMVERSION).desktop
+
+	# add versionned manpages and symlink to binaries
+	while read FILE; do \
+                if echo $$FILE | grep usr/bin > /dev/null; then \
+                        filename=`echo "$$FILE"|sed s/*//g`; \
+                        basename=`basename $$filename`; \
+                        mv "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.1" \
+                          "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR).1" ;\
+			rm -f "debian/tmp-indep/usr/bin/$$basename" \
+			ln -s "debian/tmp-indep/usr/bin/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR)" \
+	                      "/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename" \
+                else \
+                        true; \
+                fi \
+        done < debian/imagemagick-6.install
+
 
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
@@ -195,20 +218,6 @@ override_dh_install-arch: quantum_override_dh_install-arch_Q16
 
 override_dh_install-indep:
 	dh_install --indep --sourcedir=debian/tmp-indep --autodest
-
-	# add versionned manpages and symlink to binaries
-	while read FILE; do \
-                if echo $$FILE | grep usr/bin > /dev/null; then \
-                        filename=`echo "$$FILE"|sed s/*//g`; \
-                        basename=`basename $$filename`; \
-                        mv "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.1" \
-                          "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR).1" ;\
-			ln -s "debian/tmp-indep/usr/bin/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR)" \
-	                      "/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename" \
-                else \
-                        true; \
-                fi \
-        done < debian/imagemagick.install
 
 override_dh_compress:
 	# fix #611125
