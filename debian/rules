@@ -86,9 +86,13 @@ override_dh_auto_build-indep:
 
 # dh_auto_test in build directory
 quantum_override_dh_auto_test-arch_%:
+	if test "BUG#703262" = "SOLVED" ; then
+	unset DISPLAY; dh_auto_test --builddirectory="debian/build-quantum-$*"; \
+	else \
 	if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
             unset DISPLAY; \
 	    dh_auto_test --builddirectory="debian/build-quantum-$*"; \
+	fi ;\
 	fi
 override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_Q16
 override_dh_auto_test-indep:
@@ -137,14 +141,20 @@ quantum_override_dh_auto_install-arch_%:
 
 override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 override_dh_auto_install-indep:
+	if test "BUG#703261" = "SOLVED"; then \
 	dh_auto_install --builddirectory="$(CURDIR)/debian/build-quantum-indep" \
 	                --destdir="$(CURDIR)/debian/tmp-indep" \
 		        --  install-configlibDATA install-data-html \
 	                    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
-	  		    pkgdocdir=/usr/share/doc/imagemagick-doc
-	        # TODO not yet see override_dh_installdocs:
-		# pkgdocdir=/usr/share/doc/imagemagick-common
+	                    pkgdocdir=/usr/share/doc/imagemagick-common ;\
+	else \
+	cd "$(CURDIR)/debian/build-quantum-indep" && \
+		make  install-configlibDATA install-data-html \
+	                    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
+			    install-man1 \
+	                    pkgdocdir=/usr/share/doc/imagemagick-doc ;\
+	fi;
 
 	# Fix HTML location inside manpages (TODO proper patch please)
 	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
@@ -229,10 +239,12 @@ override_dh_bugfiles:
 	dh_bugfiles --all
 
 override_dh_installdocs:
-	dh_installdocs
-	# not yet due to lack of support in debhelper #659044
-        # and perlmagick example problem
-	# dh_installdocs --link-doc=imagemagick-common
+	#not yet due to lack of support in debhelper #659044
+	if test "BUG#659044" = "SOLVED" ; then \
+	dh_installdocs --link-doc=imagemagick-common; \
+	else \
+	dh_installdocs \
+	fi;
 
 # prep rules
 quantum_override_dh_prep_%:
