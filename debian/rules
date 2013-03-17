@@ -181,7 +181,7 @@ override_dh_auto_install-indep:
                         filename=`echo "$$FILE"|sed s/*//g`; \
                         basename=`basename $$filename`; \
                         mv "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.1" \
-                          "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR).1" ;\
+                          "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR).1" ;\
 			ln -s "/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename" \
 	                      "debian/tmp-indep/usr/bin/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR)";\
                 else \
