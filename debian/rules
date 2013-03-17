@@ -141,7 +141,6 @@ quantum_override_dh_auto_install-arch_%:
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
 		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.desktop
 
-
 override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 override_dh_auto_install-indep:
 	dh_auto_install --builddirectory="$(CURDIR)/debian/build-quantum-indep" \
@@ -159,7 +158,7 @@ override_dh_auto_install-indep:
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
 
-# install quantim package
+# install quantum package
 quantum_override_dh_install-arch_%:
 	dh_install --package=imagemagick-$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'} \
 		--sourcedir=debian/tmp-$* --autodest
@@ -198,13 +197,13 @@ override_dh_install-indep:
 
 override_dh_compress:
 	# fix #611125
-	dh_compress -X/usr/share/doc/imagemagick/www
+	dh_compress -X/usr/share/doc/imagemagick/www -X/usr/share/doc/imagemagick-doc/www
 
 override_dh_strip:
 	dh_strip --dbg-package=imagemagick-dbg
 
 override_dh_bugfiles:
-	dh_bugfiles --all
+	dh_bugfiles --package=imagemagick-6 --all
 
 override_dh_installdocs:
 	dh_installdocs
