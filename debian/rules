@@ -147,6 +147,7 @@ override_dh_auto_install-indep:
 	                --destdir="$(CURDIR)/debian/tmp-indep" \
 		        --  install-configlibDATA install-data-html \
 	                    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
+			    install-man1 \
 	  		    pkgdocdir=/usr/share/doc/imagemagick-doc
 	        # TODO not yet see override_dh_installdocs:
 		# pkgdocdir=/usr/share/doc/imagemagick-common
@@ -194,6 +195,20 @@ override_dh_install-arch: quantum_override_dh_install-arch_Q16
 
 override_dh_install-indep:
 	dh_install --indep --sourcedir=debian/tmp-indep --autodest
+
+	# add versionned manpages and symlink to binaries
+	while read FILE; do \
+                if echo $$FILE | grep usr/bin > /dev/null; then \
+                        filename=`echo "$$FILE"|sed s/*//g`; \
+                        basename=`basename $$filename`; \
+                        mv "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.1" \
+                          "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR).1" ;\
+			ln -s "debian/tmp-indep/usr/bin/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR)" \
+	                      "/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename" \
+                else \
+                        true; \
+                fi \
+        done < debian/imagemagick.install
 
 override_dh_compress:
 	# fix #611125
