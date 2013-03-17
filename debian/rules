@@ -86,7 +86,7 @@ override_dh_auto_build-indep:
 
 # dh_auto_test in build directory
 quantum_override_dh_auto_test-arch_%:
-	if test "BUG#703262" = "SOLVED" ; then
+	if test "BUG#703262" = "SOLVED" ; then \
 	unset DISPLAY; dh_auto_test --builddirectory="debian/build-quantum-$*"; \
 	else \
 	if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
@@ -133,7 +133,7 @@ quantum_override_dh_auto_install-arch_%:
 		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.svgz
 
 	# add desktop for default
-	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/applications/
+	mkdir -p debian/tmp-$*/usr/share/applications/
 	sed < $(CURDIR)/debian/display.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/${shell echo $* | sed -e 's/\(.*\)/\L\1/'}/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
@@ -150,7 +150,8 @@ override_dh_auto_install-indep:
 	                    pkgdocdir=/usr/share/doc/imagemagick-common ;\
 	else \
 	cd "$(CURDIR)/debian/build-quantum-indep" && \
-		make  install-configlibDATA install-data-html \
+		make  DESTDIR=$(CURDIR)/debian/tmp-indep \
+	                    install-configlibDATA install-data-html \
 	                    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
 	                    pkgdocdir=/usr/share/doc/imagemagick-doc ;\
@@ -174,14 +175,15 @@ override_dh_auto_install-indep:
 		> $(CURDIR)/debian/tmp-indep/usr/share/applications/display-im$(IMVERSION).desktop
 
 	# add versionned manpages and symlink to binaries
+	mkdir -p debian/tmp-indep/usr/bin/
 	while read FILE; do \
                 if echo $$FILE | grep usr/bin > /dev/null; then \
                         filename=`echo "$$FILE"|sed s/*//g`; \
                         basename=`basename $$filename`; \
                         mv "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.1" \
                           "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR).1" ;\
-			ln -s "debian/tmp-indep/usr/bin/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR)" \
-	                      "/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename" \
+			ln -s "/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename" \
+	                      "debian/tmp-indep/usr/bin/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR)";\
                 else \
                         true; \
                 fi \
@@ -243,7 +245,7 @@ override_dh_installdocs:
 	if test "BUG#659044" = "SOLVED" ; then \
 	dh_installdocs --link-doc=imagemagick-common; \
 	else \
-	dh_installdocs \
+	dh_installdocs ;\
 	fi;
 
 # prep rules
