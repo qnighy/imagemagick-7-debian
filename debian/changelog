@@ -5,7 +5,8 @@ imagemagick (8:6.8.3.9+svn11396-1) experimental; urgency=low
    - encoding quantum depth in the library name. This will
      allow to compile hdri and other quantum depth.
    - lib versionning.
-  * Use dh
+  * Use dh.
+  * Update debian/copyright (new review).
   
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 16 Dec 2012 21:59:47 +0100
 
