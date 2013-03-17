@@ -170,8 +170,7 @@ override_dh_auto_install-indep:
                         basename=`basename $$filename`; \
                         mv "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.1" \
                           "$(CURDIR)/debian/tmp-indep/usr/share/man/man1/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR).1" ;\
-			rm -f "debian/tmp-indep/usr/bin/$$basename" \
-			ln -s "debian/tmp-indep/usr/bin/$$basename.im$(DEB_UPSTREAM_VERSION_MAJOR)" \
+			ln -s "debian/tmp-indep/usr/bin/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR)" \
 	                      "/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename" \
                 else \
                         true; \
@@ -227,7 +226,7 @@ override_dh_strip:
 	dh_strip --dbg-package=imagemagick-dbg
 
 override_dh_bugfiles:
-	dh_bugfiles --package=imagemagick-6 --all
+	dh_bugfiles --all
 
 override_dh_installdocs:
 	dh_installdocs

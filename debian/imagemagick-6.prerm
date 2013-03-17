@@ -7,7 +7,7 @@ then
     # remove all alternatives
     for prog in compare animate convert composite conjure \
         import identify stream display montage mogrify; do 
-        update-alternatives --remove $prog /usr/bin/$prog-im6.q16
+        update-alternatives --remove $prog /usr/bin/$prog-im6
     done
 fi
 
