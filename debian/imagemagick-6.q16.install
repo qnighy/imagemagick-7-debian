@@ -12,3 +12,4 @@ usr/bin/mogrify*
 usr/share/icons/hicolor/*
 usr/share/pixmaps/*
 usr/share/applications/*
+usr/lib/*/bin*
