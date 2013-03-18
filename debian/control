@@ -108,7 +108,10 @@ Description: object-oriented C++ interface to ImageMagick - header files
 Package: imagemagick-6
 Architecture: all
 Multi-Arch: foreign
-Depends: ${misc:Depends}, imagemagick-6.q16
+Depends: ${misc:Depends}, imagemagick-6.defaultquantum
+Provides: imagemagick
+Replaces: imagemagick (<< 8:6.8.3.9+svn11396-1~)
+Breaks: imagemagick (<< 8:6.8.3.9+svn11396-1~)
 Description: image manipulation programs -- binaries
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)
@@ -122,6 +125,23 @@ Description: image manipulation programs -- binaries
  This package include links to quantum depth specific binaries and manual 
  pages.
 
+Package: libimage-magick-perl
+Architecture: all
+Multi-Arch: allowed
+Section: perl
+Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}, 
+	 libimage-magick-defaultquantum-perl
+Provides: perlmagick
+Replaces: perlmagick (<< 8:6.8.3.9+svn11396-1~)
+Breaks: perlmagick (<< 8:6.8.3.9+svn11396-1~)
+Suggests: imagemagick-doc
+Description: Perl interface to the ImageMagick graphics routines
+ PerlMagick is an objected-oriented Perl interface to ImageMagick.
+ Use the module to read, manipulate, or write an image or image sequence from
+ within a Perl script. This makes it very suitable for Web CGI scripts.
+ .
+ This is the compatibility perlmagick package that use the default quantum
+ (Q16).
 
 # quantum independent
 Package: libmagickcore-6-arch-config
@@ -154,9 +174,7 @@ Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  libwmf-bin, mplayer,
  povray, radiance, sane-utils, texlive-base-bin, transfig, 
  ufraw-batch, xdg-utils
-Replaces: imagemagick (<< 8:6.8.3.9+svn11396-1~)
-Breaks: imagemagick (<< 8:6.8.3.9+svn11396-1~)
-Provides: imagemagick
+Provides: imagemagick-6.defaultquantum
 Description: image manipulation programs -- quantum depth Q16
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)
@@ -219,6 +237,7 @@ Depends: libmagickcore-6-headers (= ${source:Version}),
  libxt-dev, zlib1g-dev, 
  ${misc:Depends},
  pkg-config
+Provides: libmagickcore-6.defaultquantum-dev
 Description: low-level image manipulation library - development files (Q16)
  This package includes header files and static libraries needed to compile
  programs using MagickCore.
@@ -252,7 +271,8 @@ Depends: libmagickwand-6-headers (= ${source:Version}),
  libmagickcore-6.q16-1-extra (= ${binary:Version}),
  libmagickcore-6.q16-dev (= ${binary:Version}), 
  pkg-config,
- ${misc:Depends},
+ ${misc:Depends}
+Provides: libmagickwand-6.defaultquantum-dev
 Description: image manipulation library - development files
  This package the static libraries needed to compile
  programs using MagickWand.
@@ -283,23 +303,12 @@ Depends: libmagick++-6.q16-1 (= ${binary:Version}),
  libmagickwand-6.q16-dev (= ${binary:Version}), 
  pkg-config,
  ${misc:Depends}
+Provides: libmagick++-6.defaultquantum-dev
 Description: object-oriented C++ interface to ImageMagick - development files
  This package includes header files and static libraries needed to compile
  programs using Magick++.
  .
  This version of libmagick++-dev is compiled for quantum depth of 16 bits.
-
-Package: perlmagick
-Architecture: any
-Multi-Arch: allowed
-Section: perl
-Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
-Provides: libimage-magick-perl
-Suggests: imagemagick-doc
-Description: Perl interface to the ImageMagick graphics routines
- PerlMagick is an objected-oriented Perl interface to ImageMagick.
- Use the module to read, manipulate, or write an image or image sequence from
- within a Perl script. This makes it very suitable for Web CGI scripts.
 
 # debug package
 Package: imagemagick-dbg
@@ -317,6 +326,21 @@ Suggests: libjpeg8-dbg, libwmf-bin, librsvg2-dbg, librsvg2-bin, inkscape
 Description: debugging symbols for ImageMagick
  This package contains the debugging symbols for ImageMagick, a software suite
  to create, edit, and compose bitmap images.
+
+Package: libimage-magick-q16-perl
+Architecture: any
+Multi-Arch: allowed
+Section: perl
+Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Suggests: imagemagick-doc
+Provides: libimage-magick-defaultquantum-perl
+Description: Perl interface to the ImageMagick graphics routines
+ PerlMagick is an objected-oriented Perl interface to ImageMagick.
+ Use the module to read, manipulate, or write an image or image sequence from
+ within a Perl script. This makes it very suitable for Web CGI scripts.
+ .
+ This is the 16 bits integer quantum depth package.
+
 
 # compatibility package
 Package: imagemagick
@@ -340,3 +364,19 @@ Description: image manipulation programs -- transition package
  .
  This package can safely be removed.
 
+Package: perlmagick
+Architecture: all
+Multi-Arch: foreign
+Section: oldlibs 
+Priority: extra
+Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Provides: libimage-magick-perl
+Suggests: imagemagick-doc
+Description: Perl interface to the ImageMagick graphics routines
+ PerlMagick is an objected-oriented Perl interface to ImageMagick.
+ Use the module to read, manipulate, or write an image or image sequence from
+ within a Perl script. This makes it very suitable for Web CGI scripts.
+ .
+ This is a transition package that depends on libimage-magick-perl.
+ .
+ This package can safely be removed.

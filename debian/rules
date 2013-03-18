@@ -75,6 +75,8 @@ override_dh_auto_configure-indep:
 	dh_auto_configure --builddirectory="debian/build-quantum-indep" -- \
 		 ${CONFIGURE_OPTIONS} \
 		--with-quantum-depth=${shell echo $(NOQUANTUMDEPTH)  | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
+	# HACK: create default quantum package Makefile
+	cd debian/build-quantum-indep/PerlMagick/default/ && perl Makefile.PL INSTALLDIRS=vendor
 
 # dh_auto_build in build directory
 # build icons cache build for each arch in order to get more testing 
@@ -83,6 +85,7 @@ quantum_override_dh_auto_build-arch_%:
 
 override_dh_auto_build-arch: quantum_override_dh_auto_build-arch_Q16
 override_dh_auto_build-indep:
+	cd debian/build-quantum-indep/PerlMagick/default/ && make
 
 # dh_auto_test in build directory
 quantum_override_dh_auto_test-arch_%:
@@ -141,6 +144,7 @@ quantum_override_dh_auto_install-arch_%:
 		-e s/\$$(DEB_UPSTREAM_VERSION_DROPREVISION)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
 		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.desktop
 
+
 override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 override_dh_auto_install-indep:
 	if test "BUG#703261" = "SOLVED"; then \
@@ -158,6 +162,9 @@ override_dh_auto_install-indep:
 			    install-man1 \
 	                    pkgdocdir=/usr/share/doc/imagemagick-doc ;\
 	fi;
+
+	# install default perl
+	cd debian/build-quantum-indep/PerlMagick/default/ && make install DESTDIR=$(CURDIR)/debian/tmp-indep
 
 	# Fix HTML location inside manpages (TODO proper patch please)
 	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
@@ -216,6 +223,9 @@ quantum_override_dh_install-arch_%:
 		--sourcedir=debian/tmp-$* --autodest
 	dh_install --package=libmagickwand-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-dev \
 		--sourcedir=debian/tmp-$* --autodest
+	# perl
+	dh_install --package=libimage-magick-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}⁻perl \
+	        --sourcedir=debian/tmp-$* --autodest
 
 	# Remove extra coders from libmagickcore
 	while read FILE; do \
@@ -226,9 +236,7 @@ quantum_override_dh_install-arch_%:
 override_dh_install-arch: quantum_override_dh_install-arch_Q16
 	# take arch include in default quantum
 	dh_install --package=libmagickcore-6-arch-config --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
-	# TODO: move perlmagick
-	dh_install --package=perlmagick --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
-	# TODO: move to quantum package
+	# TODO: better granularity
 	dh_install --package=imagemagick-dbg --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 
 override_dh_install-indep:
