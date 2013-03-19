@@ -140,8 +140,8 @@ quantum_override_dh_auto_install-arch_%:
 	sed < $(CURDIR)/debian/display.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/${shell echo $* | sed -e 's/\(.*\)/\L\1/'}/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
-	        -e s/\$$(DEB_HOST_MULTIARCH)/$(DEB_HOST_MULTIARCH)/g \
-		-e s/\$$(DEB_UPSTREAM_VERSION_DROPREVISION)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
+	        -e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
+		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
 		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.desktop
 
 
@@ -181,8 +181,8 @@ override_dh_auto_install-indep:
 	sed < $(CURDIR)/debian/display-im6.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/${shell echo $(DEFAULTQUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'}/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
-	        -e s/\$$(DEB_HOST_MULTIARCH)/$(DEB_HOST_MULTIARCH)/g \
-		-e s/\$$(DEB_UPSTREAM_VERSION_DROPREVISION)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
+	        -e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
+		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
 		> $(CURDIR)/debian/tmp-indep/usr/share/applications/display-im$(IMVERSION).desktop
 
 	# add versionned manpages and symlink to binaries
