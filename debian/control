@@ -193,7 +193,7 @@ Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, 
-	 imagemagick-common (= ${source:Version})
+ imagemagick-common (= ${source:Version})
 Recommends: ghostscript, gsfonts
 Suggests: libmagickcore-6.q16-1-extra
 Description: low-level image manipulation library -- quantum depth Q16
