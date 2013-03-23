@@ -94,7 +94,10 @@
 
 #if defined(MAGICKCORE_RSVG_DELEGATE)
 #include "librsvg/rsvg.h"
-#if !LIBRSVG_CHECK_VERSION(2,36,2)
+#if !defined(LIBRSVG_CHECK_VERSION)
+#include "librsvg/rsvg-cairo.h"
+#include "librsvg/librsvg-features.h"
+#elif !LIBRSVG_CHECK_VERSION(2,36,2)
 #include "librsvg/rsvg-cairo.h"
 #include "librsvg/librsvg-features.h"
 #endif
@@ -2743,7 +2746,7 @@ static void SVGExternalSubset(void *context,const xmlChar *name,
   Static declarations.
 */
 static char
-  SVGDensityGeometry[] = "72.0x72.0";
+  SVGDensityGeometry[] = "90.0x90.0";
 
 static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
