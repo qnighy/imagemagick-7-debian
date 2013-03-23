@@ -64,8 +64,8 @@ Architecture: all
 Multi-Arch: foreign
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends}, 
-	 libmagickcore-6-arch-config (>= ${binary:Version}), libmagickcore-6-arch-config (<< ${binary:Version}.1~)
+Depends: ${misc:Depends},
+ 	 libmagickcore-6-arch-config (>= ${binary:Version}), libmagickcore-6-arch-config (<< ${binary:Version}.1~)
 Description: low-level image manipulation library - header files 
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -140,8 +140,8 @@ Description: Perl interface to the ImageMagick graphics routines
  Use the module to read, manipulate, or write an image or image sequence from
  within a Perl script. This makes it very suitable for Web CGI scripts.
  .
- This is the compatibility perlmagick package that use the default quantum
- (Q16).
+ This is the compatibility (wrapper) perlmagick package that 
+ use the default quantum (Q16).
 
 # quantum independent
 Package: libmagickcore-6-arch-config
@@ -235,8 +235,10 @@ Depends: libmagickcore-6-headers (= ${source:Version}),
  liblcms-dev, liblqr-1-0-dev, libltdl-dev, libopenexr-dev, libpng-dev,
  librsvg2-dev, libtiff-dev, libwmf-dev, libx11-dev, libxext-dev, libxml2-dev,
  libxt-dev, zlib1g-dev, 
- ${misc:Depends},
- pkg-config
+ pkg-config,
+ ${misc:Depends}
+Replaces: libmagickcore-dev (<< 8:6.8.3.9+svn11396-1~)
+Breaks: libmagickcore-dev (<< 8:6.8.3.9+svn11396-1~)
 Provides: libmagickcore-6.defaultquantum-dev
 Description: low-level image manipulation library - development files (Q16)
  This package includes header files and static libraries needed to compile
@@ -249,7 +251,7 @@ Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends},
 	 imagemagick-common(= ${source:Version})  
 Description: image manipulation library 
  The MagickWand API is the recommended interface between the C programming
@@ -273,6 +275,8 @@ Depends: libmagickwand-6-headers (= ${source:Version}),
  pkg-config,
  ${misc:Depends}
 Provides: libmagickwand-6.defaultquantum-dev
+Replaces: libmagickwand-dev (<< 8:6.8.3.9+svn11396-1~)
+Breaks: libmagickwand-dev (<< 8:6.8.3.9+svn11396-1~)
 Description: image manipulation library - development files
  This package the static libraries needed to compile
  programs using MagickWand.
@@ -304,6 +308,8 @@ Depends: libmagick++-6.q16-1 (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
 Provides: libmagick++-6.defaultquantum-dev
+Replaces: libmagick++-dev (<< 8:6.8.3.9+svn11396-1~)
+Breaks: libmagick++-dev (<< 8:6.8.3.9+svn11396-1~)
 Description: object-oriented C++ interface to ImageMagick - development files
  This package includes header files and static libraries needed to compile
  programs using Magick++.
@@ -321,7 +327,7 @@ Depends: ${misc:Depends},
  libmagickcore-6.q16-1-extra (= ${binary:Version}), 
  libmagick++-6.q16-1 (= ${binary:Version}),
  libmagickwand-6.q16-1 (= ${binary:Version}),
- perlmagick (= ${binary:Version}),
+ libimage-magick-q16-perl (= ${binary:Version})
 Suggests: libjpeg8-dbg, libwmf-bin, librsvg2-dbg, librsvg2-bin, inkscape
 Description: debugging symbols for ImageMagick
  This package contains the debugging symbols for ImageMagick, a software suite
@@ -334,7 +340,7 @@ Section: perl
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: imagemagick-doc
 Provides: libimage-magick-defaultquantum-perl
-Description: Perl interface to the ImageMagick graphics routines
+Description: Perl interface to the ImageMagick graphics routines -- Q16 version
  PerlMagick is an objected-oriented Perl interface to ImageMagick.
  Use the module to read, manipulate, or write an image or image sequence from
  within a Perl script. This makes it very suitable for Web CGI scripts.
@@ -369,14 +375,57 @@ Architecture: all
 Multi-Arch: foreign
 Section: oldlibs 
 Priority: extra
-Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
-Provides: libimage-magick-perl
-Suggests: imagemagick-doc
-Description: Perl interface to the ImageMagick graphics routines
+Depends: ${misc:Depends}, libimage-magick-perl
+Description: Perl interface to ImageMagick -- transition package
  PerlMagick is an objected-oriented Perl interface to ImageMagick.
  Use the module to read, manipulate, or write an image or image sequence from
  within a Perl script. This makes it very suitable for Web CGI scripts.
  .
  This is a transition package that depends on libimage-magick-perl.
+ .
+ This package can safely be removed.
+
+Package: libmagickcore-dev
+Architecture: all
+Multi-Arch: foreign
+Section: oldlibs 
+Priority: extra
+Depends: ${misc:Depends}, libmagickcore-6.defaultquantum-dev
+Description: low-level image manipulation library -- transition package
+ This package included header files and static libraries needed to compile
+ programs using MagickCore.
+ .
+ This is a transition package that depends on default quantum libmagickcore
+ development files.
+ .
+ This package can safely be removed.
+
+Package: libmagickwand-dev
+Architecture: all
+Multi-Arch: foreign
+Section: oldlibs 
+Priority: extra
+Depends: ${misc:Depends}, libmagickwand-6.defaultquantum-dev
+Description: image manipulation library - transition for development files
+ This package included the static libraries needed to compile
+ programs using MagickWand.
+ .
+ This is a transition package that depends on default quantum libmagickwand
+ development files.
+ .
+ This package can safely be removed.
+
+Package: libmagick++-dev
+Architecture: all
+Multi-Arch: foreign
+Section: oldlibs 
+Priority: extra
+Depends: ${misc:Depends}, libmagick++-6.defaultquantum-dev
+Description: object-oriented C++ interface to ImageMagick
+ The Magick++ library was a set of C++ wrapper classes that provides access
+ to the ImageMagick package functionality from within a C++ application.
+ .
+ This is a transition package that depends on default quantum libmagick++
+ development files.
  .
  This package can safely be removed.
