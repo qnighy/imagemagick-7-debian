@@ -5,29 +5,40 @@
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
 
-export QUANTUMDEPTH?= Q16
+
+export QUANTUMDEPTH ?= Q16
 export SOVERSION ?= 1
 
 
 # for hardening
 # export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
-export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
-export DEB_SOURCE_PACKAGE ?= $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
-export DEB_VERSION ?= $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
-export DEB_NOEPOCH_VERSION ?= $(shell echo $(DEB_VERSION) | cut -d: -f2-)
-export DEB_UPSTREAM_VERSION ?= $(shell echo $(DEB_NOEPOCH_VERSION) | sed 's/-[^-]*$$//')
-export DEB_ISNATIVE ?= $(shell dpkg-parsechangelog | egrep '^Version:' | perl -ne 'print if not /^Version:\s*.*-/;')
+export STATIC_DEB_HOST_GNU_TYPE := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+export DEB_HOST_GNU_TYPE  ?= $(STATIC_DEB_HOST_GNU_TYPE)
+export STATIC_DEB_HOST_MULTIARCH := $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+export DEB_HOST_MULTIARCH ?= $(STATIC_DEB_HOST_MULTIARCH)
+export STATIC_DEB_BUILD_GNU_TYPE := $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+export DEB_BUILD_GNU_TYPE ?= $(STATIC_DEB_BUILD_GNU_TYPE)
+export STATIC_DEB_SOURCE_PACKAGE := $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
+export DEB_SOURCE_PACKAGE ?= $(STATIC_DEB_SOURCE_PACKAGE)
+export STATIC_DEB_VERSION := $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
+export DEB_VERSION ?= $(STATIC_DEB_VERSION)
+export STATIC_DEB_NOEPOCH_VERSION := $(shell echo $(DEB_VERSION) | cut -d: -f2-)
+export DEB_NOEPOCH_VERSION ?= $(STATIC_DEB_NOEPOCH_VERSION)
+export STATIC_DEB_UPSTREAM_VERSION := $(shell echo $(DEB_NOEPOCH_VERSION) | sed 's/-[^-]*$$//')
+export DEB_UPSTREAM_VERSION ?= $(STATIC_DEB_UPSTREAM_VERSION)
+export STATIC_DEB_ISNATIVE := $(shell dpkg-parsechangelog | egrep '^Version:' | perl -ne 'print if not /^Version:\s*.*-/;')
+export DEB_ISNATIVE ?= $(STATIC_DEB_ISNATIVE)
 
-export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
-export DEB_UPSTREAM_VERSION_MAJOR ?= $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
-export IMVERSION ?= $(DEB_UPSTREAM_VERSION_MAJOR)
+export STATIC_DEB_UPSTREAM_VERSION_DROPREVISION := $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
+export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(STATIC_DEB_UPSTREAM_VERSION_DROPREVISION)
+export STATIC_DEB_UPSTREAM_VERSION_MAJOR := $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
+export DEB_UPSTREAM_VERSION_MAJOR ?= $(STATIC_DEB_UPSTREAM_VERSION_MAJOR)
+export IMVERSION := $(DEB_UPSTREAM_VERSION_MAJOR)
 
 # quantum depth used by default and by quantum independant package (first one of QUANTUMDEPTH)
-export DEFAULTQUANTUMDEPTH = $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
-export NOQUANTUMDEPTH ?= $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
+export DEFAULTQUANTUMDEPTH := $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
+export NOQUANTUMDEPTH := $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
 
 # convert 
 export CONVERT ?= ./magick.sh convert
@@ -37,7 +48,7 @@ export CONVERT_FLAGS ?= -background none -define filter:blur=0.75 -filter Gaussi
 #export QUANTUMDEPTH_LOWER ?= $(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'))
 
 # NOTICE: remove EPL delegate lib gvc (license problem)
-export CONFIGURE_OPTIONS ?= \
+export STATIC_CONFIGURE_OPTIONS := \
 	--prefix=/usr \
         --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
 	--sysconfdir=/etc \
@@ -59,8 +70,10 @@ export CONFIGURE_OPTIONS ?= \
 	--x-includes=/usr/include/X11 \
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg
+export $CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS)
 
 %:
+	@echo "Build $(DEB_SOURCE_PACKAGE) version $(DEB_VERSION) for quantum $(QUANTUMDEPTH)"
 	dh $@ --parallel --with autoreconf
 
 # configure in build directory
@@ -342,6 +355,7 @@ maint-mark-upstream-revision-%:
 # get upstream revision like in upstream changelog
 maint-get-upstream-rev-raw: DEB_MAINT_NEW_VERSION_RAW:=$(shell echo ${DEB_MAINT_NEW_VERSION} | sed "s/\(.*\)\.\([:digit:]*\)/\1-\2/g")
 maint-get-upstream-rev-raw: 
+	@echo "Try to get upstream revision"
 	if test "x${DEB_MAINT_NEW_VERSION_RAW}" = "x"; then exit 1; fi
 	if !(git show-ref --verify --quiet refs/heads/upstream/${DEB_MAINT_NEW_VERSION_RAW}) ; then \
 		if ! ($(MAKE) -f debian/rules \
@@ -373,6 +387,7 @@ maint-get-upstream-rev-from-tar-new-make-%:
 
 # reconstruct upstream for tar
 maint-get-upstream-rev-from-tar: get-orig-source maint-get-upstream-rev
+	@echo "get upstream from tar and merge it"
 	if !(git show-ref --verify --quiet refs/heads/upstream/${DEB_MAINT_NEW_VERSION}) ; then \
 		if ! ($(MAKE) -f debian/rules maint-get-upstream-rev-from-tar-new-make-${DEB_MAINT_NEW_VERSION}); then \
 	    		git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
@@ -396,6 +411,7 @@ add-pristine-tar-new-make-%:
 
 # add pristine-tar from a sub make
 maint-add-pristine-tar-doit: maint-get-upstream-rev-from-tar
+	@echo "execute pristine-tar"
 	if !(pristine-tar list | grep ${DEB_MAINT_NEW_VERSION}); then \
 		if ! ($(MAKE) -f debian/rules add-pristine-tar-new-make-${DEB_MAINT_NEW_VERSION}) ; then \
 			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
@@ -439,5 +455,3 @@ maint-merge-debian-branch: maint-merge-debian-branch-doit
 
 # commit new version in tree
 get-orig-source-refresh-patches: get-orig-source
-
-.PHONY: get-orig-source maint-get-upstream-rev maint-get-upstream-rev-raw
