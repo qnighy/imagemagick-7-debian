@@ -34,10 +34,10 @@ extern "C" {
 #define MagickLibAddendum  "-10"
 #define MagickLibInterface  1
 #define MagickLibMinInterface  1
-#define MagickReleaseDate  "2013-03-13"
-#define MagickChangeDate   "20130310"
+#define MagickReleaseDate  "2013-03-17"
+#define MagickChangeDate   "20130315"
 #define MagickFeatures "DPC OpenMP"
-#define MagickDelegates "bzlib fontconfig freetype jng jp2 jpeg lcms lzma pango png ps tiff x xml zlib"
+#define MagickDelegates "bzlib fontconfig freetype jp2 lzma pango png ps tiff x xml zlib"
 #define MagickHomeURL  "file:///usr/share/doc/ImageMagick-6/index.html"
 #define MagickAuthoritativeURL  "http://www.imagemagick.org"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)

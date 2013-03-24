@@ -547,6 +547,13 @@ ModuleExport size_t RegisterTXTImage(void)
   MagickInfo
     *entry;
 
+  entry=SetMagickInfo("SPARSE-COLOR");
+  entry->encoder=(EncodeImageHandler *) WriteTXTImage;
+  entry->raw=MagickTrue;
+  entry->endian_support=MagickTrue;
+  entry->description=ConstantString("Sparse Color");
+  entry->module=ConstantString("TXT");
+  (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("TEXT");
   entry->decoder=(DecodeImageHandler *) ReadTXTImage;
   entry->encoder=(EncodeImageHandler *) WriteTXTImage;
@@ -621,11 +628,7 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
     colorspace[MaxTextExtent],
     tuple[MaxTextExtent];
 
-  const char
-    *option;
-
   MagickBooleanType
-    sparse_color,
     status;
 
   MagickOffsetType
@@ -658,8 +661,6 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  option=GetImageOption(image_info,"txt:sparse-color");
-  sparse_color=IsStringTrue(option);
   scene=0;
   do
   {
@@ -669,7 +670,7 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
     image->depth=GetImageQuantumDepth(image,MagickTrue);
     if (image->matte != MagickFalse)
       (void) ConcatenateMagickString(colorspace,"a",MaxTextExtent);
-    if (sparse_color == MagickFalse)
+    if (LocaleCompare(image_info->magick,"SPARSE-COLOR") != 0)
       {
         (void) FormatLocaleString(buffer,MaxTextExtent,
           "# ImageMagick pixel enumeration: %.20g,%.20g,%.20g,%s\n",(double)
@@ -692,7 +693,7 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
             pixel.green-=(QuantumRange+1)/2.0;
             pixel.blue-=(QuantumRange+1)/2.0;
           }
-        if (sparse_color != MagickFalse)
+        if (LocaleCompare(image_info->magick,"SPARSE-COLOR") == 0)
           {
             /*
               Sparse-color format.
