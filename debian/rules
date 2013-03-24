@@ -70,7 +70,7 @@ export STATIC_CONFIGURE_OPTIONS := \
 	--x-includes=/usr/include/X11 \
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg
-export $CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS)
+export CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS)
 
 %:
 	@echo "Build $(DEB_SOURCE_PACKAGE) version $(DEB_VERSION) for quantum $(QUANTUMDEPTH)"

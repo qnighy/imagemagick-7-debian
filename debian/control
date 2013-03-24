@@ -110,8 +110,8 @@ Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}, imagemagick-6.defaultquantum
 Provides: imagemagick
-Replaces: imagemagick (<< 8:6.8.3.9+svn11396-1~)
-Breaks: imagemagick (<< 8:6.8.3.9+svn11396-1~)
+Replaces: imagemagick (<< 8:6.8.3.10-1~)
+Breaks: imagemagick (<< 8:6.8.3.10-1~)
 Description: image manipulation programs -- binaries
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)
@@ -132,8 +132,8 @@ Section: perl
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}, 
 	 libimage-magick-defaultquantum-perl
 Provides: perlmagick
-Replaces: perlmagick (<< 8:6.8.3.9+svn11396-1~)
-Breaks: perlmagick (<< 8:6.8.3.9+svn11396-1~)
+Replaces: perlmagick (<< 8:6.8.3.10-1~)
+Breaks: perlmagick (<< 8:6.8.3.10-1~)
 Suggests: imagemagick-doc
 Description: Perl interface to the ImageMagick graphics routines
  PerlMagick is an objected-oriented Perl interface to ImageMagick.
@@ -237,8 +237,8 @@ Depends: libmagickcore-6-headers (= ${source:Version}),
  libxt-dev, zlib1g-dev, 
  pkg-config,
  ${misc:Depends}
-Replaces: libmagickcore-dev (<< 8:6.8.3.9+svn11396-1~)
-Breaks: libmagickcore-dev (<< 8:6.8.3.9+svn11396-1~)
+Replaces: libmagickcore-dev (<< 8:6.8.3.10-1~)
+Breaks: libmagickcore-dev (<< 8:6.8.3.10-1~)
 Provides: libmagickcore-6.defaultquantum-dev
 Description: low-level image manipulation library - development files (Q16)
  This package includes header files and static libraries needed to compile
@@ -275,8 +275,8 @@ Depends: libmagickwand-6-headers (= ${source:Version}),
  pkg-config,
  ${misc:Depends}
 Provides: libmagickwand-6.defaultquantum-dev
-Replaces: libmagickwand-dev (<< 8:6.8.3.9+svn11396-1~)
-Breaks: libmagickwand-dev (<< 8:6.8.3.9+svn11396-1~)
+Replaces: libmagickwand-dev (<< 8:6.8.3.10-1~)
+Breaks: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Description: image manipulation library - development files
  This package the static libraries needed to compile
  programs using MagickWand.
@@ -308,8 +308,8 @@ Depends: libmagick++-6.q16-1 (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
 Provides: libmagick++-6.defaultquantum-dev
-Replaces: libmagick++-dev (<< 8:6.8.3.9+svn11396-1~)
-Breaks: libmagick++-dev (<< 8:6.8.3.9+svn11396-1~)
+Replaces: libmagick++-dev (<< 8:6.8.3.10-1~)
+Breaks: libmagick++-dev (<< 8:6.8.3.10-1~)
 Description: object-oriented C++ interface to ImageMagick - development files
  This package includes header files and static libraries needed to compile
  programs using Magick++.
