@@ -353,13 +353,14 @@ maint-mark-upstream-revision-%:
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
 
 # get upstream revision like in upstream changelog
-maint-get-upstream-rev-raw: DEB_MAINT_NEW_VERSION_RAW:=$(shell echo ${DEB_MAINT_NEW_VERSION} | sed "s/\(.*\)\.\([:digit:]*\)/\1-\2/g")
-maint-get-upstream-rev-raw: 
-	@echo "Try to get upstream revision"
-	if test "x${DEB_MAINT_NEW_VERSION_RAW}" = "x"; then exit 1; fi
-	if !(git show-ref --verify --quiet refs/heads/upstream/${DEB_MAINT_NEW_VERSION_RAW}) ; then \
+maint-get-upstream-rev-doit:
+	@echo "Try to get upstream revision $(DEB_MAINT_NEW_VERSION)."
+	DEB_MAINT_NEW_VERSION_RAW=`echo $(DEB_MAINT_NEW_VERSION) | sed "s/\(.*\)\.\([:digit:]*\)/\1-\2/g"`; \
+	if test "x$$DEB_MAINT_NEW_VERSION_RAW" = "x"; then exit 1; fi;\
+	if !(git show-ref --verify --quiet refs/heads/upstream/$$DEB_MAINT_NEW_VERSION_RAW) ; then \
 		if ! ($(MAKE) -f debian/rules \
-				 maint-mark-upstream-revision-${DEB_MAINT_NEW_VERSION_RAW} \
+				 maint-mark-upstream-revision-$$DEB_MAINT_NEW_VERSION_RAW \
+				 DEB_MAINT_NEW_VERSION=${DEB_MAINT_NEW_VERSION} \
 				 DEB_MAINT_UPSTREAM_SVNREV=${DEB_MAINT_UPSTREAM_SVNREV}); then \
 			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
 			exit 1; \
@@ -368,10 +369,12 @@ maint-get-upstream-rev-raw:
 		fi; \
 	fi;
 
+
 # get upstream version
-maint-get-upstream-rev: DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs| grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
-maint-get-upstream-rev: maint-get-upstream-rev-raw  #maint-refresh-git-svn 
-	if test "x${DEB_MAINT_NEW_VERSION}" = "x"; then exit 1; fi
+maint-get-upstream-rev: #maint-refresh-git-svn 
+	$(MAKE) -f debian/rules \
+		   maint-get-upstream-rev-doit \
+		   DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
 
 
@@ -386,7 +389,7 @@ maint-get-upstream-rev-from-tar-new-make-%:
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
 
 # reconstruct upstream for tar
-maint-get-upstream-rev-from-tar: get-orig-source maint-get-upstream-rev
+maint-reconstruct-upstream-doit: maint-get-upstream-rev-doit
 	@echo "get upstream from tar and merge it"
 	if !(git show-ref --verify --quiet refs/heads/upstream/${DEB_MAINT_NEW_VERSION}) ; then \
 		if ! ($(MAKE) -f debian/rules maint-get-upstream-rev-from-tar-new-make-${DEB_MAINT_NEW_VERSION}); then \
@@ -399,9 +402,10 @@ maint-get-upstream-rev-from-tar: get-orig-source maint-get-upstream-rev
 	fi;
 
 # reconstruct upstream
-maint-reconstruct-upstream: DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs| grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
-maint-reconstruct-upstream: maint-get-upstream-rev-from-tar
-	if test "x${DEB_MAINT_NEW_VERSION}" = "x"; then exit 1; fi
+maint-reconstruct-upstream: 
+	$(MAKE) -f debian/rules \
+		   maint-reconstruct-upstream-doit \
+		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
 
 add-pristine-tar-new-make-%:
@@ -410,7 +414,7 @@ add-pristine-tar-new-make-%:
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
 
 # add pristine-tar from a sub make
-maint-add-pristine-tar-doit: maint-get-upstream-rev-from-tar
+maint-add-pristine-tar-doit: maint-reconstruct-upstream-doit
 	@echo "execute pristine-tar"
 	if !(pristine-tar list | grep ${DEB_MAINT_NEW_VERSION}); then \
 		if ! ($(MAKE) -f debian/rules add-pristine-tar-new-make-${DEB_MAINT_NEW_VERSION}) ; then \
@@ -422,26 +426,29 @@ maint-add-pristine-tar-doit: maint-get-upstream-rev-from-tar
 	fi;
 
 # add pristine-tar
-maint-add-pristine-tar: DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs| grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
-maint-add-pristine-tar: maint-add-pristine-tar-doit
+maint-add-pristine-tar:
+	$(MAKE) -f debian/rules \
+		   maint-add-pristine-tar-doit \
+		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
 
 # manually merge debian branch
 maint-merge-debian-branch-new-make-%: 
 	git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}
 	git checkout -b debian/$*-1
-	git merge --no-commit upstream/$*
+	if ! (git show-ref --verify --quiet refs/heads/upstream/$*) ; then exit 1; fi;
+	git merge --no-commit upstream/$* || true
 	find ./* -path './debian' -prune -o -path './.git' -prune -o -exec rm -rf '{}' +
 	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.bz2
-	git add .
+	git add -u
 	git commit -a -m 'merge debian branch with upstream $*'
 
 # merge debian branch
 maint-merge-debian-branch-doit: maint-add-pristine-tar-doit
-	if !git show-ref --verify --quiet refs/heads/debian/${DEB_MAINT_NEW_VERSION} ; then \
-		if !$(MAKE) -f debian/rules maint-merge-debian-branch-new-make-$*; then \
+	if ! (git show-ref --verify --quiet refs/heads/debian/${DEB_MAINT_NEW_VERSION}); then \
+		if ! ($(MAKE) -f debian/rules maint-merge-debian-branch-new-make-${DEB_MAINT_NEW_VERSION}); then \
 			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-			-git checkout -D debian/${DEB_MAINT_NEW_VERSION}-1; \
+			git branch -D debian/${DEB_MAINT_NEW_VERSION}-1 || true; \
 			exit 1; \
 		else \
 			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
@@ -449,9 +456,11 @@ maint-merge-debian-branch-doit: maint-add-pristine-tar-doit
 	fi;
 
 # merge debian branch
-maint-merge-debian-branch: DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs| grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
-maint-merge-debian-branch: maint-merge-debian-branch-doit
-	git checkout -f debian/${DEB_MAINT_NEW_VERSION}
+maint-merge-debian-branch:
+	$(MAKE) -f debian/rules \
+		   maint-merge-debian-branch-doit \
+		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
+	git checkout -f debian/${DEB_MAINT_CURRENT_DEB_BRANCH}
 
 # commit new version in tree
 get-orig-source-refresh-patches: get-orig-source
