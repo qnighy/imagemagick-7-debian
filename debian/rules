@@ -445,7 +445,7 @@ maint-merge-debian-branch-new-make-%:
 
 # merge debian branch
 maint-merge-debian-branch-doit: maint-add-pristine-tar-doit
-	if ! (git show-ref --verify --quiet refs/heads/debian/${DEB_MAINT_NEW_VERSION}); then \
+	if ! (git show-ref --verify --quiet refs/heads/debian/${DEB_MAINT_NEW_VERSION}-1); then \
 		if ! ($(MAKE) -f debian/rules maint-merge-debian-branch-new-make-${DEB_MAINT_NEW_VERSION}); then \
 			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
 			git branch -D debian/${DEB_MAINT_NEW_VERSION}-1 || true; \
@@ -460,7 +460,39 @@ maint-merge-debian-branch:
 	$(MAKE) -f debian/rules \
 		   maint-merge-debian-branch-doit \
 		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
-	git checkout -f debian/${DEB_MAINT_CURRENT_DEB_BRANCH}
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
 
-# commit new version in tree
-get-orig-source-refresh-patches: get-orig-source
+
+maint-create-debian-patches-new-make-%:
+	git checkout -f upstream/${DEB_MAINT_NEW_VERSION}
+	git checkout -b debian-patches/${DEB_MAINT_NEW_VERSION}-1
+
+maint-create-debian-patches-doit: maint-merge-debian-branch-doit
+	if ! (git show-ref --verify --quiet refs/heads/debian-patches/${DEB_MAINT_NEW_VERSION}-1); then \
+		if ! ($(MAKE) -f debian/rules maint-create-debian-patches-new-make-${DEB_MAINT_NEW_VERSION}); then \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+			git branch -D debian-patches/${DEB_MAINT_NEW_VERSION}-1 || true; \
+			exit 1; \
+		else \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+		fi; \
+	fi;
+
+# create a new debian patches branch
+maint-create-debian-patches:
+	$(MAKE) -f debian/rules \
+		   maint-create-debian-patches-doit \
+		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
+
+
+# create a new version
+maint-do-new-version:
+	DEB_MAINT_NEW_VERSION=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`;\
+	if test "x$$DEB_MAINT_NEW_VERSION" = "x" ; then exit 1; fi; \
+	if !($(MAKE) -f debian/rules maint-create-debian-patches-doit \
+		   	 DEB_MAINT_NEW_VERSION:=$$DEB_MAINT_NEW_VERSION ); then \
+	    git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+	else \
+	    git checkout -f debian/$$DEB_MAINT_NEW_VERSION-1; \
+	fi;
