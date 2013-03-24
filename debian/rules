@@ -275,3 +275,169 @@ quantum_override_dh_clean_%:
 
 override_dh_clean: quantum_override_dh_clean_Q16 quantum_override_dh_clean_indep
 	dh_clean
+
+
+# maint rules
+#########################
+
+export DEB_MAINT_UPSTREAM_BRANCH ?= ImageMagick-${DEB_UPSTREAM_VERSION_MAJOR}
+export DEB_MAINT_CURRENT_DEB_BRANCH ?= debian/${DEB_NOEPOCH_VERSION}
+
+# get original source
+get-orig-source:
+	uscan
+
+# clone debian repo (do it in another directory)
+maint-clone-debian-tree:
+	@echo "clone debian tree and get in sync with upstream"
+	@echo "Take a few cups of cofeee it take a long time  "
+	@echo "==============================================="
+	git clone git+ssh://login@git.debian.org/git/collab-maint/imagemagick.git
+	git svn init -s --prefix=origin/  https://www.imagemagick.org/subversion/ImageMagick/
+	git config gitpkg.orig-compressor bzip2
+	git config gitpkg.deb-export-hook /usr/share/gitpkg/hooks/quilt-patches-deb-export-hook
+	git config gitpkg.pre-export-hook /usr/share/gitpkg/hooks/pristine-tar-pre-export-hook
+	git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}
+
+# switch to upstream branch
+maint-switch-to-upstream:
+	git checkout ${DEB_MAINT_UPSTREAM_BRANCH}
+
+# goto upstream branch and merge new work
+maint-merge-upstream-to-local:
+	@echo "merge new upstream to local"
+	git checkout ${DEB_MAINT_UPSTREAM_BRANCH}
+	git merge origin/${DEB_MAINT_UPSTREAM_BRANCH}
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
+
+# git svn fetch
+maint-git-svn-fetch:
+	git svn fetch
+
+# git svn + merge upstream
+maint-refresh-git-svn: maint-git-svn-fetch
+	# try to go to merge upstream if fail goto to previous state
+	if !($(MAKE) -f debian/rules maint-merge-upstream-to-local); then \
+		git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+		exit 1;\
+	else \
+		git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+	fi;
+
+# mark upstream revision by founding it with svn id from upstream changelog
+maint-mark-upstream-revision-%:
+	git checkout ${DEB_MAINT_UPSTREAM_BRANCH}
+	if test "x${DEB_MAINT_UPSTREAM_SVNREV}" = "x" ; then \
+		DEB_MAINT_UPSTREAM_SVNREV=`grep "New version $*" ChangeLog | sed "s/.*SVN revision \([0-9]*\).*/\1/g"`; \
+		if test "x$$DEB_MAINT_UPSTREAM_SVNREV" = "x"; then exit 1; fi ;\
+		echo -n "Found svn revision $* git sha id: " ;\
+		git rev-list --all --grep "svn-id.*@$$DEB_MAINT_UPSTREAM_SVNREV" ;\
+		git checkout -b upstream/$* \
+				`git rev-list --all --grep "svn-id.*@$$DEB_MAINT_UPSTREAM_SVNREV"`; \
+	else \
+	   git checkout -b upstream/$* ${DEB_MAINT_UPSTREAM_SVNREV}; \
+	fi;
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
+
+# get upstream revision like in upstream changelog
+maint-get-upstream-rev-raw: DEB_MAINT_NEW_VERSION_RAW:=$(shell echo ${DEB_MAINT_NEW_VERSION} | sed "s/\(.*\)\.\([:digit:]*\)/\1-\2/g")
+maint-get-upstream-rev-raw: 
+	if test "x${DEB_MAINT_NEW_VERSION_RAW}" = "x"; then exit 1; fi
+	if !(git show-ref --verify --quiet refs/heads/upstream/${DEB_MAINT_NEW_VERSION_RAW}) ; then \
+		if ! ($(MAKE) -f debian/rules \
+				 maint-mark-upstream-revision-${DEB_MAINT_NEW_VERSION_RAW} \
+				 DEB_MAINT_UPSTREAM_SVNREV=${DEB_MAINT_UPSTREAM_SVNREV}); then \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+			exit 1; \
+		else \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+		fi; \
+	fi;
+
+# get upstream version
+maint-get-upstream-rev: DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs| grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
+maint-get-upstream-rev: maint-get-upstream-rev-raw  #maint-refresh-git-svn 
+	if test "x${DEB_MAINT_NEW_VERSION}" = "x"; then exit 1; fi
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
+
+
+# put it in a new make in order to fail gracefully
+maint-get-upstream-rev-from-tar-new-make-%:
+	git checkout -f upstream/`echo $* | sed "s/\(.*\)\.\([:digit:]*\)/\1-\2/g"`
+	git checkout -b upstream/$*
+	find ./*  -path './.git' -prune -o -exec rm -rf '{}' +
+	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.bz2
+	git add .
+	git commit -a -m "Add upstream tar.bz2 for version $*"
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
+
+# reconstruct upstream for tar
+maint-get-upstream-rev-from-tar: get-orig-source maint-get-upstream-rev
+	if !(git show-ref --verify --quiet refs/heads/upstream/${DEB_MAINT_NEW_VERSION}) ; then \
+		if ! ($(MAKE) -f debian/rules maint-get-upstream-rev-from-tar-new-make-${DEB_MAINT_NEW_VERSION}); then \
+	    		git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+			git branch -D upstream/${DEB_MAINT_NEW_VERSION} || true; \
+			exit 1; \
+		else \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+		fi; \
+	fi;
+
+# reconstruct upstream
+maint-reconstruct-upstream: DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs| grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
+maint-reconstruct-upstream: maint-get-upstream-rev-from-tar
+	if test "x${DEB_MAINT_NEW_VERSION}" = "x"; then exit 1; fi
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
+
+add-pristine-tar-new-make-%:
+	git checkout -f upstream/$*
+	pristine-tar commit ../imagemagick_$*.orig.tar.bz2 upstream/$*
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
+
+# add pristine-tar from a sub make
+maint-add-pristine-tar-doit: maint-get-upstream-rev-from-tar
+	if !(pristine-tar list | grep ${DEB_MAINT_NEW_VERSION}); then \
+		if ! ($(MAKE) -f debian/rules add-pristine-tar-new-make-${DEB_MAINT_NEW_VERSION}) ; then \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+			exit 1; \
+		else \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+		fi; \
+	fi;
+
+# add pristine-tar
+maint-add-pristine-tar: DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs| grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
+maint-add-pristine-tar: maint-add-pristine-tar-doit
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
+
+# manually merge debian branch
+maint-merge-debian-branch-new-make-%: 
+	git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}
+	git checkout -b debian/$*-1
+	git merge --no-commit upstream/$*
+	find ./* -path './debian' -prune -o -path './.git' -prune -o -exec rm -rf '{}' +
+	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.bz2
+	git add .
+	git commit -a -m 'merge debian branch with upstream $*'
+
+# merge debian branch
+maint-merge-debian-branch-doit: maint-add-pristine-tar-doit
+	if !git show-ref --verify --quiet refs/heads/debian/${DEB_MAINT_NEW_VERSION} ; then \
+		if !$(MAKE) -f debian/rules maint-merge-debian-branch-new-make-$*; then \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+			-git checkout -D debian/${DEB_MAINT_NEW_VERSION}-1; \
+			exit 1; \
+		else \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+		fi; \
+	fi;
+
+# merge debian branch
+maint-merge-debian-branch: DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs| grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
+maint-merge-debian-branch: maint-merge-debian-branch-doit
+	git checkout -f debian/${DEB_MAINT_NEW_VERSION}
+
+# commit new version in tree
+get-orig-source-refresh-patches: get-orig-source
+
+.PHONY: get-orig-source maint-get-upstream-rev maint-get-upstream-rev-raw
