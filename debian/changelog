@@ -1,5 +1,6 @@
 imagemagick (8:6.8.4.2-1) experimental; urgency=low
 
+  [ Bastien Roucariès ]
   * New upstream version
   * .so bump due to:
    - encoding quantum depth in the library name. This will
@@ -8,7 +9,11 @@ imagemagick (8:6.8.4.2-1) experimental; urgency=low
   * Use dh.
   * Update debian/copyright (new review).
   
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 16 Dec 2012 21:59:47 +0100
+  [ Vincent Fourmond ]
+  * Handle upstream rename of configuration directory:
+    /etc/ImageMagick -> /etc/ImageMagick-6
+
+ -- Vincent Fourmond <fourmond@debian.org>  Thu, 04 Apr 2013 23:18:18 +0200
 
 imagemagick (8:6.7.9.3-2) experimental; urgency=low
 
