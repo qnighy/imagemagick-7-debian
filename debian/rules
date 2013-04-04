@@ -237,7 +237,7 @@ quantum_override_dh_install-arch_%:
 	dh_install --package=libmagickwand-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-dev \
 		--sourcedir=debian/tmp-$* --autodest
 	# perl
-	dh_install --package=libimage-magick-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}⁻perl \
+	dh_install --package=libimage-magick-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-perl \
 	        --sourcedir=debian/tmp-$* --autodest
 
 	# Remove extra coders from libmagickcore
