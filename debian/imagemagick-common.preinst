@@ -12,7 +12,7 @@ dpkg-maintscript-helper rm_conffile \
 
 
 # We move a whole bunch of configuration files:
-
+# remove after jessie + 2
 for f in coder.xml colors.xml delegates.xml log.xml magic.xml \
     mime.xml policy.xml quantization-table.xml thresholds.xml \
     type-dejavu.xml type-ghostscript.xml type-windows.xml \
