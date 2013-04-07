@@ -1,19 +1,28 @@
-imagemagick (8:6.8.4.2-1) experimental; urgency=low
+imagemagick (8:6.8.4.7-1) experimental; urgency=low
 
   [ Bastien Roucariès ]
-  * New upstream version
+  * New upstream version:
+   - Bug fix: "Drawing issues with rectangle stroke", thanks to Robert Sohn
+     (Closes: #689560).
+   - Bug fix: "NULL deference during creation of temporary files"
+     (Closes: #704901).
   * .so bump due to:
    - encoding quantum depth in the library name. This will
      allow to compile hdri and other quantum depth.
    - lib versionning.
   * Use dh.
   * Update debian/copyright (new review).
+  * Debian packaging bug fixes:
+   - "Depend on liblcms2-dev, not liblcms-dev", 
+     thanks to Michael Terry (Closes: #701655).
+   - "package name does not adhere to naming policy for Perl
+    modules", thanks to ansgar@debian.org (Closes: #575932).
   
   [ Vincent Fourmond ]
   * Handle upstream rename of configuration directory:
-    /etc/ImageMagick -> /etc/ImageMagick-6
+    /etc/ImageMagick -> /etc/ImageMagick-6  
 
- -- Vincent Fourmond <fourmond@debian.org>  Thu, 04 Apr 2013 23:18:18 +0200
+ -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Sun, 07 Apr 2013 20:30:02 +0200
 
 imagemagick (8:6.7.9.3-2) experimental; urgency=low
 
