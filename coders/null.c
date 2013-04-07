@@ -39,31 +39,31 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/color.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/color.h"
+#include "magick/color-private.h"
+#include "magick/colorspace-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/pixel-private.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteNULLImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteNULLImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,13 +99,16 @@ static Image *ReadNULLImage(const ImageInfo *image_info,
   Image
     *image;
 
-  PixelInfo
+  MagickPixelPacket
     background;
+
+  register IndexPacket
+    *indexes;
 
   register ssize_t
     x;
 
-  register Quantum
+  register PixelPacket
     *q;
 
   ssize_t
@@ -121,25 +124,27 @@ static Image *ReadNULLImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   if (image->columns == 0)
     image->columns=1;
   if (image->rows == 0)
     image->rows=1;
-  image->alpha_trait=BlendPixelTrait;
-  GetPixelInfo(image,&background);
-  background.alpha=(double) TransparentAlpha;
+  image->matte=MagickTrue;
+  GetMagickPixelPacket(image,&background);
+  background.opacity=(MagickRealType) TransparentOpacity;
   if (image->colorspace == CMYKColorspace)
     ConvertRGBToCMYK(&background);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       break;
+    indexes=GetAuthenticIndexQueue(image);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      SetPixelInfoPixel(image,&background,q);
-      q+=GetPixelChannels(image);
+      SetPixelPacket(image,&background,q,indexes);
+      q++;
+      indexes++;
     }
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
@@ -227,7 +232,7 @@ ModuleExport void UnregisterNULLImage(void)
 %  The format of the WriteNULLImage method is:
 %
 %      MagickBooleanType WriteNULLImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -235,17 +240,14 @@ ModuleExport void UnregisterNULLImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
 static MagickBooleanType WriteNULLImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   assert(image_info != (const ImageInfo *) NULL);
   assert(image_info->signature == MagickSignature);
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
-  assert(exception != (ExceptionInfo *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   return(MagickTrue);

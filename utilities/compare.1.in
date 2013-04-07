@@ -45,7 +45,7 @@ Image Settings:
   \-seed value          seed a new sequence of pseudo-random numbers
   \-set attribute value set an image attribute
   \-similarity-threshold value
-                        minumum distortion for (sub)image match
+                        minimum distortion for (sub)image match
   \-size geometry       width and height of image
   \-subimage-search     search for subimage
   \-synchronize         synchronize image to storage device

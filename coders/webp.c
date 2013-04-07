@@ -39,31 +39,31 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/artifact.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/client.h"
-#include "MagickCore/display.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/option.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/string-private.h"
-#include "MagickCore/module.h"
-#include "MagickCore/utility.h"
-#include "MagickCore/xwindow.h"
-#include "MagickCore/xwindow-private.h"
+#include "magick/studio.h"
+#include "magick/artifact.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/client.h"
+#include "magick/display.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/memory_.h"
+#include "magick/option.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/string-private.h"
+#include "magick/module.h"
+#include "magick/utility.h"
+#include "magick/xwindow.h"
+#include "magick/xwindow-private.h"
 #if defined(MAGICKCORE_WEBP_DELEGATE)
 #include <webp/decode.h>
 #include <webp/encode.h>
@@ -74,7 +74,7 @@
 */
 #if defined(MAGICKCORE_WEBP_DELEGATE)
 static MagickBooleanType
-  WriteWEBPImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteWEBPImage(const ImageInfo *,Image *);
 #endif
 
 /*
@@ -191,7 +191,7 @@ static MagickBooleanType IsWEBPImageLossless(const unsigned char *stream,
     if (chunk_size > MAX_CHUNK_PAYLOAD)
       break;
     chunk_size_pad=(CHUNK_HEADER_SIZE+chunk_size+1) & ~1;
-    if (memcmp( stream+offset,VP8_CHUNK_HEADER,VP8_CHUNK_HEADER_SIZE) == 0)
+    if (memcmp(stream+offset,VP8_CHUNK_HEADER,VP8_CHUNK_HEADER_SIZE) == 0)
       return(*(stream+offset+VP8_CHUNK_HEADER_SIZE) == LOSSLESS_FLAG ?
         MagickTrue : MagickFalse);
     offset+=chunk_size_pad;
@@ -240,7 +240,7 @@ static Image *ReadWEBPImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -269,29 +269,28 @@ static Image *ReadWEBPImage(const ImageInfo *image_info,
     }
   image->columns=(size_t) webp_image->width;
   image->rows=(size_t) webp_image->height;
-  image->alpha_trait=features->has_alpha != 0 ? BlendPixelTrait :
-    UndefinedPixelTrait;
+  image->matte=features->has_alpha != 0 ? MagickTrue : MagickFalse;
   if (IsWEBPImageLossless(stream,length) != MagickFalse)
     image->quality=100;
   p=webp_image->u.RGBA.rgba;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register Quantum
+    register PixelPacket
       *q;
 
     register ssize_t
       x;
 
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      SetPixelRed(image,ScaleCharToQuantum(*p++),q);
-      SetPixelGreen(image,ScaleCharToQuantum(*p++),q);
-      SetPixelBlue(image,ScaleCharToQuantum(*p++),q);
-      SetPixelAlpha(image,ScaleCharToQuantum(*p++),q);
-      q+=GetPixelChannels(image);
+      SetPixelRed(q,ScaleCharToQuantum(*p++));
+      SetPixelGreen(q,ScaleCharToQuantum(*p++));
+      SetPixelBlue(q,ScaleCharToQuantum(*p++));
+      SetPixelAlpha(q,ScaleCharToQuantum(*p++));
+      q++;
     }
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
@@ -419,7 +418,7 @@ static int WebPWriter(const unsigned char *stream,size_t length,
 }
 
 static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   const char
     *value;
@@ -435,6 +434,9 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
 
   ssize_t
     y;
+
+  uint32_t
+    *pixels;
 
   WebPConfig
     configure;
@@ -456,7 +458,7 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if ((image->columns > 16383UL) || (image->rows > 16383UL))
     ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   if ((WebPPictureInit(&picture) == 0) || (WebPConfigInit(&configure) == 0))
@@ -470,9 +472,8 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
   picture.use_argb=1;
   if (image->quality != UndefinedCompressionQuality)
     configure.quality=(float) image->quality;
-  else
-    if (image->quality >= 100)
-      configure.lossless=1;
+  if (image->quality >= 100)
+    configure.lossless=1;
   value=GetImageArtifact(image,"webp:lossless");
   if (value != (char *) NULL)
     configure.lossless=ParseCommandOption(MagickBooleanOptions,MagickFalse,
@@ -544,42 +545,43 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
   /*
     Allocate memory for pixels.
   */
-  picture.argb=(uint32_t *) AcquireQuantumMemory(image->columns,image->rows*
-    sizeof(*picture.argb));
-  if (picture.argb == (uint32_t *) NULL)
+  pixels=(uint32_t *) AcquireQuantumMemory(image->columns,image->rows*
+    sizeof(*pixels));
+  if (pixels == (uint32_t *) NULL)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
   /*
     Convert image to WebP raster pixels.
   */
-  q=picture.argb;
+  q=pixels;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const Quantum
+    register const PixelPacket
       *restrict p;
 
     register ssize_t
       x;
 
-    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
+    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+    if (p == (PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      *q++=(uint32_t) (image->alpha_trait == BlendPixelTrait ?
-        ScaleQuantumToChar(GetPixelAlpha(image,p)) << 24 : 0xff000000u) |
-        (ScaleQuantumToChar(GetPixelRed(image,p)) << 16) |
-        (ScaleQuantumToChar(GetPixelGreen(image,p)) << 8) |
-        (ScaleQuantumToChar(GetPixelBlue(image,p)));
-      p+=GetPixelChannels(image);
+      *q++=(uint32_t) (image->matte != MagickFalse ?
+        ScaleQuantumToChar(GetPixelAlpha(p)) << 24 : 0xff000000u) |
+        (ScaleQuantumToChar(GetPixelRed(p)) << 16) |
+        (ScaleQuantumToChar(GetPixelGreen(p)) << 8) |
+        (ScaleQuantumToChar(GetPixelBlue(p)));
+      p++;
     }
     status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) y,
       image->rows);
     if (status == MagickFalse)
       break;
   }
+  picture.argb=pixels;
   webp_status=WebPEncode(&configure,&picture);
   WebPPictureFree(&picture);
-  picture.argb=(uint32_t *) RelinquishMagickMemory(picture.argb);
+  pixels=(uint32_t *) RelinquishMagickMemory(pixels);
   (void) CloseBlob(image);
   return(webp_status == 0 ? MagickFalse : MagickTrue);
 }

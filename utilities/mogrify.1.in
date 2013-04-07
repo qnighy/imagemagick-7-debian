@@ -69,8 +69,6 @@ Image Settings:
   \-origin geometry     image origin
   \-page geometry       size and location of an image canvas (setting)
   \-path path           write images to this path on disk
-  \-perceptible epsilon
-                       pixel value less than |epsilon| become epsilon or -epsilon
   \-ping                efficiently determine image attributes
   \-pointsize value     font point size
   \-preview type        image preview type
@@ -176,6 +174,8 @@ Image Operators:
   \-ordered-dither NxN
                        add a noise pattern to the image with specific amplitudes
   \-paint radius        simulate an oil painting
+  \-perceptible epsilon
+                       pixel value less than |epsilon| become epsilon or -epsilon
   \-polaroid angle      simulate a Polaroid picture
   \-posterize levels    reduce the image to a limited number of color levels
   \-print string        interpret string and print to console
@@ -231,14 +231,6 @@ Image Operators:
   \-wave geometry       alter an image along a sine wave
   \-white-threshold value
                        force all pixels above the threshold into white
-
-Image Channel Operators:
-  \-channel-extract channel-list
-                        extract the channels in order
-  \-channel-inject channel-list
-                        inject the channels in order
-  \-channel-swap channel,channel
-                        swap the channels
 
 Image Sequence Operators:
   \-affinity filename   transform image colors to match this set of colors

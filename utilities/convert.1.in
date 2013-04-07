@@ -3,7 +3,7 @@
 convert \- convert between image formats as well as resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more.
 .SH SYNOPSIS
 .TP
-\fBconvert\fP [\fIinput-options\fP] \fIinput-file\fP [\fIoutput-options\fP] \fIoutput-file\fP
+\fBconvert\fP [\fIinput-option\fP] \fIinput-file\fP [\fIoutput-option\fP] \fIoutput-file\fP
 .SH OVERVIEW
 The \fBconvert\fP program is a member of the ImageMagick(1) suite of tools.  Use it to convert between image formats as well as resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more.  
 
@@ -230,15 +230,6 @@ Image Operators:
   \-white-threshold value
                        force all pixels above the threshold into white
 
-
-Image Channel Operators:
-  \-channel-extract channel-list
-                        extract the channels in order
-  \-channel-inject channel-list
-                        inject the channels in order
-  \-channel-swap channel,channel
-                        swap the channels
-
 Image Sequence Operators:
   \-affinity filename   transform image colors to match this set of colors
   \-append              append an image sequence top to bottom (use +append for left to right)
@@ -254,7 +245,7 @@ Image Sequence Operators:
   \-fx expression       apply mathematical expression to an image channel(s)
   \-hald-clut           apply a Hald color lookup table to the image
   \-morph value         morph an image sequence
-  \- osaic              create a mosaic from an image sequence
+  \-mosaic              create a mosaic from an image sequence
   \-poly terms          build a polynomial from the image sequence and the corresponding terms (coefficients and degree pairs)
   \-process arguments   process the image with a custom image filter
   \-separate            separate an image channel into a grayscale image
