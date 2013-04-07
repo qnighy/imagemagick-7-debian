@@ -403,6 +403,8 @@ static const OptionInfo
     { "-geometry", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+gravity", 0L, ImageInfoOptionFlag | DrawInfoOptionFlag, MagickFalse },
     { "-gravity", 1L, ImageInfoOptionFlag | DrawInfoOptionFlag, MagickFalse },
+    { "+grayscale", 0L, SimpleOperatorOptionFlag, MagickFalse },
+    { "-grayscale", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+green-primary", 0L, ImageInfoOptionFlag, MagickFalse },
     { "-green-primary", 1L, ImageInfoOptionFlag, MagickFalse },
     { "+hald-clut", 0L, DeprecateOptionFlag | FireOptionFlag, MagickFalse },
@@ -872,6 +874,8 @@ static const OptionInfo
     { "HWB", HWBColorspace, UndefinedOptionFlag, MagickFalse },
     { "Lab", LabColorspace, UndefinedOptionFlag, MagickFalse },
     { "LCH", LCHColorspace, UndefinedOptionFlag, MagickFalse },
+    { "LCHab", LCHabColorspace, UndefinedOptionFlag, MagickFalse },
+    { "LCHuv", LCHuvColorspace, UndefinedOptionFlag, MagickFalse },
     { "LMS", LMSColorspace, UndefinedOptionFlag, MagickFalse },
     { "Log", LogColorspace, UndefinedOptionFlag, MagickFalse },
     { "Luv", LuvColorspace, UndefinedOptionFlag, MagickFalse },
@@ -2598,21 +2602,25 @@ MagickExport MagickBooleanType SetImageOption(ImageInfo *image_info,
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
-
-  /* FUTURE: This should not be here! */
+  /*
+    FUTURE: This should not be here!
+  */
   if (LocaleCompare(option,"size") == 0)
     (void) CloneString(&image_info->size,value);
-
-  /* create tree if needed - specify how key,values are to be freed */
+  /*
+    Create tree if needed - specify how key,values are to be freed.
+  */
   if (image_info->options == (void *) NULL)
     image_info->options=NewSplayTree(CompareSplayTreeString,
       RelinquishMagickMemory,RelinquishMagickMemory);
-
-  /* Delete Option if NULL */
+  /*
+    Delete Option if NULL.
+  */
   if (value == (const char *) NULL)
     return(DeleteImageOption(image_info,option));
-
-  /* Add option to splay-tree */
+  /*
+    Add option to splay-tree.
+  */
   return(AddValueToSplayTree((SplayTreeInfo *) image_info->options,
     ConstantString(option),ConstantString(value)));
 }

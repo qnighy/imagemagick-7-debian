@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -779,7 +780,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (read_info->scenes != (char *) NULL)
         *read_info->scenes='\0';
     }
-  option=GetImageOption(image_info,"eps:use-cropbox");
+  option=GetImageArtifact(image,"eps:use-cropbox");
   if ((*image_info->magick == 'E') && ((option == (const char *) NULL) ||
       (IsMagickTrue(option) != MagickFalse)))
     (void) ConcatenateMagickString(options,"-dEPSCrop ",MaxTextExtent);

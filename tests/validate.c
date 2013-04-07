@@ -464,8 +464,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
 {
   char
 #ifdef MagickCountTempFiles
-    SystemCommand[MaxTextExtent],
     path[MaxTextExtent],
+    SystemCommand[MaxTextExtent],
 #endif
     size[MaxTextExtent];
 
@@ -502,7 +502,7 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
   (void) FormatLocaleFile(stdout,"validate image formats in memory:\n");
 
 #ifdef MagickCountTempFiles
-  (void)GetPathTemplate(path);
+  (void) GetPathTemplate(path);
   /* Remove file template except for the leading "/path/to/magick-" */
   path[strlen(path)-17]='\0';
   (void) FormatLocaleFile(stdout," tmp path is '%s*'\n",path);
@@ -653,15 +653,9 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       /*
         Compare reference to reconstruct image.
       */
-      fuzz=0.0;
+      fuzz=0.003;  /* grayscale */
       if (reference_formats[i].fuzz != 0.0)
         fuzz=reference_formats[i].fuzz;
-#if defined(MAGICKCORE_HDRI_SUPPORT)
-      fuzz+=0.003;
-#endif
-      if (IssRGBColorspace(reference_image->colorspace) == MagickFalse)
-        fuzz+=0.3;
-      fuzz+=MagickEpsilon;
       difference_image=CompareImageChannels(reference_image,reconstruct_image,
         CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
@@ -686,10 +680,10 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       (void) FormatLocaleFile(stdout,"... pass, ");
       (void) fflush(stdout);
       SystemCommand[0]='\0';
-      (void)strncat(SystemCommand,"echo `ls ",9);
-      (void)strncat(SystemCommand,path,MaxTextExtent-31);
-      (void)strncat(SystemCommand,"* | wc -w` tmp files.",20);
-      (void)system(SystemCommand);
+      (void) strncat(SystemCommand,"echo `ls ",9);
+      (void) strncat(SystemCommand,path,MaxTextExtent-31);
+      (void) strncat(SystemCommand,"* | wc -w` tmp files.",20);
+      (void) system(SystemCommand);
       (void) fflush(stdout);
 #else
       (void) FormatLocaleFile(stdout,"... pass\n");
@@ -881,15 +875,9 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
       /*
         Compare reference to reconstruct image.
       */
-      fuzz=0.0;
+      fuzz=0.003;  /* grayscale */
       if (reference_formats[i].fuzz != 0.0)
         fuzz=reference_formats[i].fuzz;
-#if defined(MAGICKCORE_HDRI_SUPPORT)
-      fuzz+=0.003;
-#endif
-      if (IssRGBColorspace(reference_image->colorspace) == MagickFalse)
-        fuzz+=0.3;
-      fuzz+=MagickEpsilon;
       difference_image=CompareImageChannels(reference_image,reconstruct_image,
         CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);

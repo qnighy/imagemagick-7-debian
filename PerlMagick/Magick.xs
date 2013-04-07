@@ -389,7 +389,7 @@ static struct
       { "black-point-compensation", MagickBooleanOptions} } },
     { "UnsharpMask", { {"geometry", StringReference},
       {"radius", RealReference}, {"sigma", RealReference},
-      {"gain", RealReference}, {"threshold", RealReference},
+      {"amount", RealReference}, {"threshold", RealReference},
       {"channel", MagickChannelOptions} } },
     { "MotionBlur", { {"geometry", StringReference},
       {"radius", RealReference}, {"sigma", RealReference},
@@ -541,7 +541,8 @@ static struct
     { "Perceptible", { {"epsilon", RealReference},
       {"channel", MagickChannelOptions} } },
     { "Poly", { {"terms", ArrayReference},
-      {"channel", MagickChannelOptions} } }
+      {"channel", MagickChannelOptions} } },
+    { "Grayscale", { {"method", MagickPixelIntensityOptions} } },
   };
 
 static SplayTreeInfo
@@ -2375,7 +2376,7 @@ static ssize_t strEQcase(const char *p,const char *q)
 %
 %
 */
-MODULE = Image::Magick PACKAGE = Image::Magick
+MODULE = Image::Magick PACKAGE = Image::Magick::Q16
 
 PROTOTYPES: ENABLE
 
@@ -7279,6 +7280,8 @@ Mogrify(ref,...)
     PerceptibleImage   = 276
     Poly               = 277
     PolyImage          = 278
+    Grayscale          = 279
+    GrayscaleImage     = 280
     MogrifyRegion      = 666
   PPCODE:
   {
@@ -10680,6 +10683,17 @@ Mogrify(ref,...)
           image=PolynomialImageChannel(image,channel,number_terms >> 1,terms,
             exception);
           terms=(double *) RelinquishMagickMemory(terms);
+          break;
+        }
+        case 140:  /* Grayscale */
+        {
+          PixelIntensityMethod
+            method;
+
+          method=UndefinedPixelIntensityMethod;
+          if (attribute_flag[0] != 0)
+            method=(PixelIntensityMethod) argument_list[0].integer_reference;
+          (void) GrayscaleImage(image,method);
           break;
         }
       }

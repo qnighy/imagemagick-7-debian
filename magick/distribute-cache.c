@@ -76,6 +76,11 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#else
+#undef send
+#undef recv
+#define send(file,buffer,length,flags)  0
+#define recv(file,buffer,length,flags)  0
 #endif
 
 /*
@@ -828,7 +833,7 @@ static void *DistributePixelCacheClient(void *socket)
 MagickExport void DistributePixelCacheServer(const int port,
   ExceptionInfo *exception)
 {
-#if defined(MAGICKCORE_HAVE_SOCKET) && defined(MAGICKCORE_THREAD_SUPPORT)
+#if defined(MAGICKCORE_HAVE_SOCKET)
   char
     service[MaxTextExtent];
 

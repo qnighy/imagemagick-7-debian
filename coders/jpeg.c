@@ -44,6 +44,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -1060,7 +1061,7 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   if (units == 2)
     image->units=PixelsPerCentimeterResolution;
   number_pixels=(MagickSizeType) image->columns*image->rows;
-  option=GetImageOption(image_info,"jpeg:size");
+  option=GetImageArtifact(image,"jpeg:size");
   if (option != (const char *) NULL)
     {
       double
@@ -1116,7 +1117,7 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   image->compression=JPEGCompression;
   image->interlace=JPEGInterlace;
 #endif
-  option=GetImageOption(image_info,"jpeg:colors");
+  option=GetImageArtifact(image,"jpeg:colors");
   if (option != (const char *) NULL)
     {
       /*
@@ -1125,10 +1126,11 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
       jpeg_info.quantize_colors=MagickTrue;
       jpeg_info.desired_number_of_colors=(int) StringToUnsignedLong(option);
     }
-  option=GetImageOption(image_info,"jpeg:block-smoothing");
-  jpeg_info.do_block_smoothing=IsStringTrue(option);
+  option=GetImageArtifact(image,"jpeg:block-smoothing");
+  if (option != (const char *) NULL)
+    jpeg_info.do_block_smoothing=IsStringTrue(option);
   jpeg_info.dct_method=JDCT_FLOAT;
-  option=GetImageOption(image_info,"jpeg:dct-method");
+  option=GetImageArtifact(image,"jpeg:dct-method");
   if (option != (const char *) NULL)
     switch (*option)
     {
@@ -1158,8 +1160,9 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
         break;
       }
     }
-  option=GetImageOption(image_info,"jpeg:fancy-upsampling");
-  jpeg_info.do_fancy_upsampling=IsStringTrue(option);
+  option=GetImageArtifact(image,"jpeg:fancy-upsampling");
+  if (option != (const char *) NULL)
+    jpeg_info.do_fancy_upsampling=IsStringTrue(option);
   (void) jpeg_start_decompress(&jpeg_info);
   image->columns=jpeg_info.output_width;
   image->rows=jpeg_info.output_height;
@@ -2118,7 +2121,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
         jpeg_info.density_unit=(UINT8) 2;
     }
   jpeg_info.dct_method=JDCT_FLOAT;
-  option=GetImageOption(image_info,"jpeg:dct-method");
+  option=GetImageArtifact(image,"jpeg:dct-method");
   if (option != (const char *) NULL)
     switch (*option)
     {
@@ -2148,7 +2151,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
         break;
       }
     }
-  option=GetImageOption(image_info,"jpeg:optimize-coding");
+  option=GetImageArtifact(image,"jpeg:optimize-coding");
   if (option != (const char *) NULL)
     jpeg_info.optimize_coding=IsStringTrue(option);
   else
@@ -2186,7 +2189,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
       "Interlace: nonprogressive");
 #endif
-  option=GetImageOption(image_info,"jpeg:extent");
+  option=GetImageArtifact(image,"jpeg:extent");
   if (option != (const char *) NULL)
     {
       Image
@@ -2272,7 +2275,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     }
   jpeg_set_quality(&jpeg_info,quality,MagickTrue);
 #if (JPEG_LIB_VERSION >= 70)
-  option=GetImageOption(image_info,"quality");
+  option=GetImageArtifact(image,"quality");
   if (option != (const char *) NULL)
     {
       GeometryInfo
@@ -2296,7 +2299,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     }
 #endif
   sampling_factor=(const char *) NULL;
-  value=GetImageOption(image_info,"jpeg:sampling-factor");
+  value=GetImageArtifact(image,"jpeg:sampling-factor");
   if (value == (char *) NULL)
     value=GetImageProperty(image,"jpeg:sampling-factor");
   if (value != (char *) NULL)
@@ -2360,7 +2363,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
       jpeg_info.comp_info[i].h_samp_factor=1;
       jpeg_info.comp_info[i].v_samp_factor=1;
     }
-  option=GetImageOption(image_info,"jpeg:q-table");
+  option=GetImageArtifact(image,"jpeg:q-table");
   if (option != (const char *) NULL)
     {
       QuantizationTable

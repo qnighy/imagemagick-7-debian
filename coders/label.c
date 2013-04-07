@@ -41,6 +41,7 @@
 */
 #include "magick/studio.h"
 #include "magick/annotate.h"
+#include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/draw.h"
@@ -203,7 +204,7 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
           break;
         draw_info->pointsize--;
       }
-      draw_info->pointsize=floor(draw_info->pointsize+0.5);
+      draw_info->pointsize--;
     }
   status=GetMultilineTypeMetrics(image,draw_info,&metrics);
   if (status == MagickFalse)

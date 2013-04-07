@@ -320,8 +320,6 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
       noise_image=DestroyImage(noise_image);
       return((Image *) NULL);
     }
-  if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(noise_image,RGBColorspace);
   /*
     Add noise in each row.
   */
@@ -379,12 +377,12 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       if ((channel & RedChannel) != 0)
-        SetPixelRed(q,ClampToQuantum(GenerateDifferentialNoise(
-          random_info[id],GetPixelRed(p),noise_type,attenuate)));
+        SetPixelRed(q,ClampToQuantum(GenerateDifferentialNoise(random_info[id],
+          GetPixelRed(p),noise_type,attenuate)));
       if (IsGrayColorspace(image->colorspace) != MagickFalse)
         {
-          SetPixelGreen(q,GetPixelRed(p));
-          SetPixelBlue(q,GetPixelRed(p));
+          SetPixelGreen(q,GetPixelRed(q));
+          SetPixelBlue(q,GetPixelRed(q));
         }
       else
         {

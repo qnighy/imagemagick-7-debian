@@ -772,7 +772,8 @@ MagickExport MagickBooleanType ClutImageChannel(Image *image,
   assert(clut_image->signature == MagickSignature);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
+      (IsGrayColorspace(clut_image->colorspace) == MagickFalse))
     (void) TransformImageColorspace(image,sRGBColorspace);
   clut_map=(MagickPixelPacket *) AcquireQuantumMemory(MaxMap+1UL,
     sizeof(*clut_map));
@@ -1166,8 +1167,10 @@ MagickExport MagickBooleanType ContrastStretchImageChannel(Image *image,
   /*
     Form histogram.
   */
-  status=MagickTrue;
   exception=(&image->exception);
+  if (IsGrayImage(image,exception) != MagickFalse)
+    (void) SetImageColorspace(image,GRAYColorspace);
+  status=MagickTrue;
   (void) ResetMagickMemory(histogram,0,(MaxMap+1)*sizeof(*histogram));
   image_view=AcquireAuthenticCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -1196,7 +1199,7 @@ MagickExport MagickBooleanType ContrastStretchImageChannel(Image *image,
         Quantum
           intensity;
 
-        intensity=PixelIntensityToQuantum(image,p);
+        intensity=ClampToQuantum(GetPixelIntensity(image,p));
         histogram[ScaleQuantumToMap(intensity)].red++;
         histogram[ScaleQuantumToMap(intensity)].green++;
         histogram[ScaleQuantumToMap(intensity)].blue++;
@@ -2271,6 +2274,200 @@ MagickExport MagickBooleanType GammaImageChannel(Image *image,
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%     G r a y s c a l e I m a g e                                             %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GrayscaleImage() converts the colors in the reference image to gray.
+%
+%  The format of the GrayscaleImageChannel method is:
+%
+%      MagickBooleanType GrayscaleImage(Image *image,
+%        const PixelIntensityMethod method)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o channel: the channel.
+%
+*/
+
+static inline MagickRealType MagickMax(const MagickRealType x,
+  const MagickRealType y)
+{
+  if (x > y)
+    return(x);
+  return(y);
+}
+
+static inline MagickRealType MagickMin(const MagickRealType x,
+  const MagickRealType y)
+{
+  if (x < y)
+    return(x);
+  return(y);
+}
+
+MagickExport MagickBooleanType GrayscaleImage(Image *image,
+ const PixelIntensityMethod method)
+{
+#define GrayscaleImageTag  "Grayscale/Image"
+
+  CacheView
+    *image_view;
+
+  ExceptionInfo
+    *exception;
+
+  MagickBooleanType
+    status;
+
+  MagickOffsetType
+    progress;
+
+  ssize_t
+    y;
+
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (image->storage_class == PseudoClass)
+    {
+      if (SyncImage(image) == MagickFalse)
+        return(MagickFalse);
+      if (SetImageStorageClass(image,DirectClass) == MagickFalse)
+        return(MagickFalse);
+    }
+  /*
+    Grayscale image.
+  */
+  status=MagickTrue;
+  progress=0;
+  exception=(&image->exception);
+  image_view=AcquireAuthenticCacheView(image,exception);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    magick_threads(image,image,image->rows,1)
+#endif
+  for (y=0; y < (ssize_t) image->rows; y++)
+  {
+    register PixelPacket
+      *restrict q;
+
+    register ssize_t
+      x;
+
+    if (status == MagickFalse)
+      continue;
+    q=GetCacheViewAuthenticPixels(image_view,0,y,image->columns,1,exception);
+    if (q == (PixelPacket *) NULL)
+      {
+        status=MagickFalse;
+        continue;
+      }
+    for (x=0; x < (ssize_t) image->columns; x++)
+    {
+      MagickRealType
+        blue,
+        green,
+        intensity,
+        red;
+
+      red=(MagickRealType) q->red;
+      green=(MagickRealType) q->green;
+      blue=(MagickRealType) q->blue;
+      switch (method)
+      {
+        case AveragePixelIntensityMethod:
+        {
+          intensity=(red+green+blue)/3.0;
+          break;
+        }
+        case BrightnessPixelIntensityMethod:
+        {
+          intensity=MagickMax(MagickMax(red,green),blue);
+          break;
+        }
+        case LightnessPixelIntensityMethod:
+        {
+          intensity=MagickMin(MagickMin(red,green),blue);
+          break;
+        }
+        case Rec601LumaPixelIntensityMethod:
+        {
+          intensity=0.298839f*red+0.586811f*green+0.114350f*blue;
+          break;
+        }
+        case Rec601LuminancePixelIntensityMethod:
+        default:
+        {
+          if (image->colorspace == sRGBColorspace)
+            {
+              red=DecodePixelGamma(red);
+              green=DecodePixelGamma(green);
+              blue=DecodePixelGamma(blue);
+            }
+          intensity=0.298839f*red+0.586811f*green+0.114350f*blue;
+          break;
+        }
+        case Rec709LumaPixelIntensityMethod:
+        {
+          intensity=0.21260f*red+0.71520f*green+0.07220f*blue;
+          break;
+        }
+        case Rec709LuminancePixelIntensityMethod:
+        {
+          if (image->colorspace == sRGBColorspace)
+            {
+              red=DecodePixelGamma(red);
+              green=DecodePixelGamma(green);
+              blue=DecodePixelGamma(blue);
+            }
+          intensity=0.21260f*red+0.71520f*green+0.07220f*blue;
+          break;
+        }
+        case RMSPixelIntensityMethod:
+        {
+          intensity=(MagickRealType) sqrt((double) red*red+green*green+
+            blue*blue);
+          break;
+        }
+      }
+      SetPixelGray(q,ClampToQuantum(intensity));
+      q++;
+    }
+    if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
+      status=MagickFalse;
+    if (image->progress_monitor != (MagickProgressMonitor) NULL)
+      {
+        MagickBooleanType
+          proceed;
+
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+        #pragma omp critical (MagickCore_GrayscaleImageChannel)
+#endif
+        proceed=SetImageProgress(image,GrayscaleImageTag,progress++,
+          image->rows);
+        if (proceed == MagickFalse)
+          status=MagickFalse;
+      }
+  }
+  image_view=DestroyCacheView(image_view);
+  if (SetImageColorspace(image,GRAYColorspace) == MagickFalse)
+    return(MagickFalse);
+  image->type=GrayscaleType;
+  return(status);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %     H a l d C l u t I m a g e                                               %
 %                                                                             %
 %                                                                             %
@@ -2298,13 +2495,6 @@ MagickExport MagickBooleanType GammaImageChannel(Image *image,
 %    o channel: the channel.
 %
 */
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 MagickExport MagickBooleanType HaldClutImage(Image *image,
   const Image *hald_image)
@@ -2369,7 +2559,8 @@ MagickExport MagickBooleanType HaldClutImageChannel(Image *image,
   */
   status=MagickTrue;
   progress=0;
-  length=MagickMin(hald_image->columns,hald_image->rows);
+  length=(size_t) MagickMin((MagickRealType) hald_image->columns,
+    (MagickRealType) hald_image->rows);
   for (level=2; (level*level*level) < length; level++) ;
   level*=level;
   cube_size=level*level;
@@ -2833,8 +3024,6 @@ MagickExport MagickBooleanType LevelizeImageChannel(Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
   if (image->storage_class == PseudoClass)
     for (i=0; i < (ssize_t) image->colors; i++)
     {
@@ -3228,7 +3417,7 @@ static inline void ModulateHSL(const double percent_hue,
   hue+=0.5*(0.01*percent_hue-1.0);
   while (hue < 0.0)
     hue+=1.0;
-  while (hue > 1.0)
+  while (hue >= 1.0)
     hue-=1.0;
   saturation*=0.01*percent_saturation;
   lightness*=0.01*percent_lightness;
@@ -3251,11 +3440,57 @@ static inline void ModulateHWB(const double percent_hue,
   hue+=0.5*(0.01*percent_hue-1.0);
   while (hue < 0.0)
     hue+=1.0;
-  while (hue > 1.0)
+  while (hue >= 1.0)
     hue-=1.0;
   blackness*=0.01*percent_blackness;
   whiteness*=0.01*percent_whiteness;
   ConvertHWBToRGB(hue,whiteness,blackness,red,green,blue);
+}
+
+static inline void ModulateLCHab(const double percent_luma,
+  const double percent_chroma,const double percent_hue,Quantum *red,
+  Quantum *green,Quantum *blue)
+{
+  double
+    hue,
+    luma,
+    chroma;
+
+  /*
+    Increase or decrease color luma, chroma, or hue.
+  */
+  ConvertRGBToLCHab(*red,*green,*blue,&luma,&chroma,&hue);
+  luma*=0.01*percent_luma;
+  chroma*=0.01*percent_chroma;
+  hue+=0.5*(0.01*percent_hue-1.0);
+  while (hue < 0.0)
+    hue+=1.0;
+  while (hue >= 1.0)
+    hue-=1.0;
+  ConvertLCHabToRGB(luma,chroma,hue,red,green,blue);
+}
+
+static inline void ModulateLCHuv(const double percent_luma,
+  const double percent_chroma,const double percent_hue,Quantum *red,
+  Quantum *green,Quantum *blue)
+{
+  double
+    hue,
+    luma,
+    chroma;
+
+  /*
+    Increase or decrease color luma, chroma, or hue.
+  */
+  ConvertRGBToLCHuv(*red,*green,*blue,&luma,&chroma,&hue);
+  luma*=0.01*percent_luma;
+  chroma*=0.01*percent_chroma;
+  hue+=0.5*(0.01*percent_hue-1.0);
+  while (hue < 0.0)
+    hue+=1.0;
+  while (hue >= 1.0)
+    hue-=1.0;
+  ConvertLCHuvToRGB(luma,chroma,hue,red,green,blue);
 }
 
 MagickExport MagickBooleanType ModulateImage(Image *image,const char *modulate)
@@ -3322,49 +3557,75 @@ MagickExport MagickBooleanType ModulateImage(Image *image,const char *modulate)
     colorspace=(ColorspaceType) ParseCommandOption(MagickColorspaceOptions,
       MagickFalse,artifact);
   if (image->storage_class == PseudoClass)
+    for (i=0; i < (ssize_t) image->colors; i++)
     {
-      /*
-        Modulate colormap.
-      */
-      for (i=0; i < (ssize_t) image->colors; i++)
-      {
-        Quantum
-          blue,
-          green,
-          red;
+      Quantum
+        blue,
+        green,
+        red;
 
-        red=image->colormap[i].red;
-        green=image->colormap[i].green;
-        blue=image->colormap[i].blue;
-        switch (colorspace)
+      /*
+        Modulate image colormap.
+      */
+      red=image->colormap[i].red;
+      green=image->colormap[i].green;
+      blue=image->colormap[i].blue;
+      if (IssRGBColorspace(image->colorspace) != MagickFalse)
         {
-          case HCLColorspace:
-          {
-            ModulateHCL(percent_hue,percent_saturation,percent_brightness,
-              &red,&green,&blue);
-            break;
-          }
-          case HSBColorspace:
-          {
-            ModulateHSB(percent_hue,percent_saturation,percent_brightness,
-              &red,&green,&blue);
-            break;
-          }
-          case HSLColorspace:
-          default:
-          {
-            ModulateHSL(percent_hue,percent_saturation,percent_brightness,
-              &red,&green,&blue);
-            break;
-          }
-          case HWBColorspace:
-          {
-            ModulateHWB(percent_hue,percent_saturation,percent_brightness,
-              &red,&green,&blue);
-            break;
-          }
+          red=ClampToQuantum(DecodePixelGamma((MagickRealType) red));
+          green=ClampToQuantum(DecodePixelGamma((MagickRealType) green));
+          blue=ClampToQuantum(DecodePixelGamma((MagickRealType) blue));
+        }
+      switch (colorspace)
+      {
+        case HCLColorspace:
+        {
+          ModulateHCL(percent_hue,percent_saturation,percent_brightness,
+            &red,&green,&blue);
+          break;
+        }
+        case HSBColorspace:
+        {
+          ModulateHSB(percent_hue,percent_saturation,percent_brightness,
+            &red,&green,&blue);
+          break;
+        }
+        case HSLColorspace:
+        default:
+        {
+          ModulateHSL(percent_hue,percent_saturation,percent_brightness,
+            &red,&green,&blue);
+          break;
+        }
+        case HWBColorspace:
+        {
+          ModulateHWB(percent_hue,percent_saturation,percent_brightness,
+            &red,&green,&blue);
+          break;
+        }
+        case LCHabColorspace:
+        {
+          ModulateLCHab(percent_brightness,percent_saturation,percent_hue,
+            &red,&green,&blue);
+          break;
+        }
+        case LCHColorspace:
+        case LCHuvColorspace:
+        {
+          ModulateLCHuv(percent_brightness,percent_saturation,percent_hue,
+            &red,&green,&blue);
+          break;
         }
       }
+      if (IssRGBColorspace(image->colorspace) != MagickFalse)
+        {
+          red=ClampToQuantum(EncodePixelGamma((MagickRealType) red));
+          green=ClampToQuantum(EncodePixelGamma((MagickRealType) green));
+          blue=ClampToQuantum(EncodePixelGamma((MagickRealType) blue));
+        }
+      image->colormap[i].red=red;
+      image->colormap[i].green=green;
+      image->colormap[i].blue=blue;
     }
   /*
     Modulate image.
@@ -3403,6 +3664,12 @@ MagickExport MagickBooleanType ModulateImage(Image *image,const char *modulate)
       red=GetPixelRed(q);
       green=GetPixelGreen(q);
       blue=GetPixelBlue(q);
+      if (IssRGBColorspace(image->colorspace) != MagickFalse)
+        {
+          red=ClampToQuantum(DecodePixelGamma((MagickRealType) red));
+          green=ClampToQuantum(DecodePixelGamma((MagickRealType) green));
+          blue=ClampToQuantum(DecodePixelGamma((MagickRealType) blue));
+        }
       switch (colorspace)
       {
         case HCLColorspace:
@@ -3430,7 +3697,26 @@ MagickExport MagickBooleanType ModulateImage(Image *image,const char *modulate)
             &red,&green,&blue);
           break;
         }
+        case LCHabColorspace:
+        {
+          ModulateLCHab(percent_brightness,percent_saturation,percent_hue,
+            &red,&green,&blue);
+          break;
+        }
+        case LCHColorspace:
+        case LCHuvColorspace:
+        {
+          ModulateLCHuv(percent_brightness,percent_saturation,percent_hue,
+            &red,&green,&blue);
+          break;
+        }
       }
+      if (IssRGBColorspace(image->colorspace) != MagickFalse)
+        {
+          red=ClampToQuantum(EncodePixelGamma((MagickRealType) red));
+          green=ClampToQuantum(EncodePixelGamma((MagickRealType) green));
+          blue=ClampToQuantum(EncodePixelGamma((MagickRealType) blue));
+        }
       SetPixelRed(q,red);
       SetPixelGreen(q,green);
       SetPixelBlue(q,blue);
@@ -3535,14 +3821,11 @@ MagickExport MagickBooleanType NegateImageChannel(Image *image,
               (image->colormap[i].green != image->colormap[i].blue))
             continue;
         if ((channel & RedChannel) != 0)
-          image->colormap[i].red=QuantumRange-
-            image->colormap[i].red;
+          image->colormap[i].red=QuantumRange-image->colormap[i].red;
         if ((channel & GreenChannel) != 0)
-          image->colormap[i].green=QuantumRange-
-            image->colormap[i].green;
+          image->colormap[i].green=QuantumRange-image->colormap[i].green;
         if ((channel & BlueChannel) != 0)
-          image->colormap[i].blue=QuantumRange-
-            image->colormap[i].blue;
+          image->colormap[i].blue=QuantumRange-image->colormap[i].blue;
       }
     }
   /*
@@ -3597,12 +3880,10 @@ MagickExport MagickBooleanType NegateImageChannel(Image *image,
           if ((channel & BlueChannel) != 0)
             SetPixelBlue(q,QuantumRange-GetPixelBlue(q));
           if ((channel & OpacityChannel) != 0)
-            SetPixelOpacity(q,QuantumRange-
-              GetPixelOpacity(q));
+            SetPixelOpacity(q,QuantumRange-GetPixelOpacity(q));
           if (((channel & IndexChannel) != 0) &&
               (image->colorspace == CMYKColorspace))
-            SetPixelIndex(indexes+x,QuantumRange-
-              GetPixelIndex(indexes+x));
+            SetPixelIndex(indexes+x,QuantumRange-GetPixelIndex(indexes+x));
           q++;
         }
         sync=SyncCacheViewAuthenticPixels(image_view,exception);

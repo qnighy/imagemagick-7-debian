@@ -40,7 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/property.h"
+#include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -64,6 +64,7 @@
 #include "magick/option.h"
 #include "magick/pixel-accessor.h"
 #include "magick/profile.h"
+#include "magick/property.h"
 #include "magick/quantum-private.h"
 #include "magick/resource_.h"
 #include "magick/static.h"
@@ -771,7 +772,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image)
             (void) WriteBlobString(image,buffer);
           }
         }
-    option=GetImageOption(image_info,"pcl:fit-to-page");
+    option=GetImageArtifact(image,"pcl:fit-to-page");
     if ((option != (const char *) NULL) &&
         (IsMagickTrue(option) != MagickFalse))
       (void) WriteBlobString(image,"\033*r3A");

@@ -212,13 +212,13 @@ static MagickBooleanType ConvertUsage(void)
       "-gaussian-blur geometry",
       "                     reduce image noise and reduce detail levels",
       "-geometry geometry   preferred size or location of the image",
+      "-grayscale method    convert image to grayscale",
       "-identify            identify the format and characteristics of the image",
       "-ift                 implements the inverse discrete Fourier transform (DFT)",
       "-implode amount      implode image pixels about the center",
       "-interpolative-resize geometry",
       "                     resize image using 'point sampled' interpolation",
       "-lat geometry        local adaptive thresholding",
-      "-layers method       optimize, merge,  or compare image layers",
       "-level value         adjust the level of image contrast",
       "-level-colors color,color",
       "                     level image with the given colors",
@@ -320,6 +320,7 @@ static MagickBooleanType ConvertUsage(void)
       "-flatten             flatten a sequence of images",
       "-fx expression       apply mathematical expression to an image channel(s)",
       "-hald-clut           apply a Hald color lookup table to the image",
+      "-layers method       optimize, merge, or compare image layers",
       "-morph value         morph an image sequence",
       "-mosaic              create a mosaic from an image sequence",
       "-poly terms          build a polynomial from the image sequence and the corresponding",
@@ -1634,6 +1635,23 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
               argv[i]);
             if (gravity < 0)
               ThrowConvertException(OptionError,"UnrecognizedGravityType",
+                argv[i]);
+            break;
+          }
+        if (LocaleCompare("grayscale",option+1) == 0)
+          {
+            ssize_t
+              method;
+
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowConvertException(OptionError,"MissingArgument",option);
+            method=ParseCommandOption(MagickPixelIntensityOptions,MagickFalse,
+              argv[i]);
+            if (method < 0)
+              ThrowConvertException(OptionError,"UnrecognizedIntensityMethod",
                 argv[i]);
             break;
           }

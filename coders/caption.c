@@ -41,6 +41,7 @@
 */
 #include "magick/studio.h"
 #include "magick/annotate.h"
+#include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/composite-private.h"
@@ -137,7 +138,7 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
   /*
     Format caption.
   */
-  option=GetImageOption(image_info,"filename");
+  option=GetImageArtifact(image,"filename");
   if (option == (const char *) NULL)
     property=InterpretImageProperties(image_info,image,image_info->filename);
   else
@@ -150,7 +151,7 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
   caption=ConstantString(GetImageProperty(image,"caption"));
   draw_info=CloneDrawInfo(image_info,(DrawInfo *) NULL);
   (void) CloneString(&draw_info->text,caption);
-  gravity=GetImageOption(image_info,"gravity");
+  gravity=GetImageArtifact(image,"gravity");
   if (gravity != (char *) NULL)
     draw_info->gravity=(GravityType) ParseCommandOption(MagickGravityOptions,
       MagickFalse,gravity);
@@ -262,7 +263,7 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
           break;
         draw_info->pointsize--;
       }
-      draw_info->pointsize=floor(draw_info->pointsize+0.5);
+      draw_info->pointsize--;
       i=FormatMagickCaption(image,draw_info,MagickFalse,&metrics,&caption);
     }
   if (SetImageBackgroundColor(image) == MagickFalse)

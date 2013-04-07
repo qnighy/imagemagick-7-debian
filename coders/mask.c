@@ -3,14 +3,14 @@
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%                        IIIII  N   N  FFFFF   OOO                            %
-%                          I    NN  N  F      O   O                           %
-%                          I    N N N  FFF    O   O                           %
-%                          I    N  NN  F      O   O                           %
-%                        IIIII  N   N  F       OOO                            %
+%                         M   M   AAA   SSSSS  K   K                          %
+%                         MM MM  A   A  SS     K  K                           %
+%                         M M M  AAAAA   SSS   KKK                            %
+%                         M   M  A   A     SS  K  K                           %
+%                         M   M  A   A  SSSSS  K   K                          %
 %                                                                             %
 %                                                                             %
-%                         Write Info About the Image.                         %
+%                              Write Mask File.                               %
 %                                                                             %
 %                              Software Design                                %
 %                                John Cristy                                  %
@@ -40,68 +40,124 @@
   Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/artifact.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
-#include "magick/colorspace.h"
+#include "magick/constitute.h"
+#include "magick/enhance.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
-#include "magick/identify.h"
-#include "magick/image.h"
-#include "magick/image-private.h"
 #include "magick/list.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
-#include "magick/option.h"
 #include "magick/pixel-accessor.h"
-#include "magick/property.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/module.h"
-#include "magick/utility.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteINFOImage(const ImageInfo *,Image *);
+  WriteMASKImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   R e g i s t e r I N F O I m a g e                                         %
+%   R e a d M A S K I m a g e                                                 %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  RegisterINFOImage() adds attributes for the INFO image format to
+%  ReadMASKImage returns the image mask associated with the image.
+%
+%  The format of the ReadMASKImage method is:
+%
+%      Image *ReadMASKImage(const ImageInfo *image_info,
+%        ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image_info: the image info.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+static Image *ReadMASKImage(const ImageInfo *image_info,
+  ExceptionInfo *exception)
+{
+  Image
+    *image;
+
+  ImageInfo
+    *read_info;
+
+  /*
+    Initialize Image structure.
+  */
+  assert(image_info != (const ImageInfo *) NULL);
+  assert(image_info->signature == MagickSignature);
+  if (image_info->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
+      image_info->filename);
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickSignature);
+  read_info=CloneImageInfo(image_info);
+  SetImageInfoBlob(read_info,(void *) NULL,0);
+  *read_info->magick='\0';
+  image=ReadImage(read_info,exception);
+  read_info=DestroyImageInfo(read_info);
+  if (image != (Image *) NULL)
+    {
+      MagickBooleanType
+        status;
+
+      status=GrayscaleImage(image,image->intensity);
+      if (status == MagickFalse)
+        image=DestroyImage(image);
+    }
+  return(GetFirstImageInList(image));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   R e g i s t e r M A S K I m a g e                                         %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  RegisterMASKImage() adds attributes for the MASK image format to
 %  the list of supported formats.  The attributes include the image format
 %  tag, a method to read and/or write the format, whether the format
 %  supports the saving of more than one frame to the same file or blob,
 %  whether the format supports native in-memory I/O, and a brief
 %  description of the format.
 %
-%  The format of the RegisterINFOImage method is:
+%  The format of the RegisterMASKImage method is:
 %
-%      size_t RegisterINFOImage(void)
+%      size_t RegisterMASKImage(void)
 %
 */
-ModuleExport size_t RegisterINFOImage(void)
+ModuleExport size_t RegisterMASKImage(void)
 {
   MagickInfo
     *entry;
 
-  entry=SetMagickInfo("INFO");
-  entry->encoder=(EncodeImageHandler *) WriteINFOImage;
-  entry->blob_support=MagickFalse;
-  entry->description=ConstantString("The image format and characteristics");
-  entry->module=ConstantString("INFO");
+  entry=SetMagickInfo("MASK");
+  entry->decoder=(DecodeImageHandler *) ReadMASKImage;
+  entry->encoder=(EncodeImageHandler *) WriteMASKImage;
+  entry->description=ConstantString("Image Clip Mask");
+  entry->module=ConstantString("MASK");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -111,23 +167,23 @@ ModuleExport size_t RegisterINFOImage(void)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   U n r e g i s t e r I N F O I m a g e                                     %
+%   U n r e g i s t e r M A S K I m a g e                                     %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  UnregisterINFOImage() removes format registrations made by the
-%  INFO module from the list of supported formats.
+%  UnregisterMASKImage() removes format registrations made by the
+%  MASK module from the list of supported formats.
 %
-%  The format of the UnregisterINFOImage method is:
+%  The format of the UnregisterMASKImage method is:
 %
-%      UnregisterINFOImage(void)
+%      UnregisterMASKImage(void)
 %
 */
-ModuleExport void UnregisterINFOImage(void)
+ModuleExport void UnregisterMASKImage(void)
 {
-  (void) UnregisterMagickInfo("INFO");
+  (void) UnregisterMagickInfo("MASK");
 }
 
 /*
@@ -135,17 +191,17 @@ ModuleExport void UnregisterINFOImage(void)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   W r i t e I N F O I m a g e                                               %
+%   W r i t e M A S K I m a g e                                               %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  WriteINFOImage writes the pixel values as text numbers.
+%  WriteMASKImage() writes an image mask to a file.
 %
-%  The format of the WriteINFOImage method is:
+%  The format of the WriteMASKImage method is:
 %
-%      MagickBooleanType WriteINFOImage(const ImageInfo *image_info,
+%      MagickBooleanType WriteMASKImage(const ImageInfo *image_info,
 %        Image *image)
 %
 %  A description of each parameter follows.
@@ -155,64 +211,32 @@ ModuleExport void UnregisterINFOImage(void)
 %    o image:  The image.
 %
 */
-static MagickBooleanType WriteINFOImage(const ImageInfo *image_info,
+static MagickBooleanType WriteMASKImage(const ImageInfo *image_info,
   Image *image)
 {
-  const char
-    *format;
+  Image
+    *mask_image;
+
+  ImageInfo
+    *write_info;
 
   MagickBooleanType
     status;
 
-  MagickOffsetType
-    scene;
-
-  /*
-    Open output image file.
-  */
-  assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
-  assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
-  if (image->debug != MagickFalse)
-    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  status=OpenBlob(image_info,image,WriteBlobMode,&image->exception);
-  if (status == MagickFalse)
-    return(status);
-  scene=0;
-  do
-  {
-    format=GetImageArtifact(image,"format");
-    if (format == (char *) NULL)
-      {
-        (void) CopyMagickString(image->filename,image->magick_filename,
-          MaxTextExtent);
-        image->magick_columns=image->columns;
-        image->magick_rows=image->rows;
-        (void) IdentifyImage(image,GetBlobFileHandle(image),
-          image_info->verbose);
-      }
-    else
-      {
-        char
-          *text;
-
-        text=InterpretImageProperties(image_info,image,format);
-        if (text != (char *) NULL)
-          {
-            (void) WriteBlobString(image,text);
-            (void) WriteBlobString(image,"\n");
-            text=DestroyString(text);
-          }
-      }
-    if (GetNextImageInList(image) == (Image *) NULL)
-      break;
-    image=SyncNextImageInList(image);
-    status=SetImageProgress(image,SaveImagesTag,scene++,
-      GetImageListLength(image));
-    if (status == MagickFalse)
-      break;
-  } while (image_info->adjoin != MagickFalse);
-  (void) CloseBlob(image);
-  return(MagickTrue);
+  if (image->mask == (Image *) NULL)
+    ThrowWriterException(CoderError,"ImageDoesNotHaveAMask");
+  mask_image=CloneImage(image->mask,0,0,MagickTrue,&image->exception);
+  if (mask_image == (Image *) NULL)
+    return(MagickFalse);
+  (void) SetImageType(mask_image,TrueColorType);
+  (void) CopyMagickString(mask_image->filename,image->filename,MaxTextExtent);
+  write_info=CloneImageInfo(image_info);
+  (void) SetImageInfo(write_info,1,&image->exception);
+  if (LocaleCompare(write_info->magick,"MASK") == 0)
+    (void) FormatLocaleString(mask_image->filename,MaxTextExtent,"miff:%s",
+      write_info->filename);
+  status=WriteImage(write_info,mask_image);
+  mask_image=DestroyImage(mask_image);
+  write_info=DestroyImageInfo(write_info);
+  return(status);
 }

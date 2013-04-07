@@ -41,6 +41,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/artifact.h"
 #include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
@@ -1231,7 +1232,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
     /*
       Render with imagemask operator?
     */
-    option=GetImageOption(image_info,"ps3:imagemask");
+    option=GetImageArtifact(image,"ps3:imagemask");
     (void) WriteBlobString(image,((option != (const char *) NULL) &&
       (IsMonochromeImage(image,&image->exception) != MagickFalse)) ?
       "true\n" : "false\n");

@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -1375,7 +1376,7 @@ static inline const char *GetDPXProperty(const ImageInfo *image_info,
   const char
     *value;
 
-  value=GetImageOption(image_info,property);
+  value=GetImageArtifact(image,property);
   if (value != (const char *) NULL)
     return(value);
   return(GetImageProperty(image,property));
