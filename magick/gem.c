@@ -455,8 +455,8 @@ MagickExport void ConvertLCHabToRGB(const double luma,const double chroma,
   L=luma;
   C=chroma;
   H=hue;
-  a=C*cos(360.0*H*MagickPI/180.0)+0.5;
-  b=C*sin(360.0*H*MagickPI/180.0)+0.5;
+  a=C*cos(360.0*H*MagickPI/180.0);
+  b=C*sin(360.0*H*MagickPI/180.0);
   ConvertLabToXYZ(L,a,b,&X,&Y,&Z);
   ConvertXYZToRGB(X,Y,Z,red,green,blue);
 }
@@ -510,8 +510,8 @@ MagickExport void ConvertLCHuvToRGB(const double luma,const double chroma,
   L=luma;
   C=chroma;
   H=hue;
-  u=C*cos(360.0*H*MagickPI/180.0)+134.0/354.0;
-  v=C*sin(360.0*H*MagickPI/180.0)+140.0/262.0;
+  u=C*cos(360.0*H*MagickPI/180.0);
+  v=C*sin(360.0*H*MagickPI/180.0);
   ConvertLuvToXYZ(L,u,v,&X,&Y,&Z);
   ConvertXYZToRGB(X,Y,Z,red,green,blue);
 }
@@ -864,8 +864,8 @@ MagickExport void ConvertRGBToLCHab(const Quantum red,const Quantum green,
   assert(hue != (double *) NULL);
   ConvertRGBToXYZ(red,green,blue,&X,&Y,&Z);
   ConvertXYZToLab(X,Y,Z,&L,&a,&b);
-  C=hypot(a-0.5,b-0.5);
-  H=180.0*atan2(b-0.5,a-0.5)/MagickPI/360.0;
+  C=hypot(a,b);
+  H=180.0*atan2(b,a)/MagickPI/360.0;
   if (H < 0.0)
     H+=1.0;
   if (H >= 1.0)
@@ -924,8 +924,8 @@ MagickExport void ConvertRGBToLCHuv(const Quantum red,const Quantum green,
   assert(hue != (double *) NULL);
   ConvertRGBToXYZ(red,green,blue,&X,&Y,&Z);
   ConvertXYZToLuv(X,Y,Z,&L,&u,&v);
-  C=hypot(u-134.0/254.0,v-140.0/262.0);
-  H=180.0*atan2(v-140.0/262.0,u-134.0/254.0)/MagickPI/360.0;
+  C=hypot(u,v);
+  H=180.0*atan2(v,u)/MagickPI/360.0;
   if (H < 0.0)
     H+=1.0;
   if (H >= 1.0)

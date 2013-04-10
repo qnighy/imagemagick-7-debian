@@ -192,6 +192,13 @@ static MagickBooleanType CropToFitImage(Image **image,
 %  imperfections in the scanning or surface, or simply because the paper was
 %  not placed completely flat when scanned.
 %
+%  The amount of rotation calculated to deskew the image is saved in the
+%  artifact "deskew:angle".
+%
+%  If the artifact "deskew:auto-crop" is defined with 'offset limits' used to
+%  determine the images background color, the image will be automatically
+%  cropped of the excess background.
+%
 %  The format of the DeskewImage method is:
 %
 %      Image *DeskewImage(const Image *image,const double threshold,
@@ -880,17 +887,24 @@ MagickExport Image *DeskewImage(const Image *image,const double threshold,
       }
   }
   projection=(size_t *) RelinquishMagickMemory(projection);
+  degrees=RadiansToDegrees(-atan((double) skew/width/8));
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(TransformEvent,GetMagickModule(),
+      "  Deskew angle: %g",degrees);
   /*
     Deskew image.
   */
   clone_image=CloneImage(image,0,0,MagickTrue,exception);
   if (clone_image == (Image *) NULL)
     return((Image *) NULL);
+  {
+    char
+      angle[MaxTextExtent];
+
+    (void) FormatLocaleString(angle,MaxTextExtent,"%g",degrees);
+    (void) SetImageArtifact(clone_image,"deskew:angle",angle);
+  }
   (void) SetImageVirtualPixelMethod(clone_image,BackgroundVirtualPixelMethod);
-  degrees=RadiansToDegrees(-atan((double) skew/width/8));
-  if (image->debug != MagickFalse)
-    (void) LogMagickEvent(TransformEvent,GetMagickModule(),
-      "  Deskew angle: %g",degrees);
   affine_matrix.sx=cos(DegreesToRadians(fmod((double) degrees,360.0)));
   affine_matrix.rx=sin(DegreesToRadians(fmod((double) degrees,360.0)));
   affine_matrix.ry=(-sin(DegreesToRadians(fmod((double) degrees,360.0))));
