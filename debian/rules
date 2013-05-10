@@ -131,6 +131,27 @@ quantum_override_dh_auto_install-arch_%:
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
 
+	# move binaries to /usr/lib/bin
+	# TODO: proper patch upstream
+	if ! test -d "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/"; then \
+		mkdir -p "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/"; \
+	fi;
+	while read FILE; do \
+           if echo $$FILE | grep usr/bin > /dev/null; then \
+              filename=`echo "$$FILE"|sed s/*//g`; \
+	      basename=`basename $$filename`; \
+	      if ! test -f debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename ; then \
+                cp -f "debian/tmp-$*/usr/bin/$$basename" \
+                      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/"; \
+              else \
+                true; \
+              fi; \
+            else \
+              true; \
+            fi ;\
+        done < debian/imagemagick.install
+
+
 	# build icons cache (build for each arch in order to get more testing)
 	while read SIZE; do \
 		mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/ ;\
