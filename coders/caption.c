@@ -138,7 +138,7 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
   /*
     Format caption.
   */
-  option=GetImageArtifact(image,"filename");
+  option=GetImageOption(image_info,"filename");
   if (option == (const char *) NULL)
     property=InterpretImageProperties(image_info,image,image_info->filename);
   else
@@ -151,54 +151,39 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
   caption=ConstantString(GetImageProperty(image,"caption"));
   draw_info=CloneDrawInfo(image_info,(DrawInfo *) NULL);
   (void) CloneString(&draw_info->text,caption);
-  gravity=GetImageArtifact(image,"gravity");
+  gravity=GetImageOption(image_info,"gravity");
   if (gravity != (char *) NULL)
     draw_info->gravity=(GravityType) ParseCommandOption(MagickGravityOptions,
       MagickFalse,gravity);
   if (image->columns == 0)
     {
-      for ( ; ; draw_info->pointsize*=2.0)
-      {
-        text=AcquireString(caption);
-        i=FormatMagickCaption(image,draw_info,MagickFalse,&metrics,&text);
-        (void) CloneString(&draw_info->text,text);
-        text=DestroyString(text);
-        (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",
-          -metrics.bounds.x1,metrics.ascent);
-        if (draw_info->gravity == UndefinedGravity)
-          (void) CloneString(&draw_info->geometry,geometry);
-        status=GetMultilineTypeMetrics(image,draw_info,&metrics);
-        width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
-        height=(size_t) floor(metrics.height+draw_info->stroke_width+0.5);
-        if ((width >= image->columns) || (image_info->pointsize != 0.0))
-          break;
-      }
+      text=AcquireString(caption);
+      i=FormatMagickCaption(image,draw_info,MagickFalse,&metrics,&text);
+      (void) CloneString(&draw_info->text,text);
+      text=DestroyString(text);
+      (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",
+        -metrics.bounds.x1,metrics.ascent);
+      if (draw_info->gravity == UndefinedGravity)
+        (void) CloneString(&draw_info->geometry,geometry);
+      status=GetMultilineTypeMetrics(image,draw_info,&metrics);
+      width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
       image->columns=width;
     }
   if (image->rows == 0)
     {
-      for ( ; ; draw_info->pointsize*=2.0)
-      {
-        text=AcquireString(caption);
-        i=FormatMagickCaption(image,draw_info,MagickFalse,&metrics,&text);
-        (void) CloneString(&draw_info->text,text);
-        text=DestroyString(text);
-        (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",
-          -metrics.bounds.x1,metrics.ascent);
-        if (draw_info->gravity == UndefinedGravity)
-          (void) CloneString(&draw_info->geometry,geometry);
-        status=GetMultilineTypeMetrics(image,draw_info,&metrics);
-        width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
-        height=(size_t) floor(metrics.height+draw_info->stroke_width+0.5);
-        if ((width >= image->columns) || (image_info->pointsize != 0.0))
-          break;
-      }
+      text=AcquireString(caption);
+      i=FormatMagickCaption(image,draw_info,MagickFalse,&metrics,&text);
+      (void) CloneString(&draw_info->text,text);
+      text=DestroyString(text);
+      (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",
+        -metrics.bounds.x1,metrics.ascent);
+      if (draw_info->gravity == UndefinedGravity)
+        (void) CloneString(&draw_info->geometry,geometry);
+      status=GetMultilineTypeMetrics(image,draw_info,&metrics);
       image->rows=(size_t) ((i+1)*(metrics.ascent-metrics.descent+
         draw_info->interline_spacing+draw_info->stroke_width)+0.5);
     }
-  if (image_info->pointsize != 0.0)
-    i=FormatMagickCaption(image,draw_info,MagickTrue,&metrics,&caption);
-  else
+  if (fabs(image_info->pointsize) < MagickEpsilon)
     {
       double
         high,
@@ -226,8 +211,8 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
         if ((width >= (image->columns << 1)) || (height >= (image->rows << 1)))
           break;
       }
-      high=draw_info->pointsize/2.0;
-      for (low=high/2.0; (high-low) > 1.0; )
+      high=draw_info->pointsize;
+      for (low=1.0; (high-low) > 1.0; )
       {
         draw_info->pointsize=(low+high)/2.0;
         text=AcquireString(caption);
@@ -264,8 +249,9 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
         draw_info->pointsize--;
       }
       draw_info->pointsize--;
-      i=FormatMagickCaption(image,draw_info,MagickFalse,&metrics,&caption);
     }
+  (void) CloneString(&draw_info->text,caption);
+  i=FormatMagickCaption(image,draw_info,MagickFalse,&metrics,&caption);
   if (SetImageBackgroundColor(image) == MagickFalse)
     {
       InheritException(exception,&image->exception);

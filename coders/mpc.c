@@ -593,6 +593,18 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     geometry=DestroyString(geometry);
                     break;
                   }
+                if (LocaleCompare(keyword,"pixel-intensity") == 0)
+                  {
+                    ssize_t
+                      intensity;
+
+                    intensity=ParseCommandOption(MagickPixelIntensityOptions,
+                      MagickFalse,options);
+                    if (intensity < 0)
+                      break;
+                    image->intensity=(PixelIntensityMethod) intensity;
+                    break;
+                  }
                 if ((LocaleNCompare(keyword,"profile:",8) == 0) ||
                     (LocaleNCompare(keyword,"profile-",8) == 0))
                   {
@@ -1119,6 +1131,13 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
           CommandOptionToMnemonic(MagickColorspaceOptions,image->colorspace));
         (void) WriteBlobString(image,buffer);
       }
+    if (image->intensity != UndefinedPixelIntensityMethod)
+      {
+        (void) FormatLocaleString(buffer,MaxTextExtent,"pixel-intensity=%s\n",
+          CommandOptionToMnemonic(MagickPixelIntensityOptions,
+          image->intensity));
+        (void) WriteBlobString(image,buffer);
+      }
     if (image->endian != UndefinedEndian)
       {
         (void) FormatLocaleString(buffer,MaxTextExtent,"endian=%s\n",
@@ -1323,7 +1342,6 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
       (void) WriteBlobByte(image,'\n');
       property=GetNextImageProperty(image);
     }
-    ResetImageArtifactIterator(image);
     (void) WriteBlobString(image,"\f\n:\032");
     if (image->montage != (char *) NULL)
       {

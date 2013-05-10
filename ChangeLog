@@ -1,3 +1,113 @@
+2013-05-08  6.8.5-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.5-5, SVN revision 12227.
+
+2013-05-07  6.8.5-5 Nicolas Robidoux <nicolas.robidoux@gmail...>
+  * Change the sample JPEG quantization table xml to something that works
+    really well with 2x2 Chroma subsampling around quality 75.
+
+2013-05-06  6.8.5-5 Glenn Randers-Pehrson <glennrp@image...>
+  * Eliminate whitespace from image properties that hold PNG chunk data.
+  * The -poly option treats the opacity channel as alpha (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23346).
+  * The -threshold 50% option returns a 50-50 black and white image (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23354).
+  * Let user override the TIFF rows per strip  (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=23307).
+
+2013-05-05  6.8.5-5 Cristy  <quetzlzacatenango@image...>
+  * Fix transient bug in the -separate option (reference
+   http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23335).
+
+2013-05-01  6.8.5-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.5-4, SVN revision 12089.
+
+2013-05-01  6.8.5-4 Cristy  <quetzlzacatenango@image...>
+  * Add DeleteImageArtifact() for jpeg:extent artifact (thanks to
+    Jimmy Xie @ Microsoft).
+  * Track morphology changes per thread to avoid a critical section.
+
+2013-04-28  6.8.5-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.5-3, SVN revision 12025.
+
+2013-04-29  6.8.5-3 Cristy  <quetzlzacatenango@image...>
+  * Add DeleteImageArtifact() for jpeg:extent artifact (thanks to
+    Jimmy Xie @ Microsoft).
+  * Add support for JXR / WDP image format.
+
+2013-04-28  6.8.5-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.5-2, SVN revision 12013.
+
+2013-04-28  6.8.5-2 Cristy  <quetzlzacatenango@image...>
+  * Use GetImageOption() for webp options (e.g. webp:lossless).
+
+2013-04-27  6.8.5-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.5-1, SVN revision 12000.
+
+2013-04-26  6.8.5-1 Cristy  <quetzlzacatenango@image...>
+  * Recognize xc:gray50 is non-linear.
+  * Loop over read() until requested bytes are consumed (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?t=23268).
+  * Don't use gamma lookup map when HDRI is enabled.
+
+2013-04-24  6.8.5-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.5-0, SVN revision 11979.
+
+2013-04-16  6.8.5-0 Glenn Randers-Pehrson <glennrp@image...>
+  * Handle benign errors as warnings in the PNG coder.
+
+2013-04-16  6.8.5-0 Cristy  <quetzlzacatenango@image...>
+  * Don't modify channel values for -separate (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23193).
+  * The -adaptive-sharpen option is now sharpening properly (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23211).
+  * Sometimes an image says its grayscale when its not (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23217).
+  * Use malloc() to allocate X image data (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23221).
+  * If there are more components than quantization tables, the last table is
+    replicated.
+  * Removed the ICC profile from the logo: image definition in coders/magick.c;
+    libpng16 detected that it was a broken sRGB profile.
+  * Negatives raised to a non-integer power returns NaN's (reference
+   http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23234).
+
+2013-04-15  6.8.4-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.4-10, SVN revision 11851.
+
+2013-04-11  6.8.4-10 Cristy  <quetzlzacatenango@image...>
+  * Ensure -define jpeg:extent is resticted to at most 7 iterations (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23179).
+  * Move X11 font support from annotate.c source module to xwindow.c.
+
+2013-04-10  6.8.4-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.4-9, SVN revision 11818.
+
+2013-04-10  6.8.4-9 Bastien Roucaries  <roucaries.basti...>
+  * Respect --program-suffix configure script option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23143).
+  * Update to the newest AX_CHECK_PTHREAD macro from autoconf-archive.
+
+2013-04-10  6.8.4-9 Anthony Thyssen <A.Thyssen@griffith...>
+  * Save the calculated angle for "deskew" as the artifact "deskew:angle"
+
+2013-04-08  6.8.4-9 Cristy  <quetzlzacatenango@image...>
+  * Pass JP2 format type to decoder (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23038).
+  * Previously tinting a grayscale image returned dark results.
+  * The -page option only affects new images (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23172).
+  * Revert 'Move binaries to lib subdirectory and link are created from binary
+	  package' patch.  We're getting too many bug reports.
+
+2013-04-07  6.8.4-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.4-8, SVN revision 11743.
+
+2013-04-06  6.8.4-8 Cristy  <quetzlzacatenango@image...>
+  * Include intensity type in the MIFF metadata.
+
+2013-04-06  6.8.4-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.4-7, SVN revision 11720.
+
 2013-04-05  6.8.4-7 Anthony Thyssen <A.Thyssen@griffith...>
   * Fix -sample sampling point to midpoints of sampling areas
   * add a "sample:offset=" define to allow users to adjust this
@@ -4308,7 +4418,7 @@ http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=21884).
     Bacically a 'reverse-level' function, with different input args.
   * Set  +level  or a '!' flag in -level or LevelImage() to call
     the new 'reverse-level' function LevelizeImageChannels().
-  * More work on IsMagickColorSimular() to fix relationship between
+  * More work on IsMagickColorSimilar() to fix relationship between
     transparent-black and opaque-black, which was matched as 'similar'.
     Also attempts to fix 'K' channel handling for CMYK colorspace.
     More work on this to come.
@@ -4320,7 +4430,7 @@ http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=21884).
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=11492).
 
 2008-06-13  6.4.1-8 Anthony <anthony@griffith...>
-  * Fixed IsMagickColorSimular() as used by -opauqe and -transparent
+  * Fixed IsMagickColorSimilar() as used by -opaque and -transparent
     so as to understand that the Hue Channel is cyclic by nature
 
 2008-06-08  6.4.1-8 Cristy  <quetzlzacatenango@image...>

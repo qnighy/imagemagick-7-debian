@@ -634,7 +634,6 @@ MagickExport Image *CharcoalImage(const Image *image,const double radius,
   clone_image=CloneImage(image,0,0,MagickTrue,exception);
   if (clone_image == (Image *) NULL)
     return((Image *) NULL);
-  (void) SetImageType(clone_image,GrayscaleType);
   edge_image=EdgeImage(clone_image,radius,exception);
   clone_image=DestroyImage(clone_image);
   if (edge_image == (Image *) NULL)
@@ -645,7 +644,7 @@ MagickExport Image *CharcoalImage(const Image *image,const double radius,
     return((Image *) NULL);
   (void) NormalizeImage(charcoal_image);
   (void) NegateImage(charcoal_image,MagickFalse);
-  (void) SetImageType(charcoal_image,GrayscaleType);
+  (void) GrayscaleImage(charcoal_image,image->intensity);
   return(charcoal_image);
 }
 
@@ -731,7 +730,7 @@ MagickExport Image *ColorizeImage(const Image *image,const char *opacity,
       colorize_image=DestroyImage(colorize_image);
       return((Image *) NULL);
     }
- if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
+  if ((IsGrayColorspace(image->colorspace) != MagickFalse) ||
       (IsPixelGray(&colorize) != MagickFalse))
     (void) SetImageColorspace(colorize_image,sRGBColorspace);
   if ((colorize_image->matte == MagickFalse) &&
@@ -4154,7 +4153,7 @@ MagickExport Image *SepiaToneImage(const Image *image,const double threshold,
         intensity,
         tone;
 
-      intensity=(MagickRealType) PixelIntensityToQuantum(image,p);
+      intensity=GetPixelIntensity(image,p);
       tone=intensity > threshold ? (MagickRealType) QuantumRange : intensity+
         (MagickRealType) QuantumRange-threshold;
       SetPixelRed(q,ClampToQuantum(tone));
@@ -4266,7 +4265,7 @@ MagickExport Image *ShadowImage(const Image *image,const double opacity,
   if (clone_image == (Image *) NULL)
     return((Image *) NULL);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(clone_image,sRGBColorspace);
+    (void) SetImageColorspace(clone_image,sRGBColorspace);
   (void) SetImageVirtualPixelMethod(clone_image,EdgeVirtualPixelMethod);
   clone_image->compose=OverCompositeOp;
   border_info.width=(size_t) floor(2.0*sigma+0.5);
@@ -4583,7 +4582,7 @@ MagickExport MagickBooleanType SolarizeImageChannel(Image *image,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) SetImageColorspace(image,sRGBColorspace);
   if (image->storage_class == PseudoClass)
     {
       register ssize_t
@@ -4783,20 +4782,20 @@ MagickExport Image *SteganoImage(const Image *image,const Image *watermark,
         {
           case 0:
           {
-            SetBit(GetPixelRed(q),j,GetBit(PixelIntensityToQuantum(image,
-              &pixel),i));
+            SetBit(GetPixelRed(q),j,GetBit(ClampToQuantum(GetPixelIntensity(
+              image,&pixel)),i));
             break;
           }
           case 1:
           {
-            SetBit(GetPixelGreen(q),j,GetBit(PixelIntensityToQuantum(image,
-              &pixel),i));
+            SetBit(GetPixelGreen(q),j,GetBit(ClampToQuantum(GetPixelIntensity(
+              image,&pixel)),i));
             break;
           }
           case 2:
           {
-            SetBit(GetPixelBlue(q),j,GetBit(PixelIntensityToQuantum(image,
-              &pixel),i));
+            SetBit(GetPixelBlue(q),j,GetBit(ClampToQuantum(GetPixelIntensity(
+              image,&pixel)),i));
             break;
           }
         }
@@ -5265,11 +5264,11 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
   else
     pixel.opacity=(MagickRealType) OpaqueOpacity;
   color_vector.red=(MagickRealType) (pixel.red*tint.red/100.0-
-    GetPixelIntensity(image,&tint));
+    GetPixelIntensity(tint_image,&tint));
   color_vector.green=(MagickRealType) (pixel.green*tint.green/100.0-
-    GetPixelIntensity(image,&tint));
+    GetPixelIntensity(tint_image,&tint));
   color_vector.blue=(MagickRealType) (pixel.blue*tint.blue/100.0-
-    GetPixelIntensity(image,&tint));
+    GetPixelIntensity(tint_image,&tint));
   /*
     Tint image.
   */

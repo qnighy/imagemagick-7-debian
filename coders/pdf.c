@@ -431,11 +431,11 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   cmyk=image_info->colorspace == CMYKColorspace ? MagickTrue : MagickFalse;
   cropbox=MagickFalse;
-  option=GetImageArtifact(image,"pdf:use-cropbox");
+  option=GetImageOption(image_info,"pdf:use-cropbox");
   if (option != (const char *) NULL)
     cropbox=IsMagickTrue(option);
   trimbox=MagickFalse;
-  option=GetImageArtifact(image,"pdf:use-trimbox");
+  option=GetImageOption(image_info,"pdf:use-trimbox");
   if (option != (const char *) NULL)
     trimbox=IsMagickTrue(option);
   count=0;
@@ -1625,7 +1625,8 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
                 break;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                *q++=ScaleQuantumToChar(PixelIntensityToQuantum(image,p));
+                *q++=ScaleQuantumToChar(ClampToQuantum(
+                  GetPixelLuma(image,p)));
                 p++;
               }
               if (image->previous == (Image *) NULL)
@@ -1666,8 +1667,8 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
                 break;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                Ascii85Encode(image,
-                  ScaleQuantumToChar(PixelIntensityToQuantum(image,p)));
+                Ascii85Encode(image,ScaleQuantumToChar(ClampToQuantum(
+                  GetPixelLuma(image,p))));
                 p++;
               }
               if (image->previous == (Image *) NULL)
@@ -2075,7 +2076,8 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
                 break;
               for (x=0; x < (ssize_t) tile_image->columns; x++)
               {
-                *q++=ScaleQuantumToChar(PixelIntensityToQuantum(image,p));
+                *q++=ScaleQuantumToChar(ClampToQuantum(
+                   GetPixelLuma(image,p)));
                 p++;
               }
             }
@@ -2110,8 +2112,8 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
                 break;
               for (x=0; x < (ssize_t) tile_image->columns; x++)
               {
-                Ascii85Encode(image,
-                  ScaleQuantumToChar(PixelIntensityToQuantum(image,p)));
+                Ascii85Encode(image,ScaleQuantumToChar(ClampToQuantum(
+                  GetPixelLuma(image,p))));
                 p++;
               }
             }

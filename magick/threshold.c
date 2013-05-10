@@ -442,7 +442,7 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) SetImageColorspace(image,sRGBColorspace);
   /*
     Bilevel threshold image.
   */
@@ -478,8 +478,8 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
       {
         for (x=0; x < (ssize_t) image->columns; x++)
         {
-          SetPixelRed(q,(MagickRealType) PixelIntensityToQuantum(image,q) <=
-            threshold ? 0 : QuantumRange);
+          SetPixelRed(q,GetPixelIntensity(image,q) <= threshold ? 0 :
+            QuantumRange);
           SetPixelGreen(q,GetPixelRed(q));
           SetPixelBlue(q,GetPixelRed(q));
           q++;
@@ -639,7 +639,7 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
   intensity=MagickPixelIntensity(&threshold);
   if ((IsMagickGray(&threshold) == MagickFalse) &&
       (IsGrayColorspace(image->colorspace) != MagickFalse))
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) SetImageColorspace(image,sRGBColorspace);
   /*
     Black threshold image.
   */
@@ -2006,7 +2006,7 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
           MagickRealType
             intensity;
 
-          intensity=(MagickRealType) PixelIntensityToQuantum(image,q);
+          intensity=GetPixelIntensity(image,q);
           if (intensity < min_threshold)
             threshold.index=min_threshold;
           else if (intensity > max_threshold)

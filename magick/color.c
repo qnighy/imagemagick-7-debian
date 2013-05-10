@@ -1086,8 +1086,11 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
       return;
     }
   if ((pixel->colorspace == HCLColorspace) ||
+      (pixel->colorspace == HCLpColorspace) ||
       (pixel->colorspace == HSBColorspace) ||
+      (pixel->colorspace == HSIColorspace) ||
       (pixel->colorspace == HSLColorspace) ||
+      (pixel->colorspace == HSVColorspace) ||
       (pixel->colorspace == HWBColorspace))
     {
       (void) FormatLocaleString(component,MaxTextExtent,"%g%%",
@@ -1447,11 +1450,16 @@ MagickExport void GetColorTuple(const MagickPixelPacket *pixel,
   if (color.matte != MagickFalse)
     (void) ConcatenateMagickString(tuple,"a",MaxTextExtent);
   (void) ConcatenateMagickString(tuple,"(",MaxTextExtent);
-  ConcatenateColorComponent(&color,RedChannel,SVGCompliance,tuple);
-  (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
-  ConcatenateColorComponent(&color,GreenChannel,SVGCompliance,tuple);
-  (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
-  ConcatenateColorComponent(&color,BlueChannel,SVGCompliance,tuple);
+  if (color.colorspace == GRAYColorspace)
+    ConcatenateColorComponent(&color,GrayChannel,SVGCompliance,tuple);
+  else
+    {
+      ConcatenateColorComponent(&color,RedChannel,SVGCompliance,tuple);
+      (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
+      ConcatenateColorComponent(&color,GreenChannel,SVGCompliance,tuple);
+      (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
+      ConcatenateColorComponent(&color,BlueChannel,SVGCompliance,tuple);
+    }
   if (color.colorspace == CMYKColorspace)
     {
       (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
@@ -2573,7 +2581,7 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
       */
       (void) ResetMagickMemory(&pixel,0,sizeof(pixel));
       name++;
-      for (n=0; isxdigit((int) ((unsigned char) name[n])) != MagickFalse; n++) ;
+      for (n=0; isxdigit((int) ((unsigned char) name[n])) != 0; n++) ;
       if ((n % 3) == 0)
         {
           do
@@ -2596,7 +2604,7 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
                   else
                     return(MagickFalse);
             }
-          } while (isxdigit((int) ((unsigned char) *name)) != MagickFalse);
+          } while (isxdigit((int) ((unsigned char) *name)) != 0);
           depth=4*(n/3);
         }
       else

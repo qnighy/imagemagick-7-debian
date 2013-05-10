@@ -5615,11 +5615,11 @@ MagickExport MagickBooleanType XMakeImage(Display *display,
   if (window->shared_memory == MagickFalse)
     {
       if (ximage->format != XYBitmap)
-        ximage->data=(char *) AcquireQuantumMemory((size_t)
-          ximage->bytes_per_line,(size_t) ximage->height);
+        ximage->data=(char *) malloc((size_t) ximage->bytes_per_line*
+          ximage->height);
       else
-        ximage->data=(char *) AcquireQuantumMemory((size_t)
-          ximage->bytes_per_line*ximage->depth,(size_t) ximage->height);
+        ximage->data=(char *) malloc((size_t) ximage->bytes_per_line*
+          ximage->depth*ximage->height);
     }
   if (ximage->data == (char *) NULL)
     {
@@ -5697,9 +5697,9 @@ MagickExport MagickBooleanType XMakeImage(Display *display,
             /*
               Allocate matte image pixel data.
             */
-            matte_image->data=(char *) AcquireQuantumMemory((size_t)
-              matte_image->bytes_per_line*matte_image->depth,
-              (size_t) matte_image->height);
+            matte_image->data=(char *) malloc((size_t)
+              matte_image->bytes_per_line*matte_image->depth*
+              matte_image->height);
             if (matte_image->data == (char *) NULL)
               {
                 XDestroyImage(matte_image);
@@ -5916,7 +5916,7 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
       foreground=(unsigned char)
         (XPixelIntensity(&window->pixel_info->background_color) <
          XPixelIntensity(&window->pixel_info->foreground_color) ? 0x80 : 0x00);
-      polarity=(unsigned short) ((PixelIntensityToQuantum(image,
+      polarity=(unsigned short) ((GetPixelIntensity(image,
         &canvas->colormap[0])) < (QuantumRange/2) ? 1 : 0);
       if (canvas->colors == 2)
         polarity=GetPixelIntensity(canvas,&canvas->colormap[0]) <
@@ -6082,14 +6082,10 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
           register unsigned int
             bytes_per_pixel;
 
-          unsigned char
-            channel[sizeof(size_t)];
-
           /*
             Convert to multi-byte color-mapped X canvas.
           */
           bytes_per_pixel=(unsigned int) (ximage->bits_per_pixel >> 3);
-          (void) ResetMagickMemory(channel,0,sizeof(*channel));
           for (y=0; y < (int) canvas->rows; y++)
           {
             p=GetCacheViewVirtualPixels(canvas_view,0,(ssize_t) y,
@@ -6102,11 +6098,9 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
               pixel=pixels[(ssize_t) GetPixelIndex(indexes+x)];
               for (k=0; k < (int) bytes_per_pixel; k++)
               {
-                channel[k]=(unsigned char) pixel;
+                *q++=(unsigned char) (pixel & 0xff);
                 pixel>>=8;
               }
-              for (k=0; k < (int) bytes_per_pixel; k++)
-                *q++=channel[k];
             }
             q+=scanline_pad;
           }
@@ -6329,9 +6323,6 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
                 register unsigned int
                   bytes_per_pixel;
 
-                unsigned char
-                  channel[sizeof(size_t)];
-
                 /*
                   Convert to multi-byte continuous-tone X canvas.
                 */
@@ -6347,11 +6338,9 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
                     pixel=XGammaPixel(map_info,p);
                     for (k=0; k < (int) bytes_per_pixel; k++)
                     {
-                      channel[k]=(unsigned char) pixel;
+                      *q++=(unsigned char) (pixel & 0xff);
                       pixel>>=8;
                     }
-                    for (k=0; k < (int) bytes_per_pixel; k++)
-                      *q++=channel[k];
                     p++;
                   }
                   q+=scanline_pad;
@@ -6535,7 +6524,7 @@ static void XMakeImageMSBFirst(const XResourceInfo *resource_info,
       foreground=(unsigned char)
         (XPixelIntensity(&window->pixel_info->background_color) <
          XPixelIntensity(&window->pixel_info->foreground_color) ?  0x01 : 0x00);
-      polarity=(unsigned short) ((PixelIntensityToQuantum(image,
+      polarity=(unsigned short) ((GetPixelIntensity(image,
         &canvas->colormap[0])) < (QuantumRange/2) ? 1 : 0);
       if (canvas->colors == 2)
         polarity=GetPixelIntensity(canvas,&canvas->colormap[0]) <
@@ -6947,9 +6936,6 @@ static void XMakeImageMSBFirst(const XResourceInfo *resource_info,
                 register unsigned int
                   bytes_per_pixel;
 
-                unsigned char
-                  channel[sizeof(size_t)];
-
                 /*
                   Convert to multi-byte continuous-tone X canvas.
                 */
@@ -6965,11 +6951,9 @@ static void XMakeImageMSBFirst(const XResourceInfo *resource_info,
                     pixel=XGammaPixel(map_info,p);
                     for (k=(int) bytes_per_pixel-1; k >= 0; k--)
                     {
-                      channel[k]=(unsigned char) pixel;
+                      *q++=(unsigned char) (pixel & 0xff);
                       pixel>>=8;
                     }
-                    for (k=0; k < (int) bytes_per_pixel; k++)
-                      *q++=channel[k];
                     p++;
                   }
                   q+=scanline_pad;
@@ -7622,7 +7606,7 @@ static inline MagickRealType DiversityPixelIntensity(
   MagickRealType
     intensity;
 
-  intensity=0.298839f*pixel->red+0.586811f*pixel->green+0.114350f*pixel->blue;
+  intensity=0.298839*pixel->red+0.586811*pixel->green+0.114350*pixel->blue;
   return(intensity);
 }
 
@@ -8897,6 +8881,223 @@ MagickExport MagickBooleanType XRemoteCommand(Display *display,
 %                                                                             %
 %                                                                             %
 %                                                                             %
++   X R e n d e r I m a g e                                                   %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  XRenderImage() renders text on the image with an X11 font.  It also returns
+%  the bounding box of the text relative to the image.
+%
+%  The format of the XRenderImage method is:
+%
+%      MagickBooleanType XRenderImage(Image *image,DrawInfo *draw_info,
+%        const PointInfo *offset,TypeMetric *metrics)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o draw_info: the draw info.
+%
+%    o offset: (x,y) location of text relative to image.
+%
+%    o metrics: bounding box of text.
+%
+*/
+MagickPrivate MagickBooleanType XRenderImage(Image *image,
+  const DrawInfo *draw_info,const PointInfo *offset,TypeMetric *metrics)
+{
+  const char
+    *client_name;
+
+  DrawInfo
+    cache_info;
+
+  Display
+    *display = (Display *) NULL;
+
+  ImageInfo
+    *image_info;
+
+  MagickBooleanType
+    status;
+
+  size_t
+    height,
+    width;
+
+  XAnnotateInfo
+    annotate_info;
+
+  XFontStruct
+    *font_info;
+
+  XPixelInfo
+    pixel;
+
+  XResourceInfo
+    resource_info;
+
+  XrmDatabase
+    resource_database;
+
+  XStandardColormap
+    *map_info;
+
+  XVisualInfo
+    *visual_info;
+
+  /*
+    Open X server connection.
+  */
+  display=XOpenDisplay(draw_info->server_name);
+  if (display == (Display *) NULL)
+    {
+      ThrowXWindowException(XServerError,"UnableToOpenXServer",
+        draw_info->server_name);
+      return(MagickFalse);
+    }
+  /*
+    Get user defaults from X resource database.
+  */
+  (void) XSetErrorHandler(XError);
+  image_info=AcquireImageInfo();
+  client_name=GetClientName();
+  resource_database=XGetResourceDatabase(display,client_name);
+  XGetResourceInfo(image_info,resource_database,client_name,&resource_info);
+  resource_info.close_server=MagickFalse;
+  resource_info.colormap=PrivateColormap;
+  resource_info.font=AcquireString(draw_info->font);
+  resource_info.background_color=AcquireString("#ffffffffffff");
+  resource_info.foreground_color=AcquireString("#000000000000");
+  map_info=XAllocStandardColormap();
+  if (map_info == (XStandardColormap *) NULL)
+    {
+      ThrowXWindowException(ResourceLimitError,"MemoryAllocationFailed",
+        image->filename);
+      return(MagickFalse);
+    }
+  /*
+    Initialize visual info.
+  */
+  visual_info=XBestVisualInfo(display,map_info,&resource_info);
+  if (visual_info == (XVisualInfo *) NULL)
+    {
+      ThrowXWindowException(XServerError,"UnableToGetVisual",image->filename);
+      return(MagickFalse);
+    }
+  map_info->colormap=(Colormap) NULL;
+  pixel.pixels=(unsigned long *) NULL;
+  /*
+    Initialize Standard Colormap info.
+  */
+  XGetMapInfo(visual_info,XDefaultColormap(display,visual_info->screen),
+    map_info);
+  XGetPixelPacket(display,visual_info,map_info,&resource_info,(Image *) NULL,
+    &pixel);
+  pixel.annotate_context=XDefaultGC(display,visual_info->screen);
+  /*
+    Initialize font info.
+  */
+  font_info=XBestFont(display,&resource_info,MagickFalse);
+  if (font_info == (XFontStruct *) NULL)
+    {
+      ThrowXWindowException(XServerError,"UnableToLoadFont",draw_info->font);
+      return(MagickFalse);
+    }
+  if ((map_info == (XStandardColormap *) NULL) ||
+      (visual_info == (XVisualInfo *) NULL) ||
+      (font_info == (XFontStruct *) NULL))
+    {
+      XFreeResources(display,visual_info,map_info,&pixel,font_info,
+        &resource_info,(XWindowInfo *) NULL);
+      ThrowXWindowException(XServerError,"UnableToLoadFont",image->filename);
+      return(MagickFalse);
+    }
+  cache_info=(*draw_info);
+  /*
+    Initialize annotate info.
+  */
+  XGetAnnotateInfo(&annotate_info);
+  annotate_info.stencil=ForegroundStencil;
+  if (cache_info.font != draw_info->font)
+    {
+      /*
+        Type name has changed.
+      */
+      (void) XFreeFont(display,font_info);
+      (void) CloneString(&resource_info.font,draw_info->font);
+      font_info=XBestFont(display,&resource_info,MagickFalse);
+      if (font_info == (XFontStruct *) NULL)
+        {
+          ThrowXWindowException(XServerError,"UnableToLoadFont",
+            draw_info->font);
+          return(MagickFalse);
+        }
+    }
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(AnnotateEvent,GetMagickModule(),
+      "Font %s; pointsize %g",draw_info->font != (char *) NULL ?
+      draw_info->font : "none",draw_info->pointsize);
+  cache_info=(*draw_info);
+  annotate_info.font_info=font_info;
+  annotate_info.text=(char *) draw_info->text;
+  annotate_info.width=(unsigned int) XTextWidth(font_info,draw_info->text,(int)
+    strlen(draw_info->text));
+  annotate_info.height=(unsigned int) font_info->ascent+font_info->descent;
+  metrics->pixels_per_em.x=(double) font_info->max_bounds.width;
+  metrics->pixels_per_em.y=(double) font_info->ascent+font_info->descent;
+  metrics->ascent=(double) font_info->ascent+4;
+  metrics->descent=(double) (-font_info->descent);
+  metrics->width=annotate_info.width/ExpandAffine(&draw_info->affine);
+  metrics->height=font_info->ascent+font_info->descent;
+  metrics->max_advance=(double) font_info->max_bounds.width;
+  metrics->bounds.x1=0.0;
+  metrics->bounds.y1=metrics->descent;
+  metrics->bounds.x2=metrics->ascent+metrics->descent;
+  metrics->bounds.y2=metrics->ascent+metrics->descent;
+  metrics->underline_position=(-2.0);
+  metrics->underline_thickness=1.0;
+  if (draw_info->render == MagickFalse)
+    return(MagickTrue);
+  if (draw_info->fill.opacity == TransparentOpacity)
+    return(MagickTrue);
+  /*
+    Render fill color.
+  */
+  width=annotate_info.width;
+  height=annotate_info.height;
+  if ((draw_info->affine.rx != 0.0) || (draw_info->affine.ry != 0.0))
+    {
+      if (((draw_info->affine.sx-draw_info->affine.sy) == 0.0) &&
+          ((draw_info->affine.rx+draw_info->affine.ry) == 0.0))
+        annotate_info.degrees=(180.0/MagickPI)*
+          atan2(draw_info->affine.rx,draw_info->affine.sx);
+    }
+  (void) FormatLocaleString(annotate_info.geometry,MaxTextExtent,
+    "%.20gx%.20g%+.20g%+.20g",(double) width,(double) height,
+    ceil(offset->x-0.5),ceil(offset->y-metrics->ascent-metrics->descent+
+    draw_info->interline_spacing-0.5));
+  pixel.pen_color.red=ScaleQuantumToShort(draw_info->fill.red);
+  pixel.pen_color.green=ScaleQuantumToShort(draw_info->fill.green);
+  pixel.pen_color.blue=ScaleQuantumToShort(draw_info->fill.blue);
+  status=XAnnotateImage(display,&pixel,&annotate_info,image);
+  if (status == 0)
+    {
+      ThrowXWindowException(ResourceLimitError,"MemoryAllocationFailed",
+        image->filename);
+      return(MagickFalse);
+    }
+  return(MagickTrue);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   X R e t a i n W i n d o w C o l o r s                                     %
 %                                                                             %
 %                                                                             %
@@ -9666,6 +9867,48 @@ MagickExport Image *XImportImage(const ImageInfo *image_info,
       image_info->filename);
   assert(ximage_info != (XImportInfo *) NULL);
   return((Image *) NULL);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   X R e n d e r I m a g e                                                   %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  XRenderImage() renders text on the image with an X11 font.  It also returns
+%  the bounding box of the text relative to the image.
+%
+%  The format of the XRenderImage method is:
+%
+%      MagickBooleanType XRenderImage(Image *image,DrawInfo *draw_info,
+%        const PointInfo *offset,TypeMetric *metrics)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o draw_info: the draw info.
+%
+%    o offset: (x,y) location of text relative to image.
+%
+%    o metrics: bounding box of text.
+%
+*/
+MagickPrivate MagickBooleanType XRenderImage(Image *image,
+  const DrawInfo *draw_info,const PointInfo *offset,TypeMetric *metrics)
+{
+  (void) draw_info;
+  (void) offset;
+  (void) metrics;
+  (void) ThrowMagickException(&image->exception,GetMagickModule(),
+    MissingDelegateError,"DelegateLibrarySupportNotBuiltIn","`%s' (X11)",
+    image->filename);
+  return(MagickFalse);
 }
 #endif
 

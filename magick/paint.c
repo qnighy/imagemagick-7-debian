@@ -686,8 +686,8 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
       {
         for (u=0; u < (ssize_t) width; u++)
         {
-          k=(ssize_t) ScaleQuantumToChar(PixelIntensityToQuantum(linear_image,
-            p+u+i));
+          k=(ssize_t) ScaleQuantumToChar(ClampToQuantum(GetPixelIntensity(
+            linear_image,p+u+i)));
           histogram[k]++;
           if (histogram[k] > count)
             {
@@ -811,7 +811,7 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
     return(MagickFalse);
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
       (IsMagickGray(fill) == MagickFalse))
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) SetImageColorspace(image,sRGBColorspace);
   if ((fill->opacity != OpaqueOpacity) && (image->matte == MagickFalse))
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
   /*
