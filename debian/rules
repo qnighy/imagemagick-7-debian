@@ -124,6 +124,9 @@ quantum_override_dh_auto_install-arch_%:
 	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
 	find $(CURDIR)/debian/tmp-$*/usr/lib -name '*.la' -exec \
 		sed -i "s,^dependency_libs=.*,dependency_libs=''," {} \;
+	# Remove RPATH from *.so
+	find $(CURDIR)/debian/tmp-$* -name '*.so*' -exec \
+		chrpath -d {} \;
 
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
@@ -211,7 +214,7 @@ override_dh_auto_install-indep:
                 else \
                         true; \
                 fi \
-        done < debian/imagemagick-6.install
+        done < debian/imagemagick.install
 
 
 	# Remove empty directories in debian/tmp
