@@ -1,4 +1,4 @@
-imagemagick (8:6.8.4.7-1) experimental; urgency=low
+imagemagick (8:6.8.5.5-1) experimental; urgency=low
 
   [ Bastien Roucariès ]
   * New upstream version:
@@ -17,10 +17,10 @@ imagemagick (8:6.8.4.7-1) experimental; urgency=low
      thanks to Michael Terry (Closes: #701655).
    - "package name does not adhere to naming policy for Perl
     modules", thanks to ansgar@debian.org (Closes: #575932).
-  
+
   [ Vincent Fourmond ]
   * Handle upstream rename of configuration directory:
-    /etc/ImageMagick -> /etc/ImageMagick-6  
+    /etc/ImageMagick -> /etc/ImageMagick-6
 
  -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Sun, 07 Apr 2013 20:30:02 +0200
 
