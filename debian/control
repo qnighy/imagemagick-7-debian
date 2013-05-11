@@ -106,7 +106,7 @@ Description: object-oriented C++ interface to ImageMagick - header files
  programs using Magick++.
 
 Package: imagemagick
-Architecture: all
+Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}, imagemagick-6.q16
 Description: image manipulation programs -- binaries
