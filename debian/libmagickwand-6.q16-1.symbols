@@ -1,16 +1,6 @@
 # SymbolsHelper-Confirmed: 1.0.0 amd64
 libMagickWand-6.Q16.so.1 libmagickwand-6.q16-1 #MINVER#
- .gomp_critical_user_MagickCore_CommandGenesis@Base 6.8.5.5
- .gomp_critical_user_MagickWand_DuplexTransferPixelViewIterator@Base 6.8.5.5
- .gomp_critical_user_MagickWand_DuplexTransferWandViewIterator@Base 6.8.5.5
- .gomp_critical_user_MagickWand_GetPixelViewIterator@Base 6.8.5.5
- .gomp_critical_user_MagickWand_GetWandViewIterator@Base 6.8.5.5
- .gomp_critical_user_MagickWand_SetPixelViewIterator@Base 6.8.5.5
- .gomp_critical_user_MagickWand_SetWandViewIterator@Base 6.8.5.5
- .gomp_critical_user_MagickWand_TransferPixelViewIterator@Base 6.8.5.5
- .gomp_critical_user_MagickWand_TransferWandViewIterator@Base 6.8.5.5
- .gomp_critical_user_MagickWand_UpdatePixelViewIterator@Base 6.8.5.5
- .gomp_critical_user_MagickWand_UpdateWandViewIterator@Base 6.8.5.5
+ (regexp|optional)"^.gomp_critical_user_*@Base" 6.8.5.5
  AcquireWandId@Base 6.8.5.5
  AnimateImageCommand@Base 6.8.5.5
  ClearDrawingWand@Base 6.8.5.5
