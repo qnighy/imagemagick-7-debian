@@ -18,6 +18,7 @@ imagemagick (8:6.8.5.5-1) experimental; urgency=low
      thanks to Michael Terry (Closes: #701655).
    - "package name does not adhere to naming policy for Perl
     modules", thanks to ansgar@debian.org (Closes: #575932).
+  * Bump standard version to 3.9.4
 
   [ Vincent Fourmond ]
   * Handle upstream rename of configuration directory:
