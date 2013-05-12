@@ -10,6 +10,7 @@ imagemagick (8:6.8.5.5-1) experimental; urgency=low
    - encoding quantum depth in the library name. This will
      allow to compile hdri and other quantum depth.
    - lib versionning.
+   - new symbols files.
   * Use dh.
   * Update debian/copyright (new review).
   * Debian packaging bug fixes:
@@ -22,7 +23,7 @@ imagemagick (8:6.8.5.5-1) experimental; urgency=low
   * Handle upstream rename of configuration directory:
     /etc/ImageMagick -> /etc/ImageMagick-6
 
- -- Bastien ROUCARIÈS <roucaries.bastien+debian@gmail.com>  Sun, 07 Apr 2013 20:30:02 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 11 May 2013 20:25:55 +0200
 
 imagemagick (8:6.7.9.3-2) experimental; urgency=low
 
