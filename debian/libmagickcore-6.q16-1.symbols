@@ -1,6 +1,6 @@
 # SymbolsHelper-Confirmed: 1.0.0 amd64
 libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
- (regexp|optional)"^.gomp_critical_user_*@Base" 6.8.5.5
+ (regex|optional)"^.gomp_critical_user_*@Base" 6.8.5.5
  AccelerateConvolveImage@Base 6.8.5.5
  AcquireAlignedMemory@Base 6.8.5.5
  AcquireAuthenticCacheView@Base 6.8.5.5
