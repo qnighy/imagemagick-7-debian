@@ -74,7 +74,14 @@ export CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS)
 
 %:
 	@echo "Build $(DEB_SOURCE_PACKAGE) version $(DEB_VERSION) for quantum $(QUANTUMDEPTH)"
-	dh $@ --parallel --with autoreconf --with pkgkde_symbolshelper
+	if test "BUG#703261" = "SOLVED"; then \
+		dh $@ --parallel --with autoreconf --with pkgkde_symbolshelper; \
+	else
+		dh $@ --with autoreconf --with pkgkde_symbolshelper; \
+	fi;
+
+override_dh_autoreconf:
+	 dh_autoreconf --as-needed
 
 # configure in build directory
 quantum_override_dh_auto_configure-arch_%: 
