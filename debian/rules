@@ -76,7 +76,7 @@ export CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS)
 	@echo "Build $(DEB_SOURCE_PACKAGE) version $(DEB_VERSION) for quantum $(QUANTUMDEPTH)"
 	if test "BUG#703261" = "SOLVED"; then \
 		dh $@ --parallel --with autoreconf --with pkgkde_symbolshelper; \
-	else
+	else \
 		dh $@ --with autoreconf --with pkgkde_symbolshelper; \
 	fi;
 
