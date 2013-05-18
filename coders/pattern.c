@@ -39,20 +39,21 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
   Bricks pattern.
@@ -988,8 +989,8 @@ static Image *ReadPATTERNImage(const ImageInfo *image_info,
         Tile pattern across image canvas.
       */
       pattern_image=image;
-      image=AcquireImage(image_info,exception);
-      (void) TextureImage(image,pattern_image,exception);
+      image=AcquireImage(image_info);
+      (void) TextureImage(image,pattern_image);
       pattern_image=DestroyImage(pattern_image);
     }
   blob_info=DestroyImageInfo(blob_info);

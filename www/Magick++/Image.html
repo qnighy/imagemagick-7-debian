@@ -1,17 +1,13 @@
-<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
-<html>
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <meta http-equiv="Content-Type"
- content="text/html; charset=iso-8859-1">
-  <meta name="GENERATOR"
- content="Mozilla/4.78 [en] (X11; U; SunOS 5.6 sun4u) [Netscape]">
-  <meta name="Author" content="Bob Friesenhahn">
-  <meta name="Description" content="Description of Magick::Image Class">
-  <title>Magick::Image Class</title>
-<link rel=stylesheet type=text/css href="magick.css">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Magick++ API: Working with Images</title>
+<link rel="stylesheet" href="magick.css" type="text/css" />
 </head>
-<body alink="#ff0000" bgcolor="#ffffff" link="#0000ee" text="#000000"
- vlink="#551a8b">
+<body>
+<div class="doc-section">
 <center>
 <h1> Magick::Image Class</h1>
 </center>
@@ -25,7 +21,7 @@ Methods</a> </li>
   <li> <a href="Image.html#Raw%20Image%20Pixel%20Access">Low-Level Image Pixel
 Access</a> </li>
 </ul>
-<hr width="100%">Image is the primary object in Magick++ and represents
+<p>Image is the primary object in Magick++ and represents
 a single image frame (see <a href="ImageDesign.html">design</a> ). The
 <a href="STL.html">STL interface</a> <b>must</b> be used to operate on
 image sequences or images (e.g. of format GIF, TIFF, MIFF, Postscript,
@@ -43,7 +39,7 @@ API is enclosed within the <i>Magick</i> namespace so you must either
 add the prefix "<tt> Magick::</tt> " to each class/enumeration name or
 add
 the statement "<tt> using namespace Magick;</tt>" after including the <tt>Magick++.h</tt>
-header.
+header.</p>
 <p>The preferred way to allocate Image objects is via automatic
 allocation (on the stack). There is no concern that allocating Image
 objects on the stack will excessively enlarge the stack since Magick++
@@ -61,47 +57,37 @@ allocation (not the case for objects allocated via <i>new</i> ). </p>
 program which reads an image, crops it, and writes it to a new file
 (the
 exception handling is optional but strongly recommended): </p>
-<blockquote><tt><font color="#000066">#include &lt;Magick++.h&gt;</font></tt>
-  <br>
-  <tt><font color="#000066">#include &lt;iostream&gt;</font></tt> <br>
-  <tt><font color="#000066">using namespace std;</font></tt> <br>
-  <tt><font color="#000066">using namespace Magick;</font></tt> <br>
-  <tt><font color="#000066">int main(int argc,char **argv)</font></tt> <br>
-  <tt><font color="#000066">{</font></tt> <br>
-  <tt><font color="#000066">&nbsp; // Construct the image object.
-Seperating image construction from the</font></tt> <br>
-  <tt><font color="#000066">&nbsp; // the read operation ensures that a
-failure to read the image file</font></tt> <br>
-  <tt><font color="#000066">&nbsp; // doesn't render the image object
-useless.</font></tt> <br>
-  <tt><font color="#000066">&nbsp; Image image;</font></tt><tt><font
- color="#000066"></font></tt>
-  <p><tt><font color="#000066">&nbsp; try {</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; // Read a file into
-image object</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.read( "girl.gif" );</font></tt>
-  </p>
-  <p><tt><font color="#000066">&nbsp;&nbsp;&nbsp; // Crop the image to
-specified size</font></tt> (width, height, xOffset, yOffset)<br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.crop(
-Geometry(100,100, 100, 100) );</font></tt> </p>
-  <p><tt><font color="#000066">&nbsp;&nbsp;&nbsp; // Write the image to
-a file</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.write( "x.gif" );</font></tt>
-  <br>
-  <tt><font color="#000066">&nbsp; }</font></tt> <br>
-  <tt><font color="#000066">&nbsp; catch( Exception &amp;error_ )</font></tt>
-  <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; {</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cout
-&lt;&lt; "Caught exception: " &lt;&lt; error_.what() &lt;&lt; endl;</font></tt>
-  <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 1;</font></tt>
-  <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; }</font></tt> <br>
-  <tt><font color="#000066">&nbsp; return 0;</font></tt> <br>
-  <tt><font color="#000066">}</font></tt></p>
-</blockquote>
+<pre class="code">
+#include &lt;Magick++.h> 
+#include &lt;iostream> 
+using namespace std; 
+using namespace Magick; 
+int main(int argc,char **argv) 
+{ 
+  InitializeMagick(*argv);
+
+  // Construct the image object. Seperating image construction from the 
+  // the read operation ensures that a failure to read the image file 
+  // doesn't render the image object useless. 
+  Image image;
+  try { 
+    // Read a file into image object 
+    image.read( "girl.gif" );
+
+    // Crop the image to specified size (width, height, xOffset, yOffset)
+    image.crop( Geometry(100,100, 100, 100) );
+
+    // Write the image to a file 
+    image.write( "x.gif" ); 
+  } 
+  catch( Exception &error_ ) 
+    { 
+      cout &lt;&lt; "Caught exception: " &lt;&lt; error_.what() &lt;&lt; endl; 
+      return 1; 
+    } 
+  return 0; 
+}
+</pre>
 The following is the source to a program which illustrates the use of
 Magick++'s efficient reference-counted assignment and copy-constructor
 operations which minimize use of memory and eliminate unncessary copy
@@ -117,59 +103,55 @@ following:
   <li> Write the second image to a file.</li>
   <li> Write the third image to a file.</li>
 </ol>
-<blockquote><tt><font color="#000066">#include &lt;Magick++.h&gt;</font></tt>
-  <br>
-  <tt><font color="#000066">#include &lt;iostream&gt;</font></tt> <br>
-  <tt><font color="#000066">using namespace std;</font></tt> <br>
-  <tt><font color="#000066">using namespace Magick;</font></tt> <br>
-  <tt><font color="#000066">int main(int argc,char **argv)</font></tt> <br>
-  <tt><font color="#000066">{</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; Image
-master("horse.jpg");</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; Image second = master;</font></tt>
-  <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; second.resize("640x480");</font></tt>
-  <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; Image third = master;</font></tt>
-  <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; third.resize("800x600");</font></tt>
-  <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp;
-second.write("horse640x480.jpg");</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp;
-third.write("horse800x600.jpg");</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; return 0;</font></tt> <br>
-  <tt><font color="#000066">}</font></tt></blockquote>
+<pre class="code">
+#include <Magick++.h> 
+#include <iostream> 
+using namespace std; 
+using namespace Magick; 
+int main(int argc,char **argv) 
+{ 
+  InitializeMagick(*argv);
+
+  Image master("horse.jpg"); 
+  Image second = master; 
+  second.resize("640x480"); 
+  Image third = master; 
+  third.resize("800x600"); 
+  second.write("horse640x480.jpg"); 
+  third.write("horse800x600.jpg"); 
+  return 0; 
+}
+</pre>
 During the entire operation, a maximum of three images exist in memory
 and the image data is never copied.
 <p>The following is the source for another simple program which creates
 a 100 by 100 pixel white image with a red pixel in the center and
 writes it to a file: </p>
-<blockquote><tt><font color="#000066">#include &lt;Magick++.h&gt;</font></tt>
-  <br>
-  <tt><font color="#000066">using namespace std;</font></tt> <br>
-  <tt><font color="#000066">using namespace Magick;</font></tt> <br>
-  <tt><font color="#000066">int main(int argc,char **argv)</font></tt> <br>
-  <tt><font color="#000066">{</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; Image image( "100x100",
-"white" );</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.pixelColor( 49,
-49, "red" );</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.write(
-"red_pixel.png" );</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; return 0;</font></tt> <br>
-  <tt><font color="#000066">}</font></tt></blockquote>
+<pre class="code">
+#include <Magick++.h> 
+using namespace std; 
+using namespace Magick; 
+int main(int argc,char **argv) 
+{ 
+  InitializeMagick(*argv);
+  Image image( "100x100", "white" ); 
+  image.pixelColor( 49, 49, "red" ); 
+  image.write( "red_pixel.png" ); 
+  return 0; 
+}
+</pre>
 If you wanted to change the color image to grayscale, you could add the
 lines:
-<p><tt><font color="#000066">&nbsp;&nbsp;&nbsp;
-image.quantizeColorSpace( GRAYColorspace );</font></tt> <br>
-<tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.quantizeColors( 256
-);</font></tt> <br>
-<tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.quantize( );</font></tt>
+<pre class="code">
+image.quantizeColorSpace( GRAYColorspace ); 
+image.quantizeColors( 256 ); 
+image.quantize( );
+</pre>
 </p>
 <p>or, more simply: </p>
-<p><tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.type(
-GrayscaleType );</font></tt> </p>
+<pre class="code">
+ image.type( GrayscaleType );
+</pre>
 <p>prior to writing the image. </p>
 <center>
 <h3> <a name="BLOBs"></a> BLOBs</h3>
@@ -188,51 +170,50 @@ a <a href="Image.html#constructor_blob">constructor</a> or <a href="Image.html#r
  href="Image.html#write"> write()</a> .
 <p>An example of using Image to write to a Blob follows: <br>
 &nbsp; </p>
-<blockquote><tt><font color="#000066">#include &lt;Magick++.h&gt;</font></tt>
-  <br>
-  <tt><font color="#000066">using namespace std;</font></tt> <br>
-  <tt><font color="#000066">using namespace Magick;</font></tt> <br>
-  <tt><font color="#000066">int main(int argc,char **argv)</font></tt> <br>
-  <tt><font color="#000066">{</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; // Read GIF file from
-disk</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; Image image(
-"giraffe.gif" );</font></tt>
-  <p><tt><font color="#000066">&nbsp;&nbsp;&nbsp; // Write to BLOB in
-JPEG format</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; Blob blob;</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.magick( "JPEG" )
-// Set JPEG output format</font></tt> <br>
-  <tt><font color="#000066">&nbsp;&nbsp;&nbsp; image.write( &amp;blob );</font></tt>
-  </p>
-  <p><tt><font color="#000066">&nbsp;&nbsp;&nbsp; [ Use BLOB data (in
-JPEG format) here ]</font></tt> </p>
-  <p><tt><font color="#000066">&nbsp;&nbsp;&nbsp; return 0;</font></tt>
-  <br>
-  <tt><font color="#000066">}</font></tt></p>
-</blockquote>
+<pre class="code">
+#include <Magick++.h> 
+using namespace std; 
+using namespace Magick; 
+int main(int argc,char **argv) 
+{ 
+  InitializeMagick(*argv);
+
+  // Read GIF file from disk 
+  Image image( "giraffe.gif" );
+  // Write to BLOB in JPEG format 
+  Blob blob; 
+  image.magick( "JPEG" ) // Set JPEG output format 
+  image.write( &blob );
+
+  [ Use BLOB data (in JPEG format) here ]
+
+  return 0; 
+}
+</pre>
 <p><br>
 likewise, to read an image from a Blob, you could use one of the
 following examples: </p>
 <p>[ <font color="#000000">Entry condition for the following examples
 is that <i>data</i> is pointer to encoded image data and <i>length</i>
 represents the size of the data</font> ] </p>
-<blockquote><tt><font color="#000066">Blob blob( data, length );</font></tt>
-  <br>
-  <tt><font color="#000066">Image image( blob );</font></tt></blockquote>
+<pre class="code">
+Blob blob( data, length ); 
+Image image( blob );
+</pre>
 or
-<blockquote><tt><font color="#000066">Blob blob( data, length );</font></tt>
-  <br>
-  <tt><font color="#000066">Image image;</font></tt> <br>
-  <tt><font color="#000066">image.read( blob);</font></tt></blockquote>
-some images do not contain their size or format so the size and format
-must be specified in advance:
-<blockquote><tt><font color="#000066">Blob blob( data, length );</font></tt>
-  <br>
-  <tt><font color="#000066">Image image;</font></tt> <br>
-  <tt><font color="#000066">image.size( "640x480")</font></tt> <br>
-  <tt><font color="#000066">image.magick( "RGBA" );</font></tt> <br>
-  <tt><font color="#000066">image.read( blob);</font></tt></blockquote>
+<pre class="code">
+Blob blob( data, length ); 
+Image image; 
+image.read( blob);
+</pre>
+some images do not contain their size or format so the size and format must be specified in advance:
+<pre class="code">
+Blob blob( data, length ); 
+Image image; 
+image.size( "640x480") 
+image.magick( "RGBA" ); 
+image.read( blob);
+</pre>
 <center>
 <h3> <a name="Constructors"></a> Constructors</h3>
 </center>
@@ -242,7 +223,7 @@ in-memory <a href="Blob.html"> BLOB</a> . The available Image
 constructors are shown in the following table: <br>
 &nbsp; <br>
 &nbsp;
-<table bgcolor="#ffffff" border="1" width="100%">
+<ul><table bgcolor="#ffffff" border="1" width="100%">
   <caption><b>Image Constructors</b></caption> <tbody>
     <tr>
       <td>
@@ -353,7 +334,7 @@ values and type_ parameters.</font></td>
       </td>
     </tr>
   </tbody>
-</table>
+</table></ul>
 <center>
 <h3> <a name="Image Manipulation Methods"></a> Image Manipulation
 Methods</h3>
@@ -365,14 +346,16 @@ must process a multi-image file (such as an animation), the <a
  href="STL.html"> STL interface</a> , which provides a multi-image
 abstraction on top of <i>Image</i>, must be used.
 <p>Image manipulation methods are very easy to use.&nbsp; For example: </p>
-<blockquote><font color="#663366">Image image;</font> <br>
-  <font color="#663366">image.read("myImage.tiff");</font> <br>
-  <font color="#663366">image.addNoise(GaussianNoise);</font> <br>
-  <font color="#663366">image.write("myImage.tiff");</font></blockquote>
+<pre class="code">
+Image image; 
+image.read("myImage.tiff"); 
+image.addNoise(GaussianNoise); 
+image.write("myImage.tiff");
+</pre>
 adds gaussian noise to the image file "myImage.tiff".
 <p>The operations supported by Image are shown in the following table: <br>
 &nbsp;
-<table nosave="" border="1">
+<ul><table nosave="" border="1">
   <caption><b>Image Image Manipulation Methods</b></caption> <tbody>
     <tr align="center">
       <td><b>Method</b></td>
@@ -540,7 +523,7 @@ parameter specifies the standard deviation of the Laplacian, in pixels.</font></
 subregion of image)</font></td>
     </tr>
     <tr>
-      <td style="text-align: center;" rowspan="2">
+      <td style="text-align: center;">
       <center><a name="colorize"></a> <font size="-1">colorize</font></center>
       </td>
       <td><font size="-1">const unsigned int opacityRed_, const
@@ -1016,6 +999,14 @@ opacity value.</font></td>
       <td><font size="-1">const double radius_ = 0.0</font></td>
       <td><font size="-1">Filter image by replacing each pixel
 component with the median color in a circular neighborhood</font></td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">
+      <center><a name="mergeLayers"></a> <font size="-1">mergeLayers</font></center>
+      </td>
+      <td><font size="-1"><a href="Enumerations.html#LayerMethod">LayerMethod</a>
+noiseType_</font></td>
+      <td><font size="-1">handle multiple images forming a set of image layers or animation frames.</font></td>
     </tr>
     <tr>
       <td style="text-align: center;">
@@ -1669,7 +1660,7 @@ values and type_ parameters.</font></td>
       <td><font size="-1">Resize image to specified size.</font></td>
     </tr>
   </tbody>
-</table>
+</table></ul>
 </p>
 <center>
 <h3> <a name="Image Attributes"></a> Image Attributes</h3>
@@ -1681,18 +1672,18 @@ all methods return attributes by value.
 of the TIFF file "file.tiff" to 150 dots-per-inch (DPI) in both the
 horizontal and vertical directions, you can use the following example
 code: </p>
-<blockquote><font color="#663366">string filename("file.tiff");</font> <br>
-  <font color="#663366">Image image;</font> <br>
-  <font color="#663366">image.read(filename);</font> <br>
-  <font color="#663366">image.resolutionUnits(PixelsPerInchResolution);</font>
-  <br>
-  <font color="#663366">image.density(Geometry(150,150));&nbsp;&nbsp;
-// could also use image.density("150x150")</font> <br>
-  <font color="#663366">image.write(filename)</font></blockquote>
+<pre class="code">
+string filename("file.tiff"); 
+Image image; 
+image.read(filename); 
+image.resolutionUnits(PixelsPerInchResolution); 
+image.density(Geometry(150,150));   // could also use image.density("150x150") 
+image.write(filename)
+</pre>
 The supported image attributes and the method arguments required to
 obtain them are shown in the following table: <br>
 &nbsp;
-<table border="1">
+<ul><table border="1">
   <caption>Image Attributes</caption> <tbody>
     <tr>
       <td>
@@ -2957,7 +2948,7 @@ or to capture image from</font></td>
       <td><font size="-1">y resolution of the image</font></td>
     </tr>
   </tbody>
-</table>
+</table></ul>
 <center>
 <h3> <a name="Raw Image Pixel Access"></a> Low-Level Image Pixel Access</h3>
 </center>
@@ -2998,58 +2989,30 @@ representation according to the format specified by <i>QuantumTypes</i>.</p>
 <p>The pixel region is effectively a small image in which the pixels
 may be accessed, addressed, and updated, as shown in the following
 example:
-<table border="0" width="100%">
-  <tbody>
-    <tr>
-      <td><font face="Courier New,Courier"><font color="#000099"><font
- size="-1"> Image image("cow.png");</font></font></font> <br>
-      <font face="Courier New,Courier"><font color="#ff0000"><font
- size="-1"> // Ensure that there are no other references to this image.</font></font></font><br>
-      <font size="-1"><span
- style="color: rgb(0, 0, 153); font-family: courier new,courier,monospace;">image.modifyImage();<br>
-      </span></font><font face="Courier New,Courier"><font
- color="#ff0000"><font size="-1"> // Set the image type to TrueColor
-DirectClass representation.</font></font></font><br>
-      <font size="-1"><span
- style="color: rgb(0, 0, 153); font-family: courier new,courier,monospace;">image.type(TrueColorType</span></font><font
- size="-1"><span
- style="color: rgb(0, 0, 153); font-family: courier new,courier,monospace;">);</span></font><br>
-      <font face="Courier New,Courier"><font color="#ff0000"><font
- size="-1"> // Request pixel region with size 60x40, and top origin at
-20x30</font></font></font> <br>
-      <font face="Courier New,Courier"><font color="#000099"><font
- size="-1"> ssize_t columns = 60;</font></font></font> <br>
-      <font face="Courier New,Courier"><font color="#000099"><font
- size="-1"> PixelPacket *pixel_cache =
-image.getPixels(20,30,columns,40);</font></font></font> <br>
-      <font face="Courier New,Courier"><font color="#ff0000"><font
- size="-1"> // Set pixel at column 5, and row 10 in the pixel cache to
-red.</font></font></font> <br>
-      <font face="Courier New,Courier"><font color="#000099"><font
- size="-1"> ssize_t column = 5;</font></font></font> <br>
-      <font face="Courier New,Courier"><font color="#000099"><font
- size="-1"> ssize_t row = 10;</font></font></font> <br>
-      <font face="Courier New,Courier"><font color="#000099"><font
- size="-1"> PixelPacket *pixel = pixel_cache+row*columns+column;</font></font></font>
-      <br>
-      <font face="Courier New,Courier"><font color="#000099"><font
- size="-1"> *pixel = Color("red");</font></font></font> <br>
-      <font face="Courier New,Courier"><font color="#ff0000"><font
- size="-1"> // Save changes to underlying image</font></font></font> .<br>
-      <font face="Courier New,Courier"><font color="#000099"><font
- size="-1"> image.syncPixels();<br>
-      </font></font></font>&nbsp;<font face="Courier New,Courier"><font
- color="#ff0000"><font size="-1"> // Save updated image to file.</font></font></font><br>
-      <font face="Courier New,Courier"><font color="#000099"><font
- size="-1"> image.write("horse.png");</font></font></font></td>
-      <td><img src="Cache.png" height="218" width="254"> </td>
-    </tr>
-  </tbody>
-</table>
+<pre class="code">
+<p><img class="icon" src="Cache.png" name="Graphic1" width="254" border="0"></p>
+Image image("cow.png"); 
+// Ensure that there are no other references to this image.
+image.modifyImage();
+// Set the image type to TrueColor DirectClass representation.
+image.type(TrueColorType);
+// Request pixel region with size 60x40, and top origin at 20x30 
+ssize_t columns = 60; 
+PixelPacket *pixel_cache = image.getPixels(20,30,columns,40); 
+// Set pixel at column 5, and row 10 in the pixel cache to red. 
+ssize_t column = 5; 
+ssize_t row = 10; 
+PixelPacket *pixel = pixel_cache+row*columns+column; 
+*pixel = Color("red"); 
+// Save changes to underlying image .
+image.syncPixels();
+  // Save updated image to file.
+image.write("horse.png");
+</pre>
 </p>
 <p>The image cache supports the following methods: <br>
 &nbsp;
-<table border="1" width="100%">
+<ul><table border="1" width="100%">
   <caption>Image Cache Methods</caption> <tbody>
     <tr>
       <td>
@@ -3182,8 +3145,8 @@ used to support image encoders. The region transferred corresponds to
 the region set by a preceding getPixels or getConstPixels call.</font></td>
     </tr>
   </tbody>
-</table>
-<br>
-&nbsp; </p>
+</table></ul>
+</p>
+</div>
 </body>
 </html>
