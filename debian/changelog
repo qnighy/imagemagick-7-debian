@@ -1,4 +1,4 @@
-imagemagick (8:6.8.5.5-1) experimental; urgency=low
+imagemagick (8:6.8.5.6-1) experimental; urgency=low
 
   [ Bastien Roucariès ]
   * New upstream version:
@@ -21,6 +21,7 @@ imagemagick (8:6.8.5.5-1) experimental; urgency=low
     - Use dh.
     - Update debian/copyright (new review).
     - new symbols files.
+    - switch to xz for both source and debian files.
 
   [ Vincent Fourmond ]
   * Handle upstream rename of configuration directory:
