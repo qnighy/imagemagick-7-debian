@@ -342,7 +342,7 @@ maint-clone-debian-tree:
 	@echo "==============================================="
 	git clone git+ssh://login@git.debian.org/git/collab-maint/imagemagick.git
 	git svn init -s --prefix=origin/  https://www.imagemagick.org/subversion/ImageMagick/
-	git config gitpkg.orig-compressor bzip2
+	git config gitpkg.orig-compressor xz
 	git config gitpkg.deb-export-hook /usr/share/gitpkg/hooks/quilt-patches-deb-export-hook
 	git config gitpkg.pre-export-hook /usr/share/gitpkg/hooks/pristine-tar-pre-export-hook
 	git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}
@@ -418,9 +418,9 @@ maint-get-upstream-rev-from-tar-new-make-%:
 	git checkout -f upstream/`echo $* | sed "s/\(.*\)\.\([:digit:]*\)/\1-\2/g"`
 	git checkout -b upstream/$*
 	find ./*  -path './.git' -prune -o -exec rm -rf '{}' +
-	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.bz2
+	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.xz
 	git add .
-	git commit -a -m "Add upstream tar.bz2 for version $*"
+	git commit -a -m "Add upstream tar.xz for version $*"
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
 
 # reconstruct upstream for tar
@@ -445,7 +445,7 @@ maint-reconstruct-upstream:
 
 add-pristine-tar-new-make-%:
 	git checkout -f upstream/$*
-	pristine-tar commit ../imagemagick_$*.orig.tar.bz2 upstream/$*
+	pristine-tar commit ../imagemagick_$*.orig.tar.xz upstream/$*
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
 
 # add pristine-tar from a sub make
@@ -474,7 +474,7 @@ maint-merge-debian-branch-new-make-%:
 	if ! (git show-ref --verify --quiet refs/heads/upstream/$*) ; then exit 1; fi;
 	git merge --no-commit upstream/$* || true
 	find ./* -path './debian' -prune -o -path './.git' -prune -o -exec rm -rf '{}' +
-	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.bz2
+	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.xz
 	git add -u
 	git commit -a -m 'merge debian branch with upstream $*'
 
