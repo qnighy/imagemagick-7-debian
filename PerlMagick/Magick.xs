@@ -2376,7 +2376,7 @@ static ssize_t strEQcase(const char *p,const char *q)
 %
 %
 */
-MODULE = Image::Magick PACKAGE = Image::Magick::Q16
+MODULE = Image::Magick PACKAGE = Image::Magick
 
 PROTOTYPES: ENABLE
 

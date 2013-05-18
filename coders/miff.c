@@ -617,7 +617,8 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
                       p=options+strlen(options);
                     }
                   if (options == (char *) NULL)
-                    ThrowReaderException(ResourceLimitError, "MemoryAllocationFailed");
+                    ThrowReaderException(ResourceLimitError,
+                      "MemoryAllocationFailed");
                   *p++=(char) c;
                   c=ReadBlobByte(image);
                   if (c == '\\')
@@ -1960,8 +1961,6 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
     if ((image->storage_class == PseudoClass) &&
         (image->colors > (size_t) (GetQuantumRange(image->depth)+1)))
       (void) SetImageStorageClass(image,DirectClass);
-    if (IsGrayImage(image,&image->exception) != MagickFalse)
-      (void) SetImageColorspace(image,GRAYColorspace);
     image->depth=image->depth <= 8 ? 8UL : image->depth <= 16 ? 16UL :
       image->depth <= 32 ? 32UL : 64UL;
     quantum_info=AcquireQuantumInfo(image_info,image);
@@ -1980,7 +1979,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
       compression=image_info->compression;
     switch (compression)
     {
-#if !defined(MAGICKCORE_ZLIB_DELEGATE)
+#if !defined(MAGICKCORE_LZMA_DELEGATE)
       case LZMACompression: compression=NoCompression; break;
 #endif
 #if !defined(MAGICKCORE_ZLIB_DELEGATE)
