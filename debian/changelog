@@ -1,3 +1,9 @@
+imagemagick (8:6.8.5.6-2) experimental; urgency=low
+
+  * Switch debian patches to .xz
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 26 May 2013 16:27:57 +0200
+
 imagemagick (8:6.8.5.6-1) experimental; urgency=low
 
   [ Bastien Roucariès ]
