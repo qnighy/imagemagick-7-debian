@@ -1,6 +1,7 @@
 imagemagick (8:6.8.5.6-2) experimental; urgency=low
 
   * Switch debian patches to .xz
+  * Build with V=1 in order to see flags passed to compiler
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 26 May 2013 16:27:57 +0200
 

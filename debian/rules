@@ -101,11 +101,11 @@ override_dh_auto_configure-indep:
 # dh_auto_build in build directory
 # build icons cache build for each arch in order to get more testing 
 quantum_override_dh_auto_build-arch_%:
-	dh_auto_build --builddirectory="debian/build-quantum-$*" -- all perl-build
+	dh_auto_build --builddirectory="debian/build-quantum-$*" -- all perl-build V=1
 
 override_dh_auto_build-arch: quantum_override_dh_auto_build-arch_Q16
 override_dh_auto_build-indep:
-	cd debian/build-quantum-indep/PerlMagick/default/ && make
+	cd debian/build-quantum-indep/PerlMagick/default/ && make V=1
 
 # dh_auto_test in build directory
 quantum_override_dh_auto_test-arch_%:
@@ -114,7 +114,7 @@ quantum_override_dh_auto_test-arch_%:
 	else \
 	if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
             unset DISPLAY; \
-	    dh_auto_test --builddirectory="debian/build-quantum-$*"; \
+	    dh_auto_test --builddirectory="debian/build-quantum-$*" -- V=1; \
 	fi ;\
 	fi
 override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_Q16
@@ -125,7 +125,7 @@ override_dh_auto_test-indep:
 quantum_override_dh_auto_install-arch_%:
 	dh_auto_install --builddirectory="debian/build-quantum-$*" \
 	                --destdir="debian/tmp-$*" \
-		        -- install pkgdocdir=/usr/share/doc/imagemagick-common
+		        -- install pkgdocdir=/usr/share/doc/imagemagick-common V=1
 
 	# empties dependency_libs from .la files
 	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
@@ -197,14 +197,16 @@ override_dh_auto_install-indep:
 		        --  install-configlibDATA install-data-html \
 	                    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
-	                    pkgdocdir=/usr/share/doc/imagemagick-common ;\
+	                    pkgdocdir=/usr/share/doc/imagemagick-common \
+			    V=1;\
 	else \
 	cd "$(CURDIR)/debian/build-quantum-indep" && \
 		make  DESTDIR=$(CURDIR)/debian/tmp-indep \
 	                    install-configlibDATA install-data-html \
 	                    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
-	                    pkgdocdir=/usr/share/doc/imagemagick-doc ;\
+	                    pkgdocdir=/usr/share/doc/imagemagick-doc \
+			    V=1 ;\
 	fi;
 
 	# install default perl
