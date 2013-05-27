@@ -29,6 +29,8 @@ Build-Depends: debhelper (>= 9~),
 # libgraphviz-dev, incompatible license against fftw
 # for converting svg
  libpango1.0-dev, librsvg2-bin, inkscape,librsvg2-dev, libxml2-dev,
+# for documentation
+ doxygen, doxygen-latex, graphviz,
 # for easy symbols of c++ lib
  pkg-kde-tools,
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/imagemagick.git
