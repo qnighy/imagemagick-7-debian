@@ -106,6 +106,9 @@ quantum_override_dh_auto_build-arch_%:
 
 override_dh_auto_build-arch: quantum_override_dh_auto_build-arch_Q16
 override_dh_auto_build-indep:
+        # generate html doc
+        mkdir -p "debian/build-quantum-indep/www/api"
+	dh_auto_build --builddirectory="debian/build-quantum-indep" -- html V=1
 	cd debian/build-quantum-indep/PerlMagick/default/ && make V=1
 
 # dh_auto_test in build directory
