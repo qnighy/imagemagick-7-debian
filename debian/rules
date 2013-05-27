@@ -302,7 +302,7 @@ override_dh_install-indep:
 
 override_dh_compress:
 	# fix #611125
-	dh_compress -X/usr/share/doc/imagemagick/www -X/usr/share/doc/imagemagick-doc/www
+	dh_compress -Xusr/share/doc/imagemagick/www -Xusr/share/doc/imagemagick-doc/www
 
 override_dh_makeshlibs:
 	# avoid plugins' dir
