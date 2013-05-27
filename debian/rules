@@ -48,6 +48,14 @@ export CONVERT_FLAGS ?= -background none -define filter:blur=0.75 -filter Gaussi
 # put QUANTUMDEPTH in lower case for package name
 #export QUANTUMDEPTH_LOWER ?= $(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'))
 
+export STATIC_CONFIGURE_CACHEFILE := config.cache
+export CONFIGURE_CACHEFILE ?= $(STATIC_CONFIGURE_CACHEFILE)
+
+export STATIC_CONFIGURE_OPTIONS_CACHE := \
+       --cache-file=../../$(CONFIGURE_CACHEFILE)
+export CONFIGURE_OPTIONS_CACHE ?= $(STATIC_CONFIGURE_OPTIONS_CACHE)
+
+
 # NOTICE: remove EPL delegate lib gvc (license problem)
 export STATIC_CONFIGURE_OPTIONS := \
 	--prefix=/usr \
@@ -71,7 +79,8 @@ export STATIC_CONFIGURE_OPTIONS := \
 	--x-includes=/usr/include/X11 \
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg
-export CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS)
+export CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS) \
+                            $(CONFIGURE_OPTIONS_CACHE)
 
 %:
 	@echo "Build $(DEB_SOURCE_PACKAGE) version $(DEB_VERSION) for quantum $(QUANTUMDEPTH)"
@@ -328,6 +337,7 @@ quantum_override_dh_clean_%:
 	[ ! -d debian/tmp-$* ] || rm -rf debian/tmp-$*
 
 override_dh_clean: quantum_override_dh_clean_Q16 quantum_override_dh_clean_indep
+	[ ! -f $(CONFIGURE_CACHEFILE) ] || rm -f $(CONFIGURE_CACHEFILE)
 	dh_clean
 
 
