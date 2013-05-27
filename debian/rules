@@ -80,7 +80,7 @@ export STATIC_CONFIGURE_OPTIONS := \
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg
 export CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS) \
-                            $(CONFIGURE_OPTIONS_CACHE)
+			    $(CONFIGURE_OPTIONS_CACHE)
 
 %:
 	@echo "Build $(DEB_SOURCE_PACKAGE) version $(DEB_VERSION) for quantum $(QUANTUMDEPTH)"
@@ -116,7 +116,7 @@ quantum_override_dh_auto_build-arch_%:
 override_dh_auto_build-arch: quantum_override_dh_auto_build-arch_Q16
 override_dh_auto_build-indep:
         # generate html doc
-        mkdir -p "debian/build-quantum-indep/www/api"
+	mkdir -p "debian/build-quantum-indep/www/api"
 	dh_auto_build --builddirectory="debian/build-quantum-indep" -- html V=1
 	cd debian/build-quantum-indep/PerlMagick/default/ && make V=1
 
