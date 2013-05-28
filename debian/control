@@ -53,10 +53,11 @@ Package: imagemagick-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc
-Depends: ${misc:Depends}
+Depends: ${misc:Depends}, ${doxygen:Depends}
 Recommends: www-browser
 Suggests: imagemagick
 Conflicts: imagemagick (<= 7:6.4.0)
+Built-using: ${doxygen:Built-Using}
 Description: document files of ImageMagick
  This package contains the document files shipped with ImageMagick, a software
  suite to create, edit, and compose bitmap images.

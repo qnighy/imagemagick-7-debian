@@ -299,6 +299,7 @@ override_dh_install-arch: quantum_override_dh_install-arch_Q16
 
 override_dh_install-indep:
 	dh_install --indep --sourcedir=debian/tmp-indep --autodest
+	./debian/scripts/dh_doxygen --indep --package=imagemagick-doc
 
 override_dh_compress:
 	# fix #611125
