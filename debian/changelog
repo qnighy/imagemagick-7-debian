@@ -1,14 +1,18 @@
 imagemagick (8:6.8.5.6-2) experimental; urgency=low
 
+  [ Bastien Roucariès ]
   * Switch debian patches to .xz
   * Build with V=1 in order to see flags passed to compiler.
   * Pass --as-needed to LD_FLAGS.
   * Rebuild doxygen documentation using svg.
   * Bug fix: "fails to install: update-alternatives: error: alternative
     path /usr/bin/compare-im6 doesn't exist", thanks to Andreas
-    Beckmann (Closes: #709856).
+    Beckmann (Closes: #709856, #709845).
   
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 28 May 2013 16:44:08 +0200
+  [ Vincent Fourmond ]
+  * Fix small typo in debian/rules that makes nice FTBSes
+
+ -- Vincent Fourmond <fourmond@debian.org>  Wed, 29 May 2013 23:10:54 +0200
 
 imagemagick (8:6.8.5.6-1) experimental; urgency=low
 

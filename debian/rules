@@ -154,7 +154,7 @@ quantum_override_dh_auto_install-arch_%:
 	fi;
 	while read FILE; do \
            if echo $$FILE | grep usr/bin > /dev/null; then \
-              filename=`echo "$$FILE"|sed s/*//g`; \
+              filename=`echo "$$FILE"|sed 's/-\*//g'`; \
 	      basename=`basename $$filename`; \
 	      if ! test -f debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename ; then \
                 cp -f "debian/tmp-$*/usr/bin/$$basename" \
@@ -205,7 +205,7 @@ override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 	mkdir -p debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/bin/
 	while read FILE; do \
                 if echo $$FILE | grep usr/bin > /dev/null; then \
-                        filename=`echo "$$FILE"|sed s/*//g`; \
+                        filename=`echo "$$FILE"|sed 's/-\*//g'`; \
                         basename=`basename $$filename`; \
                         mv "$(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/share/man/man1/$$basename.1" \
                           "$(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/share/man/man1/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR).1" ;\
