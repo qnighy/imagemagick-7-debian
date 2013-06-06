@@ -1,3 +1,9 @@
+imagemagick (8:6.8.5.6-3) experimental; urgency=low
+
+  * Fix symbols files.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 06 Jun 2013 15:55:29 +0200
+
 imagemagick (8:6.8.5.6-2) experimental; urgency=low
 
   [ Bastien Roucariès ]
