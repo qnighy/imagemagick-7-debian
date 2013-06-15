@@ -97,6 +97,7 @@ override_dh_autoreconf:
 quantum_override_dh_auto_configure-arch_%: 
 	dh_auto_configure --builddirectory="debian/build-quantum-$*" -- \
 		 ${CONFIGURE_OPTIONS} \
+		--disable-silent-rules \
 		--with-quantum-depth=${shell echo $* | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
 
 override_dh_auto_configure-arch: quantum_override_dh_auto_configure-arch_Q16
@@ -111,13 +112,13 @@ override_dh_auto_configure-indep:
 # dh_auto_build in build directory
 # build icons cache build for each arch in order to get more testing 
 quantum_override_dh_auto_build-arch_%:
-	dh_auto_build --builddirectory="debian/build-quantum-$*" -- all perl-build V=1
+	dh_auto_build --builddirectory="debian/build-quantum-$*" -- all perl-build
 
 override_dh_auto_build-arch: quantum_override_dh_auto_build-arch_Q16
 override_dh_auto_build-indep:
         # generate html doc
-	dh_auto_build --builddirectory="debian/build-quantum-indep" -- html V=1
-	cd debian/build-quantum-indep/PerlMagick/default/ && make V=1
+	dh_auto_build --builddirectory="debian/build-quantum-indep" -- html
+	cd debian/build-quantum-indep/PerlMagick/default/ && make
 
 # dh_auto_test in build directory
 quantum_override_dh_auto_test-arch_%:
@@ -126,7 +127,7 @@ quantum_override_dh_auto_test-arch_%:
 	else \
 	if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
             unset DISPLAY; \
-	    dh_auto_test --builddirectory="debian/build-quantum-$*" -- V=1; \
+	    dh_auto_test --builddirectory="debian/build-quantum-$*"; \
 	fi ;\
 	fi
 override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_Q16
