@@ -1,3 +1,9 @@
+imagemagick (8:6.8.6.5-1) experimental; urgency=low
+
+  * New upstream version
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 14 Jul 2013 17:56:20 +0200
+
 imagemagick (8:6.8.5.6-3) experimental; urgency=low
 
   * Fix symbols files.
