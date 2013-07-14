@@ -288,6 +288,9 @@ typedef struct _CubeInfo
   Nodes
     *node_queue;
 
+  MemoryInfo
+    *memory_info;
+
   ssize_t
     *cache;
 
@@ -858,7 +861,7 @@ static MagickBooleanType ClassifyImageColors(CubeInfo *cube_info,
         error.blue=QuantumScale*(pixel.blue-mid.blue);
         if (cube_info->associate_alpha != MagickFalse)
           error.opacity=QuantumScale*(pixel.opacity-mid.opacity);
-        node_info->quantize_error+=sqrt((double) (count*error.red*error.red+
+        node_info->quantize_error+=count*sqrt((double) (error.red*error.red+
           count*error.green*error.green+count*error.blue*error.blue+
           count*error.opacity*error.opacity));
         cube_info->root->quantize_error+=node_info->quantize_error;
@@ -948,7 +951,7 @@ static MagickBooleanType ClassifyImageColors(CubeInfo *cube_info,
         error.blue=QuantumScale*(pixel.blue-mid.blue);
         if (cube_info->associate_alpha != MagickFalse)
           error.opacity=QuantumScale*(pixel.opacity-mid.opacity);
-        node_info->quantize_error+=sqrt((double) (count*error.red*error.red+
+        node_info->quantize_error+=count*sqrt((double) (error.red*error.red+
           count*error.green*error.green+count*error.blue*error.blue+
           count*error.opacity*error.opacity));
         cube_info->root->quantize_error+=node_info->quantize_error;
@@ -1314,8 +1317,8 @@ static void DestroyCubeInfo(CubeInfo *cube_info)
       cube_info->node_queue);
     cube_info->node_queue=nodes;
   } while (cube_info->node_queue != (Nodes *) NULL);
-  if (cube_info->cache != (ssize_t *) NULL)
-    cube_info->cache=(ssize_t *) RelinquishMagickMemory(cube_info->cache);
+  if (cube_info->memory_info != (MemoryInfo *) NULL)
+    cube_info->memory_info=RelinquishVirtualMemory(cube_info->memory_info);
   cube_info->quantize_info=DestroyQuantizeInfo(cube_info->quantize_info);
   cube_info=(CubeInfo *) RelinquishMagickMemory(cube_info);
 }
@@ -1799,7 +1802,6 @@ static MagickBooleanType RiemersmaDither(Image *image,CacheView *image_view,
               break;
             node_info=node_info->child[id];
           }
-          node_info=node_info->parent;
           /*
             Find closest color among siblings and their children.
           */
@@ -1978,10 +1980,10 @@ static CubeInfo *GetCubeInfo(const QuantizeInfo *quantize_info,
     Initialize dither resources.
   */
   length=(size_t) (1UL << (4*(8-CacheShift)));
-  cube_info->cache=(ssize_t *) AcquireQuantumMemory(length,
-    sizeof(*cube_info->cache));
-  if (cube_info->cache == (ssize_t *) NULL)
+  cube_info->memory_info=AcquireVirtualMemory(length,sizeof(*cube_info->cache));
+  if (cube_info->memory_info == (MemoryInfo *) NULL)
     return((CubeInfo *) NULL);
+  cube_info->cache=(ssize_t *) GetVirtualMemoryBlob(cube_info->memory_info);
   /*
     Initialize color cache.
   */
