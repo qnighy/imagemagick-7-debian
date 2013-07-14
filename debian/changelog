@@ -1,6 +1,7 @@
 imagemagick (8:6.8.6.5-1) experimental; urgency=low
 
-  * New upstream version
+  * New upstream version.
+  * Really diplay log in case of failure.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 14 Jul 2013 17:56:20 +0200
 
@@ -11,7 +12,7 @@ imagemagick (8:6.8.5.6-3) experimental; urgency=low
   * Use silent rules
   * Bug fix: "version in experimental causes FTBFS for packages using
     libmagick*", thanks to Roderich Schupp (Closes: #710668).
-  * Display log in case of tests faillure.
+  * Display log in case of tests failure.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 15 Jun 2013 16:38:51 +0200
 
