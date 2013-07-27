@@ -1,9 +1,10 @@
-imagemagick (8:6.8.6.5-1) experimental; urgency=low
+imagemagick (8:6.8.6.7-1) experimental; urgency=low
 
   * New upstream version.
-  * Really diplay log in case of failure.
+  * Really diplay loxg in case of failure.
+  * Bump c++ soname.
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 14 Jul 2013 17:56:20 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 27 Jul 2013 17:56:20 +0200
 
 imagemagick (8:6.8.5.6-3) experimental; urgency=low
 

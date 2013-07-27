@@ -283,7 +283,7 @@ Description: image manipulation library - development files
  .
  This version of libmagickwand-dev is compiled for quantum depth of 16 bits.
 
-Package: libmagick++-6.q16-1
+Package: libmagick++-6.q16-2
 Architecture: any
 Multi-Arch: same
 Section: libs
