@@ -39,28 +39,28 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/resource_.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/string-private.h"
-#include "MagickCore/thread-private.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/colorspace.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/module.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/resource_.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/string-private.h"
+#include "magick/thread-private.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -115,7 +115,7 @@ static Image *ReadHALDImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   level=0;
   if (*image_info->filename != '\0')
     level=StringToUnsignedLong(image_info->filename);
@@ -132,14 +132,14 @@ static Image *ReadHALDImage(const ImageInfo *image_info,
       green,
       red;
 
-    register Quantum
+    register PixelPacket
       *restrict q;
 
     if (status == MagickFalse)
       continue;
     q=QueueAuthenticPixels(image,0,y,image->columns,(size_t) level,
       exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       {
         status=MagickFalse;
         continue;
@@ -149,12 +149,14 @@ static Image *ReadHALDImage(const ImageInfo *image_info,
     {
       for (red=0; red < (ssize_t) cube_size; red++)
       {
-        SetPixelRed(image,ClampToQuantum(QuantumRange*red/(cube_size-1.0)),q);
-        SetPixelGreen(image,ClampToQuantum(QuantumRange*green/(cube_size-1.0)),
-          q);
-        SetPixelBlue(image,ClampToQuantum(QuantumRange*blue/(cube_size-1.0)),q);
-        SetPixelAlpha(image,OpaqueAlpha,q);
-        q+=GetPixelChannels(image);
+        SetPixelRed(q,ClampToQuantum((MagickRealType)
+          (QuantumRange*red/(cube_size-1.0))));
+        SetPixelGreen(q,ClampToQuantum((MagickRealType)
+          (QuantumRange*green/(cube_size-1.0))));
+        SetPixelBlue(q,ClampToQuantum((MagickRealType)
+          (QuantumRange*blue/(cube_size-1.0))));
+        SetPixelOpacity(q,OpaqueOpacity);
+        q++;
       }
     }
     if (SyncAuthenticPixels(image,exception) == MagickFalse)

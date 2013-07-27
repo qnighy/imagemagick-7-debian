@@ -34,8 +34,8 @@ tests_wandtest_LDADD = $(MAGICKCORE_LIBS) $(MAGICKWAND_LIBS)
 TESTS_XFAIL_TESTS = 
 
 TESTS_TESTS = \
-	tests/cli-colorspace.tap \
 	tests/cli-pipe.tap \
+	tests/cli-colorspace.tap \
 	tests/validate-colorspace.tap \
 	tests/validate-compare.tap \
 	tests/validate-composite.tap \
@@ -61,4 +61,4 @@ TESTS_EXTRA_DIST = \
 	$(TESTS_TESTS)
 
 TESTS_CLEANFILES = \
-	tests/*_out.*
+  tests/*_out.*

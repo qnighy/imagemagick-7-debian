@@ -38,30 +38,30 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/delegate.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/geometry.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/layer.h"
-#include "MagickCore/list.h"
-#include "MagickCore/log.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/resource_.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/transform.h"
-#include "MagickCore/utility.h"
-#include "MagickCore/xml-tree.h"
-#include "MagickCore/xml-tree-private.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/constitute.h"
+#include "magick/delegate.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/geometry.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/layer.h"
+#include "magick/list.h"
+#include "magick/log.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/resource_.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
+#include "magick/transform.h"
+#include "magick/utility.h"
+#include "magick/xml-tree.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,7 +76,7 @@
 %
 %  ReadDNGImage() reads an binary file in the Digital Negative format and
 %  returns it.  It allocates the memory necessary for the new Image structure
-%  and returns a pointer to the new image. 
+%  and returns a pointer to the new image.
 %
 %  The format of the ReadDNGImage method is:
 %
@@ -114,7 +114,7 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -126,7 +126,7 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Convert DNG to PPM with delegate.
   */
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   read_info=CloneImageInfo(image_info);
   SetImageInfoBlob(read_info,(void *) NULL,0);
   (void) InvokeDelegate(read_info,image,"dng:decode",(char *) NULL,exception);
@@ -164,7 +164,7 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             *ufraw;
 
           /*
-            Inject 
+            Inject.
           */
           ufraw=NewXMLTree(xml,sans);
           if (ufraw != (XMLTreeInfo *) NULL)
@@ -190,7 +190,7 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 if (tag == (char *) NULL)
                   tag="unknown";
                 (void) FormatLocaleString(property,MaxTextExtent,"dng:%s",tag);
-                content=ConstantString(GetXMLTreeContent(next)); 
+                content=ConstantString(GetXMLTreeContent(next));
                 StripString(content);
                 if ((LocaleCompare(tag,"log") != 0) &&
                     (LocaleCompare(tag,"InputFilename") != 0) &&

@@ -42,8 +42,8 @@
 /*
   Include declarations.
 */
-#include "MagickWand/studio.h"
-#include "MagickWand/MagickWand.h"
+#include "wand/studio.h"
+#include "wand/MagickWand.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -58,6 +58,7 @@
 %
 %
 */
+
 static int CompareMain(int argc,char **argv)
 {
   char
@@ -76,7 +77,7 @@ static int CompareMain(int argc,char **argv)
   exception=AcquireExceptionInfo();
   image_info=AcquireImageInfo();
   metadata=(char *) NULL;
-  status=MagickCommandGenesis(image_info,CompareImagesCommand,argc,argv,
+  status=MagickCommandGenesis(image_info,CompareImageCommand,argc,argv,
     &metadata,exception);
   if (metadata != (char *) NULL)
     metadata=DestroyString(metadata);

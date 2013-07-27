@@ -39,25 +39,25 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/property.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/resource_.h"
-#include "MagickCore/utility.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/pixel-accessor.h"
+#include "magick/property.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
+#include "magick/resource_.h"
+#include "magick/utility.h"
 #if defined(MAGICKCORE_OPENEXR_DELEGATE)
 #include <ImfCRgbaFile.h>
 
@@ -65,7 +65,7 @@
   Forward declarations.
 */
 static MagickBooleanType
-  WriteEXRImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteEXRImage(const ImageInfo *,Image *);
 #endif
 
 /*
@@ -158,7 +158,7 @@ static Image *ReadEXRImage(const ImageInfo *image_info,ExceptionInfo *exception)
   register ssize_t
     x;
 
-  register Quantum
+  register PixelPacket
     *q;
 
   ssize_t
@@ -174,7 +174,7 @@ static Image *ReadEXRImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -199,9 +199,8 @@ static Image *ReadEXRImage(const ImageInfo *image_info,ExceptionInfo *exception)
   ImfHeaderDisplayWindow(hdr_info,&min_x,&min_y,&max_x,&max_y);
   image->columns=max_x-min_x+1UL;
   image->rows=max_y-min_y+1UL;
-  image->alpha_trait=BlendPixelTrait;
-  SetImageColorspace(image,RGBColorspace,exception);
-  image->gamma=1.0;
+  image->matte=MagickTrue;
+  SetImageColorspace(image,RGBColorspace);
   if (image_info->ping != MagickFalse)
     {
       (void) ImfCloseInputFile(file);
@@ -220,7 +219,7 @@ static Image *ReadEXRImage(const ImageInfo *image_info,ExceptionInfo *exception)
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       break;
     ResetMagickMemory(scanline,0,image->columns*sizeof(*scanline));
     ImfInputSetFrameBuffer(file,scanline-min_x-image->columns*(min_y+y),1,
@@ -228,15 +227,15 @@ static Image *ReadEXRImage(const ImageInfo *image_info,ExceptionInfo *exception)
     ImfInputReadPixels(file,min_y+y,min_y+y);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      SetPixelRed(image,ClampToQuantum(QuantumRange*
-        ImfHalfToFloat(scanline[x].r)),q);
-      SetPixelGreen(image,ClampToQuantum(QuantumRange*
-        ImfHalfToFloat(scanline[x].g)),q);
-      SetPixelBlue(image,ClampToQuantum(QuantumRange*
-        ImfHalfToFloat(scanline[x].b)),q);
-      SetPixelAlpha(image,ClampToQuantum(QuantumRange*
-        ImfHalfToFloat(scanline[x].a)),q);
-      q+=GetPixelChannels(image);
+      SetPixelRed(q,ClampToQuantum((MagickRealType) QuantumRange*
+        ImfHalfToFloat(scanline[x].r)));
+      SetPixelGreen(q,ClampToQuantum((MagickRealType) QuantumRange*
+        ImfHalfToFloat(scanline[x].g)));
+      SetPixelBlue(q,ClampToQuantum((MagickRealType) QuantumRange*
+        ImfHalfToFloat(scanline[x].b)));
+      SetPixelAlpha(q,ClampToQuantum((MagickRealType) QuantumRange*
+        ImfHalfToFloat(scanline[x].a)));
+      q++;
     }
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
@@ -334,8 +333,7 @@ ModuleExport void UnregisterEXRImage(void)
 %
 %  The format of the WriteEXRImage method is:
 %
-%      MagickBooleanType WriteEXRImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%      MagickBooleanType WriteEXRImage(const ImageInfo *image_info,Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -343,11 +341,8 @@ ModuleExport void UnregisterEXRImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
-static MagickBooleanType WriteEXRImage(const ImageInfo *image_info,Image *image,
-  ExceptionInfo *exception)
+static MagickBooleanType WriteEXRImage(const ImageInfo *image_info,Image *image)
 {
   ImageInfo
     *write_info;
@@ -370,7 +365,7 @@ static MagickBooleanType WriteEXRImage(const ImageInfo *image_info,Image *image,
   MagickBooleanType
     status;
 
-  register const Quantum
+  register const PixelPacket
     *p;
 
   register ssize_t
@@ -388,12 +383,10 @@ static MagickBooleanType WriteEXRImage(const ImageInfo *image_info,Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  (void) SetImageColorspace(image,RGBColorspace,exception);
+  (void) SetImageColorspace(image,RGBColorspace);
   write_info=CloneImageInfo(image_info);
   (void) AcquireUniqueFilename(write_info->filename);
   hdr_info=ImfNewHeader();
@@ -424,7 +417,7 @@ static MagickBooleanType WriteEXRImage(const ImageInfo *image_info,Image *image,
   ImfDeleteHeader(hdr_info);
   if (file == (ImfOutputFile *) NULL)
     {
-      ThrowFileException(exception,BlobError,"UnableToOpenBlob",
+      ThrowFileException(&image->exception,BlobError,"UnableToOpenBlob",
         ImfErrorMessage());
       write_info=DestroyImageInfo(write_info);
       return(MagickFalse);
@@ -438,30 +431,31 @@ static MagickBooleanType WriteEXRImage(const ImageInfo *image_info,Image *image,
   ResetMagickMemory(scanline,0,image->columns*sizeof(*scanline));
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
+    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+    if (p == (const PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      ImfFloatToHalf(QuantumScale*GetPixelRed(image,p),&half_quantum);
+      ImfFloatToHalf(QuantumScale*GetPixelRed(p),&half_quantum);
       scanline[x].r=half_quantum;
-      ImfFloatToHalf(QuantumScale*GetPixelGreen(image,p),&half_quantum);
+      ImfFloatToHalf(QuantumScale*GetPixelGreen(p),&half_quantum);
       scanline[x].g=half_quantum;
-      ImfFloatToHalf(QuantumScale*GetPixelBlue(image,p),&half_quantum);
+      ImfFloatToHalf(QuantumScale*GetPixelBlue(p),&half_quantum);
       scanline[x].b=half_quantum;
-      if (image->alpha_trait != BlendPixelTrait)
+      if (image->matte == MagickFalse)
         ImfFloatToHalf(1.0,&half_quantum);
       else
-        ImfFloatToHalf(QuantumScale*GetPixelAlpha(image,p),&half_quantum);
+        ImfFloatToHalf(1.0-QuantumScale*GetPixelOpacity(p),
+          &half_quantum);
       scanline[x].a=half_quantum;
-      p+=GetPixelChannels(image);
+      p++;
     }
     ImfOutputSetFrameBuffer(file,scanline-(y*image->columns),1,image->columns);
     ImfOutputWritePixels(file,1);
   }
   (void) ImfCloseOutputFile(file);
   scanline=(ImfRgba *) RelinquishMagickMemory(scanline);
-  (void) FileToImage(image,write_info->filename,exception);
+  (void) FileToImage(image,write_info->filename);
   (void) RelinquishUniqueFileResource(write_info->filename);
   write_info=DestroyImageInfo(write_info);
   (void) CloseBlob(image);
