@@ -1,3 +1,26 @@
+2013-07-24  6.8.6-7 Cristy  <quetzlzacatenango@image...>
+  * Missing case for HCLpColorspace (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23811).
+
+2013-07-21  6.8.6.7 Glenn Randers-Pehrson <glennrp@image...>
+  * Do not write "jpeg:" properties in a PNG output file (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23794).
+
+2013-07-17  6.8.6-7 Dirk Lemstra <dirk@snakeware...>
+  * Fix memory leak in CloneImageArtifacts and CloneImageProfiles.
+  * Minor fix for the clipMask property in Magick++.
+
+2013-07-16  6.8.6-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.6-6, SVN revision 12718.
+
+2013-07-16  6.8.6-6 Cristy  <quetzlzacatenango@image...>
+  * JPEG ICC color profile requires null after ICC tag (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23756).
+  * Don't sync channels for the -unsharp option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23740).
+  * Magick++ version so bump (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23752).
+
 2013-07-15  6.8.6-5 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.6-5, SVN revision 12684.
 
@@ -9,7 +32,7 @@
 2013-07-10  6.8.6-5 Cristy  <quetzlzacatenango@image...>
   * compare exits with a non-zero exit code when no error (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23722).
-  * correct calculaton of quantization error (reference
+  * correct calculation of quantization error (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?t=23734).
   * correct quantize tree walking mistake for RiemersmaDither (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=23735).

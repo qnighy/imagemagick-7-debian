@@ -1385,7 +1385,8 @@ MagickExport Image *EmbossImage(const Image *image,const double radius,
     kernel_info,UndefinedCompositeOp,0.0,exception);
   kernel_info=DestroyKernelInfo(kernel_info);
   if (emboss_image != (Image *) NULL)
-    (void) EqualizeImageChannel(emboss_image,AllChannels &~ SyncChannels);
+    (void) EqualizeImageChannel(emboss_image,(ChannelType)
+      (AllChannels &~ SyncChannels));
   return(emboss_image);
 }
 
@@ -3982,7 +3983,8 @@ MagickExport Image *UnsharpMaskImageChannel(const Image *image,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  unsharp_image=BlurImageChannel(image,channel,radius,sigma,exception);
+  unsharp_image=BlurImageChannel(image,channel &~ SyncChannels,radius,sigma,
+    exception);
   if (unsharp_image == (Image *) NULL)
     return((Image *) NULL);
   quantum_threshold=(MagickRealType) QuantumRange*threshold;
