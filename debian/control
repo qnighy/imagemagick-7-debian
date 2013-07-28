@@ -132,6 +132,7 @@ Section: perl
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}, 
 	 libimage-magick-q16-perl
 Provides: perlmagick
+# remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
 Breaks: perlmagick (<< 8:6.8.3.10-1~)
 Suggests: imagemagick-doc
@@ -237,6 +238,7 @@ Depends: libmagickcore-6-headers (= ${source:Version}),
  libxt-dev, zlib1g-dev, 
  pkg-config,
  ${misc:Depends}
+# remove breaks/replaces after jessie +2
 Replaces: libmagickcore-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickcore-dev (<< 8:6.8.3.10-1~)
 Provides: libmagickcore-6.defaultquantum-dev
@@ -340,6 +342,9 @@ Section: perl
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: imagemagick-doc
 Provides: libimage-magick-defaultquantum-perl
+# remove breaks/replaces after jessie +2
+Replaces: perlmagick (<< 8:6.8.3.10-1~)
+Breaks: perlmagick (<< 8:6.8.3.10-1~)
 Description: Perl interface to the ImageMagick graphics routines -- Q16 version
  PerlMagick is an objected-oriented Perl interface to ImageMagick.
  Use the module to read, manipulate, or write an image or image sequence from
