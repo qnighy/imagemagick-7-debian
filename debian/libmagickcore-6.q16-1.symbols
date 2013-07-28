@@ -49,6 +49,7 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  AcquireUniqueFilename@Base 6.8.5.5
  AcquireUniqueSymbolicLink@Base 6.8.5.5
  AcquireVirtualCacheView@Base 6.8.5.5
+ AcquireVirtualMemory@Base 8:6.8.6.2
  AdaptiveBlurImage@Base 6.8.5.5
  AdaptiveBlurImageChannel@Base 6.8.5.5
  AdaptiveResizeImage@Base 6.8.5.5
@@ -635,6 +636,7 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  GetValueFromSplayTree@Base 6.8.5.5
  GetVirtualIndexQueue@Base 6.8.5.5
  GetVirtualIndexesFromNexus@Base 6.8.5.5
+ GetVirtualMemoryBlob@Base 8:6.8.6.2
  GetVirtualPixelQueue@Base 6.8.5.5
  GetVirtualPixels@Base 6.8.5.5
  GetVirtualPixelsFromNexus@Base 6.8.5.5
@@ -950,6 +952,7 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  RelinquishMagickResource@Base 6.8.5.5
  RelinquishSemaphoreInfo@Base 6.8.5.5
  RelinquishUniqueFileResource@Base 6.8.5.5
+ RelinquishVirtualMemory@Base 8:6.8.6.2
  RemapImage@Base 6.8.5.5
  RemapImages@Base 6.8.5.5
  RemoteDisplayCommand@Base 6.8.5.5

@@ -6,6 +6,7 @@ imagemagick (8:6.8.6.7-1) experimental; urgency=low
   * Bug fix: "fails to upgrade from sid - trying to overwrite
     /usr/lib/perl5/auto/Image/Magick/Magick.so", thanks to Andreas
     Beckmann (Closes: #717981).
+  * Add new symbols to symbols file.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 28 Jul 2013 12:12:20 +0200
 
