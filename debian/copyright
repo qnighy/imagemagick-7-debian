@@ -229,6 +229,10 @@ Copyright: 1998-2000, Scott K. Ellis
 	   2011-2013, Vincent Fourmond 
 License: ImageMagick
 
+Files: debian/scripts/changelog.pl
+Copyright: 1998-2013, ImageMagick Studio LLC
+License: ImageMagick
+
 Files: debian/display-im6.svg
 Copyright: 1999-2013, ImageMagick Studio LLC
 License: ImageMagick

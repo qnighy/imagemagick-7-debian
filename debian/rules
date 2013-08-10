@@ -272,15 +272,19 @@ override_dh_auto_install-indep:
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
 
 	# check if html doc is well formed in order to run xslt rule
-	find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
-	     -maxdepth 1 -type f -and -name '*.html' -and -not -empty -print0 \
-             | xargs -0 xmllint --noout --nonet 
+	-find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
+	     -maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
+             | xargs -r -0 xmllint --noout --nonet 
 
 	# now apply privacy cleanning rules
 	find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
-	     -maxdepth 1 -type f -and -name '*.html' -and -not -empty -print0 \
-             | xargs -0 -n 1 debian/scripts/removeprivacybreach
-	exit 2;
+	     -maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
+             | xargs -r -0 -n 1 debian/scripts/removeprivacybreach
+
+	# be paranoiac recheck validity
+	find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
+	     -maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
+             | xargs -r -0 xmllint --noout --nonet 
 
 # install quantum package
 quantum_override_dh_install-arch_%:
