@@ -271,6 +271,11 @@ override_dh_auto_install-indep:
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
 
+	# check if html doc is well formed in order to run xslt rule
+	find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
+	     -maxdepth 1 -type f -and -name '*.html' -and -not -empty -print0 \
+             | xargs -0 xmllint --noout --nonet 
+
 # install quantum package
 quantum_override_dh_install-arch_%:
 	dh_install --package=imagemagick-$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'} \

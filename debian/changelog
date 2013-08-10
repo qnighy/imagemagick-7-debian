@@ -1,12 +1,18 @@
-imagemagick (8:6.8.6.7-1) experimental; urgency=low
+imagemagick (8:6.8.6.8-1) experimental; urgency=low
 
   * New upstream version.
-  * Really diplay log in case of test failure.
-  * Bump c++ soname.
-  * Bug fix: "fails to upgrade from sid - trying to overwrite
+  * Packaging improvements:
+    - Really display log in case of test failure.
+    - check validity (in the xml or xhtml sense) of
+      upstream documentation using xmllint.
+  * Upstream break c++ ABI:
+    - Bump c++ soname.
+    - Add new symbols to symbols file.
+  * Bug fix: 
+    - "fails to upgrade from sid - trying to overwrite
     /usr/lib/perl5/auto/Image/Magick/Magick.so", thanks to Andreas
     Beckmann (Closes: #717981).
-  * Add new symbols to symbols file.
+  
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 28 Jul 2013 12:12:20 +0200
 
