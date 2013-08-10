@@ -2494,6 +2494,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
             jpeg_info.comp_info[0].v_samp_factor);
           break;
         }
+        case sRGBColorspace:
         case RGBColorspace:
         {
           (void) LogMagickEvent(CoderEvent,GetMagickModule(),

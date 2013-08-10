@@ -23,7 +23,7 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
 m4_define([magick_micro_version], [6])
-m4_define([magick_patchlevel_version], [7])
+m4_define([magick_patchlevel_version], [8])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -476,11 +476,15 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=DIR],
 AC_SUBST([pkgconfigdir])
 
 # Enable support for threads
+#
+# Find Posix threads library
+#
 AC_ARG_WITH([threads],
     [AC_HELP_STRING([--without-threads], [disable threads support])],
     [with_threads=$withval],
     [with_threads='yes'])
 
+THREAD_LIBS=''
 have_threads=no
 if test "$with_threads" != 'no'; then
     AX_PTHREAD()
@@ -489,6 +493,7 @@ if test "$with_threads" != 'no'; then
         DEF_THREAD="$PTHREAD_CFLAGS"
         CFLAGS="$CFLAGS $DEF_THREAD"
         CXXFLAGS="$CXXFLAGS $DEF_THREAD"
+	THREAD_LIBS="$PTHREAD_LIBS"
         if test "$CC" != "$PTHREAD_CC"; then
             AC_MSG_WARN([Replacing compiler $CC with compiler $PTHREAD_CC to support pthreads.])
             CC="$PTHREAD_CC"
@@ -496,6 +501,8 @@ if test "$with_threads" != 'no'; then
         AC_DEFINE(THREAD_SUPPORT,1,[Define if you have POSIX threads libraries and header files.])
     fi
 fi
+LIBS="$LIBS $THREAD_LIBS"
+AC_SUBST(THREAD_LIBS)
 
 # Enable support for OpenMP
 if test "$have_threads" != 'yes'; then
@@ -603,7 +610,7 @@ fi
 AM_CONDITIONAL(WITH_MODULES, test "$build_modules" != 'no')
 
 # Enable build using delegate libraries built in subdirectories rather than installed
-# delegate libraries (bzlib fftw fpx gslib jp2 jbig jpeg lcms lzma png tiff ttf wmf xml zlib)
+# delegate libraries (bzlib fftw fpx gslib jp2 jbig jpeg lcms lzma png tiff ttf webp wmf xml zlib)
 AC_ARG_ENABLE([delegate-build],
     [AC_HELP_STRING([--enable-delegate-build],
                     [look for delegate libraries in build directory])],
@@ -1159,7 +1166,6 @@ AC_TRY_COMPILE([],
 # Check for functions
 #
 ########
-MAGICK_FUNC_MMAP_FILEIO
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_MMAP
 AC_FUNC_FORK
@@ -1404,29 +1410,7 @@ if test "$enable_openmp" != 'no'; then
 fi
 AC_SUBST(GOMP_LIBS)
 
-#
-# Find Posix threads library
-#
-THREAD_LIBS=''
-if test "$with_threads" != 'no' && test "$have_threads" = 'yes'; then
 
-    if test "x$PTHREAD_LIBS" = "x"; then
-    case "${host_cpu}-${host_os}" in
-      *-freebsd*)
-        MAGICK_CHECK_PTHREAD_LIB(c_r,PTHREAD_LIBS=-lc_r) ;;
-    esac
-    fi
-
-    for lib in pthread pthreads; do
-        if test "x$PTHREAD_LIBS" = "x"; then
-            MAGICK_CHECK_PTHREAD_LIB([$lib],[PTHREAD_LIBS=-l$lib])
-        fi
-    done
-
-    THREAD_LIBS="$PTHREAD_LIBS"
-    LIBS="$LIBS $THREAD_LIBS"
-fi
-AC_SUBST(THREAD_LIBS)
 
 #
 # Check for umem.
@@ -3233,6 +3217,8 @@ SCANDecodeDelegateDefault='scanimage'
 SVGDecodeDelegateDefault='inkscape'
 TXTDelegateDefault='enscript'
 UniconvertorDelegateDefault='uniconvertor'
+WebPDecodeDelegateDefault='dwebp'
+WebPEncodeDelegateDefault='cwebp'
 WMFDecodeDelegateDefault='wmf2eps'
 WWWDecodeDelegateDefault='curl'
 XPSDelegateDefault='gxps'
@@ -3280,6 +3266,8 @@ AC_PATH_PROG(SCANDecodeDelegate, "$SCANDecodeDelegateDefault", "$SCANDecodeDeleg
 AC_PATH_PROG(SVGDecodeDelegate, "$SVGDecodeDelegateDefault", "$SVGDecodeDelegateDefault")
 AC_PATH_PROG(TXTDelegate, "$TXTDelegateDefault", "$TXTDelegateDefault")
 AC_PATH_PROG(UniconvertorDelegate, "$UniconvertorDelegateDefault", "$UniconvertorDelegateDefault")
+AC_PATH_PROG(WebPDecodeDelegate, "$WebPDecodeDelegateDefault", "$WebPDecodeDelegateDefault")
+AC_PATH_PROG(WebPEncodeDelegate, "$WebPEncodeDelegateDefault", "$WebPEncodeDelegateDefault")
 AC_PATH_PROG(WMFDecodeDelegate, "$WMFDecodeDelegateDefault", "$WMFDecodeDelegateDefault")
 AC_PATH_PROG(WWWDecodeDelegate, "$WWWDecodeDelegateDefault", "$WWWDecodeDelegateDefault")
 AC_PATH_PROG(XPSDelegate, "$XPSDelegateDefault", "$XPSDelegateDefault")
@@ -3450,6 +3438,8 @@ if test "$with_frozenpaths" != 'yes'; then
   SVGDecodeDelegate="$SVGDecodeDelegateDefault"
   TXTDelegate="$TXTDelegateDefault"
   UniconvertorDelegate="$UniconvertorDelegateDefault"
+  WebPDecodeDelegate="$WebPDecodeDelegateDefault"
+  WebPEncodeDelegate="$WebPEncodeDelegateDefault"
   WMFDecodeDelegate="$WMFDecodeDelegateDefault"
   WWWDecodeDelegate="$WWWDecodeDelegateDefault"
   XPSDelegate="$XPSDelegateDefault"
@@ -3494,6 +3484,8 @@ AC_SUBST(SCANDecodeDelegate)
 AC_SUBST(ShowImageDelegate)
 AC_SUBST(TXTDelegate)
 AC_SUBST(UniconvertorDelegate)
+AC_SUBST(WebPDecodeDelegate)
+AC_SUBST(WebPEncodeDelegate)
 AC_SUBST(WMFDecodeDelegate)
 AC_SUBST(WWWDecodeDelegate)
 AC_SUBST(XPSDelegate)
@@ -3863,6 +3855,9 @@ if test "$have_tiff"   = 'yes' ; then
 fi
 if test "$have_ttf"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES ttf"
+fi
+if test "$have_webp"    = 'yes' ; then
+   MAGICK_DELEGATES="$MAGICK_DELEGATES webp"
 fi
 if test "$have_wmf"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES wmf"

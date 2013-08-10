@@ -56,6 +56,9 @@ Peder Langlo, Hewlett Packard
      Made hundreds of suggestions and bug reports. Without Peder, this software
      would not be nearly as useful as it is today.
 
+Dirk Lemstra
+     Contributed to Magick++ and the Windows distribution.
+
 Rick Mabry
      Contributed code to support filling drawn objects using a pattern image
      and major improvements to the web page (both content and appearance).
@@ -99,6 +102,9 @@ Leonard Rosenthol
      Postscript and PDF expertise. Significant drawing enhancements including
      support for dash patterns, linecap stroking, clipping masks and a mask
      image.
+
+Bastien ROUCARIÈS
+     Various patches from Debian downstream.
 
 Kyle Shorter
      Original author of PerlMagick.  Author of the LOCALE coder.

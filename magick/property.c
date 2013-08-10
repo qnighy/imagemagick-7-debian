@@ -2322,18 +2322,16 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
         (image->columns != 0 ? image->columns : image->magick_columns));
       break;
     }
-    case 'x': /* Image horizontal resolution (with units) */
+    case 'x': /* Image horizontal resolution */
     {
-      (void) FormatLocaleString(value,MaxTextExtent,"%g %s",image->x_resolution,
-        CommandOptionToMnemonic(MagickResolutionOptions,(ssize_t)
-        image->units));
+      (void) FormatLocaleString(value,MaxTextExtent,"%.20g",
+        fabs(image->x_resolution) > MagickEpsilon ? image->x_resolution : 72.0);
       break;
     }
-    case 'y': /* Image vertical resolution (with units) */
+    case 'y': /* Image vertical resolution */
     {
-      (void) FormatLocaleString(value,MaxTextExtent,"%g %s",image->y_resolution,
-        CommandOptionToMnemonic(MagickResolutionOptions,(ssize_t)
-        image->units));
+      (void) FormatLocaleString(value,MaxTextExtent,"%.20g",
+        fabs(image->y_resolution) > MagickEpsilon ? image->y_resolution : 72.0);
       break;
     }
     case 'z': /* Image depth as read in */
@@ -2393,7 +2391,7 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
     case 'Q': /* image compression quality */
     {
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
-        image->quality);
+        (image->quality == 0 ? 92 : image->quality));
       break;
     }
     case 'S': /* Image scenes  ???? */
