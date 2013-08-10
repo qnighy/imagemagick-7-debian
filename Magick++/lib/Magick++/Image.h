@@ -145,9 +145,6 @@ namespace Magick
     // Transform image by specified affine (or free transform) matrix.
     void            affineTransform ( const DrawableAffine &affine );
 
-    // Activates, deactivates, resets, or sets the alpha channel.
-    void            alphaChannel ( AlphaChannelType alphaType_ );
-
     //
     // Annotate image (draw text on image)
     //
@@ -505,7 +502,7 @@ namespace Magick
     // has a useful range of 0 to ten.
     void            level ( const double black_point,
                             const double white_point,
-                            const double mid_point = 1.0 );
+                            const double mid_point=1.0 );
 
     // Level image channel. Adjust the levels of the image channel by
     // scaling the values falling between specified white and black
@@ -521,19 +518,19 @@ namespace Magick
     void            levelChannel ( const ChannelType channel,
                                    const double black_point,
                                    const double white_point,
-                                   const double mid_point = 1.0 );
+                                   const double mid_point=1.0 );
 
     // Maps the given color to "black" and "white" values, linearly spreading
     // out the colors, and level values on a channel by channel bases, as
     // per level(). The given colors allows you to specify different level
     // ranges for each of the color channels separately.
-    void            levelColors ( const Color &blackColor_,
-                                  const Color &whiteColor_,
-                                  const bool invert_ = true );
+    void            levelColors ( const Color &whiteColor_,
+                                  const Color &blackColor_,
+                                  const bool invert_ );
     void            levelColorsChannel ( const ChannelType channel_,
-                                         const Color &blackColor_,
                                          const Color &whiteColor_,
-                                         const bool invert_ = true );
+                                         const Color &blackColor_,
+                                         const bool invert_ = false );
 
     // Discards any pixels below the black point and above the white point and
     // levels the remaining pixels.
@@ -606,8 +603,6 @@ namespace Magick
     // -epsilon (whichever is closer) otherwise the pixel value remains
     // unchanged.
     void            perceptible ( const double epsilon_ );
-    void            perceptibleChannel ( const ChannelType channel_,
-                                         const double epsilon_ );
 
     // Ping is similar to read except only enough of the image is read
     // to determine the image columns, rows, and filesize.  Access the
