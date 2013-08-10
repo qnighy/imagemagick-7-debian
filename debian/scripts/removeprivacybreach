@@ -14,5 +14,5 @@ temporary_dir=$(mktemp -d "$TMPDIR/XXXXXXXXXXXXXXXXXXXXXXXXXXXXX") || { echo "ER
 umask "$save_mask"
 temporary_file=$temporary_dir/$RANDOM
 
-xsltproc --novalid debian/scripts/removeprivacybreach.xslt $1 > $temporary_file
+xsltproc --novalid --nonet debian/scripts/removeprivacybreach.xslt $1 > $temporary_file
 mv $temporary_file $1

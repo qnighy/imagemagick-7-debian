@@ -276,6 +276,12 @@ override_dh_auto_install-indep:
 	     -maxdepth 1 -type f -and -name '*.html' -and -not -empty -print0 \
              | xargs -0 xmllint --noout --nonet 
 
+	# now apply privacy cleanning rules
+	find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
+	     -maxdepth 1 -type f -and -name '*.html' -and -not -empty -print0 \
+             | xargs -0 -n 1 debian/scripts/removeprivacybreach
+	exit 2;
+
 # install quantum package
 quantum_override_dh_install-arch_%:
 	dh_install --package=imagemagick-$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'} \
