@@ -5,10 +5,11 @@ imagemagick (8:6.8.6.8-1) experimental; urgency=low
     - Really display log in case of test failure.
     - check validity (in the xml or xhtml sense) of
       upstream documentation using xmllint.
+    - check gpg signature see uscan(1).
   * Upstream break c++ ABI:
     - Bump c++ soname.
     - Add new symbols to symbols file.
-  * Bug fix: 
+  * Bug fix:
     - "fails to upgrade from sid - trying to overwrite
     /usr/lib/perl5/auto/Image/Magick/Magick.so", thanks to Andreas
     Beckmann (Closes: #717981).
