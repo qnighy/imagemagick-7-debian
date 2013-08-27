@@ -271,20 +271,11 @@ override_dh_auto_install-indep:
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
 
-	# check if html doc is well formed in order to run xslt rule
-	-find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
-	     -maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
-             | xargs -r -0 xmllint --noout --nonet 
-
 	# now apply privacy cleanning rules
 	find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
 	     -maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
              | xargs -r -0 -n 1 debian/scripts/removeprivacybreach
 
-	# be paranoiac recheck validity
-	find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
-	     -maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
-             | xargs -r -0 xmllint --noout --nonet 
 
 # install quantum package
 quantum_override_dh_install-arch_%:
@@ -372,6 +363,7 @@ override_dh_clean: quantum_override_dh_clean_Q16 quantum_override_dh_clean_indep
 
 export DEB_MAINT_UPSTREAM_BRANCH ?= ImageMagick-${DEB_UPSTREAM_VERSION_MAJOR}
 export DEB_MAINT_CURRENT_DEB_BRANCH ?= debian/${DEB_NOEPOCH_VERSION}
+export DEB_MAINT_CURRENT_DEB_CUSTOM_PATCHES ?= debian-custom-patches/${DEB_NOEPOCH_VERSION}
 
 # get original source
 get-orig-source:
@@ -555,6 +547,7 @@ maint-create-debian-patches-doit: maint-merge-debian-branch-doit
 		fi; \
 	fi;
 
+
 # create a new debian patches branch
 maint-create-debian-patches:
 	$(MAKE) -f debian/rules \
@@ -563,13 +556,48 @@ maint-create-debian-patches:
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
 
 
+maint-create-debian-custom-patches-new-make-%:
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_CUSTOM_PATCHES}
+	if ! (git show-ref --verify --quiet refs/heads/debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1) ; then \
+		git checkout -b debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1; \
+	fi;
+	git rebase upstream/${DEB_UPSTREAM_VERSION} debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1 --onto debian-patches/${DEB_MAINT_NEW_VERSION}-1
+	git checkout debian-patches/${DEB_MAINT_NEW_VERSION}-1
+	git merge --ff debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1
+
+maint-create-debian-custom-patches-doit: maint-create-debian-patches-doit
+	if ! (git show-ref --verify --quiet refs/heads/debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1); then \
+		if ! ($(MAKE) -f debian/rules maint-create-debian-custom-patches-new-make-${DEB_MAINT_NEW_VERSION}); then \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+			git branch -D debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1 || true; \
+			exit 1; \
+		else \
+			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
+		fi; \
+	fi;
+
+
+# create not forwarded debian patches (debian-custom-patches)
+maint-create-debian-custom-patches:
+	$(MAKE) -f debian/rules \
+		   maint-create-debian-custom-patches-doit \
+		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
+	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
+
+
 # create a new version
 maint-do-new-version:
 	DEB_MAINT_NEW_VERSION=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`;\
 	if test "x$$DEB_MAINT_NEW_VERSION" = "x" ; then exit 1; fi; \
-	if !($(MAKE) -f debian/rules maint-create-debian-patches-doit \
+	if !($(MAKE) -f debian/rules maint-create-debian-custom-patches-doit \
 		   	 DEB_MAINT_NEW_VERSION:=$$DEB_MAINT_NEW_VERSION ); then \
 	    git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
 	else \
 	    git checkout -f debian/$$DEB_MAINT_NEW_VERSION-1; \
 	fi;
+
+	# check if upstream is sane
+	# check if html doc is well formed in order to run xslt rule
+	find $(CURDIR)/www \
+	     	-maxdepth 1 -type f -and -name '*.html' -and -not -empty -print0 \
+		| xargs -r -0 -t xmllint --noout --nonet

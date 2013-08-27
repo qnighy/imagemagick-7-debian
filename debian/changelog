@@ -1,4 +1,4 @@
-imagemagick (8:6.8.6.8-1) experimental; urgency=low
+imagemagick (8:6.8.6.9-1) experimental; urgency=low
 
   * New upstream version.
   * Packaging improvements:
@@ -13,9 +13,10 @@ imagemagick (8:6.8.6.8-1) experimental; urgency=low
     - "fails to upgrade from sid - trying to overwrite
     /usr/lib/perl5/auto/Image/Magick/Magick.so", thanks to Andreas
     Beckmann (Closes: #717981).
-  
+    - "advertising / spying beacon in locally installed docs",
+    thanks to Adam Borowski (Closes: #700784).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 28 Jul 2013 12:12:20 +0200
+ --
 
 imagemagick (8:6.8.5.6-3) experimental; urgency=low
 
