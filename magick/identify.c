@@ -38,7 +38,8 @@
 %
 %
 */
-
+
+
 /*
   Include declarations.
 */
@@ -105,7 +106,8 @@
 #include "lcms.h"
 #endif
 #endif
-
+
+
 /*
   Define declarations.
 */
@@ -114,7 +116,8 @@
 #define cmsUInt32Number  DWORD
 #endif
 #endif
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -398,11 +401,15 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
       }
   magick_info=GetMagickInfo(image->magick,&image->exception);
   if ((magick_info == (const MagickInfo *) NULL) ||
-      (*GetMagickDescription(magick_info) == '\0'))
+      (GetMagickDescription(magick_info) == (const char *) NULL))
     (void) FormatLocaleFile(file,"  Format: %s\n",image->magick);
   else
     (void) FormatLocaleFile(file,"  Format: %s (%s)\n",image->magick,
       GetMagickDescription(magick_info));
+  if ((magick_info == (const MagickInfo *) NULL) ||
+      (GetMagickMimeType(magick_info) != (const char *) NULL))
+    (void) FormatLocaleFile(file,"  Mime type: %s\n",GetMagickMimeType(
+      magick_info));
   (void) FormatLocaleFile(file,"  Class: %s\n",CommandOptionToMnemonic(
     MagickClassOptions,(ssize_t) image->storage_class));
   (void) FormatLocaleFile(file,"  Geometry: %.20gx%.20g%+.20g%+.20g\n",(double)

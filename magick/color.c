@@ -1057,6 +1057,12 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
     default:
       break;
   }
+  if (compliance == NoCompliance)
+    {
+      (void) FormatLocaleString(component,MaxTextExtent,"%g",color);
+      (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
+      return;
+    }
   if (compliance != SVGCompliance)
     {
       if (pixel->depth > 16)
@@ -2299,7 +2305,7 @@ static MagickBooleanType LoadColorLists(const char *filename,
   option=(const StringInfo *) GetNextValueInLinkedList(options);
   while (option != (const StringInfo *) NULL)
   {
-    status|=LoadColorList((const char *) GetStringInfoDatum(option),
+    status&=LoadColorList((const char *) GetStringInfoDatum(option),
       GetStringInfoPath(option),0,exception);
     option=(const StringInfo *) GetNextValueInLinkedList(options);
   }
@@ -2338,7 +2344,7 @@ static MagickBooleanType LoadColorLists(const char *filename,
     color_info->compliance=(ComplianceType) p->compliance;
     color_info->exempt=MagickTrue;
     color_info->signature=MagickSignature;
-    status|=AppendValueToLinkedList(color_list,color_info);
+    status&=AppendValueToLinkedList(color_list,color_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",color_info->name);

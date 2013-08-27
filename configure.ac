@@ -23,7 +23,7 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
 m4_define([magick_micro_version], [6])
-m4_define([magick_patchlevel_version], [8])
+m4_define([magick_patchlevel_version], [9])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -521,6 +521,7 @@ fi
 # Enable support for OpenCL
 AX_OPENCL([C])
 CFLAGS="$CL_CFLAGS $CFLAGS"
+CPPFLAGS="$CL_CFLAGS $CPPFLAGS"
 LIBS="$CL_LIBS $LIBS"
 AC_SUBST(CL_CFLAGS)
 if test "$enable_opencl" != no; then
@@ -1287,7 +1288,7 @@ if test "$enable_delegate_build" != 'no'; then
     # Most delegates have includes in the same directory as the library, but not all...
     #
     # Includes
-    for dir in bzlib fftw fpx gslib/src jp2 jp2/src/libjasper/include jbig/libjbig jpeg lcms/include lzma magick png tiff/libtiff ttf/include wand webp wmf/include xml/include zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jp2/src/libjasper/include jbig/libjbig jpeg lcms/include lzma magick mupdf png tiff/libtiff ttf/include wand webp wmf/include xml/include zlib; do
         if test -d "$builddir/$dir"; then
             CPPFLAGS="$CPPFLAGS -I$builddir/$dir"
         else
@@ -1298,7 +1299,7 @@ if test "$enable_delegate_build" != 'no'; then
     done
 
     # Libraries
-    for dir in bzlib fftw fpx gslib/src jp2 jp2/src/libjasper jbig/libjbig jpeg lcms/src lzma magick png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jp2/src/libjasper jbig/libjbig jpeg lcms/src lzma magick mupdf png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
     if test -d "$builddir/$dir/.libs"; then
         LDFLAGS="$LDFLAGS -L$builddir/$dir/.libs"
     else
@@ -2007,7 +2008,6 @@ AM_CONDITIONAL(FREETYPE_DELEGATE, test "$have_freetype" = 'yes')
 AC_SUBST(FREETYPE_CFLAGS)
 AC_SUBST(FREETYPE_LIBS)
 
-
 dnl ===========================================================================
 
 #
@@ -2475,6 +2475,51 @@ fi
 AM_CONDITIONAL(LZMA_DELEGATE, test "$have_lzma" = 'yes')
 AC_SUBST(LZMA_CFLAGS)
 AC_SUBST(LZMA_LIBS)
+
+dnl ===========================================================================
+
+#
+# Check for MUPDF delegate library.
+#
+AC_ARG_WITH(mupdf,
+    [AC_HELP_STRING([--with-mupdf],
+                    [enable MUPDF support])],
+    [with_mupdf=$withval],
+    [with_mupdf='no'])
+
+if test "$with_mupdf" != 'yes'; then
+    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-mupdf=$with_mupdf "
+fi
+
+have_mupdf='no'
+MUPDF_LIBS=''
+if test "$with_mupdf" != 'no'; then
+    AC_MSG_RESULT([-------------------------------------------------------------])
+    AC_MSG_CHECKING([for MUPDF])
+    AC_MSG_RESULT([])
+    failed=0
+    passed=0
+    AC_CHECK_HEADER(mupdf/fitz.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
+    AC_CHECK_LIB(mupdf,fz_new_context,passed=`expr $passed + 1`,failed=`expr $failed + 1`,-lmupdf $FREETYPE_LIBS)
+    AC_MSG_CHECKING([if MUPDF package is complete])
+    if test $passed -gt 0; then
+        if test $failed -gt 0; then
+            AC_MSG_RESULT([no -- some components failed test])
+            have_mupdf='no (failed tests)'
+        else
+            MUPDF_LIBS='-lmupdf'
+            LIBS="$MUPDF_LIBS $LIBS"
+            AC_DEFINE(MUPDF_DELEGATE,1,Define if you have MUPDF library)
+            AC_MSG_RESULT([yes])
+            have_mupdf='yes'
+        fi
+    else
+        AC_MSG_RESULT([no])
+    fi
+fi
+AM_CONDITIONAL(MUPDF_DELEGATE,test "$have_mupdf" = 'yes')
+AC_SUBST(MUPDF_LIBS)
+
 
 dnl ===========================================================================
 
@@ -3790,6 +3835,9 @@ fi
 if test "$have_fig2dev" = 'yes' && test "$have_ps" = 'yes'  ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES xfig"
 fi
+if test "$have_mupdf"    = 'yes' ; then
+   MAGICK_DELEGATES="$MAGICK_DELEGATES mupdf"
+fi
 if test "$have_fpx"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES fpx"
 fi
@@ -4040,6 +4088,7 @@ LQR               --with-lqr=$with_lqr		$have_lqr
 LTDL              --with-ltdl=$with_ltdl		$have_ltdl
 LZMA              --with-lzma=$with_lzma		$have_lzma
 Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
+MUPDF             --with-mupdf=$with_mupdf		$have_mupdf
 OpenEXR           --with-openexr=$with_openexr		$have_openexr
 PANGO             --with-pango=$with_pango		$have_pango
 PERL              --with-perl=$with_perl		$have_perl

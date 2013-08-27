@@ -2147,8 +2147,8 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             (void) SyncImageSettings(mogrify_info,*image);
             p=argv[i+1];
             GetMagickToken(p,&p,token);
-            method=(MorphologyMethod) ParseCommandOption(MagickMorphologyOptions,
-              MagickFalse,token);
+            method=(MorphologyMethod) ParseCommandOption(
+              MagickMorphologyOptions,MagickFalse,token);
             iterations=1L;
             GetMagickToken(p,&p,token);
             if ((*p == ':') || (*p == ','))
@@ -3456,6 +3456,7 @@ static MagickBooleanType MogrifyUsage(void)
       "-clut                apply a color lookup table to the image",
       "-coalesce            merge a sequence of images",
       "-combine             combine a sequence of images",
+      "-compare             mathematically and visually annotate the difference between an image and its reconstruction",
       "-composite           composite image",
       "-crop geometry       cut out a rectangular region of the image",
       "-deconstruct         break down an image sequence into constituent parts",
@@ -4181,6 +4182,8 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
               ThrowMogrifyException(OptionError,"MissingArgument",option);
             break;
           }
+        if (LocaleCompare("compare",option+1) == 0)
+          break;
         if (LocaleCompare("composite",option+1) == 0)
           break;
         if (LocaleCompare("compress",option+1) == 0)
@@ -5122,6 +5125,22 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             i++;
             if (i == (ssize_t) argc)
               ThrowMogrifyException(OptionError,"MissingArgument",option);
+            break;
+          }
+        if (LocaleCompare("metric",option+1) == 0)
+          {
+            ssize_t
+              type;
+
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            type=ParseCommandOption(MagickMetricOptions,MagickTrue,argv[i]);
+            if (type < 0)
+              ThrowMogrifyException(OptionError,"UnrecognizedMetricType",
+                argv[i]);
             break;
           }
         if (LocaleCompare("maximum",option+1) == 0)
@@ -6942,6 +6961,16 @@ WandExport MagickBooleanType MogrifyImageInfo(ImageInfo *image_info,
               exception);
             break;
           }
+        if (LocaleCompare("metric",option+1) == 0)
+          {
+            if (*option == '+')
+              {
+                (void) DeleteImageOption(image_info,option+1);
+                break;
+              }
+            (void) SetImageOption(image_info,option+1,argv[i+1]);
+            break;
+          }
         if (LocaleCompare("monitor",option+1) == 0)
           {
             (void) SetImageInfoProgressMonitor(image_info,MonitorProgress,
@@ -7556,6 +7585,48 @@ WandExport MagickBooleanType MogrifyImageList(ImageInfo *image_info,
             *images=combine_image;
             break;
           }
+        if (LocaleCompare("compare",option+1) == 0)
+          {
+            const char
+              *option;
+
+            double
+              distortion;
+
+            Image
+              *difference_image,
+              *image,
+              *reconstruct_image;
+
+            MetricType
+              metric;
+
+            /*
+              Mathematically and visually annotate the difference between an
+              image and its reconstruction.
+            */
+            (void) SyncImagesSettings(mogrify_info,*images);
+            image=RemoveFirstImageFromList(images);
+            reconstruct_image=RemoveFirstImageFromList(images);
+            if (reconstruct_image == (Image *) NULL)
+              {
+                status=MagickFalse;
+                break;
+              }
+            metric=UndefinedMetric;
+            option=GetImageOption(image_info,"metric");
+            if (option != (const char *) NULL)
+              metric=(MetricType) ParseCommandOption(MagickMetricOptions,
+                MagickFalse,option);
+            difference_image=CompareImageChannels(image,reconstruct_image,
+              channel,metric,&distortion,exception);
+            if (difference_image == (Image *) NULL)
+              break;
+            if (*images != (Image *) NULL)
+              *images=DestroyImage(*images);
+            *images=difference_image;
+            break;
+          }
         if (LocaleCompare("composite",option+1) == 0)
           {
             Image
@@ -7613,29 +7684,6 @@ WandExport MagickBooleanType MogrifyImageList(ImageInfo *image_info,
             *images=image;
             break;
           }
-#if 0
-This has been merged completely into MogrifyImage()
-        if (LocaleCompare("crop",option+1) == 0)
-          {
-            MagickStatusType
-              flags;
-
-            RectangleInfo
-              geometry;
-
-            /*
-              Crop Image.
-            */
-            (void) SyncImagesSettings(mogrify_info,*images);
-            flags=ParseGravityGeometry(*images,argv[i+1],&geometry,exception);
-            if (((geometry.width == 0) && (geometry.height == 0)) ||
-                ((flags & XValue) != 0) || ((flags & YValue) != 0))
-              break;
-            (void) TransformImages(images,argv[i+1],(char *) NULL);
-            InheritException(exception,&(*images)->exception);
-            break;
-          }
-#endif
         break;
       }
       case 'd':
@@ -7717,8 +7765,8 @@ This has been merged completely into MogrifyImage()
               op;
 
             (void) SyncImageSettings(mogrify_info,*images);
-            op=(MagickEvaluateOperator) ParseCommandOption(MagickEvaluateOptions,
-              MagickFalse,argv[i+1]);
+            op=(MagickEvaluateOperator) ParseCommandOption(
+              MagickEvaluateOptions,MagickFalse,argv[i+1]);
             evaluate_image=EvaluateImages(*images,op,exception);
             if (evaluate_image == (Image *) NULL)
               {

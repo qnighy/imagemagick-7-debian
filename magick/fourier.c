@@ -200,11 +200,11 @@ static MagickBooleanType ForwardQuadrantSwap(const size_t width,
     return(MagickFalse);
   for (y=0L; y < (ssize_t) height; y++)
     for (x=0L; x < (ssize_t) (width/2L-1L); x++)
-      forward_pixels[width*y+x+width/2L]=source_pixels[center*y+x];
+      forward_pixels[y*width+x+width/2L]=source_pixels[y*center+x];
   for (y=1; y < (ssize_t) height; y++)
     for (x=0L; x < (ssize_t) (width/2L-1L); x++)
-      forward_pixels[width*(height-y)+width/2L-x-1L]=
-        source_pixels[center*y+x+1L];
+      forward_pixels[(height-y)*width+width/2L-x-1L]=
+        source_pixels[y*center+x+1L];
   for (x=0L; x < (ssize_t) (width/2L); x++)
     forward_pixels[-x+width/2L-1L]=forward_pixels[x+width/2L+1L];
   return(MagickTrue);
@@ -291,12 +291,12 @@ static MagickBooleanType ForwardFourier(const FourierInfo *fourier_info,
   phase_pixels=(double *) GetVirtualMemoryBlob(phase_info);
   (void) ResetMagickMemory(phase_pixels,0,fourier_info->height*
     fourier_info->width*sizeof(*phase_pixels));
-  status=ForwardQuadrantSwap(fourier_info->height,fourier_info->height,
+  status=ForwardQuadrantSwap(fourier_info->width,fourier_info->height,
     magnitude,magnitude_pixels);
   if (status != MagickFalse)
-    status=ForwardQuadrantSwap(fourier_info->height,fourier_info->height,phase,
+    status=ForwardQuadrantSwap(fourier_info->width,fourier_info->height,phase,
       phase_pixels);
-  CorrectPhaseLHS(fourier_info->height,fourier_info->height,phase_pixels);
+  CorrectPhaseLHS(fourier_info->width,fourier_info->height,phase_pixels);
   if (fourier_info->modulus != MagickFalse)
     {
       i=0L;
@@ -539,7 +539,7 @@ static MagickBooleanType ForwardFourierTransform(FourierInfo *fourier_info,
   /*
     Normalize Fourier transform.
   */
-  n=(double) fourier_info->width*(double) fourier_info->width;
+  n=(double) fourier_info->width*(double) fourier_info->height;
   i=0L;
   for (y=0L; y < (ssize_t) fourier_info->height; y++)
     for (x=0L; x < (ssize_t) fourier_info->center; x++)
@@ -825,9 +825,9 @@ static MagickBooleanType InverseQuadrantSwap(const size_t width,
   center=(ssize_t) floor((double) width/2L)+1L;
   for (y=1L; y < (ssize_t) height; y++)
     for (x=0L; x < (ssize_t) (width/2L+1L); x++)
-      destination[center*(height-y)-x+width/2L]=source[y*width+x];
+      destination[(height-y)*center-x+width/2L]=source[y*width+x];
   for (y=0L; y < (ssize_t) height; y++)
-    destination[center*y]=source[y*width+width/2L];
+    destination[y*center]=source[y*width+width/2L];
   for (x=0L; x < center; x++)
     destination[x]=source[center-x-1L];
   return(RollFourier(center,height,0L,(ssize_t) height/-2L,destination));
@@ -1009,7 +1009,7 @@ static MagickBooleanType InverseFourier(FourierInfo *fourier_info,
         }
     }
   phase_view=DestroyCacheView(phase_view);
-  CorrectPhaseLHS(fourier_info->width,fourier_info->width,phase_pixels);
+  CorrectPhaseLHS(fourier_info->width,fourier_info->height,phase_pixels);
   if (status != MagickFalse)
     status=InverseQuadrantSwap(fourier_info->width,fourier_info->height,
       phase_pixels,inverse_pixels);
