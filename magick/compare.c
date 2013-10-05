@@ -995,6 +995,17 @@ static MagickBooleanType GetNormalizedCrossCorrelationDistortion(
   */
   image_statistics=GetImageChannelStatistics(image,exception);
   reconstruct_statistics=GetImageChannelStatistics(reconstruct_image,exception);
+  if ((image_statistics == (ChannelStatistics *) NULL) ||
+      (reconstruct_statistics == (ChannelStatistics *) NULL))
+    {
+      if (image_statistics != (ChannelStatistics *) NULL)
+        image_statistics=(ChannelStatistics *) RelinquishMagickMemory(
+          image_statistics);
+      if (reconstruct_statistics != (ChannelStatistics *) NULL)
+        reconstruct_statistics=(ChannelStatistics *) RelinquishMagickMemory(
+          reconstruct_statistics);
+      return(MagickFalse);
+    }
   status=MagickTrue;
   progress=0;
   for (i=0; i <= (ssize_t) CompositeChannels; i++)
@@ -1394,7 +1405,8 @@ MagickExport MagickBooleanType GetImageChannelDistortion(Image *image,
   }
   *distortion=channel_distortion[CompositeChannels];
   channel_distortion=(double *) RelinquishMagickMemory(channel_distortion);
-  (void) FormatImageProperty(image,"distortion","%.20g",*distortion);
+  (void) FormatImageProperty(image,"distortion","%.*g",GetMagickPrecision(),
+    *distortion);
   return(status);
 }
 

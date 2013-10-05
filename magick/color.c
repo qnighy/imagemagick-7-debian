@@ -1023,7 +1023,7 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
   char
     component[MaxTextExtent];
 
-  MagickRealType
+  double
     color;
 
   color=0.0;
@@ -1059,7 +1059,7 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
   }
   if (compliance == NoCompliance)
     {
-      (void) FormatLocaleString(component,MaxTextExtent,"%g",color);
+      (void) FormatLocaleString(component,MaxTextExtent,"%.20g",color);
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
@@ -1086,8 +1086,8 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
     }
   if (channel == OpacityChannel)
     {
-      (void) FormatLocaleString(component,MaxTextExtent,"%g",
-        (double) (QuantumScale*color));
+      (void) FormatLocaleString(component,MaxTextExtent,"%.20g",
+        (QuantumScale*color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
@@ -1099,15 +1099,15 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
       (pixel->colorspace == HSVColorspace) ||
       (pixel->colorspace == HWBColorspace))
     {
-      (void) FormatLocaleString(component,MaxTextExtent,"%g%%",
-        (double) (100.0*QuantumScale*color));
+      (void) FormatLocaleString(component,MaxTextExtent,"%.20g%%",
+        (100.0*QuantumScale*color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
   if (pixel->depth > 8)
     {
-      (void) FormatLocaleString(component,MaxTextExtent,"%g%%",
-        (double) (100.0*QuantumScale*color));
+      (void) FormatLocaleString(component,MaxTextExtent,"%.20g%%",
+        (100.0*QuantumScale*color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
@@ -2646,6 +2646,7 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
           depth=4*(n/4);
         }
       color->colorspace=sRGBColorspace;
+      color->depth=depth;
       color->matte=MagickFalse;
       range=GetQuantumRange(depth);
       color->red=(MagickRealType) ScaleAnyToQuantum(pixel.red,range);
@@ -2715,7 +2716,10 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
         }
       color->colorspace=(ColorspaceType) type;
       if ((icc_color == MagickFalse) && (color->colorspace == RGBColorspace))
-        color->colorspace=sRGBColorspace;  /* as required by SVG standard */
+        {
+          color->colorspace=sRGBColorspace;  /* as required by SVG standard */
+          color->depth=8;
+        }
       SetGeometryInfo(&geometry_info);
       flags=ParseGeometry(name+i+1,&geometry_info);
       if (flags == 0)
@@ -2818,6 +2822,7 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
   if (p == (const ColorInfo *) NULL)
     return(MagickFalse);
   color->colorspace=sRGBColorspace;
+  color->depth=8;
   color->matte=p->color.opacity != OpaqueOpacity ? MagickTrue : MagickFalse;
   color->red=(MagickRealType) p->color.red;
   color->green=(MagickRealType) p->color.green;

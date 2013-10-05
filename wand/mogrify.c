@@ -176,7 +176,7 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
             (void) fputs(*metadata,stdout);
             *metadata=DestroyString(*metadata);
           }
-      return(status);
+      return(status == MagickFalse ? 0 : 1);
     }
   number_threads=GetOpenMPMaximumThreads();
   serial=0.0;
@@ -265,13 +265,12 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
         (double) n)))-(1.0/(double) n))/(1.0-1.0/(double) n);
     (void) FormatLocaleFile(stderr,
       "Performance[%.20g]: %.20gi %0.3fips %0.3fe %0.3fu %lu:%02lu.%03lu\n",
-      (double) n,(double) iterations,(double) iterations/parallel,e,
-      user_time,(unsigned long) (parallel/60.0),(unsigned long)
-      floor(fmod(parallel,60.0)),(unsigned long)
-      (1000.0*(parallel-floor(parallel))+0.5));
+      (double) n,(double) iterations,(double) iterations/parallel,e,user_time,
+      (unsigned long) (parallel/60.0),(unsigned long) floor(fmod(parallel,
+      60.0)),(unsigned long) (1000.0*(parallel-floor(parallel))+0.5));
     timer=DestroyTimerInfo(timer);
   }
-  return(status);
+  return(status == MagickFalse ? 0 : 1);
 }
 
 /*
@@ -4172,6 +4171,12 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             break;
           }
         if (LocaleCompare("combine",option+1) == 0)
+            if (*option == '-')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            break;
           break;
         if (LocaleCompare("comment",option+1) == 0)
           {
@@ -5822,6 +5827,17 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             i++;
             if (i == (ssize_t) (argc-1))
               ThrowMogrifyException(OptionError,"MissingArgument",option);
+            break;
+          }
+        if (LocaleCompare("splice",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMogrifyInvalidArgumentException(option,argv[i]);
             break;
           }
         if (LocaleCompare("spread",option+1) == 0)

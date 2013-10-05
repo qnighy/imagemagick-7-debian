@@ -710,44 +710,42 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
       }
       case TIFF_SHORT:
       {
-        uint16
-          shorty;
+        void
+          *shorty;
 
         if (exif_info[i].variable_length != 0)
           {
-            uint16
-              count;
-
             void
               *shorty;
 
-            if (TIFFGetField(tiff,exif_info[i].tag,&count,&shorty,&sans) != 0)
+            if (TIFFGetField(tiff,exif_info[i].tag,&sans,&shorty,&sans) != 0)
               (void) FormatLocaleString(value,MaxTextExtent,"%d",(int)
                 (*(uint16 *) shorty));
             break;
           }
         if (TIFFGetField(tiff,exif_info[i].tag,&shorty,&sans,&sans) != 0)
-          (void) FormatLocaleString(value,MaxTextExtent,"%d",(int) shorty);
+          (void) FormatLocaleString(value,MaxTextExtent,"%d",(int)
+            (uint16) shorty);
         break;
       }
       case TIFF_LONG:
       {
-        uint32
-          longy;
+        void
+          *longy;
 
         if (TIFFGetField(tiff,exif_info[i].tag,&longy,&sans,&sans) != 0)
-          (void) FormatLocaleString(value,MaxTextExtent,"%d",longy);
+          (void) FormatLocaleString(value,MaxTextExtent,"%d", (uint32) longy);
         break;
       }
 #if defined(TIFF_VERSION_BIG)
       case TIFF_LONG8:
       {
-        uint64
-          longy;
+        void
+          *longy;
 
         if (TIFFGetField(tiff,exif_info[i].tag,&longy,&sans,&sans) != 0)
           (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
-            ((MagickOffsetType) longy));
+            ((MagickOffsetType) (uint64) longy));
         break;
       }
 #endif
@@ -756,11 +754,12 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
       case TIFF_FLOAT:
       case TIFF_DOUBLE:
       {
-        float
-          rational[16];
+        void
+          *rational;
 
         if (TIFFGetField(tiff,exif_info[i].tag,&rational,&sans,&sans) != 0)
-          (void) FormatLocaleString(value,MaxTextExtent,"%g",rational[0]);
+          (void) FormatLocaleString(value,MaxTextExtent,"%g",
+            *((float *) &rational));
         break;
       }
       default:
@@ -3067,10 +3066,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
       if ((image_info->interlace == PlaneInterlace) ||
           (image_info->interlace == PartitionInterlace))
         (void) TIFFSetField(tiff,TIFFTAG_PLANARCONFIG,PLANARCONFIG_SEPARATE);
-    rows_per_strip=1;
-    if (TIFFScanlineSize(tiff) != 0)
-      rows_per_strip=(uint32) MagickMax((size_t) TIFFDefaultStripSize(tiff,0),
-        1);
+    rows_per_strip=TIFFDefaultStripSize(tiff,0);
     option=GetImageOption(image_info,"tiff:rows-per-strip");
     if (option != (const char *) NULL)
       rows_per_strip=(size_t) strtol(option,(char **) NULL,10);
@@ -3180,6 +3176,10 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
       default:
         break;
     }
+    if (rows_per_strip < 1)
+      rows_per_strip=1;
+    if ((image->rows/rows_per_strip) >= (1UL << 15))
+      rows_per_strip=(image->rows >> 15);
     (void) TIFFSetField(tiff,TIFFTAG_ROWSPERSTRIP,rows_per_strip);
     if ((image->x_resolution != 0.0) && (image->y_resolution != 0.0))
       {

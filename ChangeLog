@@ -1,3 +1,40 @@
+2013-09-23  6.8.7.0 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed comments in coders/png.c about interpretation of the -quality
+  value (reference
+  http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24134).
+
+2013-09-19  6.8.7-0 Dirk Lemstra <dirk@snakeware...>
+  * Fixed issue with colormap when reading viff image.
+  * Added support for opening https files under windows (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24121).
+  * Fixed incorrect format when reading EPT image from a blob (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24129).
+
+2013-09-18  6.8.6-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.6-10, SVN revision 13240.
+
+2013-09-07  6.8.6-10 Dirk Lemstra <dirk@snakeware...>
+  * Added support for writing DDS files.
+
+2013-08-29  6.8.6-10 Cristy  <quetzlzacatenango@image...>
+  * Call SVG / MSL xmlCleanupParser() / xmlInitParser() once (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23991).
+  * Support LEGO Mindstorms EV3 Robot Graphics File format (contributed
+    by bdwheele@ind.../
+  * Since glib-2.35.0 g_type_init() was removed (reference
+    https://bugs.gentoo.org/show_bug.cgi?id=481042).
+  * New identify define to output the location of the minimum, maximum, or
+    mean pixel of the image (e.g. identify -define identify:locate=maximum
+    -define identify:limit=7 rose).
+  * Column columns / rows no longer inverted for RGF image format (patch
+    from Brian Wheeler <bdwheele@india...>.
+  * 16bit PSD images might have a 65536 colormap (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24102).
+  * Ascii map is now declare as AsciiMap (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24106).
+  * Return label for identify -format "%l" (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24105).
+
 2013-08-26  6.8.6-9 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.6-9, SVN revision 13087.
 
@@ -29,13 +66,13 @@
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23913).
   * Escape MIFF properties with null values (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23931).
-  * Allow negate pixel values in TXT image format (reference
+  * Allow negative pixel values in TXT image format (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23923).
   * The -fx option no longer crashes for certain expressions (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23932).
   * Add support for the -compare option (e.g. convert image.png reference.png
     -metric RMSE -compare -format "%[distortion]" info:).
-  * The internal SVG rendered are now invariant for the "fill" and "opacity"
+  * The internal SVG renderer is now invariant for the "fill" and "opacity"
     keywords.
 
 2013-08-06  6.8.6-8 Cristy  <quetzlzacatenango@image...>
