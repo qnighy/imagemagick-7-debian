@@ -259,6 +259,7 @@ static const struct ReferenceFormats
     { "GIF", UndefinedCompression, 0.0 },
     { "GIF87", UndefinedCompression, 0.0 },
     { "GRAY", UndefinedCompression, 0.003 },
+    { "HRZ", UndefinedCompression, 0.0 },
     { "HTM", UndefinedCompression, 0.0 },
     { "HTML", UndefinedCompression, 0.0 },
     { "ICB", UndefinedCompression, 0.0 },
@@ -419,8 +420,8 @@ static const struct ReferenceStorage
     { CharPixel, sizeof(unsigned char) },
     { DoublePixel, sizeof(double) },
     { FloatPixel, sizeof(float) },
-    { LongPixel, sizeof(unsigned int) },
-    { LongLongPixel, sizeof(MagickSizeType) },
+    { IntegerPixel, sizeof(unsigned int) },
+    { LongPixel, sizeof(size_t) },
     { ShortPixel, sizeof(unsigned short) },
     { UndefinedPixel, 0 }
   };

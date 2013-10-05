@@ -39,27 +39,27 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/property.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/colormap.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/pixel.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/property.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/colormap.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/pixel.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -152,10 +152,13 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
   MemoryInfo
     *pixel_info;
 
+  register IndexPacket
+    *indexes;
+
   register ssize_t
     x;
 
-  register Quantum
+  register PixelPacket
     *q;
 
   register ssize_t
@@ -192,7 +195,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -215,7 +218,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->columns=ReadBlobLSBShort(image);
     image->rows=ReadBlobLSBShort(image);
     flags=(MagickStatusType) ReadBlobByte(image);
-    image->alpha_trait=flags & 0x04 ? BlendPixelTrait : UndefinedPixelTrait;
+    image->matte=flags & 0x04 ? MagickTrue : MagickFalse;
     number_planes=1UL*ReadBlobByte(image);
     bits_per_pixel=1UL*ReadBlobByte(image);
     number_colormaps=1UL*ReadBlobByte(image);
@@ -278,7 +281,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
               ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
             count=ReadBlob(image,length-1,(unsigned char *) comment);
             comment[length-1]='\0';
-            (void) SetImageProperty(image,"comment",comment,exception);
+            (void) SetImageProperty(image,"comment",comment);
             comment=DestroyString(comment);
             if ((length & 0x01) == 0)
               (void) ReadBlobByte(image);
@@ -290,7 +293,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     /*
       Allocate RLE pixels.
     */
-    if (image->alpha_trait == BlendPixelTrait)
+    if (image->matte != MagickFalse)
       number_planes++;
     number_pixels=(MagickSizeType) image->columns*image->rows;
     if ((number_pixels*number_planes) != (size_t) (number_pixels*number_planes))
@@ -311,7 +314,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
         p=pixels;
         for (i=0; i < (ssize_t) number_pixels; i++)
         {
-          if (image->alpha_trait != BlendPixelTrait)
+          if (image->matte == MagickFalse)
             for (j=0; j < (ssize_t) number_planes; j++)
               *p++=background_color[j];
           else
@@ -442,16 +445,16 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
         for (y=0; y < (ssize_t) image->rows; y++)
         {
           q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-          if (q == (Quantum *) NULL)
+          if (q == (PixelPacket *) NULL)
             break;
           for (x=0; x < (ssize_t) image->columns; x++)
           {
-            SetPixelRed(image,ScaleCharToQuantum(*p++),q);
-            SetPixelGreen(image,ScaleCharToQuantum(*p++),q);
-            SetPixelBlue(image,ScaleCharToQuantum(*p++),q);
-            if (image->alpha_trait == BlendPixelTrait)
-              SetPixelAlpha(image,ScaleCharToQuantum(*p++),q);
-            q+=GetPixelChannels(image);
+            SetPixelRed(q,ScaleCharToQuantum(*p++));
+            SetPixelGreen(q,ScaleCharToQuantum(*p++));
+            SetPixelBlue(q,ScaleCharToQuantum(*p++));
+            if (image->matte != MagickFalse)
+              SetPixelAlpha(q,ScaleCharToQuantum(*p++));
+            q++;
           }
           if (SyncAuthenticPixels(image,exception) == MagickFalse)
             break;
@@ -471,7 +474,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
         */
         if (number_colormaps == 0)
           map_length=256;
-        if (AcquireImageColormap(image,map_length,exception) == MagickFalse)
+        if (AcquireImageColormap(image,map_length) == MagickFalse)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         p=colormap;
         if (number_colormaps == 1)
@@ -494,7 +497,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
               p++;
             }
         p=pixels;
-        if (image->alpha_trait != BlendPixelTrait)
+        if (image->matte == MagickFalse)
           {
             /*
               Convert raster image to PseudoClass pixel packets.
@@ -502,13 +505,11 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
             for (y=0; y < (ssize_t) image->rows; y++)
             {
               q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-              if (q == (Quantum *) NULL)
+              if (q == (PixelPacket *) NULL)
                 break;
+              indexes=GetAuthenticIndexQueue(image);
               for (x=0; x < (ssize_t) image->columns; x++)
-              {
-                SetPixelIndex(image,*p++,q);
-                q+=GetPixelChannels(image);
-              }
+                SetPixelIndex(indexes+x,*p++);
               if (SyncAuthenticPixels(image,exception) == MagickFalse)
                 break;
               if (image->previous == (Image *) NULL)
@@ -519,7 +520,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     break;
                 }
             }
-            (void) SyncImage(image,exception);
+            (void) SyncImage(image);
           }
         else
           {
@@ -529,15 +530,15 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
             for (y=0; y < (ssize_t) image->rows; y++)
             {
               q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-              if (q == (Quantum *) NULL)
+              if (q == (PixelPacket *) NULL)
                 break;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                SetPixelRed(image,image->colormap[*p++].red,q);
-                SetPixelGreen(image,image->colormap[*p++].green,q);
-                SetPixelBlue(image,image->colormap[*p++].blue,q);
-                SetPixelAlpha(image,ScaleCharToQuantum(*p++),q);
-                q+=GetPixelChannels(image);
+                SetPixelRed(q,image->colormap[*p++].red);
+                SetPixelGreen(q,image->colormap[*p++].green);
+                SetPixelBlue(q,image->colormap[*p++].blue);
+                SetPixelAlpha(q,ScaleCharToQuantum(*p++));
+                q++;
               }
               if (SyncAuthenticPixels(image,exception) == MagickFalse)
                 break;
@@ -549,7 +550,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     break;
                 }
             }
-            image->colormap=(PixelInfo *) RelinquishMagickMemory(
+            image->colormap=(PixelPacket *) RelinquishMagickMemory(
               image->colormap);
             image->storage_class=DirectClass;
             image->colors=0;
@@ -577,7 +578,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Allocate next image structure.
         */
-        AcquireNextImage(image_info,image,exception);
+        AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
             image=DestroyImageList(image);

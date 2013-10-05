@@ -39,36 +39,37 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/property.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/client.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/effect.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/resize.h"
-#include "MagickCore/resource_.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/transform.h"
-#include "MagickCore/utility.h"
+#include "magick/studio.h"
+#include "magick/property.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/client.h"
+#include "magick/constitute.h"
+#include "magick/effect.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/resize.h"
+#include "magick/resource_.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
+#include "magick/transform.h"
+#include "magick/utility.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WritePreviewImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WritePreviewImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -151,7 +152,7 @@ ModuleExport void UnregisterPREVIEWImage(void)
 %  The format of the WritePreviewImage method is:
 %
 %      MagickBooleanType WritePreviewImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -159,11 +160,9 @@ ModuleExport void UnregisterPREVIEWImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
 static MagickBooleanType WritePreviewImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   Image
     *preview_image;
@@ -183,17 +182,17 @@ static MagickBooleanType WritePreviewImage(const ImageInfo *image_info,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  preview_image=PreviewImage(image,image_info->preview_type,exception);
+  preview_image=PreviewImage(image,image_info->preview_type,&image->exception);
   if (preview_image == (Image *) NULL)
     return(MagickFalse);
   (void) CopyMagickString(preview_image->filename,image_info->filename,
     MaxTextExtent);
   write_info=CloneImageInfo(image_info);
-  (void) SetImageInfo(write_info,1,exception);
+  (void) SetImageInfo(write_info,1,&image->exception);
   if (LocaleCompare(write_info->magick,"PREVIEW") == 0)
     (void) FormatLocaleString(preview_image->filename,MaxTextExtent,
       "miff:%s",image_info->filename);
-  status=WriteImage(write_info,preview_image,exception);
+  status=WriteImage(write_info,preview_image);
   preview_image=DestroyImage(preview_image);
   write_info=DestroyImageInfo(write_info);
   return(status);

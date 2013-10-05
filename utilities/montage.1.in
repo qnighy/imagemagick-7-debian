@@ -53,6 +53,7 @@ Image Settings:
   \-mattecolor color    frame color
   \-mode type           framing style
   \-monitor             monitor progress
+  \-origin geometry     image origin
   \-page geometry       size and location of an image canvas (setting)
   \-pointsize value     font point size
   \-profile filename    add, delete, or apply an image profile

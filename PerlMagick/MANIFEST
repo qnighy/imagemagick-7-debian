@@ -1,5 +1,4 @@
 Changelog
-check.sh
 check.sh.in
 demo/annotate.pl
 demo/button.pl
@@ -159,7 +158,7 @@ t/reference/composite/Clear.miff
 t/reference/composite/CopyBlue.miff
 t/reference/composite/CopyGreen.miff
 t/reference/composite/Copy.miff
-t/reference/composite/CopyAlpha.miff
+t/reference/composite/CopyOpacity.miff
 t/reference/composite/CopyRed.miff
 t/reference/composite/Difference.miff
 t/reference/composite/In.miff
@@ -344,7 +343,7 @@ t/reference/write/composite/Clear.miff
 t/reference/write/composite/CopyBlue.miff
 t/reference/write/composite/CopyGreen.miff
 t/reference/write/composite/Copy.miff
-t/reference/write/composite/CopyAlpha.miff
+t/reference/write/composite/CopyOpacity.miff
 t/reference/write/composite/CopyRed.miff
 t/reference/write/composite/Difference.miff
 t/reference/write/composite/In.miff

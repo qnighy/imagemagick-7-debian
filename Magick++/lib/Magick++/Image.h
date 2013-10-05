@@ -51,12 +51,12 @@ namespace Magick
   // a handle object which contains a pointer to a shared reference
   // object (ImageRef). As such, this object is extremely space efficient.
   //
-  class Image
+  class MagickPPExport Image
   {
   public:
     // Construct from image file or image specification
     Image ( const std::string &imageSpec_ );
-    
+
     // Construct a blank image canvas of specified size and color
     Image ( const Geometry &size_, const Color &color_ );
 
@@ -96,7 +96,7 @@ namespace Magick
 
     /// Copy constructor
     Image ( const Image & image_ );
-
+    
     // Assignment operator
     Image& operator= ( const Image &image_ );
 
@@ -114,8 +114,8 @@ namespace Magick
                                    const double sigma_ = 1.0 );
 
     // This is shortcut function for a fast interpolative resize using mesh
-    // interpolation.  It works well for small resizes of less than +/- 50%
-    // of the original image size.  For larger resizing on images a full
+    // interpolation. It works well for small resizes of less than +/- 50%
+    // of the original image size. For larger resizing on images a full
     // filtered and slower resize function should be used instead.
     void            adaptiveResize ( const Geometry &geometry_ );
 
@@ -145,18 +145,8 @@ namespace Magick
     // Transform image by specified affine (or free transform) matrix.
     void            affineTransform ( const DrawableAffine &affine );
 
-    // Set or attenuate the alpha channel in the image. If the image
-    // pixels are opaque then they are set to the specified alpha
-    // value, otherwise they are blended with the supplied alpha
-    // value.  The value of alpha_ ranges from 0 (completely opaque)
-    // to QuantumRange. The defines OpaqueAlpha and TransparentAlpha are
-    // available to specify completely opaque or completely
-    // transparent, respectively.
-    void            alpha ( const unsigned int alpha_ );
-
-    // AlphaChannel() activates, deactivates, resets, or sets the alpha
-    // channel.
-    void            alphaChannel ( AlphaChannelOption alphaOption_ );
+    // Activates, deactivates, resets, or sets the alpha channel.
+    void            alphaChannel ( AlphaChannelType alphaType_ );
 
     //
     // Annotate image (draw text on image)
@@ -239,7 +229,7 @@ namespace Magick
     // brightness and contrast parameters into slope and intercept and calls
     // a polynomical function to apply to the image.
     void            brightnessContrast ( const double brightness_ = 0.0,
-                                         const double contrast_ = 0.0);
+                                         const double contrast_ = 0.0 );
     void            brightnessContrastChannel ( const ChannelType channel_,
                                                 const double brightness_ = 0.0,
                                                 const double contrast_ = 0.0 );
@@ -248,8 +238,9 @@ namespace Magick
     void            channel ( const ChannelType channel_ );
 
     // Set or obtain modulus channel depth
-    void            channelDepth ( const size_t depth_ );
-    size_t          channelDepth ( );
+    void            channelDepth ( const ChannelType channel_,
+                                   const size_t depth_ );
+    size_t          channelDepth ( const ChannelType channel_ );
 
     // Charcoal effect image (looks like charcoal sketch)
     // The radius_ parameter specifies the radius of the Gaussian, in
@@ -276,26 +267,24 @@ namespace Magick
     void            clampChannel ( const ChannelType channel_ );
 
     // Apply a color lookup table (CLUT) to the image.
-    void            clut ( const Image &clutImage_,
-                           const PixelInterpolateMethod method );
+    void            clut ( const Image &clutImage_ );
     void            clutChannel ( const ChannelType channel_,
-                                  const Image &clutImage_,
-                                  const PixelInterpolateMethod method);
+                                  const Image &clutImage_);
 
-    // Colorize image with pen color, using specified percent alpha
+    // Colorize image with pen color, using specified percent opacity
     // for red, green, and blue quantums
-    void            colorize ( const unsigned int alphaRed_,
-                               const unsigned int alphaGreen_,
-                               const unsigned int alphaBlue_,
+    void            colorize ( const unsigned int opacityRed_,
+                               const unsigned int opacityGreen_,
+                               const unsigned int opacityBlue_,
                                const Color &penColor_ );
-    // Colorize image with pen color, using specified percent alpha.
-    void            colorize ( const unsigned int alpha_,
+    // Colorize image with pen color, using specified percent opacity.
+    void            colorize ( const unsigned int opacity_,
                                const Color &penColor_ );
-    
+
     // Apply a color matrix to the image channels.  The user supplied
     // matrix may be of order 1 to 5 (1x1 through 5x5).
     void            colorMatrix ( const size_t order_,
-                                  const double *color_matrix_);
+                                  const double *color_matrix_ );
 
     // Compare current image with another image
     // Sets meanErrorPerPixel, normalizedMaxError, and normalizedMeanError
@@ -391,7 +380,7 @@ namespace Magick
 
     // Enhance image (minimize noise)
     void            enhance ( void );
-    
+
     // Equalize image (histogram equalization)
     void            equalize ( void );
 
@@ -407,8 +396,6 @@ namespace Magick
     void            extent ( const Geometry &geometry_,
                              const Color &backgroundColor,
                              const GravityType gravity_ );
-
-    void            extract ( const Geometry &geometry_ );
 
     // Flip image (reflect each scanline in the vertical direction)
     void            flip ( void );
@@ -434,11 +421,11 @@ namespace Magick
                                      const Color &borderColor_ );
 
     // Floodfill pixels matching color (within fuzz factor) of target
-    // pixel(x,y) with replacement alpha value using method.
-    void            floodFillAlpha ( const ::ssize_t x_,
-                                     const ::ssize_t y_,
-                                     const unsigned int alpha_,
-                                     const PaintMethod method_ );
+    // pixel(x,y) with replacement opacity value using method.
+    void            floodFillOpacity ( const ::ssize_t x_,
+                                       const ::ssize_t y_,
+                                       const unsigned int opacity_,
+                                       const PaintMethod method_ );
 
     // Flood-fill texture across pixels that match the color of the
     // target pixel and are neighbors of the target pixel.
@@ -516,9 +503,9 @@ namespace Magick
     // white point are set to the maximum quantum value. The black and
     // white point have the valid range 0 to QuantumRange while mid (gamma)
     // has a useful range of 0 to ten.
-    void            level ( const double blackPoint_,
-                            const double whitePoint_,
-                            const double gamma_ = 1.0 );
+    void            level ( const double black_point,
+                            const double white_point,
+                            const double mid_point = 1.0 );
 
     // Level image channel. Adjust the levels of the image channel by
     // scaling the values falling between specified white and black
@@ -531,10 +518,10 @@ namespace Magick
     // Colors brighter than the white point are set to the maximum
     // quantum value. The black and white point have the valid range 0
     // to QuantumRange while mid (gamma) has a useful range of 0 to ten.
-    void            levelChannel ( const ChannelType channel_,
-                                   const double blackPoint_,
-                                   const double whitePoint_,
-                                   const double gamma_ = 1.0 );
+    void            levelChannel ( const ChannelType channel,
+                                   const double black_point,
+                                   const double white_point,
+                                   const double mid_point = 1.0 );
 
     // Maps the given color to "black" and "white" values, linearly spreading
     // out the colors, and level values on a channel by channel bases, as
@@ -558,14 +545,14 @@ namespace Magick
 
     // Magnify image by integral size
     void            magnify ( void );
-
+    
     // Remap image colors with closest color from reference image
     void            map ( const Image &mapImage_,
                           const bool dither_ = false );
 
-    // Floodfill designated area with replacement alpha value
+    // Floodfill designated area with replacement opacity value
     void            matteFloodfill ( const Color &target_,
-                                     const unsigned int alpha_,
+                                     const unsigned int opacity_,
                                      const ::ssize_t x_, const ::ssize_t y_,
                                      const PaintMethod method_ );
 
@@ -602,8 +589,16 @@ namespace Magick
     void            normalize ( void );
 
     // Oilpaint image (image looks like oil painting)
-    void            oilPaint ( const double radius_ = 0.0,
-                               const double sigma = 1.0 );
+    void            oilPaint ( const double radius_ = 3.0 );
+
+    // Set or attenuate the opacity channel in the image. If the image
+    // pixels are opaque then they are set to the specified opacity
+    // value, otherwise they are blended with the supplied opacity
+    // value.  The value of opacity_ ranges from 0 (completely opaque)
+    // to QuantumRange. The defines OpaqueOpacity and TransparentOpacity are
+    // available to specify completely opaque or completely
+    // transparent, respectively.
+    void            opacity ( const unsigned int opacity_ );
 
     // Change color of opaque pixel to specified pen color.
     void            opaque ( const Color &opaqueColor_,
@@ -621,7 +616,7 @@ namespace Magick
     // columns(), rows(), and fileSize() attributes after invoking
     // ping.  The image data is not valid after calling ping.
     void            ping ( const std::string &imageSpec_ );
-
+    
     // Ping is similar to read except only enough of the image is read
     // to determine the image columns, rows, and filesize.  Access the
     // columns(), rows(), and fileSize() attributes after invoking
@@ -630,15 +625,14 @@ namespace Magick
 
     // Simulates a Polaroid picture.
     void            polaroid ( const std::string &caption_,
-                               const double angle_,
-                               const PixelInterpolateMethod method_ );
+                               const double angle_ );
 
     // Reduces the image to a limited number of colors for a "poster" effect.
     void            posterize ( const size_t levels_,
-                                const DitherMethod method_ );
+                                const bool dither_ = false );
     void            posterizeChannel ( const ChannelType channel_,
                                        const size_t levels_,
-                                       const DitherMethod method_ );
+                                       const bool dither_ = false );
 
     // Execute a named process module using an argc/argv syntax similar to
     // that accepted by a C 'main' routine. An exception is thrown if the
@@ -756,13 +750,13 @@ namespace Magick
     void            shade ( const double azimuth_ = 30,
           const double elevation_ = 30,
           const bool   colorShading_ = false );
-    
+
     // Simulate an image shadow
     void            shadow ( const double percent_opacity_ = 80.0,
                              const double sigma_ = 0.5,
                              const ssize_t x_ = 5,
                              const ssize_t y_ = 5 );
-
+    
     // Sharpen pixels in image
     // The radius_ parameter specifies the radius of the Gaussian, in
     // pixels, not counting the center pixel.  The sigma_ parameter
@@ -898,7 +892,7 @@ namespace Magick
                             const std::string& map_,
                             const StorageType type_,
                             void *pixels_ );
-    
+
     // Zoom image to specified size.
     void            zoom ( const Geometry &geometry_ );
 
@@ -1173,10 +1167,10 @@ typedef struct _ImageStatistics
    ImageChannelStatistics red;
    ImageChannelStatistics green;
    ImageChannelStatistics blue;
-   ImageChannelStatistics alpha;
+   ImageChannelStatistics opacity;
  } ImageStatistics;
 
-    void            statistics ( ImageStatistics *statistics ) ;
+    void            statistics ( ImageStatistics *statistics ) const;
 
     // Stroke width for drawing vector objects (default one)
     // This method is now deprecated. Please use strokeWidth instead.
@@ -1194,9 +1188,12 @@ typedef struct _ImageStatistics
     // Transparent color
     void            matteColor ( const Color &matteColor_ );
     Color           matteColor ( void ) const;
-
+    
     // The mean error per pixel computed when an image is color reduced
     double          meanErrorPerPixel ( void ) const;
+
+    // Merge image layers
+    void            mergeLayers ( const ImageLayerMethod layerType_ );
 
     // Image modulus depth (minimum number of bits required to support
     // red/green/blue components without loss of accuracy)
@@ -1361,6 +1358,10 @@ typedef struct _ImageStatistics
     void            textEncoding ( const std::string &encoding_ );
     std::string     textEncoding ( void ) const;
 
+    // Tile name
+    void            tileName ( const std::string &tileName_ );
+    std::string     tileName ( void ) const;
+
     // Number of colors in the image
     size_t   totalColors ( void );
 
@@ -1424,28 +1425,28 @@ typedef struct _ImageStatistics
 
     // Transfers read-only pixels from the image to the pixel cache as
     // defined by the specified region
-    const Quantum* getConstPixels ( const ::ssize_t x_, const ::ssize_t y_,
+    const PixelPacket* getConstPixels ( const ::ssize_t x_, const ::ssize_t y_,
                                         const size_t columns_,
                                         const size_t rows_ ) const;
 
-    // Obtain mutable image pixel metacontent (valid for PseudoClass images)
-    void* getMetacontent ( void );
+    // Obtain mutable image pixel indexes (valid for PseudoClass images)
+    IndexPacket* getIndexes ( void );
 
-    // Obtain immutable image pixel metacontent (valid for PseudoClass images)
-    const void* getConstMetacontent ( void ) const;
+    // Obtain immutable image pixel indexes (valid for PseudoClass images)
+    const IndexPacket* getConstIndexes ( void ) const;
 
     // Transfers pixels from the image to the pixel cache as defined
     // by the specified region. Modified pixels may be subsequently
     // transferred back to the image via syncPixels.  This method is
     // valid for DirectClass images.
-    Quantum* getPixels ( const ::ssize_t x_, const ::ssize_t y_,
+    PixelPacket* getPixels ( const ::ssize_t x_, const ::ssize_t y_,
            const size_t columns_,
                              const size_t rows_ );
 
     // Allocates a pixel cache region to store image pixels as defined
     // by the region rectangle.  This area is subsequently transferred
     // from the pixel cache to the image via syncPixels.
-    Quantum* setPixels ( const ::ssize_t x_, const ::ssize_t y_,
+    PixelPacket* setPixels ( const ::ssize_t x_, const ::ssize_t y_,
            const size_t columns_,
                              const size_t rows_ );
 

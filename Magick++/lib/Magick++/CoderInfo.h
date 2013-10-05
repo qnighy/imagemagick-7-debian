@@ -20,9 +20,9 @@ namespace Magick
   public:
 
     enum MatchType {
-      AnyMatch,  // match any coder
-      TrueMatch, // match coder if true
-      FalseMatch // match coder if false
+      AnyMatch,   // match any coder
+      TrueMatch,  // match coder if true
+      FalseMatch  // match coder if false
     };
 
     // Default constructor
@@ -71,6 +71,7 @@ namespace Magick
     bool        _isReadable;
     bool        _isWritable;
     bool        _isMultiFrame;
+
   };
 } // namespace Magick
 
