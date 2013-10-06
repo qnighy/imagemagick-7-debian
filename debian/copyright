@@ -5,7 +5,7 @@ Source: http://www.imagemagick.org/script/download.php
 Files: *
 Copyright: 1987-1999, E. I. du Pont de Nemours and Company
 	   1999-2013, ImageMagick Studio LLC
-           1987-2013, John Cristy
+	   1987-2013, John Cristy
 License: ImageMagick
 Comment: Apache-2.0 License with additionnal preamble
  .
@@ -13,8 +13,8 @@ Comment: Apache-2.0 License with additionnal preamble
  was developed and distributed by E. I. du Pont de Nemours and
  Company.
  .
- As of 1999, E. I. du Pont de Nemours gave up all rights and 
- privileges to the ImageMagick software suite and assigned 
+ As of 1999, E. I. du Pont de Nemours gave up all rights and
+ privileges to the ImageMagick software suite and assigned
  ownership to ImageMagick Studio LLC.
  .
  ImageMagick makes use of third-party "delegate" libraries to support
@@ -26,22 +26,22 @@ Comment: Apache-2.0 License with additionnal preamble
 
 Files: coders/art.c
 Copyright: 2001, Jaroslav Fojtik
-           1999-2013, ImageMagick Studio LLC
-License: ImageMagick                                
+	   1999-2013, ImageMagick Studio LLC
+License: ImageMagick
 
 Files: coders/bmp.c
 Copyright: 2001, Glenn Randers-Pehrson
-           1999-2013, ImageMagick Studio LLC                     
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/braille.c
 Copyright: 2008, Samuel Thibault
-           2008-2013, ImageMagick Studio LLC
+	   2008-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/cin.c
-Copyright: 2003, Kelly Bergougnoux 
-           2003-2013, ImageMagick Studio LLC
+Copyright: 2003, Kelly Bergougnoux
+	   2003-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/clipboard.c
@@ -52,13 +52,15 @@ Comment: use a delegate but not compiled under debian (windows only)
 
 Files: coders/cut.c
 Copyright: 2000, Jaroslav Fojti
-           2000-2013, ImageMagick Studio LLC
-License: ImageMagick  
+	   2000-2013, ImageMagick Studio LLC
+License: ImageMagick
 
 Files: coders/dds.c
-Copyright: 2008, Bianca van Schaik
-           2008-2013, ImageMagick Studio LLC
-License: ImageMagick
+Copyright: 2006, Simon Brown
+	   2008, Bianca van Schaik
+	   2008-2013, ImageMagick Studio LLC
+	   2013, Dirk Lemstra
+License: ImageMagickPartlibsquish
 
 Files: coders/djvu.c
 Copyright: 1999-2013, ImageMagick Studio LLC
@@ -77,77 +79,77 @@ Comment: use a delegate but not compiled under debian
 
 Files: coders/emf.c
 Copyright: 2001, Bill Radcliffe
-           2001-2013, ImageMagick Studio LLC
+	   2001-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate but not compiled under debian (windows only)
 
 Files: coders/ept.c
-Copyright: 1999-2013, ImageMagick Studio LLC    
+Copyright: 1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: Use two delegates:
  * ghostscript under GPL-3+
  * libtiff under BSD-2
 
 Files: coders/exr.c
-Copyright: 2007-2013, ImageMagick Studio LLC 
+Copyright: 2007-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate libopenexr under BSD-3
 
 Files: coders/fd.c
 Copyright: 2000, Bill Radcliffe
-           2000, John Cristy
-           2000-2013, ImageMagick Studio LLC 
+	   2000, John Cristy
+	   2000-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/fpx.c
-Copyright: 1999-2013, ImageMagick Studio LLC 
+Copyright: 1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate but not compiled under debian
 
 Files: coders/ipl.c
 Copyright: 2008, Sean Burke
-           2008-2013, ImageMagick Studio LLC
+	   2008-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/jbig.c
-Copyright: 1999-2013, ImageMagick Studio LLC 
+Copyright: 1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use the libjbig delegate under GPL-2+
 
 Files: coders/jp2.c
 Copyright: 2001, Nathan Brown
-           2001-2013, ImageMagick Studio LLC
+	   2001-2013, ImageMagick Studio LLC
 	   2002-2009, GraphicsMagick Group
 License: ImageMagickPartGraphicsMagick
 Comment: use the libjasper under BSD-2 and libjpeg under BDS-3 like
 
 Files: coders/jpeg.c
 Copyright: 1999-2013, ImageMagick Studio LLC
-           1999, Glenn Randers-Pehrson
-           1991-2010, Thomas G. Lane, Guido Vollbeding
+	   1999, Glenn Randers-Pehrson
+	   1991-2010, Thomas G. Lane, Guido Vollbeding
 License: ImageMagickPartlibjpeg
 Comment: use libopenjpeg8 under BDS-3 like
 
 Files: coders/mat.c
 Copyright: 2001-2008, Jaroslav Fojtik
-           2001-2013, ImageMagick Studio LLC
+	   2001-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/meta.c
 Copyright: 2001, William Radcliffe
-           2001-2013, ImageMagick Studio LLC
+	   2001-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/msl.c
 Copyright: 2001, William Radcliffe
-           2001, John Cristy
-           2001, Leonard Rosenthol
-           2001-2013, ImageMagick Studio LLC
+	   2001, John Cristy
+	   2001, Leonard Rosenthol
+	   2001-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/palm.c
 Copyright:  2001, Christopher R. Hawks
-            2001-2013, ImageMagick Studio LLC
+	    2001-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/pattern.c
@@ -160,30 +162,35 @@ Comment: ImageMagick Licence with part of xfig program
 
 Files: coders/png.c
 Copyright: 1997, Glenn Randers-Pehrson
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use libpng under BSD-3
 
 Files: coders/ps3.c
-Copyright: 1992, Lars Ruben Skyum  
-           1992, John Cristy
-           1999-2013, ImageMagick Studio LLC
+Copyright: 1992, Lars Ruben Skyum
+	   1992, John Cristy
+	   1999-2013, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: coders/rgf.c
+Copyright: 2013, Brian Wheeler
+	   2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/scr.c
-Copyright: 2003, Catalin Mihaila 
-           2003-2013, ImageMagick Studio LLC
+Copyright: 2003, Catalin Mihaila
+	   2003-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/svg.c
 Copyright: 2000, William Radcliffe
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use librsvg-2 under LGPL-2+
 
 Files: coders/tiff.c
 Copyright: 1992, John Cristy
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: Use a few libraries for delegate
  * use libtiff under BSD-2 like
@@ -192,41 +199,41 @@ Comment: Use a few libraries for delegate
 
 Files: coders/url.c
 Copyright: 2000, Bill Radcliffe
-           2000-2013, ImageMagick Studio LLC
+	   2000-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use libxml delegate under BSD-3
 
 Files: coders/wbmp.c
 Copyright: 2000, John Cristy
-           2000, Milan Votava
-           2000-2013, ImageMagick Studio LLC
+	   2000, Milan Votava
+	   2000-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/wmf.c
 Copyright: 2000, John Cristy
-           2000, Francis J. Franklin 
-           2000-2013, ImageMagick Studio LLC 
+	   2000, Francis J. Franklin
+	   2000-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use libwmf delegate under LGPL-2+
 
 Files: coders/wpg.c
 Copyright: 2000, Jaroslav Fojtik
-           2000-2013, ImageMagick Studio LLC 
+	   2000-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/xcf.c
 Copyright: 2001, Leonard Rosenthol
-           2001-2013, ImageMagick Studio LLC 
+	   2001-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: debian/*
 Copyright: 1998-2000, Scott K. Ellis
-	   2000-2006, Ryuichi Arafune 
+	   2000-2006, Ryuichi Arafune
 	   2004-2008, Daniel Kobras
 	   2008, Luciano Bello
 	   2008-2010, Nelson A. de Oliveira
 	   2009-2013, Bastien ROUCARIÈS
-	   2011-2013, Vincent Fourmond 
+	   2011-2013, Vincent Fourmond
 License: ImageMagick
 
 Files: debian/scripts/changelog.pl
@@ -239,65 +246,66 @@ License: ImageMagick
 
 Files: magick/nt_base.c
 Copyright: 2000-2002, Ghostgum Software Pty Ltd.  All rights reserved.
-           1987-1999, E. I. du Pont de Nemours and Company
+	   1987-1999, E. I. du Pont de Nemours and Company
 	   1999-2013, ImageMagick Studio LLC
 License: ImageMagickLicensePartGsview
 Comment: ImageMagick Licence with part of gsview program
+ Not compiled under debian
 
 Files: magick/utility.c
 Copyright: 2000, Markus Friedl
-           1987-1999, E. I. du Pont de Nemours and Company
+	   1987-1999, E. I. du Pont de Nemours and Company
 	   1999-2013, ImageMagick Studio LLC
 License: ImageMagickLicensePartOpenSSH
 Comment: ImageMagick Licence with part of OpenSSH
 
 Files: Magick++/*
 Copyright: 1999-2003, Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2006-2013, ImageMagick Studio LLC 
+	   2006-2013, ImageMagick Studio LLC
 License: Magick++
 
 Files: PerlMagick/*
 Copyright: 1997, Kyle Shorter
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: PerlMagick/Makefile.am
 Copyright: 2003-2008, GraphicsMagick Group
-           1999-2013, ImageMagick Studio LLC,
+	   1999-2013, ImageMagick Studio LLC,
 License: ImageMagickPartGraphicsMagick
 
 Files: PerlMagick/check.*
 Copyright: 2003-2008, GraphicsMagick Group
-           1999-2013, ImageMagick Studio LLC,
+	   1999-2013, ImageMagick Studio LLC,
 License: ImageMagickPartGraphicsMagick
 
 Files: PerlMagick/t/*
 Copyright: 1999-2003, Bob Friesenhahn
-	   1999-2013, ImageMagick Studio LLC 
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: PerlMagick/demo/turtle.pm
 Copyright: 1999, Jason Reed
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
-Files: PerlMagicl/demo/annotate_words.pl 
+Files: PerlMagicl/demo/annotate_words.pl
 Copyright: 2008, Joseph B. Milosch a.k.a zentara
-           2008, Rick Mabry
+	   2008, Rick Mabry
 License: ImageMagick
 Comment: Posted on imagemagick user list.
 
 Files: PerlMagick/demo/lsys.pl
 Copyright: 1999, Jason Reed
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: PerlMagick/demo/pixel-fx.pl
 Copyright: 1997, Anthony Thyssen
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
-Files: PerlMagick/t/ttf/input.ttf 
+Files: PerlMagick/t/ttf/input.ttf
 Copyright: 2004-2007, Thatcher Ulrich <tu@tulrich.com>
 License: TatcherUlrichPublicDomain
 
@@ -307,82 +315,82 @@ License: TatcherUlrichPublicDomain
 
 Files: filters/analyse.c
 Copyright: 1998, Bill Corbis
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/distort.c
 Copyright: 1997, Anthony Thyssen
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/draw.c
-Copyright: 1998, Bill Radcliffe 
-           1998, Leonard Rosenthal
-           1998, David Harr
-           1998, John Cristy
-           1999-2013, ImageMagick Studio LLC
+Copyright: 1998, Bill Radcliffe
+	   1998, Leonard Rosenthal
+	   1998, David Harr
+	   1998, John Cristy
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/fourier.c
 Copyright: 2009, Sean Burke
-           2009, Fred Weinhaus
-           2009, John Cristy
-           2009-2013, ImageMagick Studio LLC
+	   2009, Fred Weinhaus
+	   2009, John Cristy
+	   2009-2013, ImageMagick Studio LLC
 License: ImageMagick
 Comment: link with libfftw under GPL-2+
 
 Files: magick/histogram.c
 Copyright: 2009, Anthony Thyssen
-           2009, Fred Weinhaus
-           2009-2013, ImageMagick Studio LLC
-License: ImageMagick  
+	   2009, Fred Weinhaus
+	   2009-2013, ImageMagick Studio LLC
+License: ImageMagick
 
 Files: magick/magic.c
 Copyright: 2000, Bob Friesenhahn
-           2000-2013, ImageMagick Studio LLC
-License: ImageMagick        
+	   2000-2013, ImageMagick Studio LLC
+License: ImageMagick
 
 Files: magick/magic.c
 Copyright: 1998, Bob Friesenhahn
-           1999-2013, ImageMagick Studio LLC
-License: ImageMagick        
+	   1999-2013, ImageMagick Studio LLC
+License: ImageMagick
 
 Files: magick/module.c
 Copyright: 2000, Bob Friesenhahn
-           2000-2013, ImageMagick Studio LLC
+	   2000-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/morphology.c
 Copyright: 2010, Anthony Thyssen
-           2010-2013, ImageMagick Studio LLC
+	   2010-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/resample.c
 Copyright: 2007, Anthony Thyssen
-           2007, John Cristy
-           2007-2013, ImageMagick Studio LLC
-           2010, Chantal Racette 
-           2010, Nicolas Robidoux
+	   2007, John Cristy
+	   2007-2013, ImageMagick Studio LLC
+	   2010, Chantal Racette
+	   2010, Nicolas Robidoux
 License: ImageMagick
 
 Files: magick/resize.c
 Copyright: 1992, John Cristy
-           1999-2013, ImageMagick Studio LLC
-           2010, Chantal Racette 
-           2010, Nicolas Robidoux
+	   1999-2013, ImageMagick Studio LLC
+	   2010, Chantal Racette
+	   2010, Nicolas Robidoux
 License: ImageMagick
 
 Files: magick/semaphore.c
 Copyright: 2000, William Radcliffe
-           2000, John Cristy
-           2000-2013, ImageMagick Studio LLC
+	   2000, John Cristy
+	   2000-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/timer.c
-Copyright: 1993, Bill Radcliffe 
-           1993, Bob Friesenhahn
-           1993, John Cristy
-           1999-2013, ImageMagick Studio LLC
+Copyright: 1993, Bill Radcliffe
+	   1993, Bob Friesenhahn
+	   1993, John Cristy
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 
@@ -393,7 +401,7 @@ Comment: Imagemagick with part from ezxml
 
 Files: scripts/format_c_api_docs
 Copyright: 1997, Bob Friesenhahn
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: script/txt2html
@@ -403,7 +411,7 @@ License: Perllikelicence
  .
  Copyright (c) 2002-2005 Kathryn Andersen
  .
- This program is free software; you can redistribute it and/or modify 
+ This program is free software; you can redistribute it and/or modify
  it under the same terms as Perl itself.
  .
  On debian systems, the (double) licenses for Perl can be found at:
@@ -423,14 +431,14 @@ Comment: retrieved from homepage of script http://txt2html.sourceforge.net/txt2h
 
 Files: wand/draw*
 Copyright: 2002, Bob Friesenhahn
-           2002-2013, ImageMagick Studio LLC
+	   2002-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: www/*
 Copyright: 1999-2013, Rick Mabry
-           1999-2013, John Cristy
-           1999-2013, Anthony Thyssen
-           1999-2013, ImageMagick Studio LLC
+	   1999-2013, John Cristy
+	   1999-2013, Anthony Thyssen
+	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 License: ImageMagickPartlibjpeg
@@ -537,7 +545,7 @@ License: ImageMagickPartlibjpeg
  See the License for the specific language governing permissions and
  limitations under the License.
  .
- The full text of this license is availaible in this file under the 
+ The full text of this license is availaible in this file under the
  License: ImageMagick section.
 
 License: ImageMagickPartGraphicsMagick
@@ -579,30 +587,30 @@ License: ImageMagickPartGraphicsMagick
  See the License for the specific language governing permissions and
  limitations under the License.
  .
- The full text of this license is availaible in this file under the 
+ The full text of this license is availaible in this file under the
  License: ImageMagick section.
 
 License: ImageMagickLicensePartEZXML
- This copyright is limited to code for reading XML files in 
+ This copyright is limited to code for reading XML files in
  magick/xml-tree.c, incorporated from the ezxml package.
  .
- Permission is hereby granted, free of charge, to any person 
- obtaining a copy of this software and associated documentation files 
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation files
  (the "Software"), to deal in the Software without restriction, including
- without limitation the rights to use, copy, modify, merge, publish, 
- distribute, sublicense, and/or sell copies of the Software, and to 
- permit persons to whom the Software is furnished to do so, subject to 
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so, subject to
  the following conditions:
  .
- The above copyright notice and this permission notice shall be included 
+ The above copyright notice and this permission notice shall be included
  in all copies or substantial portions of the Software.
  .
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
- DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT 
- OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
+ OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
  OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  .
  Other parts of this file are:
@@ -621,7 +629,7 @@ License: ImageMagickLicensePartEZXML
  See the License for the specific language governing permissions and
  limitations under the License.
  .
- The full text of this license is availaible in this file under the 
+ The full text of this license is availaible in this file under the
  License: ImageMagick section.
 
 License: TatcherUlrichPublicDomain
@@ -629,7 +637,7 @@ License: TatcherUlrichPublicDomain
  own work. Usage is totally unrestricted. If you want to make
  derivative works for any purpose, please go ahead.
 
-License: Magick++                                                                          
+License: Magick++
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of the source files and associated documentation
  files ("Magick++"), to deal in Magick++ without restriction,
@@ -637,12 +645,12 @@ License: Magick++
  merge, publish, distribute, sublicense, and/or sell copies of
  Magick++, and to permit persons to whom the Magick++ is furnished
  to do so, subject to the following conditions:
- .                                                                         
+ .
  This copyright notice shall be included in all copies or
  substantial portions of Magick++. The copyright to Magick++ is
  retained by its author and shall not be subsumed or replaced by any
  other copyright.
- .                                                                         
+ .
  The software is provided "as is", without warranty of any kind,
  express or implied, including but not limited to the warranties of
  merchantability, fitness for a particular purpose and
@@ -652,14 +660,14 @@ License: Magick++
  with Magick++ or the use or other dealings in Magick++.
 
 License: ImageMagickLicensePartOpenSSH
- The Base64Decode() and Base64Encode() methods in magick/utility.c 
+ The Base64Decode() and Base64Encode() methods in magick/utility.c
  is based on source code obtained from OpenSSH.
  .
  This source code is distributed under the following license:
  Copyright (c) 2000 Markus Friedl.  All rights reserved.
  .
- Redistribution and use in source and binary forms, 
- with or without modification, Are permitted 
+ Redistribution and use in source and binary forms,
+ with or without modification, Are permitted
  provided that the following conditions are met:
  .
  1. Redistributions of source code must retain the above copyright
@@ -668,14 +676,14 @@ License: ImageMagickLicensePartOpenSSH
     notice, this list of conditions and the following disclaimer in the
     documentation and/or other materials provided with the distribution.
  .
- THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS 
- OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
- OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  
- IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
- SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
- OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+ OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  .
  Other parts of this file are:
@@ -694,29 +702,29 @@ License: ImageMagickLicensePartOpenSSH
  See the License for the specific language governing permissions and
  limitations under the License.
  .
- The full text of this license is availaible in this file under the 
+ The full text of this license is availaible in this file under the
  License: ImageMagick section.
 
 License: ImageMagickLicensePartGsview
- ImageMagick incorporated a small portion of code from the gsview 
- package to locate Ghostscript under Windows.  
+ ImageMagick incorporated a small portion of code from the gsview
+ package to locate Ghostscript under Windows.
  .
  This source code is distributed under the following license:
  .
  Copyright (C) 2000-2002, Ghostgum Software Pty Ltd.  All rights reserved.
  .
  Permission is hereby granted, free of charge, to any person obtaining
- a copy of this file ("Software"), to deal in the Software without restriction, 
- including without limitation the rights to use, copy, modify, merge, publish, 
- distribute, sublicense, and/or sell copies of this Software, and to permit persons 
+ a copy of this file ("Software"), to deal in the Software without restriction,
+ including without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of this Software, and to permit persons
  to whom this file is furnished to do so, subject to the following conditions:
  .
- This Software is distributed with NO WARRANTY OF ANY KIND.  
- No author or distributor accepts any responsibility for the consequences 
+ This Software is distributed with NO WARRANTY OF ANY KIND.
+ No author or distributor accepts any responsibility for the consequences
  of using it, or for whether it serves any particular
  purpose or works at all, unless he or she says so in writing.
  .
- The above copyright notice and this permission notice shall 
+ The above copyright notice and this permission notice shall
  be included in all copies or substantial portions of the Software.
  .
  Other parts of this file are:
@@ -735,22 +743,22 @@ License: ImageMagickLicensePartGsview
  See the License for the specific language governing permissions and
  limitations under the License.
  .
- The full text of this license is availaible in this file under the 
+ The full text of this license is availaible in this file under the
  License: ImageMagick section.
 
 License: ImageMagickLicensePartFIG
  FIG : Facility for Interactive Generation of figures
  .
- Copyright (c) 1985-1988 by Supoj Sutanthavibul 
- Parts Copyright (c) 1989-2000 by Brian V. Smith 
+ Copyright (c) 1985-1988 by Supoj Sutanthavibul
+ Parts Copyright (c) 1989-2000 by Brian V. Smith
  Parts Copyright (c) 1991 by Paul King
  .
- Any party obtaining a copy of these files is granted, free of charge, 
+ Any party obtaining a copy of these files is granted, free of charge,
  a full and unrestricted irrevocable, world-wide, paid up,
- royalty-free, nonexclusive right and license to deal in this software 
+ royalty-free, nonexclusive right and license to deal in this software
  and documentation files (the "Software"), including without limitation
  the rights to use, copy, modify, merge, publish, distribute, sublicense,
- and/or sell copies of the Software, and to permit persons 
+ and/or sell copies of the Software, and to permit persons
  who receive copies from any such party to do so, with the
  only requirement being that this copyright notice remain intact.
  .
@@ -770,11 +778,50 @@ License: ImageMagickLicensePartFIG
  See the License for the specific language governing permissions and
  limitations under the License.
  .
- The full text of this license is availaible in this file under the 
+ The full text of this license is availaible in this file under the
+ License: ImageMagick section.
+
+License: ImageMagickPartlibsquish
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files
+ (the "Software"), to deal in the Software without restriction,
+ including without limitation the rights to use, copy, modify, merge,
+ publish, distribute, sublicense, and/or sell copies of the Software,
+ and to  permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ .
+ Part Other than compression are under:
+ .
+ Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
+ dedicated to making software imaging solutions freely available.
+ .
+ You may not use this file except in compliance with the License.  You may
+ obtain a copy of the License at
+ .
+ http://www.imagemagick.org/script/license.php
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ .
+ The full text of this license is availaible in this file under the
  License: ImageMagick section.
 
 License: ImageMagick
- Before we get to the text of the license, lets just review what the license 
+ Before we get to the text of the license, lets just review what the license
  says in simple terms:
  .
  It allows you to:
@@ -792,10 +839,10 @@ License: ImageMagick
  .
   * redistribute any piece of ImageMagick-originated software without
     proper attribution;
-  * use any marks owned by ImageMagick Studio LLC in any way that 
-    might state or imply that ImageMagick Studio LLC endorses your 
+  * use any marks owned by ImageMagick Studio LLC in any way that
+    might state or imply that ImageMagick Studio LLC endorses your
     distribution;
-  * use any marks owned by ImageMagick Studio LLC in any way that 
+  * use any marks owned by ImageMagick Studio LLC in any way that
     might state or imply that you created the ImageMagick software
     in question.
  .
@@ -803,7 +850,7 @@ License: ImageMagick
  .
   * include a copy of the license in any redistribution you may make that
     includes ImageMagick software;
-  * provide clear attribution to ImageMagick Studio LLC for any 
+  * provide clear attribution to ImageMagick Studio LLC for any
     distributions that include ImageMagick software.
  .
  It does not require you to:
@@ -819,26 +866,26 @@ License: ImageMagick
   * ImageMagick is freely available without charge;
   * you may include ImageMagick on a DVD as long as you comply with the terms
     of the license;
-  * you can give modified code away for free or sell it under the terms of 
-    the ImageMagick license or distribute the result under a different 
+  * you can give modified code away for free or sell it under the terms of
+    the ImageMagick license or distribute the result under a different
     license, but you need to acknowledge the use of the ImageMagick software;
   * the license is compatible with the GPL V3.
   * when exporting the ImageMagick software, review its export classification.
  .
  Terms and Conditions for Use, Reproduction, and Distribution
  .
- The legally binding and authoritative terms and conditions for use, 
+ The legally binding and authoritative terms and conditions for use,
  reproduction, and distribution of ImageMagick follow:
  .
- Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization 
+ Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
  dedicated to making software imaging solutions freely available.
  .
  1. Definitions.
  .
- License shall mean the terms and conditions for use, reproduction, and 
+ License shall mean the terms and conditions for use, reproduction, and
  distribution as defined by Sections 1 through 9 of this document.
  .
- Licensor shall mean the copyright owner or entity authorized by the 
+ Licensor shall mean the copyright owner or entity authorized by the
  copyright owner that is granting the License.
  .
  Legal Entity shall mean the union of the acting entity and all other
@@ -853,16 +900,16 @@ License: ImageMagick
  granted by this License.
  .
  Source form shall mean the preferred form for making modifications, including
- but not limited to software source code, documentation source, and 
+ but not limited to software source code, documentation source, and
  configuration files.
  .
  Object form shall mean any form resulting from mechanical transformation or
  translation of a Source form, including but not limited to compiled object code,
  generated documentation, and conversions to other media types.
  .
- Work shall mean the work of authorship, whether in Source or Object form, 
- made available under the License, as indicated by a copyright notice that is 
- included in or attached to the work (an example is provided in the Appendix 
+ Work shall mean the work of authorship, whether in Source or Object form,
+ made available under the License, as indicated by a copyright notice that is
+ included in or attached to the work (an example is provided in the Appendix
  below).
  .
  Derivative Works shall mean any work, whether in Source or Object
@@ -924,7 +971,7 @@ License: ImageMagick
   * You must retain, in the Source form of any Derivative Works that
     You distribute, all copyright, patent, trademark, and attribution
     notices from the Source form of the Work, excluding those notices
-    that do not pertain to any part of the Derivative Works; and 
+    that do not pertain to any part of the Derivative Works; and
   * If the Work includes a "NOTICE" text file as part of its
     distribution, then any Derivative Works that You distribute must
     include a readable copy of the attribution notices contained
@@ -940,7 +987,7 @@ License: ImageMagick
     within Derivative Works that You distribute, alongside or as an
     addendum to the NOTICE text from the Work, provided that such
     additional attribution notices cannot be construed as modifying
-    the License.  
+    the License.
  .
  You may add Your own copyright statement to Your
  modifications and may provide additional or different license
@@ -1019,4 +1066,3 @@ License: ImageMagick
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
    implied.  See the License for the specific language governing
    permissions and limitations under the License.
-
