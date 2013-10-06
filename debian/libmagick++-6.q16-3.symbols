@@ -1,5 +1,5 @@
 # SymbolsHelper-Confirmed: 6.8.5.5 amd64
-libMagick++-6.Q16.so.2 libmagick++-6.q16-2 #MINVER#
+libMagick++-6.Q16.so.3 libmagick++-6.q16-2 #MINVER#
  MagickPlusPlusDestroyMagick@Base 6.8.6.7
  (c++)"Magick::Coordinate::~Coordinate()@Base" 6.8.6.7
  (c++)"Magick::ErrorCache::ErrorCache(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 6.8.6.7

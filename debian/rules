@@ -7,7 +7,10 @@ export DH_VERBOSE=1
 
 
 export QUANTUMDEPTH ?= Q16
-export SOVERSION ?= 1
+export CORESOVERSION ?= 1
+export WANDSOVERSION ?= 1
+export PPSOVERSION ?= 3
+
 
 
 # for hardening
@@ -281,13 +284,13 @@ override_dh_auto_install-indep:
 quantum_override_dh_install-arch_%:
 	dh_install --package=imagemagick-$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
+	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${CORESOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION}-extra \
+	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${CORESOVERSION}-extra \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickwand-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
+	dh_install --package=libmagickwand-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${WANDSOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagick++-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION} \
+	dh_install --package=libmagick++-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${PPSOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
 	# dev package
 	dh_install --package=libmagick++-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-dev \
@@ -302,8 +305,8 @@ quantum_override_dh_install-arch_%:
 
 	# Remove extra coders from libmagickcore
 	while read FILE; do \
-		rm -f debian/libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION}/$$FILE; \
-	done < debian/libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${SOVERSION}-extra.install
+		rm -f debian/libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${CORESOVERSION}/$$FILE; \
+	done < debian/libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${CORESOVERSION}-extra.install
 
 # install arch package
 override_dh_install-arch: quantum_override_dh_install-arch_Q16

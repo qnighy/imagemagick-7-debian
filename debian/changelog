@@ -1,4 +1,4 @@
-imagemagick (8:6.8.6.9-1) experimental; urgency=low
+imagemagick (8:6.8.7.0-1) experimental; urgency=low
 
   * New upstream version.
   * Packaging improvements:
