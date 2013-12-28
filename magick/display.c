@@ -13,11 +13,11 @@
 %        MagickCore Methods to Interactively Display and Edit an Image        %
 %                                                                             %
 %                             Software Design                                 %
-%                               John Cristy                                   %
+%                                  Cristy                                     %
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -3080,6 +3080,10 @@ static MagickBooleanType XChopImage(Display *display,
   chop_info.height=0;
   chop_info.x=0;
   chop_info.y=0;
+  segment_info.x1=0;
+  segment_info.x2=0;
+  segment_info.y1=0;
+  segment_info.y2=0;
   distance=0;
   (void) XSetFunction(display,windows->image.highlight_context,GXinvert);
   state=DefaultState;
@@ -9528,7 +9532,7 @@ static void XMakePanImage(Display *display,XResourceInfo *resource_info,
   status=XMakeImage(display,resource_info,&windows->pan,image,
     windows->pan.width,windows->pan.height);
   if (status == MagickFalse)
-    ThrowXWindowFatalException(XServerError,image->exception.reason,
+    ThrowXWindowFatalException(XServerFatalError,image->exception.reason,
       image->exception.description);
   (void) XSetWindowBackgroundPixmap(display,windows->pan.id,
     windows->pan.pixmap);
@@ -10198,17 +10202,13 @@ static Image *XOpenImage(Display *display,XResourceInfo *resource_info,
       */
       status=XGetCommand(display,windows->image.id,&files,&count);
       if (status == 0)
-        {
-          ThrowXWindowFatalException(XServerError,"UnableToGetProperty","...");
-          return((Image *) NULL);
-        }
+          ThrowXWindowException(XServerError,"UnableToGetProperty","...");
       filelist=(char **) AcquireQuantumMemory((size_t) count,sizeof(*filelist));
       if (filelist == (char **) NULL)
         {
-          ThrowXWindowFatalException(ResourceLimitError,
-            "MemoryAllocationFailed","...");
           (void) XFreeStringList(files);
-          return((Image *) NULL);
+          ThrowXWindowException(ResourceLimitError,
+            "MemoryAllocationFailed","...");
         }
       j=0;
       for (i=1; i < count; i++)
@@ -10281,7 +10281,7 @@ static Image *XOpenImage(Display *display,XResourceInfo *resource_info,
       /*
         Unknown image format.
       */
-      text=FileToString(filename,~0,exception);
+      text=FileToString(filename,~0UL,exception);
       if (text == (char *) NULL)
         return((Image *) NULL);
       textlist=StringToList(text);
@@ -11221,6 +11221,10 @@ static MagickBooleanType XROIImage(Display *display,
   XQueryPosition(display,windows->image.id,&x,&y);
   (void) XSelectInput(display,windows->image.id,
     windows->image.attributes.event_mask | PointerMotionMask);
+  crop_info.width=0;
+  crop_info.height=0;
+  crop_info.x=0;
+  crop_info.y=0;
   roi_info.x=(ssize_t) windows->image.x+x;
   roi_info.y=(ssize_t) windows->image.y+y;
   roi_info.width=0;
@@ -12570,6 +12574,8 @@ static int XPredicate(Display *magick_unused(display),XEvent *event,char *data)
   register XWindows
     *windows;
 
+  magick_unreferenced(display);
+
   windows=(XWindows *) data;
   if ((event->type == ClientMessage) &&
       (event->xclient.window == windows->image.id))
@@ -13518,7 +13524,7 @@ static Image *XVisualDirectoryImage(Display *display,
   filelist=(char **) AcquireMagickMemory(sizeof(*filelist));
   if (filelist == (char **) NULL)
     {
-      ThrowXWindowFatalException(ResourceLimitError,"MemoryAllocationFailed",
+      ThrowXWindowException(ResourceLimitError,"MemoryAllocationFailed",
         filenames);
       return((Image *) NULL);
     }
@@ -13528,9 +13534,9 @@ static Image *XVisualDirectoryImage(Display *display,
   if ((status == MagickFalse) || (number_files == 0))
     {
       if (number_files == 0)
-        ThrowXWindowFatalException(ImageError,"NoImagesWereFound",filenames)
+        ThrowXWindowException(ImageError,"NoImagesWereFound",filenames)
       else
-        ThrowXWindowFatalException(ResourceLimitError,"MemoryAllocationFailed",
+        ThrowXWindowException(ResourceLimitError,"MemoryAllocationFailed",
           filenames);
       return((Image *) NULL);
     }
@@ -13602,7 +13608,7 @@ static Image *XVisualDirectoryImage(Display *display,
     {
       read_info=DestroyImageInfo(read_info);
       XSetCursorState(display,windows,MagickFalse);
-      ThrowXWindowFatalException(ImageError,"NoImagesWereLoaded",filenames);
+      ThrowXWindowException(ImageError,"NoImagesWereLoaded",filenames);
       return((Image *) NULL);
     }
   /*
@@ -13710,7 +13716,7 @@ MagickExport MagickBooleanType XDisplayBackgroundImage(Display *display,
     window_info.id=root_window;
   else
     {
-      if (isdigit((unsigned char) *resources.window_id) != 0)
+      if (isdigit((int) ((unsigned char) *resources.window_id)) != 0)
         window_info.id=XWindowByID(display,root_window,
           (Window) strtol((char *) resources.window_id,(char **) NULL,0));
       if (window_info.id == (Window) NULL)
@@ -13718,9 +13724,8 @@ MagickExport MagickBooleanType XDisplayBackgroundImage(Display *display,
     }
   if (window_info.id == (Window) NULL)
     {
-      ThrowXWindowFatalException(XServerError,"NoWindowWithSpecifiedIDExists",
+      ThrowXWindowException(XServerError,"NoWindowWithSpecifiedIDExists",
         resources.window_id);
-      return(MagickFalse);
     }
   /*
     Determine window visual id.
@@ -16062,6 +16067,7 @@ MagickExport MagickBooleanType DisplayImages(const ImageInfo *image_info,
   assert(image_info->signature == MagickSignature);
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
+  (void) image_info;
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   (void) ThrowMagickException(&image->exception,GetMagickModule(),

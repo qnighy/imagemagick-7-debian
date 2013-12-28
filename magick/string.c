@@ -13,11 +13,11 @@
 %                        MagickCore String Methods                            %
 %                                                                             %
 %                             Software Design                                 %
-%                               John Cristy                                   %
+%                                  Cristy                                     %
 %                               August 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the license.  You may  %
@@ -61,7 +61,7 @@
 */
 #if !defined(MAGICKCORE_HAVE_STRCASECMP) || !defined(MAGICKCORE_HAVE_STRNCASECMP)
 static const unsigned char
-  asciimap[] =
+  AsciiMap[] =
   {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
     0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
@@ -1738,6 +1738,7 @@ MagickExport void PrintStringInfo(FILE *file,const char *id,
       break;
     p++;
   }
+  (void) FormatLocaleFile(file,"%s(%.20g): ",id,(double) string_info->length);
   if (i == string_info->length)
     {
       for (i=0; i < string_info->length; i++)
@@ -2236,7 +2237,7 @@ MagickExport char **StringToArgv(const char *text,int *argc)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  StringToArrayOfDoubles() converts a string of space or comma seperated
+%  StringToArrayOfDoubles() converts a string of space or comma separated
 %  numbers into array of floating point numbers (doubles). Any number that
 %  failes to parse properly will produce a syntax error. As will two commas
 %  without a  number between them.  However a final comma at the end will
@@ -2253,7 +2254,7 @@ MagickExport char **StringToArgv(const char *text,int *argc)
 %
 %  A description of each parameter follows:
 %
-%    o string: the string containing the comma/space seperated values.
+%    o string: the string containing the comma/space separated values.
 %
 %    o count: returns number of arguments in returned array
 %
@@ -2278,6 +2279,8 @@ MagickExport double *StringToArrayOfDoubles(const char *string,ssize_t *count,
   /*
     Determine count of values, and check syntax.
   */
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickSignature);
   *count=0;
   i=0;
   p=string;
@@ -2301,7 +2304,11 @@ MagickExport double *StringToArrayOfDoubles(const char *string,ssize_t *count,
   *count=i;
   array=(double *) AcquireQuantumMemory((size_t) i,sizeof(*array));
   if (array == (double *) NULL)
-    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),
+        ResourceLimitError,"MemoryAllocationFailed","`%s'","");
+      return((double *) NULL);
+    }
   /*
     Fill in the floating point values.
   */

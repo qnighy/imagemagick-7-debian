@@ -13,11 +13,11 @@
 %                   MagickCore Image Special Effects Methods                  %
 %                                                                             %
 %                               Software Design                               %
-%                                 John Cristy                                 %
+%                                    Cristy                                   %
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -41,6 +41,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/accelerate.h"
 #include "magick/annotate.h"
 #include "magick/artifact.h"
 #include "magick/attribute.h"
@@ -72,6 +73,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/opencl-private.h"
 #include "magick/option.h"
 #include "magick/pixel-accessor.h"
 #include "magick/pixel-private.h"
@@ -95,15 +97,15 @@
 /*
   Define declarations.
 */
-#define LeftShiftOperator 0xf5
-#define RightShiftOperator 0xf6
-#define LessThanEqualOperator 0xf7
-#define GreaterThanEqualOperator 0xf8
-#define EqualOperator 0xf9
-#define NotEqualOperator 0xfa
-#define LogicalAndOperator 0xfb
-#define LogicalOrOperator 0xfc
-#define ExponentialNotation 0xfd
+#define LeftShiftOperator  0xf5U
+#define RightShiftOperator  0xf6U
+#define LessThanEqualOperator  0xf7U
+#define GreaterThanEqualOperator  0xf8U
+#define EqualOperator  0xf9U
+#define NotEqualOperator  0xfaU
+#define LogicalAndOperator  0xfbU
+#define LogicalOrOperator  0xfcU
+#define ExponentialNotation  0xfdU
 
 struct _FxInfo
 {
@@ -311,6 +313,11 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
+
+  noise_image=AccelerateAddNoiseImage(image,channel,noise_type,exception);
+  if (noise_image != (Image *) NULL)
+    return(noise_image);
+
   noise_image=CloneImage(image,0,0,MagickTrue,exception);
   if (noise_image == (Image *) NULL)
     return((Image *) NULL);
@@ -745,7 +752,7 @@ MagickExport Image *ColorizeImage(const Image *image,const char *opacity,
   pixel.red=geometry_info.rho;
   pixel.green=geometry_info.rho;
   pixel.blue=geometry_info.rho;
-  pixel.opacity=geometry_info.rho;
+  pixel.opacity=(MagickRealType) OpaqueOpacity;
   if ((flags & SigmaValue) != 0)
     pixel.green=geometry_info.sigma;
   if ((flags & XiValue) != 0)
@@ -1148,6 +1155,7 @@ static MagickRealType FxChannelStatistics(FxInfo *fx_info,const Image *image,
   ChannelType channel,const char *symbol,ExceptionInfo *exception)
 {
   char
+    channel_symbol[MaxTextExtent],
     key[MaxTextExtent],
     statistic[MaxTextExtent];
 
@@ -1158,12 +1166,14 @@ static MagickRealType FxChannelStatistics(FxInfo *fx_info,const Image *image,
     *p;
 
   for (p=symbol; (*p != '.') && (*p != '\0'); p++) ;
+  *channel_symbol='\0';
   if (*p == '.')
     {
       ssize_t
         option;
 
-      option=ParseCommandOption(MagickChannelOptions,MagickTrue,p+1);
+      (void) CopyMagickString(channel_symbol,p+1,MaxTextExtent);
+      option=ParseCommandOption(MagickChannelOptions,MagickTrue,channel_symbol);
       if (option >= 0)
         channel=(ChannelType) option;
     }
@@ -1179,8 +1189,7 @@ static MagickRealType FxChannelStatistics(FxInfo *fx_info,const Image *image,
         depth;
 
       depth=GetImageChannelDepth(image,channel,exception);
-      (void) FormatLocaleString(statistic,MaxTextExtent,"%.20g",(double)
-        depth);
+      (void) FormatLocaleString(statistic,MaxTextExtent,"%.20g",(double) depth);
     }
   if (LocaleNCompare(symbol,"kurtosis",8) == 0)
     {
@@ -1199,6 +1208,8 @@ static MagickRealType FxChannelStatistics(FxInfo *fx_info,const Image *image,
         minima;
 
       (void) GetImageChannelRange(image,channel,&minima,&maxima,exception);
+      if (LocaleCompare(channel_symbol,"a") == 0)
+        maxima=QuantumRange-maxima;
       (void) FormatLocaleString(statistic,MaxTextExtent,"%g",maxima);
     }
   if (LocaleNCompare(symbol,"mean",4) == 0)
@@ -1209,6 +1220,8 @@ static MagickRealType FxChannelStatistics(FxInfo *fx_info,const Image *image,
 
       (void) GetImageChannelMean(image,channel,&mean,&standard_deviation,
         exception);
+      if (LocaleCompare(channel_symbol,"a") == 0)
+        mean=QuantumRange-mean;
       (void) FormatLocaleString(statistic,MaxTextExtent,"%g",mean);
     }
   if (LocaleNCompare(symbol,"minima",6) == 0)
@@ -1218,6 +1231,8 @@ static MagickRealType FxChannelStatistics(FxInfo *fx_info,const Image *image,
         minima;
 
       (void) GetImageChannelRange(image,channel,&minima,&maxima,exception);
+      if (LocaleCompare(channel_symbol,"a") == 0)
+        minima=QuantumRange-minima;
       (void) FormatLocaleString(statistic,MaxTextExtent,"%g",minima);
     }
   if (LocaleNCompare(symbol,"skewness",8) == 0)
@@ -1324,7 +1339,7 @@ static MagickRealType FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
   level=0;
   point.x=(double) x;
   point.y=(double) y;
-  if (isalpha((int) *(p+1)) == 0)
+  if (isalpha((int) ((unsigned char) *(p+1))) == 0)
     {
       if (strchr("suv",(int) *p) != (char *) NULL)
         {
@@ -1366,7 +1381,7 @@ static MagickRealType FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
           if (*p == '.')
             p++;
         }
-      if ((*p == 'p') && (isalpha((int) *(p+1)) == 0))
+      if ((*p == 'p') && (isalpha((int) ((unsigned char) *(p+1))) == 0))
         {
           p++;
           if (*p == '{')
@@ -1620,7 +1635,6 @@ static MagickRealType FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
             default:
               return(0.0);
           }
-          return(0.0);
         }
       if (LocaleCompare(symbol,"c") == 0)
         return(QuantumScale*pixel.red);
@@ -3015,7 +3029,7 @@ static FxInfo **AcquireFxThreadSet(const Image *image,const char *expression,
   if (*expression != '@')
     fx_expression=ConstantString(expression);
   else
-    fx_expression=FileToString(expression+1,~0,exception);
+    fx_expression=FileToString(expression+1,~0UL,exception);
   for (i=0; i < (ssize_t) number_threads; i++)
   {
     MagickBooleanType
@@ -4608,7 +4622,8 @@ MagickExport MagickBooleanType SolarizeImageChannel(Image *image,
           if ((MagickRealType) image->colormap[i].green > threshold)
             image->colormap[i].green=QuantumRange-image->colormap[i].green;
         if ((channel & BlueChannel) != 0)
-          image->colormap[i].blue=QuantumRange-image->colormap[i].blue;
+          if ((MagickRealType) image->colormap[i].blue > threshold)
+            image->colormap[i].blue=QuantumRange-image->colormap[i].blue;
       }
     }
   /*
@@ -5255,28 +5270,25 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
   if (opacity == (const char *) NULL)
     return(tint_image);
   /*
-    Determine RGB values of the color.
+    Determine RGB values of the tint color.
   */
   flags=ParseGeometry(opacity,&geometry_info);
   pixel.red=geometry_info.rho;
+  pixel.green=geometry_info.rho;
+  pixel.blue=geometry_info.rho;
+  pixel.opacity=(MagickRealType) OpaqueOpacity;
   if ((flags & SigmaValue) != 0)
     pixel.green=geometry_info.sigma;
-  else
-    pixel.green=pixel.red;
   if ((flags & XiValue) != 0)
     pixel.blue=geometry_info.xi;
-  else
-    pixel.blue=pixel.red;
   if ((flags & PsiValue) != 0)
     pixel.opacity=geometry_info.psi;
-  else
-    pixel.opacity=(MagickRealType) OpaqueOpacity;
   color_vector.red=(MagickRealType) (pixel.red*tint.red/100.0-
-    GetPixelIntensity(tint_image,&tint));
+    PixelPacketIntensity(&tint));
   color_vector.green=(MagickRealType) (pixel.green*tint.green/100.0-
-    GetPixelIntensity(tint_image,&tint));
+    PixelPacketIntensity(&tint));
   color_vector.blue=(MagickRealType) (pixel.blue*tint.blue/100.0-
-    GetPixelIntensity(tint_image,&tint));
+    PixelPacketIntensity(&tint));
   /*
     Tint image.
   */
@@ -5371,7 +5383,8 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
 %  The format of the VignetteImage method is:
 %
 %      Image *VignetteImage(const Image *image,const double radius,
-%        const double sigma,const ssize_t x,const ssize_t y,ExceptionInfo *exception)
+%        const double sigma,const ssize_t x,const ssize_t y,
+%        ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -5396,8 +5409,8 @@ MagickExport Image *VignetteImage(const Image *image,const double radius,
     *draw_info;
 
   Image
-    *canvas_image,
     *blur_image,
+    *canvas_image,
     *oval_image,
     *vignette_image;
 

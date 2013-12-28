@@ -13,11 +13,11 @@
 %                  MagickCore Hash-map and Linked-list Methods                %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                               December 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -744,7 +744,7 @@ MagickExport void *GetValueFromHashmap(HashmapInfo *hashmap_info,
             if (hashmap_info->compare !=
                 (MagickBooleanType (*)(const void *,const void *)) NULL)
               compare=hashmap_info->compare(key,entry->key);
-            if (compare == MagickTrue)
+            if (compare != MagickFalse)
               {
                 value=entry->value;
                 UnlockSemaphoreInfo(hashmap_info->semaphore);
@@ -1534,7 +1534,7 @@ MagickExport MagickBooleanType PutEntryInHashmap(HashmapInfo *hashmap_info,
             if (hashmap_info->compare !=
                 (MagickBooleanType (*)(const void *,const void *)) NULL)
               compare=hashmap_info->compare(key,entry->key);
-            if (compare == MagickTrue)
+            if (compare != MagickFalse)
               {
                 (void) RemoveElementFromLinkedList(list_info,i);
                 if (hashmap_info->relinquish_key != (void *(*)(void *)) NULL)
@@ -1775,7 +1775,7 @@ MagickExport void *RemoveEntryFromHashmap(HashmapInfo *hashmap_info,
             if (hashmap_info->compare !=
                 (MagickBooleanType (*)(const void *,const void *)) NULL)
               compare=hashmap_info->compare(key,entry->key);
-            if (compare == MagickTrue)
+            if (compare != MagickFalse)
               {
                 entry=(EntryInfo *) RemoveElementFromLinkedList(list_info,i);
                 if (entry == (EntryInfo *) NULL)

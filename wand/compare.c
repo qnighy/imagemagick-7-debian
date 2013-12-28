@@ -13,11 +13,11 @@
 %                         Image Comparison Methods                            %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -228,6 +228,9 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
     *reconstruct_image,
     *similarity_image;
 
+  ImageInfo
+    *restore_info;
+
   ImageStack
     image_stack[MaxImageStackDepth+1];
 
@@ -273,6 +276,7 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
     }
   if (argc < 3)
     return(CompareUsage());
+  restore_info=image_info;
   channels=CompositeChannels;
   difference_image=NewImageList();
   similarity_image=NewImageList();
@@ -956,6 +960,8 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
     ThrowCompareException(OptionError,"MissingAnImageFilename",argv[i]);
   image=GetImageFromList(image,0);
   reconstruct_image=GetImageFromList(image,1);
+  offset.x=0;
+  offset.y=0;
   if (subimage_search != MagickFalse)
     {
       char
@@ -1241,14 +1247,15 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
       difference_image=DestroyImageList(difference_image);
     }
   DestroyCompare();
+  image_info=restore_info;
   if ((metric == NormalizedCrossCorrelationErrorMetric) ||
       (metric == UndefinedErrorMetric))
     {
       if (fabs(distortion-1.0) > CompareEpsilon)
-        return(MagickTrue);
+        (void) SetImageOption(image_info,"compare:dissimilar","true");
     }
   else
     if (fabs(distortion) > CompareEpsilon)
-      return(MagickTrue);
+      (void) SetImageOption(image_info,"compare:dissimilar","true");
   return(status != 0 ? MagickTrue : MagickFalse);
 }

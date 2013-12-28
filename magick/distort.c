@@ -13,12 +13,12 @@
 %                     MagickCore Image Distortion Methods                     %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                              Anthony Thyssen                                %
 %                                 June 2007                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2183,7 +2183,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
           (void) FormatLocaleFile(stderr, "  c%.20g = %+lf\n", (double) i, coeff[i]);
         (void) FormatLocaleFile(stderr, "DePolar Distort, FX Equivelent:\n");
         (void) FormatLocaleFile(stderr, "%s", image_gen);
-        (void) FormatLocaleFile(stderr, "  -fx 'aa=(i+.5)*%lf %+lf;\n", coeff[6], -coeff[4] );
+        (void) FormatLocaleFile(stderr, "  -fx 'aa=(i+.5)*%lf %+lf;\n", coeff[6], +coeff[4] );
         (void) FormatLocaleFile(stderr, "       rr=(j+.5)*%lf %+lf;\n", coeff[7], +coeff[1] );
         (void) FormatLocaleFile(stderr, "       xx=rr*sin(aa) %+lf;\n", coeff[2] );
         (void) FormatLocaleFile(stderr, "       yy=rr*cos(aa) %+lf;\n", coeff[3] );
@@ -2578,7 +2578,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
           case DePolarDistortion:
           { /* @D Polar to Carteasain  */
             /* ignore all destination virtual offsets */
-            d.x = ((double)i+0.5)*output_scaling*coeff[6]-coeff[4];
+            d.x = ((double)i+0.5)*output_scaling*coeff[6]+coeff[4];
             d.y = ((double)j+0.5)*output_scaling*coeff[7]+coeff[1];
             s.x = d.y*sin(d.x) + coeff[2];
             s.y = d.y*cos(d.x) + coeff[3];

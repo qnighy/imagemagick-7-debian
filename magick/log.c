@@ -13,11 +13,11 @@
 %                             MagickCore Log Events                           %
 %                                                                             %
 %                               Software Design                               %
-%                                 John Cristy                                 %
+%                                    Cristy                                   %
 %                                September 2002                               %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -824,6 +824,8 @@ static char *TranslateEvent(const LogEventType magick_unused(type),
   time_t
     seconds;
 
+  magick_unreferenced(type);
+
   exception=AcquireExceptionInfo();
   log_info=(LogInfo *) GetLogInfo("*",exception);
   exception=DestroyExceptionInfo(exception);
@@ -1378,7 +1380,7 @@ static MagickBooleanType LoadLogList(const char *xml,const char *filename,
                     (void) CopyMagickString(path,token,MaxTextExtent);
                   else
                     (void) ConcatenateMagickString(path,token,MaxTextExtent);
-                  xml=FileToString(path,~0,exception);
+                  xml=FileToString(path,~0UL,exception);
                   if (xml != (char *) NULL)
                     {
                       status&=LoadLogList(xml,path,depth+1,exception);

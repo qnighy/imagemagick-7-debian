@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -112,14 +112,17 @@ extern "C" {
 #  define magick_aligned(x,y)  x __attribute__((aligned(y)))
 #  define magick_attribute  __attribute__
 #  define magick_unused(x)  magick_unused_ ## x __attribute__((unused))
+#  define magick_unreferenced(x)  /* nothing */
 #elif defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__CYGWIN__)
 #  define magick_aligned(x,y)  __declspec(align(y)) x
 #  define magick_attribute(x)  /* nothing */
 #  define magick_unused(x) x
+#  define magick_unreferenced(x) (x)
 #else
 #  define magick_aligned(x,y)  /* nothing */
 #  define magick_attribute(x)  /* nothing */
 #  define magick_unused(x) x
+#  define magick_unreferenced(x)  /* nothing */
 #endif
 
 #if (((__GNUC__) > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3)))

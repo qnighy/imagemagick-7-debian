@@ -13,11 +13,11 @@
 %              Montage Magick Image File Format Image via X11.                %
 %                                                                             %
 %                           Software Design                                   %
-%                             John Cristy                                     %
+%                                Cristy                                       %
 %                              July 1992                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -79,7 +79,7 @@ static int MontageMain(int argc,char **argv)
   image_info=DestroyImageInfo(image_info);
   exception=DestroyExceptionInfo(exception);
   MagickCoreTerminus();
-  return(status);
+  return(status == MagickFalse ? 0 : 1);
 }
 
 #if !defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__MINGW64__)
@@ -104,6 +104,6 @@ int wmain(int argc,wchar_t *argv[])
   for (i=0; i < argc; i++)
     utf8[i]=DestroyString(utf8[i]);
   utf8=(char **) RelinquishMagickMemory(utf8);
-  return(status);
+  return(status == MagickFalse ? 0 : 1);
 }
 #endif

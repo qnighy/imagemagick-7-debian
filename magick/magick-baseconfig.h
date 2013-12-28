@@ -83,7 +83,9 @@
 #endif
 
 /* Define if you have FlashPIX library */
-/* #undef FPX_DELEGATE */
+#ifndef MAGICKCORE_FPX_DELEGATE
+#define MAGICKCORE_FPX_DELEGATE 1
+#endif
 
 /* Define if you have FREETYPE library */
 #ifndef MAGICKCORE_FREETYPE_DELEGATE
@@ -1117,13 +1119,13 @@
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/usr/lib64/ImageMagick-6.8.6/"
+#define MAGICKCORE_LIBRARY_PATH "/usr/lib64/ImageMagick-6.8.8/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
    installed */
 #ifndef MAGICKCORE_LIBRARY_RELATIVE_PATH
-#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.8.6"
+#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.8.8"
 #endif
 
 /* Binaries in libraries path base name (will be during install linked to bin)
@@ -1184,9 +1186,6 @@
 /* Define to 1 if assertions should be disabled. */
 /* #undef NDEBUG */
 
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-/* #undef NO_MINUS_C_MINUS_O */
-
 /* Define if you have OPENEXR library */
 #ifndef MAGICKCORE_OPENEXR_DELEGATE
 #define MAGICKCORE_OPENEXR_DELEGATE 1
@@ -1209,7 +1208,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.8.6-10"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.8.8-1"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1224,7 +1223,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.8.6-10"
+#define MAGICKCORE_PACKAGE_VERSION "6.8.8-1"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1436,7 +1435,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.8.6-10"
+#define MAGICKCORE_VERSION "6.8.8-1"
 #endif
 
 /* Define if you have WEBP library */

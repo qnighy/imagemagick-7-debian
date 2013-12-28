@@ -15,12 +15,12 @@
 %                                                                             %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                             Kelly Bergougnoux                               %
 %                               October 2003                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -42,7 +42,8 @@
 %
 %
 */
-
+
+
 /*
   Include declarations.
 */
@@ -70,7 +71,8 @@
 #include "magick/string_.h"
 #include "magick/string-private.h"
 #include "magick/module.h"
-
+
+
 /*
   Typedef declaration.
 */
@@ -223,13 +225,15 @@ typedef struct CINInfo
   CINUserInfo
     user;
 } CINInfo;
-
+
+
 /*
   Forward declaractions.
 */
 static MagickBooleanType
   WriteCINImage(const ImageInfo *,Image *);
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -263,7 +267,8 @@ static MagickBooleanType IsCIN(const unsigned char *magick,const size_t length)
     return(MagickTrue);
   return(MagickFalse);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -473,7 +478,7 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   cin.image.orientation=(unsigned char) ReadBlobByte(image);
   offset++;
-  if (cin.image.orientation != (unsigned char) (~0U))
+  if (cin.image.orientation != (unsigned char) (~0))
     (void) FormatImageProperty(image,"dpx:image.orientation","%d",
       cin.image.orientation);
   switch (cin.image.orientation)
@@ -742,7 +747,8 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -780,7 +786,8 @@ ModuleExport size_t RegisterCINImage(void)
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -804,7 +811,8 @@ ModuleExport void UnregisterCINImage(void)
 {
   (void) UnregisterMagickInfo("CINEON");
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1150,7 +1158,9 @@ static MagickBooleanType WriteCINImage(const ImageInfo *image_info,Image *image)
   quantum_type=RGBQuantum;
   pixels=GetQuantumPixels(quantum_info);
   length=GetBytesPerRow(image->columns,3,image->depth,MagickTrue);
+DisableMSCWarning(4127)
   if (0)
+RestoreMSCWarning
     {
       quantum_type=GrayQuantum;
       length=GetBytesPerRow(image->columns,1UL,image->depth,MagickTrue);

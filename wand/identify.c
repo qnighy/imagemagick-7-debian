@@ -13,11 +13,11 @@
 %               Identify an Image Format and Characteristics.                 %
 %                                                                             %
 %                           Software Design                                   %
-%                             John Cristy                                     %
+%                                Cristy                                       %
 %                            September 1994                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -107,6 +107,7 @@ static MagickBooleanType IdentifyUsage(void)
     },
     *operators[]=
     {
+      "-grayscale method    convert image to grayscale",
       "-negate              replace every pixel with its complementary color ",
       (char *) NULL
     },
@@ -142,6 +143,7 @@ static MagickBooleanType IdentifyUsage(void)
       "-matte               store matte channel if the image has one",
       "-monitor             monitor progress",
       "-ping                efficiently determine image attributes",
+      "-precision value     maximum number of significant digits to print",
       "-quiet               suppress all warning messages",
       "-regard-warnings     pay attention to warning messages",
       "-respect-parentheses settings remain in effect until parenthesis boundary",
@@ -502,6 +504,8 @@ WandExport MagickBooleanType IdentifyImageCommand(ImageInfo *image_info,
                   ThrowIdentifyException(OptionError,"NoSuchOption",argv[i]);
                 break;
               }
+            if (LocaleNCompare("identify:locate",argv[i],14) == 0)
+              image_info->ping=MagickFalse;
             break;
           }
         if (LocaleCompare("density",option+1) == 0)
@@ -606,6 +610,23 @@ WandExport MagickBooleanType IdentifyImageCommand(ImageInfo *image_info,
               ThrowIdentifyException(OptionError,"MissingArgument",option);
             if (IsGeometry(argv[i]) == MagickFalse)
               ThrowIdentifyInvalidArgumentException(option,argv[i]);
+            break;
+          }
+        if (LocaleCompare("grayscale",option+1) == 0)
+          {
+            ssize_t
+              method;
+
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowIdentifyException(OptionError,"MissingArgument",option);
+            method=ParseCommandOption(MagickPixelIntensityOptions,MagickFalse,
+              argv[i]);
+            if (method < 0)
+              ThrowIdentifyException(OptionError,"UnrecognizedIntensityMethod",
+                argv[i]);
             break;
           }
         ThrowIdentifyException(OptionError,"UnrecognizedOption",option)
@@ -745,6 +766,17 @@ WandExport MagickBooleanType IdentifyImageCommand(ImageInfo *image_info,
       {
         if (LocaleCompare("ping",option+1) == 0)
           break;
+        if (LocaleCompare("precision",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) (argc-1))
+              ThrowIdentifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowIdentifyInvalidArgumentException(option,argv[i]);
+            break;
+          }
         ThrowIdentifyException(OptionError,"UnrecognizedOption",option)
       }
       case 'q':

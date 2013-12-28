@@ -13,11 +13,11 @@
 %              Methods to Interactively Animate an Image Sequence             %
 %                                                                             %
 %                             Software Design                                 %
-%                               John Cristy                                   %
+%                                  Cristy                                     %
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -837,8 +837,8 @@ MagickExport void XAnimateBackgroundImage(Display *display,
       */
       map_info=XAllocStandardColormap();
       if (map_info == (XStandardColormap *) NULL)
-        ThrowXWindowFatalException(ResourceLimitError,"MemoryAllocationFailed",
-          images->filename);
+        ThrowXWindowFatalException(ResourceLimitFatalError,
+          "MemoryAllocationFailed",images->filename);
       map_info->colormap=(Colormap) NULL;
       pixel.pixels=(unsigned long *) NULL;
       /*
@@ -865,7 +865,7 @@ MagickExport void XAnimateBackgroundImage(Display *display,
     XDestroyWindowColors(display,root_window);
   coalesce_image=CoalesceImages(images,&images->exception);
   if (coalesce_image == (Image *) NULL)
-    ThrowXWindowFatalException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowXWindowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",
       images->filename);
   images=coalesce_image;
   if (resources.map_type == (char *) NULL)
@@ -901,8 +901,8 @@ MagickExport void XAnimateBackgroundImage(Display *display,
   number_scenes=GetImageListLength(images);
   image_list=ImageListToArray(images,&images->exception);
   if (image_list == (Image **) NULL)
-    ThrowXWindowFatalException(ResourceLimitFatalError,
-      "MemoryAllocationFailed",images->filename);
+    ThrowXWindowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",
+      images->filename);
   for (i=0; i < (ssize_t) number_scenes; i++)
     if (image_list[i]->scene == 0)
       break;
@@ -3025,6 +3025,7 @@ MagickExport MagickBooleanType AnimateImages(const ImageInfo *image_info,
 {
   assert(image_info != (const ImageInfo *) NULL);
   assert(image_info->signature == MagickSignature);
+  (void) image_info;
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)

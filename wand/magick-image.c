@@ -19,11 +19,11 @@
 %                          MagickWand Image Methods                           %
 %                                                                             %
 %                               Software Design                               %
-%                                 John Cristy                                 %
+%                                    Cristy                                   %
 %                                 August 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -6494,7 +6494,7 @@ WandExport char *MagickIdentifyImage(MagickWand *wand)
     }
   (void) IdentifyImage(wand->images,file,MagickTrue);
   (void) fclose(file);
-  description=FileToString(filename,~0,wand->exception);
+  description=FileToString(filename,~0UL,wand->exception);
   (void) RelinquishUniqueFileResource(filename);
   return(description);
 }

@@ -13,11 +13,11 @@
 %                         Read/Write WebP Image Format                        %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 March 2011                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -168,7 +168,7 @@ static MagickBooleanType IsWEBPImageLossless(const unsigned char *stream,
 #define TAG_SIZE  4
 #define CHUNK_SIZE_BYTES  4
 #define CHUNK_HEADER_SIZE  8
-#define MAX_CHUNK_PAYLOAD  (~0U-CHUNK_HEADER_SIZE-1)
+#define MAX_CHUNK_PAYLOAD  (~0UL-CHUNK_HEADER_SIZE-1)
 
   ssize_t
     offset;
@@ -177,7 +177,7 @@ static MagickBooleanType IsWEBPImageLossless(const unsigned char *stream,
     Read simple header.
   */
   if (stream[VP8_CHUNK_INDEX] != EXTENDED_HEADER)
-   return(stream[VP8_CHUNK_INDEX] == LOSSLESS_FLAG ? MagickTrue : MagickFalse);
+    return(stream[VP8_CHUNK_INDEX] == LOSSLESS_FLAG ? MagickTrue : MagickFalse);
   /*
     Read extended header.
   */
@@ -205,6 +205,9 @@ static Image *ReadWEBPImage(const ImageInfo *image_info,
 {
   Image
     *image;
+
+  int
+    webp_status;
 
   MagickBooleanType
     status;
@@ -250,6 +253,7 @@ static Image *ReadWEBPImage(const ImageInfo *image_info,
     }
   if (WebPInitDecoderConfig(&configure) == 0)
     ThrowReaderException(ResourceLimitError,"UnableToDecodeImageFile");
+  webp_image->colorspace=MODE_RGBA;
   length=(size_t) GetBlobSize(image);
   stream=(unsigned char *) AcquireQuantumMemory(length,sizeof(*stream));
   if (stream == (unsigned char *) NULL)
@@ -257,22 +261,52 @@ static Image *ReadWEBPImage(const ImageInfo *image_info,
   count=ReadBlob(image,length,stream);
   if (count != (ssize_t) length)
     ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
-  if (WebPGetFeatures(stream,length,features) != 0)
+  webp_status=WebPGetFeatures(stream,length,features);
+  if (webp_status == VP8_STATUS_OK)
+    {
+      image->columns=(size_t) features->width;
+      image->rows=(size_t) features->height;
+      image->depth=8;
+      image->matte=features->has_alpha != 0 ? MagickTrue : MagickFalse;
+      if (IsWEBPImageLossless(stream,length) != MagickFalse)
+        image->quality=100;
+      if (image_info->ping != MagickFalse)
+        {
+          stream=(unsigned char*) RelinquishMagickMemory(stream);
+          (void) CloseBlob(image);
+          return(GetFirstImageInList(image));
+        }
+      webp_status=WebPDecode(stream,length,&configure);
+    }
+  if (webp_status != VP8_STATUS_OK)
     {
       stream=(unsigned char*) RelinquishMagickMemory(stream);
-      ThrowReaderException(ResourceLimitError,"UnableToDecodeImageFile");
+      switch (webp_status)
+      {
+        case VP8_STATUS_OUT_OF_MEMORY:
+        {
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          break;
+        }
+        case VP8_STATUS_BITSTREAM_ERROR:
+        {
+          ThrowReaderException(CorruptImageError,"CorruptImage");
+          break;
+        }
+        case VP8_STATUS_UNSUPPORTED_FEATURE:
+        {
+          ThrowReaderException(CoderError,"DataEncodingSchemeIsNotSupported");
+          break;
+        }
+        case VP8_STATUS_NOT_ENOUGH_DATA:
+        {
+          ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
+          break;
+        }
+        default:
+          ThrowReaderException(CorruptImageError,"CorruptImage");
+      }
     }
-  webp_image->colorspace=MODE_RGBA;
-  if (WebPDecode(stream,length,&configure) != 0)
-    {
-      stream=(unsigned char*) RelinquishMagickMemory(stream);
-      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-    }
-  image->columns=(size_t) webp_image->width;
-  image->rows=(size_t) webp_image->height;
-  image->matte=features->has_alpha != 0 ? MagickTrue : MagickFalse;
-  if (IsWEBPImageLossless(stream,length) != MagickFalse)
-    image->quality=100;
   p=webp_image->u.RGBA.rgba;
   for (y=0; y < (ssize_t) image->rows; y++)
   {

@@ -13,11 +13,11 @@
 %                        MagickCore Exception Methods                         %
 %                                                                             %
 %                             Software Design                                 %
-%                               John Cristy                                   %
+%                                  Cristy                                     %
 %                                July 1993                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -256,6 +256,8 @@ MagickExport void CatchException(ExceptionInfo *exception)
 static void DefaultErrorHandler(const ExceptionType magick_unused(severity),
   const char *reason,const char *description)
 {
+  magick_unreferenced(severity);
+
   if (reason == (char *) NULL)
     return;
   (void) FormatLocaleFile(stderr,"%s: %s",GetClientName(),reason);
@@ -338,6 +340,8 @@ static void DefaultFatalErrorHandler(const ExceptionType severity,
 static void DefaultWarningHandler(const ExceptionType magick_unused(severity),
   const char *reason,const char *description)
 {
+  magick_unreferenced(severity);
+
   if (reason == (char *) NULL)
     return;
   (void) FormatLocaleFile(stderr,"%s: %s",GetClientName(),reason);

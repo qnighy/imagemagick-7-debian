@@ -13,11 +13,11 @@
 %                     Interpret Magick Scripting Language.                    %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -166,6 +166,8 @@ WandExport MagickBooleanType ConjureImageCommand(ImageInfo *image_info,
 
   ssize_t
     number_images;
+
+  wand_unreferenced(metadata);
 
   /*
     Set defaults.

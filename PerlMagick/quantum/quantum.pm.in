@@ -1,6 +1,6 @@
 package Image::Magick::@MAGICK_ABI_SUFFIX@;
 
-#  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -101,7 +101,7 @@ __END__
 
 =head1 NAME
 
-Image::Magick::@MAGICK_ABI_SUFFIX@ - objected-oriented Perl interface to ImageMagick (@MAGICK_ABI_SUFFIX@). Use it to read, manipulate, or write an image or image sequence from within a Perl script.
+Image::Magick::@MAGICK_ABI_SUFFIX@ - objected-oriented Perl interface to ImageMagick (@MAGICK_ABI_SUFFIX@). Use it to create, edit, compose, or convert bitmap images from within a Perl script.
 
 =head1 SYNOPSIS
 

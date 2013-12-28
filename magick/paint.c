@@ -13,11 +13,11 @@
 %                        Methods to Paint on an Image                         %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -180,7 +180,7 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) TransformImageColorspace(image,RGBColorspace);
+    (void) SetImageColorspace(image,sRGBColorspace);
   if ((image->matte == MagickFalse) &&
       (draw_info->fill.opacity != OpaqueOpacity))
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);

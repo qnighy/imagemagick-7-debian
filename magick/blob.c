@@ -13,11 +13,11 @@
 %                     MagickCore Binary Large OBjectS Methods                 %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2460,7 +2460,7 @@ MagickExport MagickBooleanType OpenBlob(const ImageInfo *image_info,
 #endif
   status=GetPathAttributes(filename,&image->blob->properties);
 #if defined(S_ISFIFO)
-  if ((status == MagickTrue) && S_ISFIFO(image->blob->properties.st_mode))
+  if ((status != MagickFalse) && S_ISFIFO(image->blob->properties.st_mode))
     {
       image->blob->file_info.file=(FILE *) fopen_utf8(filename,type);
       if (image->blob->file_info.file == (FILE *) NULL)
@@ -2687,6 +2687,9 @@ extern "C" {
 static size_t PingStream(const Image *magick_unused(image),
   const void *magick_unused(pixels),const size_t columns)
 {
+  magick_unreferenced(image);
+  magick_unreferenced(pixels);
+
   return(columns);
 }
 

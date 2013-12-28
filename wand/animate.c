@@ -13,11 +13,11 @@
 %              Methods to Interactively Animate an Image Sequence             %
 %                                                                             %
 %                             Software Design                                 %
-%                               John Cristy                                   %
+%                                  Cristy                                     %
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -298,6 +298,8 @@ WandExport MagickBooleanType AnimateImageCommand(ImageInfo *image_info,
 
   XrmDatabase
     resource_database;
+
+  wand_unreferenced(metadata);
 
   /*
     Set defaults.
@@ -1458,8 +1460,10 @@ WandExport MagickBooleanType AnimateImageCommand(ImageInfo *image_info,
   DestroyAnimate();
   return(status != 0 ? MagickTrue : MagickFalse);
 #else
-  (void) argc;
-  (void) argv;
+  magick_unreferenced(argc);
+  magick_unreferenced(argv);
+  magick_unreferenced(metadata);
+
   (void) ThrowMagickException(exception,GetMagickModule(),MissingDelegateError,
     "DelegateLibrarySupportNotBuiltIn","`%s' (X11)",image_info->filename);
   return(AnimateUsage());

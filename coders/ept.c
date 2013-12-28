@@ -13,11 +13,11 @@
 %           Read/Write Encapsulated Postscript Format (with preview).         %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -241,7 +241,11 @@ static Image *ReadEPTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     }
   read_info=DestroyImageInfo(read_info);
   if (image != (Image *) NULL)
-    (void) CopyMagickString(image->filename,image_info->filename,MaxTextExtent);
+    {
+      (void) CopyMagickString(image->filename,image_info->filename,
+        MaxTextExtent);
+      (void) CopyMagickString(image->magick,"EPT",MaxTextExtent);
+    }
   ept_info.tiff=(unsigned char *) RelinquishMagickMemory(ept_info.tiff);
   ept_info.postscript=(unsigned char *) RelinquishMagickMemory(
     ept_info.postscript);

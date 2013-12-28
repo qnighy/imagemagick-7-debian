@@ -13,11 +13,11 @@
 %            Read/Write Compuserv Graphics Interchange Format                 %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -397,9 +397,6 @@ static MagickBooleanType DecodeImage(Image *image,const ssize_t opacity)
   int
     c;
 
-  InterlaceType
-    interlace;
-
   LZWInfo
     *lzw_info;
 
@@ -428,9 +425,6 @@ static MagickBooleanType DecodeImage(Image *image,const ssize_t opacity)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   exception=(&image->exception);
-  interlace=image->interlace;
-  if (image->rows < 8)
-    interlace=NoInterlace;
   pass=0;
   offset=0;
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -465,48 +459,50 @@ static MagickBooleanType DecodeImage(Image *image,const ssize_t opacity)
       break;
     if (x < (ssize_t) image->columns)
       break;
-    if (interlace == NoInterlace)
+    if (image->interlace == NoInterlace)
       offset++;
     else
-      switch (pass)
       {
-        case 0:
-        default:
+        switch (pass)
         {
-          offset+=8;
-          if (offset >= (ssize_t) image->rows)
-            {
-              pass++;
-              offset=4;
-            }
-          break;
+          case 0:
+          default:
+          {
+            offset+=8;
+            break;
+          }
+          case 1:
+          {
+            offset+=8;
+            break;
+          }
+          case 2:
+          {
+            offset+=4;
+            break;
+          }
+          case 3:
+          {
+            offset+=2;
+            break;
+          }
         }
-        case 1:
+      if ((pass == 0) && (offset >= (ssize_t) image->rows))
         {
-          offset+=8;
-          if (offset >= (ssize_t) image->rows)
-            {
-              pass++;
-              offset=2;
-            }
-          break;
+          pass++;
+          offset=4;
         }
-        case 2:
+      if ((pass == 1) && (offset >= (ssize_t) image->rows))
         {
-          offset+=4;
-          if (offset >= (ssize_t) image->rows)
-            {
-              pass++;
-              offset=1;
-            }
-          break;
+          pass++;
+          offset=2;
         }
-        case 3:
+      if ((pass == 2) && (offset >= (ssize_t) image->rows))
         {
-          offset+=2;
-          break;
+          pass++;
+          offset=1;
         }
-      }
+    }
   }
   lzw_info=RelinquishLZWInfo(lzw_info);
   if (y < (ssize_t) image->rows)
@@ -715,7 +711,7 @@ static MagickBooleanType EncodeImage(const ImageInfo *image_info,Image *image,
                 break;
               }
           }
-          if (next_pixel == MagickTrue)
+          if (next_pixel != MagickFalse)
             continue;
         }
       GIFOutputCode((size_t) waiting_code);
@@ -1193,13 +1189,13 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 if (profile == (StringInfo *) NULL)
                   ThrowReaderException(ResourceLimitError,
                     "MemoryAllocationFailed");
-                if (i8bim == MagickTrue)
+                if (i8bim != MagickFalse)
                   (void) CopyMagickString(name,"8bim",sizeof(name));
-                else if (icc == MagickTrue)
+                else if (icc != MagickFalse)
                   (void) CopyMagickString(name,"icc",sizeof(name));
-                else if (iptc == MagickTrue)
+                else if (iptc != MagickFalse)
                   (void) CopyMagickString(name,"iptc",sizeof(name));
-                else if (magick == MagickTrue)
+                else if (magick != MagickFalse)
                   {
                     (void) CopyMagickString(name,"magick",sizeof(name));
                     image->gamma=StringToDouble((char *) info+6,(char **) NULL);

@@ -13,13 +13,13 @@
 %                    Execute Magick Scripting Language Scripts.               %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                             Leonard Rosenthol                               %
 %                             William Radcliffe                               %
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -666,6 +666,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
   keyword=(const char *) NULL;
   value=(char *) NULL;
   SetGeometryInfo(&geometry_info);
+  (void) ResetMagickMemory(&geometry,0,sizeof(geometry));
   channel=DefaultChannels;
   switch (*tag)
   {
@@ -888,8 +889,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                     }
                   if (LocaleCompare(keyword,"gravity") == 0)
                     {
-                      option=ParseCommandOption(MagickGravityOptions,MagickFalse,
-                        value);
+                      option=ParseCommandOption(MagickGravityOptions,
+                        MagickFalse,value);
                       if (option < 0)
                         ThrowMSLException(OptionError,"UnrecognizedGravityType",
                           value);
@@ -956,8 +957,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                     }
                   if (LocaleCompare(keyword,"stretch") == 0)
                     {
-                      option=ParseCommandOption(MagickStretchOptions,MagickFalse,
-                        value);
+                      option=ParseCommandOption(MagickStretchOptions,
+                        MagickFalse,value);
                       if (option < 0)
                         ThrowMSLException(OptionError,"UnrecognizedStretchType",
                           value);
@@ -2491,15 +2492,30 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                 case 'P':
                 case 'p':
                 {
-                  if (LocaleCompare(keyword,"primitive") == 0)
+                  if (LocaleCompare(keyword,"points") == 0)
                     {
-                      CloneString(&draw_info->primitive,value);
+                      if (LocaleCompare(draw_info->primitive,"path") == 0)
+                        {
+                          (void) ConcatenateString(&draw_info->primitive," '");
+                          ConcatenateString(&draw_info->primitive,value);
+                          (void) ConcatenateString(&draw_info->primitive,"'");
+                        }
+                      else
+                        {
+                          (void) ConcatenateString(&draw_info->primitive," ");
+                          ConcatenateString(&draw_info->primitive,value);
+                        }
                       break;
                     }
                   if (LocaleCompare(keyword,"pointsize") == 0)
                     {
                       draw_info->pointsize=StringToDouble(value,
                         (char **) NULL);
+                      break;
+                    }
+                  if (LocaleCompare(keyword,"primitive") == 0)
+                    {
+                      CloneString(&draw_info->primitive,value);
                       break;
                     }
                   ThrowMSLException(OptionError,"UnrecognizedAttribute",
@@ -7734,7 +7750,6 @@ static MagickBooleanType ProcessMSLScript(const ImageInfo *image_info,Image **im
     (void) xmlParseChunk(msl_info.parser," ",1,MagickTrue);
   xmlFreeParserCtxt(msl_info.parser);
   (void) LogMagickEvent(CoderEvent,GetMagickModule(),"end SAX");
-  xmlCleanupParser();
   msl_info.group_info=(MSLGroupInfo *) RelinquishMagickMemory(
     msl_info.group_info);
   if (*image == (Image *) NULL)
@@ -7793,6 +7808,9 @@ ModuleExport size_t RegisterMSLImage(void)
   MagickInfo
     *entry;
 
+#if defined(MAGICKCORE_XML_DELEGATE)
+  xmlInitParser();
+#endif
   entry=SetMagickInfo("MSL");
 #if defined(MAGICKCORE_XML_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadMSLImage;
@@ -8118,6 +8136,9 @@ static MagickBooleanType SetMSLAttributes(MSLInfo *msl_info,const char *keyword,
 ModuleExport void UnregisterMSLImage(void)
 {
   (void) UnregisterMagickInfo("MSL");
+#if defined(MAGICKCORE_XML_DELEGATE)
+  xmlCleanupParser();
+#endif
 }
 
 #if defined(MAGICKCORE_XML_DELEGATE)

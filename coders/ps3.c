@@ -13,12 +13,12 @@
 %                     Write Postscript Level III Format                       %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                              Lars Ruben Skyum                               %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -885,7 +885,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(MagickFalse);
-  compression=image->compression;
+  compression=UndefinedCompression;
   if (image_info->compression != UndefinedCompression)
     compression=image_info->compression;
   switch (compression)

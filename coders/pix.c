@@ -13,11 +13,11 @@
 %                    Read Alias/Wavefront RLE Image Format                    %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -228,7 +228,7 @@ static Image *ReadPIXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     bits_per_pixel=ReadBlobMSBShort(image);
     status=(width != 0UL) && (height == 0UL) && ((bits_per_pixel == 8) ||
       (bits_per_pixel == 24)) ? MagickTrue : MagickFalse;
-    if (status == MagickTrue)
+    if (status != MagickFalse)
       {
         /*
           Allocate next image structure.
@@ -245,7 +245,7 @@ static Image *ReadPIXImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (status == MagickFalse)
           break;
       }
-  } while (status == MagickTrue);
+  } while (status != MagickFalse);
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
 }

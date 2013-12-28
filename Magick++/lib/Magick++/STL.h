@@ -2168,13 +2168,10 @@ namespace Magick
     // Transfer histogram array to container
     for ( size_t i=0; i < colors; i++)
       {
-        histogram_->insert(histogram_->end(),std::pair<const Color,size_t>
-                           ( Color(histogram_array[i].pixel.red,
-                                   histogram_array[i].pixel.green,
-                                   histogram_array[i].pixel.blue),
-                                   (size_t) histogram_array[i].count) );
+        histogram_->insert( histogram_->end(), std::pair<const Color,size_t>
+          ( Color(histogram_array[i].pixel), (size_t) histogram_array[i].count) );
       }
-    
+
     // Deallocate histogram array
     histogram_array=(MagickCore::ColorPacket *)
       MagickCore::RelinquishMagickMemory(histogram_array);
@@ -2320,6 +2317,27 @@ namespace Magick
     // Report any error
     throwException( exceptionInfo );
     (void) MagickCore::DestroyExceptionInfo( &exceptionInfo );
+  }
+
+  // Applies a mathematical expression to a sequence of images.
+  template <class InputIterator>
+  void fxImages(Image *fxImage_,InputIterator first_,InputIterator last_,
+    const std::string expression)
+  {
+    MagickCore::ExceptionInfo
+      exceptionInfo;
+
+    MagickCore::Image
+      *image;
+
+    MagickCore::GetExceptionInfo(&exceptionInfo);
+    linkImages(first_,last_);
+    image=FxImageChannel(first_->constImage(),DefaultChannels,
+      expression.c_str(),&exceptionInfo);
+    unlinkImages(first_,last_);
+    fxImage_->replaceImage(image);
+    throwException(exceptionInfo);
+    (void) DestroyExceptionInfo(&exceptionInfo);
   }
 
   // Replace the colors of a sequence of images with the closest color
@@ -2538,6 +2556,24 @@ namespace Magick
 
     throwException( exceptionInfo );
     (void) MagickCore::DestroyExceptionInfo( &exceptionInfo );
+  }
+
+  // Adds the names of the profiles from the image to the container.
+  template <class Container>
+  void profileNames( Container *names_, const Image* image_ )
+  {
+    const char*
+      name;
+
+    names_->clear();
+
+    MagickCore::ResetImageProfileIterator( image_->constImage() );
+    name=MagickCore::GetNextImageProfile( image_->constImage() );
+    while (name != (const char *) NULL)
+    {
+      names_->push_back( std::string(name) );
+      name=MagickCore::GetNextImageProfile( image_->constImage() );
+    }
   }
 
   // Quantize colors in images using current quantization settings

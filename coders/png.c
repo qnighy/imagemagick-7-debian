@@ -13,12 +13,12 @@
 %              Read/Write Portable Network Graphics Image Format              %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                           Glenn Randers-Pehrson                             %
 %                               November 1997                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2731,7 +2731,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
           (ping_found_gAMA != MagickTrue ||
           (image->gamma > .45 && image->gamma < .46)) &&
           (ping_found_cHRM != MagickTrue ||
-          ping_found_sRGB_cHRM == MagickTrue) &&
+          ping_found_sRGB_cHRM != MagickFalse) &&
           ping_found_iCCP != MagickTrue)
       {
          png_set_sRGB(ping,ping_info,
@@ -3653,6 +3653,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
           /* Set image->gamma to 1.0, image->rendering_intent to Undefined,
            * image->colorspace to GRAY, and reset image->chromaticity.
            */
+          image->intensity = Rec709LuminancePixelIntensityMethod;
           SetImageColorspace(image,GRAYColorspace);
         }
     }
@@ -3814,7 +3815,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
         MagickTrue : MagickFalse;
 
 #if 0  /* I'm not sure what's wrong here but it does not work. */
-    if (image->matte == MagickTrue)
+    if (image->matte != MagickFalse)
     {
       if (ping_color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
         (void) SetImageType(image,GrayscaleMatteType);
@@ -8698,13 +8699,6 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
      image_colors=number_opaque+number_transparent+number_semitransparent;
 
-     if (mng_info->write_png8 != MagickFalse && image_colors > 256)
-       {
-         /* No room for the background color; remove it. */
-         number_opaque--;
-         image_colors--;
-       }
-
      if (logging != MagickFalse)
        {
          if (image_colors > 256)
@@ -8724,9 +8718,10 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
          ping_have_color=MagickFalse;
          ping_have_non_bw=MagickFalse;
 
-         if ((IssRGBCompatibleColorspace(image->colorspace) == MagickFalse) ||
-             (IssRGBColorspace(image->colorspace) != MagickFalse))
+         if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse) 
          {
+           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+              "incompatible colorspace");
            ping_have_color=MagickTrue;
            ping_have_non_bw=MagickTrue;
          }
@@ -9186,21 +9181,28 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
       }
       continue;
     }
-    break;
 
     if (image_colors == 0 || image_colors > 256)
     {
-      /* Take care of special case with 256 colors + 1 transparent
+      /* Take care of special case with 256 opaque colors + 1 transparent
        * color.  We don't need to quantize to 2-3-2-1; we only need to
        * eliminate one color, so we'll merge the two darkest red
        * colors (0x49, 0, 0) -> (0x24, 0, 0).
        */
+      if (logging != MagickFalse)
+        (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+            "    Merging two dark red background colors to 3-3-2-1");
+
       if (ScaleQuantumToChar(image->background_color.red) == 0x49 &&
           ScaleQuantumToChar(image->background_color.green) == 0x00 &&
           ScaleQuantumToChar(image->background_color.blue) == 0x00)
       {
          image->background_color.red=ScaleCharToQuantum(0x24);
       }
+
+      if (logging != MagickFalse)
+        (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+            "    Merging two dark red pixel colors to 3-3-2-1");
 
       if (image->colormap == NULL)
       {
@@ -9602,7 +9604,6 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
   if (mng_info->IsPalette && mng_info->write_png8)
     {
-
       /* To do: make this a function cause it's used twice, except
          for reducing the sample depth from 8. */
 
@@ -10288,7 +10289,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
      10's digit:
 
-        0: Use Z_HUFFMAN_ONLY strategy with the
+        0 or omitted: Use Z_HUFFMAN_ONLY strategy with the
            zlib default compression level
 
         1-9: the zlib compression level
@@ -10304,13 +10305,13 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
         6:   libpng adaptive filtering
 
         7:   "LOCO" filtering (intrapixel differing) if writing
-             a MNG, othewise "none".  Did not work in IM-6.7.0-9
+             a MNG, otherwise "none".  Did not work in IM-6.7.0-9
              and earlier because of a missing "else".
 
-        8:   Z_RLE strategy, all filters
-             Unused prior to IM-6.7.0-10, was same as 6
+        8:   Z_RLE strategy (or Z_HUFFMAN_ONLY if quality < 10), adaptive
+             filtering. Unused prior to IM-6.7.0-10, was same as 6
 
-        9:   Z_RLE strategy, no PNG filters
+        9:   Z_RLE strategy (or Z_HUFFMAN_ONLY if quality < 10), no PNG filters
              Unused prior to IM-6.7.0-10, was same as 6
 
     Note that using the -quality option, not all combinations of
@@ -10321,8 +10322,8 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
    */
 
-  quality=image->quality == UndefinedCompressionQuality ? 75UL :
-     image->quality;
+  quality=image_info->quality == UndefinedCompressionQuality ? 75UL :
+     image_info->quality;
 
   if (quality <= 9)
     {
@@ -11646,7 +11647,7 @@ static MagickBooleanType WritePNGImage(const ImageInfo *image_info,Image *image)
       mng_info->write_png_depth = 8;
       image->depth = 8;
 
-      if (image->matte == MagickTrue)
+      if (image->matte != MagickFalse)
         (void) SetImageType(image,TrueColorMatteType);
 
       else
@@ -11661,7 +11662,7 @@ static MagickBooleanType WritePNGImage(const ImageInfo *image_info,Image *image)
       mng_info->write_png_depth = 8;
       image->depth = 8;
 
-      if (image->matte == MagickTrue)
+      if (image->matte != MagickFalse)
         (void) SetImageType(image,TrueColorMatteType);
 
       else
@@ -11676,7 +11677,7 @@ static MagickBooleanType WritePNGImage(const ImageInfo *image_info,Image *image)
       mng_info->write_png_depth = 16;
       image->depth = 16;
 
-      if (image->matte == MagickTrue)
+      if (image->matte != MagickFalse)
         (void) SetImageType(image,TrueColorMatteType);
 
       else
@@ -11691,7 +11692,7 @@ static MagickBooleanType WritePNGImage(const ImageInfo *image_info,Image *image)
       mng_info->write_png_depth = 16;
       image->depth = 16;
 
-      if (image->matte == MagickTrue)
+      if (image->matte != MagickFalse)
         (void) SetImageType(image,TrueColorMatteType);
 
       else

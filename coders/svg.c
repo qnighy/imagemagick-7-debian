@@ -13,12 +13,12 @@
 %                  Read/Write Scalable Vector Graphics Format                 %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                             William Radcliffe                               %
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -3085,7 +3085,6 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
     (void) CloneString(&svg_info->size,image_info->size);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),"begin SAX");
-  xmlInitParser();
   (void) xmlSubstituteEntitiesDefault(1);
   (void) ResetMagickMemory(&sax_modules,0,sizeof(sax_modules));
   sax_modules.internalSubset=SVGInternalSubset;
@@ -3132,7 +3131,6 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
   xmlFreeParserCtxt(svg_info->parser);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),"end SAX");
-  xmlCleanupParser();
   (void) fclose(file);
   (void) CloseBlob(image);
   image->columns=svg_info->width;
@@ -3216,11 +3214,14 @@ ModuleExport size_t RegisterSVGImage(void)
   (void) CopyMagickString(version,"XML " LIBXML_DOTTED_VERSION,MaxTextExtent);
 #endif
 #if defined(MAGICKCORE_RSVG_DELEGATE)
-#if !GLIB_CHECK_VERSION(2,5,0)
+#if !GLIB_CHECK_VERSION(2,35,0)
   g_type_init();
 #endif
   (void) FormatLocaleString(version,MaxTextExtent,"RSVG %d.%d.%d",
     LIBRSVG_MAJOR_VERSION,LIBRSVG_MINOR_VERSION,LIBRSVG_MICRO_VERSION);
+#endif
+#if defined(MAGICKCORE_XML_DELEGATE)
+  xmlInitParser();
 #endif
   entry=SetMagickInfo("SVG");
 #if defined(MAGICKCORE_XML_DELEGATE)
@@ -3286,6 +3287,9 @@ ModuleExport void UnregisterSVGImage(void)
   (void) UnregisterMagickInfo("SVGZ");
   (void) UnregisterMagickInfo("SVG");
   (void) UnregisterMagickInfo("MSVG");
+#if defined(MAGICKCORE_XML_DELEGATE)
+  xmlCleanupParser();
+#endif
 }
 
 /*

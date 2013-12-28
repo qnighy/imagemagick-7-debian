@@ -13,11 +13,11 @@
 %    MagickCore Methods to Reduce the Number of Unique Colors in an Image     %
 %                                                                             %
 %                           Software Design                                   %
-%                             John Cristy                                     %
+%                                Cristy                                       %
 %                              July 1992                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -660,8 +660,8 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
       q=image->colormap;
       for (i=0; i < (ssize_t) image->colors; i++)
       {
-        intensity=(Quantum) (GetPixelIntensity(image,q) < ((MagickRealType)
-          QuantumRange/2.0) ? 0 : QuantumRange);
+        intensity=(Quantum) (GetPixelLuma(image,q) < (QuantumRange/2.0) ? 0 : 
+          QuantumRange);
         SetPixelRed(q,intensity);
         SetPixelGreen(q,intensity);
         SetPixelBlue(q,intensity);
@@ -2386,7 +2386,7 @@ MagickExport MagickBooleanType PosterizeImageChannel(Image *image,
       if ((channel & BlueChannel) != 0)
         SetPixelBlue(q,PosterizePixel(GetPixelBlue(q)));
       if (((channel & OpacityChannel) != 0) &&
-          (image->matte == MagickTrue))
+          (image->matte != MagickFalse))
         SetPixelOpacity(q,PosterizePixel(GetPixelOpacity(q)));
       if (((channel & IndexChannel) != 0) &&
           (image->colorspace == CMYKColorspace))
@@ -2886,6 +2886,63 @@ MagickExport MagickBooleanType QuantizeImages(const QuantizeInfo *quantize_info,
 %                                                                             %
 %                                                                             %
 %                                                                             %
++   Q u a n t i z e E r r o r F l a t t e n                                   %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  QuantizeErrorFlatten() traverses the color cube and flattens the quantization
+%  error into a sorted 1D array.  This accelerates the color reduction process.
+%
+%  Contributed by Yoya.
+%
+%  The format of the QuantizeImages method is:
+%
+%      size_t QuantizeErrorFlatten(const Image *image,const CubeInfo *cube_info,
+%        const NodeInfo *node_info,const ssize_t offset,
+%        MagickRealType *quantize_error)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+%    o cube_info: A pointer to the Cube structure.
+%
+%    o node_info: pointer to node in color cube tree that is current pointer.
+%
+%    o offset: quantize error offset.
+%
+%    o quantize_error: the quantization error vector.
+%
+*/
+static size_t QuantizeErrorFlatten(const Image *image,const CubeInfo *cube_info,
+  const NodeInfo *node_info,const ssize_t offset,MagickRealType *quantize_error)
+{
+  register ssize_t
+    i;
+
+  size_t
+    n,
+    number_children;
+
+  if (offset >= (ssize_t) cube_info->nodes)
+    return(0);
+  quantize_error[offset]=node_info->quantize_error;
+  n=1;
+  number_children=cube_info->associate_alpha == MagickFalse ? 8UL : 16UL;
+  for (i=0; i < (ssize_t) number_children ; i++)
+    if (node_info->child[i] != (NodeInfo *) NULL)
+      n+=QuantizeErrorFlatten(image,cube_info,node_info->child[i],offset+n,
+        quantize_error);
+  return(n);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 +   R e d u c e                                                               %
 %                                                                             %
 %                                                                             %
@@ -2992,6 +3049,22 @@ static void Reduce(const Image *image,CubeInfo *cube_info,
 %    o cube_info: A pointer to the Cube structure.
 %
 */
+
+static int MagickRealTypeCompare(const void *error_p,const void *error_q)
+{
+  MagickRealType
+    *p,
+    *q;
+   
+  p=(MagickRealType *) error_p;
+  q=(MagickRealType *) error_q;
+  if (*p > *q)
+    return(1);
+  if (fabs((double) (*q-*p)) <= MagickEpsilon)
+    return(0);
+  return(-1);
+} 
+
 static void ReduceImageColors(const Image *image,CubeInfo *cube_info)
 {
 #define ReduceImageTag  "Reduce/Image"
@@ -3006,6 +3079,28 @@ static void ReduceImageColors(const Image *image,CubeInfo *cube_info)
     span;
 
   cube_info->next_threshold=0.0;
+  if ((cube_info->colors > cube_info->maximum_colors) && (cube_info->depth > 3))
+    {
+      MagickRealType
+        *quantize_error;
+
+      /*
+        Enable rapid reduction of the number of unique colors.
+      */
+      quantize_error=(MagickRealType *) AcquireQuantumMemory(cube_info->nodes,
+        sizeof(*quantize_error));
+      if (quantize_error != (MagickRealType *) NULL)
+        {
+          (void) QuantizeErrorFlatten(image,cube_info,cube_info->root,0,
+            quantize_error);
+          qsort(quantize_error,cube_info->nodes,sizeof(MagickRealType),
+            MagickRealTypeCompare);
+          cube_info->next_threshold=quantize_error[MagickMax(cube_info->nodes-
+            cube_info->maximum_colors,0)];
+          quantize_error=(MagickRealType *) RelinquishMagickMemory(
+            quantize_error);
+        }
+  }
   for (span=cube_info->colors; cube_info->colors > cube_info->maximum_colors; )
   {
     cube_info->pruning_threshold=cube_info->next_threshold;

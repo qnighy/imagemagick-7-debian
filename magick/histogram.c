@@ -18,7 +18,7 @@
 %                                August 2009                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1039,7 +1039,7 @@ MagickExport MagickBooleanType MinMaxStretchImage(Image *image,
         status&=LevelImageChannel(image,BlueChannel,min,max,1.0);
     }
   if (((channel & OpacityChannel) != 0) &&
-       (image->matte == MagickTrue))
+       (image->matte != MagickFalse))
     {
       (void) GetImageChannelRange(image,OpacityChannel,&min,&max,
         &image->exception);

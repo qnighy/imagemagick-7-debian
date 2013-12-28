@@ -17,7 +17,7 @@
 %                               August 2013                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -96,37 +96,6 @@ static MagickBooleanType
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static int RGFInteger(Image *image,short int *hex_digits)
-{
-  int
-    c,
-    flag,
-    value;
-
-  value=0;
-  flag=0;
-  for ( ; ; )
-  {
-    c=ReadBlobByte(image);
-    if (c == EOF)
-      {
-        value=(-1);
-        break;
-      }
-    c&=0xff;
-    if (isxdigit(c) != MagickFalse)
-      {
-        value=(int) ((size_t) value << 4)+hex_digits[c];
-        flag++;
-        continue;
-      }
-    if ((hex_digits[c]) < 0 && (flag != 0))
-      break;
-  }
-  return(value);
-}
-
 static Image *ReadRGFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   Image
@@ -150,12 +119,7 @@ static Image *ReadRGFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   size_t
     bit,
-    byte,
-    bytes_per_line,
-    length,
-    padding,
-    value,
-    version;
+    byte;
 
   ssize_t
     y;
@@ -213,7 +177,6 @@ static Image *ReadRGFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Read hex image data.
   */
-  length=(size_t) image->rows;
   data=(unsigned char *) AcquireQuantumMemory(image->rows,image->columns*
     sizeof(*data));
   if (data == (unsigned char *) NULL)
@@ -390,15 +353,13 @@ static MagickBooleanType WriteRGFImage(const ImageInfo *image_info,Image *image,
   /*
     Write header (just the image dimensions)
    */
-  (void)WriteBlobByte(image,image->rows & 0xff);
-  (void)WriteBlobByte(image,image->columns & 0xff);
+  (void) WriteBlobByte(image,image->columns & 0xff);
+  (void) WriteBlobByte(image,image->rows & 0xff);
 
   /*
     Convert MIFF to bit pixels.
   */
   (void) SetImageType(image,BilevelType);
-  bit=0;
-  byte=0;
   x=0;
   y=0;
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -406,6 +367,8 @@ static MagickBooleanType WriteRGFImage(const ImageInfo *image_info,Image *image,
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);
     if (p == (const PixelPacket *) NULL)
       break;
+    bit=0;
+    byte=0;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       byte>>=1;
@@ -421,8 +384,10 @@ static MagickBooleanType WriteRGFImage(const ImageInfo *image_info,Image *image,
           bit=0;
           byte=0;
         }
-        p++;
-      }
+      p++;
+    }
+    if (bit != 0)
+      (void) WriteBlobByte(image,byte);
     status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) y,
       image->rows);
     if (status == MagickFalse)

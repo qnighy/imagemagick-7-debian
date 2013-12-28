@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ extern "C" {
     PopImageStack(); \
   image_stack[k].image=DestroyImageList(image_stack[k].image); \
   image_stack[k].image_info=DestroyImageInfo(image_stack[k].image_info); \
+  image_info=image_stack[MaxImageStackDepth].image_info; \
 }
 #define FinalizeImageSettings(image_info,image,advance) \
 { \
@@ -47,6 +48,7 @@ extern "C" {
 #define FireImageStack(postfix,advance,fire) \
   if ((j <= i) && (i < (ssize_t) argc)) \
     { \
+DisableMSCWarning(4127) \
       if (image_stack[k].image == (Image *) NULL) \
         status&=MogrifyImageInfo(image_stack[k].image_info,(int) (i-j+1), \
           (const char **) (argv+j),exception); \
@@ -61,10 +63,12 @@ extern "C" {
               j=i+1; \
             pend=MagickFalse; \
           } \
+RestoreMSCWarning \
     }
 #define MaxImageStackDepth  128
 #define NewImageStack() \
 { \
+  image_stack[MaxImageStackDepth].image_info=image_info; \
   image_stack[0].image_info=CloneImageInfo(image_info); \
   image_stack[0].image=NewImageList(); \
   image_info=image_stack[0].image_info; \

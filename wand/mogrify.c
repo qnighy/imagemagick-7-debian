@@ -13,11 +13,11 @@
 %                         MagickWand Module Methods                           %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -265,10 +265,9 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
         (double) n)))-(1.0/(double) n))/(1.0-1.0/(double) n);
     (void) FormatLocaleFile(stderr,
       "Performance[%.20g]: %.20gi %0.3fips %0.3fe %0.3fu %lu:%02lu.%03lu\n",
-      (double) n,(double) iterations,(double) iterations/parallel,e,
-      user_time,(unsigned long) (parallel/60.0),(unsigned long)
-      floor(fmod(parallel,60.0)),(unsigned long)
-      (1000.0*(parallel-floor(parallel))+0.5));
+      (double) n,(double) iterations,(double) iterations/parallel,e,user_time,
+      (unsigned long) (parallel/60.0),(unsigned long) floor(fmod(parallel,
+      60.0)),(unsigned long) (1000.0*(parallel-floor(parallel))+0.5));
     timer=DestroyTimerInfo(timer);
   }
   return(status);
@@ -396,6 +395,8 @@ static MagickBooleanType MonitorProgress(const char *text,
 
   register char
     *p;
+
+  wand_unreferenced(client_data);
 
   if (extent < 2)
     return(MagickTrue);
@@ -968,7 +969,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               Color correct with a color decision list.
             */
             (void) SyncImageSettings(mogrify_info,*image);
-            color_correction_collection=FileToString(argv[i+1],~0,exception);
+            color_correction_collection=FileToString(argv[i+1],~0UL,exception);
             if (color_correction_collection == (char *) NULL)
               break;
             (void) ColorDecisionListImage(*image,color_correction_collection);
@@ -1264,7 +1265,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               Decipher pixels.
             */
             (void) SyncImageSettings(mogrify_info,*image);
-            passkey=FileToStringInfo(argv[i+1],~0,exception);
+            passkey=FileToStringInfo(argv[i+1],~0UL,exception);
             if (passkey != (StringInfo *) NULL)
               {
                 (void) PasskeyDecipherImage(*image,passkey,exception);
@@ -1460,7 +1461,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               Encipher pixels.
             */
             (void) SyncImageSettings(mogrify_info,*image);
-            passkey=FileToStringInfo(argv[i+1],~0,exception);
+            passkey=FileToStringInfo(argv[i+1],~0UL,exception);
             if (passkey != (StringInfo *) NULL)
               {
                 (void) PasskeyEncipherImage(*image,passkey,exception);
@@ -3140,6 +3141,11 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               geometry_info.xi=0.1*(*image)->columns;
             if ((flags & PsiValue) == 0)
               geometry_info.psi=0.1*(*image)->rows;
+            if ((flags & PercentValue) != 0)
+              {
+                geometry_info.xi*=(double) (*image)->columns/100.0;
+                geometry_info.psi*=(double) (*image)->rows/100.0;
+              }
             mogrify_image=VignetteImage(*image,geometry_info.rho,
               geometry_info.sigma,(ssize_t) ceil(geometry_info.xi-0.5),(ssize_t)
               ceil(geometry_info.psi-0.5),exception);
@@ -3457,6 +3463,7 @@ static MagickBooleanType MogrifyUsage(void)
       "-coalesce            merge a sequence of images",
       "-combine             combine a sequence of images",
       "-compare             mathematically and visually annotate the difference between an image and its reconstruction",
+      "-complex operator    perform complex mathematics on an image sequence",
       "-composite           composite image",
       "-crop geometry       cut out a rectangular region of the image",
       "-deconstruct         break down an image sequence into constituent parts",
@@ -3683,6 +3690,8 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
   ssize_t
     j,
     k;
+
+  wand_unreferenced(metadata);
 
   /*
     Set defaults.
@@ -4172,7 +4181,14 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             break;
           }
         if (LocaleCompare("combine",option+1) == 0)
-          break;
+          {
+            if (*option == '-')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            break;
+          }
         if (LocaleCompare("comment",option+1) == 0)
           {
             if (*option == '+')
@@ -4184,6 +4200,22 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
           }
         if (LocaleCompare("compare",option+1) == 0)
           break;
+        if (LocaleCompare("complex",option+1) == 0)
+          {
+            ssize_t
+              op;
+
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            op=ParseCommandOption(MagickComplexOptions,MagickFalse,argv[i]);
+            if (op < 0)
+              ThrowMogrifyException(OptionError,"UnrecognizedComplexOperator",
+                argv[i]);
+            break;
+          }
         if (LocaleCompare("composite",option+1) == 0)
           break;
         if (LocaleCompare("compress",option+1) == 0)
@@ -4398,7 +4430,8 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             i++;
             if (i == (ssize_t) argc)
               ThrowMogrifyException(OptionError,"MissingArgument",option);
-            dispose=ParseCommandOption(MagickDisposeOptions,MagickFalse,argv[i]);
+            dispose=ParseCommandOption(MagickDisposeOptions,MagickFalse,
+              argv[i]);
             if (dispose < 0)
               ThrowMogrifyException(OptionError,"UnrecognizedDisposeMethod",
                 argv[i]);
@@ -5822,6 +5855,17 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             i++;
             if (i == (ssize_t) (argc-1))
               ThrowMogrifyException(OptionError,"MissingArgument",option);
+            break;
+          }
+        if (LocaleCompare("splice",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMogrifyInvalidArgumentException(option,argv[i]);
             break;
           }
         if (LocaleCompare("spread",option+1) == 0)
@@ -7625,6 +7669,27 @@ WandExport MagickBooleanType MogrifyImageList(ImageInfo *image_info,
             if (*images != (Image *) NULL)
               *images=DestroyImage(*images);
             *images=difference_image;
+            break;
+          }
+        if (LocaleCompare("complex",option+1) == 0)
+          {
+            ComplexOperator
+              op;
+
+            Image
+              *complex_images;
+
+            (void) SyncImageSettings(mogrify_info,*images);
+            op=(ComplexOperator) ParseCommandOption(MagickComplexOptions,
+              MagickFalse,argv[i+1]);
+            complex_images=ComplexImages(*images,op,exception);
+            if (complex_images == (Image *) NULL)
+              {
+                status=MagickFalse;
+                break;
+              }
+            *images=DestroyImageList(*images);
+            *images=complex_images;
             break;
           }
         if (LocaleCompare("composite",option+1) == 0)

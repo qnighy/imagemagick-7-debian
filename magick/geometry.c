@@ -13,11 +13,11 @@
 %                       MagickCore Geometry Methods                           %
 %                                                                             %
 %                             Software Design                                 %
-%                               John Cristy                                   %
+%                                  Cristy                                     %
 %                              January 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -790,7 +790,7 @@ MagickExport MagickStatusType ParseAffineGeometry(const char *geometry,
 %  and ^) flags present. It does not report the location of the percentage
 %  relative to the values.
 %
-%  Values may also be seperated by commas, colons, or slashes, and offsets.
+%  Values may also be separated by commas, colons, or slashes, and offsets.
 %  Offsets may be prefixed by multiple signs to make offset string
 %  substitutions easier to handle from shell scripts.
 %  For example: "-10-10", "-+10-+10", or "+-10+-10" will generate negtive

@@ -19,11 +19,11 @@
 %                   ImageMagick Image Pixel Iterator Methods                  %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                March 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -426,7 +426,7 @@ WandExport PixelIterator *NewPixelRegionIterator(MagickWand *wand,
   quantum=GetMagickQuantumDepth(&depth);
   if (depth != MAGICKCORE_QUANTUM_DEPTH)
     ThrowWandFatalException(WandError,"QuantumDepthMismatch",quantum);
-  if ((width == 0) || (width == 0))
+  if ((width == 0) || (height == 0))
     ThrowWandFatalException(WandError,"ZeroRegionSize",quantum);
   image=GetImageFromMagickWand(wand);
   if (image == (Image *) NULL)

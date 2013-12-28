@@ -1,6 +1,6 @@
 package Image::Magick::Q16;
 
-#  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -43,7 +43,7 @@ require AutoLoader;
       ConfigureError FatalErrorException
     );
 
-$VERSION = '6.86';
+$VERSION = '6.88';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -101,7 +101,7 @@ __END__
 
 =head1 NAME
 
-Image::Magick::Q16 - objected-oriented Perl interface to ImageMagick (Q16). Use it to read, manipulate, or write an image or image sequence from within a Perl script.
+Image::Magick::Q16 - objected-oriented Perl interface to ImageMagick (Q16). Use it to create, edit, compose, or convert bitmap images from within a Perl script.
 
 =head1 SYNOPSIS
 

@@ -13,11 +13,11 @@
 %                   Read/Write Portable Document Format                       %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -942,6 +942,7 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
 #define CFormat  "/Filter [ /%s ]\n"
 #define ObjectsPerImage  14
 
+DisableMSCWarning(4310)
   static const char
     XMPProfile[]=
     {
@@ -983,6 +984,7 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
       "<?xpacket end=\"w\"?>\n"
     },
     XMPProfileMagick[4]= { (char) 0xef, (char) 0xbb, (char) 0xbf, (char) 0x00 };
+RestoreMSCWarning
 
   char
     basename[MaxTextExtent],
@@ -1101,7 +1103,7 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
     version);
   (void) WriteBlobString(image,buffer);
   if (LocaleCompare(image_info->magick,"PDFA") == 0)
-    (void) WriteBlobString(image,"%âãÏÓ\n");
+    (void) WriteBlobString(image,"%%âãÏÓ\n");
   /*
     Write Catalog object.
   */
@@ -1213,7 +1215,7 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
   scene=0;
   do
   {
-    compression=image->compression;
+    compression=UndefinedCompression;
     if (image_info->compression != UndefinedCompression)
       compression=image_info->compression;
     switch (compression)

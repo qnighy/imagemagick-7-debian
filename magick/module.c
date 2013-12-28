@@ -17,7 +17,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -809,7 +809,6 @@ static MagickBooleanType GetMagickModulePath(const char *filename,
   if (exception->severity < ConfigureError)
     ThrowFileException(exception,ConfigureWarning,"UnableToOpenModuleFile",
       path);
-  return(MagickFalse);
 #endif
   return(MagickFalse);
 }
@@ -860,6 +859,8 @@ static void *DestroyModuleNode(void *module_info)
 MagickExport MagickBooleanType InitializeModuleList(
   ExceptionInfo *magick_unused(exception))
 {
+  magick_unreferenced(exception);
+
   if ((module_list == (SplayTreeInfo *) NULL) &&
       (instantiate_module == MagickFalse))
     {
@@ -1607,9 +1608,17 @@ static MagickBooleanType UnregisterModule(const ModuleInfo *module_info,
   return(MagickTrue);
 }
 #else
+
+#if !defined(MAGICKCORE_BUILD_MODULES)
+extern size_t
+  analyzeImage(Image **,const int,const char **,ExceptionInfo *);
+#endif
+
 MagickExport MagickBooleanType ListModuleInfo(FILE *magick_unused(file),
   ExceptionInfo *magick_unused(exception))
 {
+  magick_unreferenced(file);
+  magick_unreferenced(exception);
   return(MagickTrue);
 }
 
@@ -1638,9 +1647,6 @@ MagickExport MagickBooleanType InvokeDynamicImageFilter(const char *tag,
   (void) exception;
 #else
   {
-    extern size_t
-      analyzeImage(Image **,const int,const char **,ExceptionInfo *);
-
     ImageFilterHandler
       *image_filter;
 
