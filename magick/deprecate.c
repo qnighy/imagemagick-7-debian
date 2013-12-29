@@ -13,11 +13,11 @@
 %                        MagickCore Deprecated Methods                        %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2343,25 +2343,25 @@ MagickExport void *GetConfigureBlob(const char *filename,char *path,
       (void) FormatLocaleString(path,MaxTextExtent,"%s%s",
         MAGICKCORE_LIBRARY_PATH,filename);
       if (IsPathAccessible(path) != MagickFalse)
-        blob=FileToBlob(path,~0,length,exception);
+        blob=FileToBlob(path,~0UL,length,exception);
     }
 #endif
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !(defined(MAGICKCORE_CONFIGURE_PATH) || defined(MAGICKCORE_SHARE_PATH))
   if (blob == (void *) NULL)
     {
-      char
+      unsigned char
         *key_value;
 
       /*
         Locate file via registry key.
       */
       key_value=NTRegistryKeyLookup("ConfigurePath");
-      if (key_value != (char *) NULL)
+      if (key_value != (unsigned char *) NULL)
         {
-          (void) FormatLocaleString(path,MaxTextExtent,"%s%s%s",key_value,
-            DirectorySeparator,filename);
+          (void) FormatLocaleString(path,MaxTextExtent,"%s%s%s",(char *)
+            key_value,DirectorySeparator,filename);
           if (IsPathAccessible(path) != MagickFalse)
-            blob=FileToBlob(path,~0,length,exception);
+            blob=FileToBlob(path,~0UL,length,exception);
         }
     }
 #endif
@@ -2385,7 +2385,7 @@ MagickExport void *GetConfigureBlob(const char *filename,char *path,
             MAGICKCORE_LIBRARY_RELATIVE_PATH,filename);
 #endif
           if (IsPathAccessible(path) != MagickFalse)
-            blob=FileToBlob(path,~0,length,exception);
+            blob=FileToBlob(path,~0UL,length,exception);
           home=DestroyString(home);
         }
       home=GetEnvironmentValue("HOME");
@@ -2399,7 +2399,7 @@ MagickExport void *GetConfigureBlob(const char *filename,char *path,
           (void) FormatLocaleString(path,MaxTextExtent,"%s%s.magick%s%s",home,
             DirectorySeparator,DirectorySeparator,filename);
           if ((IsPathAccessible(path) != MagickFalse) && (blob == (void *) NULL))
-            blob=FileToBlob(path,~0,length,exception);
+            blob=FileToBlob(path,~0UL,length,exception);
           home=DestroyString(home);
         }
     }
@@ -2422,13 +2422,13 @@ MagickExport void *GetConfigureBlob(const char *filename,char *path,
         MAGICKCORE_LIBRARY_RELATIVE_PATH,filename);
 #endif
       if (IsPathAccessible(path) != MagickFalse)
-        blob=FileToBlob(path,~0,length,exception);
+        blob=FileToBlob(path,~0UL,length,exception);
     }
   /*
     Search current directory.
   */
   if ((blob == (void *) NULL) && (IsPathAccessible(path) != MagickFalse))
-    blob=FileToBlob(path,~0,length,exception);
+    blob=FileToBlob(path,~0UL,length,exception);
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
   /*
     Search Windows registry.
@@ -4245,6 +4245,8 @@ MagickExport MagickBooleanType MagickMonitor(const char *text,
   MagickBooleanType
     status;
 
+  magick_unreferenced(client_data);
+
   assert(text != (const char *) NULL);
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",text);
   ProcessPendingEvents(text);
@@ -5734,6 +5736,8 @@ MagickExport unsigned int RandomChannelThresholdImage(Image *image,const char
     (void) LogMagickEvent(DeprecateEvent,GetMagickModule(),"last use: v5.5.7");
   if (thresholds == (const char *) NULL)
     return(MagickTrue);
+  lower_threshold=0;
+  upper_threshold=0;
   if (LocaleCompare(thresholds,"2x2") == 0)
     order=2;
   else
@@ -5745,8 +5749,6 @@ MagickExport unsigned int RandomChannelThresholdImage(Image *image,const char
       else
         {
           order=1;
-          lower_threshold=0;
-          upper_threshold=0;
           count=(ssize_t) sscanf(thresholds,"%lf[/x%%]%lf",&lower_threshold,
             &upper_threshold);
           if (strchr(thresholds,'%') != (char *) NULL)
@@ -6448,6 +6450,8 @@ MagickExport ssize_t SetMagickRegistry(const RegistryType type,const void *blob,
 
   static ssize_t
     id = 0;
+
+  magick_unreferenced(length);
 
   (void) FormatLocaleString(key,MaxTextExtent,"%.20g\n",(double) id);
   status=SetImageRegistry(type,key,blob,exception);

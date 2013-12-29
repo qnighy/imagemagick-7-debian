@@ -17,7 +17,7 @@
 %                               November 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1072,14 +1072,15 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->compression=NoCompression;
   image->depth=8;
   if (image_type == GIMP_RGB)
-    SetImageColorspace(image,sRGBColorspace);
+    ;
   else
     if (image_type == GIMP_GRAY)
-      SetImageColorspace(image,GRAYColorspace);
+      image->colorspace=GRAYColorspace;
     else
       if (image_type == GIMP_INDEXED)
         ThrowReaderException(CoderError,"ColormapTypeNotSupported");
-  image->matte=MagickTrue;
+  (void) SetImageOpacity(image,OpaqueOpacity); 
+  (void) SetImageBackgroundColor(image);
   /*
     Read properties.
   */
@@ -1350,7 +1351,7 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Composite the layer data onto the main image, dispose the layer.
         */
-        (void) CompositeImage(image,OverCompositeOp,layer_info[0].image,
+        (void) CompositeImage(image,CopyCompositeOp,layer_info[0].image,
           layer_info[0].offset_x,layer_info[0].offset_y);
         layer_info[0].image =DestroyImage( layer_info[0].image);
       }

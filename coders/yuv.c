@@ -13,11 +13,11 @@
 %            Read/Write Raw CCIR 601 4:1:1 or 4:2:2 Image Format              %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -202,8 +202,9 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   do
   {
-    chroma_image=CloneImage(image,image->columns/horizontal_factor,
-      image->rows/vertical_factor,MagickTrue,exception);
+    chroma_image=CloneImage(image,(image->columns + horizontal_factor - 1) /
+      horizontal_factor, (image->rows + vertical_factor - 1) / vertical_factor,
+      MagickTrue,exception);
     if (chroma_image == (Image *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
     /*
@@ -246,16 +247,15 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
               SetPixelGreen(chroma_pixels,ScaleCharToQuantum(*p++));
             else
               {
-                SetPixelGreen(chroma_pixels,ScaleShortToQuantum(
-                  ((*p) << 8) | *(p+1)));
+                SetPixelGreen(chroma_pixels,ScaleShortToQuantum(((*p) << 8) |
+                  *(p+1)));
                 p+=2;
               }
             if (quantum == 1)
               SetPixelRed(q,ScaleCharToQuantum(*p++));
             else
               {
-                SetPixelRed(q,ScaleShortToQuantum(((*p) << 8) |
-                  *(p+1)));
+                SetPixelRed(q,ScaleShortToQuantum(((*p) << 8) | *(p+1)));
                 p+=2;
               }
             SetPixelGreen(q,0);
@@ -267,16 +267,15 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
               SetPixelBlue(chroma_pixels,ScaleCharToQuantum(*p++));
             else
               {
-                SetPixelBlue(chroma_pixels,ScaleShortToQuantum(
-                  ((*p) << 8) | *(p+1)));
+                SetPixelBlue(chroma_pixels,ScaleShortToQuantum(((*p) << 8) |
+                  *(p+1)));
                 p+=2;
               }
             if (quantum == 1)
               SetPixelRed(q,ScaleCharToQuantum(*p++));
             else
               {
-                SetPixelRed(q,ScaleShortToQuantum(((*p) << 8) |
-                  *(p+1)));
+                SetPixelRed(q,ScaleShortToQuantum(((*p) << 8) | *(p+1)));
                 p+=2;
               }
             chroma_pixels++;
@@ -297,8 +296,7 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
               SetPixelRed(q,ScaleCharToQuantum(*p++));
             else
               {
-                SetPixelRed(q,ScaleShortToQuantum(((*p) << 8) |
-                  *(p+1)));
+                SetPixelRed(q,ScaleShortToQuantum(((*p) << 8) | *(p+1)));
                 p+=2;
               }
             SetPixelGreen(q,0);
@@ -347,8 +345,7 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
               SetPixelGreen(q,ScaleCharToQuantum(*p++));
             else
               {
-                SetPixelGreen(q,ScaleShortToQuantum(((*p) << 8) |
-                  *(p+1)));
+                SetPixelGreen(q,ScaleShortToQuantum(((*p) << 8) | *(p+1)));
                 p+=2;
               }
             SetPixelBlue(q,0);
@@ -382,8 +379,7 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
             SetPixelBlue(q,ScaleCharToQuantum(*p++));
           else
             {
-              SetPixelBlue(q,ScaleShortToQuantum(((*p) << 8) |
-                *(p+1)));
+              SetPixelBlue(q,ScaleShortToQuantum(((*p) << 8) | *(p+1)));
               p+=2;
             }
           q++;

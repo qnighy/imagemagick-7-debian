@@ -13,11 +13,11 @@
 %                   Read Microsoft Windows Icon Format                        %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1211,7 +1211,7 @@ static MagickBooleanType WriteICONImage(const ImageInfo *image_info,
           for (x=0; x < (ssize_t) next->columns; x++)
           {
             byte<<=1;
-            if ((next->matte == MagickTrue) &&
+            if ((next->matte != MagickFalse) &&
                 (GetPixelOpacity(p) == (Quantum) TransparentOpacity))
               byte|=0x01;
             bit++;

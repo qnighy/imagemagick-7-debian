@@ -13,11 +13,11 @@
 %                   Windows NT Utility Methods for MagickCore                 %
 %                                                                             %
 %                               Software Design                               %
-%                                 John Cristy                                 %
+%                                    Cristy                                   %
 %                                December 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -135,6 +135,8 @@ extern "C" BOOL WINAPI
 #if defined(_DLL) && defined( ProvideDllMain )
 BOOL WINAPI DllMain(HINSTANCE handle,DWORD reason,LPVOID lpvReserved)
 {
+  magick_unreferenced(lpvReserved);
+
   switch (reason)
   {
     case DLL_PROCESS_ATTACH:
@@ -233,9 +235,11 @@ BOOL WINAPI DllMain(HINSTANCE handle,DWORD reason,LPVOID lpvReserved)
 MagickExport int Exit(int status)
 {
   if (IsWindows95())
-    TerminateProcess(GetCurrentProcess(),(unsigned int) status);
+    {
+      TerminateProcess(GetCurrentProcess(),(unsigned int) status);
+      return(0);
+    }
   exit(status);
-  return(0);
 }
 
 #if !defined(__MINGW32__) && !defined(__MINGW64__)
@@ -1096,7 +1100,7 @@ static int NTGhostscriptGetString(const char *name,BOOL *is_64_bit,char *value,
     else
       is_64_bit_version=NTIs64BitPlatform();
   }
-  if (is_64_bit!=NULL)
+  if (is_64_bit != NULL)
     *is_64_bit=is_64_bit_version;
   if (product_family == NULL)
     return(FALSE);
@@ -1214,7 +1218,8 @@ MagickExport int NTGhostscriptEXE(char *path,int length)
     {
       p++;
       *p='\0';
-      (void) ConcatenateMagickString(program,is_64_bit_version ? "gswin64c.exe" : "gswin32c.exe",sizeof(program));
+      (void) ConcatenateMagickString(program,is_64_bit_version ?
+        "gswin64c.exe" : "gswin32c.exe",sizeof(program));
     }
   (void) CopyMagickString(path,program,length);
   return(TRUE);
@@ -1453,7 +1458,7 @@ MagickExport void *NTMapMemory(char *address,size_t length,int protection,
       CloseHandle(map_handle);
     }
   if (map == (void *) NULL)
-    return((void *) MAP_FAILED);
+    return((void *) ((char *) MAP_FAILED));
   return((void *) ((char *) map));
 }
 
@@ -1482,7 +1487,7 @@ MagickExport void *NTMapMemory(char *address,size_t length,int protection,
 */
 MagickExport DIR *NTOpenDirectory(const char *path)
 {
-  char
+  wchar_t
     file_specification[MaxTextExtent];
 
   DIR
@@ -1492,28 +1497,28 @@ MagickExport DIR *NTOpenDirectory(const char *path)
     length;
 
   assert(path != (const char *) NULL);
-  length=CopyMagickString(file_specification,path,MaxTextExtent);
-  if (length >= (MaxTextExtent-1))
-    return((DIR *) NULL);
-  length=ConcatenateMagickString(file_specification,DirectorySeparator,
+  length=MultiByteToWideChar(CP_UTF8,0,path,-1,file_specification,
     MaxTextExtent);
-  if (length >= (MaxTextExtent-1))
+  if (length == 0)
+    return((DIR *) NULL);
+  if(wcsncat(file_specification,(const wchar_t*) DirectorySeparator,
+       MaxTextExtent) == (wchar_t*)NULL)
     return((DIR *) NULL);
   entry=(DIR *) AcquireMagickMemory(sizeof(DIR));
   if (entry != (DIR *) NULL)
     {
       entry->firsttime=TRUE;
-      entry->hSearch=FindFirstFile(file_specification,&entry->Win32FindData);
+      entry->hSearch=FindFirstFileW(file_specification,&entry->Win32FindData);
     }
   if (entry->hSearch == INVALID_HANDLE_VALUE)
     {
-      length=ConcatenateMagickString(file_specification,"\\*.*",MaxTextExtent);
-      if (length >= (MaxTextExtent-1))
+      if(wcsncat(file_specification,L"*.*",
+        MaxTextExtent) == (wchar_t*)NULL)
         {
           entry=(DIR *) RelinquishMagickMemory(entry);
           return((DIR *) NULL);
         }
-      entry->hSearch=FindFirstFile(file_specification,&entry->Win32FindData);
+      entry->hSearch=FindFirstFileW(file_specification,&entry->Win32FindData);
       if (entry->hSearch == INVALID_HANDLE_VALUE)
         {
           entry=(DIR *) RelinquishMagickMemory(entry);
@@ -1677,13 +1682,13 @@ MagickExport struct dirent *NTReadDirectory(DIR *entry)
     return((struct dirent *) NULL);
   if (!entry->firsttime)
     {
-      status=FindNextFile(entry->hSearch,&entry->Win32FindData);
+      status=FindNextFileW(entry->hSearch,&entry->Win32FindData);
       if (status == 0)
         return((struct dirent *) NULL);
     }
-  length=CopyMagickString(entry->file_info.d_name,
-    entry->Win32FindData.cFileName,sizeof(entry->file_info.d_name));
-  if (length >= sizeof(entry->file_info.d_name))
+  length=WideCharToMultiByte(CP_UTF8,0,entry->Win32FindData.cFileName,-1,
+    entry->file_info.d_name,sizeof(entry->file_info.d_name),NULL,NULL);
+  if (length == 0)
     return((struct dirent *) NULL);
   entry->firsttime=FALSE;
   entry->file_info.d_namlen=(int) strlen(entry->file_info.d_name);
@@ -1946,9 +1951,10 @@ MagickExport unsigned char *NTResourceToBlob(const char *id)
 */
 MagickExport void NTSeekDirectory(DIR *entry,ssize_t position)
 {
-  (void) position;
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(entry != (DIR *) NULL);
+  (void) entry;
+  (void) position;
 }
 
 /*
@@ -2076,9 +2082,9 @@ MagickExport int NTSystemCommand(const char *command)
   if (background_process)
     local_command[strlen(command)-1]='\0';
   if (command[strlen(command)-1] == '|')
-     local_command[strlen(command)-1]='\0';
-   else
-     startup_info.wShowWindow=SW_SHOWDEFAULT;
+    local_command[strlen(command)-1]='\0';
+  else
+    startup_info.wShowWindow=SW_HIDE;
   status=CreateProcess((LPCTSTR) NULL,local_command,
     (LPSECURITY_ATTRIBUTES) NULL,(LPSECURITY_ATTRIBUTES) NULL,(BOOL) FALSE,
     (DWORD) NORMAL_PRIORITY_CLASS,(LPVOID) NULL,(LPCSTR) NULL,&startup_info,
@@ -2199,6 +2205,7 @@ MagickExport ssize_t NTSystemConfiguration(int name)
 MagickExport ssize_t NTTellDirectory(DIR *entry)
 {
   assert(entry != (DIR *) NULL);
+  (void) entry;
   return(0);
 }
 
@@ -2231,20 +2238,22 @@ MagickExport int NTTruncateFile(int file,off_t length)
   DWORD
     file_pointer;
 
+  HANDLE
+    file_handle;
+
   long
-    file_handle,
     high,
     low;
 
-  file_handle=_get_osfhandle(file);
-  if (file_handle == -1L)
+  file_handle=(HANDLE)_get_osfhandle(file);
+  if (file_handle == (HANDLE)-1L)
     return(-1);
   low=(long) (length & 0xffffffffUL);
   high=(long) ((((MagickOffsetType) length) >> 32) & 0xffffffffUL);
-  file_pointer=SetFilePointer((HANDLE) file_handle,low,&high,FILE_BEGIN);
+  file_pointer=SetFilePointer(file_handle,low,&high,FILE_BEGIN);
   if ((file_pointer == 0xFFFFFFFF) && (GetLastError() != NO_ERROR))
     return(-1);
-  if (SetEndOfFile((HANDLE) file_handle) == 0)
+  if (SetEndOfFile(file_handle) == 0)
     return(-1);
   return(0);
 }

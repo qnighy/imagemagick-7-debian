@@ -12,12 +12,12 @@
 %                                                                             %
 %                     Read/Write JPEG-2000 Image Format                       %
 %                                                                             %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                Nathan Brown                                 %
 %                                 June 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -673,6 +673,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
           profile=DestroyStringInfo(profile);
           (void) jas_stream_close(icc_stream);
         }
+      jas_iccprof_destroy(icc_profile);
     }
   (void) jas_stream_close(jp2_stream);
   jas_image_destroy(jp2_image);

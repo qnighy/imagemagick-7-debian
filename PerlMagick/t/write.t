@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -225,7 +225,7 @@ print("X Windows system pixmap file (color) ...\n");
 testReadWrite( 'XPM:input.xpm',
   'XPM:output.xpm',
   q//,
-  'fa51c37680393251b7011d1825df7a5ed4e0f78168afb4d6d5c59aa4d45ade12');
+  'd28c7104a30c8986c34b98a4209de5d4b8a79911a9b5c46037e62c8a2063a09c');
 
 print("CMYK format ...\n");
 ++$test;

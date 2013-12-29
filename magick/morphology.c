@@ -17,7 +17,7 @@
 %                               January 2010                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -45,7 +45,8 @@
 % generation of many different types of kernel arrays from user supplied
 % arguments. Prehaps even the generation of a kernel from a small image.
 */
-
+
+
 /*
   Include declarations.
 */
@@ -82,7 +83,8 @@
 #include "magick/thread-private.h"
 #include "magick/token.h"
 #include "magick/utility.h"
-
+
+
 /*
   Other global definitions used by module.
 */
@@ -117,7 +119,8 @@ static void
   ExpandMirrorKernelInfo(KernelInfo *),
   ExpandRotateKernelInfo(KernelInfo *, const double),
   RotateKernelInfo(KernelInfo *, double);
-
+
+
 
 /* Quick function to find last kernel in a kernel list */
 static inline KernelInfo *LastKernelInfo(KernelInfo *kernel)
@@ -514,7 +517,7 @@ MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
     if ( *token != ';' ) {
 
       /* tokens starting with alpha is a Named kernel */
-      if (isalpha((int) *token) != 0)
+      if (isalpha((int) ((unsigned char) *token)) != 0)
         new_kernel = ParseKernelName(p);
       else /* otherwise a user defined kernel array */
         new_kernel = ParseKernelArray(p);
@@ -545,7 +548,8 @@ MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
   return(kernel);
 }
 
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2168,7 +2172,8 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
   }
   return(kernel);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2224,7 +2229,8 @@ MagickExport KernelInfo *CloneKernelInfo(const KernelInfo *kernel)
 
   return(new_kernel);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2257,7 +2263,8 @@ MagickExport KernelInfo *DestroyKernelInfo(KernelInfo *kernel)
   kernel=(KernelInfo *) RelinquishMagickMemory(kernel);
   return(kernel);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2332,7 +2339,8 @@ static void ExpandMirrorKernelInfo(KernelInfo *kernel)
 
   return;
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2401,10 +2409,12 @@ static void ExpandRotateKernelInfo(KernelInfo *kernel, const double angle)
     *last;
 
   last = kernel;
+DisableMSCWarning(4127)
   while(1) {
+RestoreMSCWarning
     clone = CloneKernelInfo(last);
     RotateKernelInfo(clone, angle);
-    if ( SameKernelInfo(kernel, clone) == MagickTrue )
+    if ( SameKernelInfo(kernel, clone) != MagickFalse )
       break;
     LastKernelInfo(last)->next = clone;
     last = clone;
@@ -2412,7 +2422,8 @@ static void ExpandRotateKernelInfo(KernelInfo *kernel, const double angle)
   clone = DestroyKernelInfo(clone); /* kernel has repeated - junk the clone */
   return;
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2469,7 +2480,8 @@ static void CalcKernelMetaData(KernelInfo *kernel)
 
   return;
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2744,7 +2756,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
             if ((channel & BlueChannel) != 0)
               SetPixelBlue(q,ClampToQuantum(result.blue));
             if (((channel & OpacityChannel) != 0) &&
-                (image->matte == MagickTrue))
+                (image->matte != MagickFalse))
               SetPixelOpacity(q,ClampToQuantum(result.opacity));
             if (((channel & IndexChannel) != 0) &&
                 (image->colorspace == CMYKColorspace))
@@ -2769,9 +2781,9 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
             for (v=0; v < (ssize_t) kernel->height; v++) {
               if ( IsNaN(*k) ) continue;
               alpha=QuantumScale*(QuantumRange-GetPixelOpacity(k_pixels));
-              gamma += alpha; /* normalize alpha weights only */
               count++;        /* number of alpha values collected */
               alpha*=(*k);    /* include kernel weighting now */
+              gamma += alpha; /* normalize alpha weights only */
               result.red     += alpha*GetPixelRed(k_pixels);
               result.green   += alpha*GetPixelGreen(k_pixels);
               result.blue    += alpha*GetPixelBlue(k_pixels);
@@ -2783,8 +2795,8 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
               k_indexes++;
             }
             /* Sync'ed channels, all channels are modified */
-            gamma=(double) count/(fabs((double) gamma) < MagickEpsilon ?
-              MagickEpsilon : gamma);
+            gamma=PerceptibleReciprocal(gamma);
+            gamma*=(double) kernel->height/count;
             SetPixelRed(q,ClampToQuantum(gamma*result.red));
             SetPixelGreen(q,ClampToQuantum(gamma*result.green));
             SetPixelBlue(q,ClampToQuantum(gamma*result.blue));
@@ -2990,7 +3002,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
                 if ((channel & BlueChannel) != 0)
                   SetPixelBlue(q,ClampToQuantum((MagickRealType) result.blue));
                 if (((channel & OpacityChannel) != 0) &&
-                    (image->matte == MagickTrue))
+                    (image->matte != MagickFalse))
                   SetPixelOpacity(q,ClampToQuantum((MagickRealType) result.opacity));
                 if (((channel & IndexChannel) != 0) &&
                     (image->colorspace == CMYKColorspace))
@@ -3014,9 +3026,9 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
                   for (u=0; u < (ssize_t) kernel->width; u++, k--) {
                     if ( IsNaN(*k) ) continue;
                     alpha=QuantumScale*(QuantumRange-k_pixels[u].opacity);
-                    gamma += alpha;    /* normalize alpha weights only */
                     count++;           /* number of alpha values collected */
-                    alpha=alpha*(*k);  /* include kernel weighting now */
+                    alpha*=(*k);  /* include kernel weighting now */
+                    gamma += alpha;    /* normalize alpha weights only */
                     result.red     += alpha*k_pixels[u].red;
                     result.green   += alpha*k_pixels[u].green;
                     result.blue    += alpha*k_pixels[u].blue;
@@ -3028,8 +3040,8 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
                   k_indexes += virt_width;
                 }
                 /* Sync'ed channels, all channels are modified */
-                gamma=(double) count/(fabs((double) gamma) < MagickEpsilon ?
-                  MagickEpsilon : gamma);
+                gamma=PerceptibleReciprocal(gamma);
+                gamma*=(double) kernel->height*kernel->width/count;
                 SetPixelRed(q,ClampToQuantum((MagickRealType) (gamma*result.red)));
                 SetPixelGreen(q,ClampToQuantum((MagickRealType) (gamma*result.green)));
                 SetPixelBlue(q,ClampToQuantum((MagickRealType) (gamma*result.blue)));
@@ -3311,7 +3323,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
           if ((channel & BlueChannel) != 0)
             SetPixelBlue(q,ClampToQuantum(result.blue));
           if ((channel & OpacityChannel) != 0
-              && image->matte == MagickTrue )
+              && image->matte != MagickFalse )
             SetPixelAlpha(q,ClampToQuantum(result.opacity));
           if (((channel & IndexChannel) != 0) &&
               (image->colorspace == CMYKColorspace))
@@ -3582,7 +3594,7 @@ static ssize_t MorphologyPrimitiveDirect(Image *image,
             SetPixelGreen(q,ClampToQuantum(result.green));
           if ((channel & BlueChannel) != 0)
             SetPixelBlue(q,ClampToQuantum(result.blue));
-          if (((channel & OpacityChannel) != 0) && (image->matte == MagickTrue))
+          if (((channel & OpacityChannel) != 0) && (image->matte != MagickFalse))
             SetPixelAlpha(q,ClampToQuantum(result.opacity));
           if (((channel & IndexChannel) != 0) &&
               (image->colorspace == CMYKColorspace))
@@ -3772,7 +3784,7 @@ static ssize_t MorphologyPrimitiveDirect(Image *image,
             SetPixelGreen(q,ClampToQuantum(result.green));
           if ((channel & BlueChannel) != 0)
             SetPixelBlue(q,ClampToQuantum(result.blue));
-          if (((channel & OpacityChannel) != 0) && (image->matte == MagickTrue))
+          if (((channel & OpacityChannel) != 0) && (image->matte != MagickFalse))
             SetPixelAlpha(q,ClampToQuantum(result.opacity));
           if (((channel & IndexChannel) != 0) &&
               (image->colorspace == CMYKColorspace))
@@ -3926,7 +3938,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
   /* Apply special methods with special requirments
   ** For example, single run only, or post-processing requirements
   */
-  if ( special == MagickTrue )
+  if ( special != MagickFalse )
     {
       rslt_image=CloneImage(image,0,0,MagickTrue,exception);
       if (rslt_image == (Image *) NULL)
@@ -3940,7 +3952,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
       changed = MorphologyPrimitiveDirect(rslt_image, method,
                       channel, kernel, exception);
 
-      if ( verbose == MagickTrue )
+      if ( verbose != MagickFalse )
         (void) (void) FormatLocaleFile(stderr,
           "%s:%.20g.%.20g #%.20g => Changed %.20g\n",
           CommandOptionToMnemonic(MagickMorphologyOptions, method),
@@ -4086,7 +4098,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
         assert( this_kernel != (KernelInfo *) NULL );
 
         /* Extra information for debugging compound operations */
-        if ( verbose == MagickTrue ) {
+        if ( verbose != MagickFalse ) {
           if ( stage_limit > 1 )
             (void) FormatLocaleString(v_info,MaxTextExtent,"%s:%.20g.%.20g -> ",
              CommandOptionToMnemonic(MagickMorphologyOptions,method),(double)
@@ -4125,7 +4137,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
           changed = MorphologyPrimitive(curr_image, work_image, primitive,
                        channel, this_kernel, bias, exception);
 
-          if ( verbose == MagickTrue ) {
+          if ( verbose != MagickFalse ) {
             if ( kernel_loop > 1 )
               (void) FormatLocaleFile(stderr, "\n"); /* add end-of-line from previous */
             (void) (void) FormatLocaleFile(stderr,
@@ -4150,9 +4162,9 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
 
         } /* End Loop 4: Iterate the kernel with primitive */
 
-        if ( verbose == MagickTrue && kernel_changed != (size_t)changed )
+        if ( verbose != MagickFalse && kernel_changed != (size_t)changed )
           (void) FormatLocaleFile(stderr, "   Total %.20g",(double) kernel_changed);
-        if ( verbose == MagickTrue && stage_loop < stage_limit )
+        if ( verbose != MagickFalse && stage_loop < stage_limit )
           (void) FormatLocaleFile(stderr, "\n"); /* add end-of-line before looping */
 
 #if 0
@@ -4177,7 +4189,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
         case EdgeInMorphology:
         case TopHatMorphology:
         case BottomHatMorphology:
-          if ( verbose == MagickTrue )
+          if ( verbose != MagickFalse )
             (void) FormatLocaleFile(stderr, "\n%s: Difference with original image",
                  CommandOptionToMnemonic(MagickMorphologyOptions, method) );
           (void) CompositeImageChannel(curr_image,
@@ -4185,7 +4197,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
                   DifferenceCompositeOp, image, 0, 0);
           break;
         case EdgeMorphology:
-          if ( verbose == MagickTrue )
+          if ( verbose != MagickFalse )
             (void) FormatLocaleFile(stderr, "\n%s: Difference of Dilate and Erode",
                  CommandOptionToMnemonic(MagickMorphologyOptions, method) );
           (void) CompositeImageChannel(curr_image,
@@ -4201,7 +4213,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
       if ( kernel->next == (KernelInfo *) NULL )
         rslt_image = curr_image;   /* just return the resulting image */
       else if ( rslt_compose == NoCompositeOp )
-        { if ( verbose == MagickTrue ) {
+        { if ( verbose != MagickFalse ) {
             if ( this_kernel->next != (KernelInfo *) NULL )
               (void) FormatLocaleFile(stderr, " (re-iterate)");
             else
@@ -4210,7 +4222,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
           rslt_image = curr_image; /* return result, and re-iterate */
         }
       else if ( rslt_image == (Image *) NULL)
-        { if ( verbose == MagickTrue )
+        { if ( verbose != MagickFalse )
             (void) FormatLocaleFile(stderr, " (save for compose)");
           rslt_image = curr_image;
           curr_image = (Image *) image;  /* continue with original image */
@@ -4223,7 +4235,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
           ** purely mathematical way, and only to the selected channels.
           ** IE: Turn off SVG composition 'alpha blending'.
           */
-          if ( verbose == MagickTrue )
+          if ( verbose != MagickFalse )
             (void) FormatLocaleFile(stderr, " (compose \"%s\")",
                  CommandOptionToMnemonic(MagickComposeOptions, rslt_compose) );
           (void) CompositeImageChannel(rslt_image,
@@ -4232,7 +4244,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
           curr_image = DestroyImage(curr_image);
           curr_image = (Image *) image;  /* continue with original image */
         }
-      if ( verbose == MagickTrue )
+      if ( verbose != MagickFalse )
         (void) FormatLocaleFile(stderr, "\n");
 
       /* loop to the next kernel in a multi-kernel list */
@@ -4266,7 +4278,8 @@ exit_cleanup:
   return(rslt_image);
 }
 
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4395,7 +4408,8 @@ MagickExport Image *MorphologyImage(const Image *image, const MorphologyMethod
     iterations,kernel,exception);
   return(morphology_image);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4595,7 +4609,8 @@ static void RotateKernelInfo(KernelInfo *kernel, double angle)
 
   return;
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4797,7 +4812,8 @@ MagickExport void ScaleKernelInfo(KernelInfo *kernel,
 
   return;
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4866,7 +4882,8 @@ MagickExport void ShowKernelInfo(const KernelInfo *kernel)
     }
   }
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4913,7 +4930,8 @@ MagickExport void UnityAddKernelInfo(KernelInfo *kernel,
 
   return;
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %

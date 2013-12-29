@@ -13,11 +13,11 @@
 %                   MagickCore Version and Copyright Methods                  %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                               September 2002                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -46,6 +46,7 @@
 #include "magick/string_.h"
 #include "magick/utility.h"
 #include "magick/version.h"
+#include "magick/version-private.h"
 
 /*
   Define declarations.
@@ -161,9 +162,6 @@ MagickExport const char *GetMagickDelegates(void)
 #if defined(MAGICKCORE_OPENEXR_DELEGATE)
   "openexr "
 #endif
-#if defined(MAGICKCORE_PANGO_DELEGATE)
-  "pango "
-#endif
 #if defined(MAGICKCORE_PANGOCAIRO_DELEGATE)
   "pangocairo "
 #endif
@@ -172,9 +170,6 @@ MagickExport const char *GetMagickDelegates(void)
 #endif
 #if defined(MAGICKCORE_DPS_DELEGATE) || defined(MAGICKCORE_GS_DELEGATE) || defined(WIN32)
   "ps "
-#endif
-#if defined(MAGICKCORE_PNG_DELEGATE)
-  "png "
 #endif
 #if defined(MAGICKCORE_RSVG_DELEGATE)
   "rsvg "
@@ -225,6 +220,9 @@ MagickExport const char *GetMagickFeatures(void)
   return "DPC"
 #if defined(MAGICKCORE_HDRI_SUPPORT)
   " HDRI"
+#endif
+#if defined(MAGICKCORE_BUILD_MODULES) || defined(_DLL)
+  " Modules"
 #endif
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
   " OpenCL"

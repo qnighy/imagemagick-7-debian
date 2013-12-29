@@ -13,11 +13,11 @@
 %                         Image Comparison Methods                            %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -960,6 +960,8 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
     ThrowCompareException(OptionError,"MissingAnImageFilename",argv[i]);
   image=GetImageFromList(image,0);
   reconstruct_image=GetImageFromList(image,1);
+  offset.x=0;
+  offset.y=0;
   if (subimage_search != MagickFalse)
     {
       char

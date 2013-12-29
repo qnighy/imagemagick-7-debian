@@ -13,11 +13,11 @@
 %               Identify an Image Format and Characteristics.                 %
 %                                                                             %
 %                           Software Design                                   %
-%                             John Cristy                                     %
+%                                Cristy                                       %
 %                            September 1994                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -397,7 +397,7 @@ static ssize_t PrintChannelLocations(FILE *file,const Image *image,
       }
       if (match != MagickFalse)
         {
-          if ((max_locations != 0) && (n >= max_locations))
+          if ((max_locations != 0) && (n >= (ssize_t) max_locations))
             break;
           (void) FormatLocaleFile(file," %.20g,%.20g",(double) x,(double) y);
           n++;

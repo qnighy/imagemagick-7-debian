@@ -13,11 +13,11 @@
 %                     MagickCore Image Composite Methods                      %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -205,6 +205,8 @@ static inline MagickRealType Atop(const MagickRealType p,
   const MagickRealType Sa,const MagickRealType q,
   const MagickRealType magick_unused(Da))
 {
+  magick_unreferenced(Da);
+
   return(p*Sa+q*(1.0-Sa));  /* Da optimized out,  Da/gamma => 1.0 */
 }
 
@@ -255,7 +257,7 @@ static inline void CompositeClear(const MagickPixelPacket *q,
 }
 
 static MagickRealType ColorBurn(const MagickRealType Sca,
-  const MagickRealType Sa, const MagickRealType Dca,const MagickRealType Da)
+  const MagickRealType Sa,const MagickRealType Dca,const MagickRealType Da)
 {
 #if 0
   /*
@@ -302,7 +304,7 @@ static inline void CompositeColorBurn(const MagickPixelPacket *p,
 
 
 static MagickRealType ColorDodge(const MagickRealType Sca,
-  const MagickRealType Sa, const MagickRealType Dca,const MagickRealType Da)
+  const MagickRealType Sa,const MagickRealType Dca,const MagickRealType Da)
 {
   /*
     Oct 2004 SVG specification.
@@ -549,7 +551,7 @@ static inline void CompositeDivide(const MagickPixelPacket *p,
 }
 
 static MagickRealType Exclusion(const MagickRealType Sca,
-  const MagickRealType Sa, const MagickRealType Dca,const MagickRealType Da)
+  const MagickRealType Sa,const MagickRealType Dca,const MagickRealType Da)
 {
   return(Sca*Da+Dca*Sa-2.0*Sca*Dca+Sca*(1.0-Da)+Dca*(1.0-Sa));
 }
@@ -752,6 +754,8 @@ static void CompositeHCL(const MagickRealType red,const MagickRealType green,
 static inline MagickRealType In(const MagickRealType p,const MagickRealType Sa,
   const MagickRealType magick_unused(q),const MagickRealType Da)
 {
+  magick_unreferenced(q);
+
   return(Sa*p*Da);
 }
 
@@ -1089,6 +1093,8 @@ static inline MagickRealType Minus(const MagickRealType Sca,
       f(Sc,Dc) = Sc - Dc
 
   */
+  magick_unreferenced(Da);
+
   return(Sca + Dca - 2*Dca*Sa);
 }
 
@@ -1130,19 +1136,19 @@ static inline void CompositeMinus(const MagickPixelPacket *p,
 }
 
 static inline MagickRealType ModulusAdd(const MagickRealType p,
-  const MagickRealType Sa, const MagickRealType q,  const MagickRealType Da)
+  const MagickRealType Sa,const MagickRealType q,const MagickRealType Da)
 {
   MagickRealType
     pixel;
 
   pixel=p+q;
   if (pixel > QuantumRange)
-    pixel-=(QuantumRange+1.0);
-  return(pixel*Sa*Da + p*Sa*(1-Da) + q*Da*(1-Sa));
+    pixel-=QuantumRange;
+  return(pixel*Sa*Da+p*Sa*(1.0-Da)+q*Da*(1.0-Sa));
 }
 
 static inline void CompositeModulusAdd(const MagickPixelPacket *p,
-  const MagickPixelPacket *q, const ChannelType channel,
+  const MagickPixelPacket *q,const ChannelType channel,
   MagickPixelPacket *composite)
 {
   if ( (channel & SyncChannels) != 0 ) {
@@ -1180,19 +1186,19 @@ static inline void CompositeModulusAdd(const MagickPixelPacket *p,
 }
 
 static inline MagickRealType ModulusSubtract(const MagickRealType p,
-  const MagickRealType Sa, const MagickRealType q,  const MagickRealType Da)
+  const MagickRealType Sa,const MagickRealType q,const MagickRealType Da)
 {
   MagickRealType
     pixel;
 
   pixel=p-q;
   if (pixel < 0.0)
-    pixel+=(QuantumRange+1.0);
-  return(pixel*Sa*Da + p*Sa*(1-Da) + q*Da*(1-Sa));
+    pixel+=QuantumRange;
+  return(pixel*Sa*Da+p*Sa*(1.0-Da)+q*Da*(1.0-Sa));
 }
 
 static inline void CompositeModulusSubtract(const MagickPixelPacket *p,
-  const MagickPixelPacket *q, const ChannelType channel,
+  const MagickPixelPacket *q,const ChannelType channel,
   MagickPixelPacket *composite)
 {
   if ( (channel & SyncChannels) != 0 ) {
@@ -1278,6 +1284,8 @@ static inline MagickRealType Out(const MagickRealType p,
   const MagickRealType Sa,const MagickRealType magick_unused(q),
   const MagickRealType Da)
 {
+  magick_unreferenced(q);
+
   return(Sa*p*(1.0-Da));
 }
 
@@ -1316,7 +1324,7 @@ static MagickRealType PegtopLight(const MagickRealType Sca,
   */
   if (fabs(Da) < MagickEpsilon)
     return(Sca);
-  return(Dca*Dca*(Sa-2*Sca)/Da+Sca*(2*Dca+1-Da)+Dca*(1-Sa));
+  return(Dca*Dca*(Sa-2.0*Sca)/Da+Sca*(2.0*Dca+1.0-Da)+Dca*(1.0-Sa));
 }
 
 static inline void CompositePegtopLight(const MagickPixelPacket *p,
@@ -1572,7 +1580,7 @@ static inline void CompositeVividLight(const MagickPixelPacket *p,
 static MagickRealType Xor(const MagickRealType Sca,const MagickRealType Sa,
   const MagickRealType Dca,const MagickRealType Da)
 {
-  return(Sca*(1-Da)+Dca*(1-Sa));
+  return(Sca*(1.0-Da)+Dca*(1.0-Sa));
 }
 
 static inline void CompositeXor(const MagickPixelPacket *p,
@@ -2805,7 +2813,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         {
           if (source.colorspace != CMYKColorspace)
             ConvertRGBToCMYK(&source);
-          composite.index=source.index;
+          composite.index=QuantumRange-source.index;
           break;
         }
         /* compose methods that are already handled */

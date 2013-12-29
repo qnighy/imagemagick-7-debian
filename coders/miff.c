@@ -13,11 +13,11 @@
 %                      Read/Write MIFF Image Format                           %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1976,6 +1976,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
         (void) SetImageColorspace(image,GRAYColorspace);
     quantum_info=AcquireQuantumInfo(image_info,image);
     if (quantum_info == (QuantumInfo *) NULL)
+      ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
     if ((image->storage_class != PseudoClass) && (image->depth >= 32) &&
         (quantum_info->format == UndefinedQuantumFormat) &&
         (IsHighDynamicRangeImage(image,&image->exception) != MagickFalse))
@@ -1984,7 +1985,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
         if (status == MagickFalse)
           ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
       }
-    compression=image->compression;
+    compression=UndefinedCompression;
     if (image_info->compression != UndefinedCompression)
       compression=image_info->compression;
     switch (compression)

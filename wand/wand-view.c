@@ -18,11 +18,11 @@
 %                        MagickWand Wand View Methods                         %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                March 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -408,7 +408,7 @@ WandExport MagickBooleanType DuplexTransferWandViewIterator(WandView *source,
           status=MagickFalse;
       }
   }
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*
@@ -624,7 +624,7 @@ WandExport MagickBooleanType GetWandViewIterator(WandView *source,
           status=MagickFalse;
       }
   }
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*
@@ -1041,7 +1041,7 @@ WandExport MagickBooleanType SetWandViewIterator(WandView *destination,
           status=MagickFalse;
       }
   }
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*
@@ -1258,7 +1258,7 @@ WandExport MagickBooleanType TransferWandViewIterator(WandView *source,
           status=MagickFalse;
       }
   }
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*
@@ -1401,5 +1401,5 @@ WandExport MagickBooleanType UpdateWandViewIterator(WandView *source,
           status=MagickFalse;
       }
   }
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }

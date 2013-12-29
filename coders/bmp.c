@@ -13,12 +13,12 @@
 %             Read/Write Microsoft Windows Bitmap Image Format                %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                            Glenn Randers-Pehrson                            %
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -608,6 +608,11 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     bmp_info.file_size=ReadBlobLSBLong(image);
     (void) ReadBlobLSBLong(image);
+
+    if (image->debug != MagickFalse)
+      (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+         "  File_size in header:  %u bytes",bmp_info.file_size);
+
     bmp_info.offset_bits=ReadBlobLSBLong(image);
     bmp_info.size=ReadBlobLSBLong(image);
     if (image->debug != MagickFalse)
@@ -860,8 +865,9 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->columns=(size_t) MagickAbsoluteValue(bmp_info.width);
     image->rows=(size_t) MagickAbsoluteValue(bmp_info.height);
     image->depth=bmp_info.bits_per_pixel <= 8 ? bmp_info.bits_per_pixel : 8;
-    image->matte=(bmp_info.alpha_mask != 0) &&
-      (bmp_info.compression == BI_BITFIELDS) ? MagickTrue : MagickFalse;
+    image->matte=((bmp_info.alpha_mask != 0) &&
+      (bmp_info.compression == BI_BITFIELDS)) || 
+       (bmp_info.bits_per_pixel == 32) ? MagickTrue : MagickFalse;
     if (bmp_info.bits_per_pixel < 16)
       {
         size_t
@@ -2112,6 +2118,9 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image)
     if (status == MagickFalse)
       break;
   } while (image_info->adjoin != MagickFalse);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+       "  File_size:  %u bytes",bmp_info.file_size);
   (void) CloseBlob(image);
   return(MagickTrue);
 }

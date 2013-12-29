@@ -13,11 +13,11 @@
 %    MagickCore Methods to Shear or Rotate an Image by an Arbitrary Angle     %
 %                                                                             %
 %                               Software Design                               %
-%                                 John Cristy                                 %
+%                                    Cristy                                   %
 %                                  July 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -251,15 +251,17 @@ static RadonInfo *DestroyRadonInfo(RadonInfo *radon_info)
         radon_info->cells=(unsigned short *) RelinquishMagickMemory(
           radon_info->cells);
       else
-        radon_info->cells=(unsigned short *) UnmapBlob(radon_info->cells,
-          (size_t) radon_info->length);
+        {
+          (void) UnmapBlob(radon_info->cells,(size_t) radon_info->length);
+          radon_info->cells=(unsigned short *) NULL;
+        }
       RelinquishMagickResource(MemoryResource,radon_info->length);
       break;
     }
     case MapCache:
     {
-      radon_info->cells=(unsigned short *) UnmapBlob(radon_info->cells,(size_t)
-        radon_info->length);
+      (void) UnmapBlob(radon_info->cells,(size_t) radon_info->length);
+      radon_info->cells=(unsigned short *) NULL;
       RelinquishMagickResource(MapResource,radon_info->length);
     }
     case DiskCache:
@@ -439,6 +441,7 @@ static inline ssize_t WriteRadonCell(const RadonInfo *radon_info,
   ssize_t
     count;
 
+  i=0;
 #if !defined(MAGICKCORE_HAVE_PWRITE)
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp critical (MagickCore_WriteRadonCell)

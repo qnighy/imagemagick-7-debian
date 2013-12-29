@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -18,19 +18,40 @@
 #ifndef _MAGICKCORE_ACCELERATE_H
 #define _MAGICKCORE_ACCELERATE_H
 
+#include "magick/fx.h"
+#include "magick/morphology.h"
+#include "magick/resample.h"
+#include "magick/resize.h"
+#include "magick/statistic.h"
+
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-#include "magick/morphology.h"
+extern MagickExport MagickBooleanType
+  AccelerateContrastImage(Image *,const MagickBooleanType,ExceptionInfo *),
+  AccelerateConvolveImage(const Image *,const KernelInfo *,Image *,
+    ExceptionInfo *),
+  AccelerateEqualizeImage(Image *,const ChannelType,ExceptionInfo *),
+  AccelerateFunctionImage(Image *,const ChannelType,const MagickFunction,
+    const size_t,const double *,ExceptionInfo *),
+  AccelerateModulateImage(Image*, double, double, double, 
+    ColorspaceType, ExceptionInfo*);
 
 extern MagickExport Image
+  *AccelerateAddNoiseImage(const Image*,const ChannelType,const NoiseType,
+    ExceptionInfo *),
+  *AccelerateBlurImage(const Image *,const ChannelType,const double,
+    const double,ExceptionInfo *),
   *AccelerateConvolveImageChannel(const Image *,const ChannelType,
-    const KernelInfo *,ExceptionInfo *);
-
-extern MagickExport MagickBooleanType
-  AccelerateConvolveImage(const Image *,const KernelInfo *,Image *,
-    ExceptionInfo *);
+    const KernelInfo *,ExceptionInfo *),
+  *AccelerateDespeckleImage(const Image *,ExceptionInfo *),
+  *AccelerateRadialBlurImage(const Image *,const ChannelType,const double,
+    ExceptionInfo *),
+  *AccelerateResizeImage(const Image *,const size_t,const size_t,
+    const ResizeFilter *,ExceptionInfo *),
+  *AccelerateUnsharpMaskImage(const Image *,const ChannelType,const double,
+    const double,const double,const double,ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

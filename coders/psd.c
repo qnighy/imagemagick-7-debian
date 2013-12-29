@@ -13,12 +13,12 @@
 %                   Read/Write Adobe Photoshop Image Format                   %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                              Leonard Rosenthol                              %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1050,7 +1050,7 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
             layer_info[i].page.width=(ssize_t) (x-layer_info[i].page.x);
             layer_info[i].page.height=(ssize_t) (y-layer_info[i].page.y);
             layer_info[i].channels=ReadBlobMSBShort(image);
-            if (check_background == MagickTrue)
+            if (check_background != MagickFalse)
               {
                 size_t
                   quantum;
@@ -1224,7 +1224,7 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
               Allocate layered image.
             */
             layer_info[i].image=CloneImage(image,layer_info[i].page.width,
-              layer_info[i].page.height == ~0U ? 1 : layer_info[i].page.height,
+              layer_info[i].page.height == ~0UL ? 1 : layer_info[i].page.height,
               MagickFalse,&image->exception);
             if (layer_info[i].image == (Image *) NULL)
               {
@@ -2112,9 +2112,6 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,Image *image)
   StringInfo
     *bim_profile;
 
-  unsigned char
-    layer_name[4];
-
   /*
     Open image file.
   */
@@ -2372,12 +2369,15 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,Image *image)
         property=(const char *) GetImageProperty(next_image,"label");
         if (property == (const char *) NULL)
           {
+            char
+              layer_name[MaxTextExtent];
+
             (void) WriteBlobMSBLong(image,16);
             (void) WriteBlobMSBLong(image,0);
             (void) WriteBlobMSBLong(image,0);
-            (void) FormatLocaleString((char *) layer_name,MaxTextExtent,
-              "L%06ld",(long) layer_count++);
-            WritePascalString( image, (char*)layer_name, 4 );
+            (void) FormatLocaleString(layer_name,MaxTextExtent,"L%06ld",(long)
+              layer_count++);
+            WritePascalString(image,layer_name,4);
           }
         else
           {

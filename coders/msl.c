@@ -13,13 +13,13 @@
 %                    Execute Magick Scripting Language Scripts.               %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                             Leonard Rosenthol                               %
 %                             William Radcliffe                               %
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -666,6 +666,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
   keyword=(const char *) NULL;
   value=(char *) NULL;
   SetGeometryInfo(&geometry_info);
+  (void) ResetMagickMemory(&geometry,0,sizeof(geometry));
   channel=DefaultChannels;
   switch (*tag)
   {
@@ -888,8 +889,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                     }
                   if (LocaleCompare(keyword,"gravity") == 0)
                     {
-                      option=ParseCommandOption(MagickGravityOptions,MagickFalse,
-                        value);
+                      option=ParseCommandOption(MagickGravityOptions,
+                        MagickFalse,value);
                       if (option < 0)
                         ThrowMSLException(OptionError,"UnrecognizedGravityType",
                           value);
@@ -956,8 +957,8 @@ static void MSLStartElement(void *context,const xmlChar *tag,
                     }
                   if (LocaleCompare(keyword,"stretch") == 0)
                     {
-                      option=ParseCommandOption(MagickStretchOptions,MagickFalse,
-                        value);
+                      option=ParseCommandOption(MagickStretchOptions,
+                        MagickFalse,value);
                       if (option < 0)
                         ThrowMSLException(OptionError,"UnrecognizedStretchType",
                           value);

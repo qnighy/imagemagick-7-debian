@@ -13,11 +13,11 @@
 %                  Read/Write X Windows system Pixmap Format                  %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -309,6 +309,7 @@ static Image *ReadXPMImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Remove comments.
   */
   count=0;
+  width=0;
   for (p=xpm_buffer; *p != '\0'; p++)
   {
     if (*p != '"')
@@ -859,6 +860,9 @@ static MagickBooleanType WriteXPMImage(const ImageInfo *image_info,Image *image)
     name[MaxTextExtent],
     symbol[MaxTextExtent];
 
+  ExceptionInfo
+    *exception;
+
   MagickBooleanType
     status;
 
@@ -893,7 +897,8 @@ static MagickBooleanType WriteXPMImage(const ImageInfo *image_info,Image *image)
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
+  exception=(&image->exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
   if (status == MagickFalse)
     return(status);
   if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
@@ -995,8 +1000,7 @@ static MagickBooleanType WriteXPMImage(const ImageInfo *image_info,Image *image)
     pixel.colorspace=sRGBColorspace;
     pixel.depth=8;
     pixel.opacity=(MagickRealType) OpaqueOpacity;
-    (void) QueryMagickColorname(image,&pixel,XPMCompliance,name,
-      &image->exception);
+    (void) QueryMagickColorname(image,&pixel,XPMCompliance,name,exception);
     if (i == opacity)
       (void) CopyMagickString(name,"None",MaxTextExtent);
     /*
@@ -1020,7 +1024,7 @@ static MagickBooleanType WriteXPMImage(const ImageInfo *image_info,Image *image)
   (void) WriteBlobString(image,"/* pixels */\n");
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
     if (p == (const PixelPacket *) NULL)
       break;
     indexes=GetVirtualIndexQueue(image);

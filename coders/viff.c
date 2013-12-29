@@ -13,11 +13,11 @@
 %                Read/Write Khoros Visualization Image Format                 %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -980,7 +980,9 @@ static MagickBooleanType WriteVIFFImage(const ImageInfo *image_info,
     */
     if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
       (void) TransformImageColorspace(image,sRGBColorspace);
+DisableMSCWarning(4310)
     viff_info.identifier=(char) 0xab;
+RestoreMSCWarning
     viff_info.file_type=1;
     viff_info.release=1;
     viff_info.version=3;

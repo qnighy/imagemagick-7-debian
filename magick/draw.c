@@ -14,11 +14,11 @@
 %                                                                             %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -41,7 +41,8 @@
 % algorithm, and minor rendering improvements.
 %
 */
-
+
+
 /*
   Include declarations.
 */
@@ -85,12 +86,14 @@
 #include "magick/token.h"
 #include "magick/transform.h"
 #include "magick/utility.h"
-
+
+
 /*
   Define declarations.
 */
 #define BezierQuantum  200
-
+
+
 /*
   Typedef declarations.
 */
@@ -154,7 +157,8 @@ typedef struct _PathInfo
   PathInfoCode
     code;
 } PathInfo;
-
+
+
 /*
   Forward declarations.
 */
@@ -179,7 +183,8 @@ static void
   TraceRoundRectangle(PrimitiveInfo *,const PointInfo,const PointInfo,
     PointInfo),
   TraceSquareLinecap(PrimitiveInfo *,const size_t,const double);
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -209,7 +214,8 @@ MagickExport DrawInfo *AcquireDrawInfo(void)
   GetDrawInfo((ImageInfo *) NULL,draw_info);
   return(draw_info);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -344,7 +350,8 @@ MagickExport DrawInfo *CloneDrawInfo(const ImageInfo *image_info,
   clone_info->debug=IsEventLogging();
   return(clone_info);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -483,6 +490,8 @@ static PolygonInfo *ConvertPathToPolygon(
     edge,
     number_edges,
     number_points;
+
+  magick_unreferenced(draw_info);
 
   /*
     Convert a path to the more efficient sorted rendering form.
@@ -654,7 +663,8 @@ static PolygonInfo *ConvertPathToPolygon(
     LogPolygonInfo(polygon_info);
   return(polygon_info);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -721,6 +731,8 @@ static PathInfo *ConvertPrimitiveToPath(
   ssize_t
     coordinates,
     start;
+
+  magick_unreferenced(draw_info);
 
   /*
     Converts a PrimitiveInfo structure into a vector path structure.
@@ -793,7 +805,8 @@ static PathInfo *ConvertPrimitiveToPath(
     LogPathInfo(path_info);
   return(path_info);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -860,7 +873,8 @@ MagickExport DrawInfo *DestroyDrawInfo(DrawInfo *draw_info)
   draw_info=(DrawInfo *) RelinquishMagickMemory(draw_info);
   return(draw_info);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -897,7 +911,8 @@ static size_t DestroyEdge(PolygonInfo *polygon_info,
       (size_t) (polygon_info->number_edges-edge)*sizeof(*polygon_info->edges));
   return(polygon_info->number_edges);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -931,7 +946,8 @@ static PolygonInfo *DestroyPolygonInfo(PolygonInfo *polygon_info)
   polygon_info->edges=(EdgeInfo *) RelinquishMagickMemory(polygon_info->edges);
   return((PolygonInfo *) RelinquishMagickMemory(polygon_info));
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1241,7 +1257,8 @@ MagickExport MagickBooleanType DrawAffineImage(Image *image,
   image_view=DestroyCacheView(image_view);
   return(status);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1379,7 +1396,8 @@ static void DrawBoundingRectangles(Image *image,const DrawInfo *draw_info,
   (void) DrawPrimitive(image,clone_info,primitive_info);
   clone_info=DestroyDrawInfo(clone_info);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1461,7 +1479,8 @@ MagickExport MagickBooleanType DrawClipPath(Image *image,
     (void) LogMagickEvent(DrawEvent,GetMagickModule(),"end clip-path");
   return(status != 0 ? MagickTrue : MagickFalse);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1632,7 +1651,8 @@ static MagickBooleanType DrawDashPolygon(const DrawInfo *draw_info,
     (void) LogMagickEvent(DrawEvent,GetMagickModule(),"    end draw-dash");
   return(status != 0 ? MagickTrue : MagickFalse);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1765,7 +1785,7 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
   if (*draw_info->primitive != '@')
     primitive=AcquireString(draw_info->primitive);
   else
-    primitive=FileToString(draw_info->primitive+1,~0,&image->exception);
+    primitive=FileToString(draw_info->primitive+1,~0UL,&image->exception);
   if (primitive == (char *) NULL)
     return(MagickFalse);
   primitive_extent=(double) strlen(primitive);
@@ -2005,13 +2025,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
                 &graphic_context[n]->fill_pattern);
             else
               {
-                double
-                  opacity;
-
-                opacity=graphic_context[n]->fill.opacity;
                 status&=QueryColorDatabase(token,&graphic_context[n]->fill,
                   &image->exception);
-                graphic_context[n]->fill.opacity=opacity;
                 if (status == MagickFalse)
                   {
                     ImageInfo
@@ -2536,13 +2551,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
                 &graphic_context[n]->stroke_pattern);
             else
               {
-                double
-                  opacity;
-
-                opacity=graphic_context[n]->stroke.opacity;
                 status&=QueryColorDatabase(token,&graphic_context[n]->stroke,
                   &image->exception);
-                graphic_context[n]->stroke.opacity=opacity;
                 if (status == MagickFalse)
                   {
                     ImageInfo
@@ -3168,7 +3178,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
       keyword);
   return(status != 0 ? MagickTrue : MagickFalse);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -3486,7 +3497,8 @@ MagickExport MagickBooleanType DrawGradientImage(Image *image,
   image_view=DestroyCacheView(image_view);
   return(status);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -3571,7 +3583,8 @@ MagickExport MagickBooleanType DrawPatternPath(Image *image,
     (void) LogMagickEvent(DrawEvent,GetMagickModule(),"end pattern-path");
   return(status);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -3867,8 +3880,10 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
   polygon_info=AcquirePolygonThreadSet(draw_info,primitive_info);
   if (polygon_info == (PolygonInfo **) NULL)
     return(MagickFalse);
+DisableMSCWarning(4127)
   if (0)
     DrawBoundingRectangles(image,draw_info,polygon_info[0]);
+RestoreMSCWarning
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(DrawEvent,GetMagickModule(),"    begin draw-polygon");
   fill=(primitive_info->method == FillToBorderMethod) ||
@@ -4036,7 +4051,8 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
     (void) LogMagickEvent(DrawEvent,GetMagickModule(),"    end draw-polygon");
   return(status);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4609,7 +4625,8 @@ MagickExport MagickBooleanType DrawPrimitive(Image *image,
     (void) LogMagickEvent(DrawEvent,GetMagickModule(),"  end draw-primitive");
   return(status != 0 ? MagickTrue : MagickFalse);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4718,7 +4735,8 @@ static MagickBooleanType DrawStrokePolygon(Image *image,
       "    end draw-stroke-polygon");
   return(status != 0 ? MagickTrue : MagickFalse);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4750,7 +4768,8 @@ MagickExport void GetAffineMatrix(AffineMatrix *affine_matrix)
   affine_matrix->sx=1.0;
   affine_matrix->sy=1.0;
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4857,7 +4876,8 @@ MagickExport void GetDrawInfo(const ImageInfo *image_info,DrawInfo *draw_info)
   draw_info->signature=MagickSignature;
   clone_info=DestroyImageInfo(clone_info);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4898,7 +4918,8 @@ static inline double Permutate(const ssize_t n,const ssize_t k)
     r/=i;
   return(r);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -5282,6 +5303,8 @@ static size_t TracePath(PrimitiveInfo *primitive_info,const char *path)
     z_count;
 
   attribute=0;
+  end.x=0.0;
+  end.y=0.0;
   point.x=0.0;
   point.y=0.0;
   start.x=0.0;

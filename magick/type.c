@@ -13,11 +13,11 @@
 %                       MagickCore Image Type Methods                         %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1061,7 +1061,7 @@ static MagickBooleanType LoadTypeList(const char *xml,const char *filename,
                   else
                     (void) ConcatenateMagickString(path,token,MaxTextExtent);
                   sans_exception=AcquireExceptionInfo();
-                  xml=FileToString(path,~0,sans_exception);
+                  xml=FileToString(path,~0UL,sans_exception);
                   sans_exception=DestroyExceptionInfo(sans_exception);
                   if (xml != (char *) NULL)
                     {
@@ -1330,7 +1330,7 @@ static MagickBooleanType LoadTypeLists(const char *filename,
       */
       (void) FormatLocaleString(path,MaxTextExtent,"%s%s%s",font_path,
         DirectorySeparator,filename);
-      option=FileToString(path,~0,exception);
+      option=FileToString(path,~0UL,exception);
       if (option != (void *) NULL)
         {
           status&=LoadTypeList(option,path,0,exception);

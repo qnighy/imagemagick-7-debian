@@ -19,11 +19,11 @@
 %            Set or Get MagickWand Properties, Options, or Profiles           %
 %                                                                             %
 %                               Software Design                               %
-%                                 John Cristy                                 %
+%                                    Cristy                                   %
 %                                 August 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1738,7 +1738,7 @@ WandExport MagickBooleanType MagickProfileImage(MagickWand *wand,
   status=ProfileImage(wand->images,name,profile,length,MagickTrue);
   if (status == MagickFalse)
     InheritException(wand->exception,&wand->images->exception);
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*
@@ -2214,7 +2214,7 @@ WandExport MagickBooleanType MagickSetGravity(MagickWand *wand,
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   status=SetImageOption(wand->image_info,"gravity",CommandOptionToMnemonic(
     MagickGravityOptions,(ssize_t) type));
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*
@@ -2259,7 +2259,7 @@ WandExport MagickBooleanType MagickSetImageArtifact(MagickWand *wand,
   status=SetImageArtifact(wand->images,artifact,value);
   if (status == MagickFalse)
     InheritException(wand->exception,&wand->images->exception);
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*
@@ -2315,7 +2315,7 @@ WandExport MagickBooleanType MagickSetImageProfile(MagickWand *wand,
   profile_info=DestroyStringInfo(profile_info);
   if (status == MagickFalse)
     InheritException(wand->exception,&wand->images->exception);
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*
@@ -2360,7 +2360,7 @@ WandExport MagickBooleanType MagickSetImageProperty(MagickWand *wand,
   status=SetImageProperty(wand->images,property,value);
   if (status == MagickFalse)
     InheritException(wand->exception,&wand->images->exception);
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*
@@ -2437,7 +2437,7 @@ WandExport MagickBooleanType MagickSetInterpolateMethod(MagickWand *wand,
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   status=SetImageOption(wand->image_info,"interpolate",
     CommandOptionToMnemonic(MagickInterpolateOptions,(ssize_t) method));
-  return(status == MagickFalse ? 0 : 1);
+  return(status);
 }
 
 /*

@@ -1,10 +1,166 @@
-2013-09-23  6.8.7.0 Glenn Randers-Pehrson <glennrp@image...>
-  * Fixed comments in coders/png.c about interpretation of the -quality
-  value (reference
-  http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24134).
+2013-12-25  6.8.8-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-0, SVN revision 14027.
+
+2013-12-23  6.8.8-0 Cristy  <quetzlzacatenango@image...>
+  * Blurring with transparency no longer returns a halo (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24665).
+  * Eliminate ICC profile memory leak for JP2 coder (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24679).
+
+2013-12-10  6.8.7-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-10, SVN revision 13965.
+
+2013-12-10  6.8.7-10  SiuChi Chan  <...>
+  * fix crash when using -resize with GPU acceleration (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24603).
+
+2013-12-08  6.8.7-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-9, SVN revision 13950.
+
+2013-12-05  6.8.7-9  SiuChi Chan  <...>
+  * silence warning related to GPU memory issues.
+  * check if OpenCL is disabled in checkOpenCLEnvironment() method
+  * turn off OpenCL path for Intel OpenCL to avoid crash when not enough memory
+  * fixed a bug for OpenCL convolution
+  * reduce compiler warnings
+
+2013-12-03  6.8.7-9 Glenn Randers-Pehrson <glennrp@image...>
+  * fixed bug in coders/png.c that caused -define png:color-type=0 to
+    fail (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=24568).
+
+2013-11-30  6.8.7-9 Dirk Lemstra <dirk@snakeware...>
+  * fixed bug in automatic selection of OpenCL device (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24542).
+  * fixed transparency for 32 bits BMP.
+
+2013-11-28  6.8.7-9 Cristy  <quetzlzacatenango@image...>
+  * The -type bilevel option sometimes returned an all white image (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24444).
+  * Check blue channel threshold for -solarize option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24473).
+
+2013-11-27  6.8.7-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-8, SVN revision 13850.
+
+2013-11-27  6.8.7-8  SiuChi Chan  <...>
+  * Add an OpenCL-accelerated analog of AddNoiseImage().
+
+2013-11-23  6.8.7-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-7, SVN revision 13827.
+
+2013-11-23  6.8.7-7  SiuChi Chan  <...>
+  * simplified interface to initialize the OpenCL environment
+  * automatic OpenCL device selection algorithm
+  * support ModulateImage() acceleration
+  * reduce the memory requirement for accelerated blur and unsharp mask
+
+2013-11-16  6.8.7-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-6, SVN revision 13767.
+
+2013-11-14  6.8.7-6 Cristy  <quetzlzacatenango@image...>
+  * Fix possible memory corruption when writing PSD images (bug report from
+    Justin Grant).
+  * Constrain color reduction acceleration to positive integers (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=24459).
+  * fx:maxima.a now returns the alpha value rather than opacity (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24461).
+
+2013-11-08  6.8.7-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-5, SVN revision 13682.
+
+2013-11-03  6.8.7-5 Cristy  <quetzlzacatenango@image...>
+  * The jpeg:extent option no longer returns double-free exception (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24366).
+  * Turn off arch-specific optimisations (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24353).
+  * The -type bilevel option no longer returns black image (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24394).
+
+2013-11-03  6.8.7-5 Dirk Lemstra <dirk@snakeware...>
+  * Added support for pangocairo to the windows distribution.
+  * Added /OpenCL option to configure.exe to enable OpenCL.
+
+2013-10-31  6.8.7-5 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed cut-and-paste error in version.c that caused the "png" delegate
+    to be listed twice by the "convert -version" command.
+
+2013-10-30  6.8.7-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-4, SVN revision 13616.
+
+2013-10-26  6.8.7-4  Siu Chi Chan <...@amd.com>
+  * Major improvements to the OpenCL infrastructure.
+  * New OpenCL accelerated algorithms (function image, blur, radial blur,
+    unsharp mask, resize, contrast, equalize, despeckle).
+  * Added a new checkbox to enable OpenCL in the configure program.
+
+2013-10-24  6.8.7-4 Cristy  <quetzlzacatenango@image...>
+  * Color reduction acceleration from Yoya (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24324).
+  * -intensity rec709luma -colorspace gray returns gamma 1.0/2.2 (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24330).
+  * Handle 16-bit JPEG-comrpessed TIFF images (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24331).
+  * An image -compose ModulusAdd negate-image returns the original (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24337).
+  * Support %U escape character for resolution units (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=24140).
+
+2013-10-23  6.8.7-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-3, SVN revision 13557.
+
+2013-10-23  6.8.7-3 Cristy  <quetzlzacatenango@image...>
+  * The -roll option is now working when the +x coordinate is +0 (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24314).
+
+2013-10-22  6.8.7-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-2, SVN revision 13534.
+
+2013-10-20  6.8.7-2 Cristy  <quetzlzacatenango@image...>
+  * Define cmsUInt32Number if LCMS version is < 2000.
+  * Set xc:gray() intensity to Rec709Luma (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24303).
+
+2013-10-20  6.8.7-2 Dirk Lemstra <dirk@snakeware...>
+  * GetImageDepth() no longer returns incorrect depth when HDRI enabled.
+
+2013-10-19  6.8.7-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-1, SVN revision 13486.
+
+2013-10-10  6.8.7-1 Cristy  <quetzlzacatenango@image...>
+  * Add support for the -complex option, perform complex mathematics on an
+    image sequence.
+  * Sync pixel cache for -set colorspace cmyk option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24173).
+
+2013-09-27  6.8.7-1 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed problem with PNG8 reduction in coders/png.c (special case where
+    exactly 256 colors plus one transparent color are present).
+  * Set image->intensity = Rec709LuminancePixelIntensityMethod before
+    setting the colorspace to Gray while reading a gray PNG (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24205).
+    This ensures that image->gamma will be set to 1.0 (linear).
+
+2013-09-26  6.8.7-1 Dirk Lemstra <dirk@snakeware...>
+  * Fixed incorrect size of DICOM image (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24135).
+  * Fixed rounding in YUV coder (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24148).
+  * Fixed colorspace issue when combining images (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24173).
+  * Replaced libjpeg with libjpeg-turbo in the windows distribution.
+  * Added support for liquid rescale to the windows distribution.
+  * Set image type after syncing the pixel cache.
+
+2013-09-25  6.8.7-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.7-0, SVN revision 13290.
+
+2013-09-23  6.8.7-0 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed comments about the -quality value in PNG coder (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24134).
 
 2013-09-19  6.8.7-0 Dirk Lemstra <dirk@snakeware...>
-  * Fixed issue with colormap when reading viff image.
+  * Fixed issue with colormap when reading Viff image.
   * Added support for opening https files under windows (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24121).
   * Fixed incorrect format when reading EPT image from a blob (reference
@@ -34,11 +190,15 @@
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24106).
   * Return label for identify -format "%l" (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24105).
+  * Add option to perform Fourier normalization in either the forward or
+    inverse transform (e.g -define fourier:normalize=inverse). The default
+    remains as it was in the forward transform (i.e. -define
+    fourier:normalize=forward)
 
 2013-08-26  6.8.6-9 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.6-9, SVN revision 13087.
 
-2013-08-16  6.8.6-9  Siu Chi Chan <...@amd.com>
+2013-08-16  6.8.6-9  SiuChi Chan  <...>
   * Accelerate numerous image filters with OpenCL under AMD, Intel, and
     NVidia.  Adapted from MulticoreWare OpenCL contribution.
 
@@ -340,7 +500,7 @@
   * New version 6.8.4-10, SVN revision 11851.
 
 2013-04-11  6.8.4-10 Cristy  <quetzlzacatenango@image...>
-  * Ensure -define jpeg:extent is resticted to at most 7 iterations (reference
+  * Ensure -define jpeg:extent is restricted to at most 7 iterations (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23179).
   * Move X11 font support from annotate.c source module to xwindow.c.
 
@@ -1425,19 +1585,16 @@ http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=21884).
 
     Convolve kernel weights have been separated from alpha blend handling.
     Un-normalized kernels applied to images with active alpha will no longer
-    be auto-normalized due to the effect of alpha blending.
-
-    The bug causes images using the default channel setting and having an
-    alpha channel to automatically 'normalize' the results of a convolve
-    during the handling of alpha blending.  This probably would cause severe
-    effects when a zero-summing kernel is being used on an image containing
-    an active (though likely fully-opaque) alpha channel, as division by near
-    zero weights would cause extreme color values in results.
-
-    This bug is not normally seen as convolution, which is normally applied only
-    to fully-opaque images. And using a zero-summing kernel on an image with
-    alpha also results in a transparent image!  This is why it was not fixed
-    up until now.
+    be auto-normalized due to the effect of alpha blending.  The bug causes
+    images using the default channel setting and having an alpha channel to
+    automatically 'normalize' the results of a convolve during the handling
+    of alpha blending.  This probably would cause severe effects when a
+    zero-summing kernel is being used on an image containing an active (though
+    likely fully-opaque) alpha channel, as division by near zero weights
+    would cause extreme color values in results.  This bug is not normally
+    seen as convolution, which is normally applied only to fully-opaque
+    images. And using a zero-summing kernel on an image with alpha also
+    results in a transparent image!  This is why it was not fixed up until now.
 
 2012-04-08  6.7.6-6 Cristy  <quetzlzacatenango@image...>
   * Pixel allocation for Pango is stride*rows not stride*columns.

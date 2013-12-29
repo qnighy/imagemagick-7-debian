@@ -13,11 +13,11 @@
 %                         MagickCore VMS Utility Methods                      %
 %                                                                             %
 %                               Software Design                               %
-%                                 John Cristy                                 %
+%                                    Cristy                                   %
 %                                October 1994                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -195,7 +195,7 @@ struct dirent *readdir(DIR *directory)
   */
   buffer[sizeof(buffer)-1]='\0';
   for (p=buffer; *p; p++)
-    if (isupper((unsigned char) *p))
+    if (isupper((int) ((unsigned char) *p)))
       *p=tolower(*p);
   /*
     Skip any directory component and just copy the name.

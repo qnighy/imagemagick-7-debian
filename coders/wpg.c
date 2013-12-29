@@ -16,7 +16,7 @@
 %                                 June 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -533,10 +533,12 @@ static int UnpackWPGRaster(Image *image,int bpp)
 /* Helper for WPG2 reader. */
 #define InsertByte6(b) \
 { \
+DisableMSCWarning(4310) \
   if(XorMe)\
     BImgBuff[x] = (unsigned char)~b;\
   else\
     BImgBuff[x] = b;\
+RestoreMSCWarning \
   x++; \
   if((ssize_t) x >= ldblk) \
   { \
@@ -629,10 +631,10 @@ static int UnpackWPG2Raster(Image *image,int bpp)
           break;
         case 0xFF:
           RunCount=ReadBlobByte(image);   /* WHT */
-          for(i=0; i < SampleSize*(RunCount+1); i++)
-            {
-              InsertByte6(0xFF);
-            }
+          for (i=0; i < SampleSize*(RunCount+1); i++)
+          {
+            InsertByte6(0xFF);
+          }
           break;
         default:
           RunCount=bbuf & 0x7F;

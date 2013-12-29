@@ -13,11 +13,11 @@
 %                         MagickCore Option Methods                           %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -51,6 +51,7 @@
 #include "magick/effect.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
+#include "magick/fourier.h"
 #include "magick/fx.h"
 #include "magick/gem.h"
 #include "magick/geometry.h"
@@ -152,6 +153,7 @@ static const OptionInfo
     { "Magenta", MagentaChannel, UndefinedOptionFlag, MagickFalse },
     { "Matte", OpacityChannel, UndefinedOptionFlag, MagickFalse },
     { "M", MagentaChannel, UndefinedOptionFlag, MagickFalse },
+    { "O", OpacityChannel, UndefinedOptionFlag, MagickFalse },
     { "Opacity", OpacityChannel, UndefinedOptionFlag, MagickFalse },
     { "Red", RedChannel, UndefinedOptionFlag, MagickFalse },
     { "R", RedChannel, UndefinedOptionFlag, MagickFalse },
@@ -281,6 +283,8 @@ static const OptionInfo
     { "-comment", 1L, ImageInfoOptionFlag, MagickFalse },
     { "+compare", 0L, FireOptionFlag | DeprecateOptionFlag, MagickFalse },
     { "-compare", 0L, ListOperatorOptionFlag | FireOptionFlag, MagickFalse },
+    { "+complex", 1L, DeprecateOptionFlag | FireOptionFlag, MagickFalse },
+    { "-complex", 1L, ListOperatorOptionFlag | FireOptionFlag, MagickFalse },
     { "+compose", 0L, ImageInfoOptionFlag, MagickFalse },
     { "-compose", 1L, ImageInfoOptionFlag, MagickFalse },
     { "+composite", 0L, FireOptionFlag | DeprecateOptionFlag, MagickFalse },
@@ -902,6 +906,18 @@ static const OptionInfo
     { "YUV", YUVColorspace, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedColorspace, UndefinedOptionFlag, MagickFalse }
   },
+  ComplexOptions[] =
+  {
+    { "Undefined", UndefinedComplexOperator, UndefinedOptionFlag, MagickTrue },
+    { "Add", AddComplexOperator, UndefinedOptionFlag, MagickFalse },
+    { "Conjugate", ConjugateComplexOperator, UndefinedOptionFlag, MagickFalse },
+    { "Divide", DivideComplexOperator, UndefinedOptionFlag, MagickFalse },
+    { "MagnitudePhase", MagnitudePhaseComplexOperator, UndefinedOptionFlag, MagickFalse },
+    { "Multiply", MultiplyComplexOperator, UndefinedOptionFlag, MagickFalse },
+    { "RealImaginary", RealImaginaryComplexOperator, UndefinedOptionFlag, MagickFalse },
+    { "Subtract", SubtractComplexOperator, UndefinedOptionFlag, MagickFalse },
+    { (char *) NULL, UndefinedComplexOperator, UndefinedOptionFlag, MagickFalse }
+  },
   DataTypeOptions[] =
   {
     { "Undefined", UndefinedData, UndefinedOptionFlag, MagickTrue },
@@ -1225,6 +1241,7 @@ static const OptionInfo
     { "Color", MagickColorOptions, UndefinedOptionFlag, MagickFalse },
     { "Colorspace", MagickColorspaceOptions, UndefinedOptionFlag, MagickFalse },
     { "Command", MagickCommandOptions, UndefinedOptionFlag, MagickFalse },
+    { "Complex", MagickComplexOptions, UndefinedOptionFlag, MagickFalse },
     { "Compose", MagickComposeOptions, UndefinedOptionFlag, MagickFalse },
     { "Compress", MagickCompressOptions, UndefinedOptionFlag, MagickFalse },
     { "Configure", MagickConfigureOptions, UndefinedOptionFlag, MagickFalse },
@@ -1486,15 +1503,15 @@ static const OptionInfo
   PixelIntensityOptions[] =
   {
     { "Undefined", UndefinedPixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
-    { "Average", AveragePixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
-    { "Brightness", BrightnessPixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
-    { "Lightness", LightnessPixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
-    { "MS", MSPixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
-    { "Rec601Luma", Rec601LumaPixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
-    { "Rec601Luminance", Rec601LuminancePixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
-    { "Rec709Luma", Rec709LumaPixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
-    { "Rec709Luminance", Rec709LuminancePixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
-    { "RMS", RMSPixelIntensityMethod, UndefinedOptionFlag, MagickTrue },
+    { "Average", AveragePixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
+    { "Brightness", BrightnessPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
+    { "Lightness", LightnessPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
+    { "MS", MSPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
+    { "Rec601Luma", Rec601LumaPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
+    { "Rec601Luminance", Rec601LuminancePixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
+    { "Rec709Luma", Rec709LumaPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
+    { "Rec709Luminance", Rec709LuminancePixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
+    { "RMS", RMSPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedPixelIntensityMethod, UndefinedOptionFlag, MagickFalse }
   },
   ResolutionOptions[] =
@@ -1887,6 +1904,7 @@ static const OptionInfo *GetOptionInfo(const CommandOption option)
     case MagickClipPathOptions: return(ClipPathOptions);
     case MagickColorspaceOptions: return(ColorspaceOptions);
     case MagickCommandOptions: return(CommandOptions);
+    case MagickComplexOptions: return(ComplexOptions);
     case MagickComposeOptions: return(ComposeOptions);
     case MagickCompressOptions: return(CompressOptions);
     case MagickDataTypeOptions: return(DataTypeOptions);
@@ -1902,6 +1920,7 @@ static const OptionInfo *GetOptionInfo(const CommandOption option)
     case MagickFilterOptions: return(FilterOptions);
     case MagickFunctionOptions: return(FunctionOptions);
     case MagickGravityOptions: return(GravityOptions);
+    case MagickIntensityOptions: return(PixelIntensityOptions);
     case MagickIntentOptions: return(IntentOptions);
     case MagickInterlaceOptions: return(InterlaceOptions);
     case MagickInterpolateOptions: return(InterpolateOptions);
@@ -2220,6 +2239,8 @@ MagickExport MagickBooleanType ListCommandOptions(FILE *file,
 
   register ssize_t
     i;
+
+  magick_unreferenced(exception);
 
   if (file == (FILE *) NULL)
     file=stdout;

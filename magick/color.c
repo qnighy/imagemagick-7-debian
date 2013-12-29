@@ -12,11 +12,11 @@
 %                          MagickCore Color Methods                           %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1059,7 +1059,8 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
   }
   if (compliance == NoCompliance)
     {
-      (void) FormatLocaleString(component,MaxTextExtent,"%.20g",color);
+      (void) FormatLocaleString(component,MaxTextExtent,"%.*g",GetMagickPrecision(),
+        color);
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
@@ -1086,7 +1087,7 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
     }
   if (channel == OpacityChannel)
     {
-      (void) FormatLocaleString(component,MaxTextExtent,"%.20g",
+      (void) FormatLocaleString(component,MaxTextExtent,"%.*g",GetMagickPrecision(),
         (QuantumScale*color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
@@ -1099,14 +1100,14 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
       (pixel->colorspace == HSVColorspace) ||
       (pixel->colorspace == HWBColorspace))
     {
-      (void) FormatLocaleString(component,MaxTextExtent,"%.20g%%",
+      (void) FormatLocaleString(component,MaxTextExtent,"%.*g%%",GetMagickPrecision(),
         (100.0*QuantumScale*color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
   if (pixel->depth > 8)
     {
-      (void) FormatLocaleString(component,MaxTextExtent,"%.20g%%",
+      (void) FormatLocaleString(component,MaxTextExtent,"%.*g%%",GetMagickPrecision(),
         (100.0*QuantumScale*color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
@@ -2150,7 +2151,7 @@ static MagickBooleanType LoadColorList(const char *xml,const char *filename,
                     (void) CopyMagickString(path,token,MaxTextExtent);
                   else
                     (void) ConcatenateMagickString(path,token,MaxTextExtent);
-                  xml=FileToString(path,~0,exception);
+                  xml=FileToString(path,~0UL,exception);
                   if (xml != (char *) NULL)
                     {
                       status=LoadColorList(xml,path,depth+1,exception);

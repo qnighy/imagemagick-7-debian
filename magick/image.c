@@ -13,11 +13,11 @@
 %                           MagickCore Image Methods                          %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1594,10 +1594,10 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
           break;
         value=(const char *) NULL;
 #if 0
-        // FUTURE: remove this code. -- Anthony  29 Arpil 2012
-        // Removed as GetMagickProperty() will will never match a "filename:"
-        // string as this is not a 'known' image property.
-        //
+        /* FUTURE: remove this code. -- Anthony  29 Arpil 2012
+           Removed as GetMagickProperty() will will never match a "filename:"
+           string as this is not a 'known' image property.
+        */
         if ((image_info != (const ImageInfo *) NULL) &&
             (image != (const Image *) NULL))
           value=GetMagickProperty(image_info,image,pattern);

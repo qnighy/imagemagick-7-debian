@@ -13,11 +13,11 @@
 %                     MagickCore Image Statistical Methods                    %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -36,12 +36,14 @@
 %
 %
 */
-
+
+
 /*
   Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/property.h"
+#include "magick/accelerate.h"
+#include "magick/animate.h"
 #include "magick/animate.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
@@ -77,6 +79,7 @@
 #include "magick/paint.h"
 #include "magick/pixel-private.h"
 #include "magick/profile.h"
+#include "magick/property.h"
 #include "magick/quantize.h"
 #include "magick/random_.h"
 #include "magick/random-private.h"
@@ -90,7 +93,8 @@
 #include "magick/timer.h"
 #include "magick/utility.h"
 #include "magick/version.h"
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -728,7 +732,7 @@ MagickExport Image *EvaluateImages(const Image *images,
             MagickBooleanType
               proceed;
 
-#if   defined(MAGICKCORE_OPENMP_SUPPORT)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
             #pragma omp critical (MagickCore_EvaluateImages)
 #endif
             proceed=SetImageProgress(images,EvaluateImageTag,progress++,
@@ -859,7 +863,8 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
   random_info=DestroyRandomInfoThreadSet(random_info);
   return(status);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1024,6 +1029,10 @@ MagickExport MagickBooleanType FunctionImageChannel(Image *image,
       InheritException(exception,&image->exception);
       return(MagickFalse);
     }
+  status=AccelerateFunctionImage(image,channel,function,number_parameters,
+    parameters,exception);
+  if (status != MagickFalse)
+    return(status);
   status=MagickTrue;
   progress=0;
   image_view=AcquireAuthenticCacheView(image,exception);
@@ -1094,7 +1103,8 @@ MagickExport MagickBooleanType FunctionImageChannel(Image *image,
   image_view=DestroyCacheView(image_view);
   return(status);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1154,7 +1164,8 @@ MagickExport MagickBooleanType GetImageChannelExtrema(const Image *image,
   *maxima=(size_t) floor(max+0.5);
   return(status);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1281,7 +1292,8 @@ MagickExport MagickBooleanType GetImageChannelMean(const Image *image,
     channel_statistics);
   return(MagickTrue);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1447,7 +1459,8 @@ MagickExport MagickBooleanType GetImageChannelKurtosis(const Image *image,
     }
   return(y == (ssize_t) image->rows ? MagickTrue : MagickFalse);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1564,7 +1577,8 @@ MagickExport MagickBooleanType GetImageChannelRange(const Image *image,
   }
   return(y == (ssize_t) image->rows ? MagickTrue : MagickFalse);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1606,9 +1620,6 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
 
   double
     area;
-
-  MagickStatusType
-    status;
 
   QuantumAny
     range;
@@ -1662,9 +1673,7 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
         {
           depth=channel_statistics[RedChannel].depth;
           range=GetQuantumRange(depth);
-          status=GetPixelRed(p) != ScaleAnyToQuantum(ScaleQuantumToAny(
-            GetPixelRed(p),range),range) ? MagickTrue : MagickFalse;
-          if (status != MagickFalse)
+          if (IsPixelAtDepth(GetPixelRed(p),range) == MagickFalse)
             {
               channel_statistics[RedChannel].depth++;
               continue;
@@ -1674,9 +1683,7 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
         {
           depth=channel_statistics[GreenChannel].depth;
           range=GetQuantumRange(depth);
-          status=GetPixelGreen(p) != ScaleAnyToQuantum(ScaleQuantumToAny(
-            GetPixelGreen(p),range),range) ? MagickTrue : MagickFalse;
-          if (status != MagickFalse)
+          if (IsPixelAtDepth(GetPixelGreen(p),range) == MagickFalse)
             {
               channel_statistics[GreenChannel].depth++;
               continue;
@@ -1686,9 +1693,7 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
         {
           depth=channel_statistics[BlueChannel].depth;
           range=GetQuantumRange(depth);
-          status=GetPixelBlue(p) != ScaleAnyToQuantum(ScaleQuantumToAny(
-            GetPixelBlue(p),range),range) ? MagickTrue : MagickFalse;
-          if (status != MagickFalse)
+          if (IsPixelAtDepth(GetPixelBlue(p),range) == MagickFalse)
             {
               channel_statistics[BlueChannel].depth++;
               continue;
@@ -1700,9 +1705,7 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
             {
               depth=channel_statistics[OpacityChannel].depth;
               range=GetQuantumRange(depth);
-              status=GetPixelOpacity(p) != ScaleAnyToQuantum(ScaleQuantumToAny(
-                GetPixelOpacity(p),range),range) ? MagickTrue : MagickFalse;
-              if (status != MagickFalse)
+              if (IsPixelAtDepth(GetPixelOpacity(p),range) == MagickFalse)
                 {
                   channel_statistics[OpacityChannel].depth++;
                   continue;
@@ -1715,10 +1718,7 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
             {
               depth=channel_statistics[BlackChannel].depth;
               range=GetQuantumRange(depth);
-              status=GetPixelIndex(indexes+x) != ScaleAnyToQuantum(
-                ScaleQuantumToAny(GetPixelIndex(indexes+x),range),range) ?
-                MagickTrue : MagickFalse;
-              if (status != MagickFalse)
+              if (IsPixelAtDepth(GetPixelIndex(indexes+x),range) == MagickFalse)
                 {
                   channel_statistics[BlackChannel].depth++;
                   continue;
@@ -1800,15 +1800,18 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
   area=(double) image->columns*image->rows;
   for (i=0; i < (ssize_t) CompositeChannels; i++)
   {
-    channel_statistics[i].sum/=area;
+    double
+      sum; // 'Fix' for Visual Studio compiler optimization issue.
+
+    sum = channel_statistics[i].sum/area;
+    channel_statistics[i].sum=sum;
     channel_statistics[i].sum_squared/=area;
     channel_statistics[i].sum_cubed/=area;
     channel_statistics[i].sum_fourth_power/=area;
-    channel_statistics[i].mean=channel_statistics[i].sum;
+    channel_statistics[i].mean=sum;
     channel_statistics[i].variance=channel_statistics[i].sum_squared;
     channel_statistics[i].standard_deviation=sqrt(
-      channel_statistics[i].variance-(channel_statistics[i].mean*
-      channel_statistics[i].mean));
+      channel_statistics[i].variance-(sum*sum));
   }
   for (i=0; i < (ssize_t) CompositeChannels; i++)
   {
@@ -1876,7 +1879,8 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
       channel_statistics);
   return(channel_statistics);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2053,13 +2057,19 @@ MagickExport Image *PolynomialImageChannel(const Image *images,
 
         coefficient=terms[i << 1];
         degree=terms[(i << 1)+1];
-        polynomial_pixel[x].red+=coefficient*pow(QuantumScale*p->red,degree);
-        polynomial_pixel[x].green+=coefficient*pow(QuantumScale*p->green,
-          degree);
-        polynomial_pixel[x].blue+=coefficient*pow(QuantumScale*p->blue,degree);
-        polynomial_pixel[x].opacity+=coefficient*pow(QuantumScale*
-          (QuantumRange-p->opacity),degree);
-        if (image->colorspace == CMYKColorspace)
+        if ((channel & RedChannel) != 0)
+          polynomial_pixel[x].red+=coefficient*pow(QuantumScale*p->red,degree);
+        if ((channel & GreenChannel) != 0)
+          polynomial_pixel[x].green+=coefficient*pow(QuantumScale*p->green,
+            degree);
+        if ((channel & BlueChannel) != 0)
+          polynomial_pixel[x].blue+=coefficient*pow(QuantumScale*p->blue,
+            degree);
+        if ((channel & OpacityChannel) != 0)
+          polynomial_pixel[x].opacity+=coefficient*pow(QuantumScale*
+            (QuantumRange-p->opacity),degree);
+        if (((channel & IndexChannel) != 0) &&
+            (image->colorspace == CMYKColorspace))
           polynomial_pixel[x].index+=coefficient*pow(QuantumScale*indexes[x],
             degree);
         p++;
@@ -2105,7 +2115,6 @@ MagickExport Image *PolynomialImageChannel(const Image *images,
     image=DestroyImage(image);
   return(image);
 }
-
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

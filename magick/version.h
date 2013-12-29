@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -26,23 +26,32 @@ extern "C" {
   Define declarations.
 */
 #define MagickPackageName "ImageMagick"
-#define MagickCopyright  "Copyright (C) 1999-2013 ImageMagick Studio LLC"
-#define MagickSVNRevision  "13290"
-#define MagickLibVersion  0x687
-#define MagickLibVersionText  "6.8.7"
+#define MagickCopyright  "Copyright (C) 1999-2014 ImageMagick Studio LLC"
+#define MagickSVNRevision  "14030"
+#define MagickLibVersion  0x688
+#define MagickLibVersionText  "6.8.8"
 #define MagickLibVersionNumber  1,0,0
 #define MagickLibAddendum  "-0"
 #define MagickLibInterface  1
 #define MagickLibMinInterface  1
-#define MagickppLibVersionText  "6.8.7"
-#define MagickppLibVersionNumber  @MAGICKPP_LIB_VERSION_NUMBER@
+#if defined(_WINDOWS)
+#  if defined(_WIN64)
+#    define MagickPlatform "x64"
+#  else
+#    define MagickPlatform "x86"
+#  endif
+#else
+#define MagickPlatform  "x86_64"
+#endif
+#define MagickppLibVersionText  "6.8.8"
+#define MagickppLibVersionNumber  3:0:0
 #define MagickppLibAddendum  "-0"
 #define MagickppLibInterface  3
 #define MagickppLibMinInterface  3
-#define MagickReleaseDate  "2013-09-25"
-#define MagickChangeDate   "20130923"
+#define MagickReleaseDate  "2013-12-25"
+#define MagickChangeDate   "20131225"
 #define MagickFeatures "DPC OpenMP"
-#define MagickDelegates "bzlib djvu fftw fpx fontconfig freetype jp2 lzma openexr pango png ps tiff webp x xml zlib"
+#define MagickDelegates "bzlib djvu mpeg fftw fpx fontconfig freetype jp2 lzma openexr pango png ps tiff webp x xml zlib"
 #define MagickHomeURL  "file:///usr/share/doc/ImageMagick-6/index.html"
 #define MagickAuthoritativeURL  "http://www.imagemagick.org"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
@@ -63,7 +72,8 @@ extern "C" {
 #endif
 #define MagickVersion  \
   MagickPackageName " " MagickLibVersionText MagickLibAddendum " " \
-  MagickReleaseDate " " MagickQuantumDepth " " MagickAuthoritativeURL
+  MagickQuantumDepth " " MagickPlatform " " MagickReleaseDate " " \
+  MagickAuthoritativeURL
 
 extern MagickExport char
   *GetMagickHomeURL(void);

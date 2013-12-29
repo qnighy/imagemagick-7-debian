@@ -13,11 +13,11 @@
 %                         Read/Write Postscript Format                        %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1576,7 +1576,9 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
             (void) WriteBlobString(image,"\n%EndPhotoshop\n");
           }
         profile=GetImageProfile(image,"xmp");
+DisableMSCWarning(4127)
         if (0 && (profile != (StringInfo *) NULL))
+RestoreMSCWarning
           {
             /*
               Embed XML profile.

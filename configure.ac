@@ -1,4 +1,4 @@
-#  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -22,7 +22,7 @@ AC_PREREQ(2.69)
 
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
-m4_define([magick_micro_version], [7])
+m4_define([magick_micro_version], [8])
 m4_define([magick_patchlevel_version], [0])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
@@ -317,7 +317,6 @@ AC_SUBST(LD)
 AC_PROG_CC_C99
 AM_PROG_CC_C_O
 AX_CFLAGS_WARN_ALL
-AX_COMPILER_VENDOR
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
@@ -330,6 +329,25 @@ PKG_PROG_PKG_CONFIG
 
 # Check for linker script support 
 gl_LD_VERSION_SCRIPT 
+
+# Test for 64-bit build.
+AC_CHECK_SIZEOF([size_t])
+
+AX_COMPILER_VENDOR
+# The AX_CFLAGS_WARN_ALL macro doesn't currently work for sunpro
+# compiler.
+if test "$ax_cv_c_compiler_vendor" != "sun"; then
+  AX_CFLAGS_WARN_ALL
+fi
+
+if test "x$GCC" = "xyes"; then
+  CFLAGS="$CFLAGS -fexceptions"
+  touch local.exp
+else
+  cat > local.exp <<EOF
+set CC_FOR_TARGET "$CC"
+EOF
+fi
 
 #
 # Enable run-time checking.
@@ -3239,8 +3257,8 @@ LPDelegateDefault='lp'
 LPRDelegateDefault='lpr'
 LaunchDelegateDefault='gimp'
 MANDelegateDefault='groff'
-MPEGDecodeDelegateDefault='ffmpeg'
-MPEGEncodeDelegateDefault='ffmpeg'
+MPEGDecodeDelegateDefault='avconv'
+MPEGEncodeDelegateDefault='avconv'
 MrSIDDecodeDelegateDefault='mrsidgeodecode'
 MVDelegateDefault='mv'
 PCLDelegateDefault='pcl6'
@@ -3293,7 +3311,15 @@ AC_PATH_PROG(LPRDelegate, "$LPRDelegateDefault", "$LPRDelegateDefault")
 AC_PATH_PROG(LaunchDelegate, "$LaunchDelegateDefault", "$LaunchDelegateDefault")
 AC_PATH_PROG(MANDelegate, "$MANDelegateDefault", "$MANDelegateDefault")
 AC_PATH_PROG(MPEGDecodeDelegate, "$MPEGDecodeDelegateDefault", "$MPEGDecodeDelegateDefault")
+if test "$MPEGDecodeDelegate" == "$MPEGDecodeDelegateDefault" ; then
+  MPEGDecodeDelegateDefault='ffmpeg'
+  AC_PATH_PROG(MPEGDecodeDelegate, "$MPEGDecodeDelegateDefault", "$MPEGDecodeDelegateDefault")
+fi;
 AC_PATH_PROG(MPEGEncodeDelegate, "$MPEGEncodeDelegateDefault", "$MPEGEncodeDelegateDefault")
+if test "$MPEGEncodeDelegate" == "$MPEGEncodeDelegateDefault" ; then
+  MPEGEncodeDelegateDefault='ffmpeg'
+  AC_PATH_PROG(MPEGEncodeDelegate, "$MPEGEncodeDelegateDefault", "$MPEGEncodeDelegateDefault")
+fi;
 AC_PATH_PROG(MrSIDDecodeDelegate, "$MrSIDDecodeDelegateDefault", "$MrSIDDecodeDelegateDefault")
 AC_PATH_PROG(MVDelegate, "$MVDelegateDefault", "$MVDelegateDefault")
 AC_PATH_PROG(PCLDelegate, "$PCLDelegateDefault", "$PCLDelegateDefault")
@@ -3328,7 +3354,7 @@ DisplayDelegate="${BIN_DIR}/${DisplayDelegateDefault}"
 MogrifyDelegate="${BIN_DIR}/${MogrifyDelegateDefault}"
 
 # Set delegate booleans
-have_ffmpeg='no'; if test "$MPEGDecodeDelegate" != "$MPEGDecodeDelegateDefault" ; then have_ffmpeg='yes'; fi
+have_avconv='no'; if test "$MPEGDecodeDelegate" != "$MPEGDecodeDelegateDefault" ; then have_avconv='yes'; fi
 have_gs='no'         ; if test "$PSDelegate" != "$PSDelegateDefault"; then have_gs='yes'; fi
 have_hp2xx='no'      ; if test "$HPGLDecodeDelegate" !=  "$HPGLDecodeDelegateDefault" ; then have_hp2xx='yes'; fi
 have_ilbmtoppm='no'  ; if test "$ILBMDecodeDelegate" != "$ILBMDecodeDelegateDefault" ; then have_ilbmtoppm='yes'; fi
@@ -3656,7 +3682,7 @@ GSColorDevice=pnmraw
 GSCMYKDevice=pam
 GSMonoDevice=pbmraw
 GSPDFDevice=pdfwrite
-GSPSDevice=pswrite
+GSPSDevice=ps2write
 GSEPSDevice=epswrite
 GSVersion='unknown'
 if test $have_gs = 'yes'; then
@@ -3816,7 +3842,7 @@ fi
 if test "$have_djvu"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES djvu"
 fi
-if test "$have_ffmpeg"   = 'yes' ; then
+if test "$have_avconv"   = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES mpeg"
 fi
 if test "$have_fftw"    = 'yes' ; then
@@ -3990,7 +4016,7 @@ MAGICK_CXXFLAGS="$CXXFLAGS"
 MAGICK_CPPFLAGS=`echo $MAGICK_CPPFLAGS | sed -e 's/  */ /g'`
 MAGICK_PCFLAGS=`echo $MAGICK_PCFLAGS | sed -e 's/  */ /g'`
 MAGICK_LDFLAGS="-L$LIB_DIR $LDFLAGS"
-MAGICK_LIBS="-lMagickCore $MAGICK_DEP_LIBS"
+MAGICK_LIBS="$MAGICK_DEP_LIBS"
 
 AC_SUBST(MAGICK_CFLAGS)
 AC_SUBST(MAGICK_CXXFLAGS)

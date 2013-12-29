@@ -13,11 +13,11 @@
 %                        Read Constant Color Image.                           %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -45,6 +45,7 @@
 #include "magick/cache.h"
 #include "magick/color.h"
 #include "magick/color-private.h"
+#include "magick/colorspace-private.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/image.h"
@@ -138,7 +139,7 @@ static Image *ReadXCImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image=DestroyImage(image);
       return((Image *) NULL);
     }
-  SetImageColorspace(image,color.colorspace);
+  (void) SetImageColorspace(image,color.colorspace);
   image->matte=color.matte;
   index=0;
   SetPixelPacket(image,&color,&pixel,&index);

@@ -18,11 +18,11 @@
 %                 MagickCore Distributed Pixel Cache Methods                  %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                January 2013                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -71,7 +71,7 @@
 #include "magick/string-private.h"
 #include "magick/version.h"
 #include "magick/version-private.h"
-#if defined(MAGICKCORE_HAVE_SOCKET) && defined(MAGICKCORE_HAVE_PTHREAD)
+#if defined(MAGICKCORE_HAVE_SOCKET) && defined(MAGICKCORE_THREAD_SUPPORT)
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -134,6 +134,9 @@ static inline MagickOffsetType dpc_read(int file,const MagickSizeType length,
   ssize_t
     count;
 
+  magick_unreferenced(file);
+  magick_unreferenced(message);
+
   count=0;
   for (i=0; i < (MagickOffsetType) length; i+=count)
   {
@@ -152,7 +155,7 @@ static inline MagickOffsetType dpc_read(int file,const MagickSizeType length,
 static int ConnectPixelCacheServer(const char *hostname,const int port,
   size_t *session_key,ExceptionInfo *exception)
 {
-#if defined(MAGICKCORE_HAVE_SOCKET) && defined(MAGICKCORE_HAVE_PTHREAD)
+#if defined(MAGICKCORE_HAVE_SOCKET) && defined(MAGICKCORE_THREAD_SUPPORT)
   char
     service[MaxTextExtent];
 
@@ -229,6 +232,11 @@ static int ConnectPixelCacheServer(const char *hostname,const int port,
     }
   return(client_socket);
 #else
+  magick_unreferenced(hostname);
+  magick_unreferenced(port);
+  magick_unreferenced(session_key);
+  magick_unreferenced(exception);
+
   (void) ThrowMagickException(exception,GetMagickModule(),MissingDelegateError,
     "DelegateLibrarySupportNotBuiltIn","distributed pixel cache");
   return(MagickFalse);
@@ -387,11 +395,13 @@ MagickPrivate DistributeCacheInfo *DestroyDistributeCacheInfo(
 */
 
 static MagickBooleanType DestroyDistributeCache(SplayTreeInfo *registry,
-  int file,const size_t session_key)
+  int magick_unused(file),const size_t session_key)
 {
   /*
     Destroy distributed pixel cache.
   */
+  magick_unreferenced(file);
+
   return(DeleteNodeFromSplayTree(registry,(const void *) session_key));
 }
 
@@ -403,6 +413,9 @@ static inline MagickOffsetType dpc_send(int file,const MagickSizeType length,
 
   register MagickOffsetType
     i;
+
+  magick_unreferenced(file);
+  magick_unreferenced(message);
 
   /*
     Ensure a complete message is sent.
@@ -833,7 +846,7 @@ static void *DistributePixelCacheClient(void *socket)
 MagickExport void DistributePixelCacheServer(const int port,
   ExceptionInfo *exception)
 {
-#if defined(MAGICKCORE_HAVE_SOCKET) && defined(MAGICKCORE_HAVE_PTHREAD)
+#if defined(MAGICKCORE_HAVE_SOCKET) && defined(MAGICKCORE_THREAD_SUPPORT)
   char
     service[MaxTextExtent];
 
@@ -916,6 +929,9 @@ MagickExport void DistributePixelCacheServer(const int port,
   }
   (void) close(server_socket);
 #else
+  magick_unreferenced(port);
+  magick_unreferenced(exception);
+
   ThrowFatalException(MissingDelegateError,"distributed pixel cache");
 #endif
 }

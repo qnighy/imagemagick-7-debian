@@ -15,7 +15,7 @@
 %                                February 2008                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -278,7 +278,9 @@ static MagickBooleanType WriteBRAILLEImage(const ImageInfo *image_info,
           cell |= (GetPixelIndex(indexes+x+dx+dy*image->columns) == polarity) << bit; \
         else \
           cell |= (GetPixelGreen(p+x+dx+dy*image->columns) == 0) << bit; \
-} while (0)
+DisableMSCWarning(4127) \
+} while (0) \
+RestoreMSCWarning
 
         do_cell(0,0,0);
         if (two_columns)
@@ -301,7 +303,9 @@ static MagickBooleanType WriteBRAILLEImage(const ImageInfo *image_info,
         do_cell(0,3,6);
         if (two_columns)
           do_cell(1,3,7);
+DisableMSCWarning(4127)
       } while(0);
+RestoreMSCWarning
 
       if (unicode)
         {

@@ -14,11 +14,11 @@
 %                   MagickCore X11 User Interface Methods                     %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                              September 1993                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -56,6 +56,8 @@
 #include "magick/widget.h"
 
 #if defined(MAGICKCORE_X11_DELEGATE)
+DisableMSCWarning(4389)
+DisableMSCWarning(4701)
 
 /*
   Define declarations.
@@ -2986,11 +2988,8 @@ MagickExport int XCommandWidget(Display *display,XWindows *windows,
       selection_info=(XWidgetInfo *) AcquireQuantumMemory(number_selections,
         sizeof(*selection_info));
       if (selection_info == (XWidgetInfo *) NULL)
-        {
-          ThrowXWindowFatalException(ResourceLimitError,
-            "MemoryAllocationFailed","...");
-          return(id);
-        }
+        ThrowXWindowFatalException(ResourceLimitFatalError,
+          "MemoryAllocationFailed","...");
       state|=UpdateConfigurationState | RedrawWidgetState;
     }
   /*
@@ -9654,4 +9653,6 @@ MagickExport void XTextViewWidget(Display *display,
   (void) XWithdrawWindow(display,windows->widget.id,windows->widget.screen);
   XCheckRefreshWindows(display,windows);
 }
+RestoreMSCWarning
+RestoreMSCWarning
 #endif

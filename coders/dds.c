@@ -19,7 +19,7 @@
 %                              September 2013                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -976,7 +976,7 @@ static void CalculateColors(unsigned short c0, unsigned short c1,
   c->g[1] = (unsigned char) C565_green(c1);
   c->b[1] = (unsigned char) C565_blue(c1);
 
-  if (ignoreAlpha == MagickTrue || c0 > c1)
+  if (ignoreAlpha != MagickFalse || c0 > c1)
     {
       c->r[2] = (unsigned char) ((2 * c->r[0] + c->r[1]) / 3);
       c->g[2] = (unsigned char) ((2 * c->g[0] + c->g[1]) / 3);
@@ -1018,7 +1018,7 @@ static size_t CompressAlpha(const size_t min, const size_t max,
   codes[6] = 0;
   codes[7] = 255;
 
-  for (i=1; i < steps; i++)
+  for (i=1; i < (ssize_t) steps; i++)
     codes[i+1] = (unsigned char) (((steps-i)*min + i*max) / steps);
 
   error = 0;
@@ -1307,7 +1307,7 @@ static void CompressRangeFit(const size_t count,
       VectorCopy43(points[0],end);
 
       min = max = Dot(points[0],principle);
-      for (i=1; i < count; i++)
+      for (i=1; i < (ssize_t) count; i++)
       {
         val = Dot(points[i],principle);
         if (val < min)
@@ -1342,7 +1342,7 @@ static void CompressRangeFit(const size_t count,
   codes[3].y = (start->y * (1.0f/3.0f)) + (end->y * (2.0f/3.0f));
   codes[3].z = (start->z * (1.0f/3.0f)) + (end->z * (2.0f/3.0f));
 
-  for (i=0; i < count; i++)
+  for (i=0; i < (ssize_t) count; i++)
   {
     bestDist = 1e+37f;
     bestj = 0;
@@ -1547,13 +1547,13 @@ static MagickBooleanType ConstructOrdering(const size_t count,
 
   o = order + (16*iteration);
 
-  for (i=0; i < count; i++)
+  for (i=0; i < (ssize_t) count; i++)
   {
     dps[i] = Dot(points[i],axis);
     o[i] = (unsigned char)i;
   }
 
-  for (i=0; i < count; i++)
+  for (i=0; i < (ssize_t) count; i++)
   {
     for (j=i; j > 0 && dps[j] < dps[j - 1]; j--)
     {
@@ -1567,7 +1567,7 @@ static MagickBooleanType ConstructOrdering(const size_t count,
     }
   }
 
-  for (i=0; i < iteration; i++)
+  for (i=0; i < (ssize_t) iteration; i++)
   {
     MagickBooleanType
       same;
@@ -1584,7 +1584,7 @@ static MagickBooleanType ConstructOrdering(const size_t count,
         }
     }
 
-    if (same == MagickTrue)
+    if (same != MagickFalse)
       return MagickFalse;
   }
 
@@ -1593,7 +1593,7 @@ static MagickBooleanType ConstructOrdering(const size_t count,
   xSumwSum->z = 0;
   xSumwSum->w = 0;
 
-  for (i=0; i < count; i++)
+  for (i=0; i < (ssize_t) count; i++)
   {
     DDSVector4
       v;
@@ -2611,7 +2611,7 @@ static MagickBooleanType WriteDDSImage(const ImageInfo *image_info,
         }
     }
 
-  maxMipmaps=-1;
+  maxMipmaps=SIZE_MAX;
   mipmaps=0;
   if ((image->columns & (image->columns - 1)) == 0 &&
       (image->rows & (image->rows - 1)) == 0)
@@ -2780,9 +2780,9 @@ static void WriteFourCC(Image *image, const size_t compression,
         alphas[i] = -1;
       }
 
-      for (by=0; by < rows; by++)
+      for (by=0; by < (ssize_t) rows; by++)
       {
-        for (bx=0; bx < columns; bx++)
+        for (bx=0; bx < (ssize_t) columns; bx++)
         {
           if (compression == FOURCC_DXT5)
             alpha = ScaleQuantumToChar(GetPixelAlpha(p));
@@ -2798,7 +2798,7 @@ static void WriteFourCC(Image *image, const size_t compression,
           p++;
 
           match = MagickFalse;
-          for (i=0; i < count; i++)
+          for (i=0; i < (ssize_t) count; i++)
           {
             if ((points[i].x == point.x) &&
                 (points[i].y == point.y) &&
@@ -2812,7 +2812,7 @@ static void WriteFourCC(Image *image, const size_t compression,
               }
             }
 
-            if (match == MagickTrue)
+            if (match != MagickFalse)
               continue;
 
             points[count].x = point.x;
@@ -2836,7 +2836,7 @@ static void WriteFourCC(Image *image, const size_t compression,
           }
         }
 
-      for (i=0; i < count; i++)
+      for (i=0; i < (ssize_t) count; i++)
         points[i].w = sqrt(points[i].w);
 
       if (compression == FOURCC_DXT5)
@@ -2945,7 +2945,7 @@ static MagickBooleanType WriteMipmaps(Image *image, const size_t pixelFormat,
   columns = image->columns;
   rows = image->rows;
 
-  for (i=0; i<mipmaps; i++)
+  for (i=0; i< (ssize_t) mipmaps; i++)
   {
     resize_image = ResizeImage(image,columns/2,rows/2,TriangleFilter,1.0,
       exception);
