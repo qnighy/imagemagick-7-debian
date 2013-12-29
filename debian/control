@@ -33,11 +33,8 @@ Build-Depends: debhelper (>= 9~),
  pkg-kde-tools,
 # for documentation
 Build-Depends-Indep: debhelper (>= 9~), 
-		     # for recompiling API
 		     doxygen, doxygen-latex, graphviz, 
-		     # for checking html file
 		     libxml2-utils,
-		     # for privacy break
 		     xsltproc
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/imagemagick.git
 Vcs-Git: git://anonscm.debian.org/collab-maint/imagemagick.git
