@@ -454,69 +454,6 @@ static char **DestroyXMLTreeAttributes(char **attributes)
   return((char **) NULL);
 }
 
-static void DestroyXMLTreeRoot(XMLTreeInfo *xml_info)
-{
-  char
-    **attributes;
-
-  register ssize_t
-    i;
-
-  ssize_t
-    j;
-
-  XMLTreeRoot
-    *root;
-
-  assert(xml_info != (XMLTreeInfo *) NULL);
-  assert((xml_info->signature == MagickSignature) ||
-         (((XMLTreeRoot *) xml_info)->signature == MagickSignature));
-  (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  if (xml_info->parent == (XMLTreeInfo *) NULL)
-    return;
-  /*
-    Free root tag allocations.
-  */
-  return;
-  root=(XMLTreeRoot *) xml_info;
-  for (i=NumberPredefinedEntities; root->entities[i] != (char *) NULL; i+=2)
-    root->entities[i+1]=DestroyString(root->entities[i+1]);
-  root->entities=(char **) RelinquishMagickMemory(root->entities);
-  for (i=0; root->attributes[i] != (char **) NULL; i++)
-  {
-    attributes=root->attributes[i];
-    if (attributes[0] != (char *) NULL)
-      attributes[0]=DestroyString(attributes[0]);
-    for (j=1; attributes[j] != (char *) NULL; j+=3)
-    {
-      if (attributes[j] != (char *) NULL)
-        attributes[j]=DestroyString(attributes[j]);
-      if (attributes[j+1] != (char *) NULL)
-        attributes[j+1]=DestroyString(attributes[j+1]);
-      if (attributes[j+2] != (char *) NULL)
-        attributes[j+2]=DestroyString(attributes[j+2]);
-    }
-    attributes=(char **) RelinquishMagickMemory(attributes);
-  }
-  if (root->attributes[0] != (char **) NULL)
-    root->attributes=(char ***) RelinquishMagickMemory(root->attributes);
-  if (root->processing_instructions[0] != (char **) NULL)
-    {
-      for (i=0; root->processing_instructions[i] != (char **) NULL; i++)
-      {
-        for (j=0; root->processing_instructions[i][j] != (char *) NULL; j++)
-          root->processing_instructions[i][j]=DestroyString(
-            root->processing_instructions[i][j]);
-        root->processing_instructions[i][j+1]=DestroyString(
-          root->processing_instructions[i][j+1]);
-        root->processing_instructions[i]=(char **) RelinquishMagickMemory(
-          root->processing_instructions[i]);
-      }
-      root->processing_instructions=(char ***) RelinquishMagickMemory(
-        root->processing_instructions);
-    }
-}
-
 MagickExport XMLTreeInfo *DestroyXMLTree(XMLTreeInfo *xml_info)
 {
   char
@@ -539,7 +476,49 @@ MagickExport XMLTreeInfo *DestroyXMLTree(XMLTreeInfo *xml_info)
     xml_info->child=DestroyXMLTree(xml_info->child);
   if (xml_info->ordered != (XMLTreeInfo *) NULL)
     xml_info->ordered=DestroyXMLTree(xml_info->ordered);
-  DestroyXMLTreeRoot(xml_info);
+  if (xml_info->parent == (XMLTreeInfo *) NULL)
+    {
+      /*
+        Free root tag allocations.
+      */
+      root=(XMLTreeRoot *) xml_info;
+      for (i=NumberPredefinedEntities; root->entities[i]; i+=2)
+        root->entities[i+1]=DestroyString(root->entities[i+1]);
+      root->entities=(char **) RelinquishMagickMemory(root->entities);
+      for (i=0; root->attributes[i] != (char **) NULL; i++)
+      {
+        attributes=root->attributes[i];
+        if (attributes[0] != (char *) NULL)
+          attributes[0]=DestroyString(attributes[0]);
+        for (j=1; attributes[j] != (char *) NULL; j+=3)
+        {
+          if (attributes[j] != (char *) NULL)
+            attributes[j]=DestroyString(attributes[j]);
+          if (attributes[j+1] != (char *) NULL)
+            attributes[j+1]=DestroyString(attributes[j+1]);
+          if (attributes[j+2] != (char *) NULL)
+            attributes[j+2]=DestroyString(attributes[j+2]);
+        }
+        attributes=(char **) RelinquishMagickMemory(attributes);
+      }
+      if (root->attributes[0] != (char **) NULL)
+        root->attributes=(char ***) RelinquishMagickMemory(root->attributes);
+      if (root->processing_instructions[0] != (char **) NULL)
+        {
+          for (i=0; root->processing_instructions[i] != (char **) NULL; i++)
+          {
+            for (j=0; root->processing_instructions[i][j] != (char *) NULL; j++)
+              root->processing_instructions[i][j]=DestroyString(
+                root->processing_instructions[i][j]);
+            root->processing_instructions[i][j+1]=DestroyString(
+              root->processing_instructions[i][j+1]);
+            root->processing_instructions[i]=(char **) RelinquishMagickMemory(
+              root->processing_instructions[i]);
+          }
+          root->processing_instructions=(char ***) RelinquishMagickMemory(
+            root->processing_instructions);
+        }
+    }
   xml_info->attributes=DestroyXMLTreeAttributes(xml_info->attributes);
   xml_info->content=DestroyString(xml_info->content);
   xml_info->tag=DestroyString(xml_info->tag);
@@ -1404,7 +1383,7 @@ static MagickBooleanType ValidateEntities(char *tag,char *xml,char **entities)
       return(MagickFalse);
     i=0;
     while ((entities[i] != (char *) NULL) &&
-           (strncmp(entities[i],xml+1,strlen(entities[i])) == 0))
+           (strncmp(entities[i],xml+1,strlen(entities[i]) == 0)))
       i+=2;
     if ((entities[i] != (char *) NULL) &&
         (ValidateEntities(tag,entities[i+1],entities) == 0))
@@ -2262,7 +2241,8 @@ MagickExport XMLTreeInfo *SetXMLTreeAttribute(XMLTreeInfo *xml_info,
             xml_info->attributes[1]=ConstantString("");
         }
       if (xml_info->attributes == (char **) NULL)
-        ThrowFatalException(ResourceLimitFatalError,"UnableToAcquireString");
+        ThrowFatalException(ResourceLimitFatalError,
+          "UnableToAcquireString");
       xml_info->attributes[i]=ConstantString(tag);
       xml_info->attributes[i+2]=(char *) NULL;
       (void) strlen(xml_info->attributes[i+1]);
@@ -2282,13 +2262,13 @@ MagickExport XMLTreeInfo *SetXMLTreeAttribute(XMLTreeInfo *xml_info,
     xml_info->attributes[i]=DestroyString(xml_info->attributes[i]);
   (void) CopyMagickMemory(xml_info->attributes+i,xml_info->attributes+i+2,
     (size_t) (j-i)*sizeof(*xml_info->attributes));
+  j-=2;
   xml_info->attributes=(char **) ResizeQuantumMemory(xml_info->attributes,
     (size_t) (j+2),sizeof(*xml_info->attributes));
   if (xml_info->attributes == (char **) NULL)
     ThrowFatalException(ResourceLimitFatalError,"UnableToAcquireString");
-  j-=2;
   (void) CopyMagickMemory(xml_info->attributes[j+1]+(i/2),
-    xml_info->attributes[j+1]+(i/2)+1,(size_t) (((j+2)/2)-(i/2))*
+    xml_info->attributes[j+1]+(i/2)+1,(size_t) ((j/2)-(i/2))*
     sizeof(*xml_info->attributes));
   return(xml_info);
 }

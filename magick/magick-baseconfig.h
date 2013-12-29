@@ -372,9 +372,7 @@
 #endif
 
 /* Define if you have the <lcms2.h> header file. */
-#ifndef MAGICKCORE_HAVE_LCMS2_H
-#define MAGICKCORE_HAVE_LCMS2_H 1
-#endif
+/* #undef HAVE_LCMS2_H */
 
 /* Define if you have the <lcms2/lcms2.h> header file. */
 /* #undef HAVE_LCMS2_LCMS2_H */
@@ -1108,14 +1106,10 @@
 #endif
 
 /* Define if you have JPEG library */
-#ifndef MAGICKCORE_JPEG_DELEGATE
-#define MAGICKCORE_JPEG_DELEGATE 1
-#endif
+/* #undef JPEG_DELEGATE */
 
 /* Define if you have LCMS (v1.11 or later) library */
-#ifndef MAGICKCORE_LCMS_DELEGATE
-#define MAGICKCORE_LCMS_DELEGATE 1
-#endif
+/* #undef LCMS_DELEGATE */
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
@@ -1208,7 +1202,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.8.8-1"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.8.8-0"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1223,7 +1217,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.8.8-1"
+#define MAGICKCORE_PACKAGE_VERSION "6.8.8-0"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1435,7 +1429,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.8.8-1"
+#define MAGICKCORE_VERSION "6.8.8-0"
 #endif
 
 /* Define if you have WEBP library */
