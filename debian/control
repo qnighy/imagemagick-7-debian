@@ -60,6 +60,7 @@ Architecture: all
 Multi-Arch: foreign
 Section: doc
 Depends: ${misc:Depends}, ${doxygen:Depends}
+Pre-Depends: dpkg (>= 1.17.5)
 Recommends: www-browser
 Suggests: imagemagick
 Conflicts: imagemagick (<= 7:6.4.0)
