@@ -6,6 +6,7 @@ imagemagick (8:6.8.8.0-1) experimental; urgency=low
     - check validity (in the xml or xhtml sense) of
       upstream documentation using xmllint.
     - check gpg signature see uscan(1).
+    - upgrade debian/copyright (new review).
   * Upstream break c++ ABI:
     - Bump c++ soname.
     - Add new symbols to symbols file.

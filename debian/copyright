@@ -318,6 +318,12 @@ Copyright: 1998, Bill Corbis
 	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
+Files: magick/accelerate*
+Copyright: 2010-2013, John Cristy
+           2013, SiuChi Chan
+           2013, Guansong Zhang
+License: ImageMagick
+
 Files: magick/distort.c
 Copyright: 1997, Anthony Thyssen
 	   1999-2013, ImageMagick Studio LLC
