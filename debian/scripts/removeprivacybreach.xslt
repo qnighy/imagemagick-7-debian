@@ -39,6 +39,58 @@
   <xsl:template match="meta[@name='google-site-verification']" />
   <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'pagead/show_ads.js')]" />
   <xsl:template match="xhtml:script[@type='text/javascript' and contains(text(),'document.getElementById(&quot;gplusone&quot;)')]" />
+  <xsl:template match="xhtml:adsense" />
+  <xsl:template match="xhtml:CustomSearchEngine" />
+  <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'google.com/jsapi')]" />
+  <xsl:template match="xhtml:script[@type='text/javascript' and contains(text(),'google.search.CustomSearchControl')]" />
+
+  <!-- flattr -->
   <xsl:template match="xhtml:script[@type='text/javascript' and contains(text(),'http://api.flattr.com/js/0.6/load.js?mode=auto')]" />
+  <xsl:template match="xhtml:img[contains(@src,'api.flattr.com/button/flattr-badge-large.png')]" />
+  <xsl:template match="xhtml:iframe[contains(@src,'tools.flattr.net/widgets/thing.html')]" />
+
+  <!-- replace online jquery with local one -->
+  <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'jquery.min.js')]">
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="src">
+	<xsl:value-of select="'/usr/share/javascript/jquery/jquery.min.js'"/>
+      </xsl:attribute>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'jquery.mousewheel')]">
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="src">
+	<xsl:value-of select="'/usr/share/javascript/jquery-mousewheel/jquery.mousewheel.js'"/>
+      </xsl:attribute>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'jquery.fancybox.pack.js')]">
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="src">
+	<xsl:value-of select="'/usr/share/javascript/jquery-fancybox/jquery.fancybox.min.js'"/>
+      </xsl:attribute>
+    </xsl:copy>
+  </xsl:template>
   
+  <xsl:template match="xhtml:link[@type='text/css' and contains(@href,'jquery.fancybox.css')]">
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="href">
+	<xsl:value-of select="'/usr/share/javascript/jquery-fancybox/jquery.fancybox.css'"/>
+      </xsl:attribute>
+    </xsl:copy>
+  </xsl:template>
+
+  <!-- temporary remove optionnal package -->
+  <xsl:template match="xhtml:link[@type='text/css' and contains(@href,'jquery.fancybox-buttons.css')]" />
+  <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'jquery.fancybox-buttons.js')]" />
+  <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'jquery.fancybox-media.js')]" />
+  <xsl:template match="xhtml:link[@type='text/css' and contains(@href,'jquery.fancybox-thumbs.css')]" />
+  <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'jquery.fancybox-thumbs.js')]" />
+
 </xsl:stylesheet>

@@ -276,7 +276,7 @@ override_dh_auto_install-indep:
 
 	# now apply privacy cleanning rules
 	find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
-	     -maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
+	     -maxdepth 3 -type f -and -name '*.html' -and -not -empty -print0 \
              | xargs -r -0 -n 1 debian/scripts/removeprivacybreach
 
 
