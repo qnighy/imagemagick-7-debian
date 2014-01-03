@@ -93,4 +93,7 @@
   <xsl:template match="xhtml:link[@type='text/css' and contains(@href,'jquery.fancybox-thumbs.css')]" />
   <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'jquery.fancybox-thumbs.js')]" />
 
+  <!-- remove rss meta data -->
+  <xsl:template match="xhtml:link[@href='http://imagemagick.org/ici.rdf']" />
+
 </xsl:stylesheet>
