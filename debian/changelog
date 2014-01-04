@@ -1,6 +1,7 @@
 imagemagick (8:6.8.8.0-1) experimental; urgency=low
 
-  * New upstream version.
+  * New upstream version:
+    - add new symbols to magickcore symbols file.
   * Packaging improvements:
     - Really display log in case of test failure.
     - check validity (in the xml or xhtml sense) of

@@ -1,7 +1,18 @@
 # SymbolsHelper-Confirmed: 1.0.0 amd64
 libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  (regex|optional)"^.gomp_critical_user_.*@Base" 6.8.5.5
+ AccelerateAddNoiseImage@Base 8:6.8.8.0
+ AccelerateBlurImage@Base 8:6.8.8.0
+ AccelerateContrastImage@Base 8:6.8.8.0
  AccelerateConvolveImage@Base 6.8.5.5
+ AccelerateConvolveImageChannel@Base 8:6.8.8.0
+ AccelerateDespeckleImage@Base 8:6.8.8.0
+ AccelerateEqualizeImage@Base 8:6.8.8.0
+ AccelerateFunctionImage@Base 8:6.8.8.0
+ AccelerateModulateImage@Base 8:6.8.8.0
+ AccelerateRadialBlurImage@Base 8:6.8.8.0
+ AccelerateResizeImage@Base 8:6.8.8.0
+ AccelerateUnsharpMaskImage@Base 8:6.8.8.0
  AcquireAlignedMemory@Base 6.8.5.5
  AcquireAuthenticCacheView@Base 6.8.5.5
  AcquireCacheView@Base 6.8.5.5
@@ -19,6 +30,7 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  AcquireKernelInfo@Base 6.8.5.5
  AcquireMagickMatrix@Base 6.8.5.5
  AcquireMagickMemory@Base 6.8.5.5
+ AcquireMagickOpenCLEnv@Base 8:6.8.8.0
  AcquireMagickResource@Base 6.8.5.5
  AcquireMemory@Base 6.8.5.5
  AcquireModuleInfo@Base 6.8.5.5
@@ -169,6 +181,7 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  CompareSplayTreeString@Base 6.8.5.5
  CompareSplayTreeStringInfo@Base 6.8.5.5
  CompareStringInfo@Base 6.8.5.5
+ ComplexImages@Base 8:6.8.8.0
  CompositeImage@Base 6.8.5.5
  CompositeImageChannel@Base 6.8.5.5
  CompositeLayers@Base 6.8.5.5
@@ -418,6 +431,7 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  GetConfigureOptions@Base 6.8.5.5
  GetConfigurePaths@Base 6.8.5.5
  GetConfigureValue@Base 6.8.5.5
+ GetDefaultOpenCLEnv@Base 8:6.8.8.0
  GetDelegateCommand@Base 6.8.5.5
  GetDelegateCommands@Base 6.8.5.5
  GetDelegateInfo@Base 6.8.5.5
@@ -523,6 +537,8 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  GetMagickInfoList@Base 6.8.5.5
  GetMagickList@Base 6.8.5.5
  GetMagickMemoryMethods@Base 6.8.5.5
+ GetMagickMimeType@Base 8:6.8.8.0
+ GetMagickOpenCLEnvParam@Base 8:6.8.8.0
  GetMagickPackageName@Base 6.8.5.5
  GetMagickPageSize@Base 6.8.5.5
  GetMagickPixelPacket@Base 6.8.5.5
@@ -613,8 +629,14 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  GetRandomKey@Base 6.8.5.5
  GetRandomSecretKey@Base 6.8.5.5
  GetRandomValue@Base 6.8.5.5
+ GetResizeFilterBlur@Base 8:6.8.8.0
+ GetResizeFilterCoefficient@Base 8:6.8.8.0
+ GetResizeFilterScale@Base 8:6.8.8.0
  GetResizeFilterSupport@Base 6.8.5.5
  GetResizeFilterWeight@Base 6.8.5.5
+ GetResizeFilterWeightingType@Base 8:6.8.8.0
+ GetResizeFilterWindowSupport@Base 8:6.8.8.0
+ GetResizeFilterWindowWeightingType@Base 8:6.8.8.0
  GetSignatureBlocksize@Base 6.8.5.5
  GetSignatureDigest@Base 6.8.5.5
  GetSignatureDigestsize@Base 6.8.5.5
@@ -672,6 +694,8 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  ImportImagePixels@Base 6.8.5.5
  ImportQuantumPixels@Base 6.8.5.5
  InheritException@Base 6.8.5.5
+ InitImageMagickOpenCL@Base 8:6.8.8.0
+ InitOpenCLEnv@Base 8:6.8.8.0
  InitializeMagick@Base 6.8.5.5
  InitializeModuleList@Base 6.8.5.5
  InitializeSignature@Base 6.8.5.5
@@ -947,8 +971,10 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  RegistryComponentGenesis@Base 6.8.5.5
  RegistryComponentTerminus@Base 6.8.5.5
  RelinquishAlignedMemory@Base 6.8.5.5
+ RelinquishCommandQueue@Base 8:6.8.8.0
  RelinquishMagickMatrix@Base 6.8.5.5
  RelinquishMagickMemory@Base 6.8.5.5
+ RelinquishMagickOpenCLEnv@Base 8:6.8.8.0
  RelinquishMagickResource@Base 6.8.5.5
  RelinquishSemaphoreInfo@Base 6.8.5.5
  RelinquishUniqueFileResource@Base 6.8.5.5
@@ -1024,6 +1050,7 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  SetCacheViewVirtualPixelMethod@Base 6.8.5.5
  SetClientName@Base 6.8.5.5
  SetClientPath@Base 6.8.5.5
+ SetDefaultOpenCLEnv@Base 8:6.8.8.0
  SetErrorHandler@Base 6.8.5.5
  SetExceptionInfo@Base 6.8.5.5
  SetFatalErrorHandler@Base 6.8.5.5
@@ -1065,6 +1092,7 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  SetLogName@Base 6.8.5.5
  SetMagickInfo@Base 6.8.5.5
  SetMagickMemoryMethods@Base 6.8.5.5
+ SetMagickOpenCLEnvParam@Base 8:6.8.8.0
  SetMagickPrecision@Base 6.8.5.5
  SetMagickRegistry@Base 6.8.5.5
  SetMagickResourceLimit@Base 6.8.5.5
@@ -1290,4 +1318,6 @@ libMagickCore-6.Q16.so.1 libmagickcore-6.q16-1 #MINVER#
  ZLIBEncodeImage@Base 6.8.5.5
  ZeroKernelNans@Base 6.8.5.5
  ZoomImage@Base 6.8.5.5
+ openclCachedFilesDirectory@Base 8:6.8.8.0
+ openclCachedFilesDirectoryLock@Base 8:6.8.8.0
  sRGBCompandor@Base 6.8.5.5
