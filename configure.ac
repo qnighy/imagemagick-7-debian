@@ -23,7 +23,7 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
 m4_define([magick_micro_version], [8])
-m4_define([magick_patchlevel_version], [0])
+m4_define([magick_patchlevel_version], [2])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -1306,7 +1306,7 @@ if test "$enable_delegate_build" != 'no'; then
     # Most delegates have includes in the same directory as the library, but not all...
     #
     # Includes
-    for dir in bzlib fftw fpx gslib/src jp2 jp2/src/libjasper/include jbig/libjbig jpeg lcms/include lzma magick mupdf png tiff/libtiff ttf/include wand webp wmf/include xml/include zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/include lzma magick mupdf png tiff/libtiff ttf/include wand webp/src wmf/include xml/include zlib; do
         if test -d "$builddir/$dir"; then
             CPPFLAGS="$CPPFLAGS -I$builddir/$dir"
         else
@@ -1317,7 +1317,7 @@ if test "$enable_delegate_build" != 'no'; then
     done
 
     # Libraries
-    for dir in bzlib fftw fpx gslib/src jp2 jp2/src/libjasper jbig/libjbig jpeg lcms/src lzma magick mupdf png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/src lzma magick mupdf png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
     if test -d "$builddir/$dir/.libs"; then
         LDFLAGS="$LDFLAGS -L$builddir/$dir/.libs"
     else
@@ -2256,50 +2256,6 @@ AC_SUBST(JPEG_LIBS)
 dnl ===========================================================================
 
 #
-# Check for JPEG Version 2 delegate library.
-#
-AC_ARG_WITH([jp2],
-    [AC_HELP_STRING([--without-jp2],
-                    [disable JPEG-2000 support])],
-    [with_jp2=$withval],
-    [with_jp2='yes'])
-
-if test "$with_jp2" != 'yes'; then
-    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-jp2=$with_jp2 "
-fi
-
-have_jp2='no'
-JP2_LIBS=''
-if test "$with_jp2" != 'no'; then
-    AC_MSG_RESULT([-------------------------------------------------------------])
-    AC_MSG_CHECKING([for JPEG Version 2])
-    AC_MSG_RESULT([])
-    failed=0
-    passed=0
-    AC_CHECK_HEADER(jasper/jasper.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
-    AC_CHECK_LIB(jasper,jas_stream_fopen,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-    AC_MSG_CHECKING([if JPEG version 2 support package is complete])
-    if test $passed -gt 0; then
-        if test $failed -gt 0; then
-            AC_MSG_RESULT([no -- some components failed test])
-            have_jp2='no (failed tests)'
-        else
-            JP2_LIBS='-ljasper'
-            LIBS="$JP2_LIBS $LIBS"
-            AC_DEFINE(JP2_DELEGATE,1,Define if you have JPEG version 2 "Jasper" library)
-            AC_MSG_RESULT([yes])
-            have_jp2='yes'
-        fi
-    else
-        AC_MSG_RESULT([no])
-    fi
-fi
-AM_CONDITIONAL(JP2_DELEGATE, test "$have_jp2" = 'yes')
-AC_SUBST(JP2_LIBS)
-
-dnl ===========================================================================
-
-#
 # Check for LCMS delegate library.
 #
 # Disable LCMS.
@@ -2429,6 +2385,43 @@ if test "$have_lcms2" = 'yes' -o "$have_lcms" = 'yes'; then
   AC_DEFINE(LCMS_DELEGATE,1,[Define if you have LCMS (v1.11 or later) library])
 fi
 AC_SUBST(LCMS_LIBS)
+
+
+dnl ===========================================================================
+
+#
+# Check for the OpenJP2 delegate library.
+#
+AC_ARG_WITH([openjp2],
+    [AC_HELP_STRING([--without-openjp2],
+                    [disable OpenJP2 support])],
+    [with_openjp2=$withval],
+    [with_openjp2='yes'])
+
+if test "$with_openjp2" != 'yes'; then
+    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-openjp2=$with_openjp2 "
+fi
+
+have_openjp2='no'
+LIBOPENJP2_CFLAGS=""
+LIBOPENJP2_LIBS=""
+LIBOPENJP2_PKG=""
+if test "x$with_openjp2" = "xyes"; then
+    AC_MSG_RESULT([-------------------------------------------------------------])
+    PKG_CHECK_MODULES(LIBOPENJP2,[libopenjp2 >= 2.0.0], have_openjp2=yes, have_openjp2=no)
+    AC_MSG_RESULT([])
+fi
+
+if test "$have_openjp2" = 'yes'; then
+    AC_DEFINE(LIBOPENJP2_DELEGATE,1,Define if you have OPENJP2 library)
+    if test "$build_modules" = 'no'; then
+        CFLAGS="$LIBOPENJP2_CFLAGS $CFLAGS"
+    fi
+fi
+
+AM_CONDITIONAL(LIBOPENJP2_DELEGATE, test "$have_openjp2" = 'yes')
+AC_SUBST(LIBOPENJP2_CFLAGS)
+AC_SUBST(LIBOPENJP2_LIBS)
 
 
 dnl ===========================================================================
@@ -2574,6 +2567,7 @@ fi
 AM_CONDITIONAL(OPENEXR_DELEGATE, test "$have_openexr" = 'yes')
 AC_SUBST(OPENEXR_CFLAGS)
 AC_SUBST(OPENEXR_LIBS)
+
 
 dnl ===========================================================================
 
@@ -3887,6 +3881,9 @@ fi
 if test "$have_openexr"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES openexr"
 fi
+if test "$have_openjp2"    = 'yes' ; then
+   MAGICK_DELEGATES="$MAGICK_DELEGATES openjp2"
+fi
 if test "$have_pango"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES pango"
 fi
@@ -3979,7 +3976,7 @@ fi
 if test "$build_modules" != 'no'; then
     MAGICK_DEP_LIBS="$LCMS_LIBS $FREETYPE_LIBS $LQR_LIBS $FFTW_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
 else
-    MAGICK_DEP_LIBS="$JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JP2_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
 fi
 AC_SUBST(MAGICK_DEP_LIBS)
 
@@ -4100,6 +4097,7 @@ LZMA              --with-lzma=$with_lzma		$have_lzma
 Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
 MUPDF             --with-mupdf=$with_mupdf		$have_mupdf
 OpenEXR           --with-openexr=$with_openexr		$have_openexr
+OpenJP2           --with-openjp2=$with_openjp2		$have_openjp2
 PANGO             --with-pango=$with_pango		$have_pango
 PERL              --with-perl=$with_perl		$have_perl
 PNG               --with-png=$with_png		$have_png

@@ -497,6 +497,8 @@ static const OptionInfo
     { "-mode", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+modulate", 1L, DeprecateOptionFlag, MagickFalse },
     { "-modulate", 1L, SimpleOperatorOptionFlag, MagickFalse },
+    { "+moments", 0L, SimpleOperatorOptionFlag | FireOptionFlag, MagickFalse },
+    { "-moments", 0L, SimpleOperatorOptionFlag | FireOptionFlag, MagickFalse },
     { "+monitor", 0L, ImageInfoOptionFlag | SimpleOperatorOptionFlag, MagickFalse },
     { "-monitor", 0L, ImageInfoOptionFlag | SimpleOperatorOptionFlag, MagickFalse },
     { "+monochrome", 0L, ImageInfoOptionFlag, MagickFalse },
@@ -1338,6 +1340,7 @@ static const OptionInfo
     { "MSE", MeanSquaredErrorMetric, UndefinedOptionFlag, MagickFalse },
     { "NCC", NormalizedCrossCorrelationErrorMetric, UndefinedOptionFlag, MagickFalse },
     { "PAE", PeakAbsoluteErrorMetric, UndefinedOptionFlag, MagickFalse },
+    { "PHASH", PerceptualHashErrorMetric, UndefinedOptionFlag, MagickFalse },
     { "PSNR", PeakSignalToNoiseRatioMetric, UndefinedOptionFlag, MagickFalse },
     { "RMSE", RootMeanSquaredErrorMetric, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedErrorMetric, UndefinedOptionFlag, MagickFalse }

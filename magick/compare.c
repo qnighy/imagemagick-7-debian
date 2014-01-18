@@ -1284,6 +1284,179 @@ static MagickBooleanType GetPeakSignalToNoiseRatio(const Image *image,
   return(status);
 }
 
+static MagickBooleanType GetPerceptualHashDistortion(const Image *image,
+  const Image *reconstruct_image,const ChannelType channel,
+  double *distortion,ExceptionInfo *exception)
+{
+  ChannelMoments
+    *image_moments,
+    *reconstruct_moments;
+
+  Image
+    *blur_image,
+    *blur_reconstruct;
+
+  register ssize_t
+    i;
+
+  /*
+    Compute perceptual hash in the native image colorspace.
+  */
+  blur_image=BlurImage(image,0.0,1.0,exception);
+  if (blur_image == (Image *) NULL)
+    return(MagickFalse);
+  image_moments=GetImageChannelMoments(blur_image,exception);
+  if (image_moments == (ChannelMoments *) NULL)
+    {
+      blur_image=DestroyImage(blur_image);
+      return(MagickFalse);
+    }
+  blur_reconstruct=BlurImage(reconstruct_image,0.0,1.0,exception);
+  if (blur_reconstruct == (Image *) NULL)
+    {
+      image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
+      blur_image=DestroyImage(blur_image);
+      return(MagickFalse);
+    }
+  reconstruct_moments=GetImageChannelMoments(blur_reconstruct,exception);
+  if (reconstruct_moments == (ChannelMoments *) NULL)
+    {
+      image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
+      blur_image=DestroyImage(blur_image);
+      blur_reconstruct=DestroyImage(blur_reconstruct);
+      return(MagickFalse);
+    }
+  for (i=0; i < 8; i++)
+  {
+    double
+      difference;
+
+    /*
+      Compute sum of moment differences squared.
+    */
+    if (i == 2)
+      continue;  /* I3 is not independent of other moments */
+    if ((channel & RedChannel) != 0)
+      {
+        difference=log10(fabs(reconstruct_moments[RedChannel].I[i]))-
+          log10(fabs(image_moments[RedChannel].I[i]));
+        distortion[RedChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+    if ((channel & GreenChannel) != 0)
+      {
+        difference=log10(fabs(reconstruct_moments[GreenChannel].I[i]))-
+          log10(fabs(image_moments[GreenChannel].I[i]));
+        distortion[GreenChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+    if ((channel & BlueChannel) != 0)
+      {
+        difference=log10(fabs(reconstruct_moments[BlueChannel].I[i]))-
+          log10(fabs(image_moments[BlueChannel].I[i]));
+        distortion[BlueChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+    if (((channel & OpacityChannel) != 0) && (image->matte != MagickFalse) &&
+        (reconstruct_image->matte != MagickFalse))
+      {
+        difference=log10(fabs(reconstruct_moments[OpacityChannel].I[i]))-
+          log10(fabs(image_moments[OpacityChannel].I[i]));
+        distortion[OpacityChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+    if (((channel & IndexChannel) != 0) &&
+        (image->colorspace == CMYKColorspace) &&
+        (reconstruct_image->colorspace == CMYKColorspace))
+      {
+        difference=log10(fabs(reconstruct_moments[IndexChannel].I[i]))-
+          log10(fabs(image_moments[IndexChannel].I[i]));
+        distortion[IndexChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+  }
+  image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
+  reconstruct_moments=(ChannelMoments *) RelinquishMagickMemory(
+    reconstruct_moments);
+  /*
+    Compute perceptual hash in the HCLP colorspace.
+  */
+  if ((SetImageColorspace(blur_image,HCLpColorspace) == MagickFalse) ||
+      (SetImageColorspace(blur_reconstruct,HCLpColorspace) == MagickFalse))
+    {
+      blur_reconstruct=DestroyImage(blur_reconstruct);
+      blur_image=DestroyImage(blur_image);
+      return(MagickFalse);
+    }
+  image_moments=GetImageChannelMoments(blur_image,exception);
+  blur_image=DestroyImage(blur_image);
+  if (image_moments == (ChannelMoments *) NULL)
+    {
+      blur_reconstruct=DestroyImage(blur_reconstruct);
+      return(MagickFalse);
+    }
+  reconstruct_moments=GetImageChannelMoments(blur_reconstruct,exception);
+  blur_reconstruct=DestroyImage(blur_reconstruct);
+  if (reconstruct_moments == (ChannelMoments *) NULL)
+    {
+      image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
+      return(MagickFalse);
+    }
+  for (i=0; i < 8; i++)
+  {
+    double
+      difference;
+
+    /*
+      Compute sum of moment differences squared.
+    */
+    if (i == 2)
+      continue;  /* I3 is not independent of other moments */
+    if ((channel & RedChannel) != 0)
+      {
+        difference=log10(fabs(reconstruct_moments[RedChannel].I[i]))-
+          log10(fabs(image_moments[RedChannel].I[i]));
+        distortion[RedChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+    if ((channel & GreenChannel) != 0)
+      {
+        difference=log10(fabs(reconstruct_moments[GreenChannel].I[i]))-
+          log10(fabs(image_moments[GreenChannel].I[i]));
+        distortion[GreenChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+    if ((channel & BlueChannel) != 0)
+      {
+        difference=log10(fabs(reconstruct_moments[BlueChannel].I[i]))-
+          log10(fabs(image_moments[BlueChannel].I[i]));
+        distortion[BlueChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+    if (((channel & OpacityChannel) != 0) && (image->matte != MagickFalse) &&
+        (reconstruct_image->matte != MagickFalse))
+      {
+        difference=log10(fabs(reconstruct_moments[OpacityChannel].I[i]))-
+          log10(fabs(image_moments[OpacityChannel].I[i]));
+        distortion[OpacityChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+    if (((channel & IndexChannel) != 0) &&
+        (image->colorspace == CMYKColorspace) &&
+        (reconstruct_image->colorspace == CMYKColorspace))
+      {
+        difference=log10(fabs(reconstruct_moments[IndexChannel].I[i]))-
+          log10(fabs(image_moments[IndexChannel].I[i]));
+        distortion[IndexChannel]+=difference*difference;
+        distortion[CompositeChannels]+=difference*difference;
+      }
+  }
+  image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
+  reconstruct_moments=(ChannelMoments *) RelinquishMagickMemory(
+    reconstruct_moments);
+  return(MagickTrue);
+}
+
 static MagickBooleanType GetRootMeanSquaredDistortion(const Image *image,
   const Image *reconstruct_image,const ChannelType channel,
   double *distortion,ExceptionInfo *exception)
@@ -1393,6 +1566,12 @@ MagickExport MagickBooleanType GetImageChannelDistortion(Image *image,
     case PeakSignalToNoiseRatioMetric:
     {
       status=GetPeakSignalToNoiseRatio(image,reconstruct_image,channel,
+        channel_distortion,exception);
+      break;
+    }
+    case PerceptualHashErrorMetric:
+    {
+      status=GetPerceptualHashDistortion(image,reconstruct_image,channel,
         channel_distortion,exception);
       break;
     }
@@ -1529,6 +1708,12 @@ MagickExport double *GetImageChannelDistortions(Image *image,
     case PeakSignalToNoiseRatioMetric:
     {
       status=GetPeakSignalToNoiseRatio(image,reconstruct_image,
+        CompositeChannels,channel_distortion,exception);
+      break;
+    }
+    case PerceptualHashErrorMetric:
+    {
+      status=GetPerceptualHashDistortion(image,reconstruct_image,
         CompositeChannels,channel_distortion,exception);
       break;
     }

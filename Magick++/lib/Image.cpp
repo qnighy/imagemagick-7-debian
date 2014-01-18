@@ -831,7 +831,7 @@ double Magick::Image::fontPointsize(void) const
   return(constOptions()->fontPointsize());
 }
 
-std::string Magick::Image::format(void ) const
+std::string Magick::Image::format(void) const
 {
   const MagickInfo
     *magick_info;
@@ -845,6 +845,24 @@ std::string Magick::Image::format(void ) const
 
   throwExceptionExplicit(CorruptImageWarning,"Unrecognized image magick type");
   return(std::string());
+}
+
+std::string Magick::Image::formatExpression(const std::string expression)
+{
+  char
+    *text;
+
+  std::string
+    result;
+
+  text=InterpretImageProperties(imageInfo(),image(),expression.c_str());
+  if (text != (char *) NULL)
+    {
+      result=std::string(text);
+      text=DestroyString(text);
+    }
+  throwImageException();
+  return(result);
 }
 
 double Magick::Image::gamma(void) const
@@ -1436,7 +1454,40 @@ void Magick::Image::textEncoding(const std::string &encoding_)
 
 std::string Magick::Image::textEncoding(void) const
 {
-  return constOptions()->textEncoding();
+  return(constOptions()->textEncoding());
+}
+
+void Magick::Image::textInterlineSpacing(double spacing_)
+{
+  modifyImage();
+  options()->textInterlineSpacing(spacing_);
+}
+
+double Magick::Image::textInterlineSpacing(void) const
+{
+  return(constOptions()->textInterlineSpacing());
+}
+
+void Magick::Image::textInterwordSpacing(double spacing_)
+{
+  modifyImage();
+  options()->textInterwordSpacing(spacing_);
+}
+
+double Magick::Image::textInterwordSpacing(void) const
+{
+  return(constOptions()->textInterwordSpacing());
+}
+
+void Magick::Image::textKerning(double kerning_)
+{
+  modifyImage();
+  options()->textKerning(kerning_);
+}
+
+double Magick::Image::textKerning(void) const
+{
+  return(constOptions()->textKerning());
 }
 
 void Magick::Image::tileName(const std::string &tileName_)
@@ -1825,28 +1876,32 @@ std::string Magick::Image::attribute(const std::string name_)
 void Magick::Image::autoGamma(void)
 {
   modifyImage();
-  AutoGammaImage(image());
+  (void) SyncImageSettings(imageInfo(),image());
+  (void) AutoGammaImage(image());
   throwImageException();
 }
 
 void Magick::Image::autoGammaChannel(const ChannelType channel_)
 {
   modifyImage();
-  AutoGammaImageChannel(image(),channel_);
+  (void) SyncImageSettings(imageInfo(),image());
+  (void) AutoGammaImageChannel(image(),channel_);
   throwImageException();
 }
 
 void Magick::Image::autoLevel(void)
 {
   modifyImage();
-  AutoLevelImage(image());
+  (void) SyncImageSettings(imageInfo(),image());
+  (void) AutoLevelImage(image());
   throwImageException();
 }
 
 void Magick::Image::autoLevelChannel(const ChannelType channel_)
 {
   modifyImage();
-  AutoLevelImageChannel(image(),channel_);
+  (void) SyncImageSettings(imageInfo(),image());
+  (void) AutoLevelImageChannel(image(),channel_);
   throwImageException();
 }
 
@@ -1860,6 +1915,7 @@ void Magick::Image::autoOrient(void)
     return;
 
   GetPPException;
+  (void) SyncImageSettings(imageInfo(),image());
   newImage=AutoOrientImage(constImage(),image()->orientation,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
@@ -2680,12 +2736,23 @@ void Magick::Image::floodFillTexture(const Magick::Geometry &point_,
 void Magick::Image::floodFillTexture(const ssize_t x_,const ssize_t y_,
   const Magick::Image &texture_)
 {
+  MagickCore::Image
+    *fillPattern;
+
   PixelPacket
     *p;
 
   modifyImage();
 
-  // Set drawing pattern
+  // Set drawing fill pattern
+  fillPattern=(MagickCore::Image *)NULL;
+  if (options()->fillPattern() != (MagickCore::Image *)NULL)
+    {
+      GetPPException;
+      fillPattern=CloneImage(options()->fillPattern(),0,0,MagickTrue,
+        &exceptionInfo);
+      ThrowPPException;
+    }
   options()->fillPattern(texture_.constImage());
 
   // Fill image
@@ -2704,6 +2771,7 @@ void Magick::Image::floodFillTexture(const ssize_t x_,const ssize_t y_,
       FloodfillPaintImage(image(),DefaultChannels,options()->drawInfo(),
         &target,static_cast<ssize_t>(x_),static_cast<ssize_t>(y_),MagickFalse);
     }
+  options()->fillPattern(fillPattern);
   throwImageException();
 }
 
@@ -2716,12 +2784,23 @@ void Magick::Image::floodFillTexture(const Magick::Geometry &point_,
 void Magick::Image::floodFillTexture(const ssize_t x_,const ssize_t y_,
   const Magick::Image &texture_,const Magick::Color &borderColor_)
 {
+  MagickCore::Image
+    *fillPattern;
+
   MagickPixelPacket
     target;
 
   modifyImage();
 
   // Set drawing fill pattern
+  fillPattern=(MagickCore::Image *)NULL;
+  if (options()->fillPattern() != (MagickCore::Image *)NULL)
+    {
+      GetPPException;
+      fillPattern=CloneImage(options()->fillPattern(),0,0,MagickTrue,
+        &exceptionInfo);
+      ThrowPPException;
+    }
   options()->fillPattern(texture_.constImage());
 
   GetMagickPixelPacket(constImage(),&target);
@@ -2730,7 +2809,7 @@ void Magick::Image::floodFillTexture(const ssize_t x_,const ssize_t y_,
   target.blue=static_cast<PixelPacket>(borderColor_).blue;
   FloodfillPaintImage(image(),DefaultChannels,options()->drawInfo(),&target,
     static_cast<ssize_t>(x_),static_cast<ssize_t>(y_),MagickTrue);
-
+  options()->fillPattern(fillPattern);
   throwImageException();
 }
 
@@ -3997,6 +4076,28 @@ void Magick::Image::threshold(const double threshold_)
   modifyImage();
   BilevelImage(image(),threshold_);
   throwImageException();
+}
+
+void Magick::Image::thumbnail(const Geometry &geometry_)
+{
+  MagickCore::Image
+    *newImage;
+
+  size_t
+    height=rows(),
+    width=columns();
+
+  ssize_t
+    x=0,
+    y=0;
+
+  ParseMetaGeometry(static_cast<std::string>(geometry_).c_str(),&x,&y,&width,
+    &height);
+
+  GetPPException;
+  newImage=ThumbnailImage(constImage(),width,height,&exceptionInfo);
+  replaceImage(newImage);
+  ThrowPPException;
 }
 
 void Magick::Image::transform(const Geometry &imageGeometry_)

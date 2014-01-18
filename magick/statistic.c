@@ -93,8 +93,7 @@
 #include "magick/timer.h"
 #include "magick/utility.h"
 #include "magick/version.h"
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -566,7 +565,7 @@ MagickExport Image *EvaluateImages(const Image *images,
             evaluate_pixel[i].blue=ApplyEvaluateOperator(random_info[id],
               GetPixelBlue(p),op,evaluate_pixel[i].blue);
             evaluate_pixel[i].opacity=ApplyEvaluateOperator(random_info[id],
-              GetPixelOpacity(p),op,evaluate_pixel[i].opacity);
+              GetPixelAlpha(p),op,evaluate_pixel[i].opacity);
             if (image->colorspace == CMYKColorspace)
               evaluate_pixel[i].index=ApplyEvaluateOperator(random_info[id],
                 *indexes,op,evaluate_pixel[i].index);
@@ -578,10 +577,7 @@ MagickExport Image *EvaluateImages(const Image *images,
           SetPixelRed(q,ClampToQuantum(evaluate_pixel[i/2].red));
           SetPixelGreen(q,ClampToQuantum(evaluate_pixel[i/2].green));
           SetPixelBlue(q,ClampToQuantum(evaluate_pixel[i/2].blue));
-          if (image->matte == MagickFalse)
-            SetPixelOpacity(q,ClampToQuantum(evaluate_pixel[i/2].opacity));
-          else
-            SetPixelAlpha(q,ClampToQuantum(evaluate_pixel[i/2].opacity));
+          SetPixelAlpha(q,ClampToQuantum(evaluate_pixel[i/2].opacity));
           if (image->colorspace == CMYKColorspace)
             SetPixelIndex(evaluate_indexes+i,ClampToQuantum(
               evaluate_pixel[i/2].index));
@@ -676,7 +672,7 @@ MagickExport Image *EvaluateImages(const Image *images,
               GetPixelBlue(p),i == 0 ? AddEvaluateOperator : op,
               evaluate_pixel[x].blue);
             evaluate_pixel[x].opacity=ApplyEvaluateOperator(random_info[id],
-              GetPixelOpacity(p),i == 0 ? AddEvaluateOperator : op,
+              GetPixelAlpha(p),i == 0 ? AddEvaluateOperator : op,
               evaluate_pixel[x].opacity);
             if (image->colorspace == CMYKColorspace)
               evaluate_pixel[x].index=ApplyEvaluateOperator(random_info[id],
@@ -716,10 +712,7 @@ MagickExport Image *EvaluateImages(const Image *images,
           SetPixelRed(q,ClampToQuantum(evaluate_pixel[x].red));
           SetPixelGreen(q,ClampToQuantum(evaluate_pixel[x].green));
           SetPixelBlue(q,ClampToQuantum(evaluate_pixel[x].blue));
-          if (image->matte == MagickFalse)
-            SetPixelOpacity(q,ClampToQuantum(evaluate_pixel[x].opacity));
-          else
-            SetPixelAlpha(q,ClampToQuantum(evaluate_pixel[x].opacity));
+          SetPixelAlpha(q,ClampToQuantum(evaluate_pixel[x].opacity));
           if (image->colorspace == CMYKColorspace)
             SetPixelIndex(evaluate_indexes+x,ClampToQuantum(
               evaluate_pixel[x].index));
@@ -863,8 +856,7 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
   random_info=DestroyRandomInfoThreadSet(random_info);
   return(status);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1103,8 +1095,7 @@ MagickExport MagickBooleanType FunctionImageChannel(Image *image,
   image_view=DestroyCacheView(image_view);
   return(status);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1164,136 +1155,7 @@ MagickExport MagickBooleanType GetImageChannelExtrema(const Image *image,
   *maxima=(size_t) floor(max+0.5);
   return(status);
 }
-
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%   G e t I m a g e C h a n n e l M e a n                                     %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  GetImageChannelMean() returns the mean and standard deviation of one or more
-%  image channels.
-%
-%  The format of the GetImageChannelMean method is:
-%
-%      MagickBooleanType GetImageChannelMean(const Image *image,
-%        const ChannelType channel,double *mean,double *standard_deviation,
-%        ExceptionInfo *exception)
-%
-%  A description of each parameter follows:
-%
-%    o image: the image.
-%
-%    o channel: the channel.
-%
-%    o mean: the average value in the channel.
-%
-%    o standard_deviation: the standard deviation of the channel.
-%
-%    o exception: return any errors or warnings in this structure.
-%
-*/
-
-MagickExport MagickBooleanType GetImageMean(const Image *image,double *mean,
-  double *standard_deviation,ExceptionInfo *exception)
-{
-  MagickBooleanType
-    status;
-
-  status=GetImageChannelMean(image,CompositeChannels,mean,standard_deviation,
-    exception);
-  return(status);
-}
-
-MagickExport MagickBooleanType GetImageChannelMean(const Image *image,
-  const ChannelType channel,double *mean,double *standard_deviation,
-  ExceptionInfo *exception)
-{
-  ChannelStatistics
-    *channel_statistics;
-
-  size_t
-    channels;
-
-  assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
-  if (image->debug != MagickFalse)
-    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  channel_statistics=GetImageChannelStatistics(image,exception);
-  if (channel_statistics == (ChannelStatistics *) NULL)
-    return(MagickFalse);
-  channels=0;
-  channel_statistics[CompositeChannels].mean=0.0;
-  channel_statistics[CompositeChannels].standard_deviation=0.0;
-  if ((channel & RedChannel) != 0)
-    {
-      channel_statistics[CompositeChannels].mean+=
-        channel_statistics[RedChannel].mean;
-      channel_statistics[CompositeChannels].standard_deviation+=
-        channel_statistics[RedChannel].variance-
-        channel_statistics[RedChannel].mean*
-        channel_statistics[RedChannel].mean;
-      channels++;
-    }
-  if ((channel & GreenChannel) != 0)
-    {
-      channel_statistics[CompositeChannels].mean+=
-        channel_statistics[GreenChannel].mean;
-      channel_statistics[CompositeChannels].standard_deviation+=
-        channel_statistics[GreenChannel].variance-
-        channel_statistics[GreenChannel].mean*
-        channel_statistics[GreenChannel].mean;
-      channels++;
-    }
-  if ((channel & BlueChannel) != 0)
-    {
-      channel_statistics[CompositeChannels].mean+=
-        channel_statistics[BlueChannel].mean;
-      channel_statistics[CompositeChannels].standard_deviation+=
-        channel_statistics[BlueChannel].variance-
-        channel_statistics[BlueChannel].mean*
-        channel_statistics[BlueChannel].mean;
-      channels++;
-    }
-  if (((channel & OpacityChannel) != 0) &&
-      (image->matte != MagickFalse))
-    {
-      channel_statistics[CompositeChannels].mean+=
-        channel_statistics[OpacityChannel].mean;
-      channel_statistics[CompositeChannels].standard_deviation+=
-        channel_statistics[OpacityChannel].variance-
-        channel_statistics[OpacityChannel].mean*
-        channel_statistics[OpacityChannel].mean;
-      channels++;
-    }
-  if (((channel & IndexChannel) != 0) &&
-      (image->colorspace == CMYKColorspace))
-    {
-      channel_statistics[CompositeChannels].mean+=
-        channel_statistics[BlackChannel].mean;
-      channel_statistics[CompositeChannels].standard_deviation+=
-        channel_statistics[BlackChannel].variance-
-        channel_statistics[BlackChannel].mean*
-        channel_statistics[BlackChannel].mean;
-      channels++;
-    }
-  channel_statistics[CompositeChannels].mean/=channels;
-  channel_statistics[CompositeChannels].standard_deviation=
-    sqrt(channel_statistics[CompositeChannels].standard_deviation/channels);
-  *mean=channel_statistics[CompositeChannels].mean;
-  *standard_deviation=channel_statistics[CompositeChannels].standard_deviation;
-  channel_statistics=(ChannelStatistics *) RelinquishMagickMemory(
-    channel_statistics);
-  return(MagickTrue);
-}
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1459,8 +1321,481 @@ MagickExport MagickBooleanType GetImageChannelKurtosis(const Image *image,
     }
   return(y == (ssize_t) image->rows ? MagickTrue : MagickFalse);
 }
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   G e t I m a g e C h a n n e l M e a n                                     %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetImageChannelMean() returns the mean and standard deviation of one or more
+%  image channels.
+%
+%  The format of the GetImageChannelMean method is:
+%
+%      MagickBooleanType GetImageChannelMean(const Image *image,
+%        const ChannelType channel,double *mean,double *standard_deviation,
+%        ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o channel: the channel.
+%
+%    o mean: the average value in the channel.
+%
+%    o standard_deviation: the standard deviation of the channel.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
 
+MagickExport MagickBooleanType GetImageMean(const Image *image,double *mean,
+  double *standard_deviation,ExceptionInfo *exception)
+{
+  MagickBooleanType
+    status;
 
+  status=GetImageChannelMean(image,CompositeChannels,mean,standard_deviation,
+    exception);
+  return(status);
+}
+
+MagickExport MagickBooleanType GetImageChannelMean(const Image *image,
+  const ChannelType channel,double *mean,double *standard_deviation,
+  ExceptionInfo *exception)
+{
+  ChannelStatistics
+    *channel_statistics;
+
+  size_t
+    channels;
+
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  channel_statistics=GetImageChannelStatistics(image,exception);
+  if (channel_statistics == (ChannelStatistics *) NULL)
+    return(MagickFalse);
+  channels=0;
+  channel_statistics[CompositeChannels].mean=0.0;
+  channel_statistics[CompositeChannels].standard_deviation=0.0;
+  if ((channel & RedChannel) != 0)
+    {
+      channel_statistics[CompositeChannels].mean+=
+        channel_statistics[RedChannel].mean;
+      channel_statistics[CompositeChannels].standard_deviation+=
+        channel_statistics[RedChannel].variance-
+        channel_statistics[RedChannel].mean*
+        channel_statistics[RedChannel].mean;
+      channels++;
+    }
+  if ((channel & GreenChannel) != 0)
+    {
+      channel_statistics[CompositeChannels].mean+=
+        channel_statistics[GreenChannel].mean;
+      channel_statistics[CompositeChannels].standard_deviation+=
+        channel_statistics[GreenChannel].variance-
+        channel_statistics[GreenChannel].mean*
+        channel_statistics[GreenChannel].mean;
+      channels++;
+    }
+  if ((channel & BlueChannel) != 0)
+    {
+      channel_statistics[CompositeChannels].mean+=
+        channel_statistics[BlueChannel].mean;
+      channel_statistics[CompositeChannels].standard_deviation+=
+        channel_statistics[BlueChannel].variance-
+        channel_statistics[BlueChannel].mean*
+        channel_statistics[BlueChannel].mean;
+      channels++;
+    }
+  if (((channel & OpacityChannel) != 0) &&
+      (image->matte != MagickFalse))
+    {
+      channel_statistics[CompositeChannels].mean+=
+        channel_statistics[OpacityChannel].mean;
+      channel_statistics[CompositeChannels].standard_deviation+=
+        channel_statistics[OpacityChannel].variance-
+        channel_statistics[OpacityChannel].mean*
+        channel_statistics[OpacityChannel].mean;
+      channels++;
+    }
+  if (((channel & IndexChannel) != 0) &&
+      (image->colorspace == CMYKColorspace))
+    {
+      channel_statistics[CompositeChannels].mean+=
+        channel_statistics[BlackChannel].mean;
+      channel_statistics[CompositeChannels].standard_deviation+=
+        channel_statistics[BlackChannel].variance-
+        channel_statistics[BlackChannel].mean*
+        channel_statistics[BlackChannel].mean;
+      channels++;
+    }
+  channel_statistics[CompositeChannels].mean/=channels;
+  channel_statistics[CompositeChannels].standard_deviation=
+    sqrt(channel_statistics[CompositeChannels].standard_deviation/channels);
+  *mean=channel_statistics[CompositeChannels].mean;
+  *standard_deviation=channel_statistics[CompositeChannels].standard_deviation;
+  channel_statistics=(ChannelStatistics *) RelinquishMagickMemory(
+    channel_statistics);
+  return(MagickTrue);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   G e t I m a g e C h a n n e l M o m e n t s                               %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetImageChannelMoments() returns the moments of one or more image channels.
+%
+%  The format of the GetImageChannelMoments method is:
+%
+%      ChannelMoments *GetImageChannelMoments(const Image *image,
+%        const ChannelType channel,ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o channel: the channel.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+
+MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
+  ExceptionInfo *exception)
+{
+#define MaxNumberImageMoments  8
+
+  ChannelMoments
+    *channel_moments;
+
+  double
+    M00[CompositeChannels+1],
+    M01[CompositeChannels+1],
+    M02[CompositeChannels+1],
+    M03[CompositeChannels+1],
+    M10[CompositeChannels+1],
+    M11[CompositeChannels+1],
+    M12[CompositeChannels+1],
+    M20[CompositeChannels+1],
+    M21[CompositeChannels+1],
+    M22[CompositeChannels+1],
+    M30[CompositeChannels+1],
+    scale;
+
+  MagickPixelPacket
+    pixel;
+
+  PointInfo
+    centroid[CompositeChannels+1];
+
+  ssize_t
+    channel,
+    y;
+
+  size_t
+    length;
+
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  length=CompositeChannels+1UL;
+  channel_moments=(ChannelMoments *) AcquireQuantumMemory(length,
+    sizeof(*channel_moments));
+  if (channel_moments == (ChannelMoments *) NULL)
+    return(channel_moments);
+  (void) ResetMagickMemory(channel_moments,0,length*sizeof(*channel_moments));
+  (void) ResetMagickMemory(centroid,0,sizeof(centroid));
+  (void) ResetMagickMemory(M00,0,sizeof(M00));
+  (void) ResetMagickMemory(M01,0,sizeof(M01));
+  (void) ResetMagickMemory(M02,0,sizeof(M02));
+  (void) ResetMagickMemory(M03,0,sizeof(M03));
+  (void) ResetMagickMemory(M10,0,sizeof(M10));
+  (void) ResetMagickMemory(M11,0,sizeof(M11));
+  (void) ResetMagickMemory(M12,0,sizeof(M12));
+  (void) ResetMagickMemory(M20,0,sizeof(M20));
+  (void) ResetMagickMemory(M21,0,sizeof(M21));
+  (void) ResetMagickMemory(M22,0,sizeof(M22));
+  (void) ResetMagickMemory(M30,0,sizeof(M30));
+  GetMagickPixelPacket(image,&pixel);
+  scale=(double) ((1UL << image->depth)-1)/QuantumRange;
+  for (y=0; y < (ssize_t) image->rows; y++)
+  {
+    register const IndexPacket
+      *restrict indexes;
+
+    register const PixelPacket
+      *restrict p;
+
+    register ssize_t
+      x;
+
+    /*
+      Compute center of mass (centroid).
+    */
+    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
+    if (p == (const PixelPacket *) NULL)
+      break;
+    indexes=GetVirtualIndexQueue(image);
+    for (x=0; x < (ssize_t) image->columns; x++)
+    {
+      SetMagickPixelPacket(image,p,indexes+x,&pixel);
+      M00[RedChannel]+=scale*pixel.red;
+      M10[RedChannel]+=x*scale*pixel.red;
+      M01[RedChannel]+=y*scale*pixel.red;
+      M00[GreenChannel]+=scale*pixel.green;
+      M10[GreenChannel]+=x*scale*pixel.green;
+      M01[GreenChannel]+=y*scale*pixel.green;
+      M00[BlueChannel]+=scale*pixel.blue;
+      M10[BlueChannel]+=x*scale*pixel.blue;
+      M01[BlueChannel]+=y*scale*pixel.blue;
+      if (image->matte != MagickFalse)
+        {
+          M00[OpacityChannel]+=scale*pixel.opacity;
+          M10[OpacityChannel]+=x*scale*pixel.opacity;
+          M01[OpacityChannel]+=y*scale*pixel.opacity;
+        }
+      if (image->colorspace == CMYKColorspace)
+        {
+          M00[IndexChannel]+=scale*pixel.index;
+          M10[IndexChannel]+=x*scale*pixel.index;
+          M01[IndexChannel]+=y*scale*pixel.index;
+        }
+      p++;
+    }
+  }
+  for (channel=0; channel <= CompositeChannels; channel++)
+  {
+    /*
+      Compute center of mass (centroid).
+    */
+    if (fabs(M00[channel]) < MagickEpsilon)
+      continue;
+    centroid[channel].x=M10[channel]/M00[channel];
+    centroid[channel].y=M01[channel]/M00[channel];
+  }
+  for (y=0; y < (ssize_t) image->rows; y++)
+  {
+    register const IndexPacket
+      *restrict indexes;
+
+    register const PixelPacket
+      *restrict p;
+
+    register ssize_t
+      x;
+
+    /*
+      Compute the image moments.
+    */
+    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
+    if (p == (const PixelPacket *) NULL)
+      break;
+    indexes=GetVirtualIndexQueue(image);
+    for (x=0; x < (ssize_t) image->columns; x++)
+    {
+      SetMagickPixelPacket(image,p,indexes+x,&pixel);
+      M11[RedChannel]+=(x-centroid[RedChannel].x)*(y-
+        centroid[RedChannel].y)*scale*pixel.red;
+      M20[RedChannel]+=(x-centroid[RedChannel].x)*(x-
+        centroid[RedChannel].x)*scale*pixel.red;
+      M02[RedChannel]+=(y-centroid[RedChannel].y)*(y-
+        centroid[RedChannel].y)*scale*pixel.red;
+      M21[RedChannel]+=(x-centroid[RedChannel].x)*(x-
+        centroid[RedChannel].x)*(y-centroid[RedChannel].y)*scale*pixel.red;
+      M12[RedChannel]+=(x-centroid[RedChannel].x)*(y-
+        centroid[RedChannel].y)*(y-centroid[RedChannel].y)*scale*pixel.red;
+      M22[RedChannel]+=(x-centroid[RedChannel].x)*(x-
+        centroid[RedChannel].x)*(y-centroid[RedChannel].y)*(y-
+        centroid[RedChannel].y)*scale*pixel.red;
+      M30[RedChannel]+=(x-centroid[RedChannel].x)*(x-
+        centroid[RedChannel].x)*(x-centroid[RedChannel].x)*scale*pixel.red;
+      M03[RedChannel]+=(y-centroid[RedChannel].y)*(y-
+        centroid[RedChannel].y)*(y-centroid[RedChannel].y)*scale*pixel.red;
+      M11[GreenChannel]+=(x-centroid[GreenChannel].x)*(y-
+        centroid[GreenChannel].y)*scale*pixel.green;
+      M20[GreenChannel]+=(x-centroid[GreenChannel].x)*(x-
+        centroid[GreenChannel].x)*scale*pixel.green;
+      M02[GreenChannel]+=(y-centroid[GreenChannel].y)*(y-
+        centroid[GreenChannel].y)*scale*pixel.green;
+      M21[GreenChannel]+=(x-centroid[GreenChannel].x)*(x-
+        centroid[GreenChannel].x)*(y-centroid[GreenChannel].y)*pixel.green;
+      M12[GreenChannel]+=(x-centroid[GreenChannel].x)*(y-
+        centroid[GreenChannel].y)*(y-centroid[GreenChannel].y)*pixel.green;
+      M22[GreenChannel]+=(x-centroid[GreenChannel].x)*(x-
+        centroid[GreenChannel].x)*(y-centroid[GreenChannel].y)*(y-
+        centroid[GreenChannel].y)*scale*pixel.green;
+      M30[GreenChannel]+=(x-centroid[GreenChannel].x)*(x-
+        centroid[GreenChannel].x)*(x-centroid[GreenChannel].x)*pixel.green;
+      M03[GreenChannel]+=(y-centroid[GreenChannel].y)*(y-
+        centroid[GreenChannel].y)*(y-centroid[GreenChannel].y)*pixel.green;
+      M11[BlueChannel]+=(x-centroid[BlueChannel].x)*(y-
+        centroid[BlueChannel].y)*scale*pixel.blue;
+      M20[BlueChannel]+=(x-centroid[BlueChannel].x)*(x-
+        centroid[BlueChannel].x)*scale*pixel.blue;
+      M02[BlueChannel]+=(y-centroid[BlueChannel].y)*(y-
+        centroid[BlueChannel].y)*scale*pixel.blue;
+      M21[BlueChannel]+=(x-centroid[BlueChannel].x)*(x-
+        centroid[BlueChannel].x)*(y-centroid[BlueChannel].y)*pixel.blue;
+      M12[BlueChannel]+=(x-centroid[BlueChannel].x)*(y-
+        centroid[BlueChannel].y)*(y-centroid[BlueChannel].y)*pixel.blue;
+      M22[BlueChannel]+=(x-centroid[BlueChannel].x)*(x-
+        centroid[BlueChannel].x)*(y-centroid[BlueChannel].y)*(y-
+        centroid[BlueChannel].y)*scale*pixel.blue;
+      M30[BlueChannel]+=(x-centroid[BlueChannel].x)*(x-
+        centroid[BlueChannel].x)*(x-centroid[BlueChannel].x)*scale*pixel.blue;
+      M03[BlueChannel]+=(y-centroid[BlueChannel].y)*(y-
+        centroid[BlueChannel].y)*(y-centroid[BlueChannel].y)*scale*pixel.blue;
+      if (image->matte != MagickFalse)
+        {
+          M11[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(y-
+            centroid[OpacityChannel].y)*scale*pixel.opacity;
+          M20[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(x-
+            centroid[OpacityChannel].x)*scale*pixel.opacity;
+          M02[OpacityChannel]+=(y-centroid[OpacityChannel].y)*(y-
+            centroid[OpacityChannel].y)*scale*pixel.opacity;
+          M21[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(x-
+            centroid[OpacityChannel].x)*(y-centroid[OpacityChannel].y)*
+            scale*pixel.opacity;
+          M12[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(y-
+            centroid[OpacityChannel].y)*(y-centroid[OpacityChannel].y)*
+            scale*pixel.opacity;
+          M22[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(x-
+            centroid[OpacityChannel].x)*(y-centroid[OpacityChannel].y)*(y-
+            centroid[OpacityChannel].y)*scale*pixel.opacity;
+          M30[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(x-
+            centroid[OpacityChannel].x)*(x-centroid[OpacityChannel].x)*
+            scale*pixel.opacity;
+          M03[OpacityChannel]+=(y-centroid[OpacityChannel].y)*(y-
+            centroid[OpacityChannel].y)*(y-centroid[OpacityChannel].y)*
+            scale*pixel.opacity;
+        }
+      if (image->colorspace == CMYKColorspace)
+        {
+          M11[IndexChannel]+=(x-centroid[IndexChannel].x)*(y-
+            centroid[IndexChannel].y)*scale*pixel.index;
+          M20[IndexChannel]+=(x-centroid[IndexChannel].x)*(x-
+            centroid[IndexChannel].x)*scale*pixel.index;
+          M02[IndexChannel]+=(y-centroid[IndexChannel].y)*(y-
+            centroid[IndexChannel].y)*scale*pixel.index;
+          M21[IndexChannel]+=(x-centroid[IndexChannel].x)*(x-
+            centroid[IndexChannel].x)*(y-centroid[IndexChannel].y)*pixel.index;
+          M12[IndexChannel]+=(x-centroid[IndexChannel].x)*(y-
+            centroid[IndexChannel].y)*(y-centroid[IndexChannel].y)*pixel.index;
+          M22[IndexChannel]+=(x-centroid[IndexChannel].x)*(x-
+            centroid[IndexChannel].x)*(y-centroid[IndexChannel].y)*(y-
+            centroid[IndexChannel].y)*scale*pixel.index;
+          M30[IndexChannel]+=(x-centroid[IndexChannel].x)*(x-
+            centroid[IndexChannel].x)*(x-centroid[IndexChannel].x)*pixel.index;
+          M03[IndexChannel]+=(y-centroid[IndexChannel].y)*(y-
+            centroid[IndexChannel].y)*(y-centroid[IndexChannel].y)*pixel.index;
+        }
+      p++;
+    }
+  }
+  for (channel=0; channel <= CompositeChannels; channel++)
+  {
+    /*
+      Compute elliptical angle, major and minor axes, eccentricity, & intensity.
+    */
+    if (fabs(M00[channel]) < MagickEpsilon)
+      continue;
+    channel_moments[channel].centroid=centroid[channel];
+    channel_moments[channel].ellipse_axis.x=sqrt((2.0/M00[channel])*
+      ((M20[channel]+M02[channel])+sqrt(4.0*M11[channel]*M11[channel]+
+      (M20[channel]-M02[channel])*(M20[channel]-M02[channel]))));
+    channel_moments[channel].ellipse_axis.y=sqrt((2.0/M00[channel])*
+      ((M20[channel]+M02[channel])-sqrt(4.0*M11[channel]*M11[channel]+
+      (M20[channel]-M02[channel])*(M20[channel]-M02[channel]))));
+    channel_moments[channel].ellipse_angle=RadiansToDegrees(0.5*atan(2.0*
+      M11[channel]/(M20[channel]-M02[channel])));
+    channel_moments[channel].ellipse_eccentricity=sqrt(1.0-(
+      channel_moments[channel].ellipse_axis.y/
+      channel_moments[channel].ellipse_axis.x));
+    channel_moments[channel].ellipse_intensity=M00[channel]/
+      (MagickPI*channel_moments[channel].ellipse_axis.x*
+      channel_moments[channel].ellipse_axis.y);
+  }
+  for (channel=0; channel <= CompositeChannels; channel++)
+  {
+    /*
+      Normalize image moments.
+    */
+    if (fabs(M00[channel]) < MagickEpsilon)
+      continue;
+    M10[channel]=0.0;
+    M01[channel]=0.0;
+    M11[channel]/=pow(M00[channel],(1.0+(1.0+1.0)/2.0));
+    M20[channel]/=pow(M00[channel],(1.0+(2.0+0.0)/2.0));
+    M02[channel]/=pow(M00[channel],(1.0+(0.0+2.0)/2.0));
+    M21[channel]/=pow(M00[channel],(1.0+(2.0+1.0)/2.0));
+    M12[channel]/=pow(M00[channel],(1.0+(1.0+2.0)/2.0));
+    M22[channel]/=pow(M00[channel],(1.0+(2.0+2.0)/2.0));
+    M30[channel]/=pow(M00[channel],(1.0+(3.0+0.0)/2.0));
+    M03[channel]/=pow(M00[channel],(1.0+(0.0+3.0)/2.0));
+    M00[channel]=1.0;
+  }
+  for (channel=0; channel <= CompositeChannels; channel++)
+  {
+    /*
+      Compute Hu invariant moments.
+    */
+    if (fabs(M00[channel]) < MagickEpsilon)
+      continue;
+    channel_moments[channel].I[0]=M20[channel]+M02[channel];
+    channel_moments[channel].I[1]=(M20[channel]-M02[channel])*
+      (M20[channel]-M02[channel])+4.0*M11[channel]*M11[channel];
+    channel_moments[channel].I[2]=(M30[channel]-3.0*M12[channel])*
+      (M30[channel]-3.0*M12[channel])+(3.0*M21[channel]-M03[channel])*
+      (3.0*M21[channel]-M03[channel]);
+    channel_moments[channel].I[3]=(M30[channel]+M12[channel])*
+      (M30[channel]+M12[channel])+(M21[channel]+M03[channel])*
+      (M21[channel]+M03[channel]);
+    channel_moments[channel].I[4]=(M30[channel]-3.0*M12[channel])*
+      (M30[channel]+M12[channel])*((M30[channel]+M12[channel])*
+      (M30[channel]+M12[channel])-3.0*(M21[channel]+M03[channel])*
+      (M21[channel]+M03[channel]))+(3.0*M21[channel]-M03[channel])*
+      (M21[channel]+M03[channel])*(3.0*(M30[channel]+M12[channel])*
+      (M30[channel]+M12[channel])-(M21[channel]+M03[channel])*
+      (M21[channel]+M03[channel]));
+    channel_moments[channel].I[5]=(M20[channel]-M02[channel])*
+      ((M30[channel]+M12[channel])*(M30[channel]+M12[channel])-
+      (M21[channel]+M03[channel])*(M21[channel]+M03[channel]))+
+      4.0*M11[channel]*(M30[channel]+M12[channel])*(M21[channel]+M03[channel]);
+    channel_moments[channel].I[6]=(3.0*M21[channel]-M03[channel])*
+      (M30[channel]+M12[channel])*((M30[channel]+M12[channel])*
+      (M30[channel]+M12[channel])-3.0*(M21[channel]+M03[channel])*
+      (M21[channel]+M03[channel]))-(M30[channel]-3*M12[channel])*
+      (M21[channel]+M03[channel])*(3.0*(M30[channel]+M12[channel])*
+      (M30[channel]+M12[channel])-(M21[channel]+M03[channel])*
+      (M21[channel]+M03[channel]));
+    channel_moments[channel].I[7]=M11[channel]*((M30[channel]+M12[channel])*
+      (M30[channel]+M12[channel])-(M03[channel]+M21[channel])*
+      (M03[channel]+M21[channel]))-(M20[channel]-M02[channel])*
+      (M30[channel]+M12[channel])*(M03[channel]+M21[channel]);
+  }
+  if (y < (ssize_t) image->rows)
+    channel_moments=(ChannelMoments *) RelinquishMagickMemory(channel_moments);
+  return(channel_moments);
+}
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1577,8 +1912,7 @@ MagickExport MagickBooleanType GetImageChannelRange(const Image *image,
   }
   return(y == (ssize_t) image->rows ? MagickTrue : MagickFalse);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1879,8 +2213,7 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
       channel_statistics);
   return(channel_statistics);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
