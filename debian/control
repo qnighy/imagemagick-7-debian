@@ -252,7 +252,7 @@ Description: low-level image manipulation library - development files (Q16)
  .
  This version of libmagickcore-dev is compiled for quantum depth of 16 bits.
 
-Package: libmagickwand-6.q16-1
+Package: libmagickwand-6.q16-2
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -275,8 +275,8 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagickwand-6-headers (= ${source:Version}),
- libmagickwand-6.q16-1 (= ${binary:Version}),
- libmagickcore-6.q16-1-extra (= ${binary:Version}),
+ libmagickwand-6.q16-2 (= ${binary:Version}),
+ libmagickcore-6.q16-2-extra (= ${binary:Version}),
  libmagickcore-6.q16-dev (= ${binary:Version}), 
  pkg-config,
  ${misc:Depends}
@@ -332,7 +332,7 @@ Depends: ${misc:Depends},
  imagemagick-6.q16 (= ${binary:Version}), 
  libmagickcore-6.q16-1-extra (= ${binary:Version}), 
  libmagick++-6.q16-3 (= ${binary:Version}),
- libmagickwand-6.q16-1 (= ${binary:Version}),
+ libmagickwand-6.q16-2 (= ${binary:Version}),
  libimage-magick-q16-perl (= ${binary:Version})
 Suggests: libjpeg8-dbg, libwmf-bin, librsvg2-dbg, librsvg2-bin, inkscape
 Description: debugging symbols for ImageMagick
