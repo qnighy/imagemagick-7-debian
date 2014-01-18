@@ -7,8 +7,8 @@ export DH_VERBOSE=1
 
 
 export QUANTUMDEPTH ?= Q16
-export CORESOVERSION ?= 1
-export WANDSOVERSION ?= 1
+export CORESOVERSION ?= 2
+export WANDSOVERSION ?= 2
 export PPSOVERSION ?= 3
 
 
