@@ -173,7 +173,7 @@ Package: imagemagick-6.q16
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}, hicolor-icon-theme
-Recommends: libmagickcore-6.q16-1-extra, ghostscript, netpbm
+Recommends: libmagickcore-6.q16-2-extra, ghostscript, netpbm
 Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  ffmpeg, gimp, gnuplot, grads, graphviz, groff-base, hp2xx, html2ps, 
  libwmf-bin, mplayer,
@@ -192,7 +192,7 @@ Description: image manipulation programs -- quantum depth Q16
  .
  This version of imagemagick is compiled for quantum depth of 16 bits.
 
-Package: libmagickcore-6.q16-1
+Package: libmagickcore-6.q16-2
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -200,7 +200,7 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, 
  imagemagick-common (= ${source:Version})
 Recommends: ghostscript, gsfonts
-Suggests: libmagickcore-6.q16-1-extra
+Suggests: libmagickcore-6.q16-2-extra
 Description: low-level image manipulation library -- quantum depth Q16
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -213,14 +213,14 @@ Description: low-level image manipulation library -- quantum depth Q16
  .
  This version of libmagickcore is compiled for quantum depth of 16 bits.
 
-Package: libmagickcore-6.q16-1-extra
+Package: libmagickcore-6.q16-2-extra
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Enhances: libmagickcore-6.q16-1
-Provides: libmagickcore-extra
+Enhances: libmagickcore-6.q16-2
+Provides: libmagickcore-extra, libmagickcore-6.q16-1-extra
 Suggests: inkscape
 Description: low-level image manipulation library - extra codecs (Q16)
  This package adds support for SVG, WMF, OpenEXR, DjVu and Graphviz to
@@ -233,8 +233,8 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagickcore-6-headers (= ${source:Version}),
- libmagickcore-6.q16-1 (= ${binary:Version}),
- libmagickcore-6.q16-1-extra (= ${binary:Version}), 
+ libmagickcore-6.q16-2 (= ${binary:Version}),
+ libmagickcore-6.q16-2-extra (= ${binary:Version}), 
  libbz2-dev, libdjvulibre-dev,
  libexif-dev, libfreetype6-dev, libgraphviz-dev, libjasper-dev, libjpeg-dev,
  liblcms2-dev, liblqr-1-0-dev, libltdl-dev, libopenexr-dev, libpng-dev,
@@ -330,7 +330,7 @@ Priority: extra
 Multi-Arch: same
 Depends: ${misc:Depends}, 
  imagemagick-6.q16 (= ${binary:Version}), 
- libmagickcore-6.q16-1-extra (= ${binary:Version}), 
+ libmagickcore-6.q16-2-extra (= ${binary:Version}), 
  libmagick++-6.q16-3 (= ${binary:Version}),
  libmagickwand-6.q16-2 (= ${binary:Version}),
  libimage-magick-q16-perl (= ${binary:Version})
@@ -406,7 +406,7 @@ Description: image manipulation library - transition for development files
 Package: libmagick++-dev
 Architecture: all
 Multi-Arch: foreign
-Section: oldlibs 
+Section: oldlibs
 Priority: extra
 Depends: ${misc:Depends}, libmagick++-6.q16-dev
 Description: object-oriented C++ interface to ImageMagick
