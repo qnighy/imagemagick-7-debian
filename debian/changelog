@@ -1,4 +1,4 @@
-imagemagick (8:6.8.8.0-1) experimental; urgency=low
+imagemagick (8:6.8.8.2-1) experimental; urgency=low
 
   [ Bastien Roucariès ]
   * New upstream version:
