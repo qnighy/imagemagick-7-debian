@@ -48,6 +48,8 @@
   <xsl:template match="xhtml:script[@type='text/javascript' and contains(text(),'http://api.flattr.com/js/0.6/load.js?mode=auto')]" />
   <xsl:template match="xhtml:img[contains(@src,'api.flattr.com/button/flattr-badge-large.png')]" />
   <xsl:template match="xhtml:iframe[contains(@src,'tools.flattr.net/widgets/thing.html')]" />
+  <xsl:template match="xhtml:div[child::xhtml:a[@class='FlattrButton']]" />
+  <xsl:template match="xhtml:noscript[child::xhtml:a[@href='http://flattr.com/thing/947300/Convert-Edit-And-Compose-Images']]" />
 
   <!-- replace online jquery with local one -->
   <xsl:template match="xhtml:script[@type='text/javascript' and contains(@src,'jquery.min.js')]">
