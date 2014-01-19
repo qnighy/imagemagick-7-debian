@@ -458,6 +458,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  GetImageChannelFeatures@Base 8:6.8.8.2
  GetImageChannelKurtosis@Base 8:6.8.8.2
  GetImageChannelMean@Base 8:6.8.8.2
+ GetImageChannelMoments@Base 8:6.8.8.2
  GetImageChannelRange@Base 8:6.8.8.2
  GetImageChannelStatistics@Base 8:6.8.8.2
  GetImageChannels@Base 8:6.8.8.2
@@ -737,6 +738,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  IsLinkedListEmpty@Base 8:6.8.8.2
  IsMagickColorSimilar@Base 8:6.8.8.2
  IsMagickConflict@Base 8:6.8.8.2
+ IsMagickCoreInstantiated@Base 8:6.8.8.2
  IsMagickInstantiated@Base 8:6.8.8.2
  IsMagickTrue@Base 8:6.8.8.2
  IsMonochromeImage@Base 8:6.8.8.2
@@ -1089,6 +1091,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  SetImageVirtualPixelMethod@Base 8:6.8.8.2
  SetLogEventMask@Base 8:6.8.8.2
  SetLogFormat@Base 8:6.8.8.2
+ SetLogMethod@Base 8:6.8.8.2
  SetLogName@Base 8:6.8.8.2
  SetMagickInfo@Base 8:6.8.8.2
  SetMagickMemoryMethods@Base 8:6.8.8.2
