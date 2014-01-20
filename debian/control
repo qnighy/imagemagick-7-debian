@@ -7,7 +7,7 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Nelson A. de Oliveira <naoliv@debian.org>,
  Bastien Roucariès <roucaries.bastien+debian@gmail.com>,
  Vincent Fourmond <fourmond@debian.org>
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Build-Depends: debhelper (>= 9~), 
 # for linking compiling ...
  pkg-config, libltdl-dev,
