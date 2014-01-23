@@ -58,7 +58,10 @@ Multi-Arch: foreign
 Section: doc
 Depends: ${misc:Depends}, ${doxygen:Depends}
 Pre-Depends: dpkg (>= 1.17.5)
-Recommends: www-browser
+Recommends: www-browser,
+            libjs-jquery,
+            libjs-jquery-mousewheel,
+            libjs-jquery-fancybox,
 Suggests: imagemagick
 Conflicts: imagemagick (<= 7:6.4.0)
 Built-using: ${doxygen:Built-Using}
