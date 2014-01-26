@@ -327,7 +327,7 @@ override_dh_compress:
 
 override_dh_makeshlibs:
 	# avoid plugins' dir
-	dh_makeshlibs -Xcoders/ -Xfilters/
+	dh_makeshlibs -v -Xcoders/ -Xfilters/
 
 override_dh_strip:
 	dh_strip --dbg-package=imagemagick-dbg
