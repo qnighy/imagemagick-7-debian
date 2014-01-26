@@ -23,7 +23,7 @@ imagemagick (8:6.8.8.2-1) experimental; urgency=low
     - "unhandled symlink to directory conversion"
       thanks to Andreas Beckmann (Closes: #720145).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 26 Jan 2014 19:18:23 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 26 Jan 2014 19:27:23 +0100
 
 imagemagick (8:6.8.5.6-3) experimental; urgency=low
 
