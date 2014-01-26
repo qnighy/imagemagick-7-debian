@@ -1,6 +1,5 @@
 # SymbolsHelper-Confirmed: 1.0.0 amd64
 libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
- (regex|optional)"^.gomp_critical_user_.*@Base" 8:6.8.8.2
  AccelerateAddNoiseImage@Base 8:6.8.8.2
  AccelerateBlurImage@Base 8:6.8.8.2
  AccelerateContrastImage@Base 8:6.8.8.2
