@@ -1,5 +1,6 @@
 # SymbolsHelper-Confirmed: 1.0.0 amd64
 libMagickWand-6.Q16.so.2 libmagickwand-6.q16-2 #MINVER#
+ (regex|optional)"^.gomp_critical_user_.*@Base" 8:6.8.8.2
  AcquireWandId@Base 8:6.8.8.2
  AnimateImageCommand@Base 8:6.8.8.2
  ClearDrawingWand@Base 8:6.8.8.2
