@@ -3,7 +3,7 @@ imagemagick (8:6.8.8.2-1) experimental; urgency=low
   * New upstream version:
     - add new symbols to magickcore symbols file.
     - so bump of libmagickwand and libmagickcore.
-    - Remove a few non free files
+    - Remove a few non free files (closes: #734800)
   * Packaging improvements:
     - Really display log in case of test failure.
     - check validity (in the xml or xhtml sense) of
