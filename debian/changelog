@@ -1,3 +1,10 @@
+imagemagick (8:6.8.8.2-2) experimental; urgency=medium
+
+  * Add missing symbols from 32 bits due to s?size_t
+  and optionnal template from sparc.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 25 Feb 2014 09:46:12 +0100
+
 imagemagick (8:6.8.8.2-1) experimental; urgency=low
 
   * New upstream version:
