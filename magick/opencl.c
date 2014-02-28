@@ -63,6 +63,7 @@ Include declarations.
 #include "magick/montage.h"
 #include "magick/morphology.h"
 #include "magick/nt-base.h"
+#include "magick/nt-base-private.h"
 #include "magick/opencl.h"
 #include "magick/opencl-private.h"
 #include "magick/option.h"
@@ -126,7 +127,7 @@ MagickExport MagickCLEnv AcquireMagickOpenCLEnv()
   if (clEnv != NULL)
   {
     memset(clEnv, 0, sizeof(struct _MagickCLEnv));
-    AcquireSemaphoreInfo(&clEnv->lock);
+    ActivateSemaphoreInfo(&clEnv->lock);
   }
   return clEnv;
 }
@@ -159,7 +160,7 @@ MagickExport MagickBooleanType RelinquishMagickOpenCLEnv(MagickCLEnv clEnv)
 {
   if (clEnv != (MagickCLEnv)NULL)
   {
-    RelinquishSemaphoreInfo(clEnv->lock);
+    DestroySemaphoreInfo(&clEnv->lock);
     RelinquishMagickMemory(clEnv);
     return MagickTrue;
   }
@@ -203,7 +204,7 @@ MagickExport MagickCLEnv GetDefaultOpenCLEnv()
   {
     if (defaultCLEnvLock == NULL)
     {
-      AcquireSemaphoreInfo(&defaultCLEnvLock);
+      ActivateSemaphoreInfo(&defaultCLEnvLock);
     }
     LockSemaphoreInfo(defaultCLEnvLock);
     defaultCLEnv = AcquireMagickOpenCLEnv();
@@ -215,7 +216,7 @@ MagickExport MagickCLEnv GetDefaultOpenCLEnv()
 static void LockDefaultOpenCLEnv() {
   if (defaultCLEnvLock == NULL)
   {
-    AcquireSemaphoreInfo(&defaultCLEnvLock);
+    ActivateSemaphoreInfo(&defaultCLEnvLock);
   }
   LockSemaphoreInfo(defaultCLEnvLock);
 }
@@ -223,7 +224,7 @@ static void LockDefaultOpenCLEnv() {
 static void UnlockDefaultOpenCLEnv() {
   if (defaultCLEnvLock == NULL)
   {
-    AcquireSemaphoreInfo(&defaultCLEnvLock);
+    ActivateSemaphoreInfo(&defaultCLEnvLock);
   }
   else
     UnlockSemaphoreInfo(defaultCLEnvLock);
@@ -2543,7 +2544,7 @@ const char* GetOpenCLCachedFilesDirectory() {
   if (openclCachedFilesDirectory == NULL) {
     if (openclCachedFilesDirectoryLock == NULL)
     {
-      AcquireSemaphoreInfo(&openclCachedFilesDirectoryLock);
+      ActivateSemaphoreInfo(&openclCachedFilesDirectoryLock);
     }
     LockSemaphoreInfo(openclCachedFilesDirectoryLock);
     if (openclCachedFilesDirectory == NULL) {
@@ -2565,10 +2566,10 @@ const char* GetOpenCLCachedFilesDirectory() {
       if (home != (char *) NULL)
       {
         /*
-        Search $HOME/.magick.
+          Search $HOME/.config/ImageMagick.
         */
-        (void) FormatLocaleString(path,MaxTextExtent,"%s%s.magick",home,
-          DirectorySeparator);
+        (void) FormatLocaleString(path,MaxTextExtent,"%s%s.config%sImageMagick",
+          home,DirectorySeparator,DirectorySeparator);
         home=DestroyString(home);
         temp = (char*)AcquireMagickMemory(strlen(path)+1);
         CopyMagickString(temp,path,strlen(path)+1);

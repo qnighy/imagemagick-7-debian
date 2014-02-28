@@ -46,15 +46,17 @@
 #include "magick/log.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/nt-base.h"
+#include "magick/nt-base-private.h"
 #include "magick/resource_.h"
 #include "magick/timer.h"
 #include "magick/string_.h"
+#include "magick/string-private.h"
 #include "magick/utility.h"
 #include "magick/version.h"
 #if defined(MAGICKCORE_LTDL_DELEGATE)
 #  include "ltdl.h"
 #endif
-#include "magick/nt-base.h"
 #if defined(MAGICKCORE_CIPHER_SUPPORT)
 #include <ntsecapi.h>
 #include <wincrypt.h>
@@ -80,7 +82,7 @@ static GhostInfo
 
 static void
   *ghost_handle = (void *) NULL;
-
+
 struct
 {
   const HKEY
@@ -94,7 +96,7 @@ const registry_roots[2] =
   { HKEY_CURRENT_USER,  "HKEY_CURRENT_USER"  },
   { HKEY_LOCAL_MACHINE, "HKEY_LOCAL_MACHINE" }
 };
-
+
 /*
   External declarations.
 */
@@ -246,7 +248,7 @@ BOOL WINAPI DllMain(HINSTANCE handle,DWORD reason,LPVOID lpvReserved)
 %      process.
 %
 */
-MagickExport int Exit(int status)
+MagickPrivate int Exit(int status)
 {
   if (IsWindows95())
     {
@@ -281,7 +283,7 @@ MagickExport int Exit(int status)
 %    o time_zone: the time zone.
 %
 */
-MagickExport int gettimeofday (struct timeval *time_value,
+MagickPrivate int gettimeofday (struct timeval *time_value,
   struct timezone *time_zone)
 {
 #define EpochFiletime  MagickLLConstant(116444736000000000)
@@ -341,7 +343,7 @@ MagickExport int gettimeofday (struct timeval *time_value,
 %      int IsWindows95()
 %
 */
-MagickExport int IsWindows95()
+MagickPrivate int IsWindows95()
 {
   OSVERSIONINFO
     version_info;
@@ -378,7 +380,7 @@ MagickExport int IsWindows95()
 %    o argv:  the  wide-character command line arguments.
 %
 */
-MagickExport char **NTArgvToUTF8(const int argc,wchar_t **argv)
+MagickPrivate char **NTArgvToUTF8(const int argc,wchar_t **argv)
 {
   char
     **utf8;
@@ -435,7 +437,7 @@ MagickExport char **NTArgvToUTF8(const int argc,wchar_t **argv)
 %    o entry: Specifies a pointer to a DIR structure.
 %
 */
-MagickExport int NTCloseDirectory(DIR *entry)
+MagickPrivate int NTCloseDirectory(DIR *entry)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(entry != (DIR *) NULL);
@@ -466,7 +468,7 @@ MagickExport int NTCloseDirectory(DIR *entry)
 %    o handle: Specifies a handle to a previously loaded dynamic module.
 %
 */
-MagickExport int NTCloseLibrary(void *handle)
+MagickPrivate int NTCloseLibrary(void *handle)
 {
   if (IsWindows95())
     return(FreeLibrary((HINSTANCE) handle));
@@ -500,7 +502,7 @@ static BOOL ControlHandler(DWORD type)
   return(FALSE);
 }
 
-MagickExport int NTControlHandler(void)
+MagickPrivate int NTControlHandler(void)
 {
   return(SetConsoleCtrlHandler((PHANDLER_ROUTINE) ControlHandler,TRUE));
 }
@@ -524,7 +526,7 @@ MagickExport int NTControlHandler(void)
 %      double NTElapsedTime(void)
 %
 */
-MagickExport double NTElapsedTime(void)
+MagickPrivate double NTElapsedTime(void)
 {
   union
   {
@@ -571,7 +573,7 @@ MagickExport double NTElapsedTime(void)
 %    o description: Specifies any description to the reason.
 %
 */
-MagickExport void NTErrorHandler(const ExceptionType severity,
+MagickPrivate void NTErrorHandler(const ExceptionType severity,
   const char *reason,const char *description)
 {
   char
@@ -624,7 +626,7 @@ MagickExport void NTErrorHandler(const ExceptionType severity,
 %      int NTExitLibrary(void)
 %
 */
-MagickExport int NTExitLibrary(void)
+MagickPrivate int NTExitLibrary(void)
 {
   return(0);
 }
@@ -654,7 +656,7 @@ MagickExport int NTExitLibrary(void)
 %    random: the random data is returned here.
 %
 */
-MagickExport MagickBooleanType NTGatherRandomData(const size_t length,
+MagickPrivate MagickBooleanType NTGatherRandomData(const size_t length,
   unsigned char *random)
 {
 #if defined(MAGICKCORE_CIPHER_SUPPORT) && defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -712,7 +714,7 @@ MagickExport MagickBooleanType NTGatherRandomData(const size_t length,
 %    o extent: the maximum extent of the path.
 %
 */
-MagickExport MagickBooleanType NTGetExecutionPath(char *path,
+MagickPrivate MagickBooleanType NTGetExecutionPath(char *path,
   const size_t extent)
 {
   GetModuleFileName(0,path,(DWORD) extent);
@@ -781,7 +783,7 @@ char *NTGetLastError(void)
 %      const char *NTGetLibraryError(void)
 %
 */
-MagickExport const char *NTGetLibraryError(void)
+MagickPrivate const char *NTGetLibraryError(void)
 {
   static char
     last_error[MaxTextExtent];
@@ -857,7 +859,7 @@ void *NTGetLibrarySymbol(void *handle,const char *name)
 %    path: the module path is returned here.
 %
 */
-MagickExport MagickBooleanType NTGetModulePath(const char *module,char *path)
+MagickPrivate MagickBooleanType NTGetModulePath(const char *module,char *path)
 {
   char
     module_path[MaxTextExtent];
@@ -987,10 +989,11 @@ static int NTLocateGhostscript(DWORD flags,int *root_index,
       mode;
 
     (void) FormatLocaleString(key,MaxTextExtent,"SOFTWARE\\%s",products[i]);
-    for (j=0; j < 2; j++)
+    for (j=0; j < (ssize_t) (sizeof(registry_roots)/sizeof(registry_roots[0]));
+         j++)
     {
       mode=KEY_READ | flags;
-      if (RegOpenKeyExA(registry_roots[j].hkey,key,0,mode,&hkey) == 
+      if (RegOpenKeyExA(registry_roots[j].hkey,key,0,mode,&hkey) ==
             ERROR_SUCCESS)
         {
           DWORD
@@ -1041,7 +1044,8 @@ static int NTGhostscriptGetString(const char *name,BOOL *is_64_bit,
   char *value,const size_t length)
 {
   char
-    key[MaxTextExtent];
+    buffer[MaxTextExtent],
+    *directory;
 
   int
     extent;
@@ -1062,51 +1066,78 @@ static int NTGhostscriptGetString(const char *name,BOOL *is_64_bit,
     Get a string from the installed Ghostscript.
   */
   *value='\0';
+  directory=(char *) NULL;
+  if (LocaleCompare(name, "GS_DLL") == 0)
+    {
+      directory=GetEnvironmentValue("MAGICK_GHOSTSCRIPT_PATH");
+      if (directory != (char *) NULL)
+        {
+          (void) FormatLocaleString(buffer,MaxTextExtent,"%s%sgsdll32.dll",
+            directory,DirectorySeparator);
+          if (IsPathAccessible(buffer) != MagickFalse)
+            {
+              (void) CopyMagickString(value,buffer,length);
+              if (is_64_bit != NULL)
+                *is_64_bit=FALSE;
+              return(TRUE);
+            }
+          (void) FormatLocaleString(buffer,MaxTextExtent,"%s%sgsdll64.dll",
+            directory,DirectorySeparator);
+          if (IsPathAccessible(buffer) != MagickFalse)
+            {
+              (void) CopyMagickString(value,buffer,length);
+              if (is_64_bit != NULL)
+                *is_64_bit=TRUE;
+              return(TRUE);
+            }
+          return(FALSE);
+        }
+    }
   if (product_family == NULL)
-  {
-    flags=0;
+    {
+      flags=0;
 #if defined(KEY_WOW64_32KEY)
 #if defined(_WIN64)
-    flags=KEY_WOW64_64KEY;
+      flags=KEY_WOW64_64KEY;
 #else
-    flags=KEY_WOW64_32KEY;
-#endif
-    (void) NTLocateGhostscript(flags,&root_index,&product_family,
-      &major_version,&minor_version);
-    if (product_family == NULL)
-#if defined(_WIN64)
       flags=KEY_WOW64_32KEY;
-    else
-      is_64_bit_version=TRUE;
+#endif
+      (void) NTLocateGhostscript(flags,&root_index,&product_family,
+        &major_version,&minor_version);
+      if (product_family == NULL)
+#if defined(_WIN64)
+        flags=KEY_WOW64_32KEY;
+      else
+        is_64_bit_version=TRUE;
 #else
       flags=KEY_WOW64_64KEY;
 #endif
 #endif
-  }
+    }
   if (product_family == NULL)
-  {
-    (void) NTLocateGhostscript(flags,&root_index,&product_family,
-      &major_version,&minor_version);
-  }
+    {
+      (void) NTLocateGhostscript(flags,&root_index,&product_family,
+        &major_version,&minor_version);
+    }
   if (product_family == NULL)
     return(FALSE);
   if (is_64_bit != NULL)
     *is_64_bit=is_64_bit_version;
-  (void) FormatLocaleString(key,MaxTextExtent,"SOFTWARE\\%s\\%d.%02d",
+  (void) FormatLocaleString(buffer,MaxTextExtent,"SOFTWARE\\%s\\%d.%02d",
     product_family,major_version,minor_version);
   extent=(int) length;
-  if (NTGetRegistryValue(registry_roots[root_index].hkey,key,flags,name,value,
-     &extent) == 0)
+  if (NTGetRegistryValue(registry_roots[root_index].hkey,buffer,flags,name,
+    value,&extent) == 0)
     {
       (void) LogMagickEvent(ConfigureEvent,GetMagickModule(),
-        "registry: \"%s\\%s\\%s\"=\"%s\"",registry_roots[root_index].name,key,
-        name,value);
+        "registry: \"%s\\%s\\%s\"=\"%s\"",registry_roots[root_index].name,
+        buffer,name,value);
       return(TRUE);
     }
   return(FALSE);
 }
 
-MagickExport int NTGhostscriptDLL(char *path,int length)
+MagickPrivate int NTGhostscriptDLL(char *path,int length)
 {
   static char
     dll[MaxTextExtent] = { "" };
@@ -1118,6 +1149,7 @@ MagickExport int NTGhostscriptDLL(char *path,int length)
   if ((*dll == '\0') &&
       (NTGhostscriptGetString("GS_DLL",&is_64_bit_version,dll,sizeof(dll)) == FALSE))
     return(FALSE);
+
 #if defined(_WIN64)
   if (!is_64_bit_version)
     return(FALSE);
@@ -1150,7 +1182,7 @@ MagickExport int NTGhostscriptDLL(char *path,int length)
 %      const GhostInfo *NTGhostscriptDLLVectors(void)
 %
 */
-MagickExport const GhostInfo *NTGhostscriptDLLVectors(void)
+MagickPrivate const GhostInfo *NTGhostscriptDLLVectors(void)
 {
   if (NTGhostscriptLoadDLL() == FALSE)
     return((GhostInfo *) NULL);
@@ -1183,7 +1215,7 @@ MagickExport const GhostInfo *NTGhostscriptDLLVectors(void)
 %    o length: length of buffer.
 %
 */
-MagickExport int NTGhostscriptEXE(char *path,int length)
+MagickPrivate int NTGhostscriptEXE(char *path,int length)
 {
   register char
     *p;
@@ -1235,10 +1267,11 @@ MagickExport int NTGhostscriptEXE(char *path,int length)
 %    o length: length of the path buffer.
 %
 */
-MagickExport int NTGhostscriptFonts(char *path,int length)
+MagickPrivate int NTGhostscriptFonts(char *path,int length)
 {
   char
     buffer[MaxTextExtent],
+    *directory,
     filename[MaxTextExtent];
 
   register char
@@ -1246,8 +1279,17 @@ MagickExport int NTGhostscriptFonts(char *path,int length)
     *q;
 
   *path='\0';
-  if (NTGhostscriptGetString("GS_LIB",NULL,buffer,MaxTextExtent) == FALSE)
-    return(FALSE);
+  directory=GetEnvironmentValue("MAGICK_GHOSTSCRIPT_FONT_PATH");
+  if (directory != (char *) NULL)
+    {
+      (void) CopyMagickString(buffer,directory,MaxTextExtent);
+      directory=DestroyString(directory);
+    }
+  else
+    {
+      if (NTGhostscriptGetString("GS_LIB",NULL,buffer,MaxTextExtent) == FALSE)
+        return(FALSE);
+    }
   for (p=buffer-1; p != (char *) NULL; p=strchr(p+1,DirectoryListSeparator))
   {
     (void) CopyMagickString(path,p+1,length+1);
@@ -1259,10 +1301,6 @@ MagickExport int NTGhostscriptFonts(char *path,int length)
     if (IsPathAccessible(filename) != MagickFalse)
       return(TRUE);
   }
-  (void) FormatLocaleString(filename,MaxTextExtent,"c:%sgs%sfonts%sfonts.dir",
-    DirectorySeparator,DirectorySeparator,DirectorySeparator);
-  if (IsPathAccessible(filename) != MagickFalse)
-    return(TRUE);
   return(FALSE);
 }
 
@@ -1285,7 +1323,7 @@ MagickExport int NTGhostscriptFonts(char *path,int length)
 %      int NTGhostscriptLoadDLL(void)
 %
 */
-MagickExport int NTGhostscriptLoadDLL(void)
+MagickPrivate int NTGhostscriptLoadDLL(void)
 {
   char
     path[MaxTextExtent];
@@ -1334,7 +1372,7 @@ MagickExport int NTGhostscriptLoadDLL(void)
 %      int NTGhostscriptUnLoadDLL(void)
 %
 */
-MagickExport int NTGhostscriptUnLoadDLL(void)
+MagickPrivate int NTGhostscriptUnLoadDLL(void)
 {
   int
     status;
@@ -1365,7 +1403,7 @@ MagickExport int NTGhostscriptUnLoadDLL(void)
 %      int NTInitializeLibrary(void)
 %
 */
-MagickExport int NTInitializeLibrary(void)
+MagickPrivate int NTInitializeLibrary(void)
 {
   return(0);
 }
@@ -1381,15 +1419,15 @@ MagickExport int NTInitializeLibrary(void)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  Mmap() emulates the Unix method of the same name.
+%  NTMapMemory() emulates the Unix method of the same name.
 %
 %  The format of the NTMapMemory method is:
 %
-%    MagickExport void *NTMapMemory(char *address,size_t length,int protection,
-%      int access,int file,MagickOffsetType offset)
+%    void *NTMapMemory(char *address,size_t length,int protection,int access,
+%      int file,MagickOffsetType offset)
 %
 */
-MagickExport void *NTMapMemory(char *address,size_t length,int protection,
+MagickPrivate void *NTMapMemory(char *address,size_t length,int protection,
   int flags,int file,MagickOffsetType offset)
 {
   DWORD
@@ -1474,7 +1512,7 @@ MagickExport void *NTMapMemory(char *address,size_t length,int protection,
 %    o entry: Specifies a pointer to a DIR structure.
 %
 */
-MagickExport DIR *NTOpenDirectory(const char *path)
+MagickPrivate DIR *NTOpenDirectory(const char *path)
 {
   wchar_t
     file_specification[MaxTextExtent];
@@ -1578,7 +1616,7 @@ static UINT ChangeErrorMode(void)
   return SetErrorMode(mode);
 }
 
-MagickExport void *NTOpenLibrary(const char *filename)
+MagickPrivate void *NTOpenLibrary(const char *filename)
 {
 #define MaxPathElements 31
 
@@ -1659,7 +1697,7 @@ MagickExport void *NTOpenLibrary(const char *filename)
 %    o entry: Specifies a pointer to a DIR structure.
 %
 */
-MagickExport struct dirent *NTReadDirectory(DIR *entry)
+MagickPrivate struct dirent *NTReadDirectory(DIR *entry)
 {
   int
     status;
@@ -1716,7 +1754,7 @@ MagickExport struct dirent *NTReadDirectory(DIR *entry)
 %      "LibPath", "CoderModulesPath", "FilterModulesPath", "SharePath".
 %
 */
-MagickExport unsigned char *NTRegistryKeyLookup(const char *subkey)
+MagickPrivate unsigned char *NTRegistryKeyLookup(const char *subkey)
 {
   char
     package_key[MaxTextExtent];
@@ -1803,7 +1841,7 @@ MagickExport unsigned char *NTRegistryKeyLookup(const char *subkey)
 %    o error: MagickTrue the event is an error.
 %
 */
-MagickExport MagickBooleanType NTReportEvent(const char *event,
+MagickPrivate MagickBooleanType NTReportEvent(const char *event,
   const MagickBooleanType error)
 {
   const char
@@ -1850,8 +1888,9 @@ MagickExport MagickBooleanType NTReportEvent(const char *event,
 %    o id: Specifies a string that identifies the resource.
 %
 */
-MagickExport unsigned char *NTResourceToBlob(const char *id)
+MagickPrivate unsigned char *NTResourceToBlob(const char *id)
 {
+
 #ifndef MAGICKCORE_LIBRARY_NAME
   char
     path[MaxTextExtent];
@@ -1938,7 +1977,7 @@ MagickExport unsigned char *NTResourceToBlob(const char *id)
 %      stream.
 %
 */
-MagickExport void NTSeekDirectory(DIR *entry,ssize_t position)
+MagickPrivate void NTSeekDirectory(DIR *entry,ssize_t position)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(entry != (DIR *) NULL);
@@ -1970,7 +2009,7 @@ MagickExport void NTSeekDirectory(DIR *entry,ssize_t position)
 %      for DLL's that can be dynamically loaded.
 %
 */
-MagickExport int NTSetSearchPath(const char *path)
+MagickPrivate int NTSetSearchPath(const char *path)
 {
 #if defined(MAGICKCORE_LTDL_DELEGATE)
   lt_dlsetsearchpath(path);
@@ -2009,7 +2048,7 @@ MagickExport int NTSetSearchPath(const char *path)
 %    o flags: Option flags (ignored for Windows).
 %
 */
-MagickExport int NTSyncMemory(void *address,size_t length,int flags)
+MagickPrivate int NTSyncMemory(void *address,size_t length,int flags)
 {
   (void) flags;
   if (FlushViewOfFile(address,length) == MagickFalse)
@@ -2040,7 +2079,7 @@ MagickExport int NTSyncMemory(void *address,size_t length,int flags)
 %    o command: This string is the command to execute.
 %
 */
-MagickExport int NTSystemCommand(const char *command)
+MagickPrivate int NTSystemCommand(const char *command)
 {
   char
     local_command[MaxTextExtent];
@@ -2077,13 +2116,13 @@ MagickExport int NTSystemCommand(const char *command)
       local_command[strlen(command)-1]='\0';
     else
       startup_info.wShowWindow=SW_HIDE;
-  status=CreateProcess((LPCTSTR) NULL,local_command,
-    (LPSECURITY_ATTRIBUTES) NULL,(LPSECURITY_ATTRIBUTES) NULL,(BOOL) FALSE,
-    (DWORD) NORMAL_PRIORITY_CLASS,(LPVOID) NULL,(LPCSTR) NULL,&startup_info,
+  status=CreateProcess((LPCTSTR) NULL,local_command,(LPSECURITY_ATTRIBUTES)
+    NULL,(LPSECURITY_ATTRIBUTES) NULL,(BOOL) FALSE,(DWORD)
+    NORMAL_PRIORITY_CLASS,(LPVOID) NULL,(LPCSTR) NULL,&startup_info,
     &process_info);
   if (status == 0)
     return(-1);
-  if (asynchronous)
+  if (asynchronous != MagickFalse)
     return(status == 0);
   status=WaitForSingleObject(process_info.hProcess,INFINITE);
   if (status != WAIT_OBJECT_0)
@@ -2119,7 +2158,7 @@ MagickExport int NTSystemCommand(const char *command)
 %    o name: _SC_PAGE_SIZE or _SC_PHYS_PAGES.
 %
 */
-MagickExport ssize_t NTSystemConfiguration(int name)
+MagickPrivate ssize_t NTSystemConfiguration(int name)
 {
   switch (name)
   {
@@ -2194,7 +2233,7 @@ MagickExport ssize_t NTSystemConfiguration(int name)
 %    o entry: Specifies a pointer to a DIR structure.
 %
 */
-MagickExport ssize_t NTTellDirectory(DIR *entry)
+MagickPrivate ssize_t NTTellDirectory(DIR *entry)
 {
   assert(entry != (DIR *) NULL);
   (void) entry;
@@ -2225,7 +2264,7 @@ MagickExport ssize_t NTTellDirectory(DIR *entry)
 %    o length: the file length.
 %
 */
-MagickExport int NTTruncateFile(int file,off_t length)
+MagickPrivate int NTTruncateFile(int file,off_t length)
 {
   DWORD
     file_pointer;
@@ -2274,7 +2313,7 @@ MagickExport int NTTruncateFile(int file,off_t length)
 %    o length: the length of the binary large object.
 %
 */
-MagickExport int NTUnmapMemory(void *map,size_t length)
+MagickPrivate int NTUnmapMemory(void *map,size_t length)
 {
   (void) length;
   if (UnmapViewOfFile(map) == 0)
@@ -2301,7 +2340,7 @@ MagickExport int NTUnmapMemory(void *map,size_t length)
 %      double NTUserTime(void)
 %
 */
-MagickExport double NTUserTime(void)
+MagickPrivate double NTUserTime(void)
 {
   DWORD
     status;
@@ -2370,7 +2409,7 @@ MagickExport double NTUserTime(void)
 %    o description: Specifies any description to the reason.
 %
 */
-MagickExport void NTWarningHandler(const ExceptionType severity,
+MagickPrivate void NTWarningHandler(const ExceptionType severity,
   const char *reason,const char *description)
 {
   char
@@ -2387,5 +2426,48 @@ MagickExport void NTWarningHandler(const ExceptionType severity,
       GetClientName(),reason,description);
   (void) MessageBox(NULL,buffer,"ImageMagick Warning",MB_OK | MB_TASKMODAL |
     MB_SETFOREGROUND | MB_ICONINFORMATION);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   N T W i n d o w s G e n e s i s                                           %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  NTWindowsGenesis() initializes the MagickCore Windows environment.
+%
+%  The format of the NTWindowsGenesis method is:
+%
+%      void NTWindowsGenesis(void)
+%
+*/
+MagickPrivate void NTWindowsGenesis(void)
+{
+  char
+    *mode;
+
+  mode=GetEnvironmentValue("MAGICK_ERRORMODE");
+  if (mode != (char *) NULL)
+    {
+      (void) SetErrorMode(StringToInteger(mode));
+      mode=DestroyString(mode);
+    }
+#if defined(_DEBUG) && !defined(__BORLANDC__) && !defined(__MINGW32__) && !defined(__MINGW64__)
+  if (IsEventLogging() != MagickFalse)
+    {
+      int
+        debug;
+
+      debug=_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+      debug|=_CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_DELAY_FREE_MEM_DF | _CRTDBG_LEAK_CHECK_DF;
+      (void) _CrtSetDbgFlag(debug);
+      _ASSERTE(_CrtCheckMemory());
+    }
+#endif
 }
 #endif

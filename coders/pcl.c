@@ -41,6 +41,7 @@
 */
 #include "magick/studio.h"
 #include "magick/artifact.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -710,11 +711,10 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image)
   one=1;
   do
   {
-    if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,sRGBColorspace);
     /*
       Initialize the printer.
     */
+    (void) TransformImageColorspace(image,sRGBColorspace);
     (void) WriteBlobString(image,"\033E");  /* printer reset */
     (void) WriteBlobString(image,"\033*r3F");  /* set presentation mode */
     (void) FormatLocaleString(buffer,MaxTextExtent,"\033*r%.20gs%.20gT",

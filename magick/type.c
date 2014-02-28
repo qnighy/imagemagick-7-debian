@@ -49,6 +49,7 @@
 #include "magick/hashmap.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
+#include "magick/nt-base-private.h"
 #include "magick/option.h"
 #include "magick/semaphore.h"
 #include "magick/splay-tree.h"
@@ -787,7 +788,7 @@ static MagickBooleanType InitializeTypeList(ExceptionInfo *exception)
       (instantiate_type == MagickFalse))
     {
       if (type_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&type_semaphore);
+				ActivateSemaphoreInfo(&type_semaphore);
       LockSemaphoreInfo(type_semaphore);
       if ((type_list == (SplayTreeInfo *) NULL) &&
           (instantiate_type == MagickFalse))
@@ -1366,7 +1367,7 @@ static MagickBooleanType LoadTypeLists(const char *filename,
 */
 MagickExport MagickBooleanType TypeComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&type_semaphore);
+  type_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -1391,7 +1392,7 @@ MagickExport MagickBooleanType TypeComponentGenesis(void)
 MagickExport void TypeComponentTerminus(void)
 {
   if (type_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&type_semaphore);
+		ActivateSemaphoreInfo(&type_semaphore);
   LockSemaphoreInfo(type_semaphore);
   if (type_list != (SplayTreeInfo *) NULL)
     type_list=DestroySplayTree(type_list);

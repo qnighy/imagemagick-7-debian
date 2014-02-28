@@ -318,18 +318,20 @@ static MagickBooleanType WriteRGFImage(const ImageInfo *image_info,Image *image,
   MagickBooleanType
     status;
 
+  int
+    bit;
+
   register const PixelPacket
     *p;
 
   register ssize_t
     x;
 
-  size_t
-    bit,
-    byte;
-
   ssize_t
     y;
+
+  unsigned char
+    byte;
 
   /*
     Open output image file.
@@ -345,17 +347,14 @@ static MagickBooleanType WriteRGFImage(const ImageInfo *image_info,Image *image,
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
   if (status == MagickFalse)
     return(status);
-  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+  (void) TransformImageColorspace(image,sRGBColorspace);
   if((image->columns > 255L) || (image->rows > 255L))
     ThrowWriterException(ImageError,"Dimensions must be less than 255x255");
-
   /*
     Write header (just the image dimensions)
-   */
+  */
   (void) WriteBlobByte(image,image->columns & 0xff);
   (void) WriteBlobByte(image,image->rows & 0xff);
-
   /*
     Convert MIFF to bit pixels.
   */

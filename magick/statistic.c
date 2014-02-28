@@ -1460,23 +1460,21 @@ MagickExport MagickBooleanType GetImageChannelMean(const Image *image,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  GetImageChannelMoments() returns the moments of one or more image channels.
+%  GetImageChannelMoments() returns the normalized moments of one or more image
+%  channels.
 %
 %  The format of the GetImageChannelMoments method is:
 %
 %      ChannelMoments *GetImageChannelMoments(const Image *image,
-%        const ChannelType channel,ExceptionInfo *exception)
+%        ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
 %    o image: the image.
 %
-%    o channel: the channel.
-%
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
 MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
   ExceptionInfo *exception)
 {
@@ -1496,8 +1494,7 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
     M20[CompositeChannels+1],
     M21[CompositeChannels+1],
     M22[CompositeChannels+1],
-    M30[CompositeChannels+1],
-    scale;
+    M30[CompositeChannels+1];
 
   MagickPixelPacket
     pixel;
@@ -1507,6 +1504,7 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
 
   ssize_t
     channel,
+    channels,
     y;
 
   size_t
@@ -1535,7 +1533,6 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
   (void) ResetMagickMemory(M22,0,sizeof(M22));
   (void) ResetMagickMemory(M30,0,sizeof(M30));
   GetMagickPixelPacket(image,&pixel);
-  scale=(double) ((1UL << image->depth)-1)/QuantumRange;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const IndexPacket
@@ -1557,26 +1554,26 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       SetMagickPixelPacket(image,p,indexes+x,&pixel);
-      M00[RedChannel]+=scale*pixel.red;
-      M10[RedChannel]+=x*scale*pixel.red;
-      M01[RedChannel]+=y*scale*pixel.red;
-      M00[GreenChannel]+=scale*pixel.green;
-      M10[GreenChannel]+=x*scale*pixel.green;
-      M01[GreenChannel]+=y*scale*pixel.green;
-      M00[BlueChannel]+=scale*pixel.blue;
-      M10[BlueChannel]+=x*scale*pixel.blue;
-      M01[BlueChannel]+=y*scale*pixel.blue;
+      M00[RedChannel]+=QuantumScale*pixel.red;
+      M10[RedChannel]+=x*QuantumScale*pixel.red;
+      M01[RedChannel]+=y*QuantumScale*pixel.red;
+      M00[GreenChannel]+=QuantumScale*pixel.green;
+      M10[GreenChannel]+=x*QuantumScale*pixel.green;
+      M01[GreenChannel]+=y*QuantumScale*pixel.green;
+      M00[BlueChannel]+=QuantumScale*pixel.blue;
+      M10[BlueChannel]+=x*QuantumScale*pixel.blue;
+      M01[BlueChannel]+=y*QuantumScale*pixel.blue;
       if (image->matte != MagickFalse)
         {
-          M00[OpacityChannel]+=scale*pixel.opacity;
-          M10[OpacityChannel]+=x*scale*pixel.opacity;
-          M01[OpacityChannel]+=y*scale*pixel.opacity;
+          M00[OpacityChannel]+=QuantumScale*pixel.opacity;
+          M10[OpacityChannel]+=x*QuantumScale*pixel.opacity;
+          M01[OpacityChannel]+=y*QuantumScale*pixel.opacity;
         }
       if (image->colorspace == CMYKColorspace)
         {
-          M00[IndexChannel]+=scale*pixel.index;
-          M10[IndexChannel]+=x*scale*pixel.index;
-          M01[IndexChannel]+=y*scale*pixel.index;
+          M00[IndexChannel]+=QuantumScale*pixel.index;
+          M10[IndexChannel]+=x*QuantumScale*pixel.index;
+          M01[IndexChannel]+=y*QuantumScale*pixel.index;
         }
       p++;
     }
@@ -1586,8 +1583,14 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
     /*
       Compute center of mass (centroid).
     */
-    if (fabs(M00[channel]) < MagickEpsilon)
-      continue;
+    if (M00[channel] < MagickEpsilon)
+      {
+        M00[channel]+=MagickEpsilon;
+        centroid[channel].x=(double) image->columns/2.0;
+        centroid[channel].y=(double) image->rows/2.0;
+        continue;
+      }
+    M00[channel]+=MagickEpsilon;
     centroid[channel].x=M10[channel]/M00[channel];
     centroid[channel].y=M01[channel]/M00[channel];
   }
@@ -1613,118 +1616,177 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
     {
       SetMagickPixelPacket(image,p,indexes+x,&pixel);
       M11[RedChannel]+=(x-centroid[RedChannel].x)*(y-
-        centroid[RedChannel].y)*scale*pixel.red;
+        centroid[RedChannel].y)*QuantumScale*pixel.red;
       M20[RedChannel]+=(x-centroid[RedChannel].x)*(x-
-        centroid[RedChannel].x)*scale*pixel.red;
+        centroid[RedChannel].x)*QuantumScale*pixel.red;
       M02[RedChannel]+=(y-centroid[RedChannel].y)*(y-
-        centroid[RedChannel].y)*scale*pixel.red;
+        centroid[RedChannel].y)*QuantumScale*pixel.red;
       M21[RedChannel]+=(x-centroid[RedChannel].x)*(x-
-        centroid[RedChannel].x)*(y-centroid[RedChannel].y)*scale*pixel.red;
+        centroid[RedChannel].x)*(y-centroid[RedChannel].y)*QuantumScale*
+        pixel.red;
       M12[RedChannel]+=(x-centroid[RedChannel].x)*(y-
-        centroid[RedChannel].y)*(y-centroid[RedChannel].y)*scale*pixel.red;
+        centroid[RedChannel].y)*(y-centroid[RedChannel].y)*QuantumScale*
+        pixel.red;
       M22[RedChannel]+=(x-centroid[RedChannel].x)*(x-
         centroid[RedChannel].x)*(y-centroid[RedChannel].y)*(y-
-        centroid[RedChannel].y)*scale*pixel.red;
+        centroid[RedChannel].y)*QuantumScale*pixel.red;
       M30[RedChannel]+=(x-centroid[RedChannel].x)*(x-
-        centroid[RedChannel].x)*(x-centroid[RedChannel].x)*scale*pixel.red;
+        centroid[RedChannel].x)*(x-centroid[RedChannel].x)*QuantumScale*
+        pixel.red;
       M03[RedChannel]+=(y-centroid[RedChannel].y)*(y-
-        centroid[RedChannel].y)*(y-centroid[RedChannel].y)*scale*pixel.red;
+        centroid[RedChannel].y)*(y-centroid[RedChannel].y)*QuantumScale*
+        pixel.red;
       M11[GreenChannel]+=(x-centroid[GreenChannel].x)*(y-
-        centroid[GreenChannel].y)*scale*pixel.green;
+        centroid[GreenChannel].y)*QuantumScale*pixel.green;
       M20[GreenChannel]+=(x-centroid[GreenChannel].x)*(x-
-        centroid[GreenChannel].x)*scale*pixel.green;
+        centroid[GreenChannel].x)*QuantumScale*pixel.green;
       M02[GreenChannel]+=(y-centroid[GreenChannel].y)*(y-
-        centroid[GreenChannel].y)*scale*pixel.green;
+        centroid[GreenChannel].y)*QuantumScale*pixel.green;
       M21[GreenChannel]+=(x-centroid[GreenChannel].x)*(x-
-        centroid[GreenChannel].x)*(y-centroid[GreenChannel].y)*scale*
+        centroid[GreenChannel].x)*(y-centroid[GreenChannel].y)*QuantumScale*
         pixel.green;
       M12[GreenChannel]+=(x-centroid[GreenChannel].x)*(y-
-        centroid[GreenChannel].y)*(y-centroid[GreenChannel].y)*scale*
+        centroid[GreenChannel].y)*(y-centroid[GreenChannel].y)*QuantumScale*
         pixel.green;
       M22[GreenChannel]+=(x-centroid[GreenChannel].x)*(x-
         centroid[GreenChannel].x)*(y-centroid[GreenChannel].y)*(y-
-        centroid[GreenChannel].y)*scale*pixel.green;
+        centroid[GreenChannel].y)*QuantumScale*pixel.green;
       M30[GreenChannel]+=(x-centroid[GreenChannel].x)*(x-
-        centroid[GreenChannel].x)*(x-centroid[GreenChannel].x)*scale*
+        centroid[GreenChannel].x)*(x-centroid[GreenChannel].x)*QuantumScale*
         pixel.green;
       M03[GreenChannel]+=(y-centroid[GreenChannel].y)*(y-
-        centroid[GreenChannel].y)*(y-centroid[GreenChannel].y)*scale*
+        centroid[GreenChannel].y)*(y-centroid[GreenChannel].y)*QuantumScale*
         pixel.green;
       M11[BlueChannel]+=(x-centroid[BlueChannel].x)*(y-
-        centroid[BlueChannel].y)*scale*pixel.blue;
+        centroid[BlueChannel].y)*QuantumScale*pixel.blue;
       M20[BlueChannel]+=(x-centroid[BlueChannel].x)*(x-
-        centroid[BlueChannel].x)*scale*pixel.blue;
+        centroid[BlueChannel].x)*QuantumScale*pixel.blue;
       M02[BlueChannel]+=(y-centroid[BlueChannel].y)*(y-
-        centroid[BlueChannel].y)*scale*pixel.blue;
+        centroid[BlueChannel].y)*QuantumScale*pixel.blue;
       M21[BlueChannel]+=(x-centroid[BlueChannel].x)*(x-
-        centroid[BlueChannel].x)*(y-centroid[BlueChannel].y)*scale*pixel.blue;
+        centroid[BlueChannel].x)*(y-centroid[BlueChannel].y)*QuantumScale*
+        pixel.blue;
       M12[BlueChannel]+=(x-centroid[BlueChannel].x)*(y-
-        centroid[BlueChannel].y)*(y-centroid[BlueChannel].y)*scale*pixel.blue;
+        centroid[BlueChannel].y)*(y-centroid[BlueChannel].y)*QuantumScale*
+        pixel.blue;
       M22[BlueChannel]+=(x-centroid[BlueChannel].x)*(x-
         centroid[BlueChannel].x)*(y-centroid[BlueChannel].y)*(y-
-        centroid[BlueChannel].y)*scale*pixel.blue;
+        centroid[BlueChannel].y)*QuantumScale*pixel.blue;
       M30[BlueChannel]+=(x-centroid[BlueChannel].x)*(x-
-        centroid[BlueChannel].x)*(x-centroid[BlueChannel].x)*scale*pixel.blue;
+        centroid[BlueChannel].x)*(x-centroid[BlueChannel].x)*QuantumScale*
+        pixel.blue;
       M03[BlueChannel]+=(y-centroid[BlueChannel].y)*(y-
-        centroid[BlueChannel].y)*(y-centroid[BlueChannel].y)*scale*pixel.blue;
+        centroid[BlueChannel].y)*(y-centroid[BlueChannel].y)*QuantumScale*
+        pixel.blue;
       if (image->matte != MagickFalse)
         {
           M11[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(y-
-            centroid[OpacityChannel].y)*scale*pixel.opacity;
+            centroid[OpacityChannel].y)*QuantumScale*pixel.opacity;
           M20[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(x-
-            centroid[OpacityChannel].x)*scale*pixel.opacity;
+            centroid[OpacityChannel].x)*QuantumScale*pixel.opacity;
           M02[OpacityChannel]+=(y-centroid[OpacityChannel].y)*(y-
-            centroid[OpacityChannel].y)*scale*pixel.opacity;
+            centroid[OpacityChannel].y)*QuantumScale*pixel.opacity;
           M21[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(x-
             centroid[OpacityChannel].x)*(y-centroid[OpacityChannel].y)*
-            scale*pixel.opacity;
+            QuantumScale*pixel.opacity;
           M12[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(y-
             centroid[OpacityChannel].y)*(y-centroid[OpacityChannel].y)*
-            scale*pixel.opacity;
+            QuantumScale*pixel.opacity;
           M22[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(x-
             centroid[OpacityChannel].x)*(y-centroid[OpacityChannel].y)*(y-
-            centroid[OpacityChannel].y)*scale*pixel.opacity;
+            centroid[OpacityChannel].y)*QuantumScale*pixel.opacity;
           M30[OpacityChannel]+=(x-centroid[OpacityChannel].x)*(x-
             centroid[OpacityChannel].x)*(x-centroid[OpacityChannel].x)*
-            scale*pixel.opacity;
+            QuantumScale*pixel.opacity;
           M03[OpacityChannel]+=(y-centroid[OpacityChannel].y)*(y-
             centroid[OpacityChannel].y)*(y-centroid[OpacityChannel].y)*
-            scale*pixel.opacity;
+            QuantumScale*pixel.opacity;
         }
       if (image->colorspace == CMYKColorspace)
         {
           M11[IndexChannel]+=(x-centroid[IndexChannel].x)*(y-
-            centroid[IndexChannel].y)*scale*pixel.index;
+            centroid[IndexChannel].y)*QuantumScale*pixel.index;
           M20[IndexChannel]+=(x-centroid[IndexChannel].x)*(x-
-            centroid[IndexChannel].x)*scale*pixel.index;
+            centroid[IndexChannel].x)*QuantumScale*pixel.index;
           M02[IndexChannel]+=(y-centroid[IndexChannel].y)*(y-
-            centroid[IndexChannel].y)*scale*pixel.index;
+            centroid[IndexChannel].y)*QuantumScale*pixel.index;
           M21[IndexChannel]+=(x-centroid[IndexChannel].x)*(x-
             centroid[IndexChannel].x)*(y-centroid[IndexChannel].y)*
-            scale*pixel.index;
+            QuantumScale*pixel.index;
           M12[IndexChannel]+=(x-centroid[IndexChannel].x)*(y-
             centroid[IndexChannel].y)*(y-centroid[IndexChannel].y)*
-            scale*pixel.index;
+            QuantumScale*pixel.index;
           M22[IndexChannel]+=(x-centroid[IndexChannel].x)*(x-
             centroid[IndexChannel].x)*(y-centroid[IndexChannel].y)*(y-
-            centroid[IndexChannel].y)*scale*pixel.index;
+            centroid[IndexChannel].y)*QuantumScale*pixel.index;
           M30[IndexChannel]+=(x-centroid[IndexChannel].x)*(x-
             centroid[IndexChannel].x)*(x-centroid[IndexChannel].x)*
-            scale*pixel.index;
+            QuantumScale*pixel.index;
           M03[IndexChannel]+=(y-centroid[IndexChannel].y)*(y-
             centroid[IndexChannel].y)*(y-centroid[IndexChannel].y)*
-            scale*pixel.index;
+            QuantumScale*pixel.index;
         }
       p++;
     }
   }
+  channels=3;
+  M00[CompositeChannels]+=(M00[RedChannel]+M00[GreenChannel]+M00[BlueChannel]);
+  M01[CompositeChannels]+=(M01[RedChannel]+M01[GreenChannel]+M01[BlueChannel]);
+  M02[CompositeChannels]+=(M02[RedChannel]+M02[GreenChannel]+M02[BlueChannel]);
+  M03[CompositeChannels]+=(M03[RedChannel]+M03[GreenChannel]+M03[BlueChannel]);
+  M10[CompositeChannels]+=(M10[RedChannel]+M10[GreenChannel]+M10[BlueChannel]);
+  M11[CompositeChannels]+=(M11[RedChannel]+M11[GreenChannel]+M11[BlueChannel]);
+  M12[CompositeChannels]+=(M12[RedChannel]+M12[GreenChannel]+M12[BlueChannel]);
+  M20[CompositeChannels]+=(M20[RedChannel]+M20[GreenChannel]+M20[BlueChannel]);
+  M21[CompositeChannels]+=(M21[RedChannel]+M21[GreenChannel]+M21[BlueChannel]);
+  M22[CompositeChannels]+=(M22[RedChannel]+M22[GreenChannel]+M22[BlueChannel]);
+  M30[CompositeChannels]+=(M30[RedChannel]+M30[GreenChannel]+M30[BlueChannel]);
+  if (image->matte != MagickFalse)
+    {
+      channels+=1;
+      M00[CompositeChannels]+=M00[OpacityChannel];
+      M01[CompositeChannels]+=M01[OpacityChannel];
+      M02[CompositeChannels]+=M02[OpacityChannel];
+      M03[CompositeChannels]+=M03[OpacityChannel];
+      M10[CompositeChannels]+=M10[OpacityChannel];
+      M11[CompositeChannels]+=M11[OpacityChannel];
+      M12[CompositeChannels]+=M12[OpacityChannel];
+      M20[CompositeChannels]+=M20[OpacityChannel];
+      M21[CompositeChannels]+=M21[OpacityChannel];
+      M22[CompositeChannels]+=M22[OpacityChannel];
+      M30[CompositeChannels]+=M30[OpacityChannel];
+    }
+  if (image->colorspace == CMYKColorspace)
+    {
+      channels+=1;
+      M00[CompositeChannels]+=M00[IndexChannel];
+      M01[CompositeChannels]+=M01[IndexChannel];
+      M02[CompositeChannels]+=M02[IndexChannel];
+      M03[CompositeChannels]+=M03[IndexChannel];
+      M10[CompositeChannels]+=M10[IndexChannel];
+      M11[CompositeChannels]+=M11[IndexChannel];
+      M12[CompositeChannels]+=M12[IndexChannel];
+      M20[CompositeChannels]+=M20[IndexChannel];
+      M21[CompositeChannels]+=M21[IndexChannel];
+      M22[CompositeChannels]+=M22[IndexChannel];
+      M30[CompositeChannels]+=M30[IndexChannel];
+    }
+  M00[CompositeChannels]/=(double) channels;
+  M01[CompositeChannels]/=(double) channels;
+  M02[CompositeChannels]/=(double) channels;
+  M03[CompositeChannels]/=(double) channels;
+  M10[CompositeChannels]/=(double) channels;
+  M11[CompositeChannels]/=(double) channels;
+  M12[CompositeChannels]/=(double) channels;
+  M20[CompositeChannels]/=(double) channels;
+  M21[CompositeChannels]/=(double) channels;
+  M22[CompositeChannels]/=(double) channels;
+  M30[CompositeChannels]/=(double) channels;
   for (channel=0; channel <= CompositeChannels; channel++)
   {
     /*
       Compute elliptical angle, major and minor axes, eccentricity, & intensity.
     */
-    if (fabs(M00[channel]) < MagickEpsilon)
-      continue;
     channel_moments[channel].centroid=centroid[channel];
     channel_moments[channel].ellipse_axis.x=sqrt((2.0/M00[channel])*
       ((M20[channel]+M02[channel])+sqrt(4.0*M11[channel]*M11[channel]+
@@ -1733,21 +1795,19 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
       ((M20[channel]+M02[channel])-sqrt(4.0*M11[channel]*M11[channel]+
       (M20[channel]-M02[channel])*(M20[channel]-M02[channel]))));
     channel_moments[channel].ellipse_angle=RadiansToDegrees(0.5*atan(2.0*
-      M11[channel]/(M20[channel]-M02[channel])));
+      M11[channel]/(M20[channel]-M02[channel]+MagickEpsilon)));
     channel_moments[channel].ellipse_eccentricity=sqrt(1.0-(
       channel_moments[channel].ellipse_axis.y/
-      channel_moments[channel].ellipse_axis.x));
+      (channel_moments[channel].ellipse_axis.x+MagickEpsilon)));
     channel_moments[channel].ellipse_intensity=M00[channel]/
       (MagickPI*channel_moments[channel].ellipse_axis.x*
-      channel_moments[channel].ellipse_axis.y);
+      channel_moments[channel].ellipse_axis.y+MagickEpsilon);
   }
   for (channel=0; channel <= CompositeChannels; channel++)
   {
     /*
       Normalize image moments.
     */
-    if (fabs(M00[channel]) < MagickEpsilon)
-      continue;
     M10[channel]=0.0;
     M01[channel]=0.0;
     M11[channel]/=pow(M00[channel],1.0+(1.0+1.0)/2.0);
@@ -1765,8 +1825,6 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
     /*
       Compute Hu invariant moments.
     */
-    if (fabs(M00[channel]) < MagickEpsilon)
-      continue;
     channel_moments[channel].I[0]=M20[channel]+M02[channel];
     channel_moments[channel].I[1]=(M20[channel]-M02[channel])*
       (M20[channel]-M02[channel])+4.0*M11[channel]*M11[channel];
@@ -1802,6 +1860,118 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
   if (y < (ssize_t) image->rows)
     channel_moments=(ChannelMoments *) RelinquishMagickMemory(channel_moments);
   return(channel_moments);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   G e t I m a g e C h a n n e l P e r c e p t u a l H a s h                 %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetImageChannelPerceptualHash() returns the perceptual hash of one or more
+%  image channels.
+%
+%  The format of the GetImageChannelPerceptualHash method is:
+%
+%      ChannelPerceptualHash *GetImageChannelPerceptualHash(const Image *image,
+%        ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+
+static inline double MagickLog10(const double x)
+{
+#define Log10Epsilon  (1.0e-11)
+
+ if (fabs(x) < Log10Epsilon)
+   return(log10(Log10Epsilon));
+ return(log10(fabs(x)));
+}
+
+MagickExport ChannelPerceptualHash *GetImageChannelPerceptualHash(
+  const Image *image,ExceptionInfo *exception)
+{
+  ChannelMoments
+    *moments;
+
+  ChannelPerceptualHash
+    *perceptual_hash;
+
+  Image
+    *hash_image;
+
+  MagickBooleanType
+    status;
+
+  register ssize_t
+    i;
+
+  ssize_t
+    channel;
+
+  /*
+    Blur then transform to sRGB colorspace.
+  */
+  hash_image=BlurImage(image,0.0,1.0,exception);
+  if (hash_image == (Image *) NULL)
+    return((ChannelPerceptualHash *) NULL);
+  hash_image->depth=8;
+  status=TransformImageColorspace(hash_image,sRGBColorspace);
+  if (status == MagickFalse)
+    return((ChannelPerceptualHash *) NULL);
+  moments=GetImageChannelMoments(hash_image,exception);
+  hash_image=DestroyImage(hash_image);
+  if (moments == (ChannelMoments *) NULL)
+    return((ChannelPerceptualHash *) NULL);
+  perceptual_hash=(ChannelPerceptualHash *) AcquireQuantumMemory(
+    CompositeChannels+1UL,sizeof(*perceptual_hash));
+  if (perceptual_hash == (ChannelPerceptualHash *) NULL)
+    return((ChannelPerceptualHash *) NULL);
+  for (channel=0; channel <= CompositeChannels; channel++)
+    for (i=0; i < 7; i++)
+      perceptual_hash[channel].P[i]=(-MagickLog10(moments[channel].I[i]));
+  moments=(ChannelMoments *) RelinquishMagickMemory(moments);
+  /*
+    Blur then transform to HCLp colorspace.
+  */
+  hash_image=BlurImage(image,0.0,1.0,exception);
+  if (hash_image == (Image *) NULL)
+    {
+      perceptual_hash=(ChannelPerceptualHash *) RelinquishMagickMemory(
+        perceptual_hash);
+      return((ChannelPerceptualHash *) NULL);
+    }
+  hash_image->depth=8;
+  status=TransformImageColorspace(hash_image,HCLpColorspace);
+  if (status == MagickFalse)
+    {
+      perceptual_hash=(ChannelPerceptualHash *) RelinquishMagickMemory(
+        perceptual_hash);
+      return((ChannelPerceptualHash *) NULL);
+    }
+  moments=GetImageChannelMoments(hash_image,exception);
+  hash_image=DestroyImage(hash_image);
+  if (moments == (ChannelMoments *) NULL)
+    {
+      perceptual_hash=(ChannelPerceptualHash *) RelinquishMagickMemory(
+        perceptual_hash);
+      return((ChannelPerceptualHash *) NULL);
+    }
+  for (channel=0; channel <= CompositeChannels; channel++)
+    for (i=0; i < 7; i++)
+      perceptual_hash[channel].Q[i]=(-MagickLog10(moments[channel].I[i]));
+  moments=(ChannelMoments *) RelinquishMagickMemory(moments);
+  return(perceptual_hash);
 }
 
 /*
@@ -1857,8 +2027,8 @@ MagickExport MagickBooleanType GetImageChannelRange(const Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  *maxima=(-MagickHuge);
-  *minima=MagickHuge;
+  *maxima=(-MagickMaximumValue);
+  *minima=MagickMaximumValue;
   GetMagickPixelPacket(image,&pixel);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1991,8 +2161,8 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
   for (i=0; i <= (ssize_t) CompositeChannels; i++)
   {
     channel_statistics[i].depth=1;
-    channel_statistics[i].maxima=(-MagickHuge);
-    channel_statistics[i].minima=MagickHuge;
+    channel_statistics[i].maxima=(-MagickMaximumValue);
+    channel_statistics[i].minima=MagickMaximumValue;
   }
   for (y=0; y < (ssize_t) image->rows; y++)
   {

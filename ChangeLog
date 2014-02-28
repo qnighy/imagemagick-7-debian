@@ -1,13 +1,73 @@
+2014-02-22  6.8.8-8 Dirk Lemstra <dirk@snakeware...>
+  * The PSD reader creates a merged image if the image does not contain one.
+  * Added option pdf:fit-page to scale a pdf to the specified size (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=25044).
+
+2014-02-21  6.8.8-8 Cristy  <quetzlzacatenango@image...>
+  * Convert linear RGB to sRGB before writing the Targa image format.
+  * Make sure we use the secure C library functions when compiling ImageMagick
+    on Windows.
+
+2014-02-18  6.8.8-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-7, SVN revision 14908.
+
+2014-02-16  6.8.8-7 Cristy  <quetzlzacatenango@image...>
+  * Prevent possible buffer overflow in messaging system.
+
+2014-02-16  6.8.8-7 Dirk Lemstra <dirk@snakeware...>
+  * Improved detection of JPEG 2000 code streams and .j2c support (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24942).
+  * Added morphology to Magick++.
+
+2014-02-13  6.8.8-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-6, SVN revision 14868.
+
+2014-02-13  6.8.8-6 Cristy  <quetzlzacatenango@image...>
+  * identify -define identify:locate=maximum locates the position of the
+    maximum value (stopped working in 6.8.8-5).
+
+2014-02-03  6.8.8-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-5, SVN revision 14838.
+
+2014-01-31  6.8.8-5 Cristy  <quetzlzacatenango@image...>
+  * Fix case where an image moment might have a mass of 0 or a Hu moment might
+    be 0.
+  * Enhance the TXT coder to read RGB percent values, e.g. 10.008% (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24934).
+
+2014-01-30  6.8.8-5 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed new "-define png:swap-bytes" option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24818).
+
+2014-01-29  6.8.8-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-4, SVN revision 14676.
+
+2014-01-29  6.8.8-4 Cristy  <quetzlzacatenango@image...>
+  * Remove comma at end of enumerator list, magick/compare.h.
+
+2014-01-28  6.8.8-4 Dirk Lemstra <dirk@snakeware...>
+  * Added transpose and transverse to Magick++. (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24884).
+
+2014-01-25  6.8.8-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-3, SVN revision 14651.
+
 2014-01-18  6.8.8-3 Dirk Lemstra <dirk@snakeware...>
-  * Added ResourceLimits class to Magick++.
+  * Added ResourceLimits class and text direction/gravity to Magick++.
+  * Added support for defining dimensions with icon:auto-resize (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=24796).
 
 2014-01-16  6.8.8-3 Glenn Randers-Pehrson <glennrp@image...>
   * Added "-define png:swap-bytes" option (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24818).
+  * Added image->duration to image.h, calculate duration in gif.c, and
+    report duration in identify.c (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=23276).
 
 2014-01-15  6.8.8-3 Cristy  <quetzlzacatenango@image...>
   * The -type truecolor option for a grayscale image returns RGB JPEG (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24814).
+  * Support JSON coder (.e.g. convert image.jpg image.json).
 
 2014-01-10  6.8.8-2 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.8-2, SVN revision 14347.

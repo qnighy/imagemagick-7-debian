@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -465,7 +466,7 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  compression=UndefinedCompression;
+  compression=image->compression;
   if (image_info->compression != UndefinedCompression)
     compression=image_info->compression;
   switch (compression)
@@ -609,6 +610,9 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
                 "%%%%Pages: %.20g\n",(double) GetImageListLength(image));
             (void) WriteBlobString(image,buffer);
           }
+        if (image->colorspace == CMYKColorspace)
+          (void) WriteBlobString(image,
+            "%%DocumentProcessColors: Cyan Magenta Yellow Black\n");
         (void) WriteBlobString(image,"%%EndComments\n");
         (void) WriteBlobString(image,"\n%%BeginDefaults\n");
         (void) WriteBlobString(image,"%%EndDefaults\n\n");

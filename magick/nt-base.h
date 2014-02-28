@@ -1,12 +1,12 @@
 /*
   Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-
+  
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-
+  
     http://www.imagemagick.org/script/license.php
-
+  
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,12 +18,15 @@
 #ifndef _MAGICKCORE_NT_BASE_H
 #define _MAGICKCORE_NT_BASE_H
 
-#include "magick/delegate.h"
-#include "magick/delegate-private.h"
 #include "magick/exception.h"
 #include "magick/geometry.h"
 
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
+
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
+
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #define _CRT_SECURE_NO_DEPRECATE  1
@@ -37,13 +40,7 @@
 #if defined(_DEBUG) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #include <crtdbg.h>
 #endif
-#endif
 
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
-
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
 #define PROT_READ  0x01
 #define PROT_WRITE  0x02
 #define MAP_SHARED  0x01
@@ -137,7 +134,7 @@ extern "C" {
 #  define inline __inline
 #endif
 #if !defined(isatty)
-#  define isatty _isatty
+#  define isatty  _isatty
 #endif
 #if !defined(locale_t)
 #define locale_t _locale_t
@@ -269,12 +266,6 @@ extern "C" {
 #endif
 #endif
 
-#if defined(_MT) && defined(MAGICKCORE_WINDOWS_SUPPORT)
-#  define SAFE_GLOBAL  __declspec(thread)
-#else
-#  define SAFE_GLOBAL
-#endif
-
 #if defined(__BORLANDC__)
 #undef _O_RANDOM
 #define _O_RANDOM 0
@@ -286,147 +277,27 @@ extern "C" {
 #define _O_TEMPORARY 0
 #endif
 
-#if !defined(XS_VERSION)
-struct dirent
-{
-  char
-    d_name[2048];
+#undef gettimeofday
 
-  int
-    d_namlen;
-};
-
-typedef struct _DIR
-{
-  HANDLE
-    hSearch;
-
-  WIN32_FIND_DATAW
-    Win32FindData;
-
-  BOOL
-    firsttime;
-
-  struct dirent
-    file_info;
-} DIR;
-
-typedef struct _NTMEMORYSTATUSEX
-{
-  DWORD
-    dwLength,
-    dwMemoryLoad;
-
-  DWORDLONG
-    ullTotalPhys,
-    ullAvailPhys,
-    ullTotalPageFile,
-    ullAvailPageFile,
-    ullTotalVirtual,
-    ullAvailVirtual,
-    ullAvailExtendedVirtual;
-} NTMEMORYSTATUSEX;
-
-#if !defined(__MINGW32__) && !defined(__MINGW64__)
-struct timezone
-{
-  int
-    tz_minuteswest,
-    tz_dsttime;
-};
-#endif
-
-typedef UINT
-  (CALLBACK *LPFNDLLFUNC1)(DWORD,UINT);
-
-typedef UINT
-  (CALLBACK *LPFNDLLFUNC2)(NTMEMORYSTATUSEX *);
-
-#endif
-
-#if defined(MAGICKCORE_BZLIB_DELEGATE)
-#  if defined(_WIN32)
-#    define BZ_IMPORT 1
-#  endif
-#endif
+typedef struct _GhostInfo
+  GhostInfo_;
 
 extern MagickExport char
-  *NTGetLastError(void),
   **NTArgvToUTF8(const int argc,wchar_t **);
 
-extern MagickExport const GhostInfo
+extern MagickExport const GhostInfo_
   *NTGhostscriptDLLVectors(void);
 
-#if !defined(MAGICKCORE_LTDL_DELEGATE)
-extern MagickExport const char
-  *NTGetLibraryError(void);
-#endif
-
-#if !defined(XS_VERSION)
-extern MagickExport const char
-  *NTGetLibraryError(void);
-
-extern MagickExport DIR
-  *NTOpenDirectory(const char *);
-
-extern MagickExport double
-  NTElapsedTime(void),
-  NTUserTime(void);
-
 extern MagickExport int
-  Exit(int),
-#if !defined(__MINGW32__) && !defined(__MINGW64__)
-  gettimeofday(struct timeval *,struct timezone *),
-#endif
-  IsWindows95(),
-  NTCloseDirectory(DIR *),
-  NTCloseLibrary(void *),
-  NTControlHandler(void),
-  NTExitLibrary(void),
-  NTTruncateFile(int,off_t),
-  NTGhostscriptDLL(char *,int),
-  NTGhostscriptEXE(char *,int),
-  NTGhostscriptFonts(char *,int),
-  NTGhostscriptLoadDLL(void),
-  NTGhostscriptUnLoadDLL(void),
-  NTInitializeLibrary(void),
-  NTSetSearchPath(const char *),
-  NTSyncMemory(void *,size_t,int),
-  NTUnmapMemory(void *,size_t),
-  NTSystemCommand(const char *);
-
-extern MagickExport ssize_t
-  NTSystemConfiguration(int),
-  NTTellDirectory(DIR *);
-
-extern MagickExport MagickBooleanType
-  NTGatherRandomData(const size_t,unsigned char *),
-  NTGetExecutionPath(char *,const size_t),
-  NTGetModulePath(const char *,char *),
-  NTReportEvent(const char *,const MagickBooleanType),
-  NTReportException(const char *,const MagickBooleanType);
-
-extern MagickExport struct dirent
-  *NTReadDirectory(DIR *);
-
-extern MagickExport unsigned char
-  *NTRegistryKeyLookup(const char *),
-  *NTResourceToBlob(const char *);
+  NTGhostscriptUnLoadDLL(void);
 
 extern MagickExport void
   NTErrorHandler(const ExceptionType,const char *,const char *),
-  *NTGetLibrarySymbol(void *,const char *),
-  *NTMapMemory(char *,size_t,int,int,int,MagickOffsetType),
-  *NTOpenLibrary(const char *),
-  NTSeekDirectory(DIR *,ssize_t),
   NTWarningHandler(const ExceptionType,const char *,const char *);
-
-#endif /* !XS_VERSION */
-
-#endif /* MAGICK_WINDOWS_SUPPORT */
+#endif
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
-#endif /* !C++ */
+#endif
 
-#endif /* !_MAGICKCORE_NT_BASE_H */
+#endif

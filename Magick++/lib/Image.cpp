@@ -1438,6 +1438,17 @@ size_t Magick::Image::subRange(void) const
   return(constOptions()->subRange());
 }
 
+void Magick::Image::textDirection(DirectionType direction_)
+{
+  modifyImage();
+  options()->textDirection(direction_);
+}
+
+Magick::DirectionType Magick::Image::textDirection(void) const
+{
+  return(constOptions()->textDirection());
+}
+
 void Magick::Image::textEncoding(const std::string &encoding_)
 {
   modifyImage();
@@ -1447,6 +1458,17 @@ void Magick::Image::textEncoding(const std::string &encoding_)
 std::string Magick::Image::textEncoding(void) const
 {
   return(constOptions()->textEncoding());
+}
+
+void Magick::Image::textGravity(GravityType gravity_)
+{
+  modifyImage();
+  options()->textGravity(gravity_);
+}
+
+Magick::GravityType Magick::Image::textGravity(void) const
+{
+  return(constOptions()->textGravity());
 }
 
 void Magick::Image::textInterlineSpacing(double spacing_)
@@ -3244,6 +3266,91 @@ void Magick::Image::modulate(const double brightness_,const double saturation_,
   throwImageException();
 }
 
+void Magick::Image::morphology(const MorphologyMethod method_,
+  const std::string kernel_,const ssize_t iterations_)
+{
+  KernelInfo
+    *kernel;
+
+  MagickCore::Image
+    *newImage;
+
+  kernel=AcquireKernelInfo(kernel_.c_str());
+  if (kernel == (KernelInfo *)NULL)
+    throwExceptionExplicit(OptionError,"Unable to parse kernel.");
+
+  GetPPException;
+  newImage=MorphologyImage(constImage(),method_,iterations_,kernel,
+    &exceptionInfo);
+  replaceImage(newImage);
+  kernel=DestroyKernelInfo(kernel);
+  ThrowPPException;
+}
+
+void Magick::Image::morphology(const MorphologyMethod method_,
+  const KernelInfoType kernel_,const std::string arguments_,
+  const ssize_t iterations_)
+{
+  const char
+    *option;
+
+  std::string
+    kernel;
+
+  option=CommandOptionToMnemonic(MagickKernelOptions,kernel_);
+  if (option == (const char *)NULL)
+    throwExceptionExplicit(OptionError,"Unable to determine kernel type.");
+
+  kernel=std::string(option);
+  if (!arguments_.empty())
+    kernel+=":"+arguments_;
+
+  morphology(method_,kernel,iterations_);
+}
+
+void Magick::Image::morphologyChannel(const ChannelType channel_,
+  const MorphologyMethod method_,const std::string kernel_,
+  const ssize_t iterations_)
+{
+  KernelInfo
+    *kernel;
+
+  MagickCore::Image
+    *newImage;
+
+  kernel=AcquireKernelInfo(kernel_.c_str());
+  if (kernel == (KernelInfo *)NULL)
+    throwExceptionExplicit(OptionError,"Unable to parse kernel.");
+
+  GetPPException;
+  newImage=MorphologyImageChannel(constImage(),channel_,method_,iterations_,
+    kernel,&exceptionInfo);
+  replaceImage(newImage);
+  kernel=DestroyKernelInfo(kernel);
+  ThrowPPException;
+}
+
+void Magick::Image::morphologyChannel(const ChannelType channel_,
+  const MorphologyMethod method_,const KernelInfoType kernel_,
+  const std::string arguments_,const ssize_t iterations_)
+{
+  const char
+    *option;
+
+  std::string
+    kernel;
+
+  option=CommandOptionToMnemonic(MagickKernelOptions,kernel_);
+  if (option == (const char *)NULL)
+    throwExceptionExplicit(OptionError,"Unable to determine kernel type.");
+
+  kernel=std::string(option);
+  if (!arguments_.empty())
+    kernel+=":"+arguments_;
+
+  morphologyChannel(channel_,method_,kernel,iterations_);
+}
+
 void Magick::Image::motionBlur(const double radius_,const double sigma_,
   const double angle_)
 {
@@ -4053,6 +4160,35 @@ void Magick::Image::strip(void)
   throwImageException();
 }
 
+Magick::Image Magick::Image::subImageSearch(const Image &reference_,
+  const MetricType metric_,Geometry *offset_,double *similarityMetric_,
+  const double similarityThreshold)
+{
+  char
+    artifact[MaxTextExtent];
+
+  MagickCore::Image
+    *newImage;
+
+  RectangleInfo
+    offset;
+
+  modifyImage();
+  (void) FormatLocaleString(artifact,MaxTextExtent,"%g",similarityThreshold);
+  (void) SetImageArtifact(image(),"compare:similarity-threshold",artifact);
+
+  GetPPException;
+  newImage=SimilarityMetricImage(image(),reference_.constImage(),metric_,
+    &offset,similarityMetric_,&exceptionInfo);
+  ThrowPPException;
+  if (offset_ != (Geometry *) NULL)
+    *offset_=offset;
+  if (newImage == (MagickCore::Image *) NULL)
+    return(Magick::Image());
+  else
+    return(Magick::Image(newImage));
+}
+
 void Magick::Image::swirl(const double degrees_)
 {
   MagickCore::Image
@@ -4184,6 +4320,28 @@ void Magick::Image::transparentChroma(const Color &colorLow_,
   TransparentPaintImageChroma(image(),&targetLow,&targetHigh,
     TransparentOpacity,MagickFalse);
   throwImageException();
+}
+
+void Magick::Image::transpose(void)
+{
+  MagickCore::Image
+    *newImage;
+
+  GetPPException;
+  newImage=TransposeImage(constImage(),&exceptionInfo);
+  replaceImage(newImage);
+  ThrowPPException;
+}
+
+void Magick::Image::transverse(void)
+{
+  MagickCore::Image
+    *newImage;
+
+  GetPPException;
+  newImage=TransverseImage(constImage(),&exceptionInfo);
+  replaceImage(newImage);
+  ThrowPPException;
 }
 
 void Magick::Image::trim(void)

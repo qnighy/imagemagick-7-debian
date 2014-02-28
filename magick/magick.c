@@ -62,9 +62,8 @@
 #include "magick/memory_.h"
 #include "magick/mime.h"
 #include "magick/module.h"
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
-# include "magick/nt-feature.h"
-#endif
+#include "magick/nt-base-private.h"
+#include "magick/nt-feature.h"
 #include "magick/random_.h"
 #include "magick/registry.h"
 #include "magick/resource_.h"
@@ -839,7 +838,7 @@ static MagickBooleanType InitializeMagickList(ExceptionInfo *exception)
       (instantiate_magick == MagickFalse))
     {
       if (magick_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&magick_semaphore);
+        ActivateSemaphoreInfo(&magick_semaphore);
       LockSemaphoreInfo(magick_semaphore);
       if ((magick_list == (SplayTreeInfo *) NULL) &&
           (instantiate_magick == MagickFalse))
@@ -1070,7 +1069,7 @@ MagickExport MagickBooleanType IsMagickCoreInstantiated(void)
 */
 MagickExport MagickBooleanType MagickComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&magick_semaphore);
+  magick_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -1095,7 +1094,7 @@ MagickExport MagickBooleanType MagickComponentGenesis(void)
 MagickExport void MagickComponentTerminus(void)
 {
   if (magick_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&magick_semaphore);
+    ActivateSemaphoreInfo(&magick_semaphore);
   LockSemaphoreInfo(magick_semaphore);
   if (magick_list != (SplayTreeInfo *) NULL)
     magick_list=DestroySplayTree(magick_list);
@@ -1246,6 +1245,7 @@ MagickExport void MagickCoreGenesis(const char *path,
   /*
     Initialize the Magick environment.
   */
+  InitializeMagickMutex();
   LockMagickMutex();
   if (instantiate_magickcore != MagickFalse)
     {
@@ -1263,18 +1263,7 @@ MagickExport void MagickCoreGenesis(const char *path,
       events=DestroyString(events);
     }
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
-#if defined(_DEBUG) && !defined(__BORLANDC__) && !defined(__MINGW32__) && !defined(__MINGW64__)
-  if (IsEventLogging() != MagickFalse)
-    {
-      int
-        debug;
-
-      debug=_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-      debug|=_CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_DELAY_FREE_MEM_DF | _CRTDBG_LEAK_CHECK_DF;
-      (void) _CrtSetDbgFlag(debug);
-      _ASSERTE(_CrtCheckMemory());
-    }
-#endif
+  NTWindowsGenesis();
 #endif
   /*
     Set client name and execution path.
@@ -1376,6 +1365,7 @@ MagickExport void MagickCoreGenesis(const char *path,
 */
 MagickExport void MagickCoreTerminus(void)
 {
+  InitializeMagickMutex();
   LockMagickMutex();
   if (instantiate_magickcore == MagickFalse)
     {
@@ -1414,6 +1404,7 @@ MagickExport void MagickCoreTerminus(void)
   SemaphoreComponentTerminus();
   instantiate_magickcore=MagickFalse;
   UnlockMagickMutex();
+  DestroyMagickMutex();
 }
 
 /*

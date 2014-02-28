@@ -195,6 +195,7 @@ static const CoderMapInfo
     { "RAS", "SUN" },
     { "RGBA", "RGB" },
     { "RGBO", "RGB" },
+    { "RMF", "DNG" },
     { "R", "RAW" },
     { "ROSE", "MAGICK" },
     { "RW2", "DNG" },
@@ -263,7 +264,7 @@ static MagickBooleanType
 */
 MagickExport MagickBooleanType CoderComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&coder_semaphore);
+  coder_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -288,7 +289,7 @@ MagickExport MagickBooleanType CoderComponentGenesis(void)
 MagickExport void CoderComponentTerminus(void)
 {
   if (coder_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&coder_semaphore);
+    ActivateSemaphoreInfo(&coder_semaphore);
   LockSemaphoreInfo(coder_semaphore);
   if (coder_list != (SplayTreeInfo *) NULL)
     coder_list=DestroySplayTree(coder_list);
@@ -540,7 +541,7 @@ static MagickBooleanType InitializeCoderList(ExceptionInfo *exception)
       (instantiate_coder == MagickFalse))
     {
       if (coder_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&coder_semaphore);
+        ActivateSemaphoreInfo(&coder_semaphore);
       LockSemaphoreInfo(coder_semaphore);
       if ((coder_list == (SplayTreeInfo *) NULL) &&
           (instantiate_coder == MagickFalse))

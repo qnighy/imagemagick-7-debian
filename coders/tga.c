@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -712,8 +713,7 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
   */
   if ((image->columns > 65535L) || (image->rows > 65535L))
     ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
-  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+  (void) TransformImageColorspace(image,sRGBColorspace);
   targa_info.id_length=0;
   value=GetImageProperty(image,"comment");
   if (value != (const char *) NULL)

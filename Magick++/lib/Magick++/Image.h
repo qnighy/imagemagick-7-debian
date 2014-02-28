@@ -470,9 +470,17 @@ namespace Magick
     void subRange(const size_t subRange_);
     size_t subRange(void) const;
 
+    // Render text right-to-left or left-to-right.
+    void textDirection(DirectionType direction_);
+    DirectionType textDirection() const;
+
     // Annotation text encoding (e.g. "UTF-16")
     void textEncoding(const std::string &encoding_);
     std::string textEncoding(void) const;
+
+    // Text gravity.
+    void textGravity(GravityType gravity_);
+    GravityType textGravity() const;
 
     // Text inter-line spacing
     void textInterlineSpacing(double spacing_);
@@ -1012,6 +1020,19 @@ namespace Magick
     void modulate(const double brightness_,const double saturation_,
       const double hue_);
 
+    // Applies a kernel to the image according to the given mophology method.
+    void morphology(const MorphologyMethod method_,const std::string kernel_,
+      const ssize_t iterations_=1);
+    void morphology(const MorphologyMethod method_,
+      const KernelInfoType kernel_,const std::string arguments_,
+      const ssize_t iterations_=1);
+    void morphologyChannel(const ChannelType channel_,
+      const MorphologyMethod method_,const std::string kernel_,
+      const ssize_t iterations_=1);
+    void morphologyChannel(const ChannelType channel_,
+      const MorphologyMethod method_,const KernelInfoType kernel_,
+      const std::string arguments_,const ssize_t iterations_=1);
+
     // Motion blur image with specified blur factor
     // The radius_ parameter specifies the radius of the Gaussian, in
     // pixels, not counting the center pixel.  The sigma_ parameter
@@ -1253,6 +1274,14 @@ namespace Magick
     // Strip strips an image of all profiles and comments.
     void strip(void);
 
+    // Search for the specified image at EVERY possible location in this image.
+    // This is slow! very very slow.. It returns a similarity image such that
+    // an exact match location is completely white and if none of the pixels
+    // match, black, otherwise some gray level in-between.
+    Image subImageSearch(const Image &reference_,const MetricType metric_,
+      Geometry *offset_,double *similarityMetric_,
+      const double similarityThreshold=(-1.0));
+
     // Swirl image (image pixels are rotated by degrees)
     void swirl(const double degrees_);
 
@@ -1290,6 +1319,14 @@ namespace Magick
     // Add matte image to image, for all the pixels that lies in between
     // the given two color
     void transparentChroma(const Color &colorLow_,const Color &colorHigh_);
+
+    // Creates a horizontal mirror image by reflecting the pixels around the
+    // central y-axis while rotating them by 90 degrees.
+    void transpose(void);
+
+    // Creates a vertical mirror image by reflecting the pixels around the
+    // central x-axis while rotating them by 270 degrees.
+    void transverse(void);
 
     // Trim edges that are the background color from the image
     void trim(void);

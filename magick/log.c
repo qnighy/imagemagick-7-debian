@@ -48,6 +48,7 @@
 #include "magick/hashmap.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
+#include "magick/nt-base-private.h"
 #include "magick/option.h"
 #include "magick/semaphore.h"
 #include "magick/timer.h"
@@ -535,7 +536,7 @@ static MagickBooleanType InitializeLogList(ExceptionInfo *exception)
   if ((log_list == (LinkedListInfo *) NULL) && (instantiate_log == MagickFalse))
     {
       if (log_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&log_semaphore);
+        ActivateSemaphoreInfo(&log_semaphore);
       LockSemaphoreInfo(log_semaphore);
       if ((log_list == (LinkedListInfo *) NULL) &&
           (instantiate_log == MagickFalse))
@@ -706,7 +707,7 @@ MagickExport MagickBooleanType LogComponentGenesis(void)
   ExceptionInfo
     *exception;
 
-  AcquireSemaphoreInfo(&log_semaphore);
+  log_semaphore=AllocateSemaphoreInfo();
   exception=AcquireExceptionInfo();
   (void) GetLogInfo("*",exception);
   exception=DestroyExceptionInfo(exception);
@@ -757,7 +758,7 @@ static void *DestroyLogElement(void *log_info)
 MagickExport void LogComponentTerminus(void)
 {
   if (log_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&log_semaphore);
+    ActivateSemaphoreInfo(&log_semaphore);
   LockSemaphoreInfo(log_semaphore);
   if (log_list != (LinkedListInfo *) NULL)
     log_list=DestroyLinkedList(log_list,DestroyLogElement);

@@ -53,6 +53,12 @@ Features and Capabilities
       * Image calculator: apply a mathematical expression to an image or image
         channels.
       * Discrete Fourier transform: implements the forward and inverse DFT.
+      * Perceptual hash: maps visually identical images to the same or similar
+        hash-- useful in image retrieval, authentication, indexing, or copy
+        detection as well as digital watermarking.
+      * Color management: accurate color management with color profiles or in
+        lieu of-- built-in gamma compression or expansion as demanded by the
+        colorspace.
       * High dynamic-range images: accurately represent the wide range of
         intensity levels found in real scenes ranging from the brightest direct
         sunlight to the deepest darkest shadows.

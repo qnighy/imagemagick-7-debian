@@ -156,9 +156,10 @@ MagickExport Image *CompareImageChannels(Image *image,
   *distortion=0.0;
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  if ((reconstruct_image->columns != image->columns) ||
-      (reconstruct_image->rows != image->rows))
-    ThrowImageException(ImageError,"ImageSizeDiffers");
+  if (metric != PerceptualHashErrorMetric)
+    if ((reconstruct_image->columns != image->columns) ||
+        (reconstruct_image->rows != image->rows))
+      ThrowImageException(ImageError,"ImageSizeDiffers");
   status=GetImageChannelDistortion(image,reconstruct_image,channel,metric,
     distortion,exception);
   if (status == MagickFalse)
@@ -236,8 +237,8 @@ MagickExport Image *CompareImageChannels(Image *image,
     if (status == MagickFalse)
       continue;
     p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
-    q=GetCacheViewVirtualPixels(reconstruct_view,0,y,reconstruct_image->columns,
-      1,exception);
+    q=GetCacheViewVirtualPixels(reconstruct_view,0,y,image->columns,1,
+      exception);
     r=QueueCacheViewAuthenticPixels(highlight_view,0,y,highlight_image->columns,
       1,exception);
     if ((p == (const PixelPacket *) NULL) ||
@@ -1253,6 +1254,15 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
   return(status);
 }
 
+static inline double MagickLog10(const double x)
+{
+#define Log10Epsilon  (1.0e-11)
+
+ if (fabs(x) < Log10Epsilon)
+   return(log10(Log10Epsilon));
+ return(log10(fabs(x)));
+}
+
 static MagickBooleanType GetPeakSignalToNoiseRatio(const Image *image,
   const Image *reconstruct_image,const ChannelType channel,
   double *distortion,ExceptionInfo *exception)
@@ -1263,105 +1273,84 @@ static MagickBooleanType GetPeakSignalToNoiseRatio(const Image *image,
   status=GetMeanSquaredDistortion(image,reconstruct_image,channel,distortion,
     exception);
   if ((channel & RedChannel) != 0)
-    distortion[RedChannel]=20.0*log10((double) 1.0/sqrt(
+    distortion[RedChannel]=20.0*MagickLog10((double) 1.0/sqrt(
       distortion[RedChannel]));
   if ((channel & GreenChannel) != 0)
-    distortion[GreenChannel]=20.0*log10((double) 1.0/sqrt(
+    distortion[GreenChannel]=20.0*MagickLog10((double) 1.0/sqrt(
       distortion[GreenChannel]));
   if ((channel & BlueChannel) != 0)
-    distortion[BlueChannel]=20.0*log10((double) 1.0/sqrt(
+    distortion[BlueChannel]=20.0*MagickLog10((double) 1.0/sqrt(
       distortion[BlueChannel]));
   if (((channel & OpacityChannel) != 0) &&
       (image->matte != MagickFalse))
-    distortion[OpacityChannel]=20.0*log10((double) 1.0/sqrt(
+    distortion[OpacityChannel]=20.0*MagickLog10((double) 1.0/sqrt(
       distortion[OpacityChannel]));
   if (((channel & IndexChannel) != 0) &&
       (image->colorspace == CMYKColorspace))
-    distortion[BlackChannel]=20.0*log10((double) 1.0/sqrt(
+    distortion[BlackChannel]=20.0*MagickLog10((double) 1.0/sqrt(
       distortion[BlackChannel]));
-  distortion[CompositeChannels]=20.0*log10((double) 1.0/sqrt(
+  distortion[CompositeChannels]=20.0*MagickLog10((double) 1.0/sqrt(
     distortion[CompositeChannels]));
   return(status);
 }
 
 static MagickBooleanType GetPerceptualHashDistortion(const Image *image,
-  const Image *reconstruct_image,const ChannelType channel,
-  double *distortion,ExceptionInfo *exception)
+  const Image *reconstruct_image,const ChannelType channel,double *distortion,
+  ExceptionInfo *exception)
 {
-  ChannelMoments
-    *image_moments,
-    *reconstruct_moments;
+  ChannelPerceptualHash
+    *image_phash,
+    *reconstruct_phash;
 
-  Image
-    *blur_image,
-    *blur_reconstruct;
+  double
+    difference;
 
   register ssize_t
     i;
 
   /*
-    Compute perceptual hash in the native image colorspace.
+    Compute perceptual hash in the sRGB colorspace.
   */
-  blur_image=BlurImage(image,0.0,1.0,exception);
-  if (blur_image == (Image *) NULL)
+  image_phash=GetImageChannelPerceptualHash(image,exception);
+  if (image_phash == (ChannelPerceptualHash *) NULL)
     return(MagickFalse);
-  image_moments=GetImageChannelMoments(blur_image,exception);
-  if (image_moments == (ChannelMoments *) NULL)
+  reconstruct_phash=GetImageChannelPerceptualHash(reconstruct_image,exception);
+  if (image_phash == (ChannelPerceptualHash *) NULL)
     {
-      blur_image=DestroyImage(blur_image);
+      image_phash=(ChannelPerceptualHash *) RelinquishMagickMemory(image_phash);
       return(MagickFalse);
     }
-  blur_reconstruct=BlurImage(reconstruct_image,0.0,1.0,exception);
-  if (blur_reconstruct == (Image *) NULL)
-    {
-      image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
-      blur_image=DestroyImage(blur_image);
-      return(MagickFalse);
-    }
-  reconstruct_moments=GetImageChannelMoments(blur_reconstruct,exception);
-  if (reconstruct_moments == (ChannelMoments *) NULL)
-    {
-      image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
-      blur_image=DestroyImage(blur_image);
-      blur_reconstruct=DestroyImage(blur_reconstruct);
-      return(MagickFalse);
-    }
-  for (i=0; i < 8; i++)
+  for (i=0; i < 7; i++)
   {
-    double
-      difference;
-
     /*
       Compute sum of moment differences squared.
     */
-    if (i == 2)
-      continue;  /* I3 is not independent of other moments */
     if ((channel & RedChannel) != 0)
       {
-        difference=log10(fabs(reconstruct_moments[RedChannel].I[i]))-
-          log10(fabs(image_moments[RedChannel].I[i]));
+        difference=reconstruct_phash[RedChannel].P[i]-
+          image_phash[RedChannel].P[i];
         distortion[RedChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
     if ((channel & GreenChannel) != 0)
       {
-        difference=log10(fabs(reconstruct_moments[GreenChannel].I[i]))-
-          log10(fabs(image_moments[GreenChannel].I[i]));
+        difference=reconstruct_phash[GreenChannel].P[i]-
+          image_phash[GreenChannel].P[i];
         distortion[GreenChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
     if ((channel & BlueChannel) != 0)
       {
-        difference=log10(fabs(reconstruct_moments[BlueChannel].I[i]))-
-          log10(fabs(image_moments[BlueChannel].I[i]));
+        difference=reconstruct_phash[BlueChannel].P[i]-
+          image_phash[BlueChannel].P[i];
         distortion[BlueChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
     if (((channel & OpacityChannel) != 0) && (image->matte != MagickFalse) &&
         (reconstruct_image->matte != MagickFalse))
       {
-        difference=log10(fabs(reconstruct_moments[OpacityChannel].I[i]))-
-          log10(fabs(image_moments[OpacityChannel].I[i]));
+        difference=reconstruct_phash[OpacityChannel].P[i]-
+          image_phash[OpacityChannel].P[i];
         distortion[OpacityChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
@@ -1369,75 +1358,46 @@ static MagickBooleanType GetPerceptualHashDistortion(const Image *image,
         (image->colorspace == CMYKColorspace) &&
         (reconstruct_image->colorspace == CMYKColorspace))
       {
-        difference=log10(fabs(reconstruct_moments[IndexChannel].I[i]))-
-          log10(fabs(image_moments[IndexChannel].I[i]));
+        difference=reconstruct_phash[IndexChannel].P[i]-
+          image_phash[IndexChannel].P[i];
         distortion[IndexChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
   }
-  image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
-  reconstruct_moments=(ChannelMoments *) RelinquishMagickMemory(
-    reconstruct_moments);
   /*
     Compute perceptual hash in the HCLP colorspace.
   */
-  if ((TransformImageColorspace(blur_image,HCLpColorspace) == MagickFalse) ||
-      (TransformImageColorspace(blur_reconstruct,HCLpColorspace) == MagickFalse))
-    {
-      blur_reconstruct=DestroyImage(blur_reconstruct);
-      blur_image=DestroyImage(blur_image);
-      return(MagickFalse);
-    }
-  image_moments=GetImageChannelMoments(blur_image,exception);
-  blur_image=DestroyImage(blur_image);
-  if (image_moments == (ChannelMoments *) NULL)
-    {
-      blur_reconstruct=DestroyImage(blur_reconstruct);
-      return(MagickFalse);
-    }
-  reconstruct_moments=GetImageChannelMoments(blur_reconstruct,exception);
-  blur_reconstruct=DestroyImage(blur_reconstruct);
-  if (reconstruct_moments == (ChannelMoments *) NULL)
-    {
-      image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
-      return(MagickFalse);
-    }
-  for (i=0; i < 8; i++)
+  for (i=0; i < 7; i++)
   {
-    double
-      difference;
-
     /*
       Compute sum of moment differences squared.
     */
-    if (i == 2)
-      continue;  /* I3 is not independent of other moments */
     if ((channel & RedChannel) != 0)
       {
-        difference=log10(fabs(reconstruct_moments[RedChannel].I[i]))-
-          log10(fabs(image_moments[RedChannel].I[i]));
+        difference=reconstruct_phash[RedChannel].Q[i]-
+          image_phash[RedChannel].Q[i];
         distortion[RedChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
     if ((channel & GreenChannel) != 0)
       {
-        difference=log10(fabs(reconstruct_moments[GreenChannel].I[i]))-
-          log10(fabs(image_moments[GreenChannel].I[i]));
+        difference=reconstruct_phash[GreenChannel].Q[i]-
+          image_phash[GreenChannel].Q[i];
         distortion[GreenChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
     if ((channel & BlueChannel) != 0)
       {
-        difference=log10(fabs(reconstruct_moments[BlueChannel].I[i]))-
-          log10(fabs(image_moments[BlueChannel].I[i]));
+        difference=reconstruct_phash[BlueChannel].Q[i]-
+          image_phash[BlueChannel].Q[i];
         distortion[BlueChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
     if (((channel & OpacityChannel) != 0) && (image->matte != MagickFalse) &&
         (reconstruct_image->matte != MagickFalse))
       {
-        difference=log10(fabs(reconstruct_moments[OpacityChannel].I[i]))-
-          log10(fabs(image_moments[OpacityChannel].I[i]));
+        difference=reconstruct_phash[OpacityChannel].Q[i]-
+          image_phash[OpacityChannel].Q[i];
         distortion[OpacityChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
@@ -1445,15 +1405,18 @@ static MagickBooleanType GetPerceptualHashDistortion(const Image *image,
         (image->colorspace == CMYKColorspace) &&
         (reconstruct_image->colorspace == CMYKColorspace))
       {
-        difference=log10(fabs(reconstruct_moments[IndexChannel].I[i]))-
-          log10(fabs(image_moments[IndexChannel].I[i]));
+        difference=reconstruct_phash[IndexChannel].Q[i]-
+          image_phash[IndexChannel].Q[i];
         distortion[IndexChannel]+=difference*difference;
         distortion[CompositeChannels]+=difference*difference;
       }
   }
-  image_moments=(ChannelMoments *) RelinquishMagickMemory(image_moments);
-  reconstruct_moments=(ChannelMoments *) RelinquishMagickMemory(
-    reconstruct_moments);
+  /*
+    Free resources.
+  */
+  reconstruct_phash=(ChannelPerceptualHash *) RelinquishMagickMemory(
+    reconstruct_phash);
+  image_phash=(ChannelPerceptualHash *) RelinquishMagickMemory(image_phash);
   return(MagickTrue);
 }
 
@@ -1505,9 +1468,10 @@ MagickExport MagickBooleanType GetImageChannelDistortion(Image *image,
   *distortion=0.0;
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  if ((reconstruct_image->columns != image->columns) ||
-      (reconstruct_image->rows != image->rows))
-    ThrowBinaryException(ImageError,"ImageSizeDiffers",image->filename);
+  if (metric != PerceptualHashErrorMetric)
+    if ((reconstruct_image->columns != image->columns) ||
+        (reconstruct_image->rows != image->rows))
+      ThrowBinaryException(ImageError,"ImageSizeDiffers",image->filename);
   /*
     Get image distortion.
   */
@@ -1642,13 +1606,14 @@ MagickExport double *GetImageChannelDistortions(Image *image,
   assert(reconstruct_image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  if ((reconstruct_image->columns != image->columns) ||
-      (reconstruct_image->rows != image->rows))
-    {
-      (void) ThrowMagickException(&image->exception,GetMagickModule(),
-        ImageError,"ImageSizeDiffers","`%s'",image->filename);
-      return((double *) NULL);
-    }
+  if (metric != PerceptualHashErrorMetric)
+    if ((reconstruct_image->columns != image->columns) ||
+        (reconstruct_image->rows != image->rows))
+      {
+        (void) ThrowMagickException(&image->exception,GetMagickModule(),
+          ImageError,"ImageSizeDiffers","`%s'",image->filename);
+        return((double *) NULL);
+      }
   /*
     Get image distortion.
   */
@@ -1968,6 +1933,13 @@ MagickExport Image *SimilarityImage(Image *image,const Image *reference,
   return(similarity_image);
 }
 
+static inline double MagickMin(const double x,const double y)
+{
+  if (x < y)
+    return(x);
+  return(y);
+}
+
 MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
   const MetricType metric,RectangleInfo *offset,double *similarity_metric,
   ExceptionInfo *exception)
@@ -2003,7 +1975,7 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
   assert(exception->signature == MagickSignature);
   assert(offset != (RectangleInfo *) NULL);
   SetGeometry(reference,offset);
-  *similarity_metric=1.0;
+  *similarity_metric=MagickMaximumValue;
   if ((reference->columns > image->columns) || (reference->rows > image->rows))
     ThrowImageException(ImageError,"ImageSizeDiffers");
   similarity_image=CloneImage(image,image->columns-reference->columns+1,
@@ -2074,6 +2046,8 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
           offset->x=x;
           offset->y=y;
         }
+      if (metric == PerceptualHashErrorMetric)
+        similarity=MagickMin(0.01*similarity,1.0);
       SetPixelRed(q,ClampToQuantum(QuantumRange-QuantumRange*similarity));
       SetPixelGreen(q,GetPixelRed(q));
       SetPixelBlue(q,GetPixelRed(q));

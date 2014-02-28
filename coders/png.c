@@ -2429,20 +2429,16 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   /* Swap bytes if requested */
   if (ping_file_depth == 16)
   {
-     const char
-       *property;
+    const char
+      *value;
 
-     ResetImagePropertyIterator(image);
+    value=GetImageOption(image_info,"png:swap-bytes");
 
-     while (property != (const char *) NULL)
-       {
-         GetImageProperty(image,property);
+    if (value == NULL)
+       value=GetImageArtifact(image,"png:swap-bytes");
 
-         if (LocaleNCompare(property,"png:swap-bytes",14) != 0)
-           png_set_swap(ping);
-
-         property=GetNextImageProperty(image);
-       }
+    if (value != NULL)
+       png_set_swap(ping);
   }
 
   /* Save bit-depth and color-type in case we later want to write a PNG00 */
@@ -8070,6 +8066,8 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   ping_preserve_iCCP = mng_info->ping_preserve_iCCP;
   ping_need_colortype_warning = MagickFalse;
 
+  property=(const char *) NULL;
+
   /* Recognize the ICC sRGB profile and convert it to the sRGB chunk,
    * i.e., eliminate the ICC profile and set image->rendering_intent.
    * Note that this will not involve any changes to the actual pixels
@@ -11225,7 +11223,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
        * "identify" or for passing through to another JPEG
        */
       if ((LocaleNCompare(property,"png:",4) != 0 &&
-           LocaleNCompare(property,"jpeg:",5)) &&
+           LocaleNCompare(property,"jpeg:",5) != 0) &&
 
           /* Suppress density and units if we wrote a pHYs chunk */
           (ping_exclude_pHYs != MagickFalse      ||

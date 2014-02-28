@@ -45,6 +45,7 @@
 */
 #include "magick/studio.h"
 #include "magick/artifact.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -2116,8 +2117,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     }
     default:
     {
-      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-        (void) TransformImageColorspace(image,sRGBColorspace);
+      (void) TransformImageColorspace(image,sRGBColorspace);
       if (image_info->type == TrueColorType)
         break;
       if (IsGrayImage(image,&image->exception) != MagickFalse)
@@ -2252,22 +2252,22 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
           /*
             Search for compression quality that does not exceed image extent.
           */
-          jpeg_info->quality=0;
+          jpeg_image->quality=0;
           extent=(MagickSizeType) SiPrefixToDoubleInterval(option,100.0);
           (void) DeleteImageOption(jpeg_info,"jpeg:extent");
           (void) DeleteImageArtifact(jpeg_image,"jpeg:extent");
-          (void) AcquireUniqueFilename(jpeg_image->filename);
           maximum=101;
           for (minimum=2; minimum < maximum; )
           {
-            jpeg_info->quality=minimum+(maximum-minimum+1)/2;
+            (void) AcquireUniqueFilename(jpeg_image->filename);
+            jpeg_image->quality=minimum+(maximum-minimum+1)/2;
             status=WriteJPEGImage(jpeg_info,jpeg_image);
             if (GetBlobSize(jpeg_image) <= extent)
-              minimum=jpeg_info->quality+1;
+              minimum=jpeg_image->quality+1;
             else
-              maximum=jpeg_info->quality-1;
+              maximum=jpeg_image->quality-1;
+            (void) RelinquishUniqueFileResource(jpeg_image->filename);
           }
-          (void) RelinquishUniqueFileResource(jpeg_image->filename);
           quality=minimum-1;
           jpeg_image=DestroyImage(jpeg_image);
         }

@@ -55,12 +55,14 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/nt-base.h"
+#include "magick/nt-base-private.h"
+#include "magick/pixel-accessor.h"
 #include "magick/quantum.h"
 #include "magick/string_.h"
 #include "magick/token.h"
 #include "magick/splay-tree.h"
 #include "magick/utility.h"
-#include "magick/nt-feature.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,39 +179,30 @@ MagickExport void *CropImageToHBITMAP(Image *image,
   if ( bitmap.bmBits == NULL )
     bitmap.bmBits = bitmap_bits;
   if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-    (void) SetImageColorspace(image,sRGBColorspace);
+    SetImageColorspace(image,sRGBColorspace);
   /*
     Extract crop image.
   */
   q=bitmap_bits;
   for (y=0; y < (ssize_t) page.height; y++)
   {
+    register ssize_t
+      x;
+
     p=GetVirtualPixels(image,page.x,page.y+y,page.width,1,exception);
     if (p == (const PixelPacket *) NULL)
       break;
 
-#if MAGICKCORE_QUANTUM_DEPTH == 8
-      /* Form of PixelPacket is identical to RGBQUAD when MAGICKCORE_QUANTUM_DEPTH==8 */
-      CopyMagickMemory((void*)q,(const void*)p,page.width*sizeof(PixelPacket));
-      q += page.width;
-
-#else  /* 16 or 32 bit Quantum */
-      {
-        ssize_t
-          x;
-
-        /* Transfer pixels, scaling to Quantum */
-        for( x=(ssize_t) page.width ; x> 0 ; x-- )
-          {
-            q->rgbRed = ScaleQuantumToChar(GetPixelRed(p));
-            q->rgbGreen = ScaleQuantumToChar(GetPixelGreen(p));
-            q->rgbBlue = ScaleQuantumToChar(GetPixelBlue(p));
-            q->rgbReserved = 0;
-            ++q;
-            ++p;
-          }
-      }
-#endif
+    /* Transfer pixels, scaling to Quantum */
+    for( x=(ssize_t) page.width ; x> 0 ; x-- )
+    {
+      q->rgbRed = ScaleQuantumToChar(GetPixelRed(p));
+      q->rgbGreen = ScaleQuantumToChar(GetPixelGreen(p));
+      q->rgbBlue = ScaleQuantumToChar(GetPixelBlue(p));
+      q->rgbReserved = 0;
+      p++;
+      q++;
+    }
     proceed=SetImageProgress(image,CropImageTag,y,page.height);
     if (proceed == MagickFalse)
       break;
@@ -294,7 +287,6 @@ MagickExport MagickBooleanType NTLoadTypeLists(SplayTreeInfo *type_list,
   LONG
     res;
 
-
   int
     list_entries = 0;
 
@@ -374,63 +366,50 @@ MagickExport MagickBooleanType NTLoadTypeLists(SplayTreeInfo *type_list,
 
         value_name_length = sizeof(value_name) - 1;
         value_data_size = sizeof(value_data) - 1;
-        res = RegEnumValueA ( reg_key, registry_index, value_name,
-          &value_name_length, 0, &type, (BYTE*)value_data, &value_data_size);
+        res=RegEnumValueA(reg_key,registry_index,value_name,&value_name_length,
+          0,&type,(BYTE *) value_data,&value_data_size);
         registry_index++;
         if (res != ERROR_SUCCESS)
           continue;
-        if ( (pos = strstr(value_name, " (TrueType)")) == (char*) NULL )
+        if ((pos=strstr(value_name," (TrueType)")) == (char*) NULL)
           continue;
-        *pos='\0'; /* Remove (TrueType) from string */
-
+        *pos='\0';  /* Remove (TrueType) from string */
         type_info=(TypeInfo *) AcquireMagickMemory(sizeof(*type_info));
         if (type_info == (TypeInfo *) NULL)
           ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
         (void) ResetMagickMemory(type_info,0,sizeof(TypeInfo));
-
         type_info->path=ConstantString("Windows Fonts");
         type_info->signature=MagickSignature;
-
-        /* Name */
-        (void) CopyMagickString(buffer,value_name,MaxTextExtent);
-        for(pos = buffer; *pos != 0 ; pos++)
+        (void) CopyMagickString(buffer,value_name,MaxTextExtent);  /* name */
+        for (pos=buffer; *pos != 0; pos++)
           if (*pos == ' ')
-            *pos = '-';
+            *pos='-';
         type_info->name=ConstantString(buffer);
-
-        /* Fullname */
-        type_info->description=ConstantString(value_name);
-
-        /* Format */
-        type_info->format=ConstantString("truetype");
-
-        /* Glyphs */
-        if (strchr(value_data,'\\') != (char *) NULL)
+        type_info->description=ConstantString(value_name);  /* fullname */
+        type_info->format=ConstantString("truetype");  /* format */
+        if (strchr(value_data,'\\') != (char *) NULL)  /* glyphs */
           (void) CopyMagickString(buffer,value_data,MaxTextExtent);
         else
           {
             (void) CopyMagickString(buffer,font_root,MaxTextExtent);
             (void) ConcatenateMagickString(buffer,value_data,MaxTextExtent);
           }
-
         LocaleLower(buffer);
         type_info->glyphs=ConstantString(buffer);
-
         type_info->stretch=NormalStretch;
         type_info->style=NormalStyle;
         type_info->weight=400;
-
-        /* Some fonts are known to require special encodings */
+        /*
+          Some fonts are known to require special encodings.
+        */
         if ( (LocaleCompare(type_info->name, "Symbol") == 0 ) ||
              (LocaleCompare(type_info->name, "Wingdings") == 0 ) ||
              (LocaleCompare(type_info->name, "Wingdings-2") == 0 ) ||
              (LocaleCompare(type_info->name, "Wingdings-3") == 0 ) )
           type_info->encoding=ConstantString("AppleRoman");
-
         family_extent=value_name;
-
         for (q=value_name; *q != '\0'; )
-          {
+        {
             GetMagickToken(q,(const char **) &q,token);
             if (*token == '\0')
               break;
@@ -553,7 +532,7 @@ MagickExport MagickBooleanType NTLoadTypeLists(SplayTreeInfo *type_list,
             ResourceLimitError,"MemoryAllocationFailed","`%s'",type_info->name);
       }
   }
-  RegCloseKey ( reg_key );
+  RegCloseKey(reg_key);
   return(MagickTrue);
 }
 
@@ -572,20 +551,17 @@ MagickExport MagickBooleanType NTLoadTypeLists(SplayTreeInfo *type_list,
 %
 %  The format of the ImageToHBITMAP method is:
 %
-%      HBITMAP ImageToHBITMAP(Image *image)
+%      HBITMAP ImageToHBITMAP(Image *image,Exceptioninfo *exception)
 %
 %  A description of each parameter follows:
 %
 %    o image: the image to convert.
 %
 */
-MagickExport void *ImageToHBITMAP(Image *image)
+MagickExport void *ImageToHBITMAP(Image *image,ExceptionInfo *exception)
 {
   BITMAP
     bitmap;
-
-  ExceptionInfo
-    *exception;
 
   HANDLE
     bitmap_bitsH;
@@ -627,7 +603,7 @@ MagickExport void *ImageToHBITMAP(Image *image)
         *message;
 
       message=GetExceptionMessage(errno);
-      (void) ThrowMagickException(&image->exception,GetMagickModule(),
+      (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",message);
       message=DestroyString(message);
       return(NULL);
@@ -637,7 +613,6 @@ MagickExport void *ImageToHBITMAP(Image *image)
   if (bitmap.bmBits == NULL)
     bitmap.bmBits=bitmap_bits;
   (void) SetImageColorspace(image,sRGBColorspace);
-  exception=(&image->exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);
@@ -661,7 +636,7 @@ MagickExport void *ImageToHBITMAP(Image *image)
         *message;
 
       message=GetExceptionMessage(errno);
-      (void) ThrowMagickException(&image->exception,GetMagickModule(),
+      (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",message);
       message=DestroyString(message);
     }

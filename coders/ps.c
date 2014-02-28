@@ -41,6 +41,7 @@
 */
 #include "magick/studio.h"
 #include "magick/artifact.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -62,6 +63,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/nt-base-private.h"
 #include "magick/option.h"
 #include "magick/profile.h"
 #include "magick/pixel-accessor.h"
@@ -762,7 +764,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     }
   *options='\0';
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",resolution.x,
-     resolution.y);
+    resolution.y);
   (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
     page.width,(double) page.height);
   read_info=CloneImageInfo(image_info);
@@ -1362,6 +1364,9 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
     **labels,
     page_geometry[MaxTextExtent];
 
+  CompressionType
+    compression;
+
   const char
     **s,
     *value;
@@ -1446,6 +1451,9 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
   if (status == MagickFalse)
     return(status);
   (void) ResetMagickMemory(&bounds,0,sizeof(bounds));
+  compression=image->compression;
+  if (image_info->compression != UndefinedCompression)
+    compression=image_info->compression;
   page=1;
   scene=0;
   do
@@ -1453,8 +1461,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
     /*
       Scale relative to dots-per-inch.
     */
-    if ((IssRGBCompatibleColorspace(image->colorspace) == MagickFalse) &&
-        (image->colorspace != CMYKColorspace))
+    if (image->colorspace != CMYKColorspace)
       (void) TransformImageColorspace(image,sRGBColorspace);
     delta.x=DefaultResolution;
     delta.y=DefaultResolution;
@@ -1797,10 +1804,8 @@ RestoreMSCWarning
                 break;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                pixel=ScaleQuantumToChar(ClampToQuantum(
-                  GetPixelLuma(image,p)));
+                pixel=ScaleQuantumToChar(ClampToQuantum(GetPixelLuma(image,p)));
                 q=PopHexPixel(hex_digits,(size_t) pixel,q);
-                i++;
                 if ((q-pixels+8) >= 80)
                   {
                     *q++='\n';
@@ -1904,9 +1909,9 @@ RestoreMSCWarning
           */
           (void) FormatLocaleString(buffer,MaxTextExtent,"%.20g %.20g\n0\n%d\n",
             (double) image->columns,(double) image->rows,
-            image_info->compression == RLECompression ? 1 : 0);
+            compression == RLECompression ? 1 : 0);
           (void) WriteBlobString(image,buffer);
-          switch (image_info->compression)
+          switch (compression)
           {
             case RLECompression:
             {
@@ -2034,7 +2039,7 @@ RestoreMSCWarning
           (void) FormatLocaleString(buffer,MaxTextExtent,
             "%.20g %.20g\n%d\n%d\n0\n",(double) image->columns,(double)
             image->rows,image->storage_class == PseudoClass ? 1 : 0,
-            image_info->compression == RLECompression ? 1 : 0);
+            compression == RLECompression ? 1 : 0);
           (void) WriteBlobString(image,buffer);
           /*
             Dump number of colors and colormap.
@@ -2050,7 +2055,7 @@ RestoreMSCWarning
               ScaleQuantumToChar(image->colormap[i].blue));
             (void) WriteBlobString(image,buffer);
           }
-          switch (image_info->compression)
+          switch (compression)
           {
             case RLECompression:
             {
