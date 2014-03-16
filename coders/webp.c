@@ -13,11 +13,11 @@
 %                         Read/Write WebP Image Format                        %
 %                                                                             %
 %                              Software Design                                %
-%                                John Cristy                                  %
+%                                   Cristy                                    %
 %                                 March 2011                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2013 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -39,32 +39,32 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/artifact.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/client.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/display.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/option.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/string-private.h"
-#include "MagickCore/module.h"
-#include "MagickCore/utility.h"
-#include "MagickCore/xwindow.h"
-#include "MagickCore/xwindow-private.h"
+#include "magick/studio.h"
+#include "magick/artifact.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/client.h"
+#include "magick/colorspace-private.h"
+#include "magick/display.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/memory_.h"
+#include "magick/option.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/string-private.h"
+#include "magick/module.h"
+#include "magick/utility.h"
+#include "magick/xwindow.h"
+#include "magick/xwindow-private.h"
 #if defined(MAGICKCORE_WEBP_DELEGATE)
 #include <webp/decode.h>
 #include <webp/encode.h>
@@ -75,7 +75,7 @@
 */
 #if defined(MAGICKCORE_WEBP_DELEGATE)
 static MagickBooleanType
-  WriteWEBPImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteWEBPImage(const ImageInfo *,Image *);
 #endif
 
 /*
@@ -244,7 +244,7 @@ static Image *ReadWEBPImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -267,8 +267,9 @@ static Image *ReadWEBPImage(const ImageInfo *image_info,
       image->columns=(size_t) features->width;
       image->rows=(size_t) features->height;
       image->depth=8;
-      image->alpha_trait=features->has_alpha != 0 ? BlendPixelTrait :
-        UndefinedPixelTrait;
+      image->matte=features->has_alpha != 0 ? MagickTrue : MagickFalse;
+      if (IsWEBPImageLossless(stream,length) != MagickFalse)
+        image->quality=100;
       if (image_info->ping != MagickFalse)
         {
           stream=(unsigned char*) RelinquishMagickMemory(stream);
@@ -306,27 +307,25 @@ static Image *ReadWEBPImage(const ImageInfo *image_info,
           ThrowReaderException(CorruptImageError,"CorruptImage");
       }
     }
-  if (IsWEBPImageLossless(stream,length) != MagickFalse)
-    image->quality=100;
   p=webp_image->u.RGBA.rgba;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register Quantum
+    register PixelPacket
       *q;
 
     register ssize_t
       x;
 
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      SetPixelRed(image,ScaleCharToQuantum(*p++),q);
-      SetPixelGreen(image,ScaleCharToQuantum(*p++),q);
-      SetPixelBlue(image,ScaleCharToQuantum(*p++),q);
-      SetPixelAlpha(image,ScaleCharToQuantum(*p++),q);
-      q+=GetPixelChannels(image);
+      SetPixelRed(q,ScaleCharToQuantum(*p++));
+      SetPixelGreen(q,ScaleCharToQuantum(*p++));
+      SetPixelBlue(q,ScaleCharToQuantum(*p++));
+      SetPixelAlpha(q,ScaleCharToQuantum(*p++));
+      q++;
     }
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
@@ -455,7 +454,7 @@ static int WebPWriter(const unsigned char *stream,size_t length,
 }
 
 static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   const char
     *value;
@@ -495,7 +494,7 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if ((image->columns > 16383UL) || (image->rows > 16383UL))
     ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   if ((WebPPictureInit(&picture) == 0) || (WebPConfigInit(&configure) == 0))
@@ -583,7 +582,7 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
   /*
     Allocate memory for pixels.
   */
-  (void) TransformImageColorspace(image,sRGBColorspace,exception);
+  (void) TransformImageColorspace(image,sRGBColorspace);
   pixel_info=AcquireVirtualMemory(image->columns,image->rows*
     sizeof(*picture.argb));
   if (pixel_info == (MemoryInfo *) NULL)
@@ -595,23 +594,23 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
   q=picture.argb;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const Quantum
+    register const PixelPacket
       *restrict p;
 
     register ssize_t
       x;
 
-    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
+    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+    if (p == (PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      *q++=(uint32_t) (image->alpha_trait == BlendPixelTrait ?
-        ScaleQuantumToChar(GetPixelAlpha(image,p)) << 24 : 0xff000000) |
-        (ScaleQuantumToChar(GetPixelRed(image,p)) << 16) |
-        (ScaleQuantumToChar(GetPixelGreen(image,p)) << 8) |
-        (ScaleQuantumToChar(GetPixelBlue(image,p)));
-      p+=GetPixelChannels(image);
+      *q++=(uint32_t) (image->matte != MagickFalse ?
+        ScaleQuantumToChar(GetPixelAlpha(p)) << 24 : 0xff000000u) |
+        (ScaleQuantumToChar(GetPixelRed(p)) << 16) |
+        (ScaleQuantumToChar(GetPixelGreen(p)) << 8) |
+        (ScaleQuantumToChar(GetPixelBlue(p)));
+      p++;
     }
     status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) y,
       image->rows);

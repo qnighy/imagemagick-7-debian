@@ -40,32 +40,33 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/geometry.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/paint.h"
-#include "MagickCore/property.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/utility.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/color-private.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
+#include "magick/constitute.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/geometry.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/paint.h"
+#include "magick/pixel-accessor.h"
+#include "magick/property.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
+#include "magick/utility.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteHTMLImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteHTMLImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,8 +198,7 @@ ModuleExport void UnregisterHTMLImage(void)
 %
 %  The format of the WriteHTMLImage method is:
 %
-%      MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%      MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -206,11 +206,10 @@ ModuleExport void UnregisterHTMLImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
 %
 */
 static MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   char
     basename[MaxTextExtent],
@@ -244,13 +243,11 @@ static MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   (void) CloseBlob(image);
-  (void) TransformImageColorspace(image,sRGBColorspace,exception);
+  (void) TransformImageColorspace(image,sRGBColorspace);
   *url='\0';
   if ((LocaleCompare(image_info->magick,"FTP") == 0) ||
       (LocaleCompare(image_info->magick,"HTTP") == 0))
@@ -290,8 +287,7 @@ static MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,
       /*
         Open output image file.
       */
-      assert(exception != (ExceptionInfo *) NULL);
-      status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+      status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
       if (status == MagickFalse)
         return(status);
       /*
@@ -304,7 +300,7 @@ static MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,
         "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
       (void) WriteBlobString(image,"<html>\n");
       (void) WriteBlobString(image,"<head>\n");
-      value=GetImageProperty(image,"label",exception);
+      value=GetImageProperty(image,"label");
       if (value != (const char *) NULL)
         (void) FormatLocaleString(buffer,MaxTextExtent,"<title>%s</title>\n",
           value);
@@ -387,7 +383,7 @@ static MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,
       next=GetNextImageInList(image);
       image->next=NewImageList();
       (void) CopyMagickString(image->magick,"PNG",MaxTextExtent);
-      (void) WriteImage(write_info,image,exception);
+      (void) WriteImage(write_info,image);
       image->next=next;
       /*
         Determine image map filename.
@@ -399,7 +395,7 @@ static MagickBooleanType WriteHTMLImage(const ImageInfo *image_info,
   /*
     Open image map.
   */
-  status=OpenBlob(write_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(write_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   write_info=DestroyImageInfo(write_info);

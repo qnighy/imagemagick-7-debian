@@ -257,6 +257,7 @@ namespace Magick
 
     void tileName(const std::string &tileName_);
     std::string tileName(void) const;
+
     // Origin of coordinate system to use when annotating with text or drawing
     void transformOrigin(double tx_,double ty_);
 
@@ -285,6 +286,10 @@ namespace Magick
 
     void view(const std::string &view_);
     std::string view(void) const;
+
+    // Virtual pixel method.
+    void virtualPixelMethod(VirtualPixelMethod virtual_pixel_method_);
+    VirtualPixelMethod virtualPixelMethod(void) const;
 
     // X11 display name
     void x11Display(const std::string &display_);

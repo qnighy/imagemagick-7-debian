@@ -82,6 +82,7 @@ Group: Applications/Multimedia
 %description libs
 This packages contains a shared libraries to use within other applications.
 
+
 %package djvu
 Summary: DjVu plugin for ImageMagick
 Group: Applications/Multimedia
@@ -95,6 +96,7 @@ save and load DjvU files from ImageMagick and libMagickCore using applications.
 %package doc
 Summary: ImageMagick HTML documentation
 Group: Documentation
+
 
 %description doc
 ImageMagick documentation, this package contains usage (for the
@@ -173,7 +175,7 @@ cp -p Magick++/demo/*.cpp Magick++/demo/*.miff Magick++/examples
            --with-rsvg \
            --with-xml \
            --with-perl-options="INSTALLDIRS=vendor %{?perl_prefix} CC='%__cc -L$PWD/magick/.libs' LDDLFLAGS='-shared -L$PWD/magick/.libs'" \
-           --without-dps 
+           --without-dps
 # Disable rpath
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
@@ -237,20 +239,24 @@ rm -rf %{buildroot}
 %exclude %{_libdir}/%{name}-%{VERSION}/modules-*/coders/djvu.*
 %{_sysconfdir}/%{name}-%{MAJOR_VERSION}
 
-
 %files devel
 %defattr(-,root,root,-)
 %{_bindir}/MagickCore-config
+%{_bindir}/Magick-config
 %{_bindir}/MagickWand-config
+%{_bindir}/Wand-config
 %{_libdir}/libMagickCore*so*
 %{_libdir}/libMagickWand*so*
 %{_libdir}/pkgconfig/MagickCore*.pc
 %{_libdir}/pkgconfig/ImageMagick*.pc
 %{_libdir}/pkgconfig/MagickWand*.pc
+%{_libdir}/pkgconfig/Wand*.pc
 %dir %{_includedir}/%{name}-%{MAJOR_VERSION}
-%{_includedir}/%{name}-%{MAJOR_VERSION}/MagickCore
-%{_includedir}/%{name}-%{MAJOR_VERSION}/MagickWand
+%{_includedir}/%{name}-%{MAJOR_VERSION}/magick
+%{_includedir}/%{name}-%{MAJOR_VERSION}/wand
+%{_mandir}/man1/Magick-config.*
 %{_mandir}/man1/MagickCore-config.*
+%{_mandir}/man1/Wand-config.*
 %{_mandir}/man1/MagickWand-config.*
 
 %files djvu

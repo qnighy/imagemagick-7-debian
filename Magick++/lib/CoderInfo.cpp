@@ -120,3 +120,13 @@ bool Magick::CoderInfo::unregister(void) const
 {
   return(UnregisterMagickInfo(_name.c_str()) != MagickFalse);
 }
+
+Magick::CoderInfo::CoderInfo(const MagickCore::MagickInfo *magickInfo_)
+  : _name(string(magickInfo_->name ? magickInfo_->name : "")),
+    _description(string(magickInfo_->description ? magickInfo_->description : "")),
+    _mimeType(string(magickInfo_->mime_type ? magickInfo_->mime_type : "")),
+    _isReadable(magickInfo_->decoder ? true : false),
+    _isWritable(magickInfo_->encoder ? true : false),
+    _isMultiFrame(magickInfo_->adjoin ? true : false)
+{
+}

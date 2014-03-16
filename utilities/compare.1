@@ -7,7 +7,7 @@ compare \- mathematically and visually annotate the difference between an image 
 .SH OVERVIEW
 The \fBcompare\fP program is a member of the ImageMagick(1) suite of tools.  Use it to mathematically and visually annotate the difference between an image and its reconstruction.
 
-For more information about the compare command, point your browser to file:///usr/local/share/doc/ImageMagick-7/www/compare.html or http://www.imagemagick.org/script/compare.php.
+For more information about the compare command, point your browser to file:///usr/share/doc/ImageMagick-6/www/compare.html or http://www.imagemagick.org/script/compare.php.
 .SH DESCRIPTION
 Image Settings:
   \-alpha option        on, activate, off, deactivate, set, opaque, copy
@@ -37,6 +37,7 @@ Image Settings:
                        de-emphasize pixel differences with this color
   \-metric type         measure differences between images with this metric
   \-monitor             monitor progress
+  \-passphrase filename get the passphrase from this file
   \-profile filename    add, delete, or apply an image profile
   \-quality value       JPEG/MIFF/PNG compression level
   \-quiet               suppress all warning messages
@@ -69,11 +70,10 @@ Miscellaneous Options:
 
 By default, the image format of `file' is determined by its magic number.  To specify a particular image format, precede the filename with an image format name and a colon (i.e. ps:image) or specify the image type as the filename suffix (i.e. image.ps).  Specify 'file' as '-' for standard input or output.
 
-The compare program returns 2 on error otherwise 0 if the images are similar or
-1 if they are dissimilar.
+The compare program returns 2 on error otherwise 0 if the images are similar or 1 if they are dissimilar.
 .SH SEE ALSO
 ImageMagick(1)
 
 .SH COPYRIGHT
 
-\fBCopyright (C) 1999-2014 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file:///usr/local/share/doc/ImageMagick-7/www/license.html or http://www.imagemagick.org/script/license.php\fP
+\fBCopyright (C) 1999-2014 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file:///usr/share/doc/ImageMagick-6/www/license.html or http://www.imagemagick.org/script/license.php\fP

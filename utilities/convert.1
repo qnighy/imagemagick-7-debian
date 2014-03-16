@@ -3,11 +3,11 @@
 convert \- convert between image formats as well as resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more.
 .SH SYNOPSIS
 .TP
-\fBconvert\fP [\fIinput-options\fP] \fIinput-file\fP [\fIoutput-options\fP] \fIoutput-file\fP
+\fBconvert\fP [\fIinput-option\fP] \fIinput-file\fP [\fIoutput-option\fP] \fIoutput-file\fP
 .SH OVERVIEW
 The \fBconvert\fP program is a member of the ImageMagick(1) suite of tools.  Use it to convert between image formats as well as resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more.  
 
-For more information about the convert command, point your browser to file:///usr/local/share/doc/ImageMagick-7/www/convert.html or http://www.imagemagick.org/script/convert.php.
+For more information about the convert command, point your browser to file:///usr/share/doc/ImageMagick-6/www/convert.html or http://www.imagemagick.org/script/convert.php.
 .SH DESCRIPTION
 Image Settings:
   \-adjoin              join images into a single multi-image file
@@ -177,6 +177,8 @@ Image Operators:
   \-identify            identify the format and characteristics of the image
   \-ift                 implements the inverse discrete Fourier transform (DFT)
   \-implode amount      implode image pixels about the center
+  \-interpolative-resize geometry
+  \                     resize image using 'point sampled' interpolation
   \-lat geometry        local adaptive thresholding
   \-layers method       optimize or compare image layers
   \-level value         adjust the level of image contrast
@@ -186,6 +188,7 @@ Image Operators:
                        improve contrast by `stretching with saturation' the intensity range
   \-liquid-rescale geometry
   \                     rescale image with seam-carving
+  \-magnify             double the size of the image with pixel art scaling
   \-median geometry     apply a median filter to the image
   \-mode geometry       make each pixel the 'predominant color' of the neighborhood
   \-modulate value      vary the brightness, saturation, and hue
@@ -259,12 +262,6 @@ Image Operators:
   \-white-threshold value
                        force all pixels above the threshold into white
 
-
-Image Channel Operators:
-  \-channel-fx expression
-                       exchange, extract, or transfer one or more image channels
-  \-separate            separate an image channel into a grayscale image
-
 Image Sequence Operators:
   \-append              append an image sequence top to bottom (use +append for left to right)
   \-clut                apply a color lookup table to the image
@@ -284,6 +281,7 @@ Image Sequence Operators:
   \-mosaic              create a mosaic from an image sequence
   \-poly terms          build a polynomial from the image sequence and the corresponding terms (coefficients and degree pairs)
   \-process arguments   process the image with a custom image filter
+  \-separate            separate an image channel into a grayscale image
   \-smush geometry      smush an image sequence together
   \-write filename      write images to this file
 
@@ -312,4 +310,4 @@ By default, the image format of `file' is determined by its magic number.  To sp
 ImageMagick(1)
 
 .SH COPYRIGHT
-\fBCopyright (C) 1999-2014 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file:///usr/local/share/doc/ImageMagick-7/www/license.html or http://www.imagemagick.org/script/license.php\fP
+\fBCopyright (C) 1999-2014 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file:///usr/share/doc/ImageMagick-6/www/license.html or http://www.imagemagick.org/script/license.php\fP

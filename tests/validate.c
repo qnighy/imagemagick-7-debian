@@ -46,10 +46,10 @@
 #include <ctype.h>
 #include <math.h>
 #include <locale.h>
-#include "MagickWand/MagickWand.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/resource_.h"
-#include "MagickCore/string-private.h"
+#include "wand/MagickWand.h"
+#include "magick/colorspace-private.h"
+#include "magick/resource_.h"
+#include "magick/string-private.h"
 #include "validate.h"
 
 /*
@@ -85,262 +85,15 @@
 %
 %    o image_info: the image info.
 %
+%    o reference_filename: the reference image filename.
+%
+%    o output_filename: the output image filename.
+%
 %    o fail: return the number of validation tests that pass.
 %
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static void ConvertHSIToRGB(const double hue,const double saturation,
-  const double intensity,double *red,double *green,double *blue)
-{
-  double
-    h;
-
-  h=360.0*hue;
-  h-=360.0*floor(h/360.0);
-  if (h < 120.0)
-    {
-      *blue=intensity*(1.0-saturation);
-      *red=intensity*(1.0+saturation*cos(h*(MagickPI/180.0))/cos((60.0-h)*
-        (MagickPI/180.0)));
-      *green=3.0*intensity-*red-*blue;
-    }
-  else
-    if (h < 240.0)
-      {
-        h-=120.0;
-        *red=intensity*(1.0-saturation);
-        *green=intensity*(1.0+saturation*cos(h*(MagickPI/180.0))/cos((60.0-h)*
-          (MagickPI/180.0)));
-        *blue=3.0*intensity-*red-*green;
-      }
-    else
-      {
-        h-=240.0;
-        *green=intensity*(1.0-saturation);
-        *blue=intensity*(1.0+saturation*cos(h*(MagickPI/180.0))/cos((60.0-h)*
-          (MagickPI/180.0)));
-        *red=3.0*intensity-*green-*blue;
-      }
-  *red*=QuantumRange;
-  *green*=QuantumRange;
-  *blue*=QuantumRange;
-}
-
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
-static void ConvertRGBToHSI(const double red,const double green,
-  const double blue,double *hue,double *saturation,double *intensity)
-{
-  double
-    alpha,
-    beta;
-
-  *intensity=(QuantumScale*red+QuantumScale*green+QuantumScale*blue)/3.0;
-  if (*intensity <= 0.0)
-    {
-      *hue=0.0;
-      *saturation=0.0;
-      return;
-    }
-  *saturation=1.0-MagickMin(QuantumScale*red,MagickMin(QuantumScale*green,
-    QuantumScale*blue))/(*intensity);
-  alpha=0.5*(2.0*QuantumScale*red-QuantumScale*green-QuantumScale*blue);
-  beta=0.8660254037844385*(QuantumScale*green-QuantumScale*blue);
-  *hue=atan2(beta,alpha)*(180.0/MagickPI)/360.0;
-  if (*hue < 0.0)
-    *hue+=1.0;
-}
-
-MagickExport void ConvertHSLToRGB(const double hue,const double saturation,
-  const double lightness,double *red,double *green,double *blue)
-{
-  double
-    c,
-    h,
-    min,
-    x;
-
-  h=hue*360.0;
-  if (lightness <= 0.5)
-    c=2.0*lightness*saturation;
-  else
-    c=(2.0-2.0*lightness)*saturation;
-  min=lightness-0.5*c;
-  h-=360.0*floor(h/360.0);
-  h/=60.0;
-  x=c*(1.0-fabs(h-2.0*floor(h/2.0)-1.0));
-  switch ((int) floor(h))
-  {
-    case 0:
-    {
-      *red=QuantumRange*(min+c);
-      *green=QuantumRange*(min+x);
-      *blue=QuantumRange*min;
-      break;
-    }
-    case 1:
-    {
-      *red=QuantumRange*(min+x);
-      *green=QuantumRange*(min+c);
-      *blue=QuantumRange*min;
-      break;
-    }
-    case 2:
-    {
-      *red=QuantumRange*min;
-      *green=QuantumRange*(min+c);
-      *blue=QuantumRange*(min+x);
-      break;
-    }
-    case 3:
-    {
-      *red=QuantumRange*min;
-      *green=QuantumRange*(min+x);
-      *blue=QuantumRange*(min+c);
-      break;
-    }
-    case 4:
-    {
-      *red=QuantumRange*(min+x);
-      *green=QuantumRange*min;
-      *blue=QuantumRange*(min+c);
-      break;
-    }
-    case 5:
-    {
-      *red=QuantumRange*(min+c);
-      *green=QuantumRange*min;
-      *blue=QuantumRange*(min+x);
-      break;
-    }
-    default:
-    {
-      *red=0.0;
-      *green=0.0;
-      *blue=0.0;
-    }
-  }
-}
-
-static inline double MagickMax(const double x,const double y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-MagickExport void ConvertRGBToHSL(const double red,const double green,
-  const double blue,double *hue,double *saturation,double *lightness)
-{
-  double
-    c,
-    max,
-    min;
-
-  max=MagickMax(QuantumScale*red,MagickMax(QuantumScale*green,
-    QuantumScale*blue));
-  min=MagickMin(QuantumScale*red,MagickMin(QuantumScale*green,
-    QuantumScale*blue));
-  c=max-min;
-  *lightness=(max+min)/2.0;
-  if (c <= 0.0)
-    {
-      *hue=0.0;
-      *saturation=0.0;
-      return;
-    }
-  if (max == (QuantumScale*red))
-    {
-      *hue=(QuantumScale*green-QuantumScale*blue)/c;
-      if ((QuantumScale*green) < (QuantumScale*blue))
-        *hue+=6.0;
-    }
-  else
-    if (max == (QuantumScale*green))
-      *hue=2.0+(QuantumScale*blue-QuantumScale*red)/c;
-    else
-      *hue=4.0+(QuantumScale*red-QuantumScale*green)/c;
-  *hue*=60.0/360.0;
-  if (*lightness <= 0.5)
-    *saturation=c/(2.0*(*lightness));
-  else
-    *saturation=c/(2.0-2.0*(*lightness));
-}
-
-static void ConvertHSVToRGB(const double hue,const double saturation,
-  const double value,double *red,double *green,double *blue)
-{
-  double
-    c,
-    h,
-    min,
-    x;
-
-  h=hue*360.0;
-  c=value*saturation;
-  min=value-c;
-  h-=360.0*floor(h/360.0);
-  h/=60.0;
-  x=c*(1.0-fabs(h-2.0*floor(h/2.0)-1.0));
-  switch ((int) floor(h))
-  {
-    case 0:
-    {
-      *red=QuantumRange*(min+c);
-      *green=QuantumRange*(min+x);
-      *blue=QuantumRange*min;
-      break;
-    }
-    case 1:
-    {
-      *red=QuantumRange*(min+x);
-      *green=QuantumRange*(min+c);
-      *blue=QuantumRange*min;
-      break;
-    }
-    case 2:
-    {
-      *red=QuantumRange*min;
-      *green=QuantumRange*(min+c);
-      *blue=QuantumRange*(min+x);
-      break;
-    }
-    case 3:
-    {
-      *red=QuantumRange*min;
-      *green=QuantumRange*(min+x);
-      *blue=QuantumRange*(min+c);
-      break;
-    }
-    case 4:
-    {
-      *red=QuantumRange*(min+x);
-      *green=QuantumRange*min;
-      *blue=QuantumRange*(min+c);
-      break;
-    }
-    case 5:
-    {
-      *red=QuantumRange*(min+c);
-      *green=QuantumRange*min;
-      *blue=QuantumRange*(min+x);
-      break;
-    }
-    default:
-    {
-      *red=0.0;
-      *green=0.0;
-      *blue=0.0;
-    }
-  }
-}
 
 static inline void ConvertRGBToXYZ(const double red,const double green,
   const double blue,double *X,double *Y,double *Z)
@@ -424,7 +177,7 @@ static inline void ConvertLabToXYZ(const double L,const double a,const double b,
 }
 
 static inline void ConvertXYZToRGB(const double x,const double y,const double z,
-  double *red,double *green,double *blue)
+  Quantum *red,Quantum *green,Quantum *blue)
 {
   double
     b,
@@ -434,13 +187,13 @@ static inline void ConvertXYZToRGB(const double x,const double y,const double z,
   r=3.2406*x-1.5372*y-0.4986*z;
   g=(-0.9689*x+1.8758*y+0.0415*z);
   b=0.0557*x-0.2040*y+1.0570*z;
-  *red=EncodePixelGamma(QuantumRange*r);
-  *green=EncodePixelGamma(QuantumRange*g);
-  *blue=EncodePixelGamma(QuantumRange*b);
+  *red=ClampToQuantum(EncodePixelGamma(QuantumRange*r));
+  *green=ClampToQuantum(EncodePixelGamma(QuantumRange*g));
+  *blue=ClampToQuantum(EncodePixelGamma(QuantumRange*b));
 }
 
 static inline void ConvertLabToRGB(const double L,const double a,
-  const double b,double *red,double *green,double *blue)
+  const double b,Quantum *red,Quantum *green,Quantum *blue)
 {
   double
     X,
@@ -466,18 +219,18 @@ static void ConvertRGBToYCbCr(const double red,const double green,
 }
 
 static void ConvertYPbPrToRGB(const double Y,const double Pb,const double Pr,
-  double *red,double *green,double *blue)
+  Quantum *red,Quantum *green,Quantum *blue)
 {
-  *red=QuantumRange*(0.99999999999914679361*Y-1.2188941887145875e-06*(Pb-0.5)+
-    1.4019995886561440468*(Pr-0.5));
-  *green=QuantumRange*(0.99999975910502514331*Y-0.34413567816504303521*(Pb-0.5)-
-    0.71413649331646789076*(Pr-0.5));
-  *blue=QuantumRange*(1.00000124040004623180*Y+1.77200006607230409200*(Pb-0.5)+
-    2.1453384174593273e-06*(Pr-0.5));
+  *red=ClampToQuantum(QuantumRange*(0.99999999999914679361*Y-
+    1.2188941887145875e-06*(Pb-0.5)+1.4019995886561440468*(Pr-0.5)));
+  *green=ClampToQuantum(QuantumRange*(0.99999975910502514331*Y-
+    0.34413567816504303521*(Pb-0.5)-0.71413649331646789076*(Pr-0.5)));
+  *blue=ClampToQuantum(QuantumRange*(1.00000124040004623180*Y+
+    1.77200006607230409200*(Pb-0.5)+2.1453384174593273e-06*(Pr-0.5)));
 }
 
 static void ConvertYCbCrToRGB(const double Y,const double Cb,
-  const double Cr,double *red,double *green,double *blue)
+  const double Cr,Quantum *red,Quantum *green,Quantum *blue)
 {
   ConvertYPbPrToRGB(Y,Cb,Cr,red,green,blue);
 }
@@ -487,53 +240,6 @@ static inline void ConvertLCHabToXYZ(const double luma,const double chroma,
 {
   ConvertLabToXYZ(luma,chroma*cos(hue*MagickPI/180.0),chroma*
     sin(hue*MagickPI/180.0),X,Y,Z);
-}
-
-static void ConvertLCHabToRGB(const double luma,const double chroma,
-  const double hue,double *red,double *green,double *blue)
-{
-  double
-    X,
-    Y,
-    Z;
-
-  ConvertLCHabToXYZ(luma*100.0,255.0*(chroma-0.5),360.0*hue,&X,&Y,&Z);
-  ConvertXYZToRGB(X,Y,Z,red,green,blue);
-}
-
-static void ConvertRGBToHSV(const double red,const double green,
-  const double blue,double *hue,double *saturation,double *value)
-{
-  double
-    c,
-    max,
-    min;
-
-  max=MagickMax(QuantumScale*red,MagickMax(QuantumScale*green,
-    QuantumScale*blue));
-  min=MagickMin(QuantumScale*red,MagickMin(QuantumScale*green,
-    QuantumScale*blue));
-  c=max-min;
-  *value=max;
-  if (c <= 0.0)
-    {
-      *hue=0.0;
-      *saturation=0.0;
-      return;
-    }
-  if (max == (QuantumScale*red))
-    {
-      *hue=(QuantumScale*green-QuantumScale*blue)/c;
-      if ((QuantumScale*green) < (QuantumScale*blue))
-        *hue+=6.0;
-    }
-  else
-    if (max == (QuantumScale*green))
-      *hue=2.0+(QuantumScale*blue-QuantumScale*red)/c;
-    else
-      *hue=4.0+(QuantumScale*red-QuantumScale*green)/c;
-  *hue*=60.0/360.0;
-  *saturation=c/max;
 }
 
 static inline void ConvertXYZToLCHab(const double X,const double Y,
@@ -550,18 +256,6 @@ static inline void ConvertXYZToLCHab(const double X,const double Y,
     *hue+=1.0;
 }
 
-static void ConvertRGBToLCHab(const double red,const double green,
-  const double blue,double *luma,double *chroma,double *hue)
-{
-  double
-    X,
-    Y,
-    Z;
-
-  ConvertRGBToXYZ(red,green,blue,&X,&Y,&Z);
-  ConvertXYZToLCHab(X,Y,Z,luma,chroma,hue);
-}
-
 static inline void ConvertLMSToXYZ(const double L,const double M,const double S,
   double *X,double *Y,double *Z)
 {
@@ -571,7 +265,7 @@ static inline void ConvertLMSToXYZ(const double L,const double M,const double S,
 }
 
 static inline void ConvertLMSToRGB(const double L,const double M,
-  const double S,double *red,double *green,double *blue)
+  const double S,Quantum *red,Quantum *green,Quantum *blue)
 {
   double
     X,
@@ -661,7 +355,7 @@ static inline void ConvertLuvToXYZ(const double L,const double u,const double v,
 }
 
 static inline void ConvertLuvToRGB(const double L,const double u,
-  const double v,double *red,double *green,double *blue)
+  const double v,Quantum *red,Quantum *green,Quantum *blue)
 {
   double
     X,
@@ -681,14 +375,14 @@ static void ConvertRGBToYDbDr(const double red,const double green,
 }
 
 static void ConvertYDbDrToRGB(const double Y,const double Db,const double Dr,
-  double *red,double *green,double *blue)
+  Quantum *red,Quantum *green,Quantum *blue)
 {
-  *red=QuantumRange*(Y+9.2303716147657e-05*(Db-0.5)-0.52591263066186533*
-    (Dr-0.5));
-  *green=QuantumRange*(Y-0.12913289889050927*(Db-0.5)+0.26789932820759876*
-    (Dr-0.5));
-  *blue=QuantumRange*(Y+0.66467905997895482*(Db-0.5)-7.9202543533108e-05*
-    (Dr-0.5));
+  *red=ClampToQuantum(QuantumRange*(Y+9.2303716147657e-05*(Db-0.5)-
+    0.52591263066186533*(Dr-0.5)));
+  *green=ClampToQuantum(QuantumRange*(Y-0.12913289889050927*(Db-0.5)+
+    0.26789932820759876*(Dr-0.5)));
+  *blue=ClampToQuantum(QuantumRange*(Y+0.66467905997895482*(Db-0.5)-
+    7.9202543533108e-05*(Dr-0.5)));
 }
 
 static void ConvertRGBToYIQ(const double red,const double green,
@@ -700,14 +394,14 @@ static void ConvertRGBToYIQ(const double red,const double green,
 }
 
 static void ConvertYIQToRGB(const double Y,const double I,const double Q,
-  double *red,double *green,double *blue)
+  Quantum *red,Quantum *green,Quantum *blue)
 {
-  *red=QuantumRange*(Y+0.9562957197589482261*(I-0.5)+0.6210244164652610754*
-    (Q-0.5));
-  *green=QuantumRange*(Y-0.2721220993185104464*(I-0.5)-0.6473805968256950427*
-    (Q-0.5));
-  *blue=QuantumRange*(Y-1.1069890167364901945*(I-0.5)+1.7046149983646481374*
-    (Q-0.5));
+  *red=ClampToQuantum(QuantumRange*(Y+0.9562957197589482261*(I-0.5)+
+    0.6210244164652610754*(Q-0.5)));
+  *green=ClampToQuantum(QuantumRange*(Y-0.2721220993185104464*(I-0.5)-
+    0.6473805968256950427*(Q-0.5)));
+  *blue=ClampToQuantum(QuantumRange*(Y-1.1069890167364901945*(I-0.5)+
+    1.7046149983646481374*(Q-0.5)));
 }
 
 static void ConvertRGBToYUV(const double red,const double green,
@@ -719,22 +413,22 @@ static void ConvertRGBToYUV(const double red,const double green,
 }
 
 static void ConvertYUVToRGB(const double Y,const double U,const double V,
-  double *red,double *green,double *blue)
+  Quantum *red,Quantum *green,Quantum *blue)
 {
-  *red=QuantumRange*(Y-3.945707070708279e-05*(U-0.5)+1.1398279671717170825*
-    (V-0.5));
-  *green=QuantumRange*(Y-0.3946101641414141437*(U-0.5)-0.5805003156565656797*
-    (V-0.5));
-  *blue=QuantumRange*(Y+2.0319996843434342537*(U-0.5)-4.813762626262513e-04*
-    (V-0.5));
+  *red=ClampToQuantum(QuantumRange*(Y-3.945707070708279e-05*(U-0.5)+
+    1.1398279671717170825*(V-0.5)));
+  *green=ClampToQuantum(QuantumRange*(Y-0.3946101641414141437*(U-0.5)-
+    0.5805003156565656797*(V-0.5)));
+  *blue=ClampToQuantum(QuantumRange*(Y+2.0319996843434342537*(U-0.5)-
+    4.813762626262513e-04*(V-0.5)));
 }
 
 static MagickBooleanType ValidateHSIToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  HSIToRGB");
   ConvertHSIToRGB(111.244375/360.0,0.295985,0.658734,&r,&g,&b);
@@ -764,10 +458,10 @@ static MagickBooleanType ValidateRGBToHSI()
 
 static MagickBooleanType ValidateHSLToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  HSLToRGB");
   ConvertHSLToRGB(110.200859/360.0,0.882623,0.715163,&r,&g,&b);
@@ -797,10 +491,10 @@ static MagickBooleanType ValidateRGBToHSL()
 
 static MagickBooleanType ValidateHSVToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  HSVToRGB");
   ConvertHSVToRGB(110.200859/360.0,0.520200,0.966567,&r,&g,&b);
@@ -847,10 +541,10 @@ static MagickBooleanType ValidateRGBToJPEGYCbCr()
 
 static MagickBooleanType ValidateJPEGYCbCrToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  JPEGYCbCrToRGB");
   ConvertYCbCrToRGB(0.783460,0.319581,0.330539,&r,&g,&b);
@@ -863,10 +557,10 @@ static MagickBooleanType ValidateJPEGYCbCrToRGB()
 
 static MagickBooleanType ValidateLabToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  LabToRGB");
   ConvertLabToRGB(88.456154/100.0,-54.671483/255+0.5,51.662818/255.0+0.5,
@@ -897,7 +591,7 @@ static MagickBooleanType ValidateRGBToLab()
 
 static MagickBooleanType ValidateLchToRGB()
 {
-  double
+  Quantum
     b,
     g,
     r;
@@ -948,10 +642,10 @@ static MagickBooleanType ValidateRGBToLMS()
 
 static MagickBooleanType ValidateLMSToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  LMSToRGB");
   ConvertLMSToRGB(0.611749,0.910088,0.294880,&r,&g,&b);
@@ -965,14 +659,14 @@ static MagickBooleanType ValidateLMSToRGB()
 static MagickBooleanType ValidateRGBToLuv()
 {
   double
-    l,
+    L,
     u,
     v;
 
   (void) FormatLocaleFile(stdout,"  RGBToLuv");
   ConvertRGBToLuv(0.545877*QuantumRange,0.966567*QuantumRange,
-    0.463759*QuantumRange,&l,&u,&v);
-  if ((fabs(l-88.456154/262.0) >= ReferenceEpsilon) ||
+    0.463759*QuantumRange,&L,&u,&v);
+  if ((fabs(L-88.456154/262.0) >= ReferenceEpsilon) ||
       (fabs(u-(-51.330414+134.0)/354.0) >= ReferenceEpsilon) ||
       (fabs(v-(76.405526+140.0)/262.0) >= ReferenceEpsilon))
     return(MagickFalse);
@@ -981,10 +675,10 @@ static MagickBooleanType ValidateRGBToLuv()
 
 static MagickBooleanType ValidateLuvToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  LuvToRGB");
   ConvertLuvToRGB(88.456154/100.0,(-51.330414+134.0)/354.0,
@@ -1015,10 +709,10 @@ static MagickBooleanType ValidateRGBToXYZ()
 
 static MagickBooleanType ValidateXYZToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  XYZToRGB");
   ConvertXYZToRGB(0.470646,0.730178,0.288324,&r,&g,&b);
@@ -1031,10 +725,10 @@ static MagickBooleanType ValidateXYZToRGB()
 
 static MagickBooleanType ValidateYDbDrToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  YDbDrToRGB");
   ConvertYDbDrToRGB(0.783460,-0.480932+0.5,0.451670+0.5,&r,&g,&b);
@@ -1081,10 +775,10 @@ static MagickBooleanType ValidateRGBToYIQ()
 
 static MagickBooleanType ValidateYIQToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  YIQToRGB");
   ConvertYIQToRGB(0.783460,-0.089078+0.5,-0.245399+0.5,&r,&g,&b);
@@ -1100,12 +794,12 @@ static MagickBooleanType ValidateRGBToYPbPr()
   double
     Pb,
     Pr,
-    y;
+    Y;
 
   (void) FormatLocaleFile(stdout,"  RGBToYPbPr");
   ConvertRGBToYPbPr(0.545877*QuantumRange,0.966567*QuantumRange,
-    0.463759*QuantumRange,&y,&Pb,&Pr);
-  if ((fabs(y-0.783460) >= ReferenceEpsilon) ||
+    0.463759*QuantumRange,&Y,&Pb,&Pr);
+  if ((fabs(Y-0.783460) >= ReferenceEpsilon) ||
       (fabs(Pb-(-0.180419)) >= ReferenceEpsilon) ||
       (fabs(Pr-(-0.169461)) >= ReferenceEpsilon))
     return(MagickFalse);
@@ -1114,10 +808,10 @@ static MagickBooleanType ValidateRGBToYPbPr()
 
 static MagickBooleanType ValidateYPbPrToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  YPbPrToRGB");
   ConvertYPbPrToRGB(0.783460,-0.180419+0.5,-0.169461+0.5,&r,&g,&b);
@@ -1147,10 +841,10 @@ static MagickBooleanType ValidateRGBToYUV()
 
 static MagickBooleanType ValidateYUVToRGB()
 {
-  double
-    r,
+  Quantum
+    b,
     g,
-    b;
+    r;
 
   (void) FormatLocaleFile(stdout,"  YUVToRGB");
   ConvertYUVToRGB(0.783460,-0.157383+0.5,-0.208443+0.5,&r,&g,&b);
@@ -1313,7 +1007,7 @@ static size_t ValidateCompareCommand(ImageInfo *image_info,
         (*fail)++;
         continue;
       }
-    status=CompareImagesCommand(image_info,number_arguments,arguments,
+    status=CompareImageCommand(image_info,number_arguments,arguments,
       (char **) NULL,exception);
     for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
@@ -1669,8 +1363,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
   Image
     *difference_image,
     *ping_image,
-    *reconstruct_image,
-    *reference_image;
+    *reference_image,
+    *reconstruct_image;
 
   MagickBooleanType
     status;
@@ -1680,17 +1374,19 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
     j;
 
   size_t
-    length,
-    test;
+    length;
 
   unsigned char
     *blob;
+
+  size_t
+    test;
 
   test=0;
   (void) FormatLocaleFile(stdout,"validate image formats in memory:\n");
 
 #ifdef MagickCountTempFiles
-  (void)GetPathTemplate(path);
+  (void) GetPathTemplate(path);
   /* Remove file template except for the leading "/path/to/magick-" */
   path[strlen(path)-17]='\0';
   (void) FormatLocaleFile(stdout," tmp path is '%s*'\n",path);
@@ -1733,7 +1429,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       image_info->depth=reference_types[j].depth;
       (void) FormatLocaleString(reference_image->filename,MaxTextExtent,"%s:%s",
         reference_formats[i].magick,output_filename);
-      status=SetImageType(reference_image,reference_types[j].type,exception);
+      status=SetImageType(reference_image,reference_types[j].type);
+      InheritException(exception,&reference_image->exception);
       if (status == MagickFalse)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
@@ -1742,7 +1439,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
           reference_image=DestroyImage(reference_image);
           continue;
         }
-      status=SetImageDepth(reference_image,reference_types[j].depth,exception);
+      status=SetImageDepth(reference_image,reference_types[j].depth);
+      InheritException(exception,&reference_image->exception);
       if (status == MagickFalse)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
@@ -1752,7 +1450,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
           continue;
         }
       reference_image->compression=reference_formats[i].compression;
-      status=WriteImage(image_info,reference_image,exception);
+      status=WriteImage(image_info,reference_image);
+      InheritException(exception,&reference_image->exception);
       reference_image=DestroyImage(reference_image);
       if (status == MagickFalse)
         {
@@ -1778,6 +1477,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       /*
         Read reference image.
       */
+      (void) FormatLocaleString(image_info->filename,MaxTextExtent,"%s:%s",
+        reference_formats[i].magick,output_filename);
       reference_image=ReadImage(image_info,exception);
       if (reference_image == (Image *) NULL)
         {
@@ -1839,8 +1540,8 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       fuzz=0.003;  /* grayscale */
       if (reference_formats[i].fuzz != 0.0)
         fuzz=reference_formats[i].fuzz;
-      difference_image=CompareImages(reference_image,reconstruct_image,
-        RootMeanSquaredErrorMetric,&distortion,exception);
+      difference_image=CompareImageChannels(reference_image,reconstruct_image,
+        CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
       reference_image=DestroyImage(reference_image);
       if (difference_image == (Image *) NULL)
@@ -1858,6 +1559,7 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
           (*fail)++;
           continue;
         }
+
 #ifdef MagickCountTempFiles
       (void) FormatLocaleFile(stdout,"... pass, ");
       (void) fflush(stdout);
@@ -1979,7 +1681,8 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
       image_info->depth=reference_types[j].depth;
       (void) FormatLocaleString(reference_image->filename,MaxTextExtent,"%s:%s",
         reference_formats[i].magick,output_filename);
-      status=SetImageType(reference_image,reference_types[j].type,exception);
+      status=SetImageType(reference_image,reference_types[j].type);
+      InheritException(exception,&reference_image->exception);
       if (status == MagickFalse)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
@@ -1988,7 +1691,8 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
           reference_image=DestroyImage(reference_image);
           continue;
         }
-      status=SetImageDepth(reference_image,reference_types[j].depth,exception);
+      status=SetImageDepth(reference_image,reference_types[j].depth);
+      InheritException(exception,&reference_image->exception);
       if (status == MagickFalse)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
@@ -1998,7 +1702,8 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
           continue;
         }
       reference_image->compression=reference_formats[i].compression;
-      status=WriteImage(image_info,reference_image,exception);
+      status=WriteImage(image_info,reference_image);
+      InheritException(exception,&reference_image->exception);
       reference_image=DestroyImage(reference_image);
       if (status == MagickFalse)
         {
@@ -2027,7 +1732,8 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
         reference_formats[i].magick,output_filename);
       reference_image->depth=reference_types[j].depth;
       reference_image->compression=reference_formats[i].compression;
-      status=WriteImage(image_info,reference_image,exception);
+      status=WriteImage(image_info,reference_image);
+      InheritException(exception,&reference_image->exception);
       if (status == MagickFalse)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
@@ -2056,8 +1762,8 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
       fuzz=0.003;  /* grayscale */
       if (reference_formats[i].fuzz != 0.0)
         fuzz=reference_formats[i].fuzz;
-      difference_image=CompareImages(reference_image,reconstruct_image,
-        RootMeanSquaredErrorMetric,&distortion,exception);
+      difference_image=CompareImageChannels(reference_image,reconstruct_image,
+        CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
       reference_image=DestroyImage(reference_image);
       if (difference_image == (Image *) NULL)
@@ -2171,7 +1877,7 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
           continue;
         }
       if (LocaleNCompare(reference_map[i],"cmy",3) == 0)
-        (void) SetImageColorspace(reference_image,CMYKColorspace,exception);
+        (void) TransformImageColorspace(reference_image,CMYKColorspace);
       length=strlen(reference_map[i])*reference_image->columns*
         reference_image->rows*reference_storage[j].quantum;
       pixels=(unsigned char *) AcquireQuantumMemory(length,sizeof(*pixels));
@@ -2196,10 +1902,11 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
           reference_image=DestroyImage(reference_image);
           continue;
         }
-      (void) SetImageBackgroundColor(reference_image,exception);
+      (void) SetImageBackgroundColor(reference_image);
       status=ImportImagePixels(reference_image,0,0,reference_image->columns,
         reference_image->rows,reference_map[i],reference_storage[j].type,
-        pixels,exception);
+        pixels);
+      InheritException(exception,&reference_image->exception);
       if (status == MagickFalse)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
@@ -2212,15 +1919,15 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
       /*
         Read reconstruct image.
       */
-      reconstruct_image=AcquireImage(image_info,exception);
+      reconstruct_image=AcquireImage(image_info);
       (void) SetImageExtent(reconstruct_image,reference_image->columns,
-        reference_image->rows,exception);
-      (void) SetImageColorspace(reconstruct_image,reference_image->colorspace,
-        exception);
-      (void) SetImageBackgroundColor(reconstruct_image,exception);
+        reference_image->rows);
+      (void) SetImageColorspace(reconstruct_image,reference_image->colorspace);
+      (void) SetImageBackgroundColor(reconstruct_image);
       status=ImportImagePixels(reconstruct_image,0,0,reconstruct_image->columns,
         reconstruct_image->rows,reference_map[i],reference_storage[j].type,
-        pixels,exception);
+        pixels);
+      InheritException(exception,&reconstruct_image->exception);
       pixels=(unsigned char *) RelinquishMagickMemory(pixels);
       if (status == MagickFalse)
         {
@@ -2233,8 +1940,8 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
       /*
         Compare reference to reconstruct image.
       */
-      difference_image=CompareImages(reference_image,reconstruct_image,
-        RootMeanSquaredErrorMetric,&distortion,exception);
+      difference_image=CompareImageChannels(reference_image,reconstruct_image,
+        CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
       reference_image=DestroyImage(reference_image);
       if (difference_image == (Image *) NULL)
@@ -2673,7 +2380,8 @@ int main(int argc,char **argv)
       (void) AcquireUniqueFilename(output_filename);
       (void) CopyMagickString(reference_image->filename,reference_filename,
         MaxTextExtent);
-      status=WriteImage(image_info,reference_image,exception);
+      status=WriteImage(image_info,reference_image);
+      InheritException(exception,&reference_image->exception);
       reference_image=DestroyImage(reference_image);
       if (status == MagickFalse)
         fail++;

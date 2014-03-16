@@ -583,9 +583,9 @@ Magick::DrawableFillColor::~DrawableFillColor( void )
 void Magick::DrawableFillColor::operator()
   ( MagickCore::DrawingWand * context_ ) const
 {
-  PixelInfo color = static_cast<PixelInfo>(_color);
+  PixelPacket color = static_cast<PixelPacket>(_color);
   PixelWand *pixel_wand=NewPixelWand();
-  PixelSetPixelColor(pixel_wand,&color);
+  PixelSetQuantumColor(pixel_wand,&color);
   DrawSetFillColor(context_,pixel_wand);
   pixel_wand=DestroyPixelWand(pixel_wand);
 }
@@ -608,18 +608,18 @@ Magick::DrawableBase* Magick::DrawableFillRule::copy() const
   return new DrawableFillRule(*this);
 }
 
-// Specify drawing fill alpha
-Magick::DrawableFillAlpha::~DrawableFillAlpha ( void )
+// Specify drawing fill opacity
+Magick::DrawableFillOpacity::~DrawableFillOpacity ( void )
 {
 }
-void Magick::DrawableFillAlpha::operator()
+void Magick::DrawableFillOpacity::operator()
   ( MagickCore::DrawingWand * context_ ) const
 {
-  DrawSetFillAlpha( context_, _alpha );
+  DrawSetFillOpacity( context_, _opacity );
 }
-Magick::DrawableBase* Magick::DrawableFillAlpha::copy() const
+Magick::DrawableBase* Magick::DrawableFillOpacity::copy() const
 {
-  return new DrawableFillAlpha(*this);
+  return new DrawableFillOpacity(*this);
 }
 
 // Specify text font
@@ -1017,7 +1017,6 @@ Magick::DrawableBase* Magick::DrawableSkewY::copy() const
   return new DrawableSkewY(*this);
 }
 
-
 // Stroke dasharray
 Magick::DrawableDashArray::DrawableDashArray( const double* dasharray_ )
   : _size(0),
@@ -1226,9 +1225,9 @@ Magick::DrawableStrokeColor::~DrawableStrokeColor ( void )
 void Magick::DrawableStrokeColor::operator()
   ( MagickCore::DrawingWand * context_ ) const
 {
-  PixelInfo color = static_cast<PixelInfo>(_color);
+  PixelPacket color = static_cast<PixelPacket>(_color);
   PixelWand *pixel_wand=NewPixelWand();
-  PixelSetPixelColor(pixel_wand,&color);
+  PixelSetQuantumColor(pixel_wand,&color);
   DrawSetStrokeColor(context_,pixel_wand);
   pixel_wand=DestroyPixelWand(pixel_wand);
 }
@@ -1237,18 +1236,18 @@ Magick::DrawableBase* Magick::DrawableStrokeColor::copy() const
   return new DrawableStrokeColor(*this);
 }
 
-// Stroke alpha
-Magick::DrawableStrokeAlpha::~DrawableStrokeAlpha ( void )
+// Stroke opacity
+Magick::DrawableStrokeOpacity::~DrawableStrokeOpacity ( void )
 {
 }
-void Magick::DrawableStrokeAlpha::operator()
+void Magick::DrawableStrokeOpacity::operator()
   ( MagickCore::DrawingWand * context_ ) const
 {
-  DrawSetStrokeAlpha( context_, _alpha );
+  DrawSetStrokeOpacity( context_, _opacity );
 }
-Magick::DrawableBase* Magick::DrawableStrokeAlpha::copy() const
+Magick::DrawableBase* Magick::DrawableStrokeOpacity::copy() const
 {
-  return new DrawableStrokeAlpha(*this);
+  return new DrawableStrokeOpacity(*this);
 }
 
 // Stroke width
@@ -1500,9 +1499,9 @@ Magick::DrawableTextUnderColor::~DrawableTextUnderColor ( void )
 void Magick::DrawableTextUnderColor::operator()
   ( MagickCore::DrawingWand * context_ ) const
 {
-  PixelInfo color = static_cast<PixelInfo>(_color);
+  PixelPacket color = static_cast<PixelPacket>(_color);
   PixelWand *pixel_wand=NewPixelWand();
-  PixelSetPixelColor(pixel_wand,&color);
+  PixelSetQuantumColor(pixel_wand,&color);
   DrawSetTextUnderColor(context_,pixel_wand);
   pixel_wand=DestroyPixelWand(pixel_wand);
 }

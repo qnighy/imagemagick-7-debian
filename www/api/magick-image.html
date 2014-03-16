@@ -1,3 +1,7 @@
+
+
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html version="-//W3C//DTD XHTML 1.1//EN"
@@ -7,6 +11,7 @@
                           http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+  <meta name=viewport content="width=device-width, initial-scale=0.3333334">
   <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4"/>
   <title>ImageMagick: MagickWand, C API for ImageMagick: Image Methods</title>
   <meta http-equiv="content-language" content="en-US"/>
@@ -16,7 +21,7 @@
   <meta name="description" content="Use ImageMagick to convert, edit, or compose bitmap images in a variety of formats.  In addition, resize, rotate, shear, distort or transform images automagically."/>
   <meta name="application-url" content="http://www.imagemagick.org"/>
   <meta name="generator" content="PHP"/>
-  <meta name="keywords" content="magickwc, api, for, imagemagick:, image, methods, ImageMagick, PerlMagick, image processing, OpenMP, software development library, image, photo, software, Magick++, MagickWand"/>
+  <meta name="keywords" content="magickwc, api, for, imagemagick:, image, methods, ImageMagick, PerlMagick, image processing, OpenMP, software development library, image, photo, Magick++, MagickWand"/>
   <meta name="rating" content="GENERAL"/>
   <meta name="robots" content="INDEX, FOLLOW"/>
   <meta name="generator" content="ImageMagick Studio LLC"/>
@@ -26,27 +31,27 @@
   <meta name="copyright" content="Copyright (c) 1999-2012 ImageMagick Studio LLC"/>
   <meta name="distribution" content="Global"/>
   <link rel="icon" href="../../images/wand.png"/>
-  <link rel="shortcut icon" href="../../images/wand.ico"  type="images/x-icon"/>
-  <link rel="canonical" href="http://www.imagemagick.org" />
+  <link rel="shortcut icon" href="../../images/wand.ico" type="images/x-icon"/>
+  <link rel="canonical" href="../../index.html" />
   <link rel="meta" type="application/rdf+xml" title="ICI" href="http://imagemagick.org/ici.rdf"/>
 
   <!-- Add jQuery library -->
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
   
   <!-- Add mousewheel plugin (this is optional) -->
   <script type="text/javascript" src="http://www.imagemagick.org/fancybox/lib/jquery.mousewheel-3.0.6.pack.js"></script>
   
   <!-- Add fancyBox -->
-  <link rel="stylesheet" href="http://www.imagemagick.org/fancybox/source/jquery.fancybox.css?v=2.0.6" type="text/css" media="screen" />
-  <script type="text/javascript" src="http://www.imagemagick.org/fancybox/source/jquery.fancybox.pack.js?v=2.0.6"></script>
+  <link rel="stylesheet" href="http://www.imagemagick.org/fancybox/source/jquery.fancybox.css?v=2.1.5" type="text/css" media="screen" />
+  <script type="text/javascript" src="http://www.imagemagick.org/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
   
   <!-- Optionally add helpers - button, thumbnail and/or media -->
-  <link rel="stylesheet" href="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-buttons.css?v=1.0.2" type="text/css" media="screen" />
-  <script type="text/javascript" src="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-buttons.js?v=1.0.2"></script>
-  <script type="text/javascript" src="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-media.js?v=1.0.0"></script>
+  <link rel="stylesheet" href="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-buttons.css?v=1.0.5" type="text/css" media="screen" />
+  <script type="text/javascript" src="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-buttons.js?v=1.0.5"></script>
+  <script type="text/javascript" src="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-media.js?v=1.0.6"></script>
   
-  <link rel="stylesheet" href="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-thumbs.css?v=2.0.6" type="text/css" media="screen" />
-  <script type="text/javascript" src="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-thumbs.js?v=2.0.6"></script>
+  <link rel="stylesheet" href="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-thumbs.css?v=1.0.7" type="text/css" media="screen" />
+  <script type="text/javascript" src="http://www.imagemagick.org/fancybox/source/helpers/jquery.fancybox-thumbs.js?v=1.0.7"></script>
   
   <script type="text/javascript">
   	$(document).ready(function() {
@@ -88,18 +93,18 @@
 </div>
 <a href="../../discourse-server">
   <img src="../../images/logo.jpg"
-  alt="ImageMagick Logo"
+  alt="ImageMagick Logo" width="123" height="118"
   style="width: 123px; height: 118px; border: 0px; float: right;" /></a>
-<a href="http://www.imagemagick.org/ImageMagick-7.0.0/index.html">
+<a href="../../index.html">
   <img src="../../images/sprite.jpg"
-  alt="ImageMagick Sprite"
+  alt="ImageMagick Sprite" width="114" height="118"
   style="width: 114px; height: 118px; border: 0px; float: right;" /></a>
 </div>
 
 <div class="westbar">
 
 <div class="menu">
-  <a title="About ImageMagick" href="http://www.imagemagick.org/ImageMagick-7.0.0/index.html">About ImageMagick</a>
+  <a title="About ImageMagick" href="../../index.html">About ImageMagick</a>
 </div>
 <div class="menu">
   <a title="Binary Releases" href="../../www/binary-releases.html">Binary Releases</a>
@@ -175,9 +180,31 @@
   <a title="Site Map: Links" href="../../www/links.html">Links</a>
 </div>
 <div class="sep"></div>
+<div class="menu">
+  <a title="Support ImageMagick Development" href="../../www/support.html">Support ImageMagick Development</a>
+</div>
 </div>
 
 <div class="eastbar">
+  <script type="text/javascript">
+    /* <![CDATA[ */
+    window.___gcfg = {
+      lang: 'en-US'
+    };
+
+    (function() {
+      var po = document.createElement('offline-script');
+      po.type = 'text/javascript';
+      po.async = true;
+      po.src = 'https://apis.google.com/js/plusone.js';
+      var script = document.getElementsByTagName('offline-script')[0];
+      script.parentNode.insertBefore(po, script);
+    })();
+    var gplusone = document.getElementById("gplusone");
+    gplusone.setAttribute("data-size","medium");
+    gplusone.setAttribute("data-count","true");
+    /* ]]> */
+  </script>
   <script type="text/javascript">
     /* <![CDATA[ */
     (function() {
@@ -190,31 +217,12 @@
     })();
     /* ]]> */
   </script>
-  <div> <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="http://www.imagemagick.org/"></a></div>
+  <div> <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="../../index.html"></a></div>
   <noscript>
     <a href="http://flattr.com/thing/947300/Convert-Edit-And-Compose-Images" target="_blank">
     <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" width="93" height="20" border="0" /></a>
   </noscript>
-    <div class="g-plusone" id="gplusone"></div>
-    <script type="text/javascript">
-      /* <![CDATA[ */
-      window.___gcfg = {
-        lang: 'en-US'
-      };
-
-      (function() {
-        var po = document.createElement('offline-script');
-        po.type = 'text/javascript';
-        po.async = true;
-        po.src = 'https://apis.google.com/js/plusone.js';
-        var script = document.getElementsByTagName('offline-script')[0];
-        script.parentNode.insertBefore(po, script);
-      })();
-      var gplusone = document.getElementById("gplusone");
-      gplusone.setAttribute("data-size","medium");
-      gplusone.setAttribute("data-count","true");
-      /* ]]> */
-    </script>
+  <div class="g-plusone" data-size="standard" data-count="true"></div>
 </div>
 
 <div class="main">
@@ -584,7 +592,7 @@
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickBlurImage">MagickBlurImage</a></h2>
 <div class="doc-section">
 
-<p>MagickBlurImage() blurs an image.  We convolve the image with a gaussian operator of the given radius and standard deviation (sigma). For reasonable results, the radius should be larger than sigma.  Use a radius of 0 and BlurImage() selects a suitable radius for you.</p>
+<p>MagickBlurImage() blurs an image.  We convolve the image with a gaussian operator of the given radius and standard deviation (sigma).  For reasonable results, the radius should be larger than sigma.  Use a radius of 0 and BlurImage() selects a suitable radius for you.</p>
 
 <p>The format of the MagickBlurImage method is:</p>
 
@@ -643,7 +651,6 @@
 
 <p>Use MagickBrightnessContrastImage() to change the brightness and/or contrast of an image.  It converts the brightness and contrast parameters into slope and intercept and calls a polynomical function to apply to the image.</p>
 
-
 <p>The format of the MagickBrightnessContrastImage method is:</p>
 
 <pre class="code">
@@ -701,9 +708,8 @@
 <p>The format of the MagickChopImage method is:</p>
 
 <pre class="code">
-  MagickBooleanType MagickChopImage(MagickWand *wand,
-    const size_t width,const size_t height,const ssize_t x,
-    const ssize_t y)
+  MagickBooleanType MagickChopImage(MagickWand *wand,const size_t width,
+    const size_t height,const ssize_t x,const ssize_t y)
 </pre>
 
 <p>A description of each parameter follows:</p>
@@ -722,7 +728,6 @@
 
 <h5>y</h5>
 <p>the region y offset.</p>
-
 
  </div>
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickClampImage">MagickClampImage</a></h2>
@@ -834,18 +839,18 @@
 <p>MagickColorDecisionListImage() accepts a lightweight Color Correction Collection (CCC) file which solely contains one or more color corrections and applies the color correction to the image.  Here is a sample CCC file:</p>
 
 <pre class="text">
-      <ColorCorrectionCollection xmlns="urn:ASC:CDL:v1.2">
-      <ColorCorrection id="cc03345">
-            <SOPNode>
-                 <Slope> 0.9 1.2 0.5 </Slope>
-                 <Offset> 0.4 -0.5 0.6 </Offset>
-                 <Power> 1.0 0.8 1.5 </Power>
-            </SOPNode>
-            <SATNode>
-                 <Saturation> 0.85 </Saturation>
-            </SATNode>
-      </ColorCorrection>
-      </ColorCorrectionCollection>
+      &lt;ColorCorrectionCollection xmlns="urn:ASC:CDL:v1.2"&gt;
+      &lt;ColorCorrection id="cc03345"&gt;
+            &lt;SOPNode&gt;
+                 &lt;Slope&gt; 0.9 1.2 0.5 &lt;/Slope&gt;
+                 &lt;Offset&gt; 0.4 -0.5 0.6 &lt;/Offset&gt;
+                 &lt;Power&gt; 1.0 0.8 1.5 &lt;/Power&gt;
+            &lt;/SOPNode&gt;
+            &lt;SATNode&gt;
+                 &lt;Saturation&gt; 0.85 &lt;/Saturation&gt;
+            &lt;/SATNode&gt;
+      &lt;/ColorCorrection&gt;
+      &lt;/ColorCorrectionCollection&gt;
 </pre>
 
 <p>which includes the offset, slope, and power for each of the RGB channels as well as the saturation.</p>
@@ -914,7 +919,7 @@
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickCombineImages">MagickCombineImages</a></h2>
 <div class="doc-section">
 
-<p>MagickCombineImages() combines one or more images into a single image.  The grayscale value of the pixels of each image in the sequence is assigned in order to the specified  hannels of the combined image.   The typical ordering would be image 1 => Red, 2 => Green, 3 => Blue, etc.</p>
+<p>MagickCombineImages() combines one or more images into a single image.  The grayscale value of the pixels of each image in the sequence is assigned in order to the specified  hannels of the combined image.   The typical ordering would be image 1 =&gt; Red, 2 =&gt; Green, 3 =&gt; Blue, etc.</p>
 
 <p>The format of the MagickCombineImages method is:</p>
 
@@ -1014,8 +1019,7 @@
 
 <pre class="code">
   MagickWand *MagickCompareImages(MagickWand *wand,
-    const MagickWand *reference,const MetricType metric,
-    double *distortion)
+    const MagickWand *reference,const MetricType metric,double *distortion)
 </pre>
 
 <p>A description of each parameter follows:</p>
@@ -1271,7 +1275,6 @@
 
 <h5>pixels</h5>
 <p>This array of values contain the pixel components as defined by map and type.  You must preallocate this array where the expected length varies depending on the values of width, height, map, and type.</p>
-
 
  </div>
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickDecipherImage">MagickDecipherImage</a></h2>
@@ -2019,7 +2022,7 @@
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickGetImageBlob">MagickGetImageBlob</a></h2>
 <div class="doc-section">
 
-<p>MagickGetImageBlob() implements direct to memory image formats.  It returns the image as a blob (a formatted "file" in memory) and its length, starting from the current position in the image sequence.  Use MagickSetImageFormat()  to set the format to write to the blob (GIF, JPEG,  PNG, etc.).</p>
+<p>MagickGetImageBlob() implements direct to memory image formats.  It returns the image as a blob (a formatted "file" in memory) and its length, starting from the current position in the image sequence.  Use MagickSetImageFormat() to set the format to write to the blob (GIF, JPEG,  PNG, etc.).</p>
 
 <p>Utilize MagickResetIterator() to ensure the write is from the beginning of the image sequence.</p>
 
@@ -2548,7 +2551,7 @@
 <p>The format of the MagickGetImageFormat method is:</p>
 
 <pre class="code">
-  const char *MagickGetImageFormat(MagickWand *wand)
+  char *MagickGetImageFormat(MagickWand *wand)
 </pre>
 
 <p>A description of each parameter follows:</p>
@@ -3357,7 +3360,7 @@
 
 <p>MagickLiquidRescaleImage() rescales image with seam carving.</p>
 
-<p>MagickBooleanType MagickLiquidRescaleImage(MagickWand *wand, const size_t columns,const size_t rows, const double delta_x,const double rigidity)</p>
+<p>MagickBooleanType MagickLiquidRescaleImage(MagickWand *wand, const size_t columns,const size_t rows,const double delta_x, const double rigidity)</p>
 
 <p>A description of each parameter follows:</p>
 
@@ -3495,7 +3498,7 @@
 <p>the number of tiles per row and page (e.g. 6x4+0+0).</p>
 
 <h5>thumbnail_geometry</h5>
-<p>Preferred image size and border size of each thumbnail (e.g. 120x120+4+3>).</p>
+<p>Preferred image size and border size of each thumbnail (e.g. 120x120+4+3&gt;).</p>
 
 <h5>mode</h5>
 <p>Thumbnail framing mode: Frame, Unframe, or Concatenate.</p>
@@ -4261,7 +4264,7 @@
 <p>Image filter to use.</p>
 
 <h5>blur</h5>
-<p>the blur factor where > 1 is blurry, < 1 is sharp.</p>
+<p>the blur factor where &gt; 1 is blurry, &lt; 1 is sharp.</p>
 
  </div>
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickResetImagePage">MagickResetImagePage</a></h2>
@@ -4323,7 +4326,7 @@
 <p>Image filter to use.</p>
 
 <h5>blur</h5>
-<p>the blur factor where > 1 is blurry, < 1 is sharp.</p>
+<p>the blur factor where &gt; 1 is blurry, &lt; 1 is sharp.</p>
 
  </div>
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickRollImage">MagickRollImage</a></h2>
@@ -4348,7 +4351,6 @@
 
 <h5>y</h5>
 <p>the y offset.</p>
-
 
  </div>
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickRotateImage">MagickRotateImage</a></h2>
@@ -4399,7 +4401,6 @@
 <h5>rows</h5>
 <p>the number of rows in the scaled image.</p>
 
-
  </div>
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickScaleImage">MagickScaleImage</a></h2>
 <div class="doc-section">
@@ -4423,7 +4424,6 @@
 
 <h5>rows</h5>
 <p>the number of rows in the scaled image.</p>
-
 
  </div>
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickSegmentImage">MagickSegmentImage</a></h2>
@@ -4922,7 +4922,7 @@
 <h2><a href="http://www.imagemagick.org/api/MagickWand/magick-image_8c.html" id="MagickSetImageExtent">MagickSetImageExtent</a></h2>
 <div class="doc-section">
 
-<p>MagickSetImageExtent() sets the image size (i.e. columns & rows).</p>
+<p>MagickSetImageExtent() sets the image size (i.e. columns &amp; rows).</p>
 
 <p>The format of the MagickSetImageExtent method is:</p>
 
@@ -5738,12 +5738,17 @@
 <pre class="code">
   MagickBooleanType MagickSolarizeImage(MagickWand *wand,
     const double threshold)
+  MagickBooleanType MagickSolarizeImageChannel(MagickWand *wand,
+    const ChannelType channel,const double threshold)
 </pre>
 
 <p>A description of each parameter follows:</p>
 
 <h5>wand</h5>
 <p>the magick wand.</p>
+
+<h5>channel</h5>
+<p>the image channel(s).</p>
 
 <h5>threshold</h5>
 <p>Define the extent of the solarization.</p>
@@ -6393,17 +6398,18 @@
     <span id="linkbar-west"> </span>
 
     <span id="linkbar-center">
-      <a href="http://pgp.mit.edu:11371/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
       <a href="../../discourse-server">Discourse Server</a> •
+      <a href="http://pgp.mit.edu:11371/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
       <a href="http://www.imagemagick.org/MagickStudio/scripts/MagickStudio.cgi">Studio</a> •
       <a href="http://jqmagick.imagemagick.org/">JqMagick</a>
     </span>
     <span id="linkbar-east"> </span>
 </div>
 <div class="footer">
-  <span id="footer-west">©  1999-2013 ImageMagick Studio LLC</span>
+  <span id="footer-west">©  1999-2014 ImageMagick Studio LLC</span>
   <span id="footer-east"> <a href="../../www/contact.html">Contact the Wizards</a></span>
 </div>
 <div style="clear: both; margin: 0; width: 100%; "></div>
 </body>
 </html>
+<!-- Magick Cache 20th February 2014 07:24 -->

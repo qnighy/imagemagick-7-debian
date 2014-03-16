@@ -20,7 +20,7 @@ Magick::Blob::Blob(void)
 }
 
 Magick::Blob::Blob(const void* data_,size_t length_)
-  : _blobRef(new Magick::BlobRef(data_, length_))
+  : _blobRef(new Magick::BlobRef(data_,length_))
 {
 }
 
@@ -28,19 +28,16 @@ Magick::Blob::Blob(const Magick::Blob& blob_)
   : _blobRef(blob_._blobRef)
 {
   // Increase reference count
-  Lock(&_blobRef->mutexLock);
-  ++_blobRef->refCount;
+  Lock(&_blobRef->_mutexLock);
+  ++_blobRef->_refCount;
 }
 
-Magick::Blob::~Blob()
+Magick::Blob::~Blob ()
 {
-  bool
-    doDelete;
-
-  doDelete=false;
+  bool doDelete=false;
   {
-    Lock(&_blobRef->mutexLock);
-    if (--_blobRef->refCount == 0)
+    Lock(&_blobRef->_mutexLock);
+    if (--_blobRef->_refCount == 0)
       doDelete=true;
   }
 
@@ -60,13 +57,13 @@ Magick::Blob& Magick::Blob::operator=(const Magick::Blob& blob_)
   if (this != &blob_)
     {
       {
-        Lock(&blob_._blobRef->mutexLock);
-        ++blob_._blobRef->refCount;
+        Lock(&blob_._blobRef->_mutexLock);
+        ++blob_._blobRef->_refCount;
       }
       doDelete=false;
       {
-        Lock(&_blobRef->mutexLock);
-        if (--_blobRef->refCount == 0)
+        Lock(&_blobRef->_mutexLock);
+        if (--_blobRef->_refCount == 0)
           doDelete=true;
       }
       if (doDelete)
@@ -87,19 +84,18 @@ void Magick::Blob::base64(const std::string base64_)
     *decoded;
 
   decoded=Base64Decode(base64_.c_str(),&length);
-
-  if(decoded)
+  if (decoded)
     updateNoCopy(static_cast<void*>(decoded),length,
       Magick::Blob::MallocAllocator);
 }
 
-std::string Magick::Blob::base64(void) const
+std::string Magick::Blob::base64(void)
 {
-  size_t
-    encoded_length;
-
   char
     *encoded;
+
+  size_t
+    encoded_length;
 
   std::string
     result;
@@ -108,7 +104,7 @@ std::string Magick::Blob::base64(void) const
   encoded=Base64Encode(static_cast<const unsigned char*>(data()),length(),
     &encoded_length);
 
-  if(encoded)
+  if (encoded)
     {
       result=std::string(encoded,encoded_length);
       encoded=(char *) RelinquishMagickMemory(encoded);
@@ -120,12 +116,12 @@ std::string Magick::Blob::base64(void) const
 
 const void* Magick::Blob::data(void) const
 {
-  return(_blobRef->data);
+  return(_blobRef->_data);
 }
 
 size_t Magick::Blob::length(void) const
 {
-  return(_blobRef->length);
+  return(_blobRef->_length);
 }
 
 void Magick::Blob::update(const void* data_,size_t length_)
@@ -135,8 +131,8 @@ void Magick::Blob::update(const void* data_,size_t length_)
 
   doDelete=false;
   {
-    Lock(&_blobRef->mutexLock);
-    if (--_blobRef->refCount == 0)
+    Lock( &_blobRef->_mutexLock );
+    if (--_blobRef->_refCount == 0)
       doDelete=true;
   }
   if (doDelete)
@@ -153,21 +149,21 @@ void Magick::Blob::updateNoCopy(void* data_,size_t length_,
 {
   bool
     doDelete;
-  
+
   doDelete=false;
   {
-    Lock(&_blobRef->mutexLock);
-    if (--_blobRef->refCount == 0)
+    Lock(&_blobRef->_mutexLock);
+    if (--_blobRef->_refCount == 0)
       doDelete=true;
   }
+
   if (doDelete)
     {
       // Delete old blob reference with associated data
       delete _blobRef;
     }
   _blobRef=new Magick::BlobRef(0,0);
-  _blobRef->data=data_;
-  _blobRef->length=length_;
-  _blobRef->allocator=allocator_;
+  _blobRef->_data=data_;
+  _blobRef->_length=length_;
+  _blobRef->_allocator=allocator_;
 }
-

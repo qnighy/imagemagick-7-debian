@@ -169,28 +169,28 @@ void Magick::cdlImage::operator()( Image &image_ ) const
   image_.cdl( _cdl.c_str() );
 }
 
-// Colorize image using pen color at specified percent alpha
-Magick::colorizeImage::colorizeImage( const unsigned int alphaRed_,
-                                      const unsigned int alphaGreen_,
-                                      const unsigned int alphaBlue_,
+// Colorize image using pen color at specified percent opacity
+Magick::colorizeImage::colorizeImage( const unsigned int opacityRed_,
+                                      const unsigned int opacityGreen_,
+                                      const unsigned int opacityBlue_,
                                       const Magick::Color &penColor_ )
-  : _alphaRed ( alphaRed_ ),
-    _alphaGreen ( alphaGreen_ ),
-    _alphaBlue ( alphaBlue_ ),
+  : _opacityRed ( opacityRed_ ),
+    _opacityGreen ( opacityGreen_ ),
+    _opacityBlue ( opacityBlue_ ),
     _penColor( penColor_ )
 {
 }
-Magick::colorizeImage::colorizeImage( const unsigned int alpha_,
+Magick::colorizeImage::colorizeImage( const unsigned int opacity_,
                                       const Magick::Color &penColor_ )
-  : _alphaRed ( alpha_ ),
-    _alphaGreen ( alpha_ ),
-    _alphaBlue ( alpha_ ),
+  : _opacityRed ( opacity_ ),
+    _opacityGreen ( opacity_ ),
+    _opacityBlue ( opacity_ ),
     _penColor( penColor_ )
 {
 }
 void Magick::colorizeImage::operator()( Magick::Image &image_ ) const
 {
-  image_.colorize( _alphaRed, _alphaGreen, _alphaBlue, _penColor );
+  image_.colorize( _opacityRed, _opacityGreen, _opacityBlue, _penColor );
 }
 
 // Apply a color matrix to the image channels.  The user supplied
@@ -639,6 +639,22 @@ void Magick::levelImage::operator()( Magick::Image &image_ ) const
   image_.level( _black_point, _white_point, _mid_point );
 }
 
+// Level image channel
+Magick::levelChannelImage::levelChannelImage( const Magick::ChannelType channel,                                              const double black_point,
+                                              const double white_point,
+                                              const double mid_point )
+  : _channel(channel),
+    _black_point(black_point),
+    _white_point(white_point),
+    _mid_point(mid_point)
+{
+}
+
+void Magick::levelChannelImage::operator()( Magick::Image &image_ ) const
+{
+  image_.levelChannel( _channel, _black_point, _white_point, _mid_point );
+}
+
 // Magnify image by integral size
 Magick::magnifyImage::magnifyImage( void )
 {
@@ -661,31 +677,42 @@ void Magick::mapImage::operator()( Magick::Image &image_ ) const
 }
 
 // Floodfill designated area with a matte value
-Magick::alphaFloodfillImage::alphaFloodfillImage( const Color &target_ ,
-                                                  const unsigned int alpha_,
+Magick::matteFloodfillImage::matteFloodfillImage( const Color &target_ ,
+                                                  const unsigned int matte_,
                                                   const ssize_t x_, const ssize_t y_,
                                                   const PaintMethod method_ )
   : _target( target_ ),
-    _alpha( alpha_ ),
+    _matte( matte_ ),
     _x( x_ ),
     _y( y_ ),
     _method( method_ )
 {
 }
-void Magick::alphaFloodfillImage::operator()( Magick::Image &image_ ) const
+void Magick::matteFloodfillImage::operator()( Magick::Image &image_ ) const
 {
-  image_.alphaFloodfill( _target, _alpha, _x, _y, _method );
+  image_.matteFloodfill( _target, _matte, _x, _y, _method );
 }
 
 // Filter image by replacing each pixel component with the median
 // color in a circular neighborhood
-Magick::medianConvolveImage::medianConvolveImage( const double radius_  )
+Magick::medianFilterImage::medianFilterImage( const double radius_  )
   : _radius( radius_ )
 {
 }
-void Magick::medianConvolveImage::operator()( Magick::Image &image_ ) const
+void Magick::medianFilterImage::operator()( Magick::Image &image_ ) const
 {
   image_.medianFilter( _radius );
+}
+
+// Merge image layers
+Magick::mergeLayersImage::mergeLayersImage( 
+  Magick::ImageLayerMethod layerMethod_ )
+  : _layerMethod( layerMethod_ )
+{
+}
+void Magick::mergeLayersImage::operator()( Magick::Image &image_ ) const
+{
+  image_.mergeLayers( _layerMethod );
 }
 
 // Reduce image by integral size
@@ -742,19 +769,19 @@ void Magick::oilPaintImage::operator()( Magick::Image &image_ ) const
   image_.oilPaint( _radius );
 }
 
-// Set or attenuate the image alpha channel. If the image pixels are
-// opaque then they are set to the specified alpha value, otherwise
-// they are blended with the supplied alpha value.  The value of
-// alpha_ ranges from 0 (completely opaque) to QuantumRange. The defines
-// OpaqueAlpha and TransparentAlpha are available to specify
+// Set or attenuate the image opacity channel. If the image pixels are
+// opaque then they are set to the specified opacity value, otherwise
+// they are blended with the supplied opacity value.  The value of
+// opacity_ ranges from 0 (completely opaque) to QuantumRange. The defines
+// OpaqueOpacity and TransparentOpacity are available to specify
 // completely opaque or completely transparent, respectively.
-Magick::alphaImage::alphaImage( const unsigned int alpha_ )
-  : _alpha( alpha_ )
+Magick::opacityImage::opacityImage( const unsigned int opacity_ )
+  : _opacity( opacity_ )
 {
 }
-void Magick::alphaImage::operator()( Magick::Image &image_ ) const
+void Magick::opacityImage::operator()( Magick::Image &image_ ) const
 {
-  image_.alpha( _alpha );
+  image_.opacity( _opacity );
 }
 
 // Change color of opaque pixel to specified pen color.
@@ -1332,7 +1359,7 @@ void Magick::fontPointsizeImage::operator()( Magick::Image &image_ ) const
 }
 
 // GIF disposal method
-Magick::gifDisposeMethodImage::gifDisposeMethodImage( const DisposeType disposeMethod_ )
+Magick::gifDisposeMethodImage::gifDisposeMethodImage( const size_t disposeMethod_ )
   : _disposeMethod( disposeMethod_ )
 {
 }
@@ -1351,6 +1378,16 @@ void Magick::interlaceTypeImage::operator()( Magick::Image &image_ ) const
   image_.interlaceType( _interlace );
 }
 
+// Linewidth for drawing vector objects (default one)
+Magick::lineWidthImage::lineWidthImage( const double lineWidth_ )
+  : _lineWidth( lineWidth_ )
+{
+}
+void Magick::lineWidthImage::operator()( Magick::Image &image_ ) const
+{
+  image_.lineWidth( _lineWidth );
+}
+
 // File type magick identifier (.e.g "GIF")
 Magick::magickImage::magickImage( const std::string &magick_ )
   : _magick( magick_ )
@@ -1362,23 +1399,23 @@ void Magick::magickImage::operator()( Magick::Image &image_ ) const
 }
 
 // Image supports transparent color
-Magick::alphaFlagImage::alphaFlagImage( const bool alphaFlag_ )
-  : _alphaFlag( alphaFlag_ )
+Magick::matteImage::matteImage( const bool matteFlag_ )
+  : _matteFlag( matteFlag_ )
 {
 }
-void Magick::alphaFlagImage::operator()( Magick::Image &image_ ) const
+void Magick::matteImage::operator()( Magick::Image &image_ ) const
 {
-  image_.alpha( _alphaFlag );
+  image_.matte( _matteFlag );
 }
 
 // Transparent color
-Magick::alphaColorImage::alphaColorImage( const Color &alphaColor_ )
-  : _alphaColor( alphaColor_ )
+Magick::matteColorImage::matteColorImage( const Color &matteColor_ )
+  : _matteColor( matteColor_ )
 {
 }
-void Magick::alphaColorImage::operator()( Magick::Image &image_ ) const
+void Magick::matteColorImage::operator()( Magick::Image &image_ ) const
 {
-  image_.alphaColor( _alphaColor );
+  image_.matteColor( _matteColor );
 }
 
 // Indicate that image is black and white
@@ -1389,6 +1426,26 @@ Magick::monochromeImage::monochromeImage( const bool monochromeFlag_ )
 void Magick::monochromeImage::operator()( Magick::Image &image_ ) const
 {
   image_.monochrome( _monochromeFlag );
+}
+
+// Pen color
+Magick::penColorImage::penColorImage( const Color &penColor_ )
+  : _penColor( penColor_ )
+{
+}
+void Magick::penColorImage::operator()( Magick::Image &image_ ) const
+{
+  image_.penColor( _penColor );
+}
+
+// Pen texture image.
+Magick::penTextureImage::penTextureImage( const Image &penTexture_ )
+  : _penTexture( penTexture_ )
+{
+}
+void Magick::penTextureImage::operator()( Magick::Image &image_ ) const
+{
+  image_.penTexture( _penTexture );
 }
 
 // Set pixel color at location x & y.
@@ -1540,6 +1597,16 @@ Magick::subRangeImage::subRangeImage( const size_t subRange_ )
 void Magick::subRangeImage::operator()( Magick::Image &image_ ) const
 {
   image_.subRange( _subRange );
+}
+
+// Tile name
+Magick::tileNameImage::tileNameImage( const std::string &tileName_ )
+  : _tileName( tileName_ )
+{
+}
+void Magick::tileNameImage::operator()( Magick::Image &image_ ) const
+{
+  image_.tileName( _tileName );
 }
 
 // Image storage type

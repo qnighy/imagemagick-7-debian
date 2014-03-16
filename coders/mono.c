@@ -39,35 +39,35 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/attribute.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/colormap.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/attribute.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/color-private.h"
+#include "magick/colormap.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteMONOImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteMONOImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -105,7 +105,10 @@ static Image *ReadMONOImage(const ImageInfo *image_info,
   MagickBooleanType
     status;
 
-  register Quantum
+  register IndexPacket
+    *indexes;
+
+  register PixelPacket
     *q;
 
   register ssize_t
@@ -128,7 +131,7 @@ static Image *ReadMONOImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   if ((image->columns == 0) || (image->rows == 0))
     ThrowReaderException(OptionError,"MustSpecifyImageSize");
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
@@ -144,7 +147,7 @@ static Image *ReadMONOImage(const ImageInfo *image_info,
     Initialize image colormap.
   */
   image->depth=1;
-  if (AcquireImageColormap(image,2,exception) == MagickFalse)
+  if (AcquireImageColormap(image,2) == MagickFalse)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   if (image_info->ping != MagickFalse)
     {
@@ -157,8 +160,9 @@ static Image *ReadMONOImage(const ImageInfo *image_info,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       break;
+    indexes=GetAuthenticIndexQueue(image);
     bit=0;
     byte=0;
     for (x=0; x < (ssize_t) image->columns; x++)
@@ -166,14 +170,13 @@ static Image *ReadMONOImage(const ImageInfo *image_info,
       if (bit == 0)
         byte=(size_t) ReadBlobByte(image);
       if (image_info->endian == LSBEndian)
-        SetPixelIndex(image,((byte & 0x01) != 0) ? 0x00 : 0x01,q);
+        SetPixelIndex(indexes+x,((byte & 0x01) != 0) ? 0x00 : 0x01)
       else
-        SetPixelIndex(image,((byte & 0x01) != 0) ? 0x01 : 0x00,q);
+        SetPixelIndex(indexes+x,((byte & 0x01) != 0) ? 0x01 : 0x00)
       bit++;
       if (bit == 8)
         bit=0;
       byte>>=1;
-      q+=GetPixelChannels(image);
     }
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
@@ -182,7 +185,7 @@ static Image *ReadMONOImage(const ImageInfo *image_info,
     if (status == MagickFalse)
       break;
   }
-  (void) SyncImage(image,exception);
+  (void) SyncImage(image);
   if (EOFBlob(image) != MagickFalse)
     ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
       image->filename);
@@ -270,7 +273,7 @@ ModuleExport void UnregisterMONOImage(void)
 %  The format of the WriteMONOImage method is:
 %
 %      MagickBooleanType WriteMONOImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -278,16 +281,14 @@ ModuleExport void UnregisterMONOImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
 static MagickBooleanType WriteMONOImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   MagickBooleanType
     status;
 
-  register const Quantum
+  register const PixelPacket
     *p;
 
   register ssize_t
@@ -309,20 +310,18 @@ static MagickBooleanType WriteMONOImage(const ImageInfo *image_info,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  (void) TransformImageColorspace(image,sRGBColorspace,exception);
+  (void) TransformImageColorspace(image,sRGBColorspace);
   /*
     Convert image to a bi-level image.
   */
-  (void) SetImageType(image,BilevelType,exception);
+  (void) SetImageType(image,BilevelType);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
+    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+    if (p == (const PixelPacket *) NULL)
       break;
     bit=0;
     byte=0;
@@ -344,7 +343,7 @@ static MagickBooleanType WriteMONOImage(const ImageInfo *image_info,
           bit=0;
           byte=0;
         }
-      p+=GetPixelChannels(image);
+      p++;
     }
     if (bit != 0)
       (void) WriteBlobByte(image,(unsigned char) (byte >> (8-bit)));

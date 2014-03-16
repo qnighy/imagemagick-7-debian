@@ -26,8 +26,7 @@ using namespace std;
 
 static bool magick_initialized=false;
 
-// Clone C++ string as allocated C string, de-allocating any existing string
-void Magick::CloneString(char **destination_, const std::string &source_)
+void Magick::CloneString(char **destination_,const std::string &source_)
 {
   MagickCore::CloneString(destination_,source_.c_str());
 }
@@ -60,11 +59,51 @@ MagickPPExport void Magick::InitializeMagick(const char *path_)
     magick_initialized=true;
 }
 
-MagickPPExport void Magick::TerminateMagick(void)
+//
+// Create a local wrapper around MagickCoreTerminus
+//
+namespace Magick
+{
+  extern "C" {
+    void MagickPlusPlusDestroyMagick(void);
+  }
+}
+
+void Magick::MagickPlusPlusDestroyMagick(void)
 {
   if (magick_initialized)
     {
       magick_initialized=false;
       MagickCore::MagickCoreTerminus();
     }
+}
+
+//
+// Cleanup class to ensure that ImageMagick singletons are destroyed
+// so as to avoid any resemblence to a memory leak (which seems to
+// confuse users)
+//
+namespace Magick
+{
+  class MagickCleanUp
+  {
+  public:
+
+    MagickCleanUp(void);
+    ~MagickCleanUp(void);
+  };
+
+  // The destructor for this object is invoked when the destructors for
+  // static objects in this translation unit are invoked.
+  static MagickCleanUp magickCleanUpGuard;
+}
+
+Magick::MagickCleanUp::MagickCleanUp(void)
+{
+  // Don't even think about invoking InitializeMagick here!
+}
+
+Magick::MagickCleanUp::~MagickCleanUp(void)
+{
+  MagickPlusPlusDestroyMagick();
 }

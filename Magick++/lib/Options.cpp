@@ -22,6 +22,7 @@
 
 #define MagickPI  3.14159265358979323846264338327950288419716939937510
 #define DegreesToRadians(x)  (MagickPI*(x)/180.0)
+
 #define GetPPException \
   ExceptionInfo \
     exceptionInfo; \
@@ -39,7 +40,7 @@ Magick::Options::Options(void)
 {
   // Initialize image info with defaults
   GetImageInfo(_imageInfo);
-
+  
   // Initialize quantization info
   GetQuantizeInfo(_quantizeInfo);
 
@@ -48,7 +49,7 @@ Magick::Options::Options(void)
 }
 
 Magick::Options::Options(const Magick::Options& options_)
-  : _imageInfo(CloneImageInfo(options_._imageInfo )),
+  : _imageInfo(CloneImageInfo(options_._imageInfo)),
     _quantizeInfo(CloneQuantizeInfo(options_._quantizeInfo)),
     _drawInfo(CloneDrawInfo(_imageInfo,options_._drawInfo))
 {
@@ -57,13 +58,13 @@ Magick::Options::Options(const Magick::Options& options_)
 Magick::Options::~Options()
 {
   // Destroy image info
-   _imageInfo=DestroyImageInfo(_imageInfo);
+  _imageInfo=DestroyImageInfo(_imageInfo);
 
   // Destroy quantization info
-   _quantizeInfo=DestroyQuantizeInfo(_quantizeInfo);
+  _quantizeInfo=DestroyQuantizeInfo(_quantizeInfo);
 
   // Destroy drawing info
-   _drawInfo=DestroyDrawInfo(_drawInfo);
+  _drawInfo=DestroyDrawInfo(_drawInfo);
 }
 
 void Magick::Options::antiAlias(bool flag_)
@@ -167,7 +168,7 @@ double Magick::Options::colorFuzz(void) const
 
 void Magick::Options::debug(bool flag_)
 {
-  if  (flag_)
+  if (flag_)
     SetLogEventMask("All");
   else
     SetLogEventMask("None");
@@ -177,12 +178,13 @@ bool Magick::Options::debug(void) const
 {
   if (IsEventLogging())
     return(true);
+
   return(false);
 }
 
 void Magick::Options::density(const Magick::Geometry &density_)
 {
-  if ( !density_.isValid() )
+  if (!density_.isValid())
     _imageInfo->density=(char *) RelinquishMagickMemory(_imageInfo->density);
   else
     Magick::CloneString(&_imageInfo->density,density_);
@@ -255,8 +257,10 @@ Magick::Color Magick::Options::fillColor(void) const
 void Magick::Options::fillPattern(const MagickCore::Image *fillPattern_)
 {
   if (_drawInfo->fill_pattern)
-      _drawInfo->fill_pattern=DestroyImageList(_drawInfo->fill_pattern);
-
+    {
+      DestroyImageList(_drawInfo->fill_pattern);
+      _drawInfo->fill_pattern=0;
+    }
   if (fillPattern_)
     {
       GetPPException;
@@ -300,7 +304,7 @@ std::string Magick::Options::font(void) const
 {
   if (_imageInfo->font)
     return(std::string(_imageInfo->font));
-  
+
   return(std::string());
 }
 
@@ -321,12 +325,12 @@ std::string Magick::Options::format(void) const
     *magick_info=0;
 
   GetPPException;
-  if (*_imageInfo->magick != '\0' )
-    magick_info = GetMagickInfo(_imageInfo->magick,&exceptionInfo);
+  if (*_imageInfo->magick != '\0')
+    magick_info=GetMagickInfo(_imageInfo->magick,&exceptionInfo);
   ThrowPPException;
-
+  
   if ((magick_info != 0) && (*magick_info->description != '\0'))
-    return(std::string( magick_info->description));
+    return(std::string(magick_info->description));
   
   return(std::string());
 }
@@ -341,14 +345,14 @@ Magick::InterlaceType Magick::Options::interlaceType(void) const
   return(static_cast<Magick::InterlaceType>(_imageInfo->interlace));
 }
 
-void Magick::Options::magick(const std::string &magick_)
+void Magick::Options::magick ( const std::string &magick_ )
 {
   FormatLocaleString(_imageInfo->filename,MaxTextExtent,"%.1024s:",
     magick_.c_str());
   GetPPException;
   SetImageInfo(_imageInfo,1,&exceptionInfo);
   if (*_imageInfo->magick == '\0')
-    throwExceptionExplicit(OptionWarning, "Unrecognized image format",
+    throwExceptionExplicit(OptionWarning,"Unrecognized image format",
       magick_.c_str());
   (void) DestroyExceptionInfo(&exceptionInfo);
 }
@@ -357,7 +361,7 @@ std::string Magick::Options::magick(void) const
 {
   if (_imageInfo->magick && *_imageInfo->magick)
     return(std::string(_imageInfo->magick));
-
+ 
   return(std::string());
 }
 
@@ -430,8 +434,7 @@ Magick::ColorspaceType Magick::Options::quantizeColorSpace(void) const
 void Magick::Options::quantizeDither(bool ditherFlag_)
 {
   _imageInfo->dither=(MagickBooleanType) ditherFlag_;
-  _quantizeInfo->dither_method=ditherFlag_ ? RiemersmaDitherMethod :
-    NoDitherMethod;
+  _quantizeInfo->dither=(MagickBooleanType) ditherFlag_;
 }
 
 bool Magick::Options::quantizeDither(void) const
@@ -465,7 +468,7 @@ void Magick::Options::samplingFactor(const std::string &samplingFactor_)
     _imageInfo->sampling_factor=(char *) RelinquishMagickMemory(
       _imageInfo->sampling_factor);
   else
-    Magick::CloneString(&_imageInfo->sampling_factor,samplingFactor_);
+    Magick::CloneString(&_imageInfo->sampling_factor, samplingFactor_);
 }
 
 std::string Magick::Options::samplingFactor(void) const
@@ -480,7 +483,7 @@ void Magick::Options::size(const Geometry &geometry_)
 {
   _imageInfo->size=(char *) RelinquishMagickMemory(_imageInfo->size);
 
-  if (geometry_.isValid())
+  if ( geometry_.isValid() )
     Magick::CloneString(&_imageInfo->size,geometry_);
 }
 
@@ -522,6 +525,7 @@ void Magick::Options::strokeDashArray(const double *strokeDashArray_)
     {
       size_t
         x;
+
       // Count elements in dash array
       for (x=0; strokeDashArray_[x]; x++) ;
       // Allocate elements
@@ -585,7 +589,7 @@ void Magick::Options::strokePattern(const MagickCore::Image *strokePattern_)
   if (strokePattern_)
     {
       GetPPException;
-      _drawInfo->stroke_pattern=CloneImage( const_cast<MagickCore::Image*>(
+      _drawInfo->stroke_pattern=CloneImage(const_cast<MagickCore::Image*>(
         strokePattern_),0,0,MagickTrue,&exceptionInfo);
       ThrowPPException;
     }
@@ -687,6 +691,21 @@ void Magick::Options::textKerning(double kerning_)
 double Magick::Options::textKerning(void) const
 {
   return(_drawInfo->kerning);
+}
+
+void Magick::Options::tileName(const std::string &tileName_)
+{
+  if (tileName_.length() == 0)
+    _imageInfo->tile=(char *) RelinquishMagickMemory(_imageInfo->tile);
+  else
+    Magick::CloneString(&_imageInfo->tile,tileName_);
+}
+
+std::string Magick::Options::tileName(void) const
+{
+  if (_imageInfo->tile)
+    return(std::string(_imageInfo->tile));
+  return(std::string());
 }
 
 void Magick::Options::transformOrigin(double tx_,double ty_)
@@ -843,12 +862,24 @@ bool Magick::Options::verbose(void) const
   return(static_cast<bool>(_imageInfo->verbose));
 }
 
+void Magick::Options::virtualPixelMethod(
+  VirtualPixelMethod virtual_pixel_method_)
+{
+  _imageInfo->virtual_pixel_method=virtual_pixel_method_;
+}
+
+Magick::VirtualPixelMethod Magick::Options::virtualPixelMethod(void) const
+{
+  return(static_cast<Magick::VirtualPixelMethod>(
+    _imageInfo->virtual_pixel_method));
+}
+
 void Magick::Options::view(const std::string &view_)
 {
   if (view_.length() == 0)
     _imageInfo->view=(char *) RelinquishMagickMemory(_imageInfo->view);
   else
-    Magick::CloneString(&_imageInfo->view, view_);
+    Magick::CloneString(&_imageInfo->view,view_);
 }
 
 std::string Magick::Options::view(void) const
@@ -871,7 +902,7 @@ void Magick::Options::x11Display(const std::string &display_)
 std::string Magick::Options::x11Display(void) const
 {
   if (_imageInfo->server_name)
-    return(std::string( _imageInfo->server_name));
+    return(std::string(_imageInfo->server_name));
 
   return(std::string());
 }
@@ -886,14 +917,14 @@ MagickCore::ImageInfo *Magick::Options::imageInfo(void)
   return(_imageInfo);
 }
 
-MagickCore::QuantizeInfo *Magick::Options::quantizeInfo(void)
+MagickCore::QuantizeInfo *Magick::Options::quantizeInfo( void )
 {
   return(_quantizeInfo);
 }
 
-Magick::Options::Options(const MagickCore::ImageInfo* imageInfo_,
-  const MagickCore::QuantizeInfo* quantizeInfo_,
-  const MagickCore::DrawInfo* drawInfo_)
+Magick::Options::Options(const MagickCore::ImageInfo *imageInfo_,
+  const MagickCore::QuantizeInfo *quantizeInfo_,
+  const MagickCore::DrawInfo *drawInfo_)
 : _imageInfo(0),
   _quantizeInfo(0),
   _drawInfo(0)

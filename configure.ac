@@ -20,21 +20,21 @@
 
 AC_PREREQ(2.69)
 
-m4_define([magick_major_version], [7])
-m4_define([magick_minor_version], [0])
-m4_define([magick_micro_version], [0])
-m4_define([magick_patchlevel_version], [0])
+m4_define([magick_major_version], [6])
+m4_define([magick_minor_version], [8])
+m4_define([magick_micro_version], [8])
+m4_define([magick_patchlevel_version], [8])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
 
 AC_INIT([ImageMagick],[magick_version],[http://www.imagemagick.org],[ImageMagick])
-AC_CONFIG_SRCDIR([MagickCore/MagickCore.h])
+AC_CONFIG_SRCDIR([magick/MagickCore.h])
 AC_CONFIG_AUX_DIR([config])
 AC_REQUIRE_AUX_FILE([tap-driver.sh])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config/config.h])
-AX_PREFIX_CONFIG_H([MagickCore/magick-baseconfig.h],[MagickCore])
+AX_PREFIX_CONFIG_H([magick/magick-baseconfig.h],[MagickCore])
 AC_CONFIG_FILES([\
     common.shi \
     config/configure.xml \
@@ -49,11 +49,13 @@ AC_CONFIG_FILES([\
     config/type.xml \
     ImageMagick.spec \
     Magick++/bin/Magick++-config \
-    MagickCore/ImageMagick.pc \
+    magick/ImageMagick.pc \
+    Magick++/lib/ImageMagick++.pc \
     Magick++/lib/Magick++.pc \
-    MagickCore/MagickCore-config \
-    MagickCore/MagickCore.pc \
-    MagickCore/version.h \
+    magick/Magick-config \
+    magick/MagickCore-config \
+    magick/MagickCore.pc \
+    magick/version.h \
     Makefile \
     magick.sh \
     PerlMagick/check.sh \
@@ -76,8 +78,10 @@ AC_CONFIG_FILES([\
     utilities/mogrify.1 \
     utilities/montage.1 \
     utilities/stream.1 \
-    MagickWand/MagickWand-config \
-    MagickWand/MagickWand.pc ])
+    wand/MagickWand-config \
+    wand/MagickWand.pc \
+    wand/Wand-config \
+    wand/Wand.pc ])
 
 #
 # Save initial user-tunable values
@@ -133,7 +137,7 @@ AC_SUBST([MAGICK_LIBRARY_CURRENT_MIN],
          [`expr $MAGICK_LIBRARY_CURRENT - $MAGICK_LIBRARY_AGE`])
 AC_SUBST([MAGICK_LIBRARY_VERSION_INFO],
          [$MAGICK_LIBRARY_CURRENT:$MAGICK_LIBRARY_REVISION:$MAGICK_LIBRARY_AGE])
-
+         
 AC_SUBST(MAGICKPP_LIBRARY_CURRENT)dnl
 AC_SUBST(MAGICKPP_LIBRARY_REVISION)dnl
 AC_SUBST(MAGICKPP_LIBRARY_AGE)dnl
@@ -141,6 +145,7 @@ AC_SUBST([MAGICKPP_LIBRARY_CURRENT_MIN],
          [`expr $MAGICKPP_LIBRARY_CURRENT - $MAGICKPP_LIBRARY_AGE`])
 AC_SUBST([MAGICKPP_LIBRARY_VERSION_INFO],
          [$MAGICKPP_LIBRARY_CURRENT:$MAGICKPP_LIBRARY_REVISION:$MAGICKPP_LIBRARY_AGE])
+         
 
 AC_SUBST(PACKAGE_NAME)dnl
 AC_SUBST(PACKAGE_VERSION)dnl
@@ -322,6 +327,9 @@ AX_C___ATTRIBUTE__
 AX_GCC_ARCHFLAG([no])
 PKG_PROG_PKG_CONFIG
 
+# Check for linker script support 
+gl_LD_VERSION_SCRIPT 
+
 # Test for 64-bit build.
 AC_CHECK_SIZEOF([size_t])
 
@@ -340,9 +348,6 @@ else
 set CC_FOR_TARGET "$CC"
 EOF
 fi
-
-# Check for linker script support
-gl_LD_VERSION_SCRIPT
 
 #
 # Enable run-time checking.
@@ -454,8 +459,8 @@ Please re-run configure with these options:
       CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386"
       CXXFLAGS="$CXXFLAGS -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386"
       LDFLAGS="$LDFLAGS -Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386"
-  fi
-  ;;
+    fi
+    ;;
 esac
 
 #
@@ -482,13 +487,12 @@ AC_ARG_WITH([sharearch-dir],
 eval "eval SHAREARCH_DIR=$sharearch_dir"
 AC_SUBST(SHAREARCH_DIR)
 
-# Path to the pkgconfig folder
+# Path to the pkgconfig folder 
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=DIR],
             [Path to the pkgconfig directory @<:@LIBDIR/pkgconfig@:>@]),
             [pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
 
-#
 # Enable support for threads
 #
 # Find Posix threads library
@@ -613,10 +617,10 @@ AC_ARG_WITH([modules],
 if test "$with_modules" != 'no' ; then
     if test "$libtool_build_shared_libs" = 'no'; then
         AC_MSG_WARN([Modules may only be built if building shared libraries is enabled.])
-    build_modules='no'
-  else
-    build_modules='yes'
-  fi
+        build_modules='no'
+    else
+        build_modules='yes'
+    fi
 fi
 if test "$build_modules" != 'no' ; then
     AC_DEFINE(BUILD_MODULES,1,Define if coders and filters are to be built as modules.)
@@ -625,7 +629,7 @@ fi
 AM_CONDITIONAL(WITH_MODULES, test "$build_modules" != 'no')
 
 # Enable build using delegate libraries built in subdirectories rather than installed
-# delegate libraries (bzlib fftw fpx gslib jp2 jbig jpeg lcms lzma png tiff ttf wmf xml zlib)
+# delegate libraries (bzlib fftw fpx gslib jp2 jbig jpeg lcms lzma png tiff ttf webp wmf xml zlib)
 AC_ARG_ENABLE([delegate-build],
     [AC_HELP_STRING([--enable-delegate-build],
                     [look for delegate libraries in build directory])],
@@ -669,7 +673,7 @@ if test "$enable_cipher" = 'yes'; then
     AC_DEFINE(CIPHER_SUPPORT,1,[permit enciphering and deciphering image pixels])
 fi
 
-# Build a zero-configuration version of ImageMagick.
+# Build an zero-configuration version of ImageMagick.
 AC_ARG_ENABLE([zero-configuration],
     [AC_HELP_STRING([--enable-zero-configuration],
                     [enable self-contained, embeddable, zero-configuration ImageMagick])],
@@ -686,7 +690,7 @@ AC_ARG_ENABLE([hdri],
     [AC_HELP_STRING([--enable-hdri],
                     [accurately represent the wide range of intensity levels found in real scenes])],
     [enable_hdri=$enableval],
-    [enable_hdri='yes'])
+    [enable_hdri='no'])
 
 MAGICK_HDRI=""
 if test "$enable_hdri" = 'yes'; then
@@ -713,7 +717,9 @@ if test "$enable_assert" = 'no'; then
     AC_DEFINE(NDEBUG,1,[Turn off assert statements])
 fi
 
-# Don't emit "rebuild rules" for configure, Makefile.ins, etc.
+# Add configure option --enable-maintainer-mode which enables dependency
+# checking and generation useful to package maintainers.  This is made an
+# option to avoid confusing end users.
 AM_MAINTAINER_MODE
 
 # Enable hugepages support
@@ -777,13 +783,6 @@ if test "$with_method_prefix" != 'no'; then
     AC_DEFINE_UNQUOTED(NAMESPACE_PREFIX,$with_method_prefix,[Magick API method prefix])
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-method-prefix "
 fi
-
-# Enable legacy support (default no)
-AC_ARG_ENABLE(legacy-support,
-              [  --enable-legacy-support  install legacy command-line utilities (default disabled)],
-              [with_legacy_support=$enableval],
-              [with_legacy_support='no'])
-AM_CONDITIONAL(LEGACY_SUPPORT, test "$with_legacy_support" != 'no')
 
 # Number of bits in a Quantum
 AC_ARG_WITH([quantum-depth],
@@ -994,6 +993,10 @@ AC_TYPE_UINTMAX_T
 AC_TYPE_UINTPTR_T
 AC_TYPE_UNSIGNED_LONG_LONG_INT
 
+# If the C type char is unsigned, define __CHAR_UNSIGNED__, unless the
+# C compiler predefines it.
+AC_C_CHAR_UNSIGNED
+
 # Float_t and double_t are intended to be the the most efficient type.
 AC_CHECK_TYPES([float_t], [], [], [[#include <math.h>]])
 AC_CHECK_TYPES([double_t], [], [], [[#include <math.h>]])
@@ -1189,8 +1192,8 @@ AC_FUNC_MEMCMP
 AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_SETVBUF_REVERSED
 AC_TYPE_SIGNAL
-AC_FUNC_STRTOD
 AC_FUNC_STRERROR_R
+AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 
 #
@@ -1211,7 +1214,7 @@ AC_SEARCH_LIBS(socket, socket,
   MAGICK_FEATURES="DPC $MAGICK_FEATURES"
 ])
 
-AC_CHECK_FUNCS([acosh _aligned_malloc asinh atanh atoll atexit cabs carg cimag creal clock ctime_r directio _exit execvp fchmod floor fork ftime ftruncate getc_unlocked getcwd getpid getexecname getdtablesize getpagesize getrlimit getrusage gettimeofday gmtime_r isnan j0 j1 lltostr localtime_r lstat memmove memset mkstemp munmap nanosleep newlocale _NSGetExecutablePath pclose _pclose poll popen _popen posix_fadvise posix_fallocate posix_madvise posix_memalign posix_spawnp pow pread pwrite qsort_r raise rand_r readlink readdir_r realpath select seekdir setlocale socket sqrt setvbuf stat strchr strrchr strcspn strdup strpbrk strspn strstr strtod strtod_l strtol strtoul symlink sysconf sigemptyset sigaction spawnvp strerror strlcat strlcpy strcasecmp strncasecmp telldir tempnam times ulltostr uselocale usleep utime vfprintf vfprintf_l vsprintf vsnprintf vsnprintf_l waitpid _wfopen _wstat])
+AC_CHECK_FUNCS([acosh _aligned_malloc asinh atanh atoll atexit cabs carg cimag creal clock ctime_r directio _exit execvp fchmod floor fork ftime ftruncate getc_unlocked getcwd getpid getexecname getdtablesize getpagesize getrlimit getrusage gettimeofday gmtime_r isnan j0 j1 lltostr localtime_r lstat memmove memset mkstemp munmap nanosleep newlocale _NSGetExecutablePath pclose _pclose poll popen _popen posix_fadvise posix_fallocate posix_madvise posix_memalign posix_spawnp pow pread pwrite qsort_r raise rand_r readlink readdir_r realpath select seekdir setlocale socket sqrt setvbuf stat strchr strerror_r strrchr strcspn strdup strpbrk strspn strstr strtod strtod_l strtol strtoul symlink sysconf sigemptyset sigaction spawnvp strerror strlcat strlcpy strcasecmp strncasecmp telldir tempnam times ulltostr uselocale usleep utime vfprintf vfprintf_l vsprintf vsnprintf vsnprintf_l waitpid _wfopen _wstat])
 
 #
 # Check for clock_gettime().
@@ -1226,7 +1229,7 @@ AC_SEARCH_LIBS(clock_gettime, rt,
        [[clockid_t clockType = CLOCK_REALTIME;]])],
       [
         AC_MSG_RESULT(yes)
-        AC_DEFINE([HAVE_CLOCK_REALTIME],[1],
+      	AC_DEFINE([HAVE_CLOCK_REALTIME],[1],
           [Define to 1 if clock_gettime supports CLOCK_REALTIME.])
       ],
       AC_MSG_RESULT(no)
@@ -1303,7 +1306,7 @@ if test "$enable_delegate_build" != 'no'; then
     # Most delegates have includes in the same directory as the library, but not all...
     #
     # Includes
-    for dir in bzlib fftw fpx gslib/src jp2 jp2/src/libjasper/include jbig/libjbig jpeg lcms/include lzma magick mupdf openjp2/include png tiff/libtiff ttf/include wand webp/src wmf/include xml/include zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/include lzma magick mupdf openjp2/include png tiff/libtiff ttf/include wand webp/src wmf/include xml/include zlib; do
         if test -d "$builddir/$dir"; then
             CPPFLAGS="$CPPFLAGS -I$builddir/$dir"
         else
@@ -1314,7 +1317,7 @@ if test "$enable_delegate_build" != 'no'; then
     done
 
     # Libraries
-    for dir in bzlib fftw fpx gslib/src jp2 jp2/src/libjasper jbig/libjbig jpeg lcms/src lzma magick mupdf openjp2 png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/src lzma magick mupdf openjp2 png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
     if test -d "$builddir/$dir/.libs"; then
         LDFLAGS="$LDFLAGS -L$builddir/$dir/.libs"
     else
@@ -1461,6 +1464,13 @@ AM_CONDITIONAL(HasUMEM, test "$have_umem" = 'yes')
 AC_SUBST(UMEM_LIBS)
 
 #
+# Add support for 'huge pages' if requested
+#
+AS_IF([test "x$enable_hugepages" != "xno"],[
+  AC_DEFINE(HAVE_HUGEPAGES, 1, [Compile with hugepage support])
+])
+
+#
 # Add support for ccmalloc memory debugging library if requested
 #
 have_ccmalloc='no'
@@ -1482,13 +1492,6 @@ if test "$enable_ccmalloc" = 'yes'; then
         fi
     fi
 fi
-
-#
-# Add support for 'huge pages' if requested
-#
-AS_IF([test "x$enable_hugepages" != "xno"],[
-  AC_DEFINE(HAVE_HUGEPAGES, 1, [Compile with hugepage support])
-])
 
 #
 # Add support for efence memory debugging library if requested
@@ -1655,7 +1658,7 @@ fi
 AM_CONDITIONAL(ZLIB_DELEGATE, test "$have_zlib" = 'yes')
 AC_SUBST(ZLIB_LIBS)
 
-# whether modules are built or not.
+dnl ImageMagick requires LTDL to support modules.
 with_ltdl='yes'
 have_ltdl='no'
 LTDL_LIBS=''
@@ -1727,7 +1730,7 @@ if test "$have_autotrace" = 'yes'; then
     failed=0
     AC_DEFINE(AUTOTRACE_DELEGATE,1,Define if you have AUTOTRACE library)
     if test "$build_modules" = 'no'; then
-      CPPFLAGS="$AUTOTRACE_CFLAGS $CPPFLAGS"
+    CPPFLAGS="$AUTOTRACE_CFLAGS $CPPFLAGS"
     fi
 fi
 
@@ -1924,8 +1927,6 @@ fi
 
 have_fpx='no'
 FPX_LIBS=''
-SAVED_LIBS=${LIBS}
-LIBS=${LIBS/-ldjvulibre/}
 if test "$with_fpx" != 'no'; then
     AC_MSG_RESULT([-------------------------------------------------------------])
     AC_MSG_CHECKING([for FlashPIX])
@@ -1954,7 +1955,6 @@ if test "$with_fpx" != 'no'; then
 fi
 AM_CONDITIONAL(FPX_DELEGATE, test "$have_fpx" = 'yes')
 AC_SUBST(FPX_LIBS)
-LIBS=${SAVED_LIBS}
 
 dnl ===========================================================================
 
@@ -2462,9 +2462,9 @@ dnl ===========================================================================
 
 # Disable LZMA (lzma library)
 AC_ARG_WITH(lzma,
-            [  --without-lzma          disable LZMA support],
-            [with_lzma=$withval],
-            [with_lzma='yes'])
+	      [  --without-lzma          disable LZMA support],
+	      [with_lzma=$withval],
+	      [with_lzma='yes'])
 if test "$with_lzma" != 'yes' ; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-lzma=$with_lzma "
 fi
@@ -2531,6 +2531,7 @@ fi
 AM_CONDITIONAL(MUPDF_DELEGATE,test "$have_mupdf" = 'yes')
 AC_SUBST(MUPDF_LIBS)
 
+
 dnl ===========================================================================
 
 #
@@ -2566,6 +2567,7 @@ fi
 AM_CONDITIONAL(OPENEXR_DELEGATE, test "$have_openexr" = 'yes')
 AC_SUBST(OPENEXR_CFLAGS)
 AC_SUBST(OPENEXR_LIBS)
+
 
 dnl ===========================================================================
 
@@ -2689,13 +2691,13 @@ return 0;
           if test "1${var}" = '17' ; then
             AC_CHECK_LIB(png17,png_get_io_ptr,passed=`expr $passed + 1`,
                failed=`expr $failed + 1`,)
-            AC_CHECK_LIB(png17,png_longjmp,passed=`expr $passed + 1`,
+            AC_CHECK_LIB(png17,png_image_free,passed=`expr $passed + 1`,
                failed=`expr $failed + 1`,)
           fi
           if test "1${var}" = '16' ; then
             AC_CHECK_LIB(png16,png_get_io_ptr,passed=`expr $passed + 1`,
                failed=`expr $failed + 1`,)
-            AC_CHECK_LIB(png16,png_longjmp,passed=`expr $passed + 1`,
+            AC_CHECK_LIB(png16,png_image_free,passed=`expr $passed + 1`,
                failed=`expr $failed + 1`,)
           fi
           if test "1${var}" = '15' ; then
@@ -2741,7 +2743,6 @@ fi
 
 AM_CONDITIONAL(PNG_DELEGATE,test "$have_png" = 'yes')
 AC_SUBST(PNG_LIBS)
-
 
 dnl ===========================================================================
 
@@ -3012,6 +3013,7 @@ if test "$with_xml" != 'no'; then
     passed=0
     AC_CHECK_HEADER(libxml/parser.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`)
     AC_CHECK_LIB(xml2,xmlSAXVersion,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
+    # Next two require --with-push to be enabled
     AC_CHECK_LIB(xml2,xmlParseChunk,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_CHECK_LIB(xml2,xmlCreatePushParserCtxt,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
     AC_MSG_CHECKING([if XML package is complete])
@@ -3070,7 +3072,7 @@ AC_SUBST(INCLUDEARCH_PATH)
 
 # Subdirectory under lib to place ImageMagick lib files
 LIBRARY_RELATIVE_PATH="${PACKAGE_NAME}-${PACKAGE_VERSION}"
-AC_DEFINE_UNQUOTED(LIBRARY_RELATIVE_PATH,"$LIBRARY_RELATIVE_PATH",[Subdirectory of lib where ImageMagick architecture dependent files are installed.])
+AC_DEFINE_UNQUOTED(LIBRARY_RELATIVE_PATH,"$LIBRARY_RELATIVE_PATH",[Subdirectory of lib where ImageMagick architecture dependent files are installed])
 
 # Path to ImageMagick bin directory
 EXECUTABLE_PATH="${BIN_DIR}"
@@ -3224,7 +3226,6 @@ SHAREARCH_RELATIVE_PATH="${SHAREARCH_DIRNAME}"
 AC_SUBST(SHAREARCH_RELATIVE_PATH)
 SHAREARCH_PATH="${LIBRARY_PATH}/${SHAREARCH_RELATIVE_PATH}"
 AC_SUBST(SHAREARCH_PATH)
-
 #
 # program_transform_name is formed for use in a Makefile, so create a
 # modified version for use in a shell script.
@@ -3253,7 +3254,7 @@ HTMLDecodeDelegateDefault='html2ps'
 ILBMDecodeDelegateDefault='ilbmtoppm'
 ILBMEncodeDelegateDefault='ppmtoilbm'
 JXRDecodeDelegateDefault='JxrDecApp'
-JXREncodeDelegateDefault='JxrEncApp'
+JXRMEncodeDelegateDefault='JxrEncApp'
 LPDelegateDefault='lp'
 LPRDelegateDefault='lpr'
 LaunchDelegateDefault='gimp'
@@ -3498,8 +3499,8 @@ if test "$with_frozenpaths" != 'yes'; then
   RMDelegate="$RMDelegateDefault"
   RSVGDecodeDelegate="$RSVGDecodeDelegateDefault"
   SCANDecodeDelegate="$SCANDecodeDelegateDefault"
-  SVGDecodeDelegate="$SVGDecodeDelegateDefault"
   ShowImageDelegate="$ShowImageDelegateDefault"
+  SVGDecodeDelegate="$SVGDecodeDelegateDefault"
   TXTDelegate="$TXTDelegateDefault"
   UniconvertorDelegate="$UniconvertorDelegateDefault"
   WebPDecodeDelegate="$WebPDecodeDelegateDefault"
@@ -3546,9 +3547,9 @@ AC_SUBST(SCANDecodeDelegate)
 AC_SUBST(ShowImageDelegate)
 AC_SUBST(TXTDelegate)
 AC_SUBST(UniconvertorDelegate)
-AC_SUBST(WMFDecodeDelegate)
 AC_SUBST(WebPDecodeDelegate)
 AC_SUBST(WebPEncodeDelegate)
+AC_SUBST(WMFDecodeDelegate)
 AC_SUBST(WWWDecodeDelegate)
 AC_SUBST(XPSDelegate)
 AC_SUBST(ZipDelegate)
@@ -3825,7 +3826,7 @@ if test $with_perl_static = 'yes'; then
     libtool_objdir=$objdir
 
     # Linker search path to library, followed by -lMagickCore
-    MAGICKCORE_PATH="${builddir}/MagickCore/${libtool_objdir}"
+    MAGICKCORE_PATH="${builddir}/magick/${libtool_objdir}"
 fi
 AC_SUBST(MAGICKCORE_PATH)
 
@@ -3846,11 +3847,11 @@ fi
 if test "$have_avconv"   = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES mpeg"
 fi
-if test "$have_mupdf"    = 'yes' ; then
-   MAGICK_DELEGATES="$MAGICK_DELEGATES mupdf"
-fi
 if test "$have_fftw"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES fftw"
+fi
+if test "$have_mupdf"    = 'yes' ; then
+   MAGICK_DELEGATES="$MAGICK_DELEGATES mupdf"
 fi
 if test "$have_fpx"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES fpx"
@@ -3983,7 +3984,7 @@ fi
 if test "$build_modules" != 'no'; then
     MAGICK_DEP_LIBS="$LCMS_LIBS $FREETYPE_LIBS $LQR_LIBS $FFTW_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
 else
-    MAGICK_DEP_LIBS="$JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $OPENJPEG_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
 fi
 AC_SUBST(MAGICK_DEP_LIBS)
 
@@ -4032,8 +4033,10 @@ AC_SUBST(MAGICK_LIBS)
 # Set configured scripts to executable.
 AC_CONFIG_COMMANDS([default],[],[])
 AC_CONFIG_COMMANDS([magick.sh.in],[chmod +x magick.sh])
-AC_CONFIG_COMMANDS([MagickCore-config.in],[chmod +x MagickCore/MagickCore-config])
-AC_CONFIG_COMMANDS([MagickWand-config.in],[chmod +x MagickWand/MagickWand-config])
+AC_CONFIG_COMMANDS([MagickCore-config.in],[chmod +x magick/MagickCore-config])
+AC_CONFIG_COMMANDS([Magick-config.in],[chmod +x magick/Magick-config])
+AC_CONFIG_COMMANDS([MagickWand-config.in],[chmod +x wand/MagickWand-config])
+AC_CONFIG_COMMANDS([Wand-config.in],[chmod +x wand/Wand-config])
 AC_CONFIG_COMMANDS([Magick++-config.in],[chmod +x Magick++/bin/Magick++-config])
 AC_CONFIG_COMMANDS([PerlMagick/check.sh.in],[chmod +x PerlMagick/check.sh])
 
@@ -4075,6 +4078,8 @@ Quantum depth     --with-quantum-depth=$with_quantum_depth	$with_quantum_depth
 High Dynamic Range Imagery
                   --enable-hdri=$enable_hdri		$enable_hdri
 
+Install documentation:		$wantdocs
+
 Delegate Configuration:
 BZLIB             --with-bzlib=$with_bzlib		$have_bzlib
 Autotrace         --with-autotrace=$with_autotrace		$have_autotrace
@@ -4096,13 +4101,13 @@ JPEG v1           --with-jpeg=$with_jpeg		$have_jpeg
 JPEG-2000         --with-jp2=$with_jp2		$have_jp2
 LCMS v1           --with-lcms=$with_lcms		$have_lcms
 LCMS v2           --with-lcms2=$with_lcms2		$have_lcms2
-LIBJPEG2          --with-openjp2=$with_openjp2	$have_openjp2
 LQR               --with-lqr=$with_lqr		$have_lqr
 LTDL              --with-ltdl=$with_ltdl		$have_ltdl
 LZMA              --with-lzma=$with_lzma		$have_lzma
 Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
 MUPDF             --with-mupdf=$with_mupdf		$have_mupdf
 OpenEXR           --with-openexr=$with_openexr		$have_openexr
+OpenJP2           --with-openjp2=$with_openjp2		$have_openjp2
 PANGO             --with-pango=$with_pango		$have_pango
 PERL              --with-perl=$with_perl		$have_perl
 PNG               --with-png=$with_png		$have_png

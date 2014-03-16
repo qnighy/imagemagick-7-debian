@@ -39,32 +39,32 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/colormap.h"
-#include "MagickCore/colormap-private.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/property.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/color-private.h"
+#include "magick/colormap.h"
+#include "magick/colormap-private.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
+#include "magick/property.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 #if defined(MAGICKCORE_X11_DELEGATE)
-#include "MagickCore/xwindow-private.h"
+#include "magick/xwindow-private.h"
 #if !defined(vms)
 #include <X11/XWDFile.h>
 #else
@@ -77,7 +77,7 @@
 */
 #if defined(MAGICKCORE_X11_DELEGATE)
 static MagickBooleanType
-  WriteXWDImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteXWDImage(const ImageInfo *,Image *);
 #endif
 
 /*
@@ -158,6 +158,9 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
   Image
     *image;
 
+  IndexPacket
+    index;
+
   int
     x_status;
 
@@ -167,13 +170,13 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
   MagickStatusType
     status;
 
-  Quantum
-    index;
+  register IndexPacket
+    *indexes;
 
   register ssize_t
     x;
 
-  register Quantum
+  register PixelPacket
     *q;
 
   register ssize_t
@@ -209,7 +212,7 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -244,7 +247,7 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   count=ReadBlob(image,length,(unsigned char *) comment);
   comment[length]='\0';
-  (void) SetImageProperty(image,"comment",comment,exception);
+  (void) SetImageProperty(image,"comment",comment);
   comment=DestroyString(comment);
   if (count != (ssize_t) length)
     ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
@@ -398,21 +401,21 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
           for (y=0; y < (ssize_t) image->rows; y++)
           {
             q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-            if (q == (Quantum *) NULL)
+            if (q == (PixelPacket *) NULL)
               break;
             for (x=0; x < (ssize_t) image->columns; x++)
             {
               pixel=XGetPixel(ximage,(int) x,(int) y);
-              index=(Quantum) ((pixel >> red_shift) & red_mask);
-              SetPixelRed(image,ScaleShortToQuantum(
-                colors[(ssize_t) index].red),q);
-              index=(Quantum) ((pixel >> green_shift) & green_mask);
-              SetPixelGreen(image,ScaleShortToQuantum(
-                colors[(ssize_t) index].green),q);
-              index=(Quantum) ((pixel >> blue_shift) & blue_mask);
-              SetPixelBlue(image,ScaleShortToQuantum(
-                colors[(ssize_t) index].blue),q);
-              q+=GetPixelChannels(image);
+              index=(IndexPacket) ((pixel >> red_shift) & red_mask);
+              SetPixelRed(q,ScaleShortToQuantum(colors[(ssize_t)
+                index].red));
+              index=(IndexPacket) ((pixel >> green_shift) & green_mask);
+              SetPixelGreen(q,ScaleShortToQuantum(colors[(ssize_t)
+                index].green));
+              index=(IndexPacket) ((pixel >> blue_shift) & blue_mask);
+              SetPixelBlue(q,ScaleShortToQuantum(colors[(ssize_t)
+                index].blue));
+              q++;
             }
             if (SyncAuthenticPixels(image,exception) == MagickFalse)
               break;
@@ -425,7 +428,7 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
           for (y=0; y < (ssize_t) image->rows; y++)
           {
             q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-            if (q == (Quantum *) NULL)
+            if (q == (PixelPacket *) NULL)
               break;
             for (x=0; x < (ssize_t) image->columns; x++)
             {
@@ -433,17 +436,19 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
               color=(pixel >> red_shift) & red_mask;
               if (red_mask != 0)
                 color=(color*65535UL)/red_mask;
-              SetPixelRed(image,ScaleShortToQuantum((unsigned short) color),q);
+              SetPixelRed(q,ScaleShortToQuantum((unsigned short)
+                color));
               color=(pixel >> green_shift) & green_mask;
               if (green_mask != 0)
                 color=(color*65535UL)/green_mask;
-              SetPixelGreen(image,ScaleShortToQuantum((unsigned short) color),
-                q);
+              SetPixelGreen(q,ScaleShortToQuantum((unsigned short)
+                color));
               color=(pixel >> blue_shift) & blue_mask;
               if (blue_mask != 0)
                 color=(color*65535UL)/blue_mask;
-              SetPixelBlue(image,ScaleShortToQuantum((unsigned short) color),q);
-              q+=GetPixelChannels(image);
+              SetPixelBlue(q,ScaleShortToQuantum((unsigned short)
+                color));
+              q++;
             }
             if (SyncAuthenticPixels(image,exception) == MagickFalse)
               break;
@@ -459,7 +464,7 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Convert X image to PseudoClass packets.
         */
-        if (AcquireImageColormap(image,image->colors,exception) == MagickFalse)
+        if (AcquireImageColormap(image,image->colors) == MagickFalse)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         for (i=0; i < (ssize_t) image->colors; i++)
         {
@@ -470,15 +475,16 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
         for (y=0; y < (ssize_t) image->rows; y++)
         {
           q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-          if (q == (Quantum *) NULL)
+          if (q == (PixelPacket *) NULL)
             break;
+          indexes=GetAuthenticIndexQueue(image);
           for (x=0; x < (ssize_t) image->columns; x++)
           {
             index=ConstrainColormapIndex(image,XGetPixel(ximage,(int) x,
-              (int) y),exception);
-            SetPixelIndex(image,index,q);
-            SetPixelInfoPixel(image,image->colormap+(ssize_t) index,q);
-            q+=GetPixelChannels(image);
+              (int) y));
+            SetPixelIndex(indexes+x,index);
+            SetPixelRGBO(q,image->colormap+(ssize_t) index);
+            q++;
           }
           if (SyncAuthenticPixels(image,exception) == MagickFalse)
             break;
@@ -587,8 +593,7 @@ ModuleExport void UnregisterXWDImage(void)
 %
 %  The format of the WriteXWDImage method is:
 %
-%      MagickBooleanType WriteXWDImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%      MagickBooleanType WriteXWDImage(const ImageInfo *image_info,Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -596,11 +601,8 @@ ModuleExport void UnregisterXWDImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
-static MagickBooleanType WriteXWDImage(const ImageInfo *image_info,Image *image,
-  ExceptionInfo *exception)
+static MagickBooleanType WriteXWDImage(const ImageInfo *image_info,Image *image)
 {
   const char
     *value;
@@ -608,7 +610,10 @@ static MagickBooleanType WriteXWDImage(const ImageInfo *image_info,Image *image,
   MagickBooleanType
     status;
 
-  register const Quantum
+  register const IndexPacket
+    *indexes;
+
+  register const PixelPacket
     *p;
 
   register ssize_t
@@ -642,18 +647,16 @@ static MagickBooleanType WriteXWDImage(const ImageInfo *image_info,Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  (void) TransformImageColorspace(image,sRGBColorspace,exception);
+  (void) TransformImageColorspace(image,sRGBColorspace);
   /*
     Initialize XWD file header.
   */
   (void) ResetMagickMemory(&xwd_info,0,sizeof(xwd_info));
   xwd_info.header_size=(CARD32) sz_XWDheader;
-  value=GetImageProperty(image,"comment",exception);
+  value=GetImageProperty(image,"comment");
   if (value != (const char *) NULL)
     xwd_info.header_size+=(CARD32) strlen(value);
   xwd_info.header_size++;
@@ -762,25 +765,23 @@ static MagickBooleanType WriteXWDImage(const ImageInfo *image_info,Image *image,
   scanline_pad=(bytes_per_line-((image->columns*bits_per_pixel) >> 3));
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
+    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+    if (p == (const PixelPacket *) NULL)
       break;
     q=pixels;
     if (image->storage_class == PseudoClass)
       {
+        indexes=GetVirtualIndexQueue(image);
         for (x=0; x < (ssize_t) image->columns; x++)
-        {
-          *q++=(unsigned char) GetPixelIndex(image,p);
-          p+=GetPixelChannels(image);
-        }
+          *q++=(unsigned char) GetPixelIndex(indexes+x);
       }
     else
       for (x=0; x < (ssize_t) image->columns; x++)
       {
-        *q++=ScaleQuantumToChar(GetPixelRed(image,p));
-        *q++=ScaleQuantumToChar(GetPixelGreen(image,p));
-        *q++=ScaleQuantumToChar(GetPixelBlue(image,p));
-        p+=GetPixelChannels(image);
+        *q++=ScaleQuantumToChar(GetPixelRed(p));
+        *q++=ScaleQuantumToChar(GetPixelGreen(p));
+        *q++=ScaleQuantumToChar(GetPixelBlue(p));
+        p++;
       }
     for (x=0; x < (ssize_t) scanline_pad; x++)
       *q++='\0';

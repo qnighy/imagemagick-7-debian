@@ -12,6 +12,7 @@ For more information about the mogrify command, point your browser to file://@DO
 Image Settings:
   \-adjoin              join images into a single multi-image file
   \-affine matrix       affine transform matrix
+  \-alpha option        activate, deactivate, reset, or set the alpha channel
   \-antialias           remove pixel-aliasing
   \-authenticate value  decrypt image with this password
   \-attenuate value     lessen (or intensify) when adding noise to an image
@@ -73,8 +74,6 @@ Image Settings:
   \-orient type         image orientation
   \-page geometry       size and location of an image canvas (setting)
   \-path path           write images to this path on disk
-  \-perceptible epsilon
-                       pixel value less than |epsilon| become epsilon or -epsilon
   \-ping                efficiently determine image attributes
   \-pointsize value     font point size
   \-precision value     maximum number of significant digits to print
@@ -131,8 +130,10 @@ Image Operators:
   \-blue-shift          simulate a scene at nighttime in the moonlight
   \-blur geometry       reduce image noise and reduce detail levels
   \-border geometry     surround image with a border of color
+  \-bordercolor color   border color
   \-brightness-contrast geometry
                        improve brightness / contrast of the image
+  \-cdl filename        color correct with a color decision list
   \-charcoal radius     simulate a charcoal drawing
   \-chop geometry       remove pixels from the image interior
   \-clamp               keep pixel values in range (0-QuantumRange)
@@ -147,12 +148,14 @@ Image Operators:
   \-convolve coefficients
                        apply a convolution kernel to the image
   \-cycle amount        cycle the image colormap
+  \-decipher filename   convert cipher pixels to plain pixels
   \-deskew threshold    straighten an image
   \-despeckle           reduce the speckles within an image
   \-distort method args
                        distort images according to given method ad args
   \-draw string         annotate the image with a graphic primitive
   \-edge radius         apply a filter to detect edges in the image
+  \-encipher filename   convert plain pixels to cipher pixels
   \-emboss radius       emboss an image
   \-enhance             apply a digital filter to enhance a noisy image
   \-equalize            perform histogram equalization to an image
@@ -160,12 +163,15 @@ Image Operators:
                        evaluate an arithmetic, relational, or logical expression
   \-extent geometry     set the image size
   \-extract geometry    extract area from image
+  \-features distance   analyze image features (e.g. contrast, correlation)
   \-fft                 implements the discrete Fourier transform (DFT)
   \-flip                flip image vertically
   \-floodfill geometry color
                        floodfill the image with color
   \-flop                flop image horizontally
   \-frame geometry      surround image with an ornamental border
+  \-function name parameters
+                       apply function over image values
   \-gamma value         level of gamma correction
   \-gaussian-blur geometry
                        reduce image noise and reduce detail levels
@@ -174,9 +180,8 @@ Image Operators:
   \-ift                 implements the inverse discrete Fourier transform (DFT)
   \-help                print program options
   \-identify            identify the format and characteristics of the image
+  \-ift                 implements the inverse discrete Fourier transform (DFT)
   \-implode amount      implode image pixels about the center
-  \-interpolative-resize geometry
-                       resize image using interpolation
   \-lat geometry        local adaptive thresholding
   \-layers method       optimize or compare image layers
   \-level value         adjust the level of image contrast
@@ -191,6 +196,8 @@ Image Operators:
   \-mode geometry       make each pixel the 'predominant color' of the neighborhood
   \-modulate value      vary the brightness, saturation, and hue
   \-monochrome          transform image to black and white
+  \-morphology method kernel
+                       apply a morphology method to the image
   \-motion-blur geometry
                        simulate motion blur
   \-negate              replace each pixel with its complementary color 
@@ -200,6 +207,8 @@ Image Operators:
   \-ordered-dither NxN
                        add a noise pattern to the image with specific amplitudes
   \-paint radius        simulate an oil painting
+  \-perceptible epsilon
+                       pixel value less than |epsilon| become epsilon or -epsilon
   \-polaroid angle      simulate a Polaroid picture
   \-posterize levels    reduce the image to a limited number of color levels
   \-print string        interpret string and print to console
@@ -257,11 +266,6 @@ Image Operators:
   \-wave geometry       alter an image along a sine wave
   \-white-threshold value
                        force all pixels above the threshold into white
-
-Image Channel Operators:
-  \-channel-fx expression
-                       exchange, extract, or transfer one or more image channels
-  \-separate            separate an image channel into a grayscale image
 
 Image Sequence Operators:
   \-affinity filename   transform image colors to match this set of colors

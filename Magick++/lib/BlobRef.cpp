@@ -15,28 +15,29 @@
 #include <string.h>
 
 Magick::BlobRef::BlobRef(const void* data_,size_t length_)
-  : data(0),
-    length(length_),
-    allocator(Magick::Blob::NewAllocator),
-    refCount(1),
-    mutexLock()
+  : _data(0),
+    _length(length_),
+    _allocator(Magick::Blob::NewAllocator),
+    _refCount(1),
+    _mutexLock()
 {
   if (data_)
     {
-      data=new unsigned char[length_];
-      memcpy(data,data_, length_);
+      _data=new unsigned char[length_];
+      memcpy(_data,data_,length_);
     }
 }
 
+// Destructor (actually destroys data)
 Magick::BlobRef::~BlobRef(void)
 {
-  if (allocator == Magick::Blob::NewAllocator)
+  if (_allocator == Magick::Blob::NewAllocator)
     {
-      delete[] static_cast<unsigned char*>(data);
-      data=0;
+      delete[] static_cast<unsigned char*>(_data);
+      _data=0;
     }
-  else if (allocator == Magick::Blob::MallocAllocator)
+  else if (_allocator == Magick::Blob::MallocAllocator)
     {
-      data=(void *) RelinquishMagickMemory(data);
+      _data=(void *) RelinquishMagickMemory(_data);
     }
 }

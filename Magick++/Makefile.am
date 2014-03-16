@@ -8,7 +8,7 @@ AM_CPPFLAGS += -I$(top_srcdir)/Magick++/lib
 
 if WITH_MAGICK_PLUS_PLUS
 MAGICKPP_LIBS = Magick++/lib/libMagick++-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.la
-MAGICKPP_LDADD = $(MAGICKPP_LIBS) $(top_builddir)/MagickCore/libMagickCore-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.la
+MAGICKPP_LDADD = $(MAGICKPP_LIBS) $(top_builddir)/magick/libMagickCore-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.la
 MAGICKPP_CHECK_PGRMS = $(MAGICKPP_CHECK_PGRMS_OPT)
 MAGICKPP_MANS = $(MAGICKPP_MANS_OPT)
 MAGICKPP_PKGCONFIG = $(MAGICKPP_PKGCONFIG_OPT)
@@ -18,7 +18,7 @@ MAGICKPP_TOP_INCHEADERS = $(MAGICKPP_TOP_INCHEADERS_OPT)
 MAGICKPP_INCHEADERS = $(MAGICKPP_INCHEADERS_OPT)
 else
 MAGICKPP_LIBS = 
-MAGICKPP_LDADD =
+MAGICKPP_LDADD = 
 MAGICKPP_CHECK_PGRMS = 
 MAGICKPP_MANS = 
 MAGICKPP_PKGCONFIG = 
@@ -36,7 +36,9 @@ MAGICKPP_MANS_OPT = \
 
 MAGICKPP_PKGCONFIG_OPT = \
 	Magick++/lib/Magick++.pc \
-	Magick++/lib/Magick++-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.pc
+	Magick++/lib/ImageMagick++.pc \
+	Magick++/lib/Magick++-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.pc \
+	Magick++/lib/ImageMagick++-@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX@.pc
 
 MAGICKPP_TEST_SCRPTS_OPT = \
 	Magick++/tests/tests.tap \
@@ -51,6 +53,7 @@ MAGICKPP_EXTRA_DIST = \
 	Magick++/README \
 	Magick++/bin/Magick++-config.1 \
 	Magick++/bin/Magick++-config.in \
+	Magick++/lib/ImageMagick++.pc.in \
 	Magick++/lib/libMagick++.map \
 	Magick++/lib/Magick++.pc.in \
 	Magick++/demo/model.miff \

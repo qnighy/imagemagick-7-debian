@@ -39,24 +39,25 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/registry.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/registry.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteMPRImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteMPRImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,7 +101,7 @@ static Image *ReadMPRImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image=(Image *) GetImageRegistry(ImageRegistryType,image_info->filename,
     exception);
   if (image != (Image *) NULL)
-    (void) SyncImageSettings(image_info,image,exception);
+    (void) SyncImageSettings(image_info,image);
   return(image);
 }
 
@@ -195,8 +196,7 @@ ModuleExport void UnregisterMPRImage(void)
 %
 %  The format of the WriteMPRImage method is:
 %
-%      MagickBooleanType WriteMPRImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%      MagickBooleanType WriteMPRImage(const ImageInfo *image_info,Image *image)
 %
 %  A description of each parameter follows.
 %
@@ -204,11 +204,8 @@ ModuleExport void UnregisterMPRImage(void)
 %
 %    o image:  The image.
 %
-%    o exception: return any errors or warnings in this structure.
-%
 */
-static MagickBooleanType WriteMPRImage(const ImageInfo *image_info,Image *image,
-  ExceptionInfo *exception)
+static MagickBooleanType WriteMPRImage(const ImageInfo *image_info,Image *image)
 {
   MagickBooleanType
     status;
@@ -220,6 +217,7 @@ static MagickBooleanType WriteMPRImage(const ImageInfo *image_info,Image *image,
   magick_unreferenced(image_info);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  status=SetImageRegistry(ImageRegistryType,image->filename,image,exception);
+  status=SetImageRegistry(ImageRegistryType,image->filename,image,
+    &image->exception);
   return(status);
 }

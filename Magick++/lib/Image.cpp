@@ -22,6 +22,7 @@ using namespace std;
 #include "Magick++/Pixels.h"
 #include "Magick++/Options.h"
 #include "Magick++/ImageRef.h"
+#include "Magick++/ResourceLimits.h"
 
 #define AbsoluteValue(x)  ((x) < 0 ? -(x) : (x))
 #define MagickPI  3.14159265358979323846264338327950288419716939937510
@@ -31,19 +32,6 @@ using namespace std;
   ExceptionInfo \
     exceptionInfo; \
   GetExceptionInfo(&exceptionInfo)
-#define ClonePPDrawException(wand) \
-  ExceptionInfo \
-    *exceptionInfo; \
-  exceptionInfo=DrawCloneExceptionInfo(wand)
-#define RestorePPChannelMask \
-  SetPixelChannelMask(image(),channel_mask)
-#define SetPPChannelMask(channel) \
-  ChannelType \
-    channel_mask; \
-  channel_mask=SetImageChannelMask(image(),channel)
-#define ThrowPPDrawException \
-  throwException(*exceptionInfo); \
-  (void) DestroyExceptionInfo(exceptionInfo)
 #define ThrowPPException \
   throwException(exceptionInfo); \
   (void) DestroyExceptionInfo(&exceptionInfo)
@@ -77,8 +65,8 @@ MagickPPExport int Magick::operator < (const Magick::Image &left_,
   const Magick::Image &right_)
 {
   // If image pixels are less, then image is smaller
-  return((left_.rows() * left_.columns()) <
-    (right_.rows() * right_.columns()));
+  return((left_.rows() * left_.columns()) < (right_.rows() * 
+    right_.columns()));
 }
 
 MagickPPExport int Magick::operator >= (const Magick::Image &left_,
@@ -90,7 +78,7 @@ MagickPPExport int Magick::operator >= (const Magick::Image &left_,
 MagickPPExport int Magick::operator <= (const Magick::Image &left_,
   const Magick::Image &right_)
 {
-  return((left_ < right_) || ( left_ == right_));
+  return((left_ < right_) || (left_ == right_));
 }
 
 Magick::Image::Image(void)
@@ -106,11 +94,11 @@ Magick::Image::Image(const Blob &blob_)
     // Initialize, Allocate and Read images
     read(blob_);
   }
-  catch(const Warning &/*warning_*/)
+  catch(const Warning & /*warning_*/)
   {
     // FIXME: need a way to report warnings in constructor
   }
-  catch (const Error &/*error_*/)
+  catch(const Error & /*error_*/)
   {
     // Release resources
     delete _imgRef;
@@ -124,13 +112,13 @@ Magick::Image::Image(const Blob &blob_,const Geometry &size_)
   try
   {
     // Read from Blob
-    read(blob_, size_);
+    read(blob_,size_);
   }
-  catch(const Warning &/*warning_*/)
+  catch(const Warning & /*warning_*/)
   {
     // FIXME: need a way to report warnings in constructor
   }
-  catch(const Error &/*error_*/)
+  catch(const Error & /*error_*/)
   {
     // Release resources
     delete _imgRef;
@@ -147,11 +135,11 @@ Magick::Image::Image(const Blob &blob_,const Geometry &size_,
     // Read from Blob
     read(blob_,size_,depth_);
   }
-  catch(const Warning &/*warning_*/)
+  catch(const Warning & /*warning_*/)
   {
     // FIXME: need a way to report warnings in constructor
   }
-  catch(const Error &/*error_*/)
+  catch(const Error & /*error_*/)
   {
     // Release resources
     delete _imgRef;
@@ -168,11 +156,11 @@ Magick::Image::Image(const Blob &blob_,const Geometry &size_,
     // Read from Blob
     read(blob_,size_,depth_,magick_);
   }
-  catch(const Warning &/*warning_*/)
+  catch(const Warning & /*warning_*/)
   {
     // FIXME: need a way to report warnings in constructor
   }
-  catch(const Error &/*error_*/)
+  catch(const Error & /*error_*/)
   {
     // Release resources
     delete _imgRef;
@@ -189,11 +177,11 @@ Magick::Image::Image(const Blob &blob_,const Geometry &size_,
     // Read from Blob
     read(blob_,size_,magick_);
   }
-  catch(const Warning &/*warning_*/)
+  catch(const Warning & /*warning_*/)
   {
     // FIXME: need a way to report warnings in constructor
   }
-  catch(const Error &/*error_*/)
+  catch(const Error & /*error_*/)
   {
     // Release resources
     delete _imgRef;
@@ -216,7 +204,7 @@ Magick::Image::Image(const Geometry &size_,const Color &color_)
     // Initialize, Allocate and Read images
     read(imageSpec);
   }
-  catch(const Warning &/*warning_*/)
+  catch(const Warning & /*warning_*/)
   {
     // FIXME: need a way to report warnings in constructor
   }
@@ -243,13 +231,13 @@ Magick::Image::Image(const size_t width_,const size_t height_,
 {
   try
   {
-    read(width_,height_,map_.c_str(),type_,pixels_);
+    read(width_,height_,map_,type_,pixels_);
   }
-  catch(const Warning &/*warning_*/)
+  catch(const Warning & /*warning_*/)
   {
     // FIXME: need a way to report warnings in constructor
   }
-  catch(const Error &/*error_*/)
+  catch(const Error & /*error_*/)
   {
     // Release resources
     delete _imgRef;
@@ -265,11 +253,11 @@ Magick::Image::Image(const std::string &imageSpec_)
     // Initialize, Allocate and Read images
     read(imageSpec_);
   }
-  catch(const Warning &/*warning_*/)
+  catch(const Warning & /*warning_*/)
   {
     // FIXME: need a way to report warnings in constructor
   }
-  catch(const Error &/*error_*/)
+  catch(const Error & /*error_*/)
   {
     // Release resources
     delete _imgRef;
@@ -277,7 +265,7 @@ Magick::Image::Image(const std::string &imageSpec_)
   }
 }
 
-Magick::Image::~Image()
+Magick::Image::~Image ()
 {
   bool
     doDelete=false;
@@ -296,7 +284,7 @@ Magick::Image::~Image()
 
 Magick::Image& Magick::Image::operator=(const Magick::Image &image_)
 {
-  if(this != &image_)
+  if (this != &image_)
     {
       bool
         doDelete=false;
@@ -318,6 +306,7 @@ Magick::Image& Magick::Image::operator=(const Magick::Image &image_)
           delete _imgRef;
           _imgRef=0;
         }
+
       // Use new image reference
       _imgRef=image_._imgRef;
     }
@@ -334,56 +323,6 @@ void Magick::Image::adjoin(const bool flag_)
 bool Magick::Image::adjoin(void) const
 {
   return(constOptions()->adjoin());
-}
-
-void Magick::Image::alpha(const bool matteFlag_)
-{
-  modifyImage();
-
-  // If matte channel is requested, but image doesn't already have a
-  // matte channel, then create an opaque matte channel.  Likewise, if
-  // the image already has a matte channel but a matte channel is not
-  // desired, then set the matte channel to opaque.
-  GetPPException;
-  if ((matteFlag_ && !constImage()->alpha_trait) ||
-      (constImage()->alpha_trait && !matteFlag_))
-    SetImageAlpha(image(),OpaqueAlpha,&exceptionInfo);
-  ThrowPPException;
-
-  image()->alpha_trait=matteFlag_ ? BlendPixelTrait : UndefinedPixelTrait;
-}
-
-bool Magick::Image::alpha(void) const
-{
-  if (constImage()->alpha_trait == BlendPixelTrait)
-    return(true);
-  else
-    return(false);
-}
-
-void Magick::Image::alphaColor(const Color &alphaColor_)
-{
-  modifyImage();
-
-  if (alphaColor_.isValid())
-    {
-      image()->matte_color=alphaColor_;
-      options()->matteColor(alphaColor_);
-    }
-  else
-    {
-      // Set to default matte color
-      Color tmpColor("#BDBDBD");
-      image()->matte_color=tmpColor;
-      options()->matteColor(tmpColor);
-    }
-}
-
-Magick::Color Magick::Image::alphaColor(void) const
-{
-  return(Color(ClampToQuantum(constImage()->matte_color.red),
-    ClampToQuantum(constImage()->matte_color.green),
-    ClampToQuantum(constImage()->matte_color.blue)));
 }
 
 void Magick::Image::antiAlias(const bool flag_)
@@ -482,8 +421,8 @@ Magick::Color Magick::Image::borderColor(void) const
 Magick::Geometry Magick::Image::boundingBox(void) const
 {
   RectangleInfo
-    bbox;
-
+    bbox; 
+  
   GetPPException;
   bbox=GetImageBoundingBox(constImage(),&exceptionInfo);
   ThrowPPException;
@@ -501,28 +440,9 @@ Magick::Color Magick::Image::boxColor(void) const
   return(constOptions()->boxColor());
 }
 
-void Magick::Image::channelDepth(const size_t depth_)
+void Magick::Image::cacheThreshold(const size_t threshold_)
 {
-  modifyImage();
-  GetPPException;
-  SetImageDepth(image(),depth_,&exceptionInfo);
-  ThrowPPException;
-}
-
-size_t Magick::Image::channelDepth()
-{
-  size_t
-    channel_depth;
-
-  GetPPException;
-  channel_depth=GetImageDepth(constImage(),&exceptionInfo);
-  ThrowPPException;
-  return(channel_depth);
-}
-
-size_t Magick::Image::channels() const
-{
-  return(constImage()->number_channels);
+  ResourceLimits::memory((MagickSizeType) threshold_);
 }
 
 void Magick::Image::classType(const ClassType class_)
@@ -532,15 +452,12 @@ void Magick::Image::classType(const ClassType class_)
       // Use SyncImage to synchronize the DirectClass pixels with the
       // color map and then set to DirectClass type.
       modifyImage();
-      GetPPException;
-      SyncImage(image(),&exceptionInfo);
-      ThrowPPException;
-      image()->colormap=(PixelInfo *)RelinquishMagickMemory(image()->colormap);
+      SyncImage(image());
+      image()->colormap=(PixelPacket *)RelinquishMagickMemory(
+        image()->colormap);
       image()->storage_class=static_cast<MagickCore::ClassType>(DirectClass);
-      return;
     }
-
-  if (classType() == DirectClass && class_ == PseudoClass)
+  else if (classType() == DirectClass && class_ == PseudoClass)
     {
       // Quantize to create PseudoClass color map
       modifyImage();
@@ -550,21 +467,14 @@ void Magick::Image::classType(const ClassType class_)
     }
 }
 
-Magick::ClassType Magick::Image::classType(void) const
-{
-  return static_cast<Magick::ClassType>(constImage()->storage_class);
-}
-
 void Magick::Image::clipMask(const Magick::Image &clipMask_)
 {
   modifyImage();
 
-  GetPPException;
   if (clipMask_.isValid())
-    SetImageMask(image(),clipMask_.constImage(),&exceptionInfo);
+    SetImageClipMask(image(),clipMask_.constImage());
   else
-    SetImageMask(image(),0,&exceptionInfo);
-  ThrowPPException;
+    SetImageClipMask(image(),0);
 }
 
 Magick::Image Magick::Image::clipMask(void) const
@@ -573,8 +483,9 @@ Magick::Image Magick::Image::clipMask(void) const
     *image;
 
   GetPPException;
-  image=GetImageMask(constImage(),&exceptionInfo);
+  image=GetImageClipMask(constImage(),&exceptionInfo);
   ThrowPPException;
+
   if (image == (MagickCore::Image *) NULL)
     return(Magick::Image());
   else
@@ -595,17 +506,15 @@ double Magick::Image::colorFuzz(void) const
 
 void Magick::Image::colorMapSize(const size_t entries_)
 {
-  if (entries_ >MaxColormapSize)
+  if (entries_ > MaxColormapSize)
     throwExceptionExplicit(OptionError,
       "Colormap entries must not exceed MaxColormapSize");
 
   modifyImage();
-  GetPPException;
-  AcquireImageColormap(image(),entries_,&exceptionInfo);
-  ThrowPPException;
+  AcquireImageColormap(image(),entries_);
 }
 
-size_t Magick::Image::colorMapSize(void) const
+size_t Magick::Image::colorMapSize(void)
 {
   if (!constImage()->colormap)
     throwExceptionExplicit(OptionError,"Image does not contain a colormap");
@@ -619,43 +528,35 @@ void Magick::Image::colorSpace(const ColorspaceType colorSpace_)
     return;
 
   modifyImage();
-  GetPPException;
-  TransformImageColorspace(image(),colorSpace_,&exceptionInfo);
-  ThrowPPException;
+  TransformImageColorspace(image(),colorSpace_);
+  throwImageException();
 }
 
 Magick::ColorspaceType Magick::Image::colorSpace(void) const
 {
-  return (constImage()->colorspace);
+  return(constImage()->colorspace);
 }
 
-void Magick::Image::colorSpaceType(const ColorspaceType colorSpace_)
+void Magick::Image::colorspaceType(const ColorspaceType colorSpace_)
 {
   modifyImage();
-  GetPPException;
-  SetImageColorspace(image(),colorSpace_,&exceptionInfo);
-  ThrowPPException;
+  SetImageColorspace(image(),colorSpace_);
+  throwImageException();
   options()->colorspaceType(colorSpace_);
 }
 
-Magick::ColorspaceType Magick::Image::colorSpaceType(void) const
+Magick::ColorspaceType Magick::Image::colorspaceType(void) const
 {
   return(constOptions()->colorspaceType());
-}
-
-size_t Magick::Image::columns(void) const
-{
-  return(constImage()->columns);
 }
 
 void Magick::Image::comment(const std::string &comment_)
 {
   modifyImage();
-  GetPPException;
-  SetImageProperty(image(),"Comment",NULL,&exceptionInfo);
+  SetImageProperty(image(),"Comment",NULL);
   if (comment_.length() > 0)
-    SetImageProperty(image(),"Comment",comment_.c_str(),&exceptionInfo);
-  ThrowPPException;
+    SetImageProperty(image(),"Comment",comment_.c_str());
+  throwImageException();
 }
 
 std::string Magick::Image::comment(void) const
@@ -663,9 +564,7 @@ std::string Magick::Image::comment(void) const
   const char
     *value;
 
-  GetPPException;
-  value=GetImageProperty(constImage(),"Comment",&exceptionInfo);
-  ThrowPPException;
+  value=GetImageProperty(constImage(),"Comment");
 
   if (value)
     return(std::string(value));
@@ -712,17 +611,17 @@ void Magick::Image::density(const Geometry &density_)
   options()->density(density_);
   if (density_.isValid())
     {
-      image()->resolution.x=density_.width();
+      image()->x_resolution=density_.width();
       if (density_.height() != 0)
-        image()->resolution.y=density_.height();
+        image()->y_resolution=density_.height();
       else
-        image()->resolution.y=density_.width();
+        image()->y_resolution=density_.width();
     }
   else
     {
       // Reset to default
-      image()->resolution.x=0;
-      image()->resolution.y=0;
+      image()->x_resolution=0;
+      image()->y_resolution=0;
     }
 }
 
@@ -734,11 +633,11 @@ Magick::Geometry Magick::Image::density(void) const
         x_resolution=72,
         y_resolution=72;
 
-      if (constImage()->resolution.x > 0.0)
-        x_resolution=static_cast<ssize_t>(constImage()->resolution.x + 0.5);
+      if (constImage()->x_resolution > 0.0)
+        x_resolution=static_cast<ssize_t>(constImage()->x_resolution + 0.5);
 
-      if (constImage()->resolution.y > 0.0)
-        y_resolution=static_cast<ssize_t>(constImage()->resolution.y + 0.5);
+      if (constImage()->y_resolution > 0.0)
+        y_resolution=static_cast<ssize_t>(constImage()->y_resolution + 0.5);
 
       return(Geometry(x_resolution,y_resolution));
     }
@@ -749,7 +648,7 @@ Magick::Geometry Magick::Image::density(void) const
 void Magick::Image::depth(const size_t depth_)
 {
   size_t
-    depth = depth_;
+    depth=depth_;
 
   if (depth > MAGICKCORE_QUANTUM_DEPTH)
     depth=MAGICKCORE_QUANTUM_DEPTH;
@@ -789,32 +688,30 @@ Magick::EndianType Magick::Image::endian(void) const
 
 void Magick::Image::exifProfile(const Magick::Blob &exifProfile_)
 {
-  modifyImage();
-
   if (exifProfile_.data() != 0)
     {
-      StringInfo
+      StringInfo 
         *exif_profile;
 
+      modifyImage();
       exif_profile=AcquireStringInfo(exifProfile_.length());
       SetStringInfoDatum(exif_profile,(unsigned char *) exifProfile_.data());
-      GetPPException;
-      (void) SetImageProfile(image(),"exif",exif_profile,&exceptionInfo);
+      (void) SetImageProfile(image(),"exif",exif_profile);
       exif_profile=DestroyStringInfo(exif_profile);
-      ThrowPPException;
     }
 }
 
 Magick::Blob Magick::Image::exifProfile(void) const
 {
-  const StringInfo 
+  const StringInfo
     *exif_profile;
 
   exif_profile=GetImageProfile(constImage(),"exif");
   if (exif_profile == (StringInfo *) NULL)
     return(Blob());
-  return(Blob(GetStringInfoDatum(exif_profile),
-    GetStringInfoLength(exif_profile)));
+
+  return(Blob(GetStringInfoDatum(exif_profile),GetStringInfoLength(
+    exif_profile)));
 } 
 
 void Magick::Image::fileName(const std::string &fileName_)
@@ -823,7 +720,7 @@ void Magick::Image::fileName(const std::string &fileName_)
 
   fileName_.copy(image()->filename,sizeof(image()->filename)-1);
   image()->filename[fileName_.length()]=0; // Null terminate
-
+  
   options()->fileName(fileName_);
 }
 
@@ -832,9 +729,9 @@ std::string Magick::Image::fileName(void) const
   return(constOptions()->fileName());
 }
 
-MagickCore::MagickSizeType Magick::Image::fileSize(void) const
+off_t Magick::Image::fileSize(void) const
 {
-  return(GetBlobSize(constImage()));
+  return((off_t) GetBlobSize(constImage()));
 }
 
 void Magick::Image::fillColor(const Magick::Color &fillColor_)
@@ -856,13 +753,13 @@ void Magick::Image::fillRule(const Magick::FillRule &fillRule_)
 
 Magick::FillRule Magick::Image::fillRule(void) const
 {
-  return constOptions()->fillRule();
+  return(constOptions()->fillRule());
 }
 
 void Magick::Image::fillPattern(const Image &fillPattern_)
 {
   modifyImage();
-  if (fillPattern_.isValid())
+  if(fillPattern_.isValid())
     options()->fillPattern(fillPattern_.constImage());
   else
     options()->fillPattern(static_cast<MagickCore::Image*>(NULL));
@@ -879,7 +776,7 @@ Magick::Image Magick::Image::fillPattern(void) const
 
   tmpTexture=constOptions()->fillPattern();
 
-  if (tmpTexture)
+  if(tmpTexture)
     {
       MagickCore::Image
         *image;
@@ -889,6 +786,7 @@ Magick::Image Magick::Image::fillPattern(void) const
       texture.replaceImage(image);
       ThrowPPException;
     }
+
   return(texture);
 }
 
@@ -927,8 +825,8 @@ double Magick::Image::fontPointsize(void) const
 
 std::string Magick::Image::format(void) const
 {
-  const MagickInfo 
-   *magick_info;
+  const MagickInfo
+    *magick_info;
 
   GetPPException;
   magick_info=GetMagickInfo(constImage()->magick,&exceptionInfo);
@@ -949,15 +847,13 @@ std::string Magick::Image::formatExpression(const std::string expression)
   std::string
     result;
 
-  GetPPException;
-  text=InterpretImageProperties(imageInfo(),image(),expression.c_str(),
-    &exceptionInfo);
+  text=InterpretImageProperties(imageInfo(),image(),expression.c_str());
   if (text != (char *) NULL)
     {
       result=std::string(text);
       text=DestroyString(text);
     }
-  ThrowPPException;
+  throwImageException();
   return(result);
 }
 
@@ -969,25 +865,26 @@ double Magick::Image::gamma(void) const
 Magick::Geometry Magick::Image::geometry(void) const
 {
   if (constImage()->geometry)
-    return Geometry(constImage()->geometry);
+    return(Geometry(constImage()->geometry));
 
   throwExceptionExplicit(OptionWarning,"Image does not contain a geometry");
 
   return(Geometry());
 }
 
-void Magick::Image::gifDisposeMethod(
-  const MagickCore::DisposeType disposeMethod_)
+void Magick::Image::gifDisposeMethod(const size_t disposeMethod_)
 {
   modifyImage();
-  image()->dispose=disposeMethod_;
+  image()->dispose=(DisposeType) disposeMethod_;
 }
 
-MagickCore::DisposeType Magick::Image::gifDisposeMethod(void) const
+size_t Magick::Image::gifDisposeMethod(void) const
 {
-  return(constImage()->dispose);
+  // FIXME: It would be better to return an enumeration
+  return ((size_t) constImage()->dispose);
 }
 
+// ICC ICM color profile (BLOB)
 void Magick::Image::iccColorProfile(const Magick::Blob &colorProfile_)
 {
   profile("icm",colorProfile_);
@@ -1000,12 +897,13 @@ Magick::Blob Magick::Image::iccColorProfile(void) const
 
   color_profile=GetImageProfile(constImage(),"icc");
   if (color_profile == (StringInfo *) NULL)
-    return(Blob());
+    return Blob();
+
   return(Blob(GetStringInfoDatum(color_profile),GetStringInfoLength(
     color_profile)));
 }
 
-void Magick::Image::interlaceType(const Magick::InterlaceType interlace_)
+void Magick::Image::interlaceType(const InterlaceType interlace_)
 {
   modifyImage();
   image()->interlace=interlace_;
@@ -1014,16 +912,16 @@ void Magick::Image::interlaceType(const Magick::InterlaceType interlace_)
 
 Magick::InterlaceType Magick::Image::interlaceType(void) const
 {
-  return(constImage()->interlace);
+  return constImage()->interlace;
 }
 
-void Magick::Image::interpolate(const PixelInterpolateMethod interpolate_)
+void Magick::Image::interpolate(const InterpolatePixelMethod interpolate_)
 {
   modifyImage();
   image()->interpolate=interpolate_;
 }
 
-Magick::PixelInterpolateMethod Magick::Image::interpolate(void) const
+Magick::InterpolatePixelMethod Magick::Image::interpolate(void) const
 {
   return constImage()->interpolate;
 }
@@ -1038,10 +936,8 @@ void Magick::Image::iptcProfile(const Magick::Blob &iptcProfile_)
 
       iptc_profile=AcquireStringInfo(iptcProfile_.length());
       SetStringInfoDatum(iptc_profile,(unsigned char *) iptcProfile_.data());
-      GetPPException;
-      (void) SetImageProfile(image(),"iptc",iptc_profile,&exceptionInfo);
-      iptc_profile=DestroyStringInfo(iptc_profile);
-      ThrowPPException;
+      (void) SetImageProfile(image(),"iptc",iptc_profile);
+      iptc_profile=DestroyStringInfo(iptc_profile );
     }
 }
 
@@ -1062,12 +958,12 @@ void Magick::Image::isValid(const bool isValid_)
   if (!isValid_)
     {
       delete _imgRef;
-      _imgRef=new ImageRef;
+      _imgRef = new ImageRef;
     }
   else if (!isValid())
     {
       // Construct with single-pixel black image to make
-      // image valid. This is an obvious hack.
+      // image valid.  This is an obvious hack.
       size(Geometry(1,1));
       read("xc:black");
     }
@@ -1075,17 +971,16 @@ void Magick::Image::isValid(const bool isValid_)
 
 bool Magick::Image::isValid(void) const
 {
-  return rows() && columns();
+  return(rows() && columns());
 }
 
 void Magick::Image::label(const std::string &label_)
 {
   modifyImage();
-  GetPPException;
-  SetImageProperty(image(),"Label",NULL,&exceptionInfo);
+  SetImageProperty(image(),"Label",NULL);
   if (label_.length() > 0)
-    SetImageProperty(image(),"Label",label_.c_str(),&exceptionInfo);
-  ThrowPPException;
+    SetImageProperty(image(),"Label",label_.c_str());
+  throwImageException();
 }
 
 std::string Magick::Image::label(void) const
@@ -1093,9 +988,7 @@ std::string Magick::Image::label(void) const
   const char
     *value;
 
-  GetPPException;
-  value=GetImageProperty(constImage(),"Label",&exceptionInfo);
-  ThrowPPException;
+  value=GetImageProperty(constImage(),"Label");
 
   if (value)
     return(std::string(value));
@@ -1109,7 +1002,7 @@ void Magick::Image::magick(const std::string &magick_)
 
   magick_.copy(image()->magick,sizeof(image()->magick)-1);
   image()->magick[magick_.length()]=0;
-  
+
   options()->magick(magick_);
 }
 
@@ -1121,6 +1014,55 @@ std::string Magick::Image::magick(void) const
   return(constOptions()->magick());
 }
 
+void Magick::Image::matte(const bool matteFlag_)
+{
+  modifyImage();
+
+  // If matte channel is requested, but image doesn't already have a
+  // matte channel, then create an opaque matte channel.  Likewise, if
+  // the image already has a matte channel but a matte channel is not
+  // desired, then set the matte channel to opaque.
+  if ((matteFlag_ && !constImage()->matte) || (constImage()->matte &&
+    !matteFlag_))
+    SetImageOpacity(image(),OpaqueOpacity);
+
+  image()->matte=(MagickBooleanType) matteFlag_;
+}
+
+bool Magick::Image::matte(void) const
+{
+  if (constImage()->matte)
+    return true;
+  else
+    return false;
+}
+
+void Magick::Image::matteColor(const Color &matteColor_)
+{
+  modifyImage();
+
+  if (matteColor_.isValid())
+    {
+      image()->matte_color=matteColor_;
+      options()->matteColor(matteColor_);
+    }
+  else
+    {
+      // Set to default matte color
+      Color
+        tmpColor("#BDBDBD");
+
+      image()->matte_color=tmpColor;
+      options()->matteColor(tmpColor);
+    }
+}
+
+Magick::Color Magick::Image::matteColor(void) const
+{
+  return(Color(constImage()->matte_color.red,constImage()->matte_color.green,
+    constImage()->matte_color.blue));
+}
+
 double Magick::Image::meanErrorPerPixel(void) const
 {
   return(constImage()->error.mean_error_per_pixel);
@@ -1129,15 +1071,13 @@ double Magick::Image::meanErrorPerPixel(void) const
 void Magick::Image::modulusDepth(const size_t depth_)
 {
   modifyImage();
-  GetPPException;
-  SetImageDepth(image(),depth_,&exceptionInfo);
-  ThrowPPException;
+  SetImageDepth(image(),depth_);
   options()->depth(depth_);
 }
 
 size_t Magick::Image::modulusDepth(void) const
 {
-  size_t 
+  size_t
     depth;
 
   GetPPException;
@@ -1160,7 +1100,7 @@ bool Magick::Image::monochrome(void) const
 Magick::Geometry Magick::Image::montageGeometry(void) const
 {
   if (constImage()->montage)
-    return Magick::Geometry(constImage()->montage);
+    return(Magick::Geometry(constImage()->montage));
 
   throwExceptionExplicit(CorruptImageWarning,
     "Image does not contain a montage");
@@ -1175,7 +1115,7 @@ double Magick::Image::normalizedMaxError(void) const
 
 double Magick::Image::normalizedMeanError(void) const
 {
-  return(constImage()->error.normalized_mean_error);
+  return (constImage()->error.normalized_mean_error);
 }
 
 void Magick::Image::orientation(const Magick::OrientationType orientation_)
@@ -1202,6 +1142,51 @@ Magick::Geometry Magick::Image::page(void) const
     AbsoluteValue(constImage()->page.x),AbsoluteValue(constImage()->page.y),
     constImage()->page.x < 0 ? true : false,
     constImage()->page.y < 0 ? true : false));
+}
+
+void Magick::Image::penColor(const Color &penColor_)
+{
+  modifyImage();
+  options()->fillColor(penColor_);
+  options()->strokeColor(penColor_);
+}
+
+Magick::Color Magick::Image::penColor(void) const
+{
+  return(constOptions()->fillColor());
+}
+
+void Magick::Image::penTexture(const Image &penTexture_)
+{
+  modifyImage();
+  if(penTexture_.isValid())
+    options()->fillPattern(penTexture_.constImage());
+  else
+    options()->fillPattern(static_cast<MagickCore::Image*>(NULL));
+}
+
+Magick::Image Magick::Image::penTexture(void) const
+{
+  // FIXME: This is inordinately innefficient
+  const MagickCore::Image
+    *tmpTexture;
+
+  Image
+    texture;
+
+  tmpTexture=constOptions()->fillPattern();
+
+  if (tmpTexture)
+    {
+      MagickCore::Image
+        *image;
+
+      GetPPException;
+      image=CloneImage(tmpTexture,0,0,MagickTrue,&exceptionInfo);
+      texture.replaceImage(image);
+      ThrowPPException;
+    }
+  return(texture);
 }
 
 void Magick::Image::quality(const size_t quality_)
@@ -1256,7 +1241,7 @@ void Magick::Image::quantizeTreeDepth(const size_t treeDepth_)
   options()->quantizeTreeDepth(treeDepth_);
 }
 
-size_t Magick::Image::quantizeTreeDepth() const
+size_t Magick::Image::quantizeTreeDepth(void) const
 {
   return(constOptions()->quantizeTreeDepth());
 }
@@ -1270,7 +1255,8 @@ void Magick::Image::renderingIntent(
 
 Magick::RenderingIntent Magick::Image::renderingIntent(void) const
 {
-  return(static_cast<Magick::RenderingIntent>(constImage()->rendering_intent));
+  return(static_cast<Magick::RenderingIntent>(
+    constImage()->rendering_intent));
 }
 
 void Magick::Image::resolutionUnits(
@@ -1284,11 +1270,6 @@ void Magick::Image::resolutionUnits(
 Magick::ResolutionType Magick::Image::resolutionUnits(void) const
 {
   return(constOptions()->resolutionUnits());
-}
-
-size_t Magick::Image::rows(void) const
-{
-  return(constImage()->rows);
 }
 
 void Magick::Image::scene(const size_t scene_)
@@ -1343,7 +1324,7 @@ void Magick::Image::strokeDashArray(const double *strokeDashArray_)
   options()->strokeDashArray(strokeDashArray_);
 }
 
-const double* Magick::Image::strokeDashArray(void) const
+const double *Magick::Image::strokeDashArray(void) const
 {
   return(constOptions()->strokeDashArray());
 }
@@ -1389,7 +1370,7 @@ void Magick::Image::strokeMiterLimit(const size_t strokeMiterLimit_)
 
 size_t Magick::Image::strokeMiterLimit(void) const
 {
-  return(constOptions()->strokeMiterLimit());
+  return constOptions()->strokeMiterLimit();
 }
 
 void Magick::Image::strokePattern(const Image &strokePattern_)
@@ -1403,8 +1384,7 @@ void Magick::Image::strokePattern(const Image &strokePattern_)
 
 Magick::Image Magick::Image::strokePattern(void) const
 {
-  // FIXME: This is inordinately innefficient
-  const MagickCore::Image 
+  const MagickCore::Image
     *tmpTexture;
 
   Image
@@ -1524,15 +1504,26 @@ double Magick::Image::textKerning(void) const
   return(constOptions()->textKerning());
 }
 
-size_t Magick::Image::totalColors(void) const
+void Magick::Image::tileName(const std::string &tileName_)
+{
+  modifyImage();
+  options()->tileName(tileName_);
+}
+
+std::string Magick::Image::tileName(void) const
+{
+  return(constOptions()->tileName());
+}
+
+size_t Magick::Image::totalColors(void)
 {
   size_t
     colors;
 
   GetPPException;
-  colors=GetNumberColors(constImage(),0,&exceptionInfo);
+  colors=GetNumberColors(image(),0,&exceptionInfo);
   ThrowPPException;
-  return colors;
+  return(colors);
 }
 
 void Magick::Image::transformRotation(const double angle_)
@@ -1553,26 +1544,26 @@ void Magick::Image::transformSkewY(const double skewy_)
   options()->transformSkewY(skewy_);
 }
 
+void Magick::Image::type(const Magick::ImageType type_)
+{
+  modifyImage();
+  options()->type(type_);
+  SetImageType(image(),type_);
+}
+
 Magick::ImageType Magick::Image::type(void) const
 {
   ImageType
     image_type;
 
-  GetPPException;
   image_type=constOptions()->type();
   if (image_type == UndefinedType)
-    image_type=GetImageType(constImage(),&exceptionInfo);
-  ThrowPPException;
-  return image_type;
-}
-
-void Magick::Image::type(const Magick::ImageType type_)
-{
-  modifyImage();
-  options()->type(type_);
-  GetPPException;
-  SetImageType(image(),type_,&exceptionInfo);
-  ThrowPPException;
+    {
+      GetPPException;
+      image_type=GetImageType(constImage(),&exceptionInfo);
+      ThrowPPException;
+    }
+  return(image_type);
 }
 
 void Magick::Image::verbose(const bool verboseFlag_)
@@ -1598,12 +1589,11 @@ std::string Magick::Image::view(void) const
 }
 
 void Magick::Image::virtualPixelMethod(
-  const VirtualPixelMethod virtualPixelMethod_)
+  const VirtualPixelMethod virtual_pixel_method_)
 {
   modifyImage();
-  GetPPException;
-  SetImageVirtualPixelMethod(image(),virtualPixelMethod_,&exceptionInfo);
-  ThrowPPException;
+  SetImageVirtualPixelMethod(image(),virtual_pixel_method_);
+  options()->virtualPixelMethod(virtual_pixel_method_);
 }
 
 Magick::VirtualPixelMethod Magick::Image::virtualPixelMethod(void) const
@@ -1624,12 +1614,12 @@ std::string Magick::Image::x11Display(void) const
 
 double Magick::Image::xResolution(void) const
 {
-  return(constImage()->resolution.x);
+  return(constImage()->x_resolution);
 }
 
 double Magick::Image::yResolution(void) const
 {
-  return(constImage()->resolution.y);
+  return(constImage()->y_resolution);
 }
 
 void Magick::Image::adaptiveBlur(const double radius_,const double sigma_)
@@ -1649,8 +1639,8 @@ void Magick::Image::adaptiveResize(const Geometry &geometry_)
     *newImage;
 
   size_t
-    height=rows(),
-    width=columns();
+    width=columns(),
+    height=rows();
 
   ssize_t
     x=0,
@@ -1677,15 +1667,14 @@ void Magick::Image::adaptiveSharpen(const double radius_,const double sigma_)
 }
 
 void Magick::Image::adaptiveSharpenChannel(const ChannelType channel_,
-  const double radius_,const double sigma_ )
+  const double radius_,const double sigma_)
 {
   MagickCore::Image
     *newImage;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=AdaptiveSharpenImage(constImage(),radius_,sigma_,&exceptionInfo);
-  RestorePPChannelMask;
+  newImage=AdaptiveSharpenImageChannel(constImage(),channel_,radius_,sigma_,
+    &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -1693,7 +1682,6 @@ void Magick::Image::adaptiveSharpenChannel(const ChannelType channel_,
 void Magick::Image::adaptiveThreshold(const size_t width_,const size_t height_,
   const ssize_t offset_)
 {
-
   MagickCore::Image
     *newImage;
 
@@ -1710,7 +1698,7 @@ void Magick::Image::addNoise(const NoiseType noiseType_)
     *newImage;
 
   GetPPException;
-  newImage=AddNoiseImage(constImage(),noiseType_,1.0,&exceptionInfo);
+  newImage=AddNoiseImage(constImage(),noiseType_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -1722,14 +1710,13 @@ void Magick::Image::addNoiseChannel(const ChannelType channel_,
     *newImage;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=AddNoiseImage(constImage(),noiseType_,1.0,&exceptionInfo);
-  RestorePPChannelMask;
+  newImage=AddNoiseImageChannel(constImage(),channel_,noiseType_,
+    &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
 
-void Magick::Image::affineTransform(const DrawableAffine &affine_)
+void Magick::Image::affineTransform(const DrawableAffine &affine_ )
 {
   AffineMatrix
     _affine;
@@ -1737,12 +1724,12 @@ void Magick::Image::affineTransform(const DrawableAffine &affine_)
   MagickCore::Image
     *newImage;
 
-  _affine.sx=affine_.sx();
-  _affine.sy=affine_.sy();
-  _affine.rx=affine_.rx();
-  _affine.ry=affine_.ry();
-  _affine.tx=affine_.tx();
-  _affine.ty=affine_.ty();
+  _affine.sx = affine_.sx();
+  _affine.sy = affine_.sy();
+  _affine.rx = affine_.rx();
+  _affine.ry = affine_.ry();
+  _affine.tx = affine_.tx();
+  _affine.ty = affine_.ty();
 
   GetPPException;
   newImage=AffineTransformImage(constImage(),&_affine,&exceptionInfo);
@@ -1750,41 +1737,11 @@ void Magick::Image::affineTransform(const DrawableAffine &affine_)
   ThrowPPException;
 }
 
-void Magick::Image::alpha(const unsigned int alpha_)
+void Magick::Image::alphaChannel(AlphaChannelType alphaType_)
 {
   modifyImage();
-  GetPPException;
-  SetImageAlpha(image(),alpha_,&exceptionInfo);
-  ThrowPPException;
-}
-
-void Magick::Image::alphaChannel(AlphaChannelOption alphaOption_)
-{
-  modifyImage();
-  GetPPException;
-  SetImageAlphaChannel(image(),alphaOption_,&exceptionInfo);
-  ThrowPPException;
-}
-
-void Magick::Image::alphaFloodfill(const Color &target_,
-  const unsigned int alpha_,const ssize_t x_,const ssize_t y_,
-  const Magick::PaintMethod method_)
-{
-  PixelInfo
-    target;
-
-  modifyImage();
-  GetPixelInfo(constImage(),&target);
-  target.red=static_cast<PixelInfo>(target_).red;
-  target.green=static_cast<PixelInfo>(target_).green;
-  target.blue=static_cast<PixelInfo>(target_).blue;
-  target.alpha=alpha_;
-  GetPPException;
-  SetPPChannelMask(AlphaChannel);
-  FloodfillPaintImage(image(),options()->drawInfo(),&target,x_,y_,
-    method_ == FloodfillMethod ? MagickFalse : MagickTrue,&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  SetImageAlphaChannel(image(), alphaType_);
+  throwImageException();
 }
 
 void Magick::Image::annotate(const std::string &text_,
@@ -1863,15 +1820,14 @@ void Magick::Image::annotate(const std::string &text_,
          +current.tx;
     }
 
-  GetPPException;
-  AnnotateImage(image(),drawInfo,&exceptionInfo);
+  AnnotateImage(image(),drawInfo);
 
   // Restore original values
   drawInfo->affine=oaffine;
   drawInfo->text=0;
   drawInfo->geometry=0;
 
-  ThrowPPException;
+  throwImageException();
 }
 
 void Magick::Image::annotate(const std::string &text_,
@@ -1886,16 +1842,16 @@ void Magick::Image::annotate(const std::string &text_,
   drawInfo->text=const_cast<char *>(text_.c_str());
   drawInfo->gravity=gravity_;
 
-  GetPPException;
-  AnnotateImage(image(),drawInfo,&exceptionInfo);
+  AnnotateImage(image(),drawInfo);
 
   drawInfo->gravity=NorthWestGravity;
   drawInfo->text=0;
 
-  ThrowPPException;
+  throwImageException();
 }
 
-void Magick::Image::artifact(const std::string &name_,const std::string &value_)
+void Magick::Image::artifact(const std::string &name_,
+  const std::string &value_)
 {
   modifyImage();
   (void) SetImageArtifact(image(),name_.c_str(),value_.c_str());
@@ -1915,9 +1871,7 @@ std::string Magick::Image::artifact(const std::string &name_)
 void Magick::Image::attribute(const std::string name_,const std::string value_)
 {
   modifyImage();
-  GetPPException;
-  SetImageProperty(image(),name_.c_str(),value_.c_str(),&exceptionInfo);
-  ThrowPPException;
+  SetImageProperty(image(),name_.c_str(),value_.c_str());
 }
 
 std::string Magick::Image::attribute(const std::string name_)
@@ -1925,9 +1879,7 @@ std::string Magick::Image::attribute(const std::string name_)
   const char
     *value;
 
-  GetPPException;
-  value=GetImageProperty(constImage(),name_.c_str(),&exceptionInfo);
-  ThrowPPException;
+  value=GetImageProperty(constImage(),name_.c_str());
 
   if (value)
     return(std::string(value));
@@ -1938,41 +1890,33 @@ std::string Magick::Image::attribute(const std::string name_)
 void Magick::Image::autoGamma(void)
 {
   modifyImage();
-  GetPPException;
-  (void) SyncImageSettings(imageInfo(),image(),&exceptionInfo);
-  (void) AutoGammaImage(image(),&exceptionInfo);
-  ThrowPPException;
+  (void) SyncImageSettings(imageInfo(),image());
+  (void) AutoGammaImage(image());
+  throwImageException();
 }
 
 void Magick::Image::autoGammaChannel(const ChannelType channel_)
 {
   modifyImage();
-  GetPPException;
-  SetPPChannelMask(channel_);
-  (void) SyncImageSettings(imageInfo(),image(),&exceptionInfo);
-  (void) AutoGammaImage(image(),&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  (void) SyncImageSettings(imageInfo(),image());
+  (void) AutoGammaImageChannel(image(),channel_);
+  throwImageException();
 }
 
 void Magick::Image::autoLevel(void)
 {
   modifyImage();
-  GetPPException;
-  (void) SyncImageSettings(imageInfo(),image(),&exceptionInfo);
-  (void) AutoLevelImage(image(),&exceptionInfo);
-  ThrowPPException;
+  (void) SyncImageSettings(imageInfo(),image());
+  (void) AutoLevelImage(image());
+  throwImageException();
 }
 
 void Magick::Image::autoLevelChannel(const ChannelType channel_)
 {
   modifyImage();
-  GetPPException;
-  SetPPChannelMask(channel_);
-  (void) SyncImageSettings(imageInfo(),image(),&exceptionInfo);
-  (void) AutoLevelImage(image(),&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  (void) SyncImageSettings(imageInfo(),image());
+  (void) AutoLevelImageChannel(image(),channel_);
+  throwImageException();
 }
 
 void Magick::Image::autoOrient(void)
@@ -1985,7 +1929,7 @@ void Magick::Image::autoOrient(void)
     return;
 
   GetPPException;
-  (void) SyncImageSettings(imageInfo(),image(),&exceptionInfo);
+  (void) SyncImageSettings(imageInfo(),image());
   newImage=AutoOrientImage(constImage(),image()->orientation,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
@@ -1994,9 +1938,8 @@ void Magick::Image::autoOrient(void)
 void Magick::Image::blackThreshold(const std::string &threshold_)
 {
   modifyImage();
-  GetPPException;
-  BlackThresholdImage(image(),threshold_.c_str(),&exceptionInfo);
-  ThrowPPException;
+  BlackThresholdImage(image(),threshold_.c_str());
+  throwImageException();
 }
 
 void Magick::Image::blackThresholdChannel(const ChannelType channel_,
@@ -2004,9 +1947,8 @@ void Magick::Image::blackThresholdChannel(const ChannelType channel_,
 {
   modifyImage();
   GetPPException;
-  SetPPChannelMask(channel_);
-  BlackThresholdImage(image(),threshold_.c_str(),&exceptionInfo);
-  RestorePPChannelMask;
+  BlackThresholdImageChannel(image(),channel_,threshold_.c_str(),
+    &exceptionInfo);
   ThrowPPException;
 }
 
@@ -2021,7 +1963,8 @@ void Magick::Image::blueShift(const double factor_)
   ThrowPPException;
 }
 
-void Magick::Image::blur(const double radius_,const double sigma_)
+// Blur image
+void Magick::Image::blur(const double radius_, const double sigma_)
 {
   MagickCore::Image
     *newImage;
@@ -2039,9 +1982,8 @@ void Magick::Image::blurChannel(const ChannelType channel_,
     *newImage;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=BlurImage(constImage(),radius_,sigma_,&exceptionInfo);
-  RestorePPChannelMask;
+  newImage=BlurImageChannel(constImage(),channel_,radius_,sigma_,
+    &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -2055,8 +1997,7 @@ void Magick::Image::border(const Geometry &geometry_)
     borderInfo=geometry_;
 
   GetPPException;
-  newImage=BorderImage(constImage(),&borderInfo,image()->compose,
-    &exceptionInfo);
+  newImage=BorderImage(constImage(),&borderInfo,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -2065,31 +2006,42 @@ void Magick::Image::brightnessContrast(const double brightness_,
   const double contrast_)
 {
   modifyImage();
-  GetPPException;
-  BrightnessContrastImage(image(),brightness_,contrast_,&exceptionInfo);
-  ThrowPPException;
+  BrightnessContrastImage(image(),brightness_,contrast_);
+  throwImageException();
 }
 
 void Magick::Image::brightnessContrastChannel(const ChannelType channel_,
   const double brightness_,const double contrast_)
 {
   modifyImage();
-  GetPPException;
-  SetPPChannelMask(channel_);
-  BrightnessContrastImage(image(),brightness_,contrast_,&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  BrightnessContrastImageChannel(image(),channel_,brightness_,contrast_);
+  throwImageException();
 }
 
 void Magick::Image::channel(const ChannelType channel_)
 {
-  MagickCore::Image
-    *newImage;
+  modifyImage();
+  SeparateImageChannel(image(),channel_);
+  throwImageException();
+}
+
+void Magick::Image::channelDepth(const ChannelType channel_,
+  const size_t depth_)
+{
+  modifyImage();
+  SetImageChannelDepth(image(),channel_,depth_);
+  throwImageException();
+}
+
+size_t Magick::Image::channelDepth(const ChannelType channel_)
+{
+  size_t
+    channel_depth;
 
   GetPPException;
-  newImage=SeparateImage(image(),channel_,&exceptionInfo);
-  replaceImage(newImage);
+  channel_depth=GetImageChannelDepth(constImage(), channel_,&exceptionInfo);
   ThrowPPException;
+  return channel_depth;
 }
 
 void Magick::Image::charcoal(const double radius_,const double sigma_)
@@ -2098,7 +2050,7 @@ void Magick::Image::charcoal(const double radius_,const double sigma_)
     *newImage;
 
   GetPPException;
-  newImage=CharcoalImage(image(),radius_,sigma_,&exceptionInfo);
+  newImage=CharcoalImage(constImage(),radius_,sigma_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -2107,12 +2059,12 @@ void Magick::Image::chop(const Geometry &geometry_)
 {
   MagickCore::Image
     *newImage;
-
+  
   RectangleInfo
     chopInfo=geometry_;
 
   GetPPException;
-  newImage=ChopImage(image(),&chopInfo,&exceptionInfo);
+  newImage=ChopImage(constImage(),&chopInfo,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -2172,114 +2124,87 @@ void Magick::Image::chromaWhitePoint(double *x_,double *y_) const
 void Magick::Image::cdl(const std::string &cdl_)
 {
   modifyImage();
-  GetPPException;
-  (void) ColorDecisionListImage(image(),cdl_.c_str(),&exceptionInfo);
-  ThrowPPException;
+  (void) ColorDecisionListImage(image(),cdl_.c_str());
+  throwImageException();
 }
 
 void Magick::Image::clamp(void)
 {
   modifyImage();
-  GetPPException;
-  ClampImage(image(),&exceptionInfo);
-  ThrowPPException;
+  ClampImage(image());
+  throwImageException();
 }
 
 void Magick::Image::clampChannel(const ChannelType channel_)
 {
   modifyImage();
-  GetPPException;
-  SetPPChannelMask(channel_);
-  ClampImage(image(),&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  ClampImageChannel(image(),channel_);
+  throwImageException();
 }
 
-void Magick::Image::clip(void)
+void Magick::Image::clip(void )
 {
   modifyImage();
-  GetPPException;
-  ClipImage(image(),&exceptionInfo);
-  ThrowPPException;
+  ClipImage(image());
+  throwImageException();
 }
 
 void Magick::Image::clipPath(const std::string pathname_,const bool inside_)
 {
   modifyImage();
-  GetPPException;
-  ClipImagePath(image(),pathname_.c_str(),(MagickBooleanType) inside_,
-    &exceptionInfo);
-  ThrowPPException;
+  ClipImagePath(image(),pathname_.c_str(),(MagickBooleanType) inside_);
+  throwImageException();
 }
 
-void Magick::Image::clut(const Image &clutImage_,
-  const PixelInterpolateMethod method)
+void Magick::Image::clut(const Image &clutImage_)
 {
   modifyImage();
-  GetPPException;
-  ClutImage(image(),clutImage_.constImage(),method,&exceptionInfo);
-  ThrowPPException;
+  ClutImage(image(),clutImage_.constImage());
+  throwImageException();
 }
 
 void Magick::Image::clutChannel(const ChannelType channel_,
-  const Image &clutImage_,const PixelInterpolateMethod method)
+  const Image &clutImage_)
 {
   modifyImage();
-  GetPPException;
-  SetPPChannelMask(channel_);
-  ClutImage(image(),clutImage_.constImage(),method,&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  ClutImageChannel(image(),channel_,clutImage_.constImage());
+  throwImageException();
 }
 
-void Magick::Image::colorize(const unsigned int alpha_,const Color &penColor_)
-{
-  colorize(alpha_,alpha_,alpha_,penColor_);
-}
-
-void Magick::Image::colorize(const unsigned int alphaRed_,
-  const unsigned int alphaGreen_,const unsigned int alphaBlue_,
+void Magick::Image::colorize(const unsigned int opacityRed_,
+  const unsigned int opacityGreen_,const unsigned int opacityBlue_,
   const Color &penColor_)
 {
   char
-    blend[MaxTextExtent];
+    opacity[MaxTextExtent];
 
   MagickCore::Image
     *newImage;
 
-  PixelInfo
-    pixel,
-    target;
-
   if (!penColor_.isValid())
-    throwExceptionExplicit(OptionError,"Pen color argument is invalid");
+    throwExceptionExplicit( OptionError, "Pen color argument is invalid" );
 
-  FormatLocaleString(blend,MaxTextExtent,"%u/%u/%u",alphaRed_,alphaGreen_,
-    alphaBlue_);
+  FormatLocaleString(opacity,MaxTextExtent,"%u/%u/%u",opacityRed_,
+    opacityGreen_,opacityBlue_);
 
-  GetPixelInfo(image(),&target);
-  pixel=static_cast<PixelInfo>(penColor_);
-  target.red=pixel.red;
-  target.green=pixel.green;
-  target.blue=pixel.blue;
-  target.alpha=pixel.alpha;
   GetPPException;
-  newImage=ColorizeImage(image(),blend,&target,&exceptionInfo);
+  newImage=ColorizeImage(image(),opacity,penColor_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
 
+void Magick::Image::colorize(const unsigned int opacity_,
+  const Color &penColor_)
+{
+  colorize(opacity_,opacity_,opacity_,penColor_);
+}
+
 void Magick::Image::colorMap(const size_t index_,const Color &color_)
 {
-  MagickCore::Image
-    *imageptr;
-
-  imageptr=image();
-
-  if (index_ > (MaxColormapSize-1))
+  if (index_ > (MaxColormapSize-1) )
     throwExceptionExplicit(OptionError,
       "Colormap index must be less than MaxColormapSize");
-
+  
   if (!color_.isValid())
     throwExceptionExplicit(OptionError,"Color argument is invalid");
 
@@ -2290,7 +2215,7 @@ void Magick::Image::colorMap(const size_t index_,const Color &color_)
     colorMapSize(index_+1);
 
   // Set color at index in colormap
-  (imageptr->colormap)[index_]=color_;
+  (image()->colormap)[index_]=color_;
 }
 
 Magick::Color Magick::Image::colorMap(const size_t index_) const
@@ -2304,7 +2229,7 @@ Magick::Color Magick::Image::colorMap(const size_t index_) const
   if (index_ > constImage()->colors-1)
     throwExceptionExplicit(OptionError,"Index out of range");
 
-  return(Magick::Color((constImage()->colormap)[index_]));
+  return(Color((constImage()->colormap)[index_]));
 }
 
 void Magick::Image::colorMatrix(const size_t order_,
@@ -2313,23 +2238,19 @@ void Magick::Image::colorMatrix(const size_t order_,
   KernelInfo
     *kernel_info;
 
+  MagickCore::Image
+    *newImage;
+
   GetPPException;
-  kernel_info=AcquireKernelInfo((const char *) NULL);
+  
+  kernel_info=AcquireKernelInfo("1");
   kernel_info->width=order_;
   kernel_info->height=order_;
-  kernel_info->values=(MagickRealType *) AcquireAlignedMemory(order_,
-    order_*sizeof(*kernel_info->values));
-  if (kernel_info->values != (MagickRealType *) NULL)
-    {
-      MagickCore::Image
-        *newImage;
-
-      for (ssize_t i=0; i < (ssize_t) (order_*order_); i++)
-        kernel_info->values[i]=color_matrix_[i];
-      newImage=ColorMatrixImage(image(),kernel_info,&exceptionInfo);
-      replaceImage(newImage);
-    }
+  kernel_info->values=(double *) color_matrix_;
+  newImage=ColorMatrixImage(constImage(),kernel_info,&exceptionInfo);
+  kernel_info->values=(double *) NULL;
   kernel_info=DestroyKernelInfo(kernel_info);
+  replaceImage(newImage);
   ThrowPPException;
 }
 
@@ -2341,11 +2262,10 @@ bool Magick::Image::compare(const Image &reference_)
   Image
     ref=reference_;
 
-  GetPPException;
   modifyImage();
   ref.modifyImage();
-  status=static_cast<bool>(IsImagesEqual(image(),ref.image(),&exceptionInfo));
-  ThrowPPException;
+  status=static_cast<bool>(IsImagesEqual(image(),ref.constImage()));
+  throwImageException();
   return(status);
 }
 
@@ -2368,10 +2288,8 @@ double Magick::Image::compareChannel(const ChannelType channel_,
     distortion=0.0;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  GetImageDistortion(image(),reference_.constImage(),metric_,&distortion,
-    &exceptionInfo);
-  RestorePPChannelMask;
+  GetImageChannelDistortion(image(),reference_.constImage(),channel_,metric_,
+    &distortion,&exceptionInfo);
   ThrowPPException;
   return(distortion);
 }
@@ -2399,10 +2317,8 @@ Magick::Image Magick::Image::compareChannel(const ChannelType channel_,
     *newImage;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=CompareImages(image(),reference_.constImage(),metric_,distortion,
-    &exceptionInfo);
-  RestorePPChannelMask;
+  newImage=CompareImageChannels(image(),reference_.constImage(),channel_,
+    metric_,distortion,&exceptionInfo);
   ThrowPPException;
   if (newImage == (MagickCore::Image *) NULL)
     return(Magick::Image());
@@ -2421,14 +2337,12 @@ void Magick::Image::composite(const Image &compositeImage_,
     x=offset_.xOff(),
     y=offset_.yOff();
 
+  modifyImage();
   ParseMetaGeometry(static_cast<std::string>(offset_).c_str(),&x,&y,&width,
     &height);
 
-  modifyImage();
-  GetPPException;
-  CompositeImage(image(),compositeImage_.constImage(),compose_,MagickFalse,
-    x,y,&exceptionInfo);
-  ThrowPPException;
+  CompositeImage(image(),compose_,compositeImage_.constImage(),x,y);
+  throwImageException();
 }
 
 void Magick::Image::composite(const Image &compositeImage_,
@@ -2438,13 +2352,13 @@ void Magick::Image::composite(const Image &compositeImage_,
     geometry;
 
   modifyImage();
+
   SetGeometry(compositeImage_.constImage(),&geometry);
   GravityAdjustGeometry(columns(),rows(),gravity_,&geometry);
 
-  GetPPException;
-  CompositeImage(image(),compositeImage_.constImage(),compose_,MagickFalse,
-    geometry.x,geometry.y,&exceptionInfo);
-  ThrowPPException;
+  CompositeImage(image(),compose_,compositeImage_.constImage(),geometry.x,
+    geometry.y);
+  throwImageException();
 }
 
 void Magick::Image::composite(const Image &compositeImage_,
@@ -2454,62 +2368,44 @@ void Magick::Image::composite(const Image &compositeImage_,
   // Image supplied as compositeImage is composited with current image and
   // results in updating current image.
   modifyImage();
-  GetPPException;
-  CompositeImage(image(),compositeImage_.constImage(),compose_,MagickFalse,
-    xOffset_,yOffset_,&exceptionInfo);
-  ThrowPPException;
+
+  CompositeImage(image(),compose_,compositeImage_.constImage(),xOffset_,
+    yOffset_);
+  throwImageException();
 }
 
 void Magick::Image::contrast(const size_t sharpen_)
 {
   modifyImage();
-  GetPPException;
-  ContrastImage(image(),(MagickBooleanType) sharpen_,&exceptionInfo);
-  ThrowPPException;
+  ContrastImage(image(),(MagickBooleanType) sharpen_);
+  throwImageException();
 }
 
-void Magick::Image::contrastStretch(const double blackPoint_,
-  const double whitePoint_)
+void Magick::Image::contrastStretch(const double black_point_,
+  const double white_point_)
 {
   modifyImage();
-  GetPPException;
-  ContrastStretchImage(image(),blackPoint_,whitePoint_,&exceptionInfo);
-  ThrowPPException;
+  ContrastStretchImageChannel(image(),DefaultChannels,black_point_,
+    white_point_);
+  throwImageException();
 }
 
 void Magick::Image::contrastStretchChannel(const ChannelType channel_,
-  const double blackPoint_,const double whitePoint_)
+  const double black_point_,const double white_point_)
 {
   modifyImage();
-  GetPPException;
-  SetPPChannelMask(channel_);
-  ContrastStretchImage(image(),blackPoint_,whitePoint_,&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  ContrastStretchImageChannel(image(),channel_,black_point_,white_point_);
+  throwImageException();
 }
 
 void Magick::Image::convolve(const size_t order_,const double *kernel_)
 {
-  KernelInfo
-    *kernel_info;
+  MagickCore::Image
+    *newImage;
 
   GetPPException;
-  kernel_info=AcquireKernelInfo((const char *) NULL);
-  kernel_info->width=order_;
-  kernel_info->height=order_;
-  kernel_info->values=(MagickRealType *) AcquireAlignedMemory(order_,
-    order_*sizeof(*kernel_info->values));
-  if (kernel_info->values != (MagickRealType *) NULL)
-    {
-      MagickCore::Image
-        *newImage;
-
-      for (ssize_t i=0; i < (ssize_t) (order_*order_); i++)
-        kernel_info->values[i]=kernel_[i];
-      newImage=ConvolveImage(image(),kernel_info,&exceptionInfo);
-      replaceImage(newImage);
-    }
-  kernel_info=DestroyKernelInfo(kernel_info);
+  newImage=ConvolveImage(constImage(),order_,kernel_,&exceptionInfo);
+  replaceImage(newImage);
   ThrowPPException;
 }
 
@@ -2530,9 +2426,8 @@ void Magick::Image::crop(const Geometry &geometry_)
 void Magick::Image::cycleColormap(const ssize_t amount_)
 {
   modifyImage();
-  GetPPException;
-  CycleColormapImage(image(),amount_,&exceptionInfo);
-  ThrowPPException;
+  CycleColormapImage(image(),amount_);
+  throwImageException();
 }
 
 void Magick::Image::decipher(const std::string &passphrase_)
@@ -2558,7 +2453,7 @@ void Magick::Image::defineSet(const std::string &magick_,
 }
 
 bool Magick::Image::defineSet(const std::string &magick_,
-  const std::string &key_ ) const
+  const std::string &key_) const
 {
   const char
     *option;
@@ -2577,13 +2472,11 @@ void Magick::Image::defineValue(const std::string &magick_,
   const std::string &key_,const std::string &value_)
 {
   std::string
-    format,
-    option;
+    format;
 
   modifyImage();
   format=magick_ + ":" + key_;
-  option=value_;
-  (void) SetImageOption(imageInfo(),format.c_str(),option.c_str());
+  (void) SetImageOption(imageInfo(),format.c_str(),value_.c_str());
 }
 
 std::string Magick::Image::defineValue(const std::string &magick_,
@@ -2626,19 +2519,17 @@ void Magick::Image::despeckle(void)
 
 void Magick::Image::display(void)
 {
-  GetPPException;
-  DisplayImages(imageInfo(),image(),&exceptionInfo);
-  ThrowPPException;
+  DisplayImages(imageInfo(),image());
 }
 
 void Magick::Image::distort(const DistortImageMethod method_,
-  const size_t numberArguments_,const double *arguments_,const bool bestfit_)
+  const size_t number_arguments_,const double *arguments_,const bool bestfit_)
 {
   MagickCore::Image
     *newImage;
 
   GetPPException;
-  newImage=DistortImage(constImage(), method_,numberArguments_,arguments_,
+  newImage=DistortImage(constImage(),method_,number_arguments_,arguments_,
     bestfit_ == true ? MagickTrue : MagickFalse,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
@@ -2657,12 +2548,13 @@ void Magick::Image::draw(const Magick::Drawable &drawable_)
     {
       drawable_.operator()(wand);
 
-      DrawRender(wand);
+      if (constImage()->exception.severity == UndefinedException)
+        DrawRender(wand);
 
-      ClonePPDrawException(wand);
       wand=DestroyDrawingWand(wand);
-      ThrowPPDrawException;
     }
+
+  throwImageException();
 }
 
 void Magick::Image::draw(const std::list<Magick::Drawable> &drawable_)
@@ -2677,20 +2569,20 @@ void Magick::Image::draw(const std::list<Magick::Drawable> &drawable_)
   if(wand)
     {
       for (std::list<Magick::Drawable>::const_iterator p = drawable_.begin();
-           p != drawable_.end(); p++ )
+           p != drawable_.end(); p++)
         {
           p->operator()(wand);
-          if (DrawGetExceptionType(wand) != UndefinedException)
+          if (constImage()->exception.severity != UndefinedException)
             break;
         }
 
-      if (DrawGetExceptionType(wand) == UndefinedException)
+      if (constImage()->exception.severity == UndefinedException)
         DrawRender(wand);
 
-      ClonePPDrawException(wand);
       wand=DestroyDrawingWand(wand);
-      ThrowPPDrawException;
     }
+
+  throwImageException();
 }
 
 void Magick::Image::edge(const double radius_)
@@ -2737,32 +2629,32 @@ void Magick::Image::enhance(void)
 void Magick::Image::equalize(void)
 {
   modifyImage();
-  GetPPException;
-  EqualizeImage(image(),&exceptionInfo);
-  ThrowPPException;
+  EqualizeImage(image());
+  throwImageException();
 }
 
 void Magick::Image::erase(void)
 {
   modifyImage();
-  GetPPException;
-  SetImageBackgroundColor(image(),&exceptionInfo);
-  ThrowPPException;
+  SetImageBackgroundColor(image());
+  throwImageException();
 }
 
-void Magick::Image::extent(const Geometry &geometry_ )
+void Magick::Image::extent(const Geometry &geometry_)
 {
   MagickCore::Image
     *newImage;
 
   RectangleInfo
-    extentInfo=geometry_;
+    extentInfo;
 
   modifyImage();
+
+  GetPPException;
+  extentInfo=geometry_;
   extentInfo.x=geometry_.xOff();
   extentInfo.y=geometry_.yOff();
-  GetPPException;
-  newImage=ExtentImage(image(),&extentInfo,&exceptionInfo);
+  newImage=ExtentImage(constImage(),&extentInfo,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -2777,6 +2669,7 @@ void Magick::Image::extent(const Geometry &geometry_,
 void Magick::Image::extent(const Geometry &geometry_,
   const Color &backgroundColor_,const GravityType gravity_)
 {
+  image()->gravity=gravity_;
   backgroundColor(backgroundColor_);
   extent(geometry_,gravity_);
 }
@@ -2805,28 +2698,6 @@ void Magick::Image::flip(void)
   ThrowPPException;
 }
 
-void Magick::Image::floodFillAlpha(const ssize_t x_,const ssize_t y_,
-  const unsigned int alpha_,const PaintMethod method_)
-{
-  PixelInfo
-    pixel,
-    target;
-
-  modifyImage();
-  GetPixelInfo(image(),&target);
-  pixel=static_cast<PixelInfo>(pixelColor(x_,y_));
-  target.red=pixel.red;
-  target.green=pixel.green;
-  target.blue=pixel.blue;
-  target.alpha=alpha_;
-
-  GetPPException;
-  FloodfillPaintImage(image(),options()->drawInfo(),&target,
-    static_cast<ssize_t>(x_), static_cast<ssize_t>(y_),
-    method_  == FloodfillMethod ? MagickFalse : MagickTrue,&exceptionInfo);
-  ThrowPPException;
-}
-
 void Magick::Image::floodFillColor(const Geometry &point_,
   const Magick::Color &fillColor_)
 {
@@ -2851,6 +2722,28 @@ void Magick::Image::floodFillColor(const ssize_t x_,const ssize_t y_,
   floodFillTexture(x_,y_,Image(Geometry(1,1),fillColor_),borderColor_);
 }
 
+void Magick::Image::floodFillOpacity(const ssize_t x_,const ssize_t y_,
+  const unsigned int opacity_,const PaintMethod method_)
+{
+  MagickPixelPacket
+    target;
+
+  PixelPacket
+    pixel;
+
+  modifyImage();
+  GetMagickPixelPacket(image(),&target);
+  pixel=static_cast<PixelPacket>(pixelColor(x_,y_));
+  target.red=pixel.red;
+  target.green=pixel.green;
+  target.blue=pixel.blue;
+  target.opacity=opacity_;
+  FloodfillPaintImage(image(),DefaultChannels,options()->drawInfo(),&target,
+    static_cast<ssize_t>(x_), static_cast<ssize_t>(y_),
+    method_  == FloodfillMethod ? MagickFalse : MagickTrue);
+  throwImageException();
+}
+
 void Magick::Image::floodFillTexture(const Magick::Geometry &point_,
   const Magick::Image &texture_)
 {
@@ -2863,7 +2756,7 @@ void Magick::Image::floodFillTexture(const ssize_t x_,const ssize_t y_,
   MagickCore::Image
     *fillPattern;
 
-  Quantum
+  PixelPacket
     *p;
 
   modifyImage();
@@ -2879,29 +2772,24 @@ void Magick::Image::floodFillTexture(const ssize_t x_,const ssize_t y_,
     }
   options()->fillPattern(texture_.constImage());
 
-  // Get pixel view
-  Pixels pixels(*this);
   // Fill image
+  Pixels pixels(*this);
   p=pixels.get(x_,y_,1,1);
-
   if (p)
     {
-      PixelInfo
+      MagickPixelPacket
         target;
 
-      GetPixelInfo(constImage(),&target);
-      target.red=GetPixelRed(constImage(),p);
-      target.green=GetPixelGreen(constImage(),p);
-      target.blue=GetPixelBlue(constImage(),p);
-      GetPPException;
-      FloodfillPaintImage(image(),options()->drawInfo(),&target,
-        static_cast<ssize_t>(x_),static_cast<ssize_t>(y_),MagickFalse,
-        &exceptionInfo);
-      options()->fillPattern(fillPattern);
-      ThrowPPException;
+      GetMagickPixelPacket(constImage(),&target);
+      target.red=p->red;
+      target.green=p->green;
+      target.blue=p->blue;
+
+      FloodfillPaintImage(image(),DefaultChannels,options()->drawInfo(),
+        &target,static_cast<ssize_t>(x_),static_cast<ssize_t>(y_),MagickFalse);
     }
-  else
-    options()->fillPattern(fillPattern);
+  options()->fillPattern(fillPattern);
+  throwImageException();
 }
 
 void Magick::Image::floodFillTexture(const Magick::Geometry &point_,
@@ -2916,7 +2804,7 @@ void Magick::Image::floodFillTexture(const ssize_t x_,const ssize_t y_,
   MagickCore::Image
     *fillPattern;
 
-  PixelInfo
+  MagickPixelPacket
     target;
 
   modifyImage();
@@ -2932,16 +2820,14 @@ void Magick::Image::floodFillTexture(const ssize_t x_,const ssize_t y_,
     }
   options()->fillPattern(texture_.constImage());
 
-  GetPixelInfo(constImage(),&target);
-  target.red=static_cast<PixelInfo>(borderColor_).red;
-  target.green=static_cast<PixelInfo>(borderColor_).green;
-  target.blue=static_cast<PixelInfo>(borderColor_).blue;
-  GetPPException;
-  FloodfillPaintImage(image(),options()->drawInfo(),&target,
-    static_cast<ssize_t>(x_),static_cast<ssize_t>(y_),MagickTrue,
-    &exceptionInfo);
+  GetMagickPixelPacket(constImage(),&target);
+  target.red=static_cast<PixelPacket>(borderColor_).red;
+  target.green=static_cast<PixelPacket>(borderColor_).green;
+  target.blue=static_cast<PixelPacket>(borderColor_).blue;
+  FloodfillPaintImage(image(),DefaultChannels,options()->drawInfo(),&target,
+    static_cast<ssize_t>(x_),static_cast<ssize_t>(y_),MagickTrue);
   options()->fillPattern(fillPattern);
-  ThrowPPException;
+  throwImageException();
 }
 
 void Magick::Image::flop(void)
@@ -2963,10 +2849,8 @@ void Magick::Image::fontTypeMetrics(const std::string &text_,
 
   drawInfo=options()->drawInfo();
   drawInfo->text=const_cast<char *>(text_.c_str());
-  GetPPException;
-  GetTypeMetrics(image(),drawInfo,&(metrics->_typeMetric),&exceptionInfo);
+  GetTypeMetrics(image(),drawInfo,&(metrics->_typeMetric));
   drawInfo->text=0;
-  ThrowPPException;
 }
 
 void Magick::Image::fontTypeMetricsMultiline(const std::string &text_,
@@ -2977,29 +2861,27 @@ void Magick::Image::fontTypeMetricsMultiline(const std::string &text_,
 
   drawInfo=options()->drawInfo();
   drawInfo->text=const_cast<char *>(text_.c_str());
-  GetPPException;
-  GetMultilineTypeMetrics(image(),drawInfo,&(metrics->_typeMetric),&exceptionInfo);
+  GetMultilineTypeMetrics(image(),drawInfo,&(metrics->_typeMetric));
   drawInfo->text=0;
-  ThrowPPException;
 }
 
 void Magick::Image::frame(const Geometry &geometry_)
 {
   FrameInfo
     info;
-  
+
   MagickCore::Image
     *newImage;
 
   info.x=static_cast<ssize_t>(geometry_.width());
   info.y=static_cast<ssize_t>(geometry_.height());
-  info.width=columns() + (static_cast<size_t>(info.x) << 1);
-  info.height=rows() + (static_cast<size_t>(info.y) << 1);
+  info.width=columns() + ( static_cast<size_t>(info.x) << 1 );
+  info.height=rows() + ( static_cast<size_t>(info.y) << 1 );
   info.outer_bevel=geometry_.xOff();
   info.inner_bevel=geometry_.yOff();
 
   GetPPException;
-  newImage=FrameImage(constImage(),&info,image()->compose,&exceptionInfo);
+  newImage=FrameImage(constImage(),&info,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -3015,48 +2897,51 @@ void Magick::Image::frame(const size_t width_,const size_t height_,
 
   info.x=static_cast<ssize_t>(width_);
   info.y=static_cast<ssize_t>(height_);
-  info.width=columns() + (static_cast<size_t>(info.x) << 1);
-  info.height=rows() + (static_cast<size_t>(info.y) << 1);
+  info.width=columns() + ( static_cast<size_t>(info.x) << 1 );
+  info.height=rows() + ( static_cast<size_t>(info.y) << 1 );
   info.outer_bevel=static_cast<ssize_t>(outerBevel_);
   info.inner_bevel=static_cast<ssize_t>(innerBevel_);
 
   GetPPException;
-  newImage=FrameImage(constImage(),&info,image()->compose,&exceptionInfo);
+  newImage=FrameImage(constImage(),&info,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
 
-void Magick::Image::fx(const std::string expression_)
+void Magick::Image::fx(const std::string expression)
 {
   MagickCore::Image
     *newImage;
 
   GetPPException;
-  newImage=FxImage(constImage(),expression_.c_str(),&exceptionInfo);
+  newImage=FxImageChannel(constImage(),DefaultChannels,expression.c_str(),
+    &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
 
-void Magick::Image::fx(const std::string expression_,
-  const Magick::ChannelType channel_)
+void Magick::Image::fx(const std::string expression,
+  const Magick::ChannelType channel)
 {
   MagickCore::Image
     *newImage;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=FxImage(constImage(),expression_.c_str(),&exceptionInfo);
-  RestorePPChannelMask;
+  newImage=FxImageChannel(constImage(),channel,expression.c_str(),
+    &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
 
 void Magick::Image::gamma(const double gamma_)
 {
+  char
+    gamma[MaxTextExtent + 1];
+
+  FormatLocaleString(gamma,MaxTextExtent,"%3.6f",gamma_);
+
   modifyImage();
-  GetPPException;
-  GammaImage(image(),gamma_,&exceptionInfo);
-  ThrowPPException;
+  GammaImage(image(),gamma);
 }
 
 void Magick::Image::gamma(const double gammaRed_,const double gammaGreen_,
@@ -3069,9 +2954,8 @@ void Magick::Image::gamma(const double gammaRed_,const double gammaGreen_,
     gammaGreen_,gammaBlue_);
 
   modifyImage();
-  GetPPException;
-  GammaImage(image(),atof(gamma),&exceptionInfo);
-  ThrowPPException;
+  GammaImage(image(),gamma);
+  throwImageException();
 }
 
 void Magick::Image::gaussianBlur(const double width_,const double sigma_)
@@ -3092,71 +2976,67 @@ void Magick::Image::gaussianBlurChannel(const ChannelType channel_,
     *newImage;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=GaussianBlurImage(constImage(),width_,sigma_,&exceptionInfo);
-  RestorePPChannelMask;
+  newImage=GaussianBlurImageChannel(constImage(),channel_,width_,sigma_,
+    &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
 
-const Magick::Quantum *Magick::Image::getConstPixels(const ssize_t x_,
+const Magick::IndexPacket* Magick::Image::getConstIndexes(void) const
+{
+  const Magick::IndexPacket
+    *result;
+
+  result=GetVirtualIndexQueue(constImage());
+  if (!result)
+    throwImageException();
+
+  return(result);
+}
+
+const Magick::PixelPacket* Magick::Image::getConstPixels(const ssize_t x_,
   const ssize_t y_,const size_t columns_,const size_t rows_) const
 {
-  const Quantum
-    *p;
+  const PixelPacket
+    *result;
 
   GetPPException;
-  p=(*GetVirtualPixels)(constImage(),x_, y_,columns_, rows_,&exceptionInfo);
+  result=(*GetVirtualPixels)(constImage(),x_,y_,columns_,rows_,&exceptionInfo);
   ThrowPPException;
-  return(p);
+  return(result);
 }
 
-const void *Magick::Image::getConstMetacontent(void) const
+Magick::IndexPacket *Magick::Image::getIndexes(void)
 {
-  const void
+  Magick::IndexPacket
     *result;
 
-  result=GetVirtualMetacontent(constImage());
+  result=GetAuthenticIndexQueue(image());
 
   if(!result)
-    throwExceptionExplicit(OptionError,"Unable to retrieve meta content.");
+    throwImageException();
 
   return(result);
 }
 
-void *Magick::Image::getMetacontent(void )
+Magick::PixelPacket *Magick::Image::getPixels(const ssize_t x_,
+  const ssize_t y_,const size_t columns_,const size_t rows_)
 {
-  void
-    *result;
-
-  result=GetAuthenticMetacontent(image());
-
-  if(!result)
-    throwExceptionExplicit(OptionError,"Unable to retrieve meta content.");
-
-  return(result);
-}
-
-Magick::Quantum *Magick::Image::getPixels(const ssize_t x_,const ssize_t y_,
-  const size_t columns_,const size_t rows_)
-{
-  Quantum
+  PixelPacket
     *result;
 
   modifyImage();
   GetPPException;
-  result=(*GetAuthenticPixels)(image(),x_, y_,columns_,rows_,&exceptionInfo);
+  result=(*GetAuthenticPixels)(image(),x_,y_,columns_,rows_,&exceptionInfo);
   ThrowPPException;
-
   return(result);
 }
 
-void  Magick::Image::haldClut(const Image &clutImage_)
+void Magick::Image::haldClut(const Image &clutImage_)
 {
   modifyImage();
-  GetPPException;
-  (void) HaldClutImage(image(),clutImage_.constImage(),&exceptionInfo);
-  ThrowPPException;
+  (void) HaldClutImage(image(),clutImage_.constImage());
+  throwImageException();
 }
 
 void Magick::Image::implode(const double factor_)
@@ -3165,8 +3045,7 @@ void Magick::Image::implode(const double factor_)
     *newImage;
 
   GetPPException;
-  newImage=ImplodeImage(constImage(),factor_,image()->interpolate,
-    &exceptionInfo);
+  newImage=ImplodeImage(constImage(),factor_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -3189,95 +3068,95 @@ void Magick::Image::inverseFourierTransform(const Image &phase_,
   ThrowPPException;
 }
 
-void Magick::Image::level(const double blackPoint_,const double whitePoint_,
-  const double gamma_)
+void Magick::Image::level(const double black_point,const double white_point,
+  const double gamma)
 {
+  char
+    levels[MaxTextExtent];
+
   modifyImage();
-  GetPPException;
-  (void) LevelImage(image(),blackPoint_,whitePoint_,gamma_,&exceptionInfo);
-  ThrowPPException;
+  FormatLocaleString(levels,MaxTextExtent,"%g,%g,%g",black_point,white_point,
+    gamma);
+  (void) LevelImage(image(),levels);
+  throwImageException();
 }
 
-void Magick::Image::levelChannel(const ChannelType channel_,
-  const double blackPoint_,const double whitePoint_,const double gamma_)
+void Magick::Image::levelChannel(const Magick::ChannelType channel,
+  const double black_point,const double white_point,const double gamma)
 {
   modifyImage();
-  GetPPException;
-  SetPPChannelMask(channel_);
-  (void) LevelImage(image(),blackPoint_,whitePoint_,gamma_,&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  (void) LevelImageChannel(image(),channel,black_point,white_point,gamma);
+  throwImageException();
 }
 
 void Magick::Image::levelColors(const Color &blackColor_,
   const Color &whiteColor_,const bool invert_)
 {
-  PixelInfo
+  MagickPixelPacket
     black,
-    pixel,
     white;
+
+  PixelPacket
+    pixel;
 
   modifyImage();
 
-  GetPixelInfo(image(),&black);
-  pixel=static_cast<PixelInfo>(blackColor_);
+  GetMagickPixelPacket(image(),&black);
+  pixel=static_cast<PixelPacket>(blackColor_);
   black.red=pixel.red;
   black.green=pixel.green;
   black.blue=pixel.blue;
-  black.alpha=pixel.alpha;
+  black.opacity=pixel.opacity;
 
-  GetPixelInfo(image(),&white);
-  pixel=static_cast<PixelInfo>(whiteColor_);
+  GetMagickPixelPacket(image(),&white);
+  pixel=static_cast<PixelPacket>(whiteColor_);
   white.red=pixel.red;
   white.green=pixel.green;
   white.blue=pixel.blue;
-  white.alpha=pixel.alpha;
+  white.opacity=pixel.opacity;
 
-  GetPPException;
-  (void) LevelImageColors(image(),&black,&white,invert_ == true ?
-    MagickTrue : MagickFalse,&exceptionInfo);
-  ThrowPPException;
+  (void) LevelColorsImage(image(),&black,&white,
+    invert_ == true ? MagickTrue : MagickFalse);
+  throwImageException();
 }
 
 void Magick::Image::levelColorsChannel(const ChannelType channel_,
   const Color &blackColor_,const Color &whiteColor_,const bool invert_)
 {
-  PixelInfo
+  MagickPixelPacket
     black,
-    pixel,
     white;
+
+  PixelPacket
+    pixel;
 
   modifyImage();
 
-  GetPixelInfo(image(),&black);
-  pixel=static_cast<PixelInfo>(blackColor_);
+  GetMagickPixelPacket(image(),&black);
+  pixel=static_cast<PixelPacket>(blackColor_);
   black.red=pixel.red;
   black.green=pixel.green;
   black.blue=pixel.blue;
-  black.alpha=pixel.alpha;
+  black.opacity=pixel.opacity;
 
-  GetPixelInfo(image(),&white);
-  pixel=static_cast<PixelInfo>(whiteColor_);
+  GetMagickPixelPacket(image(),&white);
+  pixel=static_cast<PixelPacket>(whiteColor_);
   white.red=pixel.red;
   white.green=pixel.green;
   white.blue=pixel.blue;
-  white.alpha=pixel.alpha;
+  white.opacity=pixel.opacity;
 
-  GetPPException;
-  SetPPChannelMask(channel_);
-  (void) LevelImageColors(image(),&black,&white,invert_ == true ?
-    MagickTrue : MagickFalse,&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  (void) LevelColorsImageChannel(image(),channel_,&black,&white,
+    invert_ == true ? MagickTrue : MagickFalse);
+  throwImageException();
 }
 
 void Magick::Image::linearStretch(const double blackPoint_,
   const double whitePoint_)
 {
   modifyImage();
-  GetPPException;
-  LinearStretchImage(image(),blackPoint_,whitePoint_,&exceptionInfo);
-  ThrowPPException;
+  LinearStretchImage(image(),blackPoint_,whitePoint_);
+  throwImageException();
 }
 
 void Magick::Image::liquidRescale(const Geometry &geometry_)
@@ -3297,7 +3176,7 @@ void Magick::Image::liquidRescale(const Geometry &geometry_)
     &height);
 
   GetPPException;
-  newImage=LiquidRescaleImage(image(),width,height,x,y,&exceptionInfo);
+  newImage=LiquidRescaleImage(constImage(),width,height,x,y,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -3316,11 +3195,27 @@ void Magick::Image::magnify(void)
 void Magick::Image::map(const Image &mapImage_,const bool dither_)
 {
   modifyImage();
-  GetPPException;
   options()->quantizeDither(dither_);
-  RemapImage(options()->quantizeInfo(),image(),mapImage_.constImage(),
-    &exceptionInfo);
-  ThrowPPException;
+  RemapImage(options()->quantizeInfo(),image(),mapImage_.constImage());
+  throwImageException();
+}
+
+void Magick::Image::matteFloodfill(const Color &target_,
+  const unsigned int opacity_,const ssize_t x_,const ssize_t y_,
+  const Magick::PaintMethod method_)
+{
+  MagickPixelPacket
+    target;
+
+  modifyImage();
+  GetMagickPixelPacket(constImage(),&target);
+  target.red=static_cast<PixelPacket>(target_).red;
+  target.green=static_cast<PixelPacket>(target_).green;
+  target.blue=static_cast<PixelPacket>(target_).blue;
+  target.opacity=opacity_;
+  FloodfillPaintImage(image(),OpacityChannel,options()->drawInfo(),&target,x_,
+    y_,method_ == FloodfillMethod ? MagickFalse : MagickTrue);
+  throwImageException();
 }
 
 void Magick::Image::medianFilter(const double radius_)
@@ -3329,8 +3224,19 @@ void Magick::Image::medianFilter(const double radius_)
     *newImage;
 
   GetPPException;
-  newImage=StatisticImage(image(),MedianStatistic,(size_t) radius_,
+  newImage=StatisticImage(constImage(),MedianStatistic,(size_t) radius_,
     (size_t) radius_,&exceptionInfo);
+  replaceImage(newImage);
+  ThrowPPException;
+}
+
+void Magick::Image::mergeLayers(const ImageLayerMethod layerMethod_)
+{
+  MagickCore::Image
+    *newImage;
+
+  GetPPException;
+  newImage=MergeImageLayers(image(),layerMethod_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -3356,9 +3262,8 @@ void Magick::Image::modulate(const double brightness_,const double saturation_,
     saturation_,hue_);
 
   modifyImage();
-  GetPPException;
-  ModulateImage(image(),modulate,&exceptionInfo);
-  ThrowPPException;
+  ModulateImage(image(),modulate);
+  throwImageException();
 }
 
 void Magick::Image::morphology(const MorphologyMethod method_,
@@ -3418,10 +3323,8 @@ void Magick::Image::morphologyChannel(const ChannelType channel_,
     throwExceptionExplicit(OptionError,"Unable to parse kernel.");
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=MorphologyImage(constImage(),method_,iterations_,kernel,
-    &exceptionInfo);
-  RestorePPChannelMask;
+  newImage=MorphologyImageChannel(constImage(),channel_,method_,iterations_,
+    kernel,&exceptionInfo);
   replaceImage(newImage);
   kernel=DestroyKernelInfo(kernel);
   ThrowPPException;
@@ -3463,86 +3366,91 @@ void Magick::Image::motionBlur(const double radius_,const double sigma_,
 void Magick::Image::negate(const bool grayscale_)
 {
   modifyImage();
-  GetPPException;
-  NegateImage(image(),(MagickBooleanType) grayscale_,&exceptionInfo);
-  ThrowPPException;
+  NegateImage(image(),(MagickBooleanType) grayscale_);
+  throwImageException();
 }
 
 void Magick::Image::negateChannel(const ChannelType channel_,
   const bool grayscale_)
 {
   modifyImage();
-  GetPPException;
-  SetPPChannelMask(channel_);
-  NegateImage(image(),(MagickBooleanType) grayscale_,&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  NegateImageChannel(image(),channel_,(MagickBooleanType) grayscale_);
+  throwImageException();
 }
 
 void Magick::Image::normalize(void)
 {
   modifyImage();
-  GetPPException;
-  NormalizeImage(image(),&exceptionInfo);
-  ThrowPPException;
+  NormalizeImage(image());
+  throwImageException();
 }
 
-void Magick::Image::oilPaint(const double radius_,const double sigma_)
+void Magick::Image::oilPaint(const double radius_)
 {
   MagickCore::Image
     *newImage;
 
   GetPPException;
-  newImage=OilPaintImage(constImage(),radius_,sigma_,&exceptionInfo);
+  newImage=OilPaintImage(constImage(),radius_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
 
+void Magick::Image::opacity(const unsigned int opacity_)
+{
+  modifyImage();
+  SetImageOpacity(image(),opacity_);
+}
+
 void Magick::Image::opaque(const Color &opaqueColor_,const Color &penColor_)
 {
+  MagickPixelPacket
+    opaque,
+    pen;
+
   std::string
     opaqueColor,
     penColor;
 
-  PixelInfo
-    opaque,
-    pen;
-
   if (!opaqueColor_.isValid())
     throwExceptionExplicit(OptionError,"Opaque color argument is invalid");
-
+  
   if (!penColor_.isValid())
     throwExceptionExplicit(OptionError,"Pen color argument is invalid");
 
-  modifyImage();
   opaqueColor=opaqueColor_;
   penColor=penColor_;
 
-  GetPPException;
-  (void) QueryColorCompliance(opaqueColor.c_str(),AllCompliance,&opaque,
-    &exceptionInfo);
-  (void) QueryColorCompliance(penColor.c_str(),AllCompliance,&pen,
-    &exceptionInfo);
-  OpaquePaintImage(image(),&opaque,&pen,MagickFalse,&exceptionInfo);
-  ThrowPPException;
+  (void) QueryMagickColor(opaqueColor.c_str(),&opaque,&image()->exception);
+  (void) QueryMagickColor(penColor.c_str(),&pen,&image()->exception);
+  modifyImage();
+  OpaquePaintImage(image(),&opaque,&pen,MagickFalse);
+  throwImageException();
 }
 
 void Magick::Image::perceptible(const double epsilon_)
 {
   modifyImage();
-  GetPPException;
-  PerceptibleImage(image(),epsilon_,&exceptionInfo);
-  ThrowPPException;
+  PerceptibleImage(image(),epsilon_);
+  throwImageException();
 }
 
 void Magick::Image::perceptibleChannel(const ChannelType channel_,
   const double epsilon_)
 {
   modifyImage();
+  PerceptibleImageChannel(image(),channel_,epsilon_);
+  throwImageException();
+}
+
+void Magick::Image::ping(const Blob& blob_)
+{
+  MagickCore::Image
+    *newImage;
+
   GetPPException;
-  SetPPChannelMask(channel_);
-  PerceptibleImage(image(),epsilon_,&exceptionInfo);
-  RestorePPChannelMask;
+  newImage=PingBlob(imageInfo(),blob_.data(),blob_.length(),&exceptionInfo);
+  replaceImage(newImage);
   ThrowPPException;
 }
 
@@ -3558,26 +3466,9 @@ void Magick::Image::ping(const std::string &imageSpec_)
   ThrowPPException;
 }
 
-void Magick::Image::ping(const Blob& blob_)
-{
-  MagickCore::Image
-    *newImage;
-
-  GetPPException;
-  newImage=PingBlob(imageInfo(),blob_.data(),blob_.length(),&exceptionInfo);
-  replaceImage(newImage);
-  ThrowPPException;
-}
-
 void Magick::Image::pixelColor(const ssize_t x_,const ssize_t y_,
   const Color &color_)
 {
-  PixelInfo
-    packet;
-
-  Quantum
-    *pixel;
-
   // Test arguments to ensure they are within the image.
   if (y_ > (ssize_t) rows() || x_ > (ssize_t) columns())
     throwExceptionExplicit(OptionError,"Access outside of image boundary");
@@ -3585,14 +3476,12 @@ void Magick::Image::pixelColor(const ssize_t x_,const ssize_t y_,
   modifyImage();
 
   // Set image to DirectClass
-  classType(DirectClass );
+  classType(DirectClass);
 
   // Get pixel view
   Pixels pixels(*this);
-    // Set pixel value
-  pixel=pixels.get(x_, y_, 1, 1 );
-  packet=color_;
-  MagickCore::SetPixelInfoPixel(constImage(),&packet,pixel);
+  // Set pixel value
+  *(pixels.get(x_,y_,1,1))=color_;
   // Tell ImageMagick that pixels have been updated
   pixels.sync();
 }
@@ -3600,73 +3489,88 @@ void Magick::Image::pixelColor(const ssize_t x_,const ssize_t y_,
 Magick::Color Magick::Image::pixelColor(const ssize_t x_,
   const ssize_t y_) const
 {
-  const Quantum
-    *pixel;
+  ClassType
+    storage_class;
 
-  pixel=getConstPixels(x_,y_,1,1);
-  if (pixel)
+  storage_class=classType();
+  if (storage_class == DirectClass)
     {
-      PixelInfo
-        packet;
+      const PixelPacket
+        *pixel;
 
-      MagickCore::GetPixelInfoPixel(constImage(),pixel,&packet);
-      return(Color(packet));
+      pixel=getConstPixels(x_,y_,1,1);
+      if (pixel)
+        return(Color(*pixel));
+    }
+  else if (storage_class == PseudoClass)
+    {
+      const IndexPacket
+        *indexes;
+
+      indexes=getConstIndexes();
+      if(indexes)
+        return(colorMap((size_t) *indexes));
     }
 
   return(Color()); // invalid
 }
 
-void Magick::Image::polaroid(const std::string &caption_,const double angle_,
-  const PixelInterpolateMethod method_)
+void Magick::Image::polaroid(const std::string &caption_,const double angle_)
 {
   MagickCore::Image
     *newImage;
 
   GetPPException;
-  newImage=PolaroidImage(constImage(),options()->drawInfo(),caption_.c_str(),
-    angle_,method_,&exceptionInfo);
+  (void) SetImageProperty(image(),"Caption",caption_.c_str());
+  newImage=PolaroidImage(constImage(),options()->drawInfo(),angle_,
+    &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
 
-void Magick::Image::posterize(const size_t levels_,const DitherMethod method_)
+void Magick::Image::posterize(const size_t levels_,const bool dither_)
 {
   modifyImage();
-  GetPPException;
-  PosterizeImage(image(),levels_,method_,&exceptionInfo);
-  ThrowPPException;
+  PosterizeImage(image(),levels_,(MagickBooleanType) dither_);
+  throwImageException();
 }
 
 void Magick::Image::posterizeChannel(const ChannelType channel_,
-  const size_t levels_,const DitherMethod method_)
+  const size_t levels_,const bool dither_)
 {
   modifyImage();
-  GetPPException;
-  SetPPChannelMask(channel_);
-  PosterizeImage(image(),levels_,method_,&exceptionInfo);
-  RestorePPChannelMask;
-  ThrowPPException;
+  PosterizeImageChannel(image(),channel_,levels_,
+    (MagickBooleanType) dither_);
+  throwImageException();
 }
 
 void Magick::Image::process(std::string name_,const ssize_t argc,
   const char **argv)
 {
+  size_t
+    status;
+
   modifyImage();
 
-  GetPPException;
-  (void) InvokeDynamicImageFilter(name_.c_str(),&image(),argc,argv,
-      &exceptionInfo);
-  ThrowPPException;
+  status=InvokeDynamicImageFilter(name_.c_str(),&image(),argc, argv,
+    &image()->exception);
+
+  if (status == false)
+    throwException(image()->exception);
 }
 
 void Magick::Image::profile(const std::string name_,
   const Magick::Blob &profile_)
 {
+  ssize_t
+    result;
+
   modifyImage();
-  GetPPException;
-  (void) ProfileImage(image(),name_.c_str(),(unsigned char *)profile_.data(),
-    profile_.length(),&exceptionInfo);
-  ThrowPPException;
+  result=ProfileImage(image(),name_.c_str(),(unsigned char *)profile_.data(),
+    profile_.length(),MagickTrue);
+
+  if (!result)
+    throwImageException();
 }
 
 Magick::Blob Magick::Image::profile(const std::string name_) const
@@ -3691,44 +3595,38 @@ void Magick::Image::quantize(const bool measureError_)
   else
     options()->quantizeInfo()->measure_error=MagickFalse;
 
-  GetPPException;
-  QuantizeImage(options()->quantizeInfo(),image(),&exceptionInfo);
-  ThrowPPException;
+  QuantizeImage(options()->quantizeInfo(),image());
+
+  throwImageException();
 }
 
 void Magick::Image::quantumOperator(const ChannelType channel_,
   const MagickEvaluateOperator operator_,double rvalue_)
 {
   GetPPException;
-  SetPPChannelMask(channel_);
-  EvaluateImage(image(),operator_,rvalue_,&exceptionInfo);
-  RestorePPChannelMask;
+  EvaluateImageChannel(image(),channel_,operator_,rvalue_,&exceptionInfo);
   ThrowPPException;
 }
 
-void Magick::Image::quantumOperator(const ssize_t x_,const ssize_t y_,
+void Magick::Image::quantumOperator (const ssize_t x_,const ssize_t y_,
   const size_t columns_,const size_t rows_,const ChannelType channel_,
   const MagickEvaluateOperator operator_,const double rvalue_)
 {
-  RectangleInfo
-    geometry;
-
   MagickCore::Image
     *cropImage;
 
-  geometry.width = columns_;
-  geometry.height = rows_;
-  geometry.x = x_;
-  geometry.y = y_;
+  RectangleInfo
+    geometry;
 
   GetPPException;
+  geometry.width=columns_;
+  geometry.height=rows_;
+  geometry.x=x_;
+  geometry.y=y_;
   cropImage=CropImage(image(),&geometry,&exceptionInfo);
-  SetPPChannelMask(channel_);
-  EvaluateImage(cropImage,operator_,rvalue_,&exceptionInfo);
-  RestorePPChannelMask;
-  (void) CompositeImage(image(),cropImage,image()->alpha_trait == 
-    BlendPixelTrait ? OverCompositeOp : CopyCompositeOp,MagickFalse,
-    geometry.x,geometry.y,&exceptionInfo );
+  EvaluateImageChannel(cropImage,channel_,operator_,rvalue_,&exceptionInfo);
+  (void) CompositeImage(image(),image()->matte != MagickFalse ?
+    OverCompositeOp : CopyCompositeOp,cropImage,geometry.x, geometry.y);
   cropImage=DestroyImageList(cropImage);
   ThrowPPException;
 }
@@ -3736,32 +3634,31 @@ void Magick::Image::quantumOperator(const ssize_t x_,const ssize_t y_,
 void Magick::Image::raise(const Geometry &geometry_,const bool raisedFlag_)
 {
   RectangleInfo
-    raiseInfo=geometry_;
+    raiseInfo;
 
-  GetPPException;
+  raiseInfo=geometry_;
   modifyImage();
-  RaiseImage(image(),&raiseInfo,raisedFlag_ == true ? MagickTrue : MagickFalse,
-    &exceptionInfo);
-  ThrowPPException;
+  RaiseImage(image(),&raiseInfo,raisedFlag_ == true ?
+    MagickTrue : MagickFalse);
+  throwImageException();
 }
 
-void Magick::Image::randomThreshold(const Geometry &thresholds_)
+void Magick::Image::randomThreshold( const Geometry &thresholds_ )
 {
   GetPPException;
+  modifyImage();
   (void) RandomThresholdImage(image(),static_cast<std::string>(
     thresholds_).c_str(),&exceptionInfo);
   ThrowPPException;
 }
 
-void Magick::Image::randomThresholdChannel(const ChannelType channel_,
-  const Geometry &thresholds_)
+void Magick::Image::randomThresholdChannel(const Geometry &thresholds_,
+  const ChannelType channel_)
 {
-  modifyImage();
   GetPPException;
-  SetPPChannelMask(channel_);
-  (void) RandomThresholdImage(image(),static_cast<std::string>(
+  modifyImage();
+  (void) RandomThresholdImageChannel(image(),channel_,static_cast<std::string>(
     thresholds_).c_str(),&exceptionInfo);
-  RestorePPChannelMask;
   ThrowPPException;
 }
 
@@ -3775,6 +3672,8 @@ void Magick::Image::read(const Blob &blob_)
     blob_.length(),&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
+  if (newImage)
+    throwException(newImage->exception);
 }
 
 void Magick::Image::read(const Blob &blob_,const Geometry &size_)
@@ -3797,7 +3696,6 @@ void Magick::Image::read(const Blob &blob_,const Geometry &size_,
   size(size_);
   depth(depth_);
   magick(magick_);
-  // Set explicit image format
   fileName(magick_ + ':');
   read(blob_);
 }
@@ -3807,7 +3705,6 @@ void Magick::Image::read(const Blob &blob_,const Geometry &size_,
 {
   size(size_);
   magick(magick_);
-  // Set explicit image format
   fileName(magick_ + ':');
   read(blob_);
 }
@@ -3825,10 +3722,12 @@ void Magick::Image::read(const size_t width_,const size_t height_,
     *newImage;
 
   GetPPException;
-  newImage=ConstituteImage(width_,height_,map_.c_str(),type_, pixels_,
+  newImage=ConstituteImage(width_,height_,map_.c_str(),type_,pixels_,
     &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
+  if (newImage)
+    throwException(newImage->exception);
 }
 
 void Magick::Image::read(const std::string &imageSpec_)
@@ -3836,16 +3735,16 @@ void Magick::Image::read(const std::string &imageSpec_)
   MagickCore::Image
     *newImage;
 
-  GetPPException;
   options()->fileName(imageSpec_);
+
+  GetPPException;
   newImage=ReadImage(imageInfo(),&exceptionInfo);
 
   // Ensure that multiple image frames were not read.
   if (newImage && newImage->next)
     {
       MagickCore::Image
-         *next;
-
+        *next;
       // Destroy any extra image frames
       next=newImage->next;
       newImage->next=0;
@@ -3854,6 +3753,8 @@ void Magick::Image::read(const std::string &imageSpec_)
     }
   replaceImage(newImage);
   ThrowPPException;
+  if (newImage)
+    throwException(newImage->exception);
 }
 
 void Magick::Image::readPixels(const Magick::QuantumType quantum_,
@@ -3862,17 +3763,12 @@ void Magick::Image::readPixels(const Magick::QuantumType quantum_,
   QuantumInfo
     *quantum_info;
 
-  quantum_info=AcquireQuantumInfo(imageInfo(),image());
   GetPPException;
+  quantum_info=AcquireQuantumInfo(imageInfo(),image());
   ImportQuantumPixels(image(),(MagickCore::CacheView *) NULL,quantum_info,
     quantum_,source_,&exceptionInfo);
   quantum_info=DestroyQuantumInfo(quantum_info);
   ThrowPPException;
-}
-
-void Magick::Image::reduceNoise(void)
-{
-  reduceNoise(3.0);
 }
 
 void Magick::Image::reduceNoise(const double order_)
@@ -3893,20 +3789,18 @@ void Magick::Image::resample(const Geometry &geometry_)
     *newImage;
 
   size_t
-    height=rows(),
-    width=columns();
+    width=columns(),
+    height=rows();
 
   ssize_t
     x=0,
     y=0;
 
-  // Calculate new size.  This code should be supported using binary arguments
-  // in the ImageMagick library.
-  ParseMetaGeometry(static_cast<std::string>(geometry_).c_str(),&x,&y,&width,
+  ParseMetaGeometry(static_cast<std::string>(geometry_).c_str(),&x, &y,&width,
     &height);
 
   GetPPException;
-  newImage=ResampleImage(constImage(),width,height,image()->filter,
+  newImage=ResampleImage(constImage(),width,height,image()->filter,1.0,
     &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
@@ -3918,20 +3812,18 @@ void Magick::Image::resize(const Geometry &geometry_)
     *newImage;
 
   size_t
-    height=rows(),
-    width=columns();
+    width=columns(),
+    height=rows();
 
   ssize_t
     x=0,
     y=0;
 
-  // Calculate new size.  This code should be supported using binary arguments
-  // in the ImageMagick library.
-  ParseMetaGeometry(static_cast<std::string>(geometry_).c_str(),&x,&y,&width,
+  ParseMetaGeometry(static_cast<std::string>(geometry_).c_str(),&x, &y,&width,
     &height);
 
   GetPPException;
-  newImage=ResizeImage(constImage(),width,height,image()->filter,
+  newImage=ResizeImage(constImage(),width,height,image()->filter,1.0,
     &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
@@ -3947,9 +3839,9 @@ void Magick::Image::roll(const Geometry &roll_)
     yOff=roll_.yOff();
 
   if (roll_.xNegative())
-    xOff = 0 - xOff;
+    xOff=0-xOff;
   if (roll_.yNegative())
-    yOff = 0 - yOff;
+    yOff=0-yOff;
 
   GetPPException;
   newImage=RollImage(constImage(),xOff,yOff,&exceptionInfo);
@@ -4002,19 +3894,6 @@ void Magick::Image::sample(const Geometry &geometry_)
   ThrowPPException;
 }
 
-Magick::Quantum *Magick::Image::setPixels(const ssize_t x_,const ssize_t y_,
-  const size_t columns_,const size_t rows_)
-{
-  Quantum
-    *result;
-
-  modifyImage();
-  GetPPException;
-  result=(*QueueAuthenticPixels)(image(),x_,y_,columns_,rows_,&exceptionInfo);
-  ThrowPPException;
-  return(result);
-}
-
 void Magick::Image::scale(const Geometry &geometry_)
 {
   MagickCore::Image
@@ -4041,12 +3920,25 @@ void Magick::Image::segment(const double clusterThreshold_,
   const double smoothingThreshold_)
 {
   modifyImage();
-  GetPPException;
   SegmentImage(image(),options()->quantizeColorSpace(),
     (MagickBooleanType) options()->verbose(),clusterThreshold_,
-    smoothingThreshold_,&exceptionInfo);
-  SyncImage(image(),&exceptionInfo);
+    smoothingThreshold_);
+  throwImageException();
+  SyncImage(image());
+  throwImageException();
+}
+
+Magick::PixelPacket *Magick::Image::setPixels(const ssize_t x_,
+  const ssize_t y_,const size_t columns_,const size_t rows_)
+{
+  PixelPacket
+    *result;
+
+  modifyImage();
+  GetPPException;
+  result=(*QueueAuthenticPixels)(image(),x_, y_,columns_,rows_,&exceptionInfo);
   ThrowPPException;
+  return(result);
 }
 
 void Magick::Image::shade(const double azimuth_,const double elevation_,
@@ -4069,8 +3961,7 @@ void Magick::Image::shadow(const double percent_opacity_,const double sigma_,
     *newImage;
 
   GetPPException;
-  newImage=ShadowImage(constImage(),percent_opacity_, sigma_,x_, y_,
-    &exceptionInfo);
+  newImage=ShadowImage(constImage(),percent_opacity_,sigma_,x_,y_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -4093,9 +3984,8 @@ void Magick::Image::sharpenChannel(const ChannelType channel_,
     *newImage;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=SharpenImage(constImage(),radius_,sigma_,&exceptionInfo);
-  RestorePPChannelMask;
+  newImage=SharpenImageChannel(constImage(),channel_,radius_,sigma_,
+    &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -4104,7 +3994,7 @@ void Magick::Image::shave(const Geometry &geometry_)
 {
   MagickCore::Image
     *newImage;
-
+  
   RectangleInfo
     shaveInfo=geometry_;
 
@@ -4129,10 +4019,9 @@ void Magick::Image::sigmoidalContrast(const size_t sharpen_,
   const double contrast,const double midpoint)
 {
   modifyImage();
-  GetPPException;
-  (void) SigmoidalContrastImage(image(),(MagickBooleanType) sharpen_,contrast,
-    midpoint,&exceptionInfo);
-  ThrowPPException;
+  (void) SigmoidalContrastImageChannel(image(),DefaultChannels,
+    (MagickBooleanType) sharpen_,contrast,midpoint);
+  throwImageException();
 }
 
 std::string Magick::Image::signature(const bool force_) const
@@ -4143,14 +4032,11 @@ std::string Magick::Image::signature(const bool force_) const
   Lock(&_imgRef->_mutexLock);
 
   // Re-calculate image signature if necessary
-  GetPPException;
-  if (force_ || !GetImageProperty(constImage(),"Signature",&exceptionInfo) ||
+  if (force_ ||  !GetImageProperty(constImage(), "Signature") ||
     constImage()->taint)
-    SignatureImage(const_cast<MagickCore::Image *>(constImage()),
-      &exceptionInfo);
+    SignatureImage(const_cast<MagickCore::Image *>(constImage()));
 
-  property=GetImageProperty(constImage(),"Signature",&exceptionInfo);
-  ThrowPPException;
+  property=GetImageProperty(constImage(),"Signature");
 
   return(std::string(property));
 }
@@ -4158,23 +4044,20 @@ std::string Magick::Image::signature(const bool force_) const
 void Magick::Image::solarize(const double factor_)
 {
   modifyImage();
-  GetPPException;
-  SolarizeImage(image(),factor_,&exceptionInfo);
-  ThrowPPException;
+  SolarizeImage(image(),factor_);
+  throwImageException();
 }
 
-void Magick::Image::sparseColor(const ChannelType channel_,
-  const SparseColorMethod method_,const size_t numberArguments_,
-  const double *arguments_)
+void Magick::Image::sparseColor(const ChannelType channel,
+  const SparseColorMethod method,const size_t number_arguments,
+  const double *arguments)
 {
   MagickCore::Image
     *newImage;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=SparseColorImage(constImage(),method_,numberArguments_,arguments_,
-    &exceptionInfo);
-  RestorePPChannelMask;
+  newImage=SparseColorImage(constImage(),channel,method,number_arguments,
+    arguments,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -4199,56 +4082,52 @@ void Magick::Image::spread(const size_t amount_)
     *newImage;
 
   GetPPException;
-  newImage=SpreadImage(constImage(),amount_,image()->interpolate,
-    &exceptionInfo);
+  newImage=SpreadImage(constImage(),amount_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
 
-void Magick::Image::statistics(ImageStatistics *statistics)
+void Magick::Image::statistics(ImageStatistics *statistics) const
 {
   double
     maximum,
     minimum;
 
   GetPPException;
-
-  SetPPChannelMask(RedChannel);
-  (void) GetImageRange(constImage(),&minimum,&maximum,&exceptionInfo);
+  (void) GetImageChannelRange(constImage(),RedChannel,&minimum,&maximum,
+    &exceptionInfo);
   statistics->red.minimum=minimum;
   statistics->red.maximum=maximum;
-  (void) GetImageMean(constImage(),&statistics->red.mean,
+  (void) GetImageChannelMean(constImage(),RedChannel,&statistics->red.mean,
     &statistics->red.standard_deviation,&exceptionInfo);
-  (void) GetImageKurtosis(constImage(),&statistics->red.kurtosis,
-    &statistics->red.skewness,&exceptionInfo);
-
-  (void) SetImageChannelMask(image(),GreenChannel);
-  (void) GetImageRange(constImage(),&minimum,&maximum,&exceptionInfo);
+  (void) GetImageChannelKurtosis(constImage(),RedChannel,
+    &statistics->red.kurtosis,&statistics->red.skewness,&exceptionInfo);
+  (void) GetImageChannelRange(constImage(),GreenChannel,&minimum,&maximum,
+    &exceptionInfo);
   statistics->green.minimum=minimum;
   statistics->green.maximum=maximum;
-  (void) GetImageMean(constImage(),&statistics->green.mean,
+  (void) GetImageChannelMean(constImage(),GreenChannel,&statistics->green.mean,
     &statistics->green.standard_deviation,&exceptionInfo);
-  (void) GetImageKurtosis(constImage(),&statistics->green.kurtosis,
-    &statistics->green.skewness,&exceptionInfo);
-
-  (void) SetImageChannelMask(image(),GreenChannel);
-  (void) GetImageRange(constImage(),&minimum,&maximum,&exceptionInfo);
+  (void) GetImageChannelKurtosis(constImage(),GreenChannel,
+    &statistics->green.kurtosis,&statistics->green.skewness,&exceptionInfo);
+  (void) GetImageChannelRange(constImage(),BlueChannel,&minimum,&maximum,
+    &exceptionInfo);
   statistics->blue.minimum=minimum;
   statistics->blue.maximum=maximum;
-  (void) GetImageMean(constImage(),&statistics->blue.mean,
+  (void) GetImageChannelMean(constImage(),BlueChannel,&statistics->blue.mean,
     &statistics->blue.standard_deviation,&exceptionInfo);
-  (void) GetImageKurtosis(constImage(),&statistics->blue.kurtosis,
-    &statistics->blue.skewness,&exceptionInfo);
-
-  (void) SetImageChannelMask(image(),AlphaChannel);
-  (void) GetImageRange(constImage(),&minimum,&maximum,&exceptionInfo);
-  statistics->alpha.minimum=minimum;
-  statistics->alpha.maximum=maximum;
-  (void) GetImageMean(constImage(),&statistics->alpha.mean,
-    &statistics->alpha.standard_deviation,&exceptionInfo);
-  (void) GetImageKurtosis(constImage(),&statistics->alpha.kurtosis,
-    &statistics->alpha.skewness,&exceptionInfo);
-  RestorePPChannelMask;
+  (void) GetImageChannelKurtosis(constImage(),BlueChannel,
+    &statistics->blue.kurtosis,&statistics->blue.skewness,&exceptionInfo);
+  (void) GetImageChannelRange(constImage(),OpacityChannel,&minimum,&maximum,
+    &exceptionInfo);
+  statistics->opacity.minimum=minimum;
+  statistics->opacity.maximum=maximum;
+  (void) GetImageChannelMean(constImage(),OpacityChannel,
+    &statistics->opacity.mean,&statistics->opacity.standard_deviation,
+    &exceptionInfo);
+  (void) GetImageChannelKurtosis(constImage(),OpacityChannel,
+    &statistics->opacity.kurtosis,&statistics->opacity.skewness,
+    &exceptionInfo);
   ThrowPPException;
 }
 
@@ -4277,24 +4156,30 @@ void Magick::Image::stereo(const Image &rightImage_)
 void Magick::Image::strip(void)
 {
   modifyImage();
-  GetPPException;
-  StripImage(image(),&exceptionInfo);
-  ThrowPPException;
+  StripImage(image());
+  throwImageException();
 }
 
 Magick::Image Magick::Image::subImageSearch(const Image &reference_,
   const MetricType metric_,Geometry *offset_,double *similarityMetric_,
   const double similarityThreshold)
 {
+  char
+    artifact[MaxTextExtent];
+
   MagickCore::Image
     *newImage;
 
   RectangleInfo
     offset;
 
+  modifyImage();
+  (void) FormatLocaleString(artifact,MaxTextExtent,"%g",similarityThreshold);
+  (void) SetImageArtifact(image(),"compare:similarity-threshold",artifact);
+
   GetPPException;
-  newImage=SimilarityImage(image(),reference_.constImage(),metric_,
-    similarityThreshold,&offset,similarityMetric_,&exceptionInfo);
+  newImage=SimilarityMetricImage(image(),reference_.constImage(),metric_,
+    &offset,similarityMetric_,&exceptionInfo);
   ThrowPPException;
   if (offset_ != (Geometry *) NULL)
     *offset_=offset;
@@ -4310,8 +4195,7 @@ void Magick::Image::swirl(const double degrees_)
     *newImage;
 
   GetPPException;
-  newImage=SwirlImage(constImage(),degrees_,image()->interpolate,
-    &exceptionInfo);
+  newImage=SwirlImage(constImage(),degrees_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -4326,17 +4210,15 @@ void Magick::Image::syncPixels(void)
 void Magick::Image::texture(const Image &texture_)
 {
   modifyImage();
-  GetPPException;
-  TextureImage(image(),texture_.constImage(),&exceptionInfo);
-  ThrowPPException;
+  TextureImage(image(),texture_.constImage());
+  throwImageException();
 }
 
 void Magick::Image::threshold(const double threshold_)
 {
   modifyImage();
-  GetPPException;
-  BilevelImage(image(),threshold_,&exceptionInfo);
-  ThrowPPException;
+  BilevelImage(image(),threshold_);
+  throwImageException();
 }
 
 void Magick::Image::thumbnail(const Geometry &geometry_)
@@ -4364,20 +4246,17 @@ void Magick::Image::thumbnail(const Geometry &geometry_)
 void Magick::Image::transform(const Geometry &imageGeometry_)
 {
   modifyImage();
-  GetPPException;
-  TransformImage(&(image()),0,std::string(imageGeometry_).c_str(),
-    &exceptionInfo);
-  ThrowPPException;
+  TransformImage(&(image()),0,std::string(imageGeometry_).c_str());
+  throwImageException();
 }
 
 void Magick::Image::transform(const Geometry &imageGeometry_,
   const Geometry &cropGeometry_)
 {
   modifyImage();
-  GetPPException;
-  TransformImage(&(image()),std::string(cropGeometry_).c_str(),std::string(
-    imageGeometry_).c_str(), &exceptionInfo);
-  ThrowPPException;
+  TransformImage(&(image()),std::string(cropGeometry_).c_str(),
+    std::string(imageGeometry_).c_str());
+  throwImageException();
 }
 
 void Magick::Image::transformOrigin(const double x_,const double y_)
@@ -4400,7 +4279,7 @@ void Magick::Image::transformScale(const double sx_,const double sy_)
 
 void Magick::Image::transparent(const Color &color_)
 {
-  PixelInfo
+  MagickPixelPacket
     target;
 
   std::string
@@ -4410,25 +4289,24 @@ void Magick::Image::transparent(const Color &color_)
     throwExceptionExplicit(OptionError,"Color argument is invalid");
 
   color=color_;
-  GetPPException;
-  (void) QueryColorCompliance(color.c_str(),AllCompliance,&target,
-    &exceptionInfo);
+
+  (void) QueryMagickColor(std::string(color_).c_str(),&target,
+    &image()->exception);
   modifyImage();
-  TransparentPaintImage(image(),&target,TransparentAlpha,MagickFalse,
-    &exceptionInfo);
-  ThrowPPException;
+  TransparentPaintImage(image(),&target,TransparentOpacity,MagickFalse);
+  throwImageException();
 }
 
 void Magick::Image::transparentChroma(const Color &colorLow_,
   const Color &colorHigh_)
 {
+  MagickPixelPacket
+    targetHigh,
+    targetLow;
+
   std::string
     colorHigh,
     colorLow;
-
-  PixelInfo
-    targetHigh,
-    targetLow;
 
   if (!colorLow_.isValid() || !colorHigh_.isValid())
     throwExceptionExplicit(OptionError,"Color argument is invalid");
@@ -4436,15 +4314,12 @@ void Magick::Image::transparentChroma(const Color &colorLow_,
   colorLow=colorLow_;
   colorHigh=colorHigh_;
 
-  GetPPException;
-  (void) QueryColorCompliance(colorLow.c_str(),AllCompliance,&targetLow,
-    &exceptionInfo);
-  (void) QueryColorCompliance(colorHigh.c_str(),AllCompliance,&targetHigh,
-    &exceptionInfo);
+  (void) QueryMagickColor(colorLow.c_str(),&targetLow,&image()->exception);
+  (void) QueryMagickColor(colorHigh.c_str(),&targetHigh,&image()->exception);
   modifyImage();
-  TransparentPaintImageChroma(image(),&targetLow,&targetHigh,TransparentAlpha,
-    MagickFalse,&exceptionInfo);
-  ThrowPPException;
+  TransparentPaintImageChroma(image(),&targetLow,&targetHigh,
+    TransparentOpacity,MagickFalse);
+  throwImageException();
 }
 
 void Magick::Image::transpose(void)
@@ -4501,10 +4376,8 @@ void Magick::Image::unsharpmaskChannel(const ChannelType channel_,
     *newImage;
 
   GetPPException;
-  SetPPChannelMask(channel_);
-  newImage=UnsharpMaskImage(constImage(),radius_,sigma_,amount_,threshold_,
-    &exceptionInfo);
-  RestorePPChannelMask;
+  newImage=UnsharpMaskImageChannel(constImage(),channel_,radius_,sigma_,
+    amount_,threshold_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -4515,8 +4388,7 @@ void Magick::Image::wave(const double amplitude_,const double wavelength_)
     *newImage;
 
   GetPPException;
-  newImage=WaveImage(constImage(),amplitude_,wavelength_,image()->interpolate,
-    &exceptionInfo);
+  newImage=WaveImage(constImage(),amplitude_,wavelength_,&exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -4524,9 +4396,8 @@ void Magick::Image::wave(const double amplitude_,const double wavelength_)
 void Magick::Image::whiteThreshold(const std::string &threshold_)
 {
   modifyImage();
-  GetPPException;
-  WhiteThresholdImage(image(),threshold_.c_str(),&exceptionInfo);
-  ThrowPPException;
+  WhiteThresholdImage(image(),threshold_.c_str());
+  throwImageException();
 }
 
 void Magick::Image::whiteThresholdChannel(const ChannelType channel_,
@@ -4534,9 +4405,8 @@ void Magick::Image::whiteThresholdChannel(const ChannelType channel_,
 {
   modifyImage();
   GetPPException;
-  SetPPChannelMask(channel_);
-  WhiteThresholdImage(image(),threshold_.c_str(),&exceptionInfo);
-  RestorePPChannelMask;
+  WhiteThresholdImageChannel(image(),channel_,threshold_.c_str(),
+    &exceptionInfo);
   ThrowPPException;
 }
 
@@ -4553,6 +4423,7 @@ void Magick::Image::write(Blob *blob_)
   data=ImagesToBlob(constImageInfo(),image(),&length,&exceptionInfo);
   ThrowPPException;
   blob_->updateNoCopy(data,length,Blob::MallocAllocator);
+  throwImageException();
 }
 
 void Magick::Image::write(Blob *blob_,const std::string &magick_)
@@ -4569,6 +4440,7 @@ void Magick::Image::write(Blob *blob_,const std::string &magick_)
   data=ImagesToBlob(constImageInfo(),image(),&length,&exceptionInfo);
   ThrowPPException;
   blob_->updateNoCopy(data,length,Blob::MallocAllocator);
+  throwImageException();
 }
 
 void Magick::Image::write(Blob *blob_,const std::string &magick_,
@@ -4587,6 +4459,7 @@ void Magick::Image::write(Blob *blob_,const std::string &magick_,
   data=ImagesToBlob(constImageInfo(),image(),&length,&exceptionInfo);
   ThrowPPException;
   blob_->updateNoCopy(data,length,Blob::MallocAllocator);
+  throwImageException();
 }
 
 void Magick::Image::write(const ssize_t x_,const ssize_t y_,
@@ -4594,8 +4467,8 @@ void Magick::Image::write(const ssize_t x_,const ssize_t y_,
   const StorageType type_,void *pixels_)
 {
   GetPPException;
-  ExportImagePixels(image(),x_,y_,columns_,rows_,map_.c_str(),type_,pixels_,
-    &exceptionInfo);
+  ExportImagePixels(constImage(),x_,y_,columns_,rows_,map_.c_str(),type_,
+    pixels_,&exceptionInfo);
   ThrowPPException;
 }
 
@@ -4603,9 +4476,8 @@ void Magick::Image::write(const std::string &imageSpec_)
 {
   modifyImage();
   fileName(imageSpec_);
-  GetPPException;
-  WriteImage(constImageInfo(),image(),&exceptionInfo);
-  ThrowPPException;
+  WriteImage(constImageInfo(),image());
+  throwImageException();
 }
 
 void Magick::Image::writePixels(const Magick::QuantumType quantum_,
@@ -4616,8 +4488,8 @@ void Magick::Image::writePixels(const Magick::QuantumType quantum_,
 
   quantum_info=AcquireQuantumInfo(imageInfo(),image());
   GetPPException;
-  ExportQuantumPixels(image(),(MagickCore::CacheView *) NULL,quantum_info,
-    quantum_,destination_, &exceptionInfo);
+  ExportQuantumPixels(constImage(),(MagickCore::CacheView *) NULL,quantum_info,
+    quantum_,destination_,&exceptionInfo);
   quantum_info=DestroyQuantumInfo(quantum_info);
   ThrowPPException;
 }
@@ -4639,7 +4511,8 @@ void Magick::Image::zoom(const Geometry &geometry_)
     &height);
 
   GetPPException;
-  newImage=ResizeImage(constImage(),width,height,image()->filter,&exceptionInfo);
+  newImage=ResizeImage(constImage(),width,height,image()->filter,image()->blur,
+    &exceptionInfo);
   replaceImage(newImage);
   ThrowPPException;
 }
@@ -4702,14 +4575,15 @@ void Magick::Image::modifyImage(void)
   }
 
   GetPPException;
-  replaceImage(CloneImage(image(),0,0,MagickTrue,&exceptionInfo));
+  replaceImage(CloneImage(constImage(),0,0,MagickTrue,&exceptionInfo));
   ThrowPPException;
+  return;
 }
 
 ssize_t Magick::Image::registerId(void)
 {
   Lock(&_imgRef->_mutexLock);
-  if ( _imgRef->id() < 0)
+  if (_imgRef->id() < 0)
     {
       char
         id[MaxTextExtent];
@@ -4727,15 +4601,11 @@ MagickCore::Image *Magick::Image::replaceImage(MagickCore::Image *replacement_)
 {
   MagickCore::Image
     *image;
-
+  
   if (replacement_)
-    image = replacement_;
+    image=replacement_;
   else
-    {
-      GetPPException;
-      image=AcquireImage(constImageInfo(),&exceptionInfo);
-      ThrowPPException;
-    }
+    image=AcquireImage(constImageInfo());
 
   {
     Lock(&_imgRef->_mutexLock);
@@ -4755,6 +4625,12 @@ MagickCore::Image *Magick::Image::replaceImage(MagickCore::Image *replacement_)
   }
 
   return(_imgRef->_image);
+}
+
+void Magick::Image::throwImageException(void) const
+{
+  // Throw C++ exception while resetting Image exception to default state
+  throwException(const_cast<MagickCore::Image*>(constImage())->exception);
 }
 
 void Magick::Image::unregisterId(void)

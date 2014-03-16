@@ -39,25 +39,25 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/string-private.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/module.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/string-private.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -130,18 +130,21 @@ static Image *ReadSCTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   MagickBooleanType
     status;
 
-  double
+  MagickRealType
     height,
     width;
 
   Quantum
     pixel;
 
+  register IndexPacket
+    *indexes;
+
   register ssize_t
     i,
     x;
 
-  register Quantum
+  register PixelPacket
     *q;
 
   ssize_t
@@ -166,7 +169,7 @@ static Image *ReadSCTImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -213,9 +216,9 @@ static Image *ReadSCTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   count=ReadBlob(image,200,buffer);
   count=ReadBlob(image,768,buffer);
   if (separations_mask == 0x0f)
-    SetImageColorspace(image,CMYKColorspace,exception);
-  image->resolution.x=1.0*image->columns/width;
-  image->resolution.y=1.0*image->rows/height;
+    SetImageColorspace(image,CMYKColorspace);
+  image->x_resolution=1.0*image->columns/width;
+  image->y_resolution=1.0*image->rows/height;
   if (image_info->ping != MagickFalse)
     {
       (void) CloseBlob(image);
@@ -229,8 +232,9 @@ static Image *ReadSCTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     for (i=0; i < (ssize_t) separations; i++)
     {
       q=GetAuthenticPixels(image,0,y,image->columns,1,exception);
-      if (q == (Quantum *) NULL)
+      if (q == (PixelPacket *) NULL)
         break;
+      indexes=GetAuthenticIndexQueue(image);
       for (x=0; x < (ssize_t) image->columns; x++)
       {
         pixel=(Quantum) ScaleCharToQuantum((unsigned char) ReadBlobByte(image));
@@ -240,29 +244,29 @@ static Image *ReadSCTImage(const ImageInfo *image_info,ExceptionInfo *exception)
         {
           case 0:
           {
-            SetPixelRed(image,pixel,q);
-            SetPixelGreen(image,pixel,q);
-            SetPixelBlue(image,pixel,q);
+            SetPixelRed(q,pixel);
+            SetPixelGreen(q,pixel);
+            SetPixelBlue(q,pixel);
             break;
           }
           case 1:
           {
-            SetPixelGreen(image,pixel,q);
+            SetPixelGreen(q,pixel);
             break;
           }
           case 2:
           {
-            SetPixelBlue(image,pixel,q);
+            SetPixelBlue(q,pixel);
             break;
           }
-          case 3: 
+          case 3:
           {
             if (image->colorspace == CMYKColorspace)
-              SetPixelBlack(image,pixel,q);
+              SetPixelBlack(indexes+x,pixel);
             break;
           }
         }
-        q+=GetPixelChannels(image);
+        q++;
       }
       if (SyncAuthenticPixels(image,exception) == MagickFalse)
         break;

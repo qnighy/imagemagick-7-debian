@@ -813,14 +813,14 @@ int main( int /*argc*/, char ** argv)
       }
 
     // Test set/get
-    image.gifDisposeMethod(BackgroundDispose);
-    if ( image.gifDisposeMethod() != BackgroundDispose )
+    image.gifDisposeMethod(4);
+    if ( image.gifDisposeMethod() != 4 )
       {
 	++failures;
 	cout << "Line: " << __LINE__
              << ", gifDisposeMethod set/get failed" << endl;
       }
-    image.gifDisposeMethod(UndefinedDispose);
+    image.gifDisposeMethod(0);
 
     //
     // interlaceType
@@ -869,24 +869,24 @@ int main( int /*argc*/, char ** argv)
       }
 
     //
-    // strokeWidth
+    // lineWidth
     //
     // Test default
-    if ( image.strokeWidth() != 1 )
+    if ( image.lineWidth() != 1 )
       {
 	++failures;
 	cout << "Line: " << __LINE__
-             << ", strokeWidth default is not 1 as expected" << endl;
+             << ", lineWidth default is not 1 as expected" << endl;
       }
 
     // Test set/get
-    image.strokeWidth(2);
-    if ( image.strokeWidth() != 2 )
+    image.lineWidth(2);
+    if ( image.lineWidth() != 2 )
       {
 	++failures;
-	cout << "Line: " << __LINE__ << ", strokeWidth set/get failed" << endl;
+	cout << "Line: " << __LINE__ << ", lineWidth set/get failed" << endl;
       }
-    image.strokeWidth(1);
+    image.lineWidth(1);
 
     //
     // magick
@@ -910,48 +910,48 @@ int main( int /*argc*/, char ** argv)
     image.magick("XC");
 
     //
-    // alpha
+    // matte
     //
     // Test default
-    if ( image.alpha() != false )
+    if ( image.matte() != false )
       {
 	++failures;
 	cout << "Line: " << __LINE__
-             << ", alpha default is not false as expected" << endl;
+             << ", matte default is not false as expected" << endl;
       }
 
     // Test set/get
-    image.alpha(true);
-    if ( image.alpha() != true )
+    image.matte(true);
+    if ( image.matte() != true )
       {
 	++failures;
-	cout << "Line: " << __LINE__ << ", alpha set/get failed" << endl;
+	cout << "Line: " << __LINE__ << ", matte set/get failed" << endl;
       }
-    image.alpha(false);
+    image.matte(false);
 
     //
-    // alphaColor
+    // matteColor
     //
     // Test default
-    if ( image.alphaColor() != Color("#BDBDBD") )
+    if ( image.matteColor() != Color("#BDBDBD") )
       {
 	++failures;
 	cout << "Line: " << __LINE__
-             << ", alphaColor default is not #BDBDBD as expected" << endl;
+             << ", matteColor default is not #BDBDBD as expected" << endl;
       }
 
     // Test set/get
-    image.alphaColor(ColorRGB(0.5,0.5,1));
-    if ( image.alphaColor() != ColorRGB(0.5,0.5,1) )
+    image.matteColor(ColorRGB(0.5,0.5,1));
+    if ( image.matteColor() != ColorRGB(0.5,0.5,1) )
       {
 	++failures;
-	cout << "Line: " << __LINE__ << ", alphaColor set/get failed" << endl;
+	cout << "Line: " << __LINE__ << ", matteColor set/get failed" << endl;
       }
 
     // Test unset
-    image.alphaColor( Color() );
+    image.matteColor( Color() );
 
-    image.alphaColor("#BDBDBD");
+    image.matteColor("#BDBDBD");
 
     //
     // meanErrorPerPixel
@@ -1022,6 +1022,19 @@ int main( int /*argc*/, char ** argv)
 	++failures;
 	cout << "Line: " << __LINE__
              << ", normalizedMeanError is not zero as expected" << endl;
+      }
+
+    //
+    // penColor
+    //
+
+    image.penColor(ColorRGB(0.5,0.5,1));
+    if ( image.penColor() != ColorRGB(0.5,0.5,1) )
+      {
+	++failures;
+	cout << "Line: " << __LINE__ << ", penColor ("
+	     << string(image.penColor())
+	     << ") set/get failed" << endl;
       }
 
     //
@@ -1269,7 +1282,17 @@ int main( int /*argc*/, char ** argv)
     // signature
     //
 
-    if ( image.signature() != "b89bff8473dd6fe2302bcfd365e7d20daf7bd97ad667fe42d1a87469fce0d138" &&
+    if ( image.signature() != "c7ac1ef7b47015c6ea6c1fb1d736eba4f8c3fe81dbfe511fbce104cedfce7588" &&
+	 image.signature() != "d9464cd4d0c02f25166909726d6548db51d25fa91bd3cff642813f8a464bcfc7" &&
+	 image.signature() != "e073572dfa4ad28f2f8dd3c6d37dfb14585e60c94cfae910149e97eff2fd895f" &&
+	 image.signature() != "ed06047a79b5b298515538db3fb8186d79e94758ed07a9b411637ba3a79fb4a0" &&
+	 image.signature() != "e12b9781b3a5025628567a4eabf970d16d42560e1b86189caceb03ec358dd8e6" &&
+	 image.signature() != "ea9aaf29023c4c1c801e05483423a4a4266918e3a464b6a5155f11a0c581dedb" &&
+	 image.signature() != "6a989010d8ea958934ff8be44a42e0848f7c5e7e46cd53e04c4a90452c15d34c" &&
+	 image.signature() != "7e5977b8bce5c40b858c84344803dae61feae0ef7a21739b2d068c9cdb72f95b" &&
+	 image.signature() != "c8aed4b60d666e449f5c29d0fb32f089e3257422a1f11a4712451c5340362df0" &&
+	 image.signature() != "bc272b75794971f4a3ade1bf524c0aee375765e9fb15d65278a8b9452b551ea6" &&
+	 image.signature() != "482690062c78a9e78c9f5f3db514197a067028e9f1bec577b787fb9e9b044567" &&
 	 image.signature() != "8610fd1c5ef905c05bf75438aaab8729d3e1277b8ec1e86927777bd3382702e5" &&
    image.signature() != "b891ddb1d32cd45c6329180e5bd733eebb8dd06c401a9c721841ec43e4a662f8")
       {
@@ -1339,6 +1362,32 @@ int main( int /*argc*/, char ** argv)
              << ", subRange set/get failed" << endl;
       }
     image.subRange(0);
+
+    //
+    // tileName
+    //
+    if ( image.tileName().length() != 0 )
+      {
+	++failures;
+	cout << "Line: " << __LINE__
+             << ", tileName default is not empty string as expected" << endl;
+      }
+    
+    image.tileName("How now brown cow?");
+    if ( image.tileName() != "How now brown cow?" )
+      {
+	++failures;
+	cout << "Line: " << __LINE__
+             << ", tileName set/get failed" << endl;
+      }
+
+    image.tileName( string() );
+    if ( image.tileName().length() != 0 )
+      {
+	++failures;
+	cout << "Line: " << __LINE__
+             << ", tileName failed to unset" << endl;
+      }
 
     //
     // totalColors

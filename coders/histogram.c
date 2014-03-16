@@ -39,40 +39,40 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/artifact.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/color.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/geometry.h"
-#include "MagickCore/histogram.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/option.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/property.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/resource_.h"
-#include "MagickCore/static.h"
-#include "MagickCore/statistic.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/token.h"
-#include "MagickCore/utility.h"
+#include "magick/studio.h"
+#include "magick/artifact.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/color.h"
+#include "magick/color-private.h"
+#include "magick/constitute.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/geometry.h"
+#include "magick/histogram.h"
+#include "magick/image-private.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/option.h"
+#include "magick/pixel-accessor.h"
+#include "magick/property.h"
+#include "magick/quantum-private.h"
+#include "magick/resource_.h"
+#include "magick/static.h"
+#include "magick/statistic.h"
+#include "magick/string_.h"
+#include "magick/module.h"
+#include "magick/token.h"
+#include "magick/utility.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteHISTOGRAMImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteHISTOGRAMImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -160,15 +160,13 @@ ModuleExport void UnregisterHISTOGRAMImage(void)
 %  The format of the WriteHISTOGRAMImage method is:
 %
 %      MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
 %    o image_info: the image info.
 %
 %    o image:  The image.
-%
-%    o exception: return any errors or warnings in this structure.
 %
 */
 
@@ -180,15 +178,21 @@ static inline size_t MagickMax(const size_t x,const size_t y)
 }
 
 static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
 #define HistogramDensity  "256x200"
+
+  ChannelType
+    channel;
 
   char
     filename[MaxTextExtent];
 
   const char
     *option;
+
+  ExceptionInfo
+    *exception;
 
   Image
     *histogram_image;
@@ -199,20 +203,20 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
   MagickBooleanType
     status;
 
-  PixelInfo
+  MagickPixelPacket
     *histogram;
 
-  double
+  MagickRealType
     maximum,
     scale;
 
   RectangleInfo
     geometry;
 
-  register const Quantum
+  register const PixelPacket
     *p;
 
-  register Quantum
+  register PixelPacket
     *q,
     *r;
 
@@ -241,17 +245,18 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
   else
     (void) ParseAbsoluteGeometry(image_info->density,&geometry);
   histogram_image=CloneImage(image,geometry.width,geometry.height,MagickTrue,
-    exception);
+    &image->exception);
   if (histogram_image == (Image *) NULL)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
-  (void) SetImageStorageClass(histogram_image,DirectClass,exception);
+  (void) SetImageStorageClass(histogram_image,DirectClass);
   /*
     Allocate histogram count arrays.
   */
   length=MagickMax((size_t) ScaleQuantumToChar(QuantumRange)+1UL,
     histogram_image->columns);
-  histogram=(PixelInfo *) AcquireQuantumMemory(length,sizeof(*histogram));
-  if (histogram == (PixelInfo *) NULL)
+  histogram=(MagickPixelPacket *) AcquireQuantumMemory(length,
+    sizeof(*histogram));
+  if (histogram == (MagickPixelPacket *) NULL)
     {
       histogram_image=DestroyImage(histogram_image);
       ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
@@ -259,76 +264,75 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
   /*
     Initialize histogram count arrays.
   */
+  channel=image_info->channel;
   (void) ResetMagickMemory(histogram,0,length*sizeof(*histogram));
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
+    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+    if (p == (const PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
-        histogram[ScaleQuantumToChar(GetPixelRed(image,p))].red++;
-      if ((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0)
-        histogram[ScaleQuantumToChar(GetPixelGreen(image,p))].green++;
-      if ((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0)
-        histogram[ScaleQuantumToChar(GetPixelBlue(image,p))].blue++;
-      p+=GetPixelChannels(image);
+      if ((channel & RedChannel) != 0)
+        histogram[ScaleQuantumToChar(GetPixelRed(p))].red++;
+      if ((channel & GreenChannel) != 0)
+        histogram[ScaleQuantumToChar(GetPixelGreen(p))].green++;
+      if ((channel & BlueChannel) != 0)
+        histogram[ScaleQuantumToChar(GetPixelBlue(p))].blue++;
+      p++;
     }
   }
   maximum=histogram[0].red;
   for (x=0; x < (ssize_t) histogram_image->columns; x++)
   {
-    if (((GetPixelRedTraits(image) & UpdatePixelTrait) != 0) &&
-        (maximum < histogram[x].red))
+    if (((channel & RedChannel) != 0) && (maximum < histogram[x].red))
       maximum=histogram[x].red;
-    if (((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0) &&
-        (maximum < histogram[x].green))
+    if (((channel & GreenChannel) != 0) && (maximum < histogram[x].green))
       maximum=histogram[x].green;
-    if (((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0) &&
-        (maximum < histogram[x].blue))
+    if (((channel & BlueChannel) != 0) && (maximum < histogram[x].blue))
       maximum=histogram[x].blue;
   }
-  scale=(double) histogram_image->rows/maximum;
+  scale=(MagickRealType) histogram_image->rows/maximum;
   /*
     Initialize histogram image.
   */
-  (void) QueryColorCompliance("#000000",AllCompliance,
-    &histogram_image->background_color,exception);
-  (void) SetImageBackgroundColor(histogram_image,exception);
+  exception=(&image->exception);
+  (void) QueryColorDatabase("#000",&histogram_image->background_color,
+    &image->exception);
+  (void) SetImageBackgroundColor(histogram_image);
   for (x=0; x < (ssize_t) histogram_image->columns; x++)
   {
     q=GetAuthenticPixels(histogram_image,x,0,1,histogram_image->rows,exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       break;
-    if ((GetPixelRedTraits(image) & UpdatePixelTrait) != 0)
+    if ((channel & RedChannel) != 0)
       {
         y=(ssize_t) ceil(histogram_image->rows-scale*histogram[x].red-0.5);
-        r=q+y*GetPixelChannels(histogram_image);
+        r=q+y;
         for ( ; y < (ssize_t) histogram_image->rows; y++)
         {
-          SetPixelRed(histogram_image,QuantumRange,r);
-          r+=GetPixelChannels(histogram_image);
+          SetPixelRed(r,QuantumRange);
+          r++;
         }
       }
-    if ((GetPixelGreenTraits(image) & UpdatePixelTrait) != 0)
+    if ((channel & GreenChannel) != 0)
       {
         y=(ssize_t) ceil(histogram_image->rows-scale*histogram[x].green-0.5);
-        r=q+y*GetPixelChannels(histogram_image);
+        r=q+y;
         for ( ; y < (ssize_t) histogram_image->rows; y++)
         {
-          SetPixelGreen(histogram_image,QuantumRange,r);
-          r+=GetPixelChannels(histogram_image);
+          SetPixelGreen(r,QuantumRange);
+          r++;
         }
       }
-    if ((GetPixelBlueTraits(image) & UpdatePixelTrait) != 0)
+    if ((channel & BlueChannel) != 0)
       {
         y=(ssize_t) ceil(histogram_image->rows-scale*histogram[x].blue-0.5);
-        r=q+y*GetPixelChannels(histogram_image);
+        r=q+y;
         for ( ; y < (ssize_t) histogram_image->rows; y++)
         {
-          SetPixelBlue(histogram_image,QuantumRange,r);
-          r+=GetPixelChannels(histogram_image);
+          SetPixelBlue(r,QuantumRange);
+          r++;
         }
       }
     if (SyncAuthenticPixels(histogram_image,exception) == MagickFalse)
@@ -337,9 +341,12 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
     if (status == MagickFalse)
       break;
   }
-  histogram=(PixelInfo *) RelinquishMagickMemory(histogram);
+  /*
+    Relinquish resources.
+  */
+  histogram=(MagickPixelPacket *) RelinquishMagickMemory(histogram);
   option=GetImageOption(image_info,"histogram:unique-colors");
-  if ((option == (const char *) NULL) || (IsStringTrue(option) != MagickFalse))
+  if ((option == (const char *) NULL) || (IsMagickTrue(option) != MagickFalse))
     {
       FILE
         *file;
@@ -359,13 +366,12 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
           char
             *property;
 
-          (void) GetNumberColors(image,file,exception);
+          (void) GetNumberColors(image,file,&image->exception);
           (void) fclose(file);
-          property=FileToString(filename,~0UL,exception);
+          property=FileToString(filename,~0UL,&image->exception);
           if (property != (char *) NULL)
             {
-              (void) SetImageProperty(histogram_image,"comment",property,
-                exception);
+              (void) SetImageProperty(histogram_image,"comment",property);
               property=DestroyString(property);
             }
         }
@@ -377,11 +383,11 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
   (void) CopyMagickString(histogram_image->filename,image_info->filename,
     MaxTextExtent);
   write_info=CloneImageInfo(image_info);
-  (void) SetImageInfo(write_info,1,exception);
+  (void) SetImageInfo(write_info,1,&image->exception);
   if (LocaleCompare(write_info->magick,"HISTOGRAM") == 0)
-    (void) FormatLocaleString(histogram_image->filename,MaxTextExtent,"miff:%s",
-      write_info->filename);
-  status=WriteImage(write_info,histogram_image,exception);
+    (void) FormatLocaleString(histogram_image->filename,MaxTextExtent,
+      "miff:%s",write_info->filename);
+  status=WriteImage(write_info,histogram_image);
   histogram_image=DestroyImage(histogram_image);
   write_info=DestroyImageInfo(write_info);
   return(status);

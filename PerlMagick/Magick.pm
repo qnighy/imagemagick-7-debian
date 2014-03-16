@@ -16,7 +16,6 @@ package Image::Magick;
 #
 #  Initial version, written by Kyle Shorter.
 
-
 use strict;
 use Carp;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
@@ -44,7 +43,7 @@ require AutoLoader;
       ConfigureError FatalErrorException
     );
 
-$VERSION = '7.00';
+$VERSION = '6.88';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -102,7 +101,7 @@ __END__
 
 =head1 NAME
 
-Image::Magick - objected-oriented Perl interface to ImageMagick. Use it to read, manipulate, or write an image or image sequence from within a Perl script.
+Image::Magick - objected-oriented Perl interface to ImageMagick. Use it to create, edit, compose, or convert bitmap images from within a Perl script.
 
 =head1 SYNOPSIS
 
@@ -123,7 +122,7 @@ It was originally developed to be used by CGI scripts for Web pages.
 
 A web page has been set up for this extension. See:
 
-	 file:///usr/local/share/doc/ImageMagick-7.0.0/www/perl-magick.html
+	 file:///usr/share/doc/ImageMagick-6.8.0/www/perl-magick.html
 	 http://www.imagemagick.org/script/perl-magick.php
 
 If you have problems, go to

@@ -47,7 +47,7 @@
   Include declarations.
 */
 #if !defined(_VISUALC_)
-#include <MagickCore/magick-config.h>
+#include <magick/magick-config.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,7 +58,7 @@
 #include <sys\types.h>
 #endif
 #include <time.h>
-#include <MagickWand/MagickWand.h>
+#include <wand/MagickWand.h>
 
 #define WandDelay   3
 
@@ -5301,8 +5301,8 @@ int main(int argc,char **argv)
   border=NewPixelWand();
   (void) PixelSetColor(background,"green");
   (void) PixelSetColor(border,"black");
-  status=MagickFloodfillPaintImage(magick_wand,background,0.01*QuantumRange,
-    border,0,0,MagickFalse);
+  status=MagickFloodfillPaintImage(magick_wand,CompositeChannels,background,
+    0.01*QuantumRange,border,0,0,MagickFalse);
   if (status == MagickFalse)
     ThrowAPIException(magick_wand);
   background=DestroyPixelWand(background);
@@ -5356,7 +5356,7 @@ int main(int argc,char **argv)
         }
   }
   (void) MagickSetIteratorIndex(magick_wand,3);
-  status=MagickResizeImage(magick_wand,50,50,UndefinedFilter);
+  status=MagickResizeImage(magick_wand,50,50,UndefinedFilter,1.0);
   if (status == MagickFalse)
     ThrowAPIException(magick_wand);
   MagickResetIterator(magick_wand);

@@ -39,47 +39,47 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/artifact.h"
-#include "MagickCore/attribute.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/feature.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/option.h"
-#include "MagickCore/pixel.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/pixel-private.h"
-#include "MagickCore/prepress.h"
-#include "MagickCore/property.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/registry.h"
-#include "MagickCore/signature.h"
-#include "MagickCore/static.h"
-#include "MagickCore/statistic.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/string-private.h"
-#include "MagickCore/utility.h"
-#include "MagickCore/version.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/artifact.h"
+#include "magick/attribute.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
+#include "magick/constitute.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/feature.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/option.h"
+#include "magick/pixel.h"
+#include "magick/pixel-accessor.h"
+#include "magick/pixel-private.h"
+#include "magick/prepress.h"
+#include "magick/property.h"
+#include "magick/quantum-private.h"
+#include "magick/registry.h"
+#include "magick/signature.h"
+#include "magick/static.h"
+#include "magick/statistic.h"
+#include "magick/string_.h"
+#include "magick/string-private.h"
+#include "magick/utility.h"
+#include "magick/version.h"
+#include "magick/module.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteJSONImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteJSONImage(const ImageInfo *,Image *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -153,20 +153,18 @@ ModuleExport void UnregisterJSONImage(void)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  WriteJSONImage writes the image attributes in the JSON format.
+%  WriteJSONImage writes the pixel values as text numbers.
 %
 %  The format of the WriteJSONImage method is:
 %
 %      MagickBooleanType WriteJSONImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
 %    o image_info: the image info.
 %
 %    o image:  The image.
-%
-%    o exception: return any errors or warnings in this structure.
 %
 */
 
@@ -179,6 +177,9 @@ static ChannelStatistics *GetLocationStatistics(const Image *image,
   register ssize_t
     i;
 
+  size_t
+    length;
+
   ssize_t
     y;
 
@@ -186,13 +187,14 @@ static ChannelStatistics *GetLocationStatistics(const Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  channel_statistics=(ChannelStatistics *) AcquireQuantumMemory(
-    MaxPixelChannels+1,sizeof(*channel_statistics));
+  length=CompositeChannels+1UL;
+  channel_statistics=(ChannelStatistics *) AcquireQuantumMemory(length,
+    sizeof(*channel_statistics));
   if (channel_statistics == (ChannelStatistics *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(channel_statistics,0,(MaxPixelChannels+1)*
+  (void) ResetMagickMemory(channel_statistics,0,length*
     sizeof(*channel_statistics));
-  for (i=0; i <= (ssize_t) MaxPixelChannels; i++)
+  for (i=0; i <= (ssize_t) CompositeChannels; i++)
   {
     switch (type)
     {
@@ -211,56 +213,70 @@ static ChannelStatistics *GetLocationStatistics(const Image *image,
   }
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const Quantum
+    register const IndexPacket
+      *restrict indexes;
+
+    register const PixelPacket
       *restrict p;
 
     register ssize_t
       x;
 
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
+    if (p == (const PixelPacket *) NULL)
       break;
+    indexes=GetVirtualIndexQueue(image);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      register ssize_t
-        i;
-
-      if (GetPixelReadMask(image,p) == 0)
-        {
-          p+=GetPixelChannels(image);
-          continue;
-        }
-      for (i=0; i < (ssize_t) GetPixelChannels(image); i++)
+      switch (type)
       {
-        PixelChannel channel=GetPixelChannelChannel(image,i);
-        PixelTrait traits=GetPixelChannelTraits(image,channel);
-        if (traits == UndefinedPixelTrait)
-          continue;
-        switch (type)
+        case MaximumStatistic:
+        default:
         {
-          case MaximumStatistic:
-          default:
-          {
-            if ((double) p[i] > channel_statistics[channel].maxima)
-              channel_statistics[channel].maxima=(double) p[i];
-            break;
-          }
-          case MinimumStatistic:
-          {
-            if ((double) p[i] < channel_statistics[channel].minima)
-              channel_statistics[channel].minima=(double) p[i];
-            break;
-          }
+          if ((double) GetPixelRed(p) > channel_statistics[RedChannel].maxima)
+            channel_statistics[RedChannel].maxima=(double) GetPixelRed(p);
+          if ((double) GetPixelGreen(p) > channel_statistics[GreenChannel].maxima)
+            channel_statistics[GreenChannel].maxima=(double) GetPixelGreen(p);
+          if ((double) GetPixelBlue(p) > channel_statistics[BlueChannel].maxima)
+            channel_statistics[BlueChannel].maxima=(double) GetPixelBlue(p);
+          if ((image->matte != MagickFalse) &&
+              ((double) GetPixelOpacity(p) > channel_statistics[OpacityChannel].maxima))
+            channel_statistics[OpacityChannel].maxima=(double)
+              GetPixelOpacity(p);
+          if ((image->colorspace == CMYKColorspace) &&
+              ((double) GetPixelIndex(indexes+x) > channel_statistics[BlackChannel].maxima))
+            channel_statistics[BlackChannel].maxima=(double)
+              GetPixelIndex(indexes+x);
+          break;
+        }
+        case MinimumStatistic:
+        {
+          if ((double) GetPixelRed(p) < channel_statistics[RedChannel].minima)
+            channel_statistics[RedChannel].minima=(double) GetPixelRed(p);
+          if ((double) GetPixelGreen(p) < channel_statistics[GreenChannel].minima)
+            channel_statistics[GreenChannel].minima=(double) GetPixelGreen(p);
+          if ((double) GetPixelBlue(p) < channel_statistics[BlueChannel].minima)
+            channel_statistics[BlueChannel].minima=(double) GetPixelBlue(p);
+          if ((image->matte != MagickFalse) &&
+              ((double) GetPixelOpacity(p) < channel_statistics[OpacityChannel].minima))
+            channel_statistics[OpacityChannel].minima=(double)
+              GetPixelOpacity(p);
+          if ((image->colorspace == CMYKColorspace) &&
+              ((double) GetPixelIndex(indexes+x) < channel_statistics[BlackChannel].minima))
+            channel_statistics[BlackChannel].minima=(double)
+              GetPixelIndex(indexes+x);
+          break;
         }
       }
-      p+=GetPixelChannels(image);
+      p++;
     }
   }
   return(channel_statistics);
 }
 
-static ssize_t PrintChannelFeatures(FILE *file,const PixelChannel channel,
-  const char *name,const ChannelFeatures *channel_features)
+static ssize_t PrintChannelFeatures(FILE *file,const ChannelType channel,
+  const char *name,const MagickBooleanType separator,
+  const ChannelFeatures *channel_features)
 {
 #define PrintFeature(feature) \
   GetMagickPrecision(),(feature)[0], \
@@ -269,35 +285,105 @@ static ssize_t PrintChannelFeatures(FILE *file,const PixelChannel channel,
   GetMagickPrecision(),(feature)[3], \
   GetMagickPrecision(),((feature)[0]+(feature)[1]+(feature)[2]+(feature)[3])/4.0 \
 
-#define FeaturesFormat "    %s:\n" \
-  "      Angular Second Moment:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Contrast:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Correlation:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Sum of Squares: Variance:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Inverse Difference Moment:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Sum Average:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Sum Variance:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Sum Entropy:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Entropy:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Difference Variance:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Difference Entropy:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Information Measure of Correlation 1:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Information Measure of Correlation 2:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n" \
-  "      Maximum Correlation Coefficient:\n" \
-  "        %.*g, %.*g, %.*g, %.*g, %.*g\n"
+#define FeaturesFormat "      \"%s\": {\n" \
+  "        \"angularSecondMoment\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"contrast\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"correlation\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"sumOfSquaresVariance\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"inverseDifferenceMoment\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"sumAverage\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"sumVariance\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"sumEntropy\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"entropy\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"differenceVariance\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"differenceEntropy\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"informationMeasureOfCorrelation1\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"informationMeasureOfCorrelation2\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        },\n" \
+  "        \"maximumCorrelationCoefficient\": {\n" \
+  "          \"horizontal\": \"%.*g\",\n" \
+  "          \"vertical\": \"%.*g\",\n" \
+  "          \"leftDiagonal\": \"%.*g\",\n" \
+  "          \"rightDiagonal\": \"%.*g\",\n" \
+  "          \"average\": \"%.*g\"\n" \
+  "        }\n"
 
   ssize_t
     n;
@@ -317,12 +403,17 @@ static ssize_t PrintChannelFeatures(FILE *file,const PixelChannel channel,
     PrintFeature(channel_features[channel].measure_of_correlation_1),
     PrintFeature(channel_features[channel].measure_of_correlation_2),
     PrintFeature(channel_features[channel].maximum_correlation_coefficient));
+  (void) FormatLocaleFile(file,"      }");
+  if (separator != MagickFalse)
+    (void) FormatLocaleFile(file,",");
+  (void) FormatLocaleFile(file,"\n");
   return(n);
 }
 
 static ssize_t PrintChannelLocations(FILE *file,const Image *image,
-  const PixelChannel channel,const char *name,const StatisticType type,
-  const size_t max_locations,const ChannelStatistics *channel_statistics)
+  const ChannelType channel,const char *name,const StatisticType type,
+  const size_t max_locations,const MagickBooleanType separator,
+  const ChannelStatistics *channel_statistics)
 {
   double
     target;
@@ -342,56 +433,90 @@ static ssize_t PrintChannelLocations(FILE *file,const Image *image,
       target=channel_statistics[channel].maxima;
       break;
     }
+    case MeanStatistic:
+    {
+      target=channel_statistics[channel].mean;
+      break;
+    }
     case MinimumStatistic:
     {
       target=channel_statistics[channel].minima;
       break;
     }
   }
-  (void) FormatLocaleFile(file,"  %s: %.*g (%.*g)",name,GetMagickPrecision(),
-    target,GetMagickPrecision(),QuantumScale*target);
+  (void) FormatLocaleFile(file,"      \"%s\": {\n        \"intensity\": "
+    "\"%.*g\",\n",name,GetMagickPrecision(),QuantumScale*target);
   exception=AcquireExceptionInfo();
   n=0;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const Quantum
+    register const PixelPacket
       *p;
 
     ssize_t
-      offset,
       x;
 
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-    if (p == (const Quantum *) NULL)
+    if (p == (const PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       MagickBooleanType
         match;
 
-      PixelTrait traits=GetPixelChannelTraits(image,channel);
-      if (traits == UndefinedPixelTrait)
-        continue;
-      offset=GetPixelChannelOffset(image,channel);
-      match=fabs((double) p[offset]-target) < 0.5 ? MagickTrue : MagickFalse;
+      match=MagickFalse;
+      switch (channel)
+      {
+        case RedChannel:
+        {
+          match=fabs((double) p->red-target) < 0.5 ? MagickTrue : MagickFalse;
+          break;
+        }
+        case GreenChannel:
+        {
+          match=fabs((double) p->green-target) < 0.5 ? MagickTrue : MagickFalse;
+          break;
+        }
+        case BlueChannel:
+        {
+          match=fabs((double) p->blue-target) < 0.5 ? MagickTrue : MagickFalse;
+          break;
+        }
+        case AlphaChannel:
+        {
+          match=fabs((double) p->opacity-target) < 0.5 ? MagickTrue :
+            MagickFalse;
+          break;
+        }
+        default:
+          break;
+      }
       if (match != MagickFalse)
         {
           if ((max_locations != 0) && (n >= (ssize_t) max_locations))
             break;
-          (void) FormatLocaleFile(file," %.20g,%.20g",(double) x,(double) y);
+          if (n != 0)
+            (void) FormatLocaleFile(file,",\n");
+          (void) FormatLocaleFile(file,"        \"location%.20g\": {\n"
+            "          \"x\": \"%.20g\",\n          \"y\": \"%.20g\"\n"
+            "        }",(double) n,(double) x,(double) y);
           n++;
         }
-      p+=GetPixelChannels(image);
+      p++;
     }
     if (x < (ssize_t) image->columns)
       break;
   }
+  (void) FormatLocaleFile(file,"\n      }");
+  if (separator != MagickFalse)
+    (void) FormatLocaleFile(file,",");
   (void) FormatLocaleFile(file,"\n");
   return(n);
 }
 
-static ssize_t PrintChannelMoments(FILE *file,const PixelChannel channel,
-  const char *name,const ChannelMoments *channel_moments)
+static ssize_t PrintChannelMoments(FILE *file,const ChannelType channel,
+  const char *name,const MagickBooleanType separator,
+  const ChannelMoments *channel_moments)
 {
   register ssize_t
     i;
@@ -399,22 +524,32 @@ static ssize_t PrintChannelMoments(FILE *file,const PixelChannel channel,
   ssize_t
     n;
 
-  n=FormatLocaleFile(file,"    %s:\n",name);
-  n+=FormatLocaleFile(file,"      Centroid: %.*g,%.*g\n",
+  n=FormatLocaleFile(file,"      \"%s\": {\n",name);
+  n+=FormatLocaleFile(file,"        \"centroid\": {\n "
+    "          \"x\": \"%.*g\",\n"
+    "           \"y\": \"%.*g\"\n        },\n",
     GetMagickPrecision(),channel_moments[channel].centroid.x,
     GetMagickPrecision(),channel_moments[channel].centroid.y);
-  n+=FormatLocaleFile(file,"      Ellipse Semi-Major/Minor axis: %.*g,%.*g\n",
+  n+=FormatLocaleFile(file,"        \"ellipseSemiMajorMinorAxis\": {\n"
+    "          \"x\": \"%.*g\",\n"
+    "          \"y\": \"%.*g\"\n        },\n",
     GetMagickPrecision(),channel_moments[channel].ellipse_axis.x,
     GetMagickPrecision(),channel_moments[channel].ellipse_axis.y);
-  n+=FormatLocaleFile(file,"      Ellipse angle: %.*g\n",
+  n+=FormatLocaleFile(file,"        \"ellipseAngle\": \"%.*g\",\n",
     GetMagickPrecision(),channel_moments[channel].ellipse_angle);
-  n+=FormatLocaleFile(file,"      Ellipse eccentricity: %.*g\n",
+  n+=FormatLocaleFile(file,"        \"ellipseEccentricity\": \"%.*g\",\n",
     GetMagickPrecision(),channel_moments[channel].ellipse_eccentricity);
-  n+=FormatLocaleFile(file,"      Ellipse intensity: %.*g\n",
+  n+=FormatLocaleFile(file,"        \"ellipseIntensity\": \"%.*g\",\n",
     GetMagickPrecision(),channel_moments[channel].ellipse_intensity);
-  for (i=0; i < 8; i++)
-    n+=FormatLocaleFile(file,"      I%.20g: %.*g\n",i+1.0,GetMagickPrecision(),
-      channel_moments[channel].I[i]);
+  for (i=0; i < 7; i++)
+    n+=FormatLocaleFile(file,"        \"I%.20g\": \"%.*g\",\n",i+1.0,
+      GetMagickPrecision(),channel_moments[channel].I[i]);
+  n+=FormatLocaleFile(file,"        \"I%.20g\": \"%.*g\"\n",i+1.0,
+    GetMagickPrecision(),channel_moments[channel].I[i]);
+  (void) FormatLocaleFile(file,"      }");
+  if (separator != MagickFalse)
+    (void) FormatLocaleFile(file,",");
+  (void) FormatLocaleFile(file,"\n");
   return(n);
 }
 
@@ -445,32 +580,45 @@ static ssize_t PrintChannelPerceptualHash(FILE *file,const ChannelType channel,
   return(n);
 }
 
-static ssize_t PrintChannelStatistics(FILE *file,const PixelChannel channel,
-  const char *name,const double scale,
+static ssize_t PrintChannelStatistics(FILE *file,const ChannelType channel,
+  const char *name,const double scale,const MagickBooleanType separator,
   const ChannelStatistics *channel_statistics)
 {
-#define StatisticsFormat "    %s:\n      min: " QuantumFormat  \
-  " (%g)\n      max: " QuantumFormat " (%g)\n"  \
-  "      mean: %g (%g)\n      standard deviation: %g (%g)\n"  \
-  "      kurtosis: %g\n      skewness: %g\n"
+#define StatisticsFormat "      \"%s\": {\n        \"min\": \"" QuantumFormat  \
+  "\",\n        \"max\": \"" QuantumFormat "\",\n"  \
+  "        \"mean\": \"%g\",\n        \"standardDeviation\": "  \
+  "\"%g\",\n        \"kurtosis\": \"%g\",\n        \"skewness\": " \
+  "\"%g\"\n      }"
 
   ssize_t
     n;
 
+  if (channel == AlphaChannel)
+    {
+      n=FormatLocaleFile(file,StatisticsFormat,name,ClampToQuantum(scale*
+        (QuantumRange-channel_statistics[channel].maxima)),
+        ClampToQuantum(scale*(QuantumRange-channel_statistics[channel].minima)),
+        scale*(QuantumRange-channel_statistics[channel].mean),scale*
+        channel_statistics[channel].standard_deviation,
+        channel_statistics[channel].kurtosis,
+        channel_statistics[channel].skewness);
+      if (separator != MagickFalse)
+        (void) FormatLocaleFile(file,",");
+      (void) FormatLocaleFile(file,"\n");
+      return(n);
+    }
   n=FormatLocaleFile(file,StatisticsFormat,name,ClampToQuantum(scale*
-    channel_statistics[channel].minima),channel_statistics[channel].minima/
-    (double) QuantumRange,ClampToQuantum(scale*
-    channel_statistics[channel].maxima),channel_statistics[channel].maxima/
-    (double) QuantumRange,scale*channel_statistics[channel].mean,
-    channel_statistics[channel].mean/(double) QuantumRange,scale*
-    channel_statistics[channel].standard_deviation,
-    channel_statistics[channel].standard_deviation/(double) QuantumRange,
+    channel_statistics[channel].minima),ClampToQuantum(scale*
+    channel_statistics[channel].maxima),scale*channel_statistics[channel].mean,
+    scale*channel_statistics[channel].standard_deviation,
     channel_statistics[channel].kurtosis,channel_statistics[channel].skewness);
+  if (separator != MagickFalse)
+    (void) FormatLocaleFile(file,",");
+  (void) FormatLocaleFile(file,"\n");
   return(n);
 }
 
-static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
-  ExceptionInfo *exception)
+static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
 {
   char
     color[MaxTextExtent],
@@ -507,20 +655,18 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
     elapsed_time,
     user_time;
 
+  ExceptionInfo
+    *exception;
+
   ImageType
     type;
-
-  MagickBooleanType
-    ping;
-
-  register const Quantum
-    *p;
 
   register ssize_t
     i,
     x;
 
   size_t
+    depth,
     distance,
     scale;
 
@@ -533,15 +679,18 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (file == (FILE *) NULL)
     file=stdout;
+  exception=AcquireExceptionInfo();
   *format='\0';
   elapsed_time=GetElapsedTime(&image->timer);
   user_time=GetUserTime(&image->timer);
   GetTimerInfo(&image->timer);
-  p=GetVirtualPixels(image,0,0,1,1,exception);
-  ping=p == (const Quantum *) NULL ? MagickTrue : MagickFalse;
+  (void) GetVirtualPixels(image,0,0,1,1,exception);
+  exception=DestroyExceptionInfo(exception);
+  exception=(&image->exception);
   type=GetImageType(image,exception);
-  (void) SignatureImage(image,exception);
-  (void) FormatLocaleFile(file,"Image: %s\n",image->filename);
+  (void) SignatureImage(image);
+  (void) FormatLocaleFile(file,"{\n  \"image\": {\n    \"name\": \"%s\",\n",
+    image->filename);
   if (*image->magick_filename != '\0')
     if (LocaleCompare(image->magick_filename,image->filename) != 0)
       {
@@ -549,51 +698,58 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
           filename[MaxTextExtent];
 
         GetPathComponent(image->magick_filename,TailPath,filename);
-        (void) FormatLocaleFile(file,"  Base filename: %s\n",filename);
+        (void) FormatLocaleFile(file,"    \"baseName\": \"%s\",\n",filename);
       }
   magick_info=GetMagickInfo(image->magick,exception);
-  if ((magick_info == (const MagickInfo *) NULL) ||
-      (GetMagickDescription(magick_info) == (const char *) NULL))
-    (void) FormatLocaleFile(file,"  Format: %s\n",image->magick);
-  else
-    (void) FormatLocaleFile(file,"  Format: %s (%s)\n",image->magick,
+  (void) FormatLocaleFile(file,"    \"format\": \"%s\",\n",image->magick);
+  if ((magick_info != (const MagickInfo *) NULL) &&
+      (GetMagickDescription(magick_info) != (const char *) NULL))
+    (void) FormatLocaleFile(file,"    \"formatDescription\": \"%s\",\n",
       GetMagickDescription(magick_info));
   if ((magick_info == (const MagickInfo *) NULL) ||
       (GetMagickMimeType(magick_info) != (const char *) NULL))
-    (void) FormatLocaleFile(file,"  Mime type: %s\n",GetMagickMimeType(
-      magick_info));
-  (void) FormatLocaleFile(file,"  Class: %s\n",CommandOptionToMnemonic(
-    MagickClassOptions,(ssize_t) image->storage_class));
-  (void) FormatLocaleFile(file,"  Geometry: %.20gx%.20g%+.20g%+.20g\n",(double)
-    image->columns,(double) image->rows,(double) image->tile_offset.x,(double)
-    image->tile_offset.y);
+    (void) FormatLocaleFile(file,"    \"mimeType\": \"%s\",\n",
+      GetMagickMimeType(magick_info));
+  (void) FormatLocaleFile(file,"    \"class\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickClassOptions,(ssize_t) image->storage_class));
+  (void) FormatLocaleFile(file,"    \"geometry\": {\n"
+    "      \"width\": \"%.20g\",\n      \"height\": \"%.20g\",\n"
+    "      \"x\": \"%.20g\",\n      \"y\": \"%.20g\"\n    },\n",
+    (double) image->columns,(double) image->rows,(double) image->tile_offset.x,
+    (double) image->tile_offset.y);
   if ((image->magick_columns != 0) || (image->magick_rows != 0))
     if ((image->magick_columns != image->columns) ||
         (image->magick_rows != image->rows))
-      (void) FormatLocaleFile(file,"  Base geometry: %.20gx%.20g\n",(double)
-        image->magick_columns,(double) image->magick_rows);
-  if ((image->resolution.x != 0.0) && (image->resolution.y != 0.0))
+      (void) FormatLocaleFile(file,"    \"baseGeometry\": {\n"
+        "      \"width\": \"%.20g\",\n      \"height\": \"%.20g\"\n    },\n",
+        (double) image->magick_columns,(double) image->magick_rows);
+  if ((image->x_resolution != 0.0) && (image->y_resolution != 0.0))
     {
-      (void) FormatLocaleFile(file,"  Resolution: %gx%g\n",image->resolution.x,
-        image->resolution.y);
-      (void) FormatLocaleFile(file,"  Print size: %gx%g\n",(double)
-        image->columns/image->resolution.x,(double) image->rows/
-        image->resolution.y);
+      (void) FormatLocaleFile(file,"    \"resolution\": {\n"
+        "      \"x\": \"%.20g\",\n      \"y\": \"%.20g\"\n    },\n",
+        image->x_resolution,image->y_resolution);
+      (void) FormatLocaleFile(file,"    \"printSize\": {\n"
+        "      \"x\": \"%.20g\",\n      \"y\": \"%.20g\"\n    },\n",
+        image->columns/image->x_resolution,(double) image->rows/
+        image->y_resolution);
     }
-  (void) FormatLocaleFile(file,"  Units: %s\n",CommandOptionToMnemonic(
-    MagickResolutionOptions,(ssize_t) image->units));
-  (void) FormatLocaleFile(file,"  Type: %s\n",CommandOptionToMnemonic(
-    MagickTypeOptions,(ssize_t) type));
+  (void) FormatLocaleFile(file,"    \"units\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickResolutionOptions,(ssize_t) image->units));
+  (void) FormatLocaleFile(file,"    \"type\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickTypeOptions,(ssize_t) type));
   if (image->type != UndefinedType)
-    (void) FormatLocaleFile(file,"  Base type: %s\n",CommandOptionToMnemonic(
-      MagickTypeOptions,(ssize_t) image->type));
-  (void) FormatLocaleFile(file,"  Endianess: %s\n",CommandOptionToMnemonic(
-    MagickEndianOptions,(ssize_t) image->endian));
+    (void) FormatLocaleFile(file,"    \"baseType\": \"%s\",\n",
+      CommandOptionToMnemonic(MagickTypeOptions,(ssize_t) image->type));
+  (void) FormatLocaleFile(file,"    \"endianess\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickEndianOptions,(ssize_t) image->endian));
   locate=GetImageArtifact(image,"identify:locate");
   if (locate == (const char *) NULL)
     locate=GetImageArtifact(image,"json:locate");
   if (locate != (const char *) NULL)
     {
+      char
+        target[MaxTextExtent];
+
       const char
         *limit;
 
@@ -608,236 +764,233 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
       */
       type=(StatisticType) ParseCommandOption(MagickStatisticOptions,
         MagickFalse,locate);
+      max_locations=0;
       limit=GetImageArtifact(image,"identify:limit");
       if (limit == (const char *) NULL)
         limit=GetImageArtifact(image,"json:limit");
-      max_locations=0;
       if (limit != (const char *) NULL)
         max_locations=StringToUnsignedLong(limit);
       channel_statistics=GetLocationStatistics(image,type,exception);
       if (channel_statistics == (ChannelStatistics *) NULL)
         return(MagickFalse);
       colorspace=image->colorspace;
-      if (IsImageGray(image,exception) != MagickFalse)
+      if (IsGrayImage(image,exception) != MagickFalse)
         colorspace=GRAYColorspace;
-      (void) FormatLocaleFile(file,"Channel %s locations:\n",locate);
+      (void) CopyMagickString(target,locate,MaxTextExtent);
+      *target=(char) toupper((int) ((unsigned char) *target));
+      (void) FormatLocaleFile(file,"    \"channel%s\": {\n",target);
+      if (image->matte != MagickFalse)
+        (void) PrintChannelLocations(file,image,AlphaChannel,"alpha",
+          type,max_locations,MagickTrue,channel_statistics);
       switch (colorspace)
       {
         case RGBColorspace:
         default:
         {
-          (void) PrintChannelLocations(file,image,RedPixelChannel,"Red",
-            type,max_locations,channel_statistics);
-          (void) PrintChannelLocations(file,image,GreenPixelChannel,"Green",
-            type,max_locations,channel_statistics);
-          (void) PrintChannelLocations(file,image,BluePixelChannel,"Blue",
-            type,max_locations,channel_statistics);
+          (void) PrintChannelLocations(file,image,RedChannel,"red",
+            type,max_locations,MagickTrue,channel_statistics);
+          (void) PrintChannelLocations(file,image,GreenChannel,"Green",
+            type,max_locations,MagickTrue,channel_statistics);
+          (void) PrintChannelLocations(file,image,BlueChannel,"blue",
+            type,max_locations,MagickFalse,channel_statistics);
           break;
         }
         case CMYKColorspace:
         {
-          (void) PrintChannelLocations(file,image,CyanPixelChannel,"Cyan",
-            type,max_locations,channel_statistics);
-          (void) PrintChannelLocations(file,image,MagentaPixelChannel,"Magenta",
-            type,max_locations,channel_statistics);
-          (void) PrintChannelLocations(file,image,YellowPixelChannel,"Yellow",
-            type,max_locations,channel_statistics);
-          (void) PrintChannelLocations(file,image,BlackPixelChannel,"Black",
-            type,max_locations,channel_statistics);
+          (void) PrintChannelLocations(file,image,CyanChannel,"cyan",
+            type,max_locations,MagickTrue,channel_statistics);
+          (void) PrintChannelLocations(file,image,MagentaChannel,"magenta",
+            type,max_locations,MagickTrue,channel_statistics);
+          (void) PrintChannelLocations(file,image,YellowChannel,"yellow",
+            type,max_locations,MagickTrue,channel_statistics);
+          (void) PrintChannelLocations(file,image,BlackChannel,"black",
+            type,max_locations,MagickFalse,channel_statistics);
           break;
         }
         case GRAYColorspace:
         {
-          (void) PrintChannelLocations(file,image,GrayPixelChannel,"Gray",
-            type,max_locations,channel_statistics);
+          (void) PrintChannelLocations(file,image,GrayChannel,"gray",
+            type,max_locations,MagickFalse,channel_statistics);
           break;
         }
       }
-      if (image->alpha_trait == BlendPixelTrait)
-        (void) PrintChannelLocations(file,image,AlphaPixelChannel,"Alpha",
-          type,max_locations,channel_statistics);
+      (void) FormatLocaleFile(file,"    },\n");
       channel_statistics=(ChannelStatistics *) RelinquishMagickMemory(
         channel_statistics);
     }
   /*
     Detail channel depth and extrema.
   */
-  (void) FormatLocaleFile(file,"  Colorspace: %s\n",CommandOptionToMnemonic(
-    MagickColorspaceOptions,(ssize_t) image->colorspace));
+  (void) FormatLocaleFile(file,"    \"colorspace\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickColorspaceOptions,(ssize_t)
+    image->colorspace));
   channel_statistics=(ChannelStatistics *) NULL;
   channel_moments=(ChannelMoments *) NULL;
   channel_phash=(ChannelPerceptualHash *) NULL;
   channel_features=(ChannelFeatures *) NULL;
   colorspace=image->colorspace;
   scale=1;
-  if (ping == MagickFalse)
+  channel_statistics=GetImageChannelStatistics(image,exception);
+  if (channel_statistics == (ChannelStatistics *) NULL)
+    return(MagickFalse);
+  artifact=GetImageArtifact(image,"identify:moments");
+  if (artifact == (const char *) NULL)
+    artifact=GetImageArtifact(image,"json:moments");
+  if (artifact != (const char *) NULL)
     {
-      size_t
-        depth;
-
-      channel_statistics=GetImageStatistics(image,exception);
-      if (channel_statistics == (ChannelStatistics *) NULL)
-        return(MagickFalse);
-      artifact=GetImageArtifact(image,"identify:moments");
-      if (artifact == (const char *) NULL)
-        artifact=GetImageArtifact(image,"json:moments");
-      if (artifact != (const char *) NULL)
-        {
-          channel_moments=GetImageMoments(image,exception);
-          channel_phash=GetImagePerceptualHash(image,exception);
-        }
-      artifact=GetImageArtifact(image,"identify:features");
-      if (artifact == (const char *) NULL)
-        artifact=GetImageArtifact(image,"json:features");
-      if (artifact != (const char *) NULL)
-        {
-          distance=StringToUnsignedLong(artifact);
-          channel_features=GetImageFeatures(image,distance,exception);
-        }
-      depth=GetImageDepth(image,exception);
-      if (image->depth == depth)
-        (void) FormatLocaleFile(file,"  Depth: %.20g-bit\n",(double)
-          image->depth);
-      else
-        (void) FormatLocaleFile(file,"  Depth: %.20g/%.20g-bit\n",(double)
-          image->depth,(double) depth);
-      (void) FormatLocaleFile(file,"  Channel depth:\n");
-      if (IsImageGray(image,exception) != MagickFalse)
-        colorspace=GRAYColorspace;
-      switch (colorspace)
-      {
-        case RGBColorspace:
-        default:
-        {
-          (void) FormatLocaleFile(file,"    Red: %.20g-bit\n",(double)
-            channel_statistics[RedPixelChannel].depth);
-          (void) FormatLocaleFile(file,"    Green: %.20g-bit\n",(double)
-            channel_statistics[GreenPixelChannel].depth);
-          (void) FormatLocaleFile(file,"    Blue: %.20g-bit\n",(double)
-            channel_statistics[BluePixelChannel].depth);
-          break;
-        }
-        case CMYKColorspace:
-        {
-          (void) FormatLocaleFile(file,"    Cyan: %.20g-bit\n",(double)
-            channel_statistics[CyanPixelChannel].depth);
-          (void) FormatLocaleFile(file,"    Magenta: %.20g-bit\n",(double)
-            channel_statistics[MagentaPixelChannel].depth);
-          (void) FormatLocaleFile(file,"    Yellow: %.20g-bit\n",(double)
-            channel_statistics[YellowPixelChannel].depth);
-          (void) FormatLocaleFile(file,"    Black: %.20g-bit\n",(double)
-            channel_statistics[BlackPixelChannel].depth);
-          break;
-        }
-        case GRAYColorspace:
-        {
-          (void) FormatLocaleFile(file,"    Gray: %.20g-bit\n",(double)
-            channel_statistics[GrayPixelChannel].depth);
-          break;
-        }
-      }
-      if (image->alpha_trait == BlendPixelTrait)
-        (void) FormatLocaleFile(file,"    alpha: %.20g-bit\n",(double)
-          channel_statistics[AlphaPixelChannel].depth);
-      scale=1;
-      if (image->depth <= MAGICKCORE_QUANTUM_DEPTH)
-        scale=QuantumRange/((size_t) QuantumRange >> ((size_t)
-          MAGICKCORE_QUANTUM_DEPTH-image->depth));
+      channel_moments=GetImageChannelMoments(image,exception);
+      channel_phash=GetImageChannelPerceptualHash(image,exception);
     }
+  artifact=GetImageArtifact(image,"identify:features");
+  if (artifact == (const char *) NULL)
+    artifact=GetImageArtifact(image,"json:features");
+  if (artifact != (const char *) NULL)
+    {
+      distance=StringToUnsignedLong(artifact);
+      channel_features=GetImageChannelFeatures(image,distance,exception);
+    }
+  depth=GetImageDepth(image,exception);
+  (void) FormatLocaleFile(file,"    \"depth\": \"%.20g\",\n",(double) depth);
+  (void) FormatLocaleFile(file,"    \"baseDepth\": \"%.20g\",\n",(double)
+    image->depth);
+  (void) FormatLocaleFile(file,"    \"channelDepth\": {\n");
+  if (IsGrayImage(image,exception) != MagickFalse)
+    colorspace=GRAYColorspace;
+  if (image->matte != MagickFalse)
+    (void) FormatLocaleFile(file,"      \"alpha\": \"%.20g\",\n",(double)
+      channel_statistics[OpacityChannel].depth);
+  switch (colorspace)
+  {
+    case RGBColorspace:
+    default:
+    {
+      (void) FormatLocaleFile(file,"      \"red\": \"%.20g\",\n",(double)
+        channel_statistics[RedChannel].depth);
+      (void) FormatLocaleFile(file,"      \"green\": \"%.20g\",\n",(double)
+        channel_statistics[GreenChannel].depth);
+      (void) FormatLocaleFile(file,"      \"blue\": \"%.20g\"\n",(double)
+        channel_statistics[BlueChannel].depth);
+      break;
+    }
+    case CMYKColorspace:
+    {
+      (void) FormatLocaleFile(file,"      \"cyan\": \"%.20g\",\n",(double)
+        channel_statistics[CyanChannel].depth);
+      (void) FormatLocaleFile(file,"      \"magenta\": \"%.20g\",\n",(double)
+        channel_statistics[MagentaChannel].depth);
+      (void) FormatLocaleFile(file,"      \"yellow\": \"%.20g\",\n",(double)
+        channel_statistics[YellowChannel].depth);
+      (void) FormatLocaleFile(file,"      \"black\": \"%.20g\"\n",(double)
+        channel_statistics[BlackChannel].depth);
+      break;
+    }
+    case GRAYColorspace:
+    {
+      (void) FormatLocaleFile(file,"      \"gray\": \"%.20g\"\n",(double)
+        channel_statistics[GrayChannel].depth);
+      break;
+    }
+  }
+  (void) FormatLocaleFile(file,"    },\n");
+  scale=1;
+  if (image->depth <= MAGICKCORE_QUANTUM_DEPTH)
+    scale=QuantumRange/((size_t) QuantumRange >> ((size_t)
+      MAGICKCORE_QUANTUM_DEPTH-image->depth));
   if (channel_statistics != (ChannelStatistics *) NULL)
     {
-      (void) FormatLocaleFile(file,"  Channel statistics:\n");
-      (void) FormatLocaleFile(file,"    Pixels: %.20g\n",
-        channel_statistics[CompositePixelChannel].area);
+      if (colorspace != GRAYColorspace)
+        {
+          (void) FormatLocaleFile(file,"    \"imageStatistics\": {\n");
+          (void) PrintChannelStatistics(file,CompositeChannels,"all",1.0/
+            scale,MagickFalse,channel_statistics);
+          (void) FormatLocaleFile(file,"    },\n");
+        }
+      (void) FormatLocaleFile(file,"    \"channelStatistics\": {\n");
+      if (image->matte != MagickFalse)
+        (void) PrintChannelStatistics(file,AlphaChannel,"alpha",1.0/scale,
+          MagickTrue,channel_statistics);
       switch (colorspace)
       {
         case RGBColorspace:
         default:
         {
-          (void) PrintChannelStatistics(file,RedPixelChannel,"Red",1.0/
-            scale,channel_statistics);
-          (void) PrintChannelStatistics(file,GreenPixelChannel,"Green",1.0/
-            scale,channel_statistics);
-          (void) PrintChannelStatistics(file,BluePixelChannel,"Blue",1.0/
-            scale,channel_statistics);
+          (void) PrintChannelStatistics(file,RedChannel,"red",1.0/scale,
+            MagickTrue,channel_statistics);
+          (void) PrintChannelStatistics(file,GreenChannel,"green",1.0/scale,
+            MagickTrue,channel_statistics);
+          (void) PrintChannelStatistics(file,BlueChannel,"blue",1.0/scale,
+            MagickFalse,channel_statistics);
           break;
         }
         case CMYKColorspace:
         {
-          (void) PrintChannelStatistics(file,CyanPixelChannel,"Cyan",1.0/
-            scale,channel_statistics);
-          (void) PrintChannelStatistics(file,MagentaPixelChannel,"Magenta",1.0/
-            scale,channel_statistics);
-          (void) PrintChannelStatistics(file,YellowPixelChannel,"Yellow",1.0/
-            scale,channel_statistics);
-          (void) PrintChannelStatistics(file,BlackPixelChannel,"Black",1.0/
-            scale,channel_statistics);
+          (void) PrintChannelStatistics(file,CyanChannel,"cyan",1.0/scale,
+            MagickTrue,channel_statistics);
+          (void) PrintChannelStatistics(file,MagentaChannel,"magenta",1.0/scale,
+            MagickTrue,channel_statistics);
+          (void) PrintChannelStatistics(file,YellowChannel,"yellow",1.0/scale,
+            MagickTrue,channel_statistics);
+          (void) PrintChannelStatistics(file,BlackChannel,"black",1.0/scale,
+            MagickFalse,channel_statistics);
           break;
         }
         case GRAYColorspace:
         {
-          (void) PrintChannelStatistics(file,GrayPixelChannel,"Gray",1.0/
-            scale,channel_statistics);
+          (void) PrintChannelStatistics(file,GrayChannel,"gray",1.0/scale,
+            MagickFalse,channel_statistics);
           break;
         }
       }
-      if (image->alpha_trait == BlendPixelTrait)
-        (void) PrintChannelStatistics(file,AlphaPixelChannel,"Alpha",1.0/
-          scale,channel_statistics);
-      if (colorspace != GRAYColorspace)
-        {
-          (void) FormatLocaleFile(file,"  Image statistics:\n");
-          (void) PrintChannelStatistics(file,(PixelChannel) MaxPixelChannels,
-            "Overall",1.0/scale,channel_statistics);
-        }
+      (void) FormatLocaleFile(file,"    },\n");
       channel_statistics=(ChannelStatistics *) RelinquishMagickMemory(
         channel_statistics);
     }
   if (channel_moments != (ChannelMoments *) NULL)
     {
-      (void) FormatLocaleFile(file,"  Channel moments:\n");
+      (void) FormatLocaleFile(file,"    \"channelMoments\": {\n");
+      if (image->matte != MagickFalse)
+        (void) PrintChannelMoments(file,AlphaChannel,"alpha",MagickTrue,
+          channel_moments);
       switch (colorspace)
       {
         case RGBColorspace:
         default:
         {
-          (void) PrintChannelMoments(file,RedPixelChannel,"Red",
+          (void) PrintChannelMoments(file,RedChannel,"red",MagickTrue,
             channel_moments);
-          (void) PrintChannelMoments(file,GreenPixelChannel,"Green",
+          (void) PrintChannelMoments(file,GreenChannel,"green",MagickTrue,
             channel_moments);
-          (void) PrintChannelMoments(file,BluePixelChannel,"Blue",
+          (void) PrintChannelMoments(file,BlueChannel,"blue",MagickFalse,
             channel_moments);
           break;
         }
         case CMYKColorspace:
         {
-          (void) PrintChannelMoments(file,CyanPixelChannel,"Cyan",
+          (void) PrintChannelMoments(file,CyanChannel,"cyan",MagickTrue,
             channel_moments);
-          (void) PrintChannelMoments(file,MagentaPixelChannel,"Magenta",
+          (void) PrintChannelMoments(file,MagentaChannel,"magenta",MagickTrue,
             channel_moments);
-          (void) PrintChannelMoments(file,YellowPixelChannel,"Yellow",
+          (void) PrintChannelMoments(file,YellowChannel,"yellow",MagickTrue,
             channel_moments);
-          (void) PrintChannelMoments(file,BlackPixelChannel,"Black",
+          (void) PrintChannelMoments(file,BlackChannel,"black",MagickFalse,
             channel_moments);
           break;
         }
         case GRAYColorspace:
         {
-          (void) PrintChannelMoments(file,GrayPixelChannel,"Gray",
+          (void) PrintChannelMoments(file,GrayChannel,"gray",MagickFalse,
             channel_moments);
           break;
         }
       }
-      if (image->alpha_trait == BlendPixelTrait)
-        (void) PrintChannelMoments(file,AlphaPixelChannel,"Alpha",
-          channel_moments);
+      (void) FormatLocaleFile(file,"    },\n");
       channel_moments=(ChannelMoments *) RelinquishMagickMemory(
         channel_moments);
     }
   if (channel_phash != (ChannelPerceptualHash *) NULL)
     {
       (void) FormatLocaleFile(file,"    \"channelPerceptualHash\": {\n");
-      if (image->alpha_trait == BlendPixelTrait)
+      if (image->matte != MagickFalse)
         (void) PrintChannelPerceptualHash(file,AlphaChannel,"alphaAlpha",
           MagickTrue,channel_phash);
       (void) PrintChannelPerceptualHash(file,RedChannel,"redHue",MagickTrue,
@@ -852,158 +1005,149 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
     }
   if (channel_features != (ChannelFeatures *) NULL)
     {
-      (void) FormatLocaleFile(file,"  Channel features (horizontal, vertical, "
-        "left and right diagonals, average):\n");
+      (void) FormatLocaleFile(file,"    \"channelFeatures\": {\n");
+      if (image->matte != MagickFalse)
+        (void) PrintChannelFeatures(file,AlphaChannel,"alpha",MagickTrue,
+          channel_features);
       switch (colorspace)
       {
         case RGBColorspace:
         default:
         {
-          (void) PrintChannelFeatures(file,RedPixelChannel,"Red",
+          (void) PrintChannelFeatures(file,RedChannel,"red",MagickTrue,
             channel_features);
-          (void) PrintChannelFeatures(file,GreenPixelChannel,"Green",
+          (void) PrintChannelFeatures(file,GreenChannel,"green",MagickTrue,
             channel_features);
-          (void) PrintChannelFeatures(file,BluePixelChannel,"Blue",
+          (void) PrintChannelFeatures(file,BlueChannel,"blue",MagickFalse,
             channel_features);
           break;
         }
         case CMYKColorspace:
         {
-          (void) PrintChannelFeatures(file,CyanPixelChannel,"Cyan",
+          (void) PrintChannelFeatures(file,CyanChannel,"cyan",MagickTrue,
             channel_features);
-          (void) PrintChannelFeatures(file,MagentaPixelChannel,"Magenta",
+          (void) PrintChannelFeatures(file,MagentaChannel,"magenta",MagickTrue,
             channel_features);
-          (void) PrintChannelFeatures(file,YellowPixelChannel,"Yellow",
+          (void) PrintChannelFeatures(file,YellowChannel,"yellow",MagickTrue,
             channel_features);
-          (void) PrintChannelFeatures(file,BlackPixelChannel,"Black",
+          (void) PrintChannelFeatures(file,BlackChannel,"black",MagickFalse,
             channel_features);
           break;
         }
         case GRAYColorspace:
         {
-          (void) PrintChannelFeatures(file,GrayPixelChannel,"Gray",
+          (void) PrintChannelFeatures(file,GrayChannel,"gray",MagickFalse,
             channel_features);
           break;
         }
       }
-      if (image->alpha_trait == BlendPixelTrait)
-        (void) PrintChannelFeatures(file,AlphaPixelChannel,"Alpha",
-          channel_features);
+      (void) FormatLocaleFile(file,"    },\n");
       channel_features=(ChannelFeatures *) RelinquishMagickMemory(
         channel_features);
     }
-  if (ping == MagickFalse)
+  if (image->colorspace == CMYKColorspace)
+    (void) FormatLocaleFile(file,"    \"totalInkDensity\": \"%.*g%%\",\n",
+      GetMagickPrecision(),100.0*GetImageTotalInkDensity(image)/(double)
+      QuantumRange);
+  x=0;
+  if (image->matte != MagickFalse)
     {
-      if (image->colorspace == CMYKColorspace)
-        (void) FormatLocaleFile(file,"  Total ink density: %.0f%%\n",100.0*
-          GetImageTotalInkDensity(image,exception)/(double) QuantumRange);
-      x=0;
-      if (image->alpha_trait == BlendPixelTrait)
+      register const IndexPacket
+        *indexes;
+
+      register const PixelPacket
+        *p;
+
+      p=(PixelPacket *) NULL;
+      indexes=(IndexPacket *) NULL;
+      for (y=0; y < (ssize_t) image->rows; y++)
+      {
+        p=GetVirtualPixels(image,0,y,image->columns,1,exception);
+        if (p == (const PixelPacket *) NULL)
+          break;
+        indexes=GetVirtualIndexQueue(image);
+        for (x=0; x < (ssize_t) image->columns; x++)
         {
-          register const Quantum
-            *p;
+          if (GetPixelOpacity(p) == (Quantum) TransparentOpacity)
+            break;
+          p++;
+        }
+        if (x < (ssize_t) image->columns)
+          break;
+      }
+      if ((x < (ssize_t) image->columns) || (y < (ssize_t) image->rows))
+        {
+          char
+            tuple[MaxTextExtent];
 
-          p=(const Quantum *) NULL;
-          for (y=0; y < (ssize_t) image->rows; y++)
-          {
-            p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-            if (p == (const Quantum *) NULL)
-              break;
-            for (x=0; x < (ssize_t) image->columns; x++)
-            {
-              if (GetPixelAlpha(image,p) == (Quantum) TransparentAlpha)
-                break;
-              p+=GetPixelChannels(image);
-            }
-            if (x < (ssize_t) image->columns)
-              break;
-          }
-          if ((x < (ssize_t) image->columns) || (y < (ssize_t) image->rows))
-            {
-              char
-                tuple[MaxTextExtent];
+          MagickPixelPacket
+            pixel;
 
-              PixelInfo
-                pixel;
-
-              GetPixelInfo(image,&pixel);
-              GetPixelInfoPixel(image,p,&pixel);
-              (void) QueryColorname(image,&pixel,SVGCompliance,tuple,
-                exception);
-              (void) FormatLocaleFile(file,"  Alpha: %s ",tuple);
-              GetColorTuple(&pixel,MagickTrue,tuple);
-              (void) FormatLocaleFile(file,"  %s\n",tuple);
-            }
+          GetMagickPixelPacket(image,&pixel);
+          SetMagickPixelPacket(image,p,indexes+x,&pixel);
+          (void) QueryMagickColorname(image,&pixel,SVGCompliance,tuple,
+            exception);
+          (void) FormatLocaleFile(file,"    \"alpha\": \"%s\",\n",tuple);
         }
     }
   if (image->storage_class == PseudoClass)
     {
-      (void) FormatLocaleFile(file,"  Colormap entries: %.20g\n",(double)
-        image->colors);
-      (void) FormatLocaleFile(file,"  Colormap:\n");
-      if (image->colors <= 1024)
-        {
-          char
-            color[MaxTextExtent],
-            hex[MaxTextExtent],
-            tuple[MaxTextExtent];
+      char
+        tuple[MaxTextExtent];
 
-          PixelInfo
-            pixel;
+      MagickPixelPacket
+        pixel;
 
-          register PixelInfo
-            *restrict p;
+      register PixelPacket
+        *restrict p;
 
-          GetPixelInfo(image,&pixel);
-          p=image->colormap;
-          for (i=0; i < (ssize_t) image->colors; i++)
+      (void) FormatLocaleFile(file,"    \"colormapEntries\": \"%.20g\",\n",
+        (double) image->colors);
+      (void) FormatLocaleFile(file,"    \"colormap\": [\n        ");
+      GetMagickPixelPacket(image,&pixel);
+      p=image->colormap;
+      for (i=0; i < (ssize_t) image->colors; i++)
+      {
+        SetMagickPixelPacket(image,p,(IndexPacket *) NULL,&pixel);
+        *tuple='\0';
+        ConcatenateColorComponent(&pixel,RedChannel,X11Compliance,tuple);
+        (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
+        ConcatenateColorComponent(&pixel,GreenChannel,X11Compliance,tuple);
+        (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
+        ConcatenateColorComponent(&pixel,BlueChannel,X11Compliance,tuple);
+        if (pixel.colorspace == CMYKColorspace)
           {
-            pixel=(*p);
-            (void) CopyMagickString(tuple,"(",MaxTextExtent);
-            ConcatenateColorComponent(&pixel,RedPixelChannel,X11Compliance,
-              tuple);
             (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
-            ConcatenateColorComponent(&pixel,GreenPixelChannel,X11Compliance,
-              tuple);
-            (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
-            ConcatenateColorComponent(&pixel,BluePixelChannel,X11Compliance,
-              tuple);
-            if (pixel.colorspace == CMYKColorspace)
-              {
-                (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
-                ConcatenateColorComponent(&pixel,BlackPixelChannel,
-                  X11Compliance,tuple);
-              }
-            if (pixel.alpha_trait == BlendPixelTrait)
-              {
-                (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
-                ConcatenateColorComponent(&pixel,AlphaPixelChannel,
-                  X11Compliance,tuple);
-              }
-            (void) ConcatenateMagickString(tuple,")",MaxTextExtent);
-            (void) QueryColorname(image,&pixel,SVGCompliance,color,
-              exception);
-            GetColorTuple(&pixel,MagickTrue,hex);
-            (void) FormatLocaleFile(file,"  %8ld: %s %s %s\n",(long) i,tuple,
-              hex,color);
-            p++;
+            ConcatenateColorComponent(&pixel,IndexChannel,X11Compliance,tuple);
           }
-        }
+        if (pixel.matte != MagickFalse)
+          {
+            (void) ConcatenateMagickString(tuple,",",MaxTextExtent);
+            ConcatenateColorComponent(&pixel,AlphaChannel,X11Compliance,tuple);
+          }
+        (void) FormatLocaleFile(file,"%s",tuple);
+        if (i < (ssize_t) (image->colors-1))
+          (void) FormatLocaleFile(file,",");
+        if (((i+1) % 5) == 0)
+          (void) FormatLocaleFile(file,"\n        ");
+        p++;
+      }
+      (void) FormatLocaleFile(file,"\n    ],\n");
     }
   if (image->error.mean_error_per_pixel != 0.0)
-    (void) FormatLocaleFile(file,"  Mean error per pixel: %g\n",
+    (void) FormatLocaleFile(file,"    \"meanErrorPerPixel\": \"%g\",\n",
       image->error.mean_error_per_pixel);
   if (image->error.normalized_mean_error != 0.0)
-    (void) FormatLocaleFile(file,"  Normalized mean error: %g\n",
+    (void) FormatLocaleFile(file,"    \"normalizedMeanError\": \"%g\",\n",
       image->error.normalized_mean_error);
   if (image->error.normalized_maximum_error != 0.0)
-    (void) FormatLocaleFile(file,"  Normalized maximum error: %g\n",
+    (void) FormatLocaleFile(file,"    \"normalizedMaximumError\": \"%g\",\n",
       image->error.normalized_maximum_error);
-  (void) FormatLocaleFile(file,"  Rendering intent: %s\n",
+  (void) FormatLocaleFile(file,"    \"renderingIntent\": \"%s\",\n",
     CommandOptionToMnemonic(MagickIntentOptions,(ssize_t)
     image->rendering_intent));
   if (image->gamma != 0.0)
-    (void) FormatLocaleFile(file,"  Gamma: %g\n",image->gamma);
+    (void) FormatLocaleFile(file,"    \"gamma\": \"%g\",\n",image->gamma);
   if ((image->chromaticity.red_primary.x != 0.0) ||
       (image->chromaticity.green_primary.x != 0.0) ||
       (image->chromaticity.blue_primary.x != 0.0) ||
@@ -1012,69 +1156,83 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
       /*
         Display image chromaticity.
       */
-      (void) FormatLocaleFile(file,"  Chromaticity:\n");
-      (void) FormatLocaleFile(file,"    red primary: (%g,%g)\n",
+      (void) FormatLocaleFile(file,"    \"chromaticity\": {\n");
+      (void) FormatLocaleFile(file,"      \"redPrimary\": {\n"
+        "        \"x\": \"%g\",\n        \"y\": \"%g\"\n      },\n",
         image->chromaticity.red_primary.x,image->chromaticity.red_primary.y);
-      (void) FormatLocaleFile(file,"    green primary: (%g,%g)\n",
+      (void) FormatLocaleFile(file,"      \"greenPrimary\": {\n"
+        "        \"x\": \"%g\",\n        \"y\": \"%g\"\n      },\n",
         image->chromaticity.green_primary.x,
         image->chromaticity.green_primary.y);
-      (void) FormatLocaleFile(file,"    blue primary: (%g,%g)\n",
+      (void) FormatLocaleFile(file,"      \"bluePrimary\": {\n"
+        "        \"x\": \"%g\",\n        \"y\": \"%g\"\n      },\n",
         image->chromaticity.blue_primary.x,image->chromaticity.blue_primary.y);
-      (void) FormatLocaleFile(file,"    white point: (%g,%g)\n",
+      (void) FormatLocaleFile(file,"      \"whitePrimary\": {\n"
+        "        \"x\": \"%g\",\n        \"y\": \"%g\"\n      }\n",
         image->chromaticity.white_point.x,image->chromaticity.white_point.y);
+      (void) FormatLocaleFile(file,"    },\n");
     }
   if ((image->extract_info.width*image->extract_info.height) != 0)
-    (void) FormatLocaleFile(file,"  Tile geometry: %.20gx%.20g%+.20g%+.20g\n",
+    (void) FormatLocaleFile(file,"    \"tileGeometry\": {\n"
+      "      \"width\": \"%.20g\",\n      \"height\": \"%.20g\",\n"
+      "      \"x\": \"%.20g\",\n      \"y\": \"%.20g\"\n    },\n",
       (double) image->extract_info.width,(double) image->extract_info.height,
       (double) image->extract_info.x,(double) image->extract_info.y);
   (void) QueryColorname(image,&image->background_color,SVGCompliance,color,
     exception);
-  (void) FormatLocaleFile(file,"  Background color: %s\n",color);
+  (void) FormatLocaleFile(file,"    \"backgroundColor\": \"%s\",\n",color);
   (void) QueryColorname(image,&image->border_color,SVGCompliance,color,
     exception);
-  (void) FormatLocaleFile(file,"  Border color: %s\n",color);
+  (void) FormatLocaleFile(file,"    \"borderColor\": \"%s\",\n",color);
   (void) QueryColorname(image,&image->matte_color,SVGCompliance,color,
     exception);
-  (void) FormatLocaleFile(file,"  Matte color: %s\n",color);
+  (void) FormatLocaleFile(file,"    \"matteColor\": \"%s\",\n",color);
   (void) QueryColorname(image,&image->transparent_color,SVGCompliance,color,
     exception);
-  (void) FormatLocaleFile(file,"  Transparent color: %s\n",color);
-  (void) FormatLocaleFile(file,"  Interlace: %s\n",CommandOptionToMnemonic(
-    MagickInterlaceOptions,(ssize_t) image->interlace));
-  (void) FormatLocaleFile(file,"  Intensity: %s\n",CommandOptionToMnemonic(
-    MagickPixelIntensityOptions,(ssize_t) image->intensity));
-  (void) FormatLocaleFile(file,"  Compose: %s\n",CommandOptionToMnemonic(
-    MagickComposeOptions,(ssize_t) image->compose));
+  (void) FormatLocaleFile(file,"    \"transparentColor\": \"%s\",\n",color);
+  (void) FormatLocaleFile(file,"    \"interlace\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickInterlaceOptions,(ssize_t) image->interlace));
+  (void) FormatLocaleFile(file,"    \"intensity\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickPixelIntensityOptions,(ssize_t)
+    image->intensity));
+  (void) FormatLocaleFile(file,"    \"compose\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickComposeOptions,(ssize_t) image->compose));
   if ((image->page.width != 0) || (image->page.height != 0) ||
       (image->page.x != 0) || (image->page.y != 0))
-    (void) FormatLocaleFile(file,"  Page geometry: %.20gx%.20g%+.20g%+.20g\n",
-      (double) image->page.width,(double) image->page.height,(double)
-      image->page.x,(double) image->page.y);
+    (void) FormatLocaleFile(file,"    \"pageGeometry\": {\n"
+      "      \"width\": \"%.20g\",\n      \"height\": \"%.20g\",\n"
+      "      \"x\": \"%.20g\",\n      \"y\": \"%.20g\"\n    },\n",
+      (double) image->page.width,(double) image->page.height,
+      (double) image->page.x,(double) image->page.y);
   if ((image->page.x != 0) || (image->page.y != 0))
-    (void) FormatLocaleFile(file,"  Origin geometry: %+.20g%+.20g\n",(double)
-      image->page.x,(double) image->page.y);
-  (void) FormatLocaleFile(file,"  Dispose: %s\n",CommandOptionToMnemonic(
-    MagickDisposeOptions,(ssize_t) image->dispose));
+    (void) FormatLocaleFile(file,"    \"origingeometry\": %+.20g%+.20g\n",
+      (double) image->page.x,(double) image->page.y);
+  (void) FormatLocaleFile(file,"    \"dispose\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickDisposeOptions,(ssize_t) image->dispose));
   if (image->delay != 0)
-    (void) FormatLocaleFile(file,"  Delay: %.20gx%.20g\n",(double) image->delay,
-      (double) image->ticks_per_second);
+    (void) FormatLocaleFile(file,"    \"delay\": %.20gx%.20g\n",
+      (double) image->delay,(double) image->ticks_per_second);
   if (image->iterations != 1)
-    (void) FormatLocaleFile(file,"  Iterations: %.20g\n",(double)
+    (void) FormatLocaleFile(file,"    \"iterations\": \"%.20g\",\n",(double)
       image->iterations);
   if ((image->next != (Image *) NULL) || (image->previous != (Image *) NULL))
-    (void) FormatLocaleFile(file,"  Scene: %.20g of %.20g\n",(double)
+    (void) FormatLocaleFile(file,"    \"scene\": %.20g of %.20g\n",(double)
       image->scene,(double) GetImageListLength(image));
   else
     if (image->scene != 0)
-      (void) FormatLocaleFile(file,"  Scene: %.20g\n",(double) image->scene);
-  (void) FormatLocaleFile(file,"  Compression: %s\n",CommandOptionToMnemonic(
-    MagickCompressOptions,(ssize_t) image->compression));
+      (void) FormatLocaleFile(file,"    \"scene\": \"%.20g\",\n",(double)
+        image->scene);
+  (void) FormatLocaleFile(file,"    \"compression\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickCompressOptions,(ssize_t)
+    image->compression));
   if (image->quality != UndefinedCompressionQuality)
-    (void) FormatLocaleFile(file,"  Quality: %.20g\n",(double) image->quality);
-  (void) FormatLocaleFile(file,"  Orientation: %s\n",CommandOptionToMnemonic(
-    MagickOrientationOptions,(ssize_t) image->orientation));
+    (void) FormatLocaleFile(file,"    \"quality\": \"%.20g\",\n",(double)
+      image->quality);
+  (void) FormatLocaleFile(file,"    \"orientation\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickOrientationOptions,(ssize_t)
+    image->orientation));
   if (image->montage != (char *) NULL)
-    (void) FormatLocaleFile(file,"  Montage: %s\n",image->montage);
+    (void) FormatLocaleFile(file,"    \"montage\": \"%s\",\n",image->montage);
   if (image->directory != (char *) NULL)
     {
       Image
@@ -1095,7 +1253,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
       */
       image_info=AcquireImageInfo();
       (void) CloneString(&image_info->size,"64x64");
-      (void) FormatLocaleFile(file,"  Directory:\n");
+      (void) FormatLocaleFile(file,"    Directory:\n");
       for (p=image->directory; *p != '\0'; p++)
       {
         q=p;
@@ -1103,7 +1261,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
           q++;
         (void) CopyMagickString(image_info->filename,p,(size_t) (q-p+1));
         p=q;
-        (void) FormatLocaleFile(file,"    %s",image_info->filename);
+        (void) FormatLocaleFile(file,"      %s",image_info->filename);
         handler=SetWarningHandler((WarningHandler) NULL);
         tile=ReadImage(image_info,exception);
         (void) SetWarningHandler(handler);
@@ -1114,13 +1272,13 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
           }
         (void) FormatLocaleFile(file," %.20gx%.20g %s\n",(double)
           tile->magick_columns,(double) tile->magick_rows,tile->magick);
-        (void) SignatureImage(tile,exception);
+        (void) SignatureImage(tile);
         ResetImagePropertyIterator(tile);
         property=GetNextImageProperty(tile);
         while (property != (const char *) NULL)
         {
-          (void) FormatLocaleFile(file,"  %s:\n",property);
-          value=GetImageProperty(tile,property,exception);
+          (void) FormatLocaleFile(file,"    %s:\n",property);
+          value=GetImageProperty(tile,property);
           if (value != (const char *) NULL)
             (void) FormatLocaleFile(file,"%s\n",value);
           property=GetNextImageProperty(tile);
@@ -1129,38 +1287,46 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
       }
       image_info=DestroyImageInfo(image_info);
     }
-  (void) GetImageProperty(image,"exif:*",exception);
-  (void) GetImageProperty(image,"icc:*",exception);
-  (void) GetImageProperty(image,"iptc:*",exception);
-  (void) GetImageProperty(image,"xmp:*",exception);
+  (void) GetImageProperty(image,"exif:*");
+  (void) GetImageProperty(image,"icc:*");
+  (void) GetImageProperty(image,"iptc:*");
+  (void) GetImageProperty(image,"xmp:*");
   ResetImagePropertyIterator(image);
   property=GetNextImageProperty(image);
   if (property != (const char *) NULL)
     {
+      size_t
+        n;
+
       /*
         Display image properties.
       */
-      (void) FormatLocaleFile(file,"  Properties:\n");
+      n=0;
+      (void) FormatLocaleFile(file,"    \"properties\": {\n");
       while (property != (const char *) NULL)
       {
-        (void) FormatLocaleFile(file,"    %s: ",property);
-        value=GetImageProperty(image,property,exception);
+        if (n++ != 0)
+          (void) FormatLocaleFile(file,",\n");
+        (void) FormatLocaleFile(file,"      \"%s\": ",property);
+        value=GetImageProperty(image,property);
         if (value != (const char *) NULL)
-          (void) FormatLocaleFile(file,"%s\n",value);
+          (void) FormatLocaleFile(file,"\"%s\"",value);
         property=GetNextImageProperty(image);
       }
+      (void) FormatLocaleFile(file,"\n    },\n");
     }
   (void) FormatLocaleString(key,MaxTextExtent,"8BIM:1999,2998:#1");
-  value=GetImageProperty(image,key,exception);
+  value=GetImageProperty(image,key);
   if (value != (const char *) NULL)
     {
       /*
         Display clipping path.
       */
-      (void) FormatLocaleFile(file,"  Clipping path: ");
+      (void) FormatLocaleFile(file,"    \"clipping path\": {");
       if (strlen(value) > 80)
         (void) fputc('\n',file);
       (void) FormatLocaleFile(file,"%s\n",value);
+      (void) FormatLocaleFile(file,"    },\n");
     }
   ResetImageProfileIterator(image);
   name=GetNextImageProfile(image);
@@ -1169,17 +1335,22 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
       const StringInfo
         *profile;
 
+      size_t
+        n;
+
       /*
         Identify image profiles.
       */
-      (void) FormatLocaleFile(file,"  Profiles:\n");
+      n=0;
+      (void) FormatLocaleFile(file,"    \"profiles\": {\n");
       while (name != (char *) NULL)
       {
         profile=GetImageProfile(image,name);
         if (profile == (StringInfo *) NULL)
           continue;
-        (void) FormatLocaleFile(file,"    Profile-%s: %.20g bytes\n",name,
-          (double) GetStringInfoLength(profile));
+        if (n++ != 0)
+          (void) FormatLocaleFile(file,",\n");
+        (void) FormatLocaleFile(file,"      \"%s\": {\n",name);
         if (LocaleCompare(name,"iptc") == 0)
           {
             char
@@ -1266,8 +1437,8 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
                 case 219: tag="Custom Field 20"; break;
                 default: tag="unknown"; break;
               }
-              (void) FormatLocaleFile(file,"      %s[%.20g,%.20g]: ",tag,
-                (double) dataset,(double) record);
+              (void) FormatLocaleFile(file,"        \"%s[%.20g,%.20g]\": ",
+                tag,(double) dataset,(double) record);
               length=(size_t) (GetStringInfoDatum(profile)[i++] << 8);
               length|=GetStringInfoDatum(profile)[i++];
               attribute=(char *) NULL;
@@ -1283,8 +1454,9 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
                     {
                       for (j=0; attribute_list[j] != (char *) NULL; j++)
                       {
+                        (void) fputs("\"",file);
                         (void) fputs(attribute_list[j],file);
-                        (void) fputs("\n",file);
+                        (void) fputs("\",\n",file);
                         attribute_list[j]=(char *) RelinquishMagickMemory(
                           attribute_list[j]);
                       }
@@ -1295,27 +1467,36 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
                 }
             }
           }
-        if (image->debug != MagickFalse)
-          PrintStringInfo(file,name,profile);
+        (void) FormatLocaleFile(file,"        \"length\": \"%.20g\"",(double)
+          GetStringInfoLength(profile));
+        (void) FormatLocaleFile(file,"\n      }");
         name=GetNextImageProfile(image);
       }
+      (void) FormatLocaleFile(file,"\n    },\n");
     }
   ResetImageArtifactIterator(image);
   artifact=GetNextImageArtifact(image);
   if (artifact != (const char *) NULL)
     {
+      ssize_t
+        n;
+
       /*
         Display image artifacts.
       */
-      (void) FormatLocaleFile(file,"  Artifacts:\n");
+      n=0;
+      (void) FormatLocaleFile(file,"    \"artifacts\": {\n");
       while (artifact != (const char *) NULL)
       {
-        (void) FormatLocaleFile(file,"    %s: ",artifact);
+        if (n++ != 0)
+          (void) FormatLocaleFile(file,",\n");
+        (void) FormatLocaleFile(file,"      \"%s\": ",artifact);
         value=GetImageArtifact(image,artifact);
         if (value != (const char *) NULL)
-          (void) FormatLocaleFile(file,"%s\n",value);
+          (void) FormatLocaleFile(file,"\"%s\"",value);
         artifact=GetNextImageArtifact(image);
       }
+      (void) FormatLocaleFile(file,"\n    },\n");
     }
   ResetImageRegistryIterator();
   registry=GetNextImageRegistry();
@@ -1324,41 +1505,44 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file,
       /*
         Display image registry.
       */
-      (void) FormatLocaleFile(file,"  Registry:\n");
+      (void) FormatLocaleFile(file,"    \"registry\": {\n");
       while (registry != (const char *) NULL)
       {
-        (void) FormatLocaleFile(file,"    %s: ",registry);
+        (void) FormatLocaleFile(file,"      %s: ",registry);
         value=(const char *) GetImageRegistry(StringRegistryType,registry,
           exception);
         if (value != (const char *) NULL)
           (void) FormatLocaleFile(file,"%s\n",value);
         registry=GetNextImageRegistry();
       }
+      (void) FormatLocaleFile(file,"    },\n");
     }
-  (void) FormatLocaleFile(file,"  Tainted: %s\n",CommandOptionToMnemonic(
-    MagickBooleanOptions,(ssize_t) image->taint));
+  (void) FormatLocaleFile(file,"    \"tainted\": \"%s\",\n",
+    CommandOptionToMnemonic(MagickBooleanOptions,(ssize_t) image->taint));
   (void) FormatMagickSize(GetBlobSize(image),MagickFalse,format);
-  (void) FormatLocaleFile(file,"  Filesize: %s\n",format);
+  (void) FormatLocaleFile(file,"    \"filesize\": \"%s\",\n",format);
   (void) FormatMagickSize((MagickSizeType) image->columns*image->rows,
-    MagickFalse,format);
+     MagickFalse,format);
   if (strlen(format) > 1)
     format[strlen(format)-1]='\0';
-  (void) FormatLocaleFile(file,"  Number pixels: %s\n",format);
+  (void) FormatLocaleFile(file,"    \"numberPixels\": \"%s\",\n",format);
   (void) FormatMagickSize((MagickSizeType) ((double) image->columns*image->rows/
     elapsed_time+0.5),MagickFalse,format);
-  (void) FormatLocaleFile(file,"  Pixels per second: %s\n",format);
-  (void) FormatLocaleFile(file,"  User time: %0.3fu\n",user_time);
-  (void) FormatLocaleFile(file,"  Elapsed time: %lu:%02lu.%03lu\n",
-    (unsigned long) (elapsed_time/60.0),(unsigned long) ceil(fmod(elapsed_time,
-    60.0)),(unsigned long) (1000.0*(elapsed_time-floor(elapsed_time))));
-  (void) FormatLocaleFile(file,"  Version: %s\n",GetMagickVersion((size_t *)
-    NULL));
+  (void) FormatLocaleFile(file,"    \"pixelsPerSecond\": \"%s\",\n",format);
+  (void) FormatLocaleFile(file,"    \"userTime\": \"%0.3fu\",\n",user_time);
+  (void) FormatLocaleFile(file,"    \"elapsedTime\": \"%lu:%02lu.%03lu\",\n",
+    (unsigned long) (elapsed_time/60.0),(unsigned long) ceil(fmod(
+    elapsed_time,60.0)),(unsigned long) (1000.0*(elapsed_time-floor(
+    elapsed_time))));
+  (void) FormatLocaleFile(file,"    \"version\": \"%s\"\n",
+    GetMagickVersion((size_t *) NULL));
+  (void) FormatLocaleFile(file,"  }\n}\n");
   (void) fflush(file);
   return(ferror(file) != 0 ? MagickFalse : MagickTrue);
 }
 
 static MagickBooleanType WriteJSONImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   MagickBooleanType
     status;
@@ -1375,7 +1559,7 @@ static MagickBooleanType WriteJSONImage(const ImageInfo *image_info,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  status=OpenBlob(image_info,image,WriteBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   scene=0;
@@ -1385,7 +1569,7 @@ static MagickBooleanType WriteJSONImage(const ImageInfo *image_info,
       MaxTextExtent);
     image->magick_columns=image->columns;
     image->magick_rows=image->rows;
-    (void) EncodeImageAttributes(image,GetBlobFileHandle(image),exception);
+    (void) EncodeImageAttributes(image,GetBlobFileHandle(image));
     if (GetNextImageInList(image) == (Image *) NULL)
       break;
     image=SyncNextImageInList(image);

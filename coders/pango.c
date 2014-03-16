@@ -39,33 +39,33 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/annotate.h"
-#include "MagickCore/artifact.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/composite-private.h"
-#include "MagickCore/draw.h"
-#include "MagickCore/draw-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/module.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/option.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/property.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/string-private.h"
-#include "MagickCore/token.h"
-#include "MagickCore/utility.h"
+#include "magick/studio.h"
+#include "magick/annotate.h"
+#include "magick/artifact.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/composite-private.h"
+#include "magick/draw.h"
+#include "magick/draw-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/module.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/option.h"
+#include "magick/pixel-accessor.h"
+#include "magick/property.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/string-private.h"
+#include "magick/token.h"
+#include "magick/utility.h"
 #if defined(MAGICKCORE_PANGOCAIRO_DELEGATE)
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
@@ -147,7 +147,7 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
   PangoRectangle
     extent;
 
-  PixelInfo
+  PixelPacket
     fill_color;
 
   RectangleInfo
@@ -175,31 +175,28 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   (void) ResetImagePage(image,"0x0+0+0");
   /*
     Format caption.
   */
   option=GetImageOption(image_info,"filename");
   if (option == (const char *) NULL)
-    property=InterpretImageProperties((ImageInfo *) image_info,image,
-      image_info->filename,exception);
+    property=InterpretImageProperties(image_info,image,image_info->filename);
   else
     if (LocaleNCompare(option,"pango:",6) == 0)
-      property=InterpretImageProperties((ImageInfo *) image_info,image,option+6,
-        exception);
+      property=InterpretImageProperties(image_info,image,option+6);
     else
-      property=InterpretImageProperties((ImageInfo *) image_info,image,option,
-        exception);
-  (void) SetImageProperty(image,"caption",property,exception);
+      property=InterpretImageProperties(image_info,image,option);
+  (void) SetImageProperty(image,"caption",property);
   property=DestroyString(property);
-  caption=ConstantString(GetImageProperty(image,"caption",exception));
+  caption=ConstantString(GetImageProperty(image,"caption"));
   /*
     Get context.
   */
   fontmap=pango_cairo_font_map_new();
   pango_cairo_font_map_set_resolution(PANGO_CAIRO_FONT_MAP(fontmap),
-    image->resolution.x == 0.0 ? 90.0 : image->resolution.x);
+    image->x_resolution == 0.0 ? 90.0 : image->x_resolution);
   font_options=cairo_font_options_create();
   option=GetImageOption(image_info,"pango:hinting");
   if (option != (const char *) NULL)
@@ -281,10 +278,10 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
         pango_layout_set_ellipsize(layout,PANGO_ELLIPSIZE_START);
     }
   option=GetImageOption(image_info,"pango:justify");
-  if (IfMagickTrue(IsStringTrue(option)))
+  if ((option != (const char *) NULL) && (IsMagickTrue(option) != MagickFalse))
     pango_layout_set_justify(layout,1);
   option=GetImageOption(image_info,"pango:single-paragraph");
-  if (IfMagickTrue(IsStringTrue(option)))
+  if ((option != (const char *) NULL) && (IsMagickTrue(option) != MagickFalse))
     pango_layout_set_single_paragraph_mode(layout,1);
   option=GetImageOption(image_info,"pango:wrap");
   if (option != (const char *) NULL)
@@ -299,7 +296,7 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
   option=GetImageOption(image_info,"pango:indent");
   if (option != (const char *) NULL)
     pango_layout_set_indent(layout,(int) ((StringToLong(option)*
-      (image->resolution.x == 0.0 ? 90.0 : image->resolution.x)*PANGO_SCALE+36)/
+      (image->x_resolution == 0.0 ? 90.0 : image->x_resolution)*PANGO_SCALE+45)/
       90.0+0.5));
   switch (draw_info->align)
   {
@@ -336,7 +333,7 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
       pango_font_description_free(description);
     }
   option=GetImageOption(image_info,"pango:markup");
-  if ((option != (const char *) NULL) && (IsStringTrue(option) == MagickFalse))
+  if ((option != (const char *) NULL) && (IsMagickTrue(option) == MagickFalse))
     pango_layout_set_text(layout,caption,-1);
   else
     {
@@ -363,7 +360,7 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
     {
       image->columns-=2*page.x;
       pango_layout_set_width(layout,(int) ((PANGO_SCALE*image->columns*
-        (image->resolution.x == 0.0 ? 90.0 : image->resolution.x)+45.0)/90.0+
+        (image->x_resolution == 0.0 ? 90.0 : image->x_resolution)+45.0)/90.0+
         0.5));
     }
   if (image->rows == 0)
@@ -375,7 +372,7 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
     {
       image->rows-=2*page.y;
       pango_layout_set_height(layout,(int) ((PANGO_SCALE*image->rows*
-        (image->resolution.y == 0.0 ? 90.0 : image->resolution.y)+45.0)/90.0+
+        (image->y_resolution == 0.0 ? 90.0 : image->y_resolution)+45.0)/90.0+
         0.5));
     }
   /*
@@ -406,40 +403,39 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
   /*
     Convert surface to image.
   */
-  (void) SetImageBackgroundColor(image,exception);
+  (void) SetImageBackgroundColor(image);
   p=pixels;
-  GetPixelInfo(image,&fill_color);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register Quantum
+    register PixelPacket
       *q;
 
     register ssize_t
       x;
 
     q=GetAuthenticPixels(image,0,y,image->columns,1,exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       double
         gamma;
 
-      fill_color.blue=(double) ScaleCharToQuantum(*p++);
-      fill_color.green=(double) ScaleCharToQuantum(*p++);
-      fill_color.red=(double) ScaleCharToQuantum(*p++);
-      fill_color.alpha=(double) ScaleCharToQuantum(*p++);
+      fill_color.blue=ScaleCharToQuantum(*p++);
+      fill_color.green=ScaleCharToQuantum(*p++);
+      fill_color.red=ScaleCharToQuantum(*p++);
+      fill_color.opacity=QuantumRange-ScaleCharToQuantum(*p++);
       /*
         Disassociate alpha.
       */
-      gamma=1.0-QuantumScale*fill_color.alpha;
+      gamma=1.0-QuantumScale*fill_color.opacity;
       gamma=PerceptibleReciprocal(gamma);
       fill_color.blue*=gamma;
       fill_color.green*=gamma;
       fill_color.red*=gamma;
-      CompositePixelOver(image,&fill_color,fill_color.alpha,q,(double)
-        GetPixelAlpha(image,q),q);
-      q+=GetPixelChannels(image);
+      MagickCompositeOver(&fill_color,fill_color.opacity,q,(MagickRealType)
+        q->opacity,q);
+      q++;
     }
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;

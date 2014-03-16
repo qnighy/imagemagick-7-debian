@@ -39,26 +39,27 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/color.h"
-#include "MagickCore/color-private.h"
-#include "MagickCore/colorspace-private.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/pixel.h"
-#include "MagickCore/pixel-accessor.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/color.h"
+#include "magick/color-private.h"
+#include "magick/colorspace-private.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/pixel.h"
+#include "magick/pixel-accessor.h"
+#include "magick/pixel-private.h"
+#include "magick/quantum-private.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -94,16 +95,23 @@ static Image *ReadXCImage(const ImageInfo *image_info,ExceptionInfo *exception)
   Image
     *image;
 
+  IndexPacket
+    index,
+    *indexes;
+
   MagickBooleanType
     status;
 
-  PixelInfo
+  MagickPixelPacket
+    color;
+
+  PixelPacket
     pixel;
 
   register ssize_t
     x;
 
-  register Quantum
+  register PixelPacket
     *q;
 
   ssize_t
@@ -119,36 +127,35 @@ static Image *ReadXCImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   if (image->columns == 0)
     image->columns=1;
   if (image->rows == 0)
     image->rows=1;
   (void) CopyMagickString(image->filename,image_info->filename,MaxTextExtent);
-  if (*image_info->filename == '\0')
-    pixel=image->background_color;
-  else
+  status=QueryMagickColor((char *) image_info->filename,&color,exception);
+  if (status == MagickFalse)
     {
-      status=QueryColorCompliance((char *) image_info->filename,AllCompliance,
-        &pixel,exception);
-      if (status == MagickFalse)
-        {
-          image=DestroyImage(image);
-          return((Image *) NULL);
-        }
+      image=DestroyImage(image);
+      return((Image *) NULL);
     }
-  (void) SetImageColorspace(image,pixel.colorspace,exception);
-  image->alpha_trait=pixel.alpha_trait;
+  (void) SetImageColorspace(image,color.colorspace);
+  image->matte=color.matte;
+  index=0;
+  SetPixelPacket(image,&color,&pixel,&index);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-    if (q == (Quantum *) NULL)
+    if (q == (PixelPacket *) NULL)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
-    {
-      SetPixelInfoPixel(image,&pixel,q);
-      q+=GetPixelChannels(image);
-    }
+      *q++=pixel;
+    if (image->colorspace == CMYKColorspace)
+      {
+        indexes=GetAuthenticIndexQueue(image);
+        for (x=0; x < (ssize_t) image->columns; x++)
+          SetPixelIndex(indexes+x,index);
+      }
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
   }

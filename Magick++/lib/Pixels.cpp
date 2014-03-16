@@ -8,7 +8,6 @@
 #define MAGICKCORE_IMPLEMENTATION  1
 #define MAGICK_PLUSPLUS_IMPLEMENTATION 1
 
-#include <cstring>
 #include "Magick++/Include.h"
 #include <string> // This is here to compile with Visual C++
 #include "Magick++/Thread.h"
@@ -26,18 +25,18 @@ Magick::Pixels::Pixels(Magick::Image &image_)
   GetExceptionInfo(&_exception);
 
   if (!_view)
-    throwExceptionExplicit(OptionError,"Empty view detected.");
+    _image.throwImageException();
 }
 
 Magick::Pixels::~Pixels(void)
 {
   if (_view)
     _view=DestroyCacheView(_view);
-  
+
   (void) DestroyExceptionInfo(&_exception);
 }
 
-Magick::Quantum* Magick::Pixels::get(const ssize_t x_,const ssize_t y_,
+Magick::PixelPacket* Magick::Pixels::get(const ssize_t x_,const ssize_t y_,
   const size_t columns_,const size_t rows_)
 {
   _x=x_;
@@ -45,7 +44,7 @@ Magick::Quantum* Magick::Pixels::get(const ssize_t x_,const ssize_t y_,
   _columns=columns_;
   _rows=rows_;
 
-  Quantum* pixels=GetCacheViewAuthenticPixels(_view,x_,y_,columns_,rows_,
+  PixelPacket* pixels=GetCacheViewAuthenticPixels(_view,x_,y_,columns_,rows_,
     &_exception);
 
   if (!pixels)
@@ -54,7 +53,7 @@ Magick::Quantum* Magick::Pixels::get(const ssize_t x_,const ssize_t y_,
   return pixels;
 }
 
-const Magick::Quantum* Magick::Pixels::getConst(const ssize_t x_,
+const Magick::PixelPacket* Magick::Pixels::getConst(const ssize_t x_,
   const ssize_t y_,const size_t columns_,const size_t rows_)
 {
   _x=x_;
@@ -62,8 +61,8 @@ const Magick::Quantum* Magick::Pixels::getConst(const ssize_t x_,
   _columns=columns_;
   _rows=rows_;
 
-  const Quantum* pixels=GetCacheViewVirtualPixels(_view,x_,y_,columns_,rows_,
-    &_exception);
+  const PixelPacket* pixels=GetCacheViewVirtualPixels(_view,x_,y_,columns_,
+    rows_,&_exception);
 
   if (!pixels)
     throwException(_exception);
@@ -71,14 +70,7 @@ const Magick::Quantum* Magick::Pixels::getConst(const ssize_t x_,
   return pixels;
 }
 
-ssize_t Magick::Pixels::offset(PixelChannel channel) const
-{
-  if (_image.constImage()->channel_map[channel].traits == UndefinedPixelTrait)
-    return -1;
-  return _image.constImage()->channel_map[channel].offset;
-}
-
-Magick::Quantum* Magick::Pixels::set(const ssize_t x_,const ssize_t y_,
+Magick::PixelPacket* Magick::Pixels::set(const ssize_t x_,const ssize_t y_,
   const size_t columns_,const size_t rows_)
 {
   _x=x_;
@@ -86,7 +78,7 @@ Magick::Quantum* Magick::Pixels::set(const ssize_t x_,const ssize_t y_,
   _columns=columns_;
   _rows=rows_;
 
-  Quantum* pixels=QueueCacheViewAuthenticPixels(_view,x_,y_,columns_,rows_,
+  PixelPacket* pixels=QueueCacheViewAuthenticPixels(_view,x_,y_,columns_,rows_,
     &_exception);
 
   if (!pixels)
@@ -97,19 +89,16 @@ Magick::Quantum* Magick::Pixels::set(const ssize_t x_,const ssize_t y_,
 
 void Magick::Pixels::sync(void)
 {
-  if(!SyncCacheViewAuthenticPixels(_view,&_exception))
+  if( !SyncCacheViewAuthenticPixels(_view,&_exception))
     throwException(_exception);
 }
 
-// Return pixel colormap index array
-/*
-Magick::void* Magick::Pixels::metacontent(void)
+Magick::IndexPacket* Magick::Pixels::indexes (void)
 {
-  void* pixel_metacontent=GetCacheViewAuthenticMetacontent(_view);
+  IndexPacket* pixel_indexes=GetCacheViewAuthenticIndexQueue(_view);
 
-  if (!pixel_metacontent)
+  if (!pixel_indexes)
     _image.throwImageException();
 
-  return pixel_metacontent;
+  return pixel_indexes;
 }
-*/

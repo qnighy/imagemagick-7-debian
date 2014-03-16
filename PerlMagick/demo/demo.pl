@@ -100,7 +100,7 @@ push(@$images,$example);
 print "Charcoal...\n";
 $example=$model->Clone();
 $example->Label('Charcoal');
-$example->Charcoal('2x1');
+$example->Charcoal('0x1');
 push(@$images,$example);
 
 print "ColorMatrix...\n";
@@ -163,7 +163,7 @@ push(@$images,$example);
 print "Detect Edges...\n";
 $example=$model->Clone();
 $example->Label('Detect Edges');
-$example->Edge('2x0.5');
+$example->Edge();
 $example->Clamp();
 push(@$images,$example);
 
@@ -256,13 +256,13 @@ push(@$images,$example);
 print "Median Filter...\n";
 $example=$model->Clone();
 $example->Label('Median Filter');
-$example->MedianFilter('4x4');
+$example->MedianFilter();
 push(@$images,$example);
 
 print "Mode...\n";
 $example=$model->Clone();
 $example->Label('Mode');
-$example->Mode('4x4');
+$example->Mode();
 push(@$images,$example);
 
 print "Modulate...\n";
@@ -305,7 +305,7 @@ push(@$images,$example);
 print "Oil Paint...\n";
 $example=$model->Clone();
 $example->Label('Oil Paint');
-$example->OilPaint('2x0.5');
+$example->OilPaint();
 push(@$images,$example);
 
 print "Plasma...\n";
@@ -349,7 +349,7 @@ push(@$images,$example);
 print "Reduce Noise...\n";
 $example=$model->Clone();
 $example->Label('Reduce Noise');
-$example->ReduceNoise('2x2');
+$example->ReduceNoise();
 push(@$images,$example);
 
 print "Resize...\n";
@@ -444,12 +444,6 @@ $example->Label('Swirl');
 $example->Swirl(90);
 push(@$images,$example);
 
-print "Tint...\n";
-$example=$model->Clone();
-$example->Label('Tint');
-$example->Tint('wheat');
-push(@$images,$example);
-
 print "Unsharp Mask...\n";
 $example=$model->Clone();
 $example->Label('Unsharp Mask');
@@ -473,8 +467,9 @@ push(@$images,$example);
 #
 print "Montage...\n";
 $montage=$images->Montage(geometry=>'128x160+8+4>',gravity=>'Center',
-  tile=>'5x+10+200',compose=>'over',background=>'#ffffff',font=>'Generic.ttf',
-  pointsize=>18,fill=>'#600',stroke=>'none',shadow=>'true');
+  tile=>'5x+10+200',compose=>'over',background=>'#ffffff',
+  font=>'Generic.ttf',pointsize=>18,fill=>'#600',stroke=>'none',
+  shadow=>'true');
 
 $logo=Image::Magick->new();
 $logo->Read('logo:');

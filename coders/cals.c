@@ -44,35 +44,35 @@
 /*
   Include declarations.
 */
-#include "MagickCore/studio.h"
-#include "MagickCore/blob.h"
-#include "MagickCore/blob-private.h"
-#include "MagickCore/cache.h"
-#include "MagickCore/colorspace.h"
-#include "MagickCore/constitute.h"
-#include "MagickCore/exception.h"
-#include "MagickCore/exception-private.h"
-#include "MagickCore/geometry.h"
-#include "MagickCore/image.h"
-#include "MagickCore/image-private.h"
-#include "MagickCore/list.h"
-#include "MagickCore/magick.h"
-#include "MagickCore/memory_.h"
-#include "MagickCore/monitor.h"
-#include "MagickCore/monitor-private.h"
-#include "MagickCore/option.h"
-#include "MagickCore/quantum-private.h"
-#include "MagickCore/resource_.h"
-#include "MagickCore/static.h"
-#include "MagickCore/string_.h"
-#include "MagickCore/module.h"
+#include "magick/studio.h"
+#include "magick/blob.h"
+#include "magick/blob-private.h"
+#include "magick/cache.h"
+#include "magick/colorspace.h"
+#include "magick/exception.h"
+#include "magick/exception-private.h"
+#include "magick/geometry.h"
+#include "magick/image.h"
+#include "magick/image-private.h"
+#include "magick/list.h"
+#include "magick/magick.h"
+#include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
+#include "magick/option.h"
+#include "magick/pixel-accessor.h"
+#include "magick/quantum-private.h"
+#include "magick/resource_.h"
+#include "magick/static.h"
+#include "magick/string_.h"
+#include "magick/module.h"
 
 #if defined(MAGICKCORE_TIFF_DELEGATE)
 /*
  Forward declarations.
 */
 static MagickBooleanType
-  WriteCALSImage(const ImageInfo *,Image *,ExceptionInfo *);
+  WriteCALSImage(const ImageInfo *,Image *);
 #endif
 
 /*
@@ -186,7 +186,7 @@ static Image *ReadCALSImage(const ImageInfo *image_info,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-  image=AcquireImage(image_info,exception);
+  image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -266,9 +266,9 @@ static Image *ReadCALSImage(const ImageInfo *image_info,
   (void) FormatLocaleString(read_info->filename,MaxTextExtent,"group4:%s",
     filename);
   (void) FormatLocaleString(message,MaxTextExtent,"%lux%lu",width,height);
-  (void) CloneString(&read_info->size,message);
+  read_info->size=ConstantString(message);
   (void) FormatLocaleString(message,MaxTextExtent,"%lu",density);
-  (void) CloneString(&read_info->density,message);
+  read_info->density=ConstantString(message);
   read_info->orientation=(OrientationType) orientation;
   image=ReadImage(read_info,exception);
   if (image != (Image *) NULL)
@@ -390,15 +390,13 @@ ModuleExport void UnregisterCALSImage(void)
 %  The format of the WriteCALSImage method is:
 %
 %      MagickBooleanType WriteCALSImage(const ImageInfo *image_info,
-%        Image *image,ExceptionInfo *exception)
+%        Image *image)
 %
 %  A description of each parameter follows.
 %
 %    o image_info: the image info.
 %
 %    o image:  The image.
-%
-%    o exception: return any errors or warnings in this structure.
 %
 */
 
@@ -434,7 +432,7 @@ static ssize_t WriteCALSRecord(Image *image,const char *data)
 }
 
 static MagickBooleanType WriteCALSImage(const ImageInfo *image_info,
-  Image *image,ExceptionInfo *exception)
+  Image *image)
 {
   char
     header[129];
@@ -472,9 +470,7 @@ static MagickBooleanType WriteCALSImage(const ImageInfo *image_info,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
   /*
@@ -541,7 +537,7 @@ static MagickBooleanType WriteCALSImage(const ImageInfo *image_info,
   count=WriteCALSRecord(image,header);
   (void) FormatLocaleString(header,MaxTextExtent,"rpelcnt: %06lu,%06lu",
     (unsigned long) image->columns,(unsigned long) image->rows);
-  count=WriteCALSRecord(image,header);  
+  count=WriteCALSRecord(image,header);
   density=200;
   if (image_info->density != (char *) NULL)
     {
@@ -564,14 +560,14 @@ static MagickBooleanType WriteCALSImage(const ImageInfo *image_info,
   write_info=CloneImageInfo(image_info);
   (void) CopyMagickString(write_info->filename,"GROUP4:",MaxTextExtent);
   (void) CopyMagickString(write_info->magick,"GROUP4",MaxTextExtent);
-  group4_image=CloneImage(image,0,0,MagickTrue,exception);
+  group4_image=CloneImage(image,0,0,MagickTrue,&image->exception);
   if (group4_image == (Image *) NULL)
     {
       (void) CloseBlob(image);
       return(MagickFalse);
     }
   group4=(unsigned char *) ImageToBlob(write_info,group4_image,&length,
-    exception);
+    &image->exception);
   group4_image=DestroyImage(group4_image);
   if (group4 == (unsigned char *) NULL)
     {
