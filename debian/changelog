@@ -1,7 +1,11 @@
-imagemagick (8:6.8.8.2-2) experimental; urgency=medium
+imagemagick (8:6.8.8.8-1) experimental; urgency=medium
 
   * Add missing symbols from 32 bits due to s?size_t
   and optionnal template from sparc.
+  * Fix three security bugs (Closes: #740250):
+  - Fix CVE-2014-1958 and CVE-2014-2030, two buffer overflow
+    in psd file handling.
+  - Fix CVE-2014-1947 a buffer overflow in log handling.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 25 Feb 2014 09:46:12 +0100
 
