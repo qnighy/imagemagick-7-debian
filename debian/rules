@@ -456,7 +456,7 @@ maint-get-upstream-rev-from-tar-new-make-%:
 	git checkout -b upstream/$*
 	find ./*  -path './.git' -prune -o -exec rm -rf '{}' +
 	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.xz
-	git add .
+	git add --all .
 	git commit -a -m "Add upstream tar.xz for version $*"
 	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
 
@@ -512,7 +512,7 @@ maint-merge-debian-branch-new-make-%:
 	git merge --no-commit upstream/$* || true
 	find ./* -path './debian' -prune -o -path './.git' -prune -o -exec rm -rf '{}' +
 	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.xz
-	git add -u
+	git add --all .
 	git commit -a -m 'merge debian branch with upstream $*'
 
 # merge debian branch
