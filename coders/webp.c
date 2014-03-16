@@ -382,6 +382,7 @@ ModuleExport size_t RegisterWEBPImage(void)
     (WebPGetDecoderVersion() >> 0) & 0xff);
 #endif
   entry->description=ConstantString("WebP Image Format");
+  entry->mime_type=ConstantString("image/x-webp");
   entry->adjoin=MagickFalse;
   entry->module=ConstantString("WEBP");
   entry->magick=(IsImageFormatHandler *) IsWEBP;
@@ -581,8 +582,7 @@ static MagickBooleanType WriteWEBPImage(const ImageInfo *image_info,
   /*
     Allocate memory for pixels.
   */
-  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+  (void) TransformImageColorspace(image,sRGBColorspace);
   pixel_info=AcquireVirtualMemory(image->columns,image->rows*
     sizeof(*picture.argb));
   if (pixel_info == (MemoryInfo *) NULL)

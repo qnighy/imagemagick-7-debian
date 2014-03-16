@@ -230,6 +230,42 @@ MagickExport void CatchException(ExceptionInfo *exception)
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%   C l o n e E x c e p t i o n I n f o                                       %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  CloneExceptionInfo() clones the ExceptionInfo structure.
+%
+%  The format of the CloneExceptionInfo method is:
+%
+%      ExceptionInfo *CloneException(ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o exception: the exception info.
+%
+*/
+MagickExport ExceptionInfo *CloneExceptionInfo(ExceptionInfo *exception)
+{
+  ExceptionInfo
+    *clone_exception;
+
+  clone_exception=(ExceptionInfo *) AcquireMagickMemory(sizeof(*exception));
+  if (clone_exception == (ExceptionInfo *) NULL)
+    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+  GetExceptionInfo(clone_exception);
+  InheritException(clone_exception,exception);
+  clone_exception->relinquish=MagickTrue;
+  return(clone_exception);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 +   D e f a u l t E r r o r H a n d l e r                                     %
 %                                                                             %
 %                                                                             %
@@ -381,7 +417,7 @@ MagickExport ExceptionInfo *DestroyExceptionInfo(ExceptionInfo *exception)
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
   if (exception->semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&exception->semaphore);
+    ActivateSemaphoreInfo(&exception->semaphore);
   LockSemaphoreInfo(exception->semaphore);
   exception->severity=UndefinedException;
   if (exception->exceptions != (void *) NULL)

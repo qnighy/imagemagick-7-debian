@@ -51,16 +51,11 @@
 #include "wand/magick-wand-private.h"
 #include "wand/wand.h"
 #include "wand/pixel-wand-private.h"
+#include "magick/image-private.h"
 
 /*
   Define declarations.
 */
-#define ThrowWandException(severity,tag,context) \
-{ \
-  (void) ThrowMagickException(wand->exception,GetMagickModule(),severity, \
-    tag,"`%s'",context); \
-  return(MagickFalse); \
-}
 #define MagickWandId  "MagickWand"
 
 /*

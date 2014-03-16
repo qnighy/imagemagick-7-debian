@@ -22,6 +22,7 @@ using namespace std;
 #include "Magick++/Pixels.h"
 #include "Magick++/Options.h"
 #include "Magick++/ImageRef.h"
+#include "Magick++/ResourceLimits.h"
 
 #define AbsoluteValue(x)  ((x) < 0 ? -(x) : (x))
 #define MagickPI  3.14159265358979323846264338327950288419716939937510
@@ -38,8 +39,6 @@ using namespace std;
 MagickPPExport const char *Magick::borderGeometryDefault="6x6+0+0";
 MagickPPExport const char *Magick::frameGeometryDefault="25x25+6+6";
 MagickPPExport const char *Magick::raiseGeometryDefault="6x6+0+0";
-
-static bool magick_initialized=false;
 
 MagickPPExport int Magick::operator == (const Magick::Image &left_,
   const Magick::Image &right_)
@@ -80,13 +79,6 @@ MagickPPExport int Magick::operator <= (const Magick::Image &left_,
   const Magick::Image &right_)
 {
   return((left_ < right_) || (left_ == right_));
-}
-
-MagickPPExport void Magick::InitializeMagick(const char *path_)
-{
-  MagickCore::MagickCoreGenesis(path_,MagickFalse);
-  if (!magick_initialized)
-    magick_initialized=true;
 }
 
 Magick::Image::Image(void)
@@ -450,7 +442,7 @@ Magick::Color Magick::Image::boxColor(void) const
 
 void Magick::Image::cacheThreshold(const size_t threshold_)
 {
-  SetMagickResourceLimit(MemoryResource,threshold_);
+  ResourceLimits::memory((MagickSizeType) threshold_);
 }
 
 void Magick::Image::classType(const ClassType class_)
@@ -1446,6 +1438,17 @@ size_t Magick::Image::subRange(void) const
   return(constOptions()->subRange());
 }
 
+void Magick::Image::textDirection(DirectionType direction_)
+{
+  modifyImage();
+  options()->textDirection(direction_);
+}
+
+Magick::DirectionType Magick::Image::textDirection(void) const
+{
+  return(constOptions()->textDirection());
+}
+
 void Magick::Image::textEncoding(const std::string &encoding_)
 {
   modifyImage();
@@ -1455,6 +1458,17 @@ void Magick::Image::textEncoding(const std::string &encoding_)
 std::string Magick::Image::textEncoding(void) const
 {
   return(constOptions()->textEncoding());
+}
+
+void Magick::Image::textGravity(GravityType gravity_)
+{
+  modifyImage();
+  options()->textGravity(gravity_);
+}
+
+Magick::GravityType Magick::Image::textGravity(void) const
+{
+  return(constOptions()->textGravity());
 }
 
 void Magick::Image::textInterlineSpacing(double spacing_)
@@ -2207,7 +2221,10 @@ void Magick::Image::colorMap(const size_t index_,const Color &color_)
 Magick::Color Magick::Image::colorMap(const size_t index_) const
 {
   if (!constImage()->colormap)
-    throwExceptionExplicit(OptionError,"Image does not contain a colormap");
+    {
+      throwExceptionExplicit(OptionError,"Image does not contain a colormap");
+      return(Color());
+    }
 
   if (index_ > constImage()->colors-1)
     throwExceptionExplicit(OptionError,"Index out of range");
@@ -2836,6 +2853,18 @@ void Magick::Image::fontTypeMetrics(const std::string &text_,
   drawInfo->text=0;
 }
 
+void Magick::Image::fontTypeMetricsMultiline(const std::string &text_,
+  TypeMetric *metrics)
+{
+  DrawInfo
+    *drawInfo;
+
+  drawInfo=options()->drawInfo();
+  drawInfo->text=const_cast<char *>(text_.c_str());
+  GetMultilineTypeMetrics(image(),drawInfo,&(metrics->_typeMetric));
+  drawInfo->text=0;
+}
+
 void Magick::Image::frame(const Geometry &geometry_)
 {
   FrameInfo
@@ -3235,6 +3264,91 @@ void Magick::Image::modulate(const double brightness_,const double saturation_,
   modifyImage();
   ModulateImage(image(),modulate);
   throwImageException();
+}
+
+void Magick::Image::morphology(const MorphologyMethod method_,
+  const std::string kernel_,const ssize_t iterations_)
+{
+  KernelInfo
+    *kernel;
+
+  MagickCore::Image
+    *newImage;
+
+  kernel=AcquireKernelInfo(kernel_.c_str());
+  if (kernel == (KernelInfo *)NULL)
+    throwExceptionExplicit(OptionError,"Unable to parse kernel.");
+
+  GetPPException;
+  newImage=MorphologyImage(constImage(),method_,iterations_,kernel,
+    &exceptionInfo);
+  replaceImage(newImage);
+  kernel=DestroyKernelInfo(kernel);
+  ThrowPPException;
+}
+
+void Magick::Image::morphology(const MorphologyMethod method_,
+  const KernelInfoType kernel_,const std::string arguments_,
+  const ssize_t iterations_)
+{
+  const char
+    *option;
+
+  std::string
+    kernel;
+
+  option=CommandOptionToMnemonic(MagickKernelOptions,kernel_);
+  if (option == (const char *)NULL)
+    throwExceptionExplicit(OptionError,"Unable to determine kernel type.");
+
+  kernel=std::string(option);
+  if (!arguments_.empty())
+    kernel+=":"+arguments_;
+
+  morphology(method_,kernel,iterations_);
+}
+
+void Magick::Image::morphologyChannel(const ChannelType channel_,
+  const MorphologyMethod method_,const std::string kernel_,
+  const ssize_t iterations_)
+{
+  KernelInfo
+    *kernel;
+
+  MagickCore::Image
+    *newImage;
+
+  kernel=AcquireKernelInfo(kernel_.c_str());
+  if (kernel == (KernelInfo *)NULL)
+    throwExceptionExplicit(OptionError,"Unable to parse kernel.");
+
+  GetPPException;
+  newImage=MorphologyImageChannel(constImage(),channel_,method_,iterations_,
+    kernel,&exceptionInfo);
+  replaceImage(newImage);
+  kernel=DestroyKernelInfo(kernel);
+  ThrowPPException;
+}
+
+void Magick::Image::morphologyChannel(const ChannelType channel_,
+  const MorphologyMethod method_,const KernelInfoType kernel_,
+  const std::string arguments_,const ssize_t iterations_)
+{
+  const char
+    *option;
+
+  std::string
+    kernel;
+
+  option=CommandOptionToMnemonic(MagickKernelOptions,kernel_);
+  if (option == (const char *)NULL)
+    throwExceptionExplicit(OptionError,"Unable to determine kernel type.");
+
+  kernel=std::string(option);
+  if (!arguments_.empty())
+    kernel+=":"+arguments_;
+
+  morphologyChannel(channel_,method_,kernel,iterations_);
 }
 
 void Magick::Image::motionBlur(const double radius_,const double sigma_,
@@ -4046,6 +4160,35 @@ void Magick::Image::strip(void)
   throwImageException();
 }
 
+Magick::Image Magick::Image::subImageSearch(const Image &reference_,
+  const MetricType metric_,Geometry *offset_,double *similarityMetric_,
+  const double similarityThreshold)
+{
+  char
+    artifact[MaxTextExtent];
+
+  MagickCore::Image
+    *newImage;
+
+  RectangleInfo
+    offset;
+
+  modifyImage();
+  (void) FormatLocaleString(artifact,MaxTextExtent,"%g",similarityThreshold);
+  (void) SetImageArtifact(image(),"compare:similarity-threshold",artifact);
+
+  GetPPException;
+  newImage=SimilarityMetricImage(image(),reference_.constImage(),metric_,
+    &offset,similarityMetric_,&exceptionInfo);
+  ThrowPPException;
+  if (offset_ != (Geometry *) NULL)
+    *offset_=offset;
+  if (newImage == (MagickCore::Image *) NULL)
+    return(Magick::Image());
+  else
+    return(Magick::Image(newImage));
+}
+
 void Magick::Image::swirl(const double degrees_)
 {
   MagickCore::Image
@@ -4177,6 +4320,28 @@ void Magick::Image::transparentChroma(const Color &colorLow_,
   TransparentPaintImageChroma(image(),&targetLow,&targetHigh,
     TransparentOpacity,MagickFalse);
   throwImageException();
+}
+
+void Magick::Image::transpose(void)
+{
+  MagickCore::Image
+    *newImage;
+
+  GetPPException;
+  newImage=TransposeImage(constImage(),&exceptionInfo);
+  replaceImage(newImage);
+  ThrowPPException;
+}
+
+void Magick::Image::transverse(void)
+{
+  MagickCore::Image
+    *newImage;
+
+  GetPPException;
+  newImage=TransverseImage(constImage(),&exceptionInfo);
+  replaceImage(newImage);
+  ThrowPPException;
 }
 
 void Magick::Image::trim(void)
@@ -4472,53 +4637,4 @@ void Magick::Image::unregisterId(void)
 {
   modifyImage();
   _imgRef->id(-1);
-}
-
-//
-// Create a local wrapper around MagickCoreTerminus
-//
-namespace Magick
-{
-  extern "C" {
-    void MagickPlusPlusDestroyMagick(void);
-  }
-}
-
-void Magick::MagickPlusPlusDestroyMagick(void)
-{
-  if (magick_initialized)
-    {
-      magick_initialized=false;
-      MagickCore::MagickCoreTerminus();
-    }
-}
-
-//
-// Cleanup class to ensure that ImageMagick singletons are destroyed
-// so as to avoid any resemblence to a memory leak (which seems to
-// confuse users)
-//
-namespace Magick
-{
-
-  class MagickCleanUp
-  {
-  public:
-    MagickCleanUp( void );
-    ~MagickCleanUp( void );
-  };
-
-  // The destructor for this object is invoked when the destructors for
-  // static objects in this translation unit are invoked.
-  static MagickCleanUp magickCleanUpGuard;
-}
-
-Magick::MagickCleanUp::MagickCleanUp(void)
-{
-  // Don't even think about invoking InitializeMagick here!
-}
-
-Magick::MagickCleanUp::~MagickCleanUp(void)
-{
-  MagickPlusPlusDestroyMagick();
 }

@@ -47,6 +47,7 @@
 #include "magick/memory_.h"
 #include "magick/mime.h"
 #include "magick/mime-private.h"
+#include "magick/nt-base-private.h"
 #include "magick/option.h"
 #include "magick/semaphore.h"
 #include "magick/string_.h"
@@ -601,13 +602,13 @@ MagickExport const char *GetMimeType(const MimeInfo *mime_info)
 */
 static MagickBooleanType InitializeMimeList(ExceptionInfo *exception)
 {
-  if ((mime_list == (LinkedListInfo *) NULL) &&
+  if ((mime_list == (LinkedListInfo *) NULL) ||
       (instantiate_mime == MagickFalse))
     {
       if (mime_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&mime_semaphore);
+        ActivateSemaphoreInfo(&mime_semaphore);
       LockSemaphoreInfo(mime_semaphore);
-      if ((mime_list == (LinkedListInfo *) NULL) &&
+      if ((mime_list == (LinkedListInfo *) NULL) ||
           (instantiate_mime == MagickFalse))
         {
           (void) LoadMimeLists(MimeFilename,exception);
@@ -1054,7 +1055,7 @@ MagickExport char *MagickToMime(const char *magick)
 */
 MagickExport MagickBooleanType MimeComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&mime_semaphore);
+  mime_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -1100,7 +1101,7 @@ static void *DestroyMimeElement(void *mime_info)
 MagickExport void MimeComponentTerminus(void)
 {
   if (mime_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&mime_semaphore);
+    ActivateSemaphoreInfo(&mime_semaphore);
   LockSemaphoreInfo(mime_semaphore);
   if (mime_list != (LinkedListInfo *) NULL)
     mime_list=DestroyLinkedList(mime_list,DestroyMimeElement);

@@ -40,7 +40,7 @@ extern "C" {
 #   pragma warning( disable: 4273 )  /* Disable the dll linkage warnings */
 #  endif
 #  if !defined(_MAGICKLIB_)
-#   if defined(__GNUC__)
+#   if defined(__clang__) || defined(__GNUC__)
 #    define MagickExport __attribute__ ((dllimport))
 #   else
 #    define MagickExport __declspec(dllimport)
@@ -49,7 +49,7 @@ extern "C" {
 #    pragma message( "MagickCore lib DLL import interface" )
 #   endif
 #  else
-#   if defined(__GNUC__)
+#   if defined(__clang__) || defined(__GNUC__)
 #    define MagickExport __attribute__ ((dllexport))
 #   else
 #    define MagickExport __declspec(dllexport)
@@ -66,7 +66,7 @@ extern "C" {
 # endif
 
 # if defined(_DLL) && !defined(_LIB)
-#   if defined(__GNUC__)
+#   if defined(__clang__) || defined(__GNUC__)
 #    define ModuleExport __attribute__ ((dllexport))
 #   else
 #    define ModuleExport __declspec(dllexport)
@@ -81,7 +81,6 @@ extern "C" {
 #  endif
 
 # endif
-# define MagickGlobal __declspec(thread)
 # if defined(_VISUALC_)
 #  pragma warning(disable : 4018)
 #  pragma warning(disable : 4068)
@@ -92,7 +91,7 @@ extern "C" {
 #  pragma warning(disable : 4996)
 # endif
 #else
-# if __GNUC__ >= 4
+# if defined(__clang__) || (__GNUC__ >= 4)
 #  define MagickExport __attribute__ ((visibility ("default")))
 #  define MagickPrivate  __attribute__ ((visibility ("hidden")))
 # else
@@ -100,7 +99,6 @@ extern "C" {
 #   define MagickPrivate
 # endif
 # define ModuleExport  MagickExport
-# define MagickGlobal
 #endif
 
 #define MagickSignature  0xabacadabUL
@@ -125,7 +123,13 @@ extern "C" {
 #  define magick_unreferenced(x)  /* nothing */
 #endif
 
-#if (((__GNUC__) > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3)))
+#if defined(__apple_build_version__)
+#  define magick_alloc_size(x)  __attribute__((__alloc_size__(x)))
+#  define magick_alloc_sizes(x,y)  __attribute__((__alloc_size__(x,y)))
+#  define magick_cold_spot
+#  define magick_hot_spot
+#else
+#if defined(__clang__) || (((__GNUC__) > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3)))
 #  define magick_alloc_size(x)  __attribute__((__alloc_size__(x)))
 #  define magick_alloc_sizes(x,y)  __attribute__((__alloc_size__(x,y)))
 #  define magick_cold_spot  __attribute__((__cold__))
@@ -135,6 +139,7 @@ extern "C" {
 #  define magick_alloc_sizes(x,y)  /* nothing */
 #  define magick_cold_spot
 #  define magick_hot_spot
+#endif
 #endif
 
 #if defined(__cplusplus) || defined(c_plusplus)

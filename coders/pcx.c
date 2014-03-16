@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -610,7 +611,7 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       for (x=0; x < (ssize_t) image->columns; x++)
       {
         if (image->storage_class == PseudoClass)
-          SetPixelIndex(indexes+x,*r++);
+          SetPixelIndex(indexes+x,*r++)
         else
           {
             SetPixelRed(q,ScaleCharToQuantum(*r++));
@@ -888,8 +889,7 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+  (void) TransformImageColorspace(image,sRGBColorspace);
   page_table=(MagickOffsetType *) NULL;
   if ((LocaleCompare(image_info->magick,"DCX") == 0) ||
       ((GetNextImageInList(image) != (Image *) NULL) &&

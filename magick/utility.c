@@ -49,6 +49,7 @@
 #include "magick/list.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
+#include "magick/nt-base-private.h"
 #include "magick/option.h"
 #include "magick/policy.h"
 #include "magick/random_.h"
@@ -773,6 +774,7 @@ MagickExport MagickBooleanType ExpandFilenames(int *number_arguments,
     *path='\0';
     *filename='\0';
     *subimage='\0';
+    number_files=0;
     vector[count++]=ConstantString(option);
     destroy=MagickTrue;
     parameters=ParseCommandOption(MagickCommandOptions,MagickFalse,option);
@@ -890,7 +892,8 @@ MagickExport MagickBooleanType ExpandFilenames(int *number_arguments,
       if (*path != '\0')
         (void) ConcatenateMagickString(filename,DirectorySeparator,
           MaxTextExtent);
-      (void) ConcatenateMagickString(filename,filelist[j],MaxTextExtent);
+      if (filelist[j] != (char *) NULL)
+        (void) ConcatenateMagickString(filename,filelist[j],MaxTextExtent);
       filelist[j]=DestroyString(filelist[j]);
       if (strlen(filename) >= (MaxTextExtent-1))
         ThrowFatalException(OptionFatalError,"FilenameTruncated");

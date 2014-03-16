@@ -57,6 +57,7 @@
 #include "magick/hashmap.h"
 #include "magick/list.h"
 #include "magick/memory_.h"
+#include "magick/nt-base-private.h"
 #include "magick/policy.h"
 #include "magick/resource_.h"
 #include "magick/semaphore.h"
@@ -162,7 +163,7 @@ static MagickBooleanType
 */
 MagickExport MagickBooleanType DelegateComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&delegate_semaphore);
+  delegate_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -207,7 +208,7 @@ static void *DestroyDelegate(void *delegate_info)
 MagickExport void DelegateComponentTerminus(void)
 {
   if (delegate_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&delegate_semaphore);
+    ActivateSemaphoreInfo(&delegate_semaphore);
   LockSemaphoreInfo(delegate_semaphore);
   if (delegate_list != (LinkedListInfo *) NULL)
     delegate_list=DestroyLinkedList(delegate_list,DestroyDelegate);
@@ -702,13 +703,13 @@ MagickExport MagickBooleanType GetDelegateThreadSupport(
 */
 static MagickBooleanType InitializeDelegateList(ExceptionInfo *exception)
 {
-  if ((delegate_list == (LinkedListInfo *) NULL) &&
+  if ((delegate_list == (LinkedListInfo *) NULL) ||
       (instantiate_delegate == MagickFalse))
     {
       if (delegate_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&delegate_semaphore);
+        ActivateSemaphoreInfo(&delegate_semaphore);
       LockSemaphoreInfo(delegate_semaphore);
-      if ((delegate_list == (LinkedListInfo *) NULL) &&
+      if ((delegate_list == (LinkedListInfo *) NULL) ||
           (instantiate_delegate == MagickFalse))
         {
           (void) LoadDelegateLists(DelegateFilename,exception);
@@ -945,8 +946,7 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
         }
       LocaleUpper(magick);
       clone_info=CloneImageInfo(image_info);
-      (void) CopyMagickString((char *) clone_info->magick,magick,
-        MaxTextExtent);
+      (void) CopyMagickString((char *) clone_info->magick,magick,MaxTextExtent);
       if (LocaleCompare(magick,"NULL") != 0)
         (void) CopyMagickString(image->magick,magick,MaxTextExtent);
       magick=DestroyString(magick);
@@ -1335,6 +1335,7 @@ static MagickBooleanType LoadDelegateList(const char *xml,const char *filename,
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
             delegate_info->commands);
         delegate_info=(DelegateInfo *) NULL;
+        continue;
       }
     GetMagickToken(q,(const char **) NULL,token);
     if (*token != '=')

@@ -1782,6 +1782,7 @@ MagickExport void XColorBrowserWidget(Display *display,XWindows *windows,
   /*
     Respond to X events.
   */
+  XGetWidgetInfo((char *) NULL,&mode_info);
   XGetWidgetInfo((char *) NULL,&slider_info);
   XGetWidgetInfo((char *) NULL,&north_info);
   XGetWidgetInfo((char *) NULL,&south_info);
@@ -2246,8 +2247,9 @@ MagickExport void XColorBrowserWidget(Display *display,XWindows *windows,
             /*
               User pressed mode button.
             */
-            (void) CopyMagickString(reply_info.text,mode_info.text,
-              MaxTextExtent);
+            if (mode_info.text != (char *) NULL)
+              (void) CopyMagickString(reply_info.text,mode_info.text,
+                MaxTextExtent);
             (void) CopyMagickString(primary_selection,reply_info.text,
               MaxTextExtent);
             (void) XSetSelectionOwner(display,XA_PRIMARY,windows->widget.id,

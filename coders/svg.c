@@ -3072,6 +3072,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Parse SVG file.
   */
+  if (image == (Image *) NULL)
+    return((Image *) NULL);
   svg_info=AcquireSVGInfo();
   if (svg_info == (SVGInfo *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -3231,6 +3233,7 @@ ModuleExport size_t RegisterSVGImage(void)
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickFalse;
   entry->description=ConstantString("Scalable Vector Graphics");
+  entry->mime_type=ConstantString("image/svg+xml");
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->magick=(IsImageFormatHandler *) IsSVG;
@@ -3244,6 +3247,7 @@ ModuleExport size_t RegisterSVGImage(void)
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickFalse;
   entry->description=ConstantString("Compressed Scalable Vector Graphics");
+  entry->mime_type=ConstantString("image/svg+xml");
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->magick=(IsImageFormatHandler *) IsSVG;

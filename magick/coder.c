@@ -195,6 +195,7 @@ static const CoderMapInfo
     { "RAS", "SUN" },
     { "RGBA", "RGB" },
     { "RGBO", "RGB" },
+    { "RMF", "DNG" },
     { "R", "RAW" },
     { "ROSE", "MAGICK" },
     { "RW2", "DNG" },
@@ -263,7 +264,7 @@ static MagickBooleanType
 */
 MagickExport MagickBooleanType CoderComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&coder_semaphore);
+  coder_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -288,7 +289,7 @@ MagickExport MagickBooleanType CoderComponentGenesis(void)
 MagickExport void CoderComponentTerminus(void)
 {
   if (coder_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&coder_semaphore);
+    ActivateSemaphoreInfo(&coder_semaphore);
   LockSemaphoreInfo(coder_semaphore);
   if (coder_list != (SplayTreeInfo *) NULL)
     coder_list=DestroySplayTree(coder_list);
@@ -536,13 +537,13 @@ MagickExport char **GetCoderList(const char *pattern,
 */
 static MagickBooleanType InitializeCoderList(ExceptionInfo *exception)
 {
-  if ((coder_list == (SplayTreeInfo *) NULL) &&
+  if ((coder_list == (SplayTreeInfo *) NULL) ||
       (instantiate_coder == MagickFalse))
     {
       if (coder_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&coder_semaphore);
+        ActivateSemaphoreInfo(&coder_semaphore);
       LockSemaphoreInfo(coder_semaphore);
-      if ((coder_list == (SplayTreeInfo *) NULL) &&
+      if ((coder_list == (SplayTreeInfo *) NULL) ||
           (instantiate_coder == MagickFalse))
         {
           (void) LoadCoderLists(MagickCoderFilename,exception);
@@ -808,6 +809,7 @@ static MagickBooleanType LoadCoderList(const char *xml,const char *filename,
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
             coder_info->magick);
         coder_info=(CoderInfo *) NULL;
+        continue;
       }
     GetMagickToken(q,(const char **) NULL,token);
     if (*token != '=')
@@ -935,7 +937,7 @@ static MagickBooleanType LoadCoderLists(const char *filename,
     if (coder_info == (CoderInfo *) NULL)
       {
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",coder_info->name);
+          ResourceLimitError,"MemoryAllocationFailed","`%s'",p->name);
         continue;
       }
     (void) ResetMagickMemory(coder_info,0,sizeof(*coder_info));

@@ -2572,9 +2572,7 @@ static MagickBooleanType WriteDDSImage(const ImageInfo *image_info,
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
-
+  (void) TransformImageColorspace(image,sRGBColorspace);
   pixelFormat=DDPF_FOURCC;
   compression=FOURCC_DXT5;
 
@@ -2601,7 +2599,7 @@ static MagickBooleanType WriteDDSImage(const ImageInfo *image_info,
       option=GetImageOption(image_info,"dds:cluster-fit");
       if (option != (char *) NULL && LocaleCompare(option,"true") == 0)
         {
-          clusterFit=MagickFalse;
+          clusterFit=MagickTrue;
           if (compression != FOURCC_DXT1)
             {
               option=GetImageOption(image_info,"dds:weight-by-alpha");
@@ -2980,9 +2978,9 @@ static void WriteSingleColorFit(Image *image, const DDSVector4* points,
     start,
     end;
 
-  color[0] = ClampToLimit(255.0f*points->x,255);
-  color[1] = ClampToLimit(255.0f*points->y,255);
-  color[2] = ClampToLimit(255.0f*points->z,255);
+  color[0] = (unsigned char) ClampToLimit(255.0f*points->x,255);
+  color[1] = (unsigned char) ClampToLimit(255.0f*points->y,255);
+  color[2] = (unsigned char) ClampToLimit(255.0f*points->z,255);
 
   ComputeEndPoints(DDS_LOOKUP,color,&start,&end,&index);
 

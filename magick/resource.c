@@ -48,6 +48,7 @@
 #include "magick/log.h"
 #include "magick/image.h"
 #include "magick/memory_.h"
+#include "magick/nt-base-private.h"
 #include "magick/option.h"
 #include "magick/policy.h"
 #include "magick/random_.h"
@@ -166,7 +167,7 @@ MagickExport MagickBooleanType AcquireMagickResource(const ResourceType type,
   status=MagickFalse;
   (void) FormatMagickSize(size,MagickFalse,resource_request);
   if (resource_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&resource_semaphore);
+    ActivateSemaphoreInfo(&resource_semaphore);
   LockSemaphoreInfo(resource_semaphore);
   switch (type)
   {
@@ -364,9 +365,6 @@ MagickExport MagickBooleanType GetPathTemplate(char *path)
   MagickBooleanType
     status;
 
-  register char
-    *p;
-
   struct stat
     attributes;
 
@@ -419,10 +417,6 @@ MagickExport MagickBooleanType GetPathTemplate(char *path)
     (void) FormatLocaleString(path,MaxTextExtent,"%s%smagick-%.20gXXXXXXXXXXXX",
       directory,DirectorySeparator,(double) getpid());
   directory=DestroyString(directory);
-  if (*DirectorySeparator != '/')
-    for (p=path; *p != '\0'; p++)
-      if (*p == *DirectorySeparator)
-        *p='/';
   return(MagickTrue);
 }
 
@@ -501,7 +495,7 @@ MagickExport int AcquireUniqueFileResource(char *path)
   if (file == -1)
     return(file);
   if (resource_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&resource_semaphore);
+    ActivateSemaphoreInfo(&resource_semaphore);
   LockSemaphoreInfo(resource_semaphore);
   if (temporary_resources == (SplayTreeInfo *) NULL)
     temporary_resources=NewSplayTree(CompareSplayTreeString,
@@ -619,7 +613,7 @@ MagickExport MagickSizeType GetMagickResourceLimit(const ResourceType type)
 
   resource=0;
   if (resource_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&resource_semaphore);
+    ActivateSemaphoreInfo(&resource_semaphore);
   LockSemaphoreInfo(resource_semaphore);
   switch (type)
   {
@@ -710,7 +704,7 @@ MagickExport MagickBooleanType ListMagickResourceInfo(FILE *file,
   if (file == (const FILE *) NULL)
     file=stdout;
   if (resource_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&resource_semaphore);
+    ActivateSemaphoreInfo(&resource_semaphore);
   LockSemaphoreInfo(resource_semaphore);
   (void) FormatMagickSize(resource_info.area_limit,MagickFalse,area_limit);
   (void) FormatMagickSize(resource_info.memory_limit,MagickTrue,memory_limit);
@@ -772,7 +766,7 @@ MagickExport void RelinquishMagickResource(const ResourceType type,
 
   (void) FormatMagickSize(size,MagickFalse,resource_request);
   if (resource_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&resource_semaphore);
+    ActivateSemaphoreInfo(&resource_semaphore);
   LockSemaphoreInfo(resource_semaphore);
   switch (type)
   {
@@ -960,7 +954,7 @@ MagickExport MagickBooleanType ResourceComponentGenesis(void)
   /*
     Set Magick resource limits.
   */
-  AcquireSemaphoreInfo(&resource_semaphore);
+  resource_semaphore=AllocateSemaphoreInfo();
   pagesize=GetMagickPageSize();
   pages=(-1);
 #if defined(MAGICKCORE_HAVE_SYSCONF) && defined(_SC_PHYS_PAGES)
@@ -1076,7 +1070,7 @@ MagickExport MagickBooleanType ResourceComponentGenesis(void)
 MagickExport void ResourceComponentTerminus(void)
 {
   if (resource_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&resource_semaphore);
+    ActivateSemaphoreInfo(&resource_semaphore);
   LockSemaphoreInfo(resource_semaphore);
   if (temporary_resources != (SplayTreeInfo *) NULL)
     temporary_resources=DestroySplayTree(temporary_resources);
@@ -1127,7 +1121,7 @@ MagickExport MagickBooleanType SetMagickResourceLimit(const ResourceType type,
     *value;
 
   if (resource_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&resource_semaphore);
+    ActivateSemaphoreInfo(&resource_semaphore);
   LockSemaphoreInfo(resource_semaphore);
   value=(char *) NULL;
   switch (type)

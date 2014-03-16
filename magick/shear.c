@@ -65,8 +65,10 @@
 #include "magick/image-private.h"
 #include "magick/memory_.h"
 #include "magick/list.h"
+#include "magick/matrix.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/nt-base-private.h"
 #include "magick/pixel-private.h"
 #include "magick/quantum.h"
 #include "magick/resource_.h"
@@ -215,334 +217,27 @@ static MagickBooleanType CropToFitImage(Image **image,
 %
 */
 
-typedef struct _RadonInfo
+static void RadonProjection(const Image *image,MatrixInfo *source_matrix,
+  MatrixInfo *destination_matrix,const ssize_t sign,size_t *projection)
 {
-  CacheType
-    type;
-
-  size_t
-    width,
-    height;
-
-  MagickSizeType
-    length;
-
-  MagickBooleanType
-    mapped;
-
-  char
-    path[MaxTextExtent];
-
-  int
-    file;
-
-  unsigned short
-    *cells;
-} RadonInfo;
-
-static RadonInfo *DestroyRadonInfo(RadonInfo *radon_info)
-{
-  assert(radon_info != (RadonInfo *) NULL);
-  switch (radon_info->type)
-  {
-    case MemoryCache:
-    {
-      if (radon_info->mapped == MagickFalse)
-        radon_info->cells=(unsigned short *) RelinquishMagickMemory(
-          radon_info->cells);
-      else
-        {
-          (void) UnmapBlob(radon_info->cells,(size_t) radon_info->length);
-          radon_info->cells=(unsigned short *) NULL;
-        }
-      RelinquishMagickResource(MemoryResource,radon_info->length);
-      break;
-    }
-    case MapCache:
-    {
-      (void) UnmapBlob(radon_info->cells,(size_t) radon_info->length);
-      radon_info->cells=(unsigned short *) NULL;
-      RelinquishMagickResource(MapResource,radon_info->length);
-    }
-    case DiskCache:
-    {
-      if (radon_info->file != -1)
-        (void) close(radon_info->file);
-      (void) RelinquishUniqueFileResource(radon_info->path);
-      RelinquishMagickResource(DiskResource,radon_info->length);
-      break;
-    }
-    default:
-      break;
-  }
-  return((RadonInfo *) RelinquishMagickMemory(radon_info));
-}
-
-static MagickBooleanType ResetRadonCells(RadonInfo *radon_info)
-{
-  register ssize_t
-    x;
-
-  ssize_t
-    count,
-    y;
-
-  unsigned short
-    value;
-
-  if (radon_info->type != DiskCache)
-    {
-      (void) ResetMagickMemory(radon_info->cells,0,(size_t) radon_info->length);
-      return(MagickTrue);
-    }
-  value=0;
-  (void) lseek(radon_info->file,0,SEEK_SET);
-  for (y=0; y < (ssize_t) radon_info->height; y++)
-  {
-    for (x=0; x < (ssize_t) radon_info->width; x++)
-    {
-      count=write(radon_info->file,&value,sizeof(*radon_info->cells));
-      if (count != (ssize_t) sizeof(*radon_info->cells))
-        break;
-    }
-    if (x < (ssize_t) radon_info->width)
-      break;
-  }
-  return(y < (ssize_t) radon_info->height ? MagickFalse : MagickTrue);
-}
-
-static RadonInfo *AcquireRadonInfo(const Image *image,const size_t width,
-  const size_t height,ExceptionInfo *exception)
-{
-  MagickBooleanType
-    status;
-
-  RadonInfo
-    *radon_info;
-
-  radon_info=(RadonInfo *) AcquireMagickMemory(sizeof(*radon_info));
-  if (radon_info == (RadonInfo *) NULL)
-    return((RadonInfo *) NULL);
-  (void) ResetMagickMemory(radon_info,0,sizeof(*radon_info));
-  radon_info->width=width;
-  radon_info->height=height;
-  radon_info->length=(MagickSizeType) width*height*sizeof(*radon_info->cells);
-  radon_info->type=MemoryCache;
-  status=AcquireMagickResource(AreaResource,radon_info->length);
-  if ((status != MagickFalse) &&
-      (radon_info->length == (MagickSizeType) ((size_t) radon_info->length)))
-    {
-      status=AcquireMagickResource(MemoryResource,radon_info->length);
-      if (status != MagickFalse)
-        {
-          radon_info->mapped=MagickFalse;
-          radon_info->cells=(unsigned short *) AcquireMagickMemory((size_t)
-            radon_info->length);
-          if (radon_info->cells == (unsigned short *) NULL)
-            {
-              radon_info->mapped=MagickTrue;
-              radon_info->cells=(unsigned short *) MapBlob(-1,IOMode,0,(size_t)
-                radon_info->length);
-            }
-          if (radon_info->cells == (unsigned short *) NULL)
-            RelinquishMagickResource(MemoryResource,radon_info->length);
-        }
-    }
-  radon_info->file=(-1);
-  if (radon_info->cells == (unsigned short *) NULL)
-    {
-      status=AcquireMagickResource(DiskResource,radon_info->length);
-      if (status == MagickFalse)
-        {
-          (void) ThrowMagickException(exception,GetMagickModule(),CacheError,
-            "CacheResourcesExhausted","`%s'",image->filename);
-          return(DestroyRadonInfo(radon_info));
-        }
-      radon_info->type=DiskCache;
-      (void) AcquireMagickResource(MemoryResource,radon_info->length);
-      radon_info->file=AcquireUniqueFileResource(radon_info->path);
-      if (radon_info->file == -1)
-        return(DestroyRadonInfo(radon_info));
-      status=AcquireMagickResource(MapResource,radon_info->length);
-      if (status != MagickFalse)
-        {
-          status=ResetRadonCells(radon_info);
-          if (status != MagickFalse)
-            {
-              radon_info->cells=(unsigned short *) MapBlob(radon_info->file,
-                IOMode,0,(size_t) radon_info->length);
-              if (radon_info->cells != (unsigned short *) NULL)
-                radon_info->type=MapCache;
-              else
-                RelinquishMagickResource(MapResource,radon_info->length);
-            }
-        }
-    }
-  return(radon_info);
-}
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
-static inline ssize_t ReadRadonCell(const RadonInfo *radon_info,
-  const MagickOffsetType offset,const size_t length,unsigned char *buffer)
-{
-  register ssize_t
-    i;
-
-  ssize_t
-    count;
-
-#if !defined(MAGICKCORE_HAVE_PPREAD)
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_ReadRadonCell)
-#endif
-  {
-    i=(-1);
-    if (lseek(radon_info->file,offset,SEEK_SET) >= 0)
-      {
-#endif
-        count=0;
-        for (i=0; i < (ssize_t) length; i+=count)
-        {
-#if !defined(MAGICKCORE_HAVE_PPREAD)
-          count=read(radon_info->file,buffer+i,MagickMin(length-i,(size_t)
-            SSIZE_MAX));
-#else
-          count=pread(radon_info->file,buffer+i,MagickMin(length-i,(size_t)
-            SSIZE_MAX),offset+i);
-#endif
-          if (count > 0)
-            continue;
-          count=0;
-          if (errno != EINTR)
-            {
-              i=(-1);
-              break;
-            }
-        }
-#if !defined(MAGICKCORE_HAVE_PPREAD)
-      }
-  }
-#endif
-  return(i);
-}
-
-static inline ssize_t WriteRadonCell(const RadonInfo *radon_info,
-  const MagickOffsetType offset,const size_t length,const unsigned char *buffer)
-{
-  register ssize_t
-    i;
-
-  ssize_t
-    count;
-
-  i=0;
-#if !defined(MAGICKCORE_HAVE_PWRITE)
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp critical (MagickCore_WriteRadonCell)
-#endif
-  {
-    if (lseek(radon_info->file,offset,SEEK_SET) >= 0)
-      {
-#endif
-        count=0;
-        for (i=0; i < (ssize_t) length; i+=count)
-        {
-#if !defined(MAGICKCORE_HAVE_PWRITE)
-          count=write(radon_info->file,buffer+i,MagickMin(length-i,(size_t)
-            SSIZE_MAX));
-#else
-          count=pwrite(radon_info->file,buffer+i,MagickMin(length-i,(size_t)
-            SSIZE_MAX),offset+i);
-#endif
-          if (count > 0)
-            continue;
-          count=0;
-          if (errno != EINTR)
-            {
-              i=(-1);
-              break;
-            }
-        }
-#if !defined(MAGICKCORE_HAVE_PWRITE)
-      }
-  }
-#endif
-  return(i);
-}
-
-static inline unsigned short GetRadonCell(const RadonInfo *radon_info,
-  const ssize_t x,const ssize_t y)
-{
-  MagickOffsetType
-    i;
-
-  unsigned short
-    value;
-
-  i=(MagickOffsetType) radon_info->height*x+y;
-  if ((i < 0) ||
-      ((MagickSizeType) (i*sizeof(*radon_info->cells)) >= radon_info->length))
-    return(0);
-  if (radon_info->type != DiskCache)
-    return(radon_info->cells[i]);
-  value=0;
-  (void) ReadRadonCell(radon_info,i*sizeof(*radon_info->cells),
-    sizeof(*radon_info->cells),(unsigned char *) &value);
-  return(value);
-}
-
-static inline MagickBooleanType SetRadonCell(const RadonInfo *radon_info,
-  const ssize_t x,const ssize_t y,const unsigned short value)
-{
-  MagickOffsetType
-    i;
-
-  ssize_t
-    count;
-
-  i=(MagickOffsetType) radon_info->height*x+y;
-  if ((i < 0) ||
-      ((MagickSizeType) (i*sizeof(*radon_info->cells)) >= radon_info->length))
-    return(MagickFalse);
-  if (radon_info->type != DiskCache)
-    {
-      radon_info->cells[i]=value;
-      return(MagickTrue);
-    }
-  count=WriteRadonCell(radon_info,i*sizeof(*radon_info->cells),
-    sizeof(*radon_info->cells),(const unsigned char *) &value);
-  if (count != (ssize_t) sizeof(*radon_info->cells))
-    return(MagickFalse);
-  return(MagickTrue);
-}
-
-static void RadonProjection(const Image *image,RadonInfo *source_cells,
-  RadonInfo *destination_cells,const ssize_t sign,size_t *projection)
-{
-  RadonInfo
+  MatrixInfo
     *swap;
 
-  register ssize_t
-    x;
-
-  register RadonInfo
+  register MatrixInfo
     *p,
     *q;
+
+  register ssize_t
+    x;
 
   size_t
     step;
 
-  p=source_cells;
-  q=destination_cells;
-  for (step=1; step < p->width; step*=2)
+  p=source_matrix;
+  q=destination_matrix;
+  for (step=1; step < GetMatrixColumns(p); step*=2)
   {
-    for (x=0; x < (ssize_t) p->width; x+=2*(ssize_t) step)
+    for (x=0; x < (ssize_t) GetMatrixColumns(p); x+=2*(ssize_t) step)
     {
       register ssize_t
         i;
@@ -551,30 +246,46 @@ static void RadonProjection(const Image *image,RadonInfo *source_cells,
         y;
 
       unsigned short
-        cell;
+        element,
+        neighbor;
 
       for (i=0; i < (ssize_t) step; i++)
       {
-        for (y=0; y < (ssize_t) (p->height-i-1); y++)
+        for (y=0; y < (ssize_t) (GetMatrixRows(p)-i-1); y++)
         {
-          cell=GetRadonCell(p,x+i,y);
-          (void) SetRadonCell(q,x+2*i,y,cell+GetRadonCell(p,x+i+(ssize_t)
-            step,y+i));
-          (void) SetRadonCell(q,x+2*i+1,y,cell+GetRadonCell(p,x+i+(ssize_t)
-            step,y+i+1));
+          if (GetMatrixElement(p,x+i,y,&element) == MagickFalse)
+            continue;
+          if (GetMatrixElement(p,x+i+step,y+i,&neighbor) == MagickFalse)
+            continue;
+          neighbor+=element;
+          if (SetMatrixElement(q,x+2*i,y,&neighbor) == MagickFalse)
+            continue;
+          if (GetMatrixElement(p,x+i+step,y+i+1,&neighbor) == MagickFalse)
+            continue;
+          neighbor+=element;
+          if (SetMatrixElement(q,x+2*i+1,y,&neighbor) == MagickFalse)
+            continue;
         }
-        for ( ; y < (ssize_t) (p->height-i); y++)
+        for ( ; y < (ssize_t) (GetMatrixRows(p)-i); y++)
         {
-          cell=GetRadonCell(p,x+i,y);
-          (void) SetRadonCell(q,x+2*i,y,cell+GetRadonCell(p,x+i+(ssize_t) step,
-            y+i));
-          (void) SetRadonCell(q,x+2*i+1,y,cell);
+          if (GetMatrixElement(p,x+i,y,&element) == MagickFalse)
+            continue;
+          if (GetMatrixElement(p,x+i+step,y+i,&neighbor) == MagickFalse)
+            continue;
+          neighbor+=element;
+          if (SetMatrixElement(q,x+2*i,y,&neighbor) == MagickFalse)
+            continue;
+          if (SetMatrixElement(q,x+2*i+1,y,&element) == MagickFalse)
+            continue;
         }
-        for ( ; y < (ssize_t) p->height; y++)
+        for ( ; y < (ssize_t) GetMatrixRows(p); y++)
         {
-          cell=GetRadonCell(p,x+i,y);
-          (void) SetRadonCell(q,x+2*i,y,cell);
-          (void) SetRadonCell(q,x+2*i+1,y,cell);
+          if (GetMatrixElement(p,x+i,y,&element) == MagickFalse)
+            continue;
+          if (SetMatrixElement(q,x+2*i,y,&element) == MagickFalse)
+            continue;
+          if (SetMatrixElement(q,x+2*i+1,y,&element) == MagickFalse)
+            continue;
         }
       }
     }
@@ -586,7 +297,7 @@ static void RadonProjection(const Image *image,RadonInfo *source_cells,
   #pragma omp parallel for schedule(static,4) \
     magick_threads(image,image,1,1)
 #endif
-  for (x=0; x < (ssize_t) p->width; x++)
+  for (x=0; x < (ssize_t) GetMatrixColumns(p); x++)
   {
     register ssize_t
       y;
@@ -595,15 +306,23 @@ static void RadonProjection(const Image *image,RadonInfo *source_cells,
       sum;
 
     sum=0;
-    for (y=0; y < (ssize_t) (p->height-1); y++)
+    for (y=0; y < (ssize_t) (GetMatrixRows(p)-1); y++)
     {
       ssize_t
         delta;
 
-      delta=GetRadonCell(p,x,y)-(ssize_t) GetRadonCell(p,x,y+1);
+      unsigned short
+        element,
+        neighbor;
+
+      if (GetMatrixElement(p,x,y,&element) == MagickFalse)
+        continue;
+      if (GetMatrixElement(p,x,y+1,&neighbor) == MagickFalse)
+        continue;
+      delta=(ssize_t) element-(ssize_t) neighbor;
       sum+=delta*delta;
     }
-    projection[p->width+sign*x-1]=sum;
+    projection[GetMatrixColumns(p)+sign*x-1]=sum;
   }
 }
 
@@ -613,12 +332,12 @@ static MagickBooleanType RadonTransform(const Image *image,
   CacheView
     *image_view;
 
+  MatrixInfo
+    *destination_matrix,
+    *source_matrix;
+
   MagickBooleanType
     status;
-
-  RadonInfo
-    *destination_cells,
-    *source_cells;
 
   register ssize_t
     i;
@@ -637,21 +356,23 @@ static MagickBooleanType RadonTransform(const Image *image,
     bits[256];
 
   for (width=1; width < ((image->columns+7)/8); width<<=1) ;
-  source_cells=AcquireRadonInfo(image,width,image->rows,exception);
-  destination_cells=AcquireRadonInfo(image,width,image->rows,exception);
-  if ((source_cells == (RadonInfo *) NULL) ||
-      (destination_cells == (RadonInfo *) NULL))
+  source_matrix=AcquireMatrixInfo(width,image->rows,sizeof(unsigned short),
+    exception);
+  destination_matrix=AcquireMatrixInfo(width,image->rows,sizeof(unsigned short),
+    exception);
+  if ((source_matrix == (MatrixInfo *) NULL) ||
+      (destination_matrix == (MatrixInfo *) NULL))
     {
-      if (destination_cells != (RadonInfo *) NULL)
-        destination_cells=DestroyRadonInfo(destination_cells);
-      if (source_cells != (RadonInfo *) NULL)
-        source_cells=DestroyRadonInfo(source_cells);
+      if (destination_matrix != (MatrixInfo *) NULL)
+        destination_matrix=DestroyMatrixInfo(destination_matrix);
+      if (source_matrix != (MatrixInfo *) NULL)
+        source_matrix=DestroyMatrixInfo(source_matrix);
       return(MagickFalse);
     }
-  if (ResetRadonCells(source_cells) == MagickFalse)
+  if (NullMatrix(source_matrix) == MagickFalse)
     {
-      destination_cells=DestroyRadonInfo(destination_cells);
-      source_cells=DestroyRadonInfo(source_cells);
+      destination_matrix=DestroyMatrixInfo(destination_matrix);
+      source_matrix=DestroyMatrixInfo(source_matrix);
       return(MagickFalse);
     }
   for (i=0; i < 256; i++)
@@ -680,6 +401,9 @@ static MagickBooleanType RadonTransform(const Image *image,
       bit,
       byte;
 
+    unsigned short
+      value;
+
     if (status == MagickFalse)
       continue;
     p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
@@ -701,7 +425,8 @@ static MagickBooleanType RadonTransform(const Image *image,
       bit++;
       if (bit == 8)
         {
-          (void) SetRadonCell(source_cells,--i,y,bits[byte]);
+          value=bits[byte];
+          (void) SetMatrixElement(source_matrix,--i,y,&value);
           bit=0;
           byte=0;
         }
@@ -710,11 +435,12 @@ static MagickBooleanType RadonTransform(const Image *image,
     if (bit != 0)
       {
         byte<<=(8-bit);
-        (void) SetRadonCell(source_cells,--i,y,bits[byte]);
+        value=bits[byte];
+        (void) SetMatrixElement(source_matrix,--i,y,&value);
       }
   }
-  RadonProjection(image,source_cells,destination_cells,-1,projection);
-  (void) ResetRadonCells(source_cells);
+  RadonProjection(image,source_matrix,destination_matrix,-1,projection);
+  (void) NullMatrix(source_matrix);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
     magick_threads(image,image,image->rows,1)
@@ -731,6 +457,9 @@ static MagickBooleanType RadonTransform(const Image *image,
     size_t
       bit,
       byte;
+
+    unsigned short
+     value;
 
     if (status == MagickFalse)
       continue;
@@ -753,7 +482,8 @@ static MagickBooleanType RadonTransform(const Image *image,
       bit++;
       if (bit == 8)
         {
-          (void) SetRadonCell(source_cells,i++,y,bits[byte]);
+          value=bits[byte];
+          (void) SetMatrixElement(source_matrix,i++,y,&value);
           bit=0;
           byte=0;
         }
@@ -762,13 +492,14 @@ static MagickBooleanType RadonTransform(const Image *image,
     if (bit != 0)
       {
         byte<<=(8-bit);
-        (void) SetRadonCell(source_cells,i++,y,bits[byte]);
+        value=bits[byte];
+        (void) SetMatrixElement(source_matrix,i++,y,&value);
       }
   }
-  RadonProjection(image,source_cells,destination_cells,1,projection);
+  RadonProjection(image,source_matrix,destination_matrix,1,projection);
   image_view=DestroyCacheView(image_view);
-  destination_cells=DestroyRadonInfo(destination_cells);
-  source_cells=DestroyRadonInfo(source_cells);
+  destination_matrix=DestroyMatrixInfo(destination_matrix);
+  source_matrix=DestroyMatrixInfo(source_matrix);
   return(MagickTrue);
 }
 
@@ -1555,7 +1286,7 @@ static MagickBooleanType XShearImage(Image *image,const MagickRealType degrees,
           indexes--;
           q--;
           shear_indexes--;
-          if ((size_t) (x_offset+width+step-i) >= image->columns)
+          if ((size_t) (x_offset+width+step-i) > image->columns)
             continue;
           SetMagickPixelPacket(image,p,indexes,&source);
           MagickPixelCompositeAreaBlend(&pixel,(MagickRealType) pixel.opacity,
@@ -1776,7 +1507,7 @@ static MagickBooleanType YShearImage(Image *image,const MagickRealType degrees,
           indexes--;
           q--;
           shear_indexes--;
-          if ((size_t) (y_offset+height+step-i) >= image->rows)
+          if ((size_t) (y_offset+height+step-i) > image->rows)
             continue;
           SetMagickPixelPacket(image,p,indexes,&source);
           MagickPixelCompositeAreaBlend(&pixel,(MagickRealType) pixel.opacity,
@@ -1857,10 +1588,6 @@ MagickExport Image *ShearImage(const Image *image,const double x_shear,
     *integral_image,
     *shear_image;
 
-  ssize_t
-    x_offset,
-    y_offset;
-
   MagickBooleanType
     status;
 
@@ -1868,10 +1595,8 @@ MagickExport Image *ShearImage(const Image *image,const double x_shear,
     shear;
 
   RectangleInfo
-    border_info;
-
-  size_t
-    y_width;
+    border_info,
+    bounds;
 
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
@@ -1904,18 +1629,18 @@ MagickExport Image *ShearImage(const Image *image,const double x_shear,
   /*
     Compute image size.
   */
-  y_width=image->columns+(ssize_t) floor(fabs(shear.x)*image->rows+0.5);
-  x_offset=(ssize_t) ceil((double) image->columns+((fabs(shear.x)*image->rows)-
+  bounds.width=image->columns+(ssize_t) floor(fabs(shear.x)*image->rows+0.5);
+  bounds.x=(ssize_t) ceil((double) image->columns+((fabs(shear.x)*image->rows)-
     image->columns)/2.0-0.5);
-  y_offset=(ssize_t) ceil((double) image->rows+((fabs(shear.y)*y_width)-
+  bounds.y=(ssize_t) ceil((double) image->rows+((fabs(shear.y)*bounds.width)-
     image->rows)/2.0-0.5);
   /*
     Surround image with border.
   */
   integral_image->border_color=integral_image->background_color;
   integral_image->compose=CopyCompositeOp;
-  border_info.width=(size_t) x_offset;
-  border_info.height=(size_t) y_offset;
+  border_info.width=(size_t) bounds.x;
+  border_info.height=(size_t) bounds.y;
   shear_image=BorderImage(integral_image,&border_info,exception);
   integral_image=DestroyImage(integral_image);
   if (shear_image == (Image *) NULL)
@@ -1925,15 +1650,15 @@ MagickExport Image *ShearImage(const Image *image,const double x_shear,
   */
   if (shear_image->matte == MagickFalse)
     (void) SetImageAlphaChannel(shear_image,OpaqueAlphaChannel);
-  status=XShearImage(shear_image,shear.x,image->columns,image->rows,x_offset,
+  status=XShearImage(shear_image,shear.x,image->columns,image->rows,bounds.x,
     (ssize_t) (shear_image->rows-image->rows)/2,exception);
   if (status == MagickFalse)
     {
       shear_image=DestroyImage(shear_image);
       return((Image *) NULL);
     }
-  status=YShearImage(shear_image,shear.y,y_width,image->rows,(ssize_t)
-    (shear_image->columns-y_width)/2,y_offset,exception);
+  status=YShearImage(shear_image,shear.y,bounds.width,image->rows,(ssize_t)
+    (shear_image->columns-bounds.width)/2,bounds.y,exception);
   if (status == MagickFalse)
     {
       shear_image=DestroyImage(shear_image);
@@ -1995,10 +1720,6 @@ MagickExport Image *ShearRotateImage(const Image *image,const double degrees,
     *integral_image,
     *rotate_image;
 
-  ssize_t
-    x_offset,
-    y_offset;
-
   MagickBooleanType
     status;
 
@@ -2009,13 +1730,14 @@ MagickExport Image *ShearRotateImage(const Image *image,const double degrees,
     shear;
 
   RectangleInfo
-    border_info;
+    border_info,
+    bounds;
 
   size_t
     height,
     rotations,
-    width,
-    y_width;
+    shear_width,
+    width;
 
   /*
     Adjust rotation angle.
@@ -2051,27 +1773,24 @@ MagickExport Image *ShearRotateImage(const Image *image,const double degrees,
   if (integral_image->matte == MagickFalse)
     (void) SetImageAlphaChannel(integral_image,OpaqueAlphaChannel);
   /*
-    Compute image size.
+    Compute maximum bounds for 3 shear operations.
   */
-  width=image->columns;
-  height=image->rows;
-  if ((rotations == 1) || (rotations == 3))
-    {
-      width=image->rows;
-      height=image->columns;
-    }
-  y_width=width+(ssize_t) floor(fabs(shear.x)*height+0.5);
-  x_offset=(ssize_t) ceil((double) width+((fabs(shear.y)*height)-width)/2.0-
-    0.5);
-  y_offset=(ssize_t) ceil((double) height+((fabs(shear.y)*y_width)-height)/2.0-
-    0.5);
+  width=integral_image->columns;
+  height=integral_image->rows;
+  bounds.width=(size_t) floor(fabs((double) height*shear.x)+width+0.5);
+  bounds.height=(size_t) floor(fabs((double) bounds.width*shear.y)+height+0.5);
+  shear_width=(size_t) floor(fabs((double) bounds.height*shear.x)+
+    bounds.width+0.5);
+  bounds.x=(ssize_t) floor((double) ((shear_width > bounds.width) ? width :
+    bounds.width-shear_width+2)/2.0+0.5);
+  bounds.y=(ssize_t) floor(((double) bounds.height-height+2)/2.0+0.5);
   /*
     Surround image with a border.
   */
   integral_image->border_color=integral_image->background_color;
   integral_image->compose=CopyCompositeOp;
-  border_info.width=(size_t) x_offset;
-  border_info.height=(size_t) y_offset;
+  border_info.width=(size_t) bounds.x;
+  border_info.height=(size_t) bounds.y;
   rotate_image=BorderImage(integral_image,&border_info,exception);
   integral_image=DestroyImage(integral_image);
   if (rotate_image == (Image *) NULL)
@@ -2079,22 +1798,23 @@ MagickExport Image *ShearRotateImage(const Image *image,const double degrees,
   /*
     Rotate the image.
   */
-  status=XShearImage(rotate_image,shear.x,width,height,x_offset,(ssize_t)
+  status=XShearImage(rotate_image,shear.x,width,height,bounds.x,(ssize_t)
     (rotate_image->rows-height)/2,exception);
   if (status == MagickFalse)
     {
       rotate_image=DestroyImage(rotate_image);
       return((Image *) NULL);
     }
-  status=YShearImage(rotate_image,shear.y,y_width,height,(ssize_t)
-    (rotate_image->columns-y_width)/2,y_offset,exception);
+  status=YShearImage(rotate_image,shear.y,bounds.width,height,(ssize_t)
+    (rotate_image->columns-bounds.width)/2,bounds.y,exception);
   if (status == MagickFalse)
     {
       rotate_image=DestroyImage(rotate_image);
       return((Image *) NULL);
     }
-  status=XShearImage(rotate_image,shear.x,y_width,rotate_image->rows,(ssize_t)
-    (rotate_image->columns-y_width)/2,0,exception);
+  status=XShearImage(rotate_image,shear.x,bounds.width,bounds.height,(ssize_t)
+    (rotate_image->columns-bounds.width)/2,(ssize_t) (rotate_image->rows-
+    bounds.height)/2,exception);
   if (status == MagickFalse)
     {
       rotate_image=DestroyImage(rotate_image);

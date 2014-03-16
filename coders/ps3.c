@@ -885,7 +885,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(MagickFalse);
-  compression=UndefinedCompression;
+  compression=image->compression;
   if (image_info->compression != UndefinedCompression)
     compression=image_info->compression;
   switch (compression)
@@ -1065,6 +1065,9 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
                 "%%%%Pages: %.20g\n",(double) GetImageListLength(image));
             (void) WriteBlobString(image,buffer);
           }
+        if (image->colorspace == CMYKColorspace)
+          (void) WriteBlobString(image,
+            "%%DocumentProcessColors: Cyan Magenta Yellow Black\n");
         (void) WriteBlobString(image,"%%EndComments\n");
         /*
           The static postscript procedures prolog.

@@ -569,7 +569,8 @@ static PolygonInfo *ConvertPathToPolygon(
     next_direction=((path_info[i].point.y > point.y) ||
       ((path_info[i].point.y == point.y) &&
        (path_info[i].point.x > point.x))) ? 1 : -1;
-    if ((direction != 0) && (direction != next_direction))
+    if ((points != (PointInfo *) NULL) && (direction != 0) &&
+        (direction != next_direction))
       {
         /*
           New edge.
@@ -1991,6 +1992,20 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
                 break;
               }
             graphic_context[n]->decorate=(DecorationType) decorate;
+            break;
+          }
+        if (LocaleCompare("direction",keyword) == 0)
+          {
+            ssize_t
+              direction;
+
+            GetMagickToken(q,&q,token);
+            direction=ParseCommandOption(MagickDirectionOptions,MagickFalse,
+              token);
+            if (direction == -1)
+              status=MagickFalse;
+            else
+              graphic_context[n]->direction=(DirectionType) direction;
             break;
           }
         status=MagickFalse;
@@ -5311,6 +5326,7 @@ static size_t TracePath(PrimitiveInfo *primitive_info,const char *path)
   start.y=0.0;
   number_coordinates=0;
   z_count=0;
+  (void) ResetMagickMemory(points,0,sizeof(*points));
   primitive_type=primitive_info->primitive;
   q=primitive_info;
   for (p=path; *p != '\0'; )

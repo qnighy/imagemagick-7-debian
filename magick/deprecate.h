@@ -37,7 +37,7 @@ extern "C" {
 #if !defined(MAGICKCORE_EXCLUDE_DEPRECATED)
 
 #if !defined(magick_attribute)
-#  if !defined(__GNUC__)
+#  if !defined(__clang__) && !defined(__GNUC__)
 #    define magick_attribute(x) /*nothing*/
 #  else
 #    define magick_attribute __attribute__
@@ -55,8 +55,9 @@ extern "C" {
   RelinquishUniqueFileResource(resource)
 #define LiberateMagickResource(resource)  RelinquishMagickResource(resource)
 #define LiberateSemaphore(semaphore)  RelinquishSemaphore(semaphore)
-#define QuantumDepth  MAGICKCORE_QUANTUM_DEPTH
+#define MagickHuge  3.4e+38F
 #define MaxRGB  QuantumRange  /* deprecated */
+#define QuantumDepth  MAGICKCORE_QUANTUM_DEPTH
 #define RunlengthEncodedCompression  RLECompression
 #define Upscale(value)  ScaleCharToQuantum(value)
 #define XDownscale(value)  ScaleShortToQuantum(value)
@@ -312,6 +313,7 @@ extern MagickExport unsigned int
 
 extern MagickExport void
   *AcquireMemory(const size_t) magick_attribute((deprecated)),
+  AcquireSemaphoreInfo(SemaphoreInfo **) magick_attribute((deprecated)),
   AllocateNextImage(const ImageInfo *,Image *) magick_attribute((deprecated)),
   *CloneMemory(void *,const void *,const size_t) magick_attribute((deprecated)),
   DestroyConstitute(void),
@@ -337,6 +339,7 @@ extern MagickExport void
   InitializeMagick(const char *) magick_attribute((deprecated)),
   MagickIncarnate(const char *) magick_attribute((deprecated)),
   ReacquireMemory(void **,const size_t) magick_attribute((deprecated)),
+  RelinquishSemaphoreInfo(SemaphoreInfo *) magick_attribute((deprecated)),
   ResetImageAttributeIterator(const Image *) magick_attribute((deprecated)),
   SetCacheThreshold(const size_t) magick_attribute((deprecated)),
   SetImage(Image *,const Quantum) magick_attribute((deprecated)),

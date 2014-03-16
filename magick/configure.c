@@ -48,6 +48,7 @@
 #include "magick/hashmap.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
+#include "magick/nt-base-private.h"
 #include "magick/semaphore.h"
 #include "magick/string_.h"
 #include "magick/token.h"
@@ -139,7 +140,7 @@ static MagickBooleanType
 */
 MagickExport MagickBooleanType ConfigureComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&configure_semaphore);
+  configure_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -184,7 +185,7 @@ static void *DestroyConfigureElement(void *configure_info)
 MagickExport void ConfigureComponentTerminus(void)
 {
   if (configure_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&configure_semaphore);
+    ActivateSemaphoreInfo(&configure_semaphore);
   LockSemaphoreInfo(configure_semaphore);
   if (configure_list != (LinkedListInfo *) NULL)
     configure_list=DestroyLinkedList(configure_list,DestroyConfigureElement);
@@ -798,6 +799,13 @@ MagickExport LinkedListInfo *GetConfigurePaths(const char *filename,
     if (home != (char *) NULL)
       {
         /*
+          Search $HOME/.config/ImageMagick.
+        */
+        (void) FormatLocaleString(path,MaxTextExtent,
+          "%s%s.config%sImageMagick%s",home,DirectorySeparator,
+          DirectorySeparator,DirectorySeparator);
+        (void) AppendValueToLinkedList(paths,ConstantString(path));
+        /*
           Search $HOME/.magick.
         */
         (void) FormatLocaleString(path,MaxTextExtent,"%s%s.magick%s",home,
@@ -807,7 +815,6 @@ MagickExport LinkedListInfo *GetConfigurePaths(const char *filename,
       }
   }
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
-
   {
     char
       module_path[MaxTextExtent];
@@ -900,13 +907,13 @@ MagickExport const char *GetConfigureValue(const ConfigureInfo *configure_info)
 */
 static MagickBooleanType InitializeConfigureList(ExceptionInfo *exception)
 {
-  if ((configure_list == (LinkedListInfo *) NULL) &&
+  if ((configure_list == (LinkedListInfo *) NULL) ||
       (instantiate_configure == MagickFalse))
     {
       if (configure_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&configure_semaphore);
+        ActivateSemaphoreInfo(&configure_semaphore);
       LockSemaphoreInfo(configure_semaphore);
-      if ((configure_list == (LinkedListInfo *) NULL) &&
+      if ((configure_list == (LinkedListInfo *) NULL) ||
           (instantiate_configure == MagickFalse))
         {
           (void) LoadConfigureLists(ConfigureFilename,exception);
@@ -1160,6 +1167,7 @@ static MagickBooleanType LoadConfigureList(const char *xml,const char *filename,
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
             configure_info->name);
         configure_info=(ConfigureInfo *) NULL;
+        continue;
       }
     /*
       Parse configure element.
@@ -1290,8 +1298,7 @@ static MagickBooleanType LoadConfigureLists(const char *filename,
     if (configure_info == (ConfigureInfo *) NULL)
       {
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",
-          configure_info->name);
+          ResourceLimitError,"MemoryAllocationFailed","`%s'",p->name);
         continue;
       }
     (void) ResetMagickMemory(configure_info,0,sizeof(*configure_info));

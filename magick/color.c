@@ -817,7 +817,7 @@ static MagickBooleanType
 */
 MagickExport MagickBooleanType ColorComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&color_semaphore);
+  color_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -860,7 +860,7 @@ static void *DestroyColorElement(void *color_info)
 MagickExport void ColorComponentTerminus(void)
 {
   if (color_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&color_semaphore);
+    ActivateSemaphoreInfo(&color_semaphore);
   LockSemaphoreInfo(color_semaphore);
   if (color_list != (LinkedListInfo *) NULL)
     color_list=DestroyLinkedList(color_list,DestroyColorElement);
@@ -1506,13 +1506,13 @@ MagickExport void GetColorTuple(const MagickPixelPacket *pixel,
 */
 static MagickBooleanType InitializeColorList(ExceptionInfo *exception)
 {
-  if ((color_list == (LinkedListInfo *) NULL) &&
+  if ((color_list == (LinkedListInfo *) NULL) ||
       (instantiate_color == MagickFalse))
     {
       if (color_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&color_semaphore);
+        ActivateSemaphoreInfo(&color_semaphore);
       LockSemaphoreInfo(color_semaphore);
-      if ((color_list == (LinkedListInfo *) NULL) &&
+      if ((color_list == (LinkedListInfo *) NULL) ||
           (instantiate_color == MagickFalse))
         {
           (void) LoadColorLists(ColorFilename,exception);
@@ -2186,6 +2186,7 @@ static MagickBooleanType LoadColorList(const char *xml,const char *filename,
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
             color_info->name);
         color_info=(ColorInfo *) NULL;
+        continue;
       }
     GetMagickToken(q,(const char **) NULL,token);
     if (*token != '=')
@@ -2327,7 +2328,7 @@ static MagickBooleanType LoadColorLists(const char *filename,
     if (color_info == (ColorInfo *) NULL)
       {
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",color_info->name);
+          ResourceLimitError,"MemoryAllocationFailed","`%s'",p->name);
         continue;
       }
     (void) ResetMagickMemory(color_info,0,sizeof(*color_info));

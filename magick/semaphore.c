@@ -75,28 +75,30 @@ struct SemaphoreInfo
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   A c q u i r e S e m a p h o r e I n f o                                   %
+%   A c t i v a t e S e m a p h o r e I n f o                                 %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  AcquireSemaphoreInfo() acquires a semaphore.
+%  ActivateSemaphoreInfo() activates a semaphore under protection of a mutex
+%  to ensure only one thread allocates the semaphore.
 %
-%  The format of the AcquireSemaphoreInfo method is:
+%  The format of the ActivateSemaphoreInfo method is:
 %
-%      void AcquireSemaphoreInfo(SemaphoreInfo **semaphore_info)
+%      void ActivateSemaphoreInfo(SemaphoreInfo **semaphore_info)
 %
 %  A description of each parameter follows:
 %
 %    o semaphore_info: Specifies a pointer to an SemaphoreInfo structure.
 %
 */
-MagickExport void AcquireSemaphoreInfo(SemaphoreInfo **semaphore_info)
+MagickExport void ActivateSemaphoreInfo(SemaphoreInfo **semaphore_info)
 {
   assert(semaphore_info != (SemaphoreInfo **) NULL);
   if (*semaphore_info == (SemaphoreInfo *) NULL)
     {
+      InitializeMagickMutex();
       LockMagickMutex();
       if (*semaphore_info == (SemaphoreInfo *) NULL)
         *semaphore_info=AllocateSemaphoreInfo();
@@ -202,7 +204,9 @@ MagickExport SemaphoreInfo *AllocateSemaphoreInfo(void)
   /*
     Initialize the semaphore.
   */
-#if defined(MAGICKCORE_THREAD_SUPPORT)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  omp_init_lock((omp_lock_t *) &semaphore_info->mutex);
+#elif defined(MAGICKCORE_THREAD_SUPPORT)
   {
     int
       status;
@@ -254,7 +258,7 @@ MagickExport SemaphoreInfo *AllocateSemaphoreInfo(void)
         errno=status;
         perror("unable to initialize critical section");
         _exit(1);
-       }
+      }
   }
 #endif
   semaphore_info->id=GetMagickThreadId();
@@ -290,8 +294,11 @@ MagickExport void DestroySemaphoreInfo(SemaphoreInfo **semaphore_info)
   assert(semaphore_info != (SemaphoreInfo **) NULL);
   assert((*semaphore_info) != (SemaphoreInfo *) NULL);
   assert((*semaphore_info)->signature == MagickSignature);
+  InitializeMagickMutex();
   LockMagickMutex();
-#if defined(MAGICKCORE_THREAD_SUPPORT)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  omp_destroy_lock((omp_lock_t *) &(*semaphore_info)->mutex);
+#elif defined(MAGICKCORE_THREAD_SUPPORT)
   {
     int
       status;
@@ -338,7 +345,9 @@ MagickExport void LockSemaphoreInfo(SemaphoreInfo *semaphore_info)
 {
   assert(semaphore_info != (SemaphoreInfo *) NULL);
   assert(semaphore_info->signature == MagickSignature);
-#if defined(MAGICKCORE_THREAD_SUPPORT)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  omp_set_lock((omp_lock_t *) &semaphore_info->mutex);
+#elif defined(MAGICKCORE_THREAD_SUPPORT)
   {
     int
       status;
@@ -371,35 +380,6 @@ MagickExport void LockSemaphoreInfo(SemaphoreInfo *semaphore_info)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   R e l i n g u i s h S e m a p h o r e I n f o                             %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  RelinquishSemaphoreInfo() relinquishes a semaphore.
-%
-%  The format of the RelinquishSemaphoreInfo method is:
-%
-%      RelinquishSemaphoreInfo(SemaphoreInfo *semaphore_info)
-%
-%  A description of each parameter follows:
-%
-%    o semaphore_info: Specifies a pointer to an SemaphoreInfo structure.
-%
-*/
-MagickExport void RelinquishSemaphoreInfo(SemaphoreInfo *semaphore_info)
-{
-  assert(semaphore_info != (SemaphoreInfo *) NULL);
-  assert(semaphore_info->signature == MagickSignature);
-  UnlockSemaphoreInfo(semaphore_info);
-}
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
 %   S e m a p h o r e C o m p o n e n t G e n e s i s                         %
 %                                                                             %
 %                                                                             %
@@ -415,8 +395,7 @@ MagickExport void RelinquishSemaphoreInfo(SemaphoreInfo *semaphore_info)
 */
 MagickExport MagickBooleanType SemaphoreComponentGenesis(void)
 {
-  LockMagickMutex();
-  UnlockMagickMutex();
+  InitializeMagickMutex();
   return(MagickTrue);
 }
 
@@ -440,6 +419,7 @@ MagickExport MagickBooleanType SemaphoreComponentGenesis(void)
 */
 MagickExport void SemaphoreComponentTerminus(void)
 {
+  DestroyMagickMutex();
 }
 
 /*
@@ -479,7 +459,9 @@ MagickExport void UnlockSemaphoreInfo(SemaphoreInfo *semaphore_info)
     }
   semaphore_info->reference_count--;
 #endif
-#if defined(MAGICKCORE_THREAD_SUPPORT)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  omp_unset_lock((omp_lock_t *) &semaphore_info->mutex);
+#elif defined(MAGICKCORE_THREAD_SUPPORT)
   {
     int
       status;

@@ -49,6 +49,7 @@
 #include "magick/locale_.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
+#include "magick/nt-base-private.h"
 #include "magick/semaphore.h"
 #include "magick/splay-tree.h"
 #include "magick/string_.h"
@@ -809,13 +810,13 @@ MagickExport const char *GetLocaleValue(const LocaleInfo *locale_info)
 */
 static MagickBooleanType InitializeLocaleList(ExceptionInfo *exception)
 {
-  if ((locale_list == (SplayTreeInfo *) NULL) &&
+  if ((locale_list == (SplayTreeInfo *) NULL) ||
       (instantiate_locale == MagickFalse))
     {
       if (locale_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&locale_semaphore);
+        ActivateSemaphoreInfo(&locale_semaphore);
       LockSemaphoreInfo(locale_semaphore);
-      if ((locale_list == (SplayTreeInfo *) NULL) &&
+      if ((locale_list == (SplayTreeInfo *) NULL) ||
           (instantiate_locale == MagickFalse))
         {
           char
@@ -1064,6 +1065,12 @@ static void LocaleFatalErrorHandler(
   exit(1);
 }
 
+static inline size_t MagickMin(const size_t x,const size_t y)
+{
+  if (x < y)
+    return(x);
+  return(y);
+}
 
 static MagickBooleanType LoadLocaleList(const char *xml,const char *filename,
   const char *locale,const size_t depth,ExceptionInfo *exception)
@@ -1243,7 +1250,8 @@ static MagickBooleanType LoadLocaleList(const char *xml,const char *filename,
         q--;
         while ((isspace((int) ((unsigned char) *q)) != 0) && (q > p))
           q--;
-        (void) CopyMagickString(message,p,(size_t) (q-p+2));
+        (void) CopyMagickString(message,p,MagickMin((size_t) (q-p+2),
+          MaxTextExtent));
         locale_info=(LocaleInfo *) AcquireMagickMemory(sizeof(*locale_info));
         if (locale_info == (LocaleInfo *) NULL)
           ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
@@ -1390,7 +1398,7 @@ static MagickBooleanType LoadLocaleLists(const char *filename,
 */
 MagickExport MagickBooleanType LocaleComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&locale_semaphore);
+  locale_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -1415,7 +1423,7 @@ MagickExport MagickBooleanType LocaleComponentGenesis(void)
 MagickExport void LocaleComponentTerminus(void)
 {
   if (locale_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&locale_semaphore);
+    ActivateSemaphoreInfo(&locale_semaphore);
   LockSemaphoreInfo(locale_semaphore);
   if (locale_list != (SplayTreeInfo *) NULL)
     locale_list=DestroySplayTree(locale_list);

@@ -1,3 +1,98 @@
+2014-03-09  6.8.8-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-8, SVN revision 15097.
+
+2014-03-04  6.8.8-8 Glenn Randers-Pehrson <glennrp@image...>
+  * Reset colorspace to Grayscale when reading a gray PNG image with
+    gamma > 0.75 instead of when gamma==1.0 (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25136).
+
+2014-02-22  6.8.8-8 Dirk Lemstra <dirk@snakeware...>
+  * The PSD reader creates a merged image if the image does not contain one.
+  * Added option pdf:fit-page to scale a pdf to the specified size (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=25044).
+  * The ResolutionInfo in the 8BIM profile will be updated when an image is
+    written.
+  * Fixed UTF8 issues and added support for reading files with long path names
+    for the Windows distribution.
+
+2014-02-21  6.8.8-8 Cristy  <quetzlzacatenango@image...>
+  * Convert linear RGB to sRGB before writing the Targa image format.
+  * Make sure we use the secure C library functions when compiling ImageMagick
+    on Windows.
+  * Tweak color reduction optimization to return a full color palette (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=25098).
+  * Patch configure.ac to support FlashPix under Debian (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25140).
+  * OpenCL support writes to $HOME/.config/ImageMagick, if the path does not
+    exist, two calls to mkdir() are required (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25080).
+  * Replace  MAGICKCORE_JP2_DELEGATE with MAGICKCORE_LIBOPENJP2_DELEGATE in
+    magick/static.c (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25153).
+  * Eliminate thread race condition (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25168).
+
+2014-02-18  6.8.8-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-7, SVN revision 14908.
+
+2014-02-16  6.8.8-7 Cristy  <quetzlzacatenango@image...>
+  * Prevent possible buffer overflow in messaging system.
+
+2014-02-16  6.8.8-7 Dirk Lemstra <dirk@snakeware...>
+  * Improved detection of JPEG 2000 code streams and .j2c support (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24942).
+  * Added morphology to Magick++.
+
+2014-02-13  6.8.8-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-6, SVN revision 14868.
+
+2014-02-13  6.8.8-6 Cristy  <quetzlzacatenango@image...>
+  * identify -define identify:locate=maximum locates the position of the
+    maximum value (stopped working in 6.8.8-5).
+
+2014-02-03  6.8.8-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-5, SVN revision 14838.
+
+2014-01-31  6.8.8-5 Cristy  <quetzlzacatenango@image...>
+  * Fix case where an image moment might have a mass of 0 or a Hu moment might
+    be 0.
+  * Enhance the TXT coder to read RGB percent values, e.g. 10.008% (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24934).
+
+2014-01-30  6.8.8-5 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed new "-define png:swap-bytes" option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24818).
+
+2014-01-29  6.8.8-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-4, SVN revision 14676.
+
+2014-01-29  6.8.8-4 Cristy  <quetzlzacatenango@image...>
+  * Remove comma at end of enumerator list, magick/compare.h.
+
+2014-01-28  6.8.8-4 Dirk Lemstra <dirk@snakeware...>
+  * Added transpose and transverse to Magick++. (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24884).
+
+2014-01-25  6.8.8-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-3, SVN revision 14651.
+
+2014-01-18  6.8.8-3 Dirk Lemstra <dirk@snakeware...>
+  * Added ResourceLimits class and text direction/gravity to Magick++.
+  * Added support for defining dimensions with icon:auto-resize (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=24796).
+
+2014-01-16  6.8.8-3 Glenn Randers-Pehrson <glennrp@image...>
+  * Added "-define png:swap-bytes" option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=24818).
+  * Added image->duration to image.h, calculate duration in gif.c, and
+    report duration in identify.c (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=23276).
+
+2014-01-15  6.8.8-3 Cristy  <quetzlzacatenango@image...>
+  * The -type truecolor option for a grayscale image returns RGB JPEG (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24814).
+  * Support JSON coder (.e.g. convert image.jpg image.json).
+
 2014-01-10  6.8.8-2 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.8-2, SVN revision 14347.
 
@@ -324,11 +419,11 @@
     of x64 project file
 
 2013-07-10  6.8.6-5 Cristy  <quetzlzacatenango@image...>
-  * compare exits with a non-zero exit code when no error (reference
+  * Compare exits with a non-zero exit code when no error (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23722).
-  * correct calculation of quantization error (reference
+  * Correct calculation of quantization error (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?t=23734).
-  * correct quantize tree walking mistake for RiemersmaDither (reference
+  * Correct quantize tree walking mistake for RiemersmaDither (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=23735).
 
 2013-07-10  6.8.6-4 Cristy  <quetzlzacatenango@image...>
@@ -524,7 +619,7 @@
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23193).
   * The -adaptive-sharpen option is now sharpening properly (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23211).
-  * Sometimes an image says its grayscale when its not (reference
+  * Sometimes an image says it's grayscale when it's not (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23217).
   * Use malloc() to allocate X image data (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23221).
@@ -574,7 +669,7 @@
 
 2013-04-05  6.8.4-7 Anthony Thyssen <A.Thyssen@griffith...>
   * Fix -sample sampling point to midpoints of sampling areas
-  * add a "sample:offset=" define to allow users to adjust this
+  * Add a "sample:offset=" define to allow users to adjust this
     sampling point position in terms of percentage (default = 50x50)
 
 2013-04-02  6.8.4-7 Glenn Randers-Pehrson <glennrp@image...>
@@ -709,10 +804,10 @@
   * New version 6.8.3-6, SVN revision 11210.
 
 2013-02-25  6.8.3-6 Cristy  <quetzlzacatenango@image...>
-   * Support built-in 1x1 and 2x1 threshold maps (reference
-     http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22861).
-   * Check for webp version (reference
-     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22867).
+  * Support built-in 1x1 and 2x1 threshold maps (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22861).
+  * Check for webp version (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22867).
 
 2013-02-25  6.8.3-6 Glenn Randers-Pehrson <glennrp@image...>
   * Relocated png_set_bKGD(), etc., after png_set_IHDR() because they
@@ -752,14 +847,14 @@
   * New version 6.8.3-1, SVN revision 11060.
 
 2013-02-16  6.8.3-1 Cristy  <quetzlzacatenango@image...>
-   * Disable FORTIFY_SOURCE to fix a bug in LVVM / OpenMP support.
+  * Disable FORTIFY_SOURCE to fix a bug in LVVM / OpenMP support.
 
 2013-02-15  6.8.3-0 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.3-0, SVN revision 11045.
 
 2013-02-14  6.8.3-0 Cristy  <quetzlzacatenango@image...>
-   * Webp requires alpha, not opacity (reference
-     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22793).
+  * Webp requires alpha, not opacity (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=22793).
 
 2013-02-12  6.8.3-0 Bastien Roucaries  <roucaries.basti...>
   * Allow PerlMagick to be multi-quantum (e.g. Image::Magick::Q16).
@@ -768,7 +863,7 @@
   * New version 6.8.2-10, SVN revision 11004.
 
 2013-02-11  6.8.2-10 Cristy  <quetzlzacatenango@image...>
-   * The XPM regression tests passes now.
+  * The XPM regression tests passes now.
 
 2013-02-09  6.8.2-9 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.2-9, SVN revision 10995.
@@ -898,7 +993,7 @@
 
 2013-01-01  6.8.1-7 Cristy  <quetzlzacatenango@image...>
   * magick-baseconfig.h is architecture dependant;
-    make headers quantum depth neutral ( reference
+    make headers quantum depth neutral (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=22509).
 
 2013-01-01  6.8.1-6 Cristy  <quetzlzacatenango@image...>

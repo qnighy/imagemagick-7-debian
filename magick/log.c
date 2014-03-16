@@ -48,6 +48,7 @@
 #include "magick/hashmap.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
+#include "magick/nt-base-private.h"
 #include "magick/option.h"
 #include "magick/semaphore.h"
 #include "magick/timer.h"
@@ -271,7 +272,8 @@ static LogInfo *GetLogInfo(const char *name,ExceptionInfo *exception)
     *p;
 
   assert(exception != (ExceptionInfo *) NULL);
-  if ((log_list == (LinkedListInfo *) NULL) || (instantiate_log == MagickFalse))
+  if ((log_list == (LinkedListInfo *) NULL) ||
+      (instantiate_log == MagickFalse))
     if (InitializeLogList(exception) == MagickFalse)
       return((LogInfo *) NULL);
   if ((log_list == (LinkedListInfo *) NULL) ||
@@ -532,12 +534,13 @@ MagickExport const char *GetLogName(void)
 */
 static MagickBooleanType InitializeLogList(ExceptionInfo *exception)
 {
-  if ((log_list == (LinkedListInfo *) NULL) && (instantiate_log == MagickFalse))
+  if ((log_list == (LinkedListInfo *) NULL) &&
+      (instantiate_log == MagickFalse))
     {
       if (log_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&log_semaphore);
+        ActivateSemaphoreInfo(&log_semaphore);
       LockSemaphoreInfo(log_semaphore);
-      if ((log_list == (LinkedListInfo *) NULL) &&
+      if ((log_list == (LinkedListInfo *) NULL) ||
           (instantiate_log == MagickFalse))
         {
           (void) LoadLogLists(LogFilename,exception);
@@ -706,7 +709,7 @@ MagickExport MagickBooleanType LogComponentGenesis(void)
   ExceptionInfo
     *exception;
 
-  AcquireSemaphoreInfo(&log_semaphore);
+  log_semaphore=AllocateSemaphoreInfo();
   exception=AcquireExceptionInfo();
   (void) GetLogInfo("*",exception);
   exception=DestroyExceptionInfo(exception);
@@ -757,7 +760,7 @@ static void *DestroyLogElement(void *log_info)
 MagickExport void LogComponentTerminus(void)
 {
   if (log_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&log_semaphore);
+    ActivateSemaphoreInfo(&log_semaphore);
   LockSemaphoreInfo(log_semaphore);
   if (log_list != (LinkedListInfo *) NULL)
     log_list=DestroyLinkedList(log_list,DestroyLogElement);
@@ -1423,6 +1426,7 @@ static MagickBooleanType LoadLogList(const char *xml,const char *filename,
           (void) ThrowMagickException(exception,GetMagickModule(),
             ResourceLimitError,"MemoryAllocationFailed","`%s'",filename);
         log_info=(LogInfo *) NULL;
+        continue;
       }
     GetMagickToken(q,(const char **) NULL,token);
     if (*token != '=')
@@ -1594,7 +1598,7 @@ static MagickBooleanType LoadLogLists(const char *filename,
     if (log_info == (LogInfo *) NULL)
       {
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",log_info->name);
+          ResourceLimitError,"MemoryAllocationFailed","`%s'",p->filename);
         continue;
       }
     (void) ResetMagickMemory(log_info,0,sizeof(*log_info));

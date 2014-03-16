@@ -2267,6 +2267,38 @@ WandExport DecorationType DrawGetTextDecoration(const DrawingWand *wand)
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%   D r a w G e t T e x t D i r e c t i o n                                   %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  DrawGetTextDirection() returns the direction that will be used when
+%  annotating with text.
+%
+%  The format of the DrawGetTextDirection method is:
+%
+%      DirectionType DrawGetTextDirection(const DrawingWand *wand)
+%
+%  A description of each parameter follows:
+%
+%    o wand: the drawing wand.
+%
+*/
+WandExport DirectionType DrawGetTextDirection(const DrawingWand *wand)
+{
+  assert(wand != (const DrawingWand *) NULL);
+  assert(wand->signature == WandSignature);
+  if (wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  return(CurrentContext->direction);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   D r a w G e t T e x t E n c o d i n g                                     %
 %                                                                             %
 %                                                                             %
@@ -5505,30 +5537,35 @@ WandExport MagickBooleanType DrawSetStrokeDashArray(DrawingWand *wand,
         {
           CurrentContext->dash_pattern=(double *) AcquireQuantumMemory((size_t)
             n_new+1UL,sizeof(*CurrentContext->dash_pattern));
-          if (!CurrentContext->dash_pattern)
+          if (CurrentContext->dash_pattern == (double *) NULL)
             {
               ThrowDrawException(ResourceLimitError,"MemoryAllocationFailed",
                 wand->name);
               return(MagickFalse);
             }
-          for (i=0; i < n_new; i++)
-            CurrentContext->dash_pattern[i]=dasharray[i];
+          for (i=0; i < (ssize_t) n_new; i++)
+          {
+            CurrentContext->dash_pattern[i]=0.0;
+            if (dasharray != (double *) NULL)
+              CurrentContext->dash_pattern[i]=dasharray[i];
+          }
           CurrentContext->dash_pattern[n_new]=0.0;
         }
       (void) MvgPrintf(wand,"stroke-dasharray ");
       if (n_new == 0)
         (void) MvgPrintf(wand,"none\n");
       else
-        {
-          for (i=0; i < n_new; i++)
+        if (dasharray != (double *) NULL)
           {
-            if (i != 0)
-              (void) MvgPrintf(wand,",");
-            (void) MvgPrintf(wand,"%.20g",dasharray[i]);
+            for (i=0; i < (ssize_t) n_new; i++)
+            {
+              if (i != 0)
+                (void) MvgPrintf(wand,",");
+              (void) MvgPrintf(wand,"%.20g",dasharray[i]);
+            }
+            (void) MvgPrintf(wand,"\n");
           }
-          (void) MvgPrintf(wand,"\n");
-        }
-    }
+      }
   return(MagickTrue);
 }
 
@@ -5908,6 +5945,50 @@ WandExport void DrawSetTextDecoration(DrawingWand *wand,
       CurrentContext->decorate=decoration;
       (void) MvgPrintf(wand,"decorate '%s'\n",CommandOptionToMnemonic(
         MagickDecorateOptions,(ssize_t) decoration));
+    }
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   D r a w S e t T e x t D i r e c t i o n                                   %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  DrawSetTextDirection() specifies the direction to be used when
+%  annotating with text.
+%
+%  The format of the DrawSetTextDirection method is:
+%
+%      void DrawSetTextDirection(DrawingWand *wand,
+%        const DirectionType direction)
+%
+%  A description of each parameter follows:
+%
+%    o wand: the drawing wand.
+%
+%    o direction: text direction. One of RightToLeftDirection,
+%      LeftToRightDirection
+%
+*/
+WandExport void DrawSetTextDirection(DrawingWand *wand,
+  const DirectionType direction)
+{
+  assert(wand != (DrawingWand *) NULL);
+  assert(wand->signature == WandSignature);
+
+  if (wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  if ((wand->filter_off != MagickFalse) ||
+      (CurrentContext->direction != direction))
+    {
+      CurrentContext->direction=direction;
+      (void) MvgPrintf(wand,"direction '%s'\n",CommandOptionToMnemonic(
+        MagickDirectionOptions,(ssize_t) direction));
     }
 }
 

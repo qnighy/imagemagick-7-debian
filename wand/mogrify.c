@@ -46,8 +46,10 @@
 */
 #include "wand/studio.h"
 #include "wand/MagickWand.h"
+#include "wand/magick-wand-private.h"
 #include "wand/mogrify-private.h"
 #include "magick/color-private.h"
+#include "magick/image-private.h"
 #include "magick/monitor-private.h"
 #include "magick/pixel-private.h"
 #include "magick/thread-private.h"
@@ -1546,6 +1548,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
                 break;
               }
             (void) SetImageArtifact(*image,"identify:features",argv[i+1]);
+            (void) SetImageArtifact(*image,"verbose","true");
             break;
           }
         if (LocaleCompare("fill",option+1) == 0)
@@ -2114,6 +2117,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
                 break;
               }
             (void) SetImageArtifact(*image,"identify:moments",argv[i+1]);
+            (void) SetImageArtifact(*image,"verbose","true");
             break;
           }
         if (LocaleCompare("monitor",option+1) == 0)

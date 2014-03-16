@@ -58,6 +58,7 @@
 #include "magick/magick.h"
 #include "magick/memory_.h"
 #include "magick/memory-private.h"
+#include "magick/nt-base-private.h"
 #include "magick/option.h"
 #include "magick/pixel.h"
 #include "magick/pixel-accessor.h"
@@ -328,7 +329,7 @@ MagickExport const void *AcquirePixelCachePixels(const Image *image,
 */
 MagickExport MagickBooleanType CacheComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&cache_semaphore);
+  cache_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -353,7 +354,7 @@ MagickExport MagickBooleanType CacheComponentGenesis(void)
 MagickExport void CacheComponentTerminus(void)
 {
   if (cache_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&cache_semaphore);
+    ActivateSemaphoreInfo(&cache_semaphore);
   LockSemaphoreInfo(cache_semaphore);
   instantiate_cache=MagickFalse;
   UnlockSemaphoreInfo(cache_semaphore);
@@ -701,6 +702,7 @@ static MagickBooleanType ClonePixelCacheRepository(
       clone_nexus[id],exception);
     if (pixels == (PixelPacket *) NULL)
       continue;
+    (void) ResetMagickMemory(clone_nexus[id]->pixels,0,clone_nexus[id]->length);
     (void) memcpy(clone_nexus[id]->pixels,cache_nexus[id]->pixels,length);
     status=WritePixelCachePixels(clone_info,clone_nexus[id],exception);
   }
@@ -1516,7 +1518,12 @@ static Cache GetImagePixelCache(Image *image,const MagickBooleanType clone,
     }
   if ((time_limit != MagickResourceInfinity) &&
       ((MagickSizeType) (time((time_t *) NULL)-cache_timestamp) >= time_limit))
-    ThrowFatalException(ResourceLimitFatalError,"TimeLimitExceeded");
+     {
+#if defined(ECANCELED)
+       errno=ECANCELED;
+#endif
+       ThrowFatalException(ResourceLimitFatalError,"TimeLimitExceeded");
+     }
   assert(image->cache != (Cache) NULL);
   cache_info=(CacheInfo *) image->cache;
   destroy=MagickFalse;

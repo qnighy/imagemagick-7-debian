@@ -170,9 +170,9 @@ static Image *ReadMONOImage(const ImageInfo *image_info,
       if (bit == 0)
         byte=(size_t) ReadBlobByte(image);
       if (image_info->endian == LSBEndian)
-        SetPixelIndex(indexes+x,((byte & 0x01) != 0) ? 0x00 : 0x01);
+        SetPixelIndex(indexes+x,((byte & 0x01) != 0) ? 0x00 : 0x01)
       else
-        SetPixelIndex(indexes+x,((byte & 0x01) != 0) ? 0x01 : 0x00);
+        SetPixelIndex(indexes+x,((byte & 0x01) != 0) ? 0x01 : 0x00)
       bit++;
       if (bit == 8)
         bit=0;
@@ -313,8 +313,7 @@ static MagickBooleanType WriteMONOImage(const ImageInfo *image_info,
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(image,sRGBColorspace);
+  (void) TransformImageColorspace(image,sRGBColorspace);
   /*
     Convert image to a bi-level image.
   */

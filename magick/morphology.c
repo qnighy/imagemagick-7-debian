@@ -126,7 +126,7 @@ static void
 static inline KernelInfo *LastKernelInfo(KernelInfo *kernel)
 {
   while (kernel->next != (KernelInfo *) NULL)
-    kernel = kernel->next;
+    kernel=kernel->next;
   return(kernel);
 }
 
@@ -322,8 +322,8 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
     kernel->width,kernel->height*sizeof(*kernel->values)));
   if (kernel->values == (double *) NULL)
     return(DestroyKernelInfo(kernel));
-  kernel->minimum = +MagickHuge;
-  kernel->maximum = -MagickHuge;
+  kernel->minimum=MagickMaximumValue;
+  kernel->maximum=(-MagickMaximumValue);
   kernel->negative_range = kernel->positive_range = 0.0;
   for (i=0; (i < (ssize_t) (kernel->width*kernel->height)) && (p < end); i++)
   {
@@ -364,7 +364,7 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
 #endif
 
   /* check that we recieved at least one real (non-nan) value! */
-  if ( kernel->minimum == MagickHuge )
+  if (kernel->minimum == MagickMaximumValue)
     return(DestroyKernelInfo(kernel));
 
   if ( (flags & AreaValue) != 0 )         /* '@' symbol in kernel size */
@@ -491,7 +491,6 @@ static KernelInfo *ParseKernelName(const char *kernel_string)
 
 MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
 {
-
   KernelInfo
     *kernel,
     *new_kernel;
@@ -502,48 +501,42 @@ MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
   const char
     *p;
 
-  size_t
-    kernel_number;
-
   if (kernel_string == (const char *) NULL)
     return(ParseKernelArray(kernel_string));
-  p = kernel_string;
-  kernel = NULL;
-  kernel_number = 0;
+  p=kernel_string;
+  kernel=NULL;
 
-  while ( GetMagickToken(p,NULL,token),  *token != '\0' ) {
-
+  while (GetMagickToken(p,NULL,token), *token != '\0')
+  {
     /* ignore extra or multiple ';' kernel separators */
-    if ( *token != ';' ) {
+    if (*token != ';')
+      {
+        /* tokens starting with alpha is a Named kernel */
+        if (isalpha((int) ((unsigned char) *token)) != 0)
+          new_kernel=ParseKernelName(p);
+        else /* otherwise a user defined kernel array */
+          new_kernel=ParseKernelArray(p);
 
-      /* tokens starting with alpha is a Named kernel */
-      if (isalpha((int) ((unsigned char) *token)) != 0)
-        new_kernel = ParseKernelName(p);
-      else /* otherwise a user defined kernel array */
-        new_kernel = ParseKernelArray(p);
+        /* Error handling -- this is not proper error handling! */
+        if (new_kernel == (KernelInfo *) NULL)
+          {
+            if (kernel != (KernelInfo *) NULL)
+              kernel=DestroyKernelInfo(kernel);
+            return((KernelInfo *) NULL);
+          }
 
-      /* Error handling -- this is not proper error handling! */
-      if ( new_kernel == (KernelInfo *) NULL ) {
-        (void) FormatLocaleFile(stderr, "Failed to parse kernel number #%.20g\n",
-          (double) kernel_number);
-        if ( kernel != (KernelInfo *) NULL )
-          kernel=DestroyKernelInfo(kernel);
-        return((KernelInfo *) NULL);
+        /* initialise or append the kernel list */
+        if (kernel == (KernelInfo *) NULL)
+          kernel=new_kernel;
+        else
+          LastKernelInfo(kernel)->next=new_kernel;
       }
 
-      /* initialise or append the kernel list */
-      if ( kernel == (KernelInfo *) NULL )
-        kernel = new_kernel;
-      else
-        LastKernelInfo(kernel)->next = new_kernel;
-    }
-
     /* look for the next kernel in list */
-    p = strchr(p, ';');
-    if ( p == (char *) NULL )
+    p=strchr(p,';');
+    if (p == (char *) NULL)
       break;
     p++;
-
   }
   return(kernel);
 }
@@ -2257,7 +2250,7 @@ MagickExport KernelInfo *CloneKernelInfo(const KernelInfo *kernel)
 MagickExport KernelInfo *DestroyKernelInfo(KernelInfo *kernel)
 {
   assert(kernel != (KernelInfo *) NULL);
-  if ( kernel->next != (KernelInfo *) NULL )
+  if (kernel->next != (KernelInfo *) NULL)
     kernel->next=DestroyKernelInfo(kernel->next);
   kernel->values=(double *) RelinquishAlignedMemory(kernel->values);
   kernel=(KernelInfo *) RelinquishMagickMemory(kernel);
@@ -3888,7 +3881,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
   if ( iterations < 0 )  /* negative interations = infinite (well alomst) */
      kernel_limit = image->columns>image->rows ? image->columns : image->rows;
 
-  verbose = IsMagickTrue(GetImageArtifact(image,"verbose"));
+  verbose = IsMagickTrue(GetImageArtifact(image,"debug"));
 
   /* initialise for cleanup */
   curr_image = (Image *) image;
@@ -4298,7 +4291,8 @@ exit_cleanup:
 %  the above internal function MorphologyApply().
 %
 %  User defined settings include...
-%    * Output Bias for Convolution and correlation   ("-bias")
+%    * Output Bias for Convolution and correlation   ("-bias"
+       or "-define convolve:bias=??")
 %    * Kernel Scale/normalize settings     ("-set 'option:convolve:scale'")
 %      This can also includes the addition of a scaled unity kernel.
 %    * Show Kernel being applied           ("-set option:showkernel 1")
@@ -4342,19 +4336,27 @@ MagickExport Image *MorphologyImageChannel(const Image *image,
   CompositeOperator
     compose;
 
+  double
+    bias;
+
   Image
     *morphology_image;
-
 
   /* Apply Convolve/Correlate Normalization and Scaling Factors.
    * This is done BEFORE the ShowKernelInfo() function is called so that
    * users can see the results of the 'option:convolve:scale' option.
    */
   curr_kernel = (KernelInfo *) kernel;
+  bias=image->bias;
   if ( method == ConvolveMorphology ||  method == CorrelateMorphology )
     {
       const char
         *artifact;
+
+      artifact = GetImageArtifact(image,"convolve:bias");
+      if (artifact != (const char *) NULL)
+        bias=StringToDoubleInterval(artifact,(double) QuantumRange+1.0);
+
       artifact = GetImageArtifact(image,"convolve:scale");
       if ( artifact != (const char *)NULL ) {
         if ( curr_kernel == kernel )
@@ -4389,7 +4391,7 @@ MagickExport Image *MorphologyImageChannel(const Image *image,
   }
   /* Apply the Morphology */
   morphology_image = MorphologyApply(image, channel, method, iterations,
-                         curr_kernel, compose, image->bias, exception);
+                         curr_kernel, compose, bias, exception);
 
   /* Cleanup and Exit */
   if ( curr_kernel != kernel )

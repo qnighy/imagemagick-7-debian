@@ -190,6 +190,11 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
   sum=0;
   bits=32;
   p=buffer+0x800;
+  for (i=0; i < 3; i++)
+  {
+    pcd_table[i]=(PCDTable *) NULL;
+    pcd_length[i]=0;
+  }
   for (i=0; i < (image->columns > 1536 ? 3 : 1); i++)
   {
     PCDGetBits(8);
@@ -1007,8 +1012,7 @@ static MagickBooleanType WritePCDTile(Image *image,const char *page_geometry,
       tile_image=bordered_image;
     }
   (void) TransformImage(&tile_image,(char *) NULL,tile_geometry);
-  if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-    (void) TransformImageColorspace(tile_image,YCCColorspace);
+  (void) TransformImageColorspace(tile_image,YCCColorspace);
   downsample_image=ResizeImage(tile_image,tile_image->columns/2,
     tile_image->rows/2,TriangleFilter,1.0,&image->exception);
   if (downsample_image == (Image *) NULL)

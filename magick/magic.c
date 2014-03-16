@@ -526,13 +526,13 @@ MagickExport const char *GetMagicName(const MagicInfo *magic_info)
 */
 static MagickBooleanType InitializeMagicList(ExceptionInfo *exception)
 {
-  if ((magic_list == (LinkedListInfo *) NULL) &&
+  if ((magic_list == (LinkedListInfo *) NULL) ||
       (instantiate_magic == MagickFalse))
     {
       if (magic_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&magic_semaphore);
+        ActivateSemaphoreInfo(&magic_semaphore);
       LockSemaphoreInfo(magic_semaphore);
-      if ((magic_list == (LinkedListInfo *) NULL) &&
+      if ((magic_list == (LinkedListInfo *) NULL) ||
           (instantiate_magic == MagickFalse))
         {
           (void) LoadMagicLists(MagicFilename,exception);
@@ -789,6 +789,7 @@ static MagickBooleanType LoadMagicList(const char *xml,const char *filename,
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
             magic_info->name);
         magic_info=(MagicInfo *) NULL;
+        continue;
       }
     GetMagickToken(q,(const char **) NULL,token);
     if (*token != '=')
@@ -979,7 +980,7 @@ static MagickBooleanType LoadMagicLists(const char *filename,
     if (magic_info == (MagicInfo *) NULL)
       {
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",magic_info->name);
+          ResourceLimitError,"MemoryAllocationFailed","`%s'",p->name);
         continue;
       }
     (void) ResetMagickMemory(magic_info,0,sizeof(*magic_info));
@@ -1020,7 +1021,7 @@ static MagickBooleanType LoadMagicLists(const char *filename,
 */
 MagickExport MagickBooleanType MagicComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&magic_semaphore);
+  magic_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -1067,7 +1068,7 @@ static void *DestroyMagicElement(void *magic_info)
 MagickExport void MagicComponentTerminus(void)
 {
   if (magic_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&magic_semaphore);
+    ActivateSemaphoreInfo(&magic_semaphore);
   LockSemaphoreInfo(magic_semaphore);
   if (magic_list != (LinkedListInfo *) NULL)
     magic_list=DestroyLinkedList(magic_list,DestroyMagicElement);

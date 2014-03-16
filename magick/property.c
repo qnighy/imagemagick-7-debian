@@ -94,6 +94,15 @@
 #endif
 
 /*
+  Define declarations.
+*/
+#if defined(MAGICKCORE_LCMS_DELEGATE)
+#if defined(LCMS_VERSION) && (LCMS_VERSION < 2000)
+#define cmsUInt32Number  DWORD
+#endif
+#endif
+
+/*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 %                                                                             %
@@ -1514,6 +1523,60 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
   return(status);
 }
 
+static MagickBooleanType GetICCProperty(const Image *image,const char *property)
+{
+  const StringInfo
+    *profile;
+
+  magick_unreferenced(property);
+
+  profile=GetImageProfile(image,"icc");
+  if (profile == (StringInfo *) NULL)
+    profile=GetImageProfile(image,"icm");
+  if (profile == (StringInfo *) NULL)
+    return(MagickFalse);
+  if (GetStringInfoLength(profile) < 128)
+    return(MagickFalse);  /* minimum ICC profile length */
+#if defined(MAGICKCORE_LCMS_DELEGATE)
+  {
+    cmsHPROFILE
+      icc_profile;
+
+    icc_profile=cmsOpenProfileFromMem(GetStringInfoDatum(profile),
+      (cmsUInt32Number) GetStringInfoLength(profile));
+    if (icc_profile != (cmsHPROFILE *) NULL)
+      {
+#if defined(LCMS_VERSION) && (LCMS_VERSION < 2000)
+        const char
+          *name;
+
+        name=cmsTakeProductName(icc_profile);
+        if (name != (const char *) NULL)
+          (void) SetImageProperty((Image *) image,"icc:name",name);
+#else
+        char
+          info[MaxTextExtent];
+
+        (void) cmsGetProfileInfoASCII(icc_profile,cmsInfoDescription,
+          "en","US",info,MaxTextExtent);
+        (void) SetImageProperty((Image *) image,"icc:description",info);
+        (void) cmsGetProfileInfoASCII(icc_profile,cmsInfoManufacturer,
+          "en","US",info,MaxTextExtent);
+        (void) SetImageProperty((Image *) image,"icc:manufacturer",info);
+        (void) cmsGetProfileInfoASCII(icc_profile,cmsInfoModel,"en",
+          "US",info,MaxTextExtent);
+        (void) SetImageProperty((Image *) image,"icc:model",info);
+        (void) cmsGetProfileInfoASCII(icc_profile,cmsInfoCopyright,
+          "en","US",info,MaxTextExtent);
+        (void) SetImageProperty((Image *) image,"icc:copyright",info);
+#endif
+        (void) cmsCloseProfile(icc_profile);
+      }
+  }
+#endif
+  return(MagickTrue);
+}
+
 static MagickBooleanType GetXMPProperty(const Image *image,const char *property)
 {
   char
@@ -2050,13 +2113,8 @@ MagickExport const char *GetImageProperty(const Image *image,
     {
       if (LocaleNCompare("8bim:",property,5) == 0)
         {
-          if ((Get8BIMProperty(image,property) != MagickFalse) &&
-              (image->properties != (void *) NULL))
-            {
-              p=(const char *) GetValueFromSplayTree((SplayTreeInfo *)
-                image->properties,property);
-              return(p);
-            }
+          (void) Get8BIMProperty(image,property);
+          break;
         }
       break;
     }
@@ -2065,13 +2123,8 @@ MagickExport const char *GetImageProperty(const Image *image,
     {
       if (LocaleNCompare("exif:",property,5) == 0)
         {
-          if ((GetEXIFProperty(image,property) != MagickFalse) &&
-              (image->properties != (void *) NULL))
-            {
-              p=(const char *) GetValueFromSplayTree((SplayTreeInfo *)
-                image->properties,property);
-              return(p);
-            }
+          (void) GetEXIFProperty(image,property);
+          break;
         }
       break;
     }
@@ -2093,27 +2146,23 @@ MagickExport const char *GetImageProperty(const Image *image,
                 GetMagickPrecision(),(double) alpha);
               (void) SetImageProperty((Image *) image,property,value);
             }
-          if (image->properties != (void *) NULL)
-            {
-              p=(const char *) GetValueFromSplayTree((SplayTreeInfo *)
-                image->properties,property);
-              return(p);
-            }
+          break;
         }
       break;
     }
     case 'I':
     case 'i':
     {
+      if ((LocaleNCompare("icc:",property,4) == 0) ||
+          (LocaleNCompare("icm:",property,4) == 0))
+        {
+          (void) GetICCProperty(image,property);
+          break;
+        }
       if (LocaleNCompare("iptc:",property,5) == 0)
         {
-          if ((GetIPTCProperty(image,property) != MagickFalse) &&
-              (image->properties != (void *) NULL))
-            {
-              p=(const char *) GetValueFromSplayTree((SplayTreeInfo *)
-                image->properties,property);
-              return(p);
-            }
+          (void) GetIPTCProperty(image,property);
+          break;
         }
       break;
     }
@@ -2154,8 +2203,8 @@ MagickExport const char *GetImageProperty(const Image *image,
               (void) QueryMagickColorname(image,&pixel,SVGCompliance,name,
                 exception);
               (void) SetImageProperty((Image *) image,property,name);
-              return(GetImageProperty(image,property));
             }
+          break;
         }
       break;
     }
@@ -2164,20 +2213,21 @@ MagickExport const char *GetImageProperty(const Image *image,
     {
       if (LocaleNCompare("xmp:",property,4) == 0)
         {
-          if ((GetXMPProperty(image,property) != MagickFalse) &&
-              (image->properties != (void *) NULL))
-            {
-              p=(const char *) GetValueFromSplayTree((SplayTreeInfo *)
-                image->properties,property);
-              return(p);
-            }
+          (void) GetXMPProperty(image,property);
+          break;
         }
       break;
     }
     default:
       break;
   }
-  return(p);
+  if (image->properties != (void *) NULL)
+    {
+      p=(const char *) GetValueFromSplayTree((SplayTreeInfo *)
+        image->properties,property);
+      return(p);
+    }
+  return((const char *) NULL);
 }
 
 /*
@@ -2226,14 +2276,19 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
   const char
     *string;
 
-  if ((image != (Image *) NULL) && (image->debug != MagickFalse))
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   *value='\0';
   string=(char *)NULL;
   switch (letter)
   {
-    case 'b':  /* image size read in - in bytes */
+    case 'b':
     {
+      /*
+        Image size read in - in bytes.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         ((MagickOffsetType) image->extent));
       if (image->extent != (MagickSizeType) ((size_t) image->extent))
@@ -2241,104 +2296,151 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
       ConcatenateMagickString(value,"B",MaxTextExtent);
       break;
     }
-    case 'c':  /* image comment property - empty string by default */
+    case 'c':
     {
+      /*
+        Image comment property - empty string by default.
+      */
       string=GetImageProperty(image,"comment");
       if (string == (const char *) NULL)
         string="";
       break;
     }
-    case 'd':  /* Directory component of filename */
+    case 'd':
     {
+      /*
+        Directory component of filename.
+      */
       GetPathComponent(image->magick_filename,HeadPath,value);
       break;
     }
-    case 'e': /* Filename extension (suffix) of image file */
+    case 'e':
     {
+      /*
+        Filename extension (suffix) of image file.
+      */
       GetPathComponent(image->magick_filename,ExtensionPath,value);
       break;
     }
-    case 'f': /* Filename without directory component */
+    case 'f':
     {
+      /*
+        Filename without directory component.
+      */
       GetPathComponent(image->magick_filename,TailPath,value);
       break;
     }
-    case 'g': /* Image geometry, canvas and offset  %Wx%H+%X+%Y */
+    case 'g':
     {
+      /*
+        Image geometry, canvas and offset  %Wx%H+%X+%Y.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20gx%.20g%+.20g%+.20g",
         (double) image->page.width,(double) image->page.height,
         (double) image->page.x,(double) image->page.y);
       break;
     }
-    case 'h': /* Image height (current) */
+    case 'h':
     {
+      /*
+        Image height (current).
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         (image->rows != 0 ? image->rows : image->magick_rows));
       break;
     }
-    case 'i': /* Filename last used for image (read or write) */
+    case 'i':
     {
+      /*
+        Filename last used for image (read or write).
+      */
       string=image->filename;
       break;
     }
-    case 'k': /* Number of unique colors  */
+    case 'k':
     {
-      /* FUTURE: ensure this does not generate the formated comment! */
+      /*
+        Number of unique colors.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         GetNumberColors(image,(FILE *) NULL,&image->exception));
       break;
     }
-    case 'l': /* Image label property - empty string by default */
+    case 'l':
     {
+      /*
+        Image label property - empty string by default.
+      */
       string=GetImageProperty(image,"label");
       if (string == (const char *) NULL)
         string="";
       break;
     }
-    case 'm': /* Image format (file magick) */
+    case 'm':
     {
+      /*
+        Image format (file magick).
+      */
       string=image->magick;
       break;
     }
-    case 'n': /* Number of images in the list.  */
+    case 'n':
     {
+      /*
+        Number of images in the list.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         GetImageListLength(image));
       break;
     }
-    case 'o': /* Output Filename - for delegate use only */
+    case 'o':
     {
+      /*
+        Output Filename - for delegate use only
+      */
       string=image_info->filename;
       break;
     }
-    case 'p': /* Image index in current image list -- As 'n' OBSOLETE */
+    case 'p':
     {
+      /*
+        Image index in current image list -- As 'n' OBSOLETE.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         GetImageIndexInList(image));
       break;
     }
-    case 'q': /* Quantum depth of image in memory */
+    case 'q':
     {
+      /*
+        Quantum depth of image in memory.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         MAGICKCORE_QUANTUM_DEPTH);
       break;
     }
-    case 'r': /* Image storage class and colorspace.  */
+    case 'r':
     {
       ColorspaceType
         colorspace;
 
+      /*
+        Image storage class and colorspace.
+      */
       colorspace=image->colorspace;
       if (IsGrayImage(image,&image->exception) != MagickFalse)
         colorspace=GRAYColorspace;
       (void) FormatLocaleString(value,MaxTextExtent,"%s %s %s",
-        CommandOptionToMnemonic(MagickClassOptions,(ssize_t) image->storage_class),
-        CommandOptionToMnemonic(MagickColorspaceOptions,(ssize_t) colorspace),
-        image->matte != MagickFalse ? "Matte" : "" );
+        CommandOptionToMnemonic(MagickClassOptions,(ssize_t)
+        image->storage_class),CommandOptionToMnemonic(MagickColorspaceOptions,
+        (ssize_t) colorspace),image->matte != MagickFalse ? "Matte" : "" );
       break;
     }
-    case 's': /* Image scene number */
+    case 's':
     {
+      /*
+        Image scene number.
+      */
       if (image_info->number_scenes != 0)
         (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
           image_info->scene);
@@ -2347,96 +2449,144 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
           image->scene);
       break;
     }
-    case 't': /* Base filename without directory or extention */
+    case 't':
     {
+      /*
+        Base filename without directory or extension.
+      */
       GetPathComponent(image->magick_filename,BasePath,value);
       break;
     }
-    case 'u': /* Unique filename */
+    case 'u':
     {
+      /*
+        Unique filename.
+      */
       string=image_info->unique;
       break;
     }
-    case 'w': /* Image width (current) */
+    case 'w':
     {
+      /*
+        Image width (current).
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         (image->columns != 0 ? image->columns : image->magick_columns));
       break;
     }
-    case 'x': /* Image horizontal resolution */
+    case 'x':
     {
+      /*
+        Image horizontal resolution.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",
         fabs(image->x_resolution) > MagickEpsilon ? image->x_resolution : 72.0);
       break;
     }
-    case 'y': /* Image vertical resolution */
+    case 'y':
     {
+      /*
+        Image vertical resolution.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",
         fabs(image->y_resolution) > MagickEpsilon ? image->y_resolution : 72.0);
       break;
     }
-    case 'z': /* Image depth as read in */
+    case 'z':
     {
+      /*
+        Image depth.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         image->depth);
       break;
     }
-    case 'A': /* Image alpha channel  */
+    case 'A':
     {
+      /*
+        Image alpha channel.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%s",
          CommandOptionToMnemonic(MagickBooleanOptions,(ssize_t) image->matte));
       break;
     }
-    case 'C': /* Image compression method.  */
+    case 'C':
     {
+      /*
+        Image compression method.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%s",
         CommandOptionToMnemonic(MagickCompressOptions,(ssize_t)
           image->compression));
       break;
     }
-    case 'D': /* Image dispose method.  */
+    case 'D':
     {
+      /*
+        Image dispose method.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%s",
         CommandOptionToMnemonic(MagickDisposeOptions,(ssize_t) image->dispose));
       break;
     }
-    case 'G': /* Image size as geometry = "%wx%h" */
+    case 'G':
     {
+      /*
+        Image size as geometry = "%wx%h".
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20gx%.20g",(double)
         image->magick_columns,(double) image->magick_rows);
       break;
     }
-    case 'H': /* layer canvas height */
+    case 'H':
     {
+      /*
+        Layer canvas height.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         image->page.height);
       break;
     }
-    case 'M': /* Magick filename - filename given incl. coder & read mods */
+    case 'M':
     {
+      /*
+        Magick filename - filename given incl. coder & read mods.
+      */
       string=image->magick_filename;
       break;
     }
-    case 'O': /* layer canvas offset with sign = "+%X+%Y" */
+    case 'O':
     {
+      /*
+        Layer canvas offset with sign = "+%X+%Y".
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%+ld%+ld",(long)
         image->page.x,(long) image->page.y);
       break;
     }
-    case 'P': /* layer canvas page size = "%Wx%H" */
+    case 'P':
     {
+      /*
+        Layer canvas page size = "%Wx%H".
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20gx%.20g",(double)
         image->page.width,(double) image->page.height);
       break;
     }
-    case 'Q': /* image compression quality */
+    case 'Q':
     {
+      /*
+        Image compression quality.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         (image->quality == 0 ? 92 : image->quality));
       break;
     }
-    case 'S': /* Image scenes  ???? */
+    case 'S':
     {
+      /*
+        Image scenes.
+      */
       if (image_info->number_scenes == 0)
         string="2147483647";
       else
@@ -2444,61 +2594,88 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
           image_info->scene+image_info->number_scenes);
       break;
     }
-    case 'T': /* image time delay for animations */
+    case 'T':
     {
+      /*
+        Image time delay for animations.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         image->delay);
       break;
     }
-    case 'U': /* Image resolution units. */
+    case 'U':
     {
+      /*
+        Image resolution units.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%s",
         CommandOptionToMnemonic(MagickResolutionOptions,(ssize_t)
           image->units));
       break;
     }
-    case 'W': /* layer canvas width */
+    case 'W':
     {
+      /*
+        Layer canvas width.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
         image->page.width);
       break;
     }
-    case 'X': /* layer canvas X offset */
+    case 'X':
     {
+      /*
+        Layer canvas X offset.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%+.20g",(double)
         image->page.x);
       break;
     }
-    case 'Y': /* layer canvas Y offset */
+    case 'Y':
     {
+      /*
+        Layer canvas Y offset.
+      */
       (void) FormatLocaleString(value,MaxTextExtent,"%+.20g",(double)
         image->page.y);
       break;
     }
-    case 'Z': /* Zero filename ??? */
+    case 'Z':
     {
+      /*
+        Zero filename.
+      */
       string=image_info->zero;
       break;
     }
-    case '@': /* Trim bounding box, without Trimming! */
+    case '@':
     {
       RectangleInfo
         page;
 
+      /*
+        Image bounding box.
+      */
       page=GetImageBoundingBox(image,&image->exception);
       (void) FormatLocaleString(value,MaxTextExtent,"%.20gx%.20g%+.20g%+.20g",
         (double) page.width,(double) page.height,(double) page.x,(double)
         page.y);
       break;
     }
-    case '#': /* Image signature */
+    case '#':
     {
+      /*
+        Image signature.
+      */
       (void) SignatureImage(image);
       string=GetImageProperty(image,"signature");
       break;
     }
-    case '%': /* percent escaped */
+    case '%':
     {
+      /*
+        Percent escaped.
+      */
       string="%";
       break;
     }
@@ -3527,23 +3704,18 @@ MagickExport MagickBooleanType SetImageProperty(Image *image,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image->filename);
-
-  /* Create splay-tree */
   if (image->properties == (void *) NULL)
     image->properties=NewSplayTree(CompareSplayTreeString,
-      RelinquishMagickMemory,RelinquishMagickMemory);
-
-  /* Delete property if NULL --  empty string values are valid! */
+      RelinquishMagickMemory,RelinquishMagickMemory);  /* create splay-tree */
   if (value == (const char *) NULL)
-    return(DeleteImageProperty(image,property));
-
-  /* FUTURE: These should produce 'illegal settings'
-     + binary chars in p[roperty key
-     + first letter must be a alphabetic
-     + single letter property keys (read only)
-     + known special prefix (read only, they don't get saved!)
+    return(DeleteImageProperty(image,property));  /* delete if NULL */
+  /*
+    FUTURE: These should produce 'illegal settings'
+     * binary chars in p[roperty key
+     * first letter must be a alphabetic
+     * single letter property keys (read only)
+     * known special prefix (read only, they don't get saved!)
   */
-
   status=MagickTrue;
   exception=(&image->exception);
   switch (*property)

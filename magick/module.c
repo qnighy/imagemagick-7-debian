@@ -53,6 +53,7 @@
 #include "magick/magick.h"
 #include "magick/memory_.h"
 #include "magick/module.h"
+#include "magick/nt-base-private.h"
 #include "magick/policy.h"
 #include "magick/semaphore.h"
 #include "magick/splay-tree.h"
@@ -792,6 +793,17 @@ static MagickBooleanType GetMagickModulePath(const char *filename,
     if (home != (char *) NULL)
       {
         /*
+          Search $HOME/.config/ImageMagick.
+        */
+        (void) FormatLocaleString(path,MaxTextExtent,
+          "%s%s.config%sImageMagick%s%s",home,DirectorySeparator,
+          DirectorySeparator,DirectorySeparator,filename);
+        if (IsPathAccessible(path) != MagickFalse)
+          {
+            home=DestroyString(home);
+            return(MagickTrue);
+          }
+        /*
           Search $HOME/.magick.
         */
         (void) FormatLocaleString(path,MaxTextExtent,"%s%s.magick%s%s",home,
@@ -861,13 +873,13 @@ MagickExport MagickBooleanType InitializeModuleList(
 {
   magick_unreferenced(exception);
 
-  if ((module_list == (SplayTreeInfo *) NULL) &&
+  if ((module_list == (SplayTreeInfo *) NULL) ||
       (instantiate_module == MagickFalse))
     {
       if (module_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&module_semaphore);
+        ActivateSemaphoreInfo(&module_semaphore);
       LockSemaphoreInfo(module_semaphore);
-      if ((module_list == (SplayTreeInfo *) NULL) &&
+      if ((module_list == (SplayTreeInfo *) NULL) ||
           (instantiate_module == MagickFalse))
         {
           MagickBooleanType
@@ -1160,7 +1172,7 @@ MagickExport MagickBooleanType ModuleComponentGenesis(void)
   MagickBooleanType
     status;
 
-  AcquireSemaphoreInfo(&module_semaphore);
+  module_semaphore=AllocateSemaphoreInfo();
   exception=AcquireExceptionInfo();
   status=InitializeModuleList(exception);
   exception=DestroyExceptionInfo(exception);
@@ -1188,7 +1200,7 @@ MagickExport MagickBooleanType ModuleComponentGenesis(void)
 MagickExport void ModuleComponentTerminus(void)
 {
   if (module_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&module_semaphore);
+    ActivateSemaphoreInfo(&module_semaphore);
   DestroyModuleList();
   DestroySemaphoreInfo(&module_semaphore);
 }

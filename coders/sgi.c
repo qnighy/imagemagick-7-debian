@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -924,8 +925,7 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
     /*
       Initialize SGI raster file header.
     */
-    if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,sRGBColorspace);
+    (void) TransformImageColorspace(image,sRGBColorspace);
     (void) ResetMagickMemory(&iris_info,0,sizeof(iris_info));
     iris_info.magic=0x01DA;
     compression=image->compression;

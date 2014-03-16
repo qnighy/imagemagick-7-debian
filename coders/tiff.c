@@ -688,7 +688,10 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
     return;
   directory=TIFFCurrentDirectory(tiff);
   if (TIFFReadEXIFDirectory(tiff,offset) == 0)
-    return;
+    {
+      TIFFSetDirectory(tiff,directory);
+      return;
+    }
   sans=NULL;
   for (i=0; exif_info[i].tag != 0; i++)
   {
@@ -1012,6 +1015,7 @@ RestoreMSCWarning
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_IMAGELENGTH,&height);
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_FILLORDER,&endian);
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_PLANARCONFIG,&interlace);
+    bits_per_sample=8;
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_BITSPERSAMPLE,&bits_per_sample);
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_SAMPLEFORMAT,&sample_format);
     if (sample_format == SAMPLEFORMAT_IEEEFP)
@@ -1863,7 +1867,7 @@ ModuleExport size_t RegisterTIFFImage(void)
     *entry;
 
   if (tiff_semaphore == (SemaphoreInfo *) NULL)
-    tiff_semaphore=AllocateSemaphoreInfo();
+    ActivateSemaphoreInfo(&tiff_semaphore);
   LockSemaphoreInfo(tiff_semaphore);
   if (instantiate_key == MagickFalse)
     {
@@ -1996,7 +2000,7 @@ ModuleExport void UnregisterTIFFImage(void)
   (void) UnregisterMagickInfo("TIF");
   (void) UnregisterMagickInfo("PTIF");
   if (tiff_semaphore == (SemaphoreInfo *) NULL)
-    tiff_semaphore=AllocateSemaphoreInfo();
+    ActivateSemaphoreInfo(&tiff_semaphore);
   LockSemaphoreInfo(tiff_semaphore);
   if (instantiate_key != MagickFalse)
     {
@@ -2549,38 +2553,40 @@ static void TIFFSetProperties(TIFF *tiff,Image *image)
   const char
     *value;
 
-  (void) TIFFSetField(tiff,TIFFTAG_DOCUMENTNAME,image->filename);
-  value=GetImageProperty(image,"tiff:hostcomputer");
+  value=GetImageArtifact(image,"tiff:document");
+  if (value != (const char *) NULL)
+    (void) TIFFSetField(tiff,TIFFTAG_DOCUMENTNAME,value);
+  value=GetImageArtifact(image,"tiff:hostcomputer");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,TIFFTAG_HOSTCOMPUTER,value);
-  value=GetImageProperty(image,"tiff:artist");
+  value=GetImageArtifact(image,"tiff:artist");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,TIFFTAG_ARTIST,value);
-  value=GetImageProperty(image,"tiff:timestamp");
+  value=GetImageArtifact(image,"tiff:timestamp");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,TIFFTAG_DATETIME,value);
-  value=GetImageProperty(image,"tiff:make");
+  value=GetImageArtifact(image,"tiff:make");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,TIFFTAG_MAKE,value);
-  value=GetImageProperty(image,"tiff:model");
+  value=GetImageArtifact(image,"tiff:model");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,TIFFTAG_MODEL,value);
-  value=GetImageProperty(image,"tiff:software");
+  value=GetImageArtifact(image,"tiff:software");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,TIFFTAG_SOFTWARE,value);
-  value=GetImageProperty(image,"tiff:copyright");
+  value=GetImageArtifact(image,"tiff:copyright");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,TIFFTAG_COPYRIGHT,value);
-  value=GetImageProperty(image,"kodak-33423");
+  value=GetImageArtifact(image,"kodak-33423");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,33423,value);
-  value=GetImageProperty(image,"kodak-36867");
+  value=GetImageArtifact(image,"kodak-36867");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,36867,value);
-  value=GetImageProperty(image,"label");
+  value=GetImageArtifact(image,"label");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,TIFFTAG_PAGENAME,value);
-  value=GetImageProperty(image,"comment");
+  value=GetImageArtifact(image,"comment");
   if (value != (const char *) NULL)
     (void) TIFFSetField(tiff,TIFFTAG_IMAGEDESCRIPTION,value);
 }
@@ -2979,8 +2985,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
                 }
           }
       }
-    if ((photometric == PHOTOMETRIC_RGB) &&
-        (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse))
+    if (photometric == PHOTOMETRIC_RGB)
       (void) TransformImageColorspace(image,sRGBColorspace);
     switch (image->endian)
     {
@@ -3189,7 +3194,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
     if (rows_per_strip < 1)
       rows_per_strip=1;
     if ((image->rows/rows_per_strip) >= (1UL << 15))
-      rows_per_strip=(image->rows >> 15);
+      rows_per_strip=(uint32) (image->rows >> 15);
     (void) TIFFSetField(tiff,TIFFTAG_ROWSPERSTRIP,rows_per_strip);
     if ((image->x_resolution != 0.0) && (image->y_resolution != 0.0))
       {

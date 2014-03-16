@@ -138,7 +138,7 @@ static MagickBooleanType
 */
 MagickExport MagickBooleanType AnnotateComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&annotate_semaphore);
+  annotate_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -163,7 +163,7 @@ MagickExport MagickBooleanType AnnotateComponentGenesis(void)
 MagickExport void AnnotateComponentTerminus(void)
 {
   if (annotate_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&annotate_semaphore);
+    ActivateSemaphoreInfo(&annotate_semaphore);
   DestroySemaphoreInfo(&annotate_semaphore);
 }
 
@@ -1168,7 +1168,11 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
         encoding_type=ft_encoding_wansung;
       ft_status=FT_Select_Charmap(face,encoding_type);
       if (ft_status != 0)
-        ThrowBinaryException(TypeError,"UnrecognizedFontEncoding",encoding);
+        {
+          (void) FT_Done_Face(face);
+          (void) FT_Done_FreeType(library);
+          ThrowBinaryException(TypeError,"UnrecognizedFontEncoding",encoding);
+        }
     }
   /*
     Set text size.
@@ -1876,7 +1880,7 @@ static MagickBooleanType RenderX11(Image *image,const DrawInfo *draw_info,
     status;
 
   if (annotate_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&annotate_semaphore);
+    ActivateSemaphoreInfo(&annotate_semaphore);
   LockSemaphoreInfo(annotate_semaphore);
   status=XRenderImage(image,draw_info,offset,metrics);
   UnlockSemaphoreInfo(annotate_semaphore);

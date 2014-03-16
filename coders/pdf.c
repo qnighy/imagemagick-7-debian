@@ -41,6 +41,7 @@
 */
 #include "magick/studio.h"
 #include "magick/artifact.h"
+#include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -63,6 +64,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/nt-base-private.h"
 #include "magick/option.h"
 #include "magick/pixel-accessor.h"
 #include "magick/profile.h"
@@ -343,6 +345,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   MagickBooleanType
     cmyk,
     cropbox,
+    fitPage,
     trimbox,
     status;
 
@@ -567,6 +570,32 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       page.height=(size_t) ceil((double) ((hires_bounds.y2-hires_bounds.y1)*
         image->y_resolution/delta.y)-0.5);
     }
+  fitPage=MagickFalse;
+  option=GetImageOption(image_info,"pdf:fit-page");
+  if (option != (char *) NULL)
+  {
+    char
+      *geometry;
+
+    MagickStatusType
+      flags;
+
+    geometry=GetPageGeometry(option);
+    flags=ParseMetaGeometry(geometry,&page.x,&page.y,&page.width,&page.height);
+    if (flags == NoValue)
+      {
+        (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+          "InvalidGeometry","`%s'",option);
+        image=DestroyImage(image);
+        return((Image *) NULL);
+      }
+    page.width=(size_t) ceil((double) (page.width*image->x_resolution/delta.x)
+      -0.5);
+    page.height=(size_t) ceil((double) (page.height*image->y_resolution/
+      delta.y) -0.5);
+    geometry=DestroyString(geometry);
+    fitPage=MagickTrue;
+  }
   (void) CloseBlob(image);
   if ((fabs(angle) == 90.0) || (fabs(angle) == 270.0))
     {
@@ -612,9 +641,11 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   *options='\0';
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",image->x_resolution,
     image->y_resolution);
-  if (image_info->page != (char *) NULL)
+  if ((image_info->page != (char *) NULL) || (fitPage != MagickFalse))
     (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
       page.width,(double) page.height);
+  if (fitPage != MagickFalse)
+    (void) ConcatenateMagickString(options,"-dPDFFitPage ",MaxTextExtent);
   if (cmyk != MagickFalse)
     (void) ConcatenateMagickString(options,"-dUseCIEColor ",MaxTextExtent);
   if (cropbox != MagickFalse)
@@ -1103,7 +1134,14 @@ RestoreMSCWarning
     version);
   (void) WriteBlobString(image,buffer);
   if (LocaleCompare(image_info->magick,"PDFA") == 0)
-    (void) WriteBlobString(image,"%%âãÏÓ\n");
+    {
+      (void) WriteBlobByte(image,'%');
+      (void) WriteBlobByte(image,0xe2);
+      (void) WriteBlobByte(image,0xe3);
+      (void) WriteBlobByte(image,0xcf);
+      (void) WriteBlobByte(image,0xd3);
+      (void) WriteBlobByte(image,'\n');
+    }
   /*
     Write Catalog object.
   */
@@ -1215,7 +1253,7 @@ RestoreMSCWarning
   scene=0;
   do
   {
-    compression=UndefinedCompression;
+    compression=image->compression;
     if (image_info->compression != UndefinedCompression)
       compression=image_info->compression;
     switch (compression)
@@ -1274,10 +1312,7 @@ RestoreMSCWarning
         break;
     }
     if (compression == JPEG2000Compression)
-      {
-        if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-          (void) TransformImageColorspace(image,sRGBColorspace);
-      }
+      (void) TransformImageColorspace(image,sRGBColorspace);
     /*
       Scale relative to dots-per-inch.
     */

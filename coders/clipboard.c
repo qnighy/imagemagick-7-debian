@@ -45,6 +45,7 @@
 #    include <windows.h>
 #  else
      /* All MinGW needs ... */
+#    include "magick/nt-base-private.h"
 #    include <wingdi.h>
 #  endif
 #endif
@@ -342,7 +343,7 @@ static MagickBooleanType WriteCLIPBOARDImage(const ImageInfo *image_info,
 
     OpenClipboard(NULL);
     EmptyClipboard();
-    bitmapH=(HBITMAP) ImageToHBITMAP(image);
+    bitmapH=(HBITMAP) ImageToHBITMAP(image,&image->exception);
     SetClipboardData(CF_BITMAP,bitmapH);
     CloseClipboard();
   }

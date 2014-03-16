@@ -23,7 +23,7 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
 m4_define([magick_micro_version], [8])
-m4_define([magick_patchlevel_version], [2])
+m4_define([magick_patchlevel_version], [8])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -1306,7 +1306,7 @@ if test "$enable_delegate_build" != 'no'; then
     # Most delegates have includes in the same directory as the library, but not all...
     #
     # Includes
-    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/include lzma magick mupdf png tiff/libtiff ttf/include wand webp/src wmf/include xml/include zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/include lzma magick mupdf openjp2/include png tiff/libtiff ttf/include wand webp/src wmf/include xml/include zlib; do
         if test -d "$builddir/$dir"; then
             CPPFLAGS="$CPPFLAGS -I$builddir/$dir"
         else
@@ -1317,7 +1317,7 @@ if test "$enable_delegate_build" != 'no'; then
     done
 
     # Libraries
-    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/src lzma magick mupdf png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/src lzma magick mupdf openjp2 png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
     if test -d "$builddir/$dir/.libs"; then
         LDFLAGS="$LDFLAGS -L$builddir/$dir/.libs"
     else
@@ -3173,6 +3173,14 @@ esac
 AC_DEFINE_UNQUOTED(DOCUMENTATION_PATH,"$DEFINE_DOCUMENTATION_PATH",[Directory where ImageMagick documents live.])
 AC_SUBST(DOCUMENTATION_PATH)
 
+#
+# Enable/Disable documentation
+AC_ARG_ENABLE([docs],
+  [AS_HELP_STRING([--disable-docs],
+    [disable building of documentation])],
+  wantdocs=$enableval, wantdocs=yes)
+AM_CONDITIONAL([INSTALL_DOC], [test "$wantdocs" = "yes"])
+
 # Subdirectory to place architecture-dependent configuration files
 CONFIGURE_RELATIVE_PATH="${PACKAGE_NAME}-${MAGICK_MAJOR_VERSION}"
 AC_DEFINE_UNQUOTED(CONFIGURE_RELATIVE_PATH,"$CONFIGURE_RELATIVE_PATH",[Subdirectory of lib where architecture-dependent configuration files live.])
@@ -4069,6 +4077,8 @@ GNU ld            --with-gnu-ld=$with_gnu_ld		$lt_cv_prog_gnu_ld
 Quantum depth     --with-quantum-depth=$with_quantum_depth	$with_quantum_depth
 High Dynamic Range Imagery
                   --enable-hdri=$enable_hdri		$enable_hdri
+
+Install documentation:		$wantdocs
 
 Delegate Configuration:
 BZLIB             --with-bzlib=$with_bzlib		$have_bzlib

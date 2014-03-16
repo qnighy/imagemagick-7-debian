@@ -96,7 +96,7 @@ static MagickBooleanType
 %
 %  The format of the IsJ2K method is:
 %
-%      MagickBooleanType IsJP2(const unsigned char *magick,const size_t length)
+%      MagickBooleanType IsJ2K(const unsigned char *magick,const size_t length)
 %
 %  A description of each parameter follows:
 %
@@ -141,47 +141,13 @@ static MagickBooleanType IsJ2K(const unsigned char *magick,const size_t length)
 */
 static MagickBooleanType IsJP2(const unsigned char *magick,const size_t length)
 {
+  if (length < 4)
+    return(MagickFalse);
+  if (memcmp(magick,"\x0d\x0a\x87\x0a",4) == 0)
+    return(MagickTrue);
   if (length < 12)
     return(MagickFalse);
   if (memcmp(magick,"\x00\x00\x00\x0c\x6a\x50\x20\x20\x0d\x0a\x87\x0a",12) == 0)
-    return(MagickTrue);
-  if (memcmp(magick,"\x0d\x0a\x87\x0a",12) == 0)
-    return(MagickTrue);
-  return(MagickFalse);
-}
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%   I s J P C                                                                 %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  IsJPC()() returns MagickTrue if the image format type, identified by the
-%  magick string, is JPC.
-%
-%  The format of the IsJPC method is:
-%
-%      MagickBooleanType IsJPC(const unsigned char *magick,const size_t length)
-%
-%  A description of each parameter follows:
-%
-%    o magick: compare image format pattern against these bytes.
-%
-%    o length: Specifies the length of the magick string.
-%
-*/
-static MagickBooleanType IsJPC(const unsigned char *magick,const size_t length)
-{
-  if (length < 12)
-    return(MagickFalse);
-  if (memcmp(magick,"\x00\x00\x00\x0c\x6a\x50\x20\x20\x0d\x0a\x87\x0a",12) == 0)
-    return(MagickTrue);
-  if (memcmp(magick,"\x0d\x0a\x87\x0a",12) == 0)
     return(MagickTrue);
   return(MagickFalse);
 }
@@ -248,7 +214,7 @@ static OPJ_BOOL JP2SeekHandler(OPJ_OFF_T offset,void *context)
     *image;
 
   image=(Image *) context;
-  return(SeekBlob(image,offset,SEEK_SET) < 0 ? 0 : 1);
+  return(SeekBlob(image,offset,SEEK_SET) < 0 ? OPJ_FALSE : OPJ_TRUE);
 }
 
 static OPJ_OFF_T JP2SkipHandler(OPJ_OFF_T offset,void *context)
@@ -257,7 +223,7 @@ static OPJ_OFF_T JP2SkipHandler(OPJ_OFF_T offset,void *context)
     *image;
 
   image=(Image *) context;
-  return(SeekBlob(image,offset,SEEK_CUR) < 0 ? 0 : offset);
+  return(SeekBlob(image,offset,SEEK_CUR) < 0 ? -1 : offset);
 }
 
 static void JP2WarningHandler(const char *message,void *client_data)
@@ -318,6 +284,9 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   ssize_t
     y;
 
+  unsigned char
+    sans[4];
+
   /*
     Open image file.
   */
@@ -338,10 +307,16 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Initialize JP2 codec.
   */
+  if (ReadBlob(image,4,sans) != 4)
+    {
+      image=DestroyImageList(image);
+      return((Image *) NULL);
+    }
+  (void) SeekBlob(image,SEEK_SET,0);
   if (LocaleCompare(image_info->magick,"JPT") == 0)
     jp2_codec=opj_create_decompress(OPJ_CODEC_JPT);
   else
-    if (LocaleCompare(image_info->magick,"J2K") == 0)
+    if (IsJ2K(sans,4) != MagickFalse)
       jp2_codec=opj_create_decompress(OPJ_CODEC_J2K);
     else
       jp2_codec=opj_create_decompress(OPJ_CODEC_JP2);
@@ -435,17 +410,8 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   if (jp2_image->numcomps > 3)
     image->matte=MagickTrue;
   for (i=0; i < (ssize_t) jp2_image->numcomps; i++)
-  {
-    if ((jp2_image->comps[i].dx == 0) || (jp2_image->comps[i].dy == 0))
-      {
-        opj_stream_set_user_data(jp2_stream,NULL);
-        opj_destroy_codec(jp2_codec);
-        opj_image_destroy(jp2_image);
-        ThrowReaderException(CoderError,"IrregularChannelGeometryNotSupported")
-      }
     if ((jp2_image->comps[i].dx > 1) || (jp2_image->comps[i].dy > 1))
-      image->colorspace=YUVColorspace;
-  }
+      SetImageColorspace(image,YUVColorspace);
   if (jp2_image->icc_profile_buf != (unsigned char *) NULL)
     {
       StringInfo
@@ -582,6 +548,21 @@ ModuleExport size_t RegisterJP2Image(void)
   entry->encoder=(EncodeImageHandler *) WriteJP2Image;
 #endif
   (void) RegisterMagickInfo(entry);
+  entry=SetMagickInfo("J2C");
+  entry->description=ConstantString("JPEG-2000 Code Stream Syntax");
+  if (*version != '\0')
+    entry->version=ConstantString(version);
+  entry->mime_type=ConstantString("image/jp2");
+  entry->module=ConstantString("JP2");
+  entry->magick=(IsImageFormatHandler *) IsJ2K;
+  entry->adjoin=MagickFalse;
+  entry->seekable_stream=MagickTrue;
+  entry->thread_support=NoThreadSupport;
+#if defined(MAGICKCORE_LIBOPENJP2_DELEGATE)
+  entry->decoder=(DecodeImageHandler *) ReadJP2Image;
+  entry->encoder=(EncodeImageHandler *) WriteJP2Image;
+#endif
+  (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("J2K");
   entry->description=ConstantString("JPEG-2000 Code Stream Syntax");
   if (*version != '\0')
@@ -618,7 +599,7 @@ ModuleExport size_t RegisterJP2Image(void)
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jp2");
   entry->module=ConstantString("JP2");
-  entry->magick=(IsImageFormatHandler *) IsJPC;
+  entry->magick=(IsImageFormatHandler *) IsJP2;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->thread_support=NoThreadSupport;
@@ -857,7 +838,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
         Set quality PSNR.
       */
       p=option;
-      for (i=1; sscanf(p,"%f",&parameters.tcp_distoratio[i]) == 1; i++)
+      for (i=0; sscanf(p,"%f",&parameters.tcp_distoratio[i]) == 1; i++)
       {
         if (i > 100)
           break;
@@ -867,7 +848,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
           break;
         p++;
       }
-      parameters.tcp_numlayers=i;
+      parameters.tcp_numlayers=i+1;
       parameters.cp_fixed_quality=OPJ_TRUE;
     }
   option=GetImageOption(image_info,"jp2:progression-order");
@@ -894,7 +875,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
         Set compression rate.
       */
       p=option;
-      for (i=1; sscanf(p,"%f",&parameters.tcp_rates[i]) == 1; i++)
+      for (i=0; sscanf(p,"%f",&parameters.tcp_rates[i]) == 1; i++)
       {
         if (i > 100)
           break;
@@ -904,7 +885,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
           break;
         p++;
       }
-      parameters.tcp_numlayers=i;
+      parameters.tcp_numlayers=i+1;
       parameters.cp_disto_alloc=OPJ_TRUE;
     }
   if (image_info->sampling_factor != (const char *) NULL)
@@ -922,8 +903,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
     }
   else
     {
-      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-        (void) TransformImageColorspace(image,sRGBColorspace);
+      (void) TransformImageColorspace(image,sRGBColorspace);
       if (IsGrayColorspace(image->colorspace) != MagickFalse)
         {
           channels=1;

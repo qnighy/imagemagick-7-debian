@@ -1066,8 +1066,12 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                         if (image->matte != MagickFalse)
                           {
                             p=PushCharPixel(p,&pixel);
-                            SetPixelOpacity(q,ScaleAnyToQuantum(pixel,
-                               max_value));
+                            if (image->depth != 1)
+                              SetPixelOpacity(q,ScaleAnyToQuantum(pixel,
+                                max_value));
+                            else
+                              SetPixelOpacity(q,QuantumRange-ScaleAnyToQuantum(
+                                pixel,max_value));
                           }
                         q++;
                       }
@@ -1865,8 +1869,7 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         /*
           Convert image to a PNM image.
         */
-        if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-          (void) TransformImageColorspace(image,sRGBColorspace);
+        (void) TransformImageColorspace(image,sRGBColorspace);
         if (image->depth <= 8)
           (void) WriteBlobString(image,"255\n");
         else
@@ -2084,8 +2087,7 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         /*
           Convert image to a PNM image.
         */
-        if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-          (void) TransformImageColorspace(image,sRGBColorspace);
+        (void) TransformImageColorspace(image,sRGBColorspace);
         if (image->depth > 32)
           image->depth=32;
         (void) FormatLocaleString(buffer,MaxTextExtent,"%.20g\n",(double)

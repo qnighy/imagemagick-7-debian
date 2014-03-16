@@ -2426,6 +2426,21 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
   ping_file_depth = ping_bit_depth;
 
+  /* Swap bytes if requested */
+  if (ping_file_depth == 16)
+  {
+    const char
+      *value;
+
+    value=GetImageOption(image_info,"png:swap-bytes");
+
+    if (value == NULL)
+       value=GetImageArtifact(image,"png:swap-bytes");
+
+    if (value != NULL)
+       png_set_swap(ping);
+  }
+
   /* Save bit-depth and color-type in case we later want to write a PNG00 */
   {
       char
@@ -2768,6 +2783,9 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
         }
     }
 
+  x_resolution=0;
+  y_resolution=0;
+  unit_type=0;
   if (png_get_valid(ping,ping_info,PNG_INFO_pHYs))
     {
       /*
@@ -3437,7 +3455,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 
               quantum|=(*p++);
 
-              *r=ScaleShortToQuantum(quantum);
+              *r=(unsigned short) ScaleShortToQuantum(quantum);
               r++;
 
               if (ping_color_type == 4)
@@ -3448,7 +3466,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
                     quantum=0;
 
                   quantum|=(*p++);
-                  alpha=ScaleShortToQuantum(quantum);
+                  alpha=(unsigned short) ScaleShortToQuantum(quantum);
                   SetPixelAlpha(q,alpha);
                   if (alpha != QuantumRange-OpaqueOpacity)
                     found_transparent_pixel = MagickTrue;
@@ -3647,19 +3665,25 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   if ((ping_color_type == PNG_COLOR_TYPE_GRAY) ||
       (ping_color_type == PNG_COLOR_TYPE_GRAY_ALPHA))
     {
-      if ((!png_get_valid(ping,ping_info,PNG_INFO_gAMA) ||
-          image->gamma == 1.0) && ping_found_sRGB != MagickTrue)
+      double
+        image_gamma = image->gamma;
+
+      (void)LogMagickEvent(CoderEvent,GetMagickModule(),
+         "    image->gamma=%f",(float) image_gamma);
+
+      if (image_gamma > 0.75)
         {
-          /* Set image->gamma to 1.0, image->rendering_intent to Undefined,
+          /* Set image->rendering_intent to Undefined,
            * image->colorspace to GRAY, and reset image->chromaticity.
            */
           image->intensity = Rec709LuminancePixelIntensityMethod;
           SetImageColorspace(image,GRAYColorspace);
+          image->gamma = image_gamma;
         }
     }
 
   (void)LogMagickEvent(CoderEvent,GetMagickModule(),
-      "  image->colorspace=%d",(int) image->colorspace);
+      "    image->colorspace=%d",(int) image->colorspace);
 
   for (j = 0; j < 2; j++)
   {
@@ -4669,6 +4693,7 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
       "    Reading jng_image from color_blob.");
 
+  assert(color_image_info != (ImageInfo *) NULL);
   (void) FormatLocaleString(color_image_info->filename,MaxTextExtent,"%s",
     color_image->filename);
 
@@ -8047,6 +8072,8 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   ping_preserve_iCCP = mng_info->ping_preserve_iCCP;
   ping_need_colortype_warning = MagickFalse;
 
+  property=(const char *) NULL;
+
   /* Recognize the ICC sRGB profile and convert it to the sRGB chunk,
    * i.e., eliminate the ICC profile and set image->rendering_intent.
    * Note that this will not involve any changes to the actual pixels
@@ -11202,7 +11229,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
        * "identify" or for passing through to another JPEG
        */
       if ((LocaleNCompare(property,"png:",4) != 0 &&
-           LocaleNCompare(property,"jpeg:",5)) &&
+           LocaleNCompare(property,"jpeg:",5) != 0) &&
 
           /* Suppress density and units if we wrote a pHYs chunk */
           (ping_exclude_pHYs != MagickFalse      ||
@@ -13293,7 +13320,7 @@ static MagickBooleanType WriteMNGImage(const ImageInfo *image_info,Image *image)
          if (need_defi && final_delay > 2 && (final_delay != 4) &&
             (final_delay != 5) && (final_delay != 10) && (final_delay != 20) &&
             (final_delay != 25) && (final_delay != 50) && (final_delay !=
-               1UL*image->ticks_per_second))
+               1L*image->ticks_per_second))
            mng_info->need_fram=MagickTrue;  /* make it exact; cannot be VLC */
        }
 

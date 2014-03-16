@@ -422,13 +422,13 @@ MagickExport char *GetPolicyValue(const char *name)
 */
 static MagickBooleanType InitializePolicyList(ExceptionInfo *exception)
 {
-  if ((policy_list == (LinkedListInfo *) NULL) &&
+  if ((policy_list == (LinkedListInfo *) NULL) ||
       (instantiate_policy == MagickFalse))
     {
       if (policy_semaphore == (SemaphoreInfo *) NULL)
-        AcquireSemaphoreInfo(&policy_semaphore);
+        ActivateSemaphoreInfo(&policy_semaphore);
       LockSemaphoreInfo(policy_semaphore);
-      if ((policy_list == (LinkedListInfo *) NULL) &&
+      if ((policy_list == (LinkedListInfo *) NULL) ||
           (instantiate_policy == MagickFalse))
         {
           (void) LoadPolicyLists(PolicyFilename,exception);
@@ -767,6 +767,7 @@ static MagickBooleanType LoadPolicyList(const char *xml,const char *filename,
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
             policy_info->name);
         policy_info=(PolicyInfo *) NULL;
+        continue;
       }
     GetMagickToken(q,(const char **) NULL,token);
     if (*token != '=')
@@ -925,7 +926,7 @@ static MagickBooleanType LoadPolicyLists(const char *filename,
     if (policy_info == (PolicyInfo *) NULL)
       {
         (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",policy_info->name);
+          ResourceLimitError,"MemoryAllocationFailed","`%s'",p->name);
         continue;
       }
     (void) ResetMagickMemory(policy_info,0,sizeof(*policy_info));
@@ -965,7 +966,7 @@ static MagickBooleanType LoadPolicyLists(const char *filename,
 */
 MagickExport MagickBooleanType PolicyComponentGenesis(void)
 {
-  AcquireSemaphoreInfo(&policy_semaphore);
+  policy_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -1012,7 +1013,7 @@ static void *DestroyPolicyElement(void *policy_info)
 MagickExport void PolicyComponentTerminus(void)
 {
   if (policy_semaphore == (SemaphoreInfo *) NULL)
-    AcquireSemaphoreInfo(&policy_semaphore);
+    ActivateSemaphoreInfo(&policy_semaphore);
   LockSemaphoreInfo(policy_semaphore);
   if (policy_list != (LinkedListInfo *) NULL)
     policy_list=DestroyLinkedList(policy_list,DestroyPolicyElement);
