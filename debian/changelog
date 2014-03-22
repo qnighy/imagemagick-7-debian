@@ -1,4 +1,4 @@
-imagemagick (8:6.8.8.8-1) experimental; urgency=medium
+imagemagick (8:6.8.8.8-1) UNRELEASED; urgency=medium
 
   * Add missing symbols from 32 bits due to s?size_t
   and optionnal template from sparc.
@@ -7,7 +7,7 @@ imagemagick (8:6.8.8.8-1) experimental; urgency=medium
     in psd file handling.
   - Fix CVE-2014-1947 a buffer overflow in log handling.
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 25 Feb 2014 09:46:12 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 22 Mar 2014 11:53:06 +0100
 
 imagemagick (8:6.8.8.2-1) experimental; urgency=low
 
