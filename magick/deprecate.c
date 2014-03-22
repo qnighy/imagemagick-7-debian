@@ -180,7 +180,8 @@ MagickExport const PixelPacket *AcquireCacheViewPixels(
 %                                                                             %
 %                                                                             %
 %   A c q u i r e I m a g e P i x e l s                                       %
-%                                                                             % %                                                                             %
+%                                                                             %
+%                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -1421,6 +1422,51 @@ MagickExport MagickBooleanType ColorFloodfillImage(Image *image,
 %                                                                             %
 %                                                                             %
 %                                                                             %
++   C o n s t i t u t e C o m p o n e n t G e n e s i s                       %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ConstituteComponentGenesis() instantiates the constitute component.
+%
+%  The format of the ConstituteComponentGenesis method is:
+%
+%      MagickBooleanType ConstituteComponentGenesis(void)
+%
+*/
+MagickExport MagickBooleanType ConstituteComponentGenesis(void)
+{
+  return(MagickTrue);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   C o n s t i t u t e C o m p o n e n t T e r m i n u s                     %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ConstituteComponentTerminus() destroys the constitute component.
+%
+%  The format of the ConstituteComponentTerminus method is:
+%
+%      ConstituteComponentTerminus(void)
+%
+*/
+MagickExport void ConstituteComponentTerminus(void)
+{
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   D e l e t e I m a g e A t t r i b u t e                                   %
 %                                                                             %
 %                                                                             %
@@ -1552,7 +1598,6 @@ MagickExport MagickBooleanType DeleteMagickRegistry(const ssize_t id)
 */
 MagickExport void DestroyConstitute(void)
 {
-  ConstituteComponentTerminus();
 }
 
 /*
@@ -5724,6 +5769,52 @@ MagickExport unsigned int QuantizationError(Image *image)
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(DeprecateEvent,GetMagickModule(),"last use: v5.5.3");
   return(GetImageQuantizeError(image));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%     R a d i a l B l u r I m a g e                                           %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  RadialBlurImage() applies a radial blur to the image.
+%
+%  Andrew Protano contributed this effect.
+%
+%  The format of the RadialBlurImage method is:
+%
+%    Image *RadialBlurImage(const Image *image,const double angle,
+%      ExceptionInfo *exception)
+%    Image *RadialBlurImageChannel(const Image *image,const ChannelType channel,
+%      const double angle,ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o channel: the channel type.
+%
+%    o angle: the angle of the radial blur.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+
+MagickExport Image *RadialBlurImage(const Image *image,const double angle,
+  ExceptionInfo *exception)
+{
+  return(RotationalBlurImage(image,angle,exception));
+}
+
+MagickExport Image *RadialBlurImageChannel(const Image *image,
+  const ChannelType channel,const double angle,ExceptionInfo *exception)
+{
+  return(RotationalBlurImageChannel(image,channel,angle,exception));
 }
 
 /*

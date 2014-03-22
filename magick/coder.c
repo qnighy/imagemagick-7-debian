@@ -57,6 +57,7 @@
 #include "magick/token.h"
 #include "magick/utility.h"
 #include "magick/xml-tree.h"
+#include "magick/xml-tree-private.h"
 
 /*
   Define declarations.
@@ -232,17 +233,129 @@ static SemaphoreInfo
   *coder_semaphore = (SemaphoreInfo *) NULL;
 
 static SplayTreeInfo
-  *coder_list = (SplayTreeInfo *) NULL;
-
-static volatile MagickBooleanType
-  instantiate_coder = MagickFalse;
+  *coder_cache = (SplayTreeInfo *) NULL;
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  InitializeCoderList(ExceptionInfo *),
-  LoadCoderLists(const char *,ExceptionInfo *);
+  IsCoderTreeInstantiated(ExceptionInfo *),
+  LoadCoderCache(SplayTreeInfo *,const char *,const char *,const size_t,
+    ExceptionInfo *);
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%  A c q u i r e C o d e r S p l a y T r e e                                  %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  AcquireCoderCache() caches one or more coder configurations which
+%  provides a mapping between coder attributes and a coder name.
+%
+%  The format of the AcquireCoderCache coder is:
+%
+%      SplayTreeInfo *AcquireCoderCache(const char *filename,
+%        ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o filename: the font file name.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+
+static void *DestroyCoderNode(void *coder_info)
+{
+  register CoderInfo
+    *p;
+
+  p=(CoderInfo *) coder_info;
+  if (p->exempt == MagickFalse)
+    {
+      if (p->path != (char *) NULL)
+        p->path=DestroyString(p->path);
+      if (p->name != (char *) NULL)
+        p->name=DestroyString(p->name);
+      if (p->magick != (char *) NULL)
+        p->magick=DestroyString(p->magick);
+    }
+  return(RelinquishMagickMemory(p));
+}
+
+static SplayTreeInfo *AcquireCoderCache(const char *filename,
+  ExceptionInfo *exception)
+{
+  const StringInfo
+    *option;
+
+  LinkedListInfo
+    *options;
+
+  MagickStatusType
+    status;
+
+  register ssize_t
+    i;
+
+  SplayTreeInfo
+    *coder_cache;
+
+  /*
+    Load external coder map.
+  */
+  coder_cache=NewSplayTree(CompareSplayTreeString,RelinquishMagickMemory,
+    DestroyCoderNode);
+  if (coder_cache == (SplayTreeInfo *) NULL)
+    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+  status=MagickTrue;
+  options=GetConfigureOptions(filename,exception);
+  option=(const StringInfo *) GetNextValueInLinkedList(options);
+  while (option != (const StringInfo *) NULL)
+  {
+    status&=LoadCoderCache(coder_cache,(const char *)
+      GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+    option=(const StringInfo *) GetNextValueInLinkedList(options);
+  }
+  options=DestroyConfigureOptions(options);
+  /*
+    Load built-in coder map.
+  */
+  for (i=0; i < (ssize_t) (sizeof(CoderMap)/sizeof(*CoderMap)); i++)
+  {
+    CoderInfo
+      *coder_info;
+
+    register const CoderMapInfo
+      *p;
+
+    p=CoderMap+i;
+    coder_info=(CoderInfo *) AcquireMagickMemory(sizeof(*coder_info));
+    if (coder_info == (CoderInfo *) NULL)
+      {
+        (void) ThrowMagickException(exception,GetMagickModule(),
+          ResourceLimitError,"MemoryAllocationFailed","`%s'",p->name);
+        continue;
+      }
+    (void) ResetMagickMemory(coder_info,0,sizeof(*coder_info));
+    coder_info->path=(char *) "[built-in]";
+    coder_info->magick=(char *) p->magick;
+    coder_info->name=(char *) p->name;
+    coder_info->exempt=MagickTrue;
+    coder_info->signature=MagickSignature;
+    status&=AddValueToSplayTree(coder_cache,ConstantString(coder_info->magick),
+      coder_info);
+    if (status == MagickFalse)
+      (void) ThrowMagickException(exception,GetMagickModule(),
+        ResourceLimitError,"MemoryAllocationFailed","`%s'",coder_info->name);
+  }
+  return(coder_cache);
+}
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -291,9 +404,8 @@ MagickExport void CoderComponentTerminus(void)
   if (coder_semaphore == (SemaphoreInfo *) NULL)
     ActivateSemaphoreInfo(&coder_semaphore);
   LockSemaphoreInfo(coder_semaphore);
-  if (coder_list != (SplayTreeInfo *) NULL)
-    coder_list=DestroySplayTree(coder_list);
-  instantiate_coder=MagickFalse;
+  if (coder_cache != (SplayTreeInfo *) NULL)
+    coder_cache=DestroySplayTree(coder_cache);
   UnlockSemaphoreInfo(coder_semaphore);
   DestroySemaphoreInfo(&coder_semaphore);
 }
@@ -326,20 +438,23 @@ MagickExport void CoderComponentTerminus(void)
 MagickExport const CoderInfo *GetCoderInfo(const char *name,
   ExceptionInfo *exception)
 {
+  const CoderInfo
+    *coder_info;
+
   assert(exception != (ExceptionInfo *) NULL);
-  if ((coder_list == (SplayTreeInfo *) NULL) ||
-      (instantiate_coder == MagickFalse))
-    if (InitializeCoderList(exception) == MagickFalse)
-      return((const CoderInfo *) NULL);
-  if ((coder_list == (SplayTreeInfo *) NULL) ||
-      (GetNumberOfNodesInSplayTree(coder_list) == 0))
+  if (IsCoderTreeInstantiated(exception) == MagickFalse)
     return((const CoderInfo *) NULL);
+  LockSemaphoreInfo(coder_semaphore);
   if ((name == (const char *) NULL) || (LocaleCompare(name,"*") == 0))
     {
-      ResetSplayTreeIterator(coder_list);
-      return((const CoderInfo *) GetNextValueInSplayTree(coder_list));
+      ResetSplayTreeIterator(coder_cache);
+      coder_info=(const CoderInfo *) GetNextValueInSplayTree(coder_cache);
+      UnlockSemaphoreInfo(coder_semaphore);
+      return(coder_info);
     }
-  return((const CoderInfo *) GetValueFromSplayTree(coder_list,name));
+  coder_info=(const CoderInfo *) GetValueFromSplayTree(coder_cache,name);
+  UnlockSemaphoreInfo(coder_semaphore);
+  return(coder_info);
 }
 
 /*
@@ -405,21 +520,21 @@ MagickExport const CoderInfo **GetCoderInfoList(const char *pattern,
   if (p == (const CoderInfo *) NULL)
     return((const CoderInfo **) NULL);
   coder_map=(const CoderInfo **) AcquireQuantumMemory((size_t)
-    GetNumberOfNodesInSplayTree(coder_list)+1UL,sizeof(*coder_map));
+    GetNumberOfNodesInSplayTree(coder_cache)+1UL,sizeof(*coder_map));
   if (coder_map == (const CoderInfo **) NULL)
     return((const CoderInfo **) NULL);
   /*
     Generate coder list.
   */
   LockSemaphoreInfo(coder_semaphore);
-  ResetSplayTreeIterator(coder_list);
-  p=(const CoderInfo *) GetNextValueInSplayTree(coder_list);
+  ResetSplayTreeIterator(coder_cache);
+  p=(const CoderInfo *) GetNextValueInSplayTree(coder_cache);
   for (i=0; p != (const CoderInfo *) NULL; )
   {
     if ((p->stealth == MagickFalse) &&
         (GlobExpression(p->name,pattern,MagickFalse) != MagickFalse))
       coder_map[i++]=p;
-    p=(const CoderInfo *) GetNextValueInSplayTree(coder_list);
+    p=(const CoderInfo *) GetNextValueInSplayTree(coder_cache);
   }
   UnlockSemaphoreInfo(coder_semaphore);
   qsort((void *) coder_map,(size_t) i,sizeof(*coder_map),CoderInfoCompare);
@@ -490,21 +605,21 @@ MagickExport char **GetCoderList(const char *pattern,
   if (p == (const CoderInfo *) NULL)
     return((char **) NULL);
   coder_map=(char **) AcquireQuantumMemory((size_t)
-    GetNumberOfNodesInSplayTree(coder_list)+1UL,sizeof(*coder_map));
+    GetNumberOfNodesInSplayTree(coder_cache)+1UL,sizeof(*coder_map));
   if (coder_map == (char **) NULL)
     return((char **) NULL);
   /*
     Generate coder list.
   */
   LockSemaphoreInfo(coder_semaphore);
-  ResetSplayTreeIterator(coder_list);
-  p=(const CoderInfo *) GetNextValueInSplayTree(coder_list);
+  ResetSplayTreeIterator(coder_cache);
+  p=(const CoderInfo *) GetNextValueInSplayTree(coder_cache);
   for (i=0; p != (const CoderInfo *) NULL; )
   {
     if ((p->stealth == MagickFalse) &&
         (GlobExpression(p->name,pattern,MagickFalse) != MagickFalse))
       coder_map[i++]=ConstantString(p->name);
-    p=(const CoderInfo *) GetNextValueInSplayTree(coder_list);
+    p=(const CoderInfo *) GetNextValueInSplayTree(coder_cache);
   }
   UnlockSemaphoreInfo(coder_semaphore);
   qsort((void *) coder_map,(size_t) i,sizeof(*coder_map),CoderCompare);
@@ -518,40 +633,36 @@ MagickExport char **GetCoderList(const char *pattern,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   I n i t i a l i z e C o d e r L i s t                                     %
++   I s C o d e r T r e e I n s t a n t i a t e d                             %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  InitializeCoderList() initializes the coder list.
+%  IsCoderTreeInstantiated() determines if the coder tree is instantiated.  If
+%  not, it instantiates the tree and returns it.
 %
-%  The format of the InitializeCoderList method is:
+%  The format of the IsCoderInstantiated method is:
 %
-%      MagickBooleanType InitializeCoderList(ExceptionInfo *exception)
+%      MagickBooleanType IsCoderTreeInstantiated(ExceptionInfo *exception)
 %
 %  A description of each parameter follows.
 %
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static MagickBooleanType InitializeCoderList(ExceptionInfo *exception)
+static MagickBooleanType IsCoderTreeInstantiated(ExceptionInfo *exception)
 {
-  if ((coder_list == (SplayTreeInfo *) NULL) ||
-      (instantiate_coder == MagickFalse))
+  if (coder_cache == (SplayTreeInfo *) NULL)
     {
       if (coder_semaphore == (SemaphoreInfo *) NULL)
         ActivateSemaphoreInfo(&coder_semaphore);
       LockSemaphoreInfo(coder_semaphore);
-      if ((coder_list == (SplayTreeInfo *) NULL) ||
-          (instantiate_coder == MagickFalse))
-        {
-          (void) LoadCoderLists(MagickCoderFilename,exception);
-          instantiate_coder=MagickTrue;
-        }
+      if (coder_cache == (SplayTreeInfo *) NULL)
+        coder_cache=AcquireCoderCache(MagickCoderFilename,exception);
       UnlockSemaphoreInfo(coder_semaphore);
     }
-  return(coder_list != (SplayTreeInfo *) NULL ? MagickTrue : MagickFalse);
+  return(coder_cache != (SplayTreeInfo *) NULL ? MagickTrue : MagickFalse);
 }
 
 /*
@@ -640,13 +751,14 @@ MagickExport MagickBooleanType ListCoderInfo(FILE *file,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  LoadCoderList() loads the coder configuration file which provides a
+%  LoadCoderCache() loads the coder configurations which provides a
 %  mapping between coder attributes and a coder name.
 %
-%  The format of the LoadCoderList coder is:
+%  The format of the LoadCoderCache coder is:
 %
-%      MagickBooleanType LoadCoderList(const char *xml,const char *filename,
-%        const size_t depth,ExceptionInfo *exception)
+%      MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
+%        const char *xml,const char *filename,const size_t depth,
+%        ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -659,27 +771,9 @@ MagickExport MagickBooleanType ListCoderInfo(FILE *file,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static void *DestroyCoderNode(void *coder_info)
-{
-  register CoderInfo
-    *p;
-
-  p=(CoderInfo *) coder_info;
-  if (p->exempt == MagickFalse)
-    {
-      if (p->path != (char *) NULL)
-        p->path=DestroyString(p->path);
-      if (p->name != (char *) NULL)
-        p->name=DestroyString(p->name);
-      if (p->magick != (char *) NULL)
-        p->magick=DestroyString(p->magick);
-    }
-  return(RelinquishMagickMemory(p));
-}
-
-static MagickBooleanType LoadCoderList(const char *xml,const char *filename,
-  const size_t depth,ExceptionInfo *exception)
+static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
+  const char *xml,const char *filename,const size_t depth,
+  ExceptionInfo *exception)
 {
   char
     keyword[MaxTextExtent],
@@ -701,17 +795,6 @@ static MagickBooleanType LoadCoderList(const char *xml,const char *filename,
     "Loading coder configuration file \"%s\" ...",filename);
   if (xml == (const char *) NULL)
     return(MagickFalse);
-  if (coder_list == (SplayTreeInfo *) NULL)
-    {
-      coder_list=NewSplayTree(CompareSplayTreeString,RelinquishMagickMemory,
-        DestroyCoderNode);
-      if (coder_list == (SplayTreeInfo *) NULL)
-        {
-          ThrowFileException(exception,ResourceLimitError,
-            "MemoryAllocationFailed",filename);
-          return(MagickFalse);
-        }
-    }
   status=MagickTrue;
   coder_info=(CoderInfo *) NULL;
   token=AcquireString(xml);
@@ -773,10 +856,11 @@ static MagickBooleanType LoadCoderList(const char *xml,const char *filename,
                     (void) CopyMagickString(path,token,MaxTextExtent);
                   else
                     (void) ConcatenateMagickString(path,token,MaxTextExtent);
-                  xml=FileToString(path,~0UL,exception);
+                  xml=FileToXML(path,~0UL);
                   if (xml != (char *) NULL)
                     {
-                      status=LoadCoderList(xml,path,depth+1,exception);
+                      status&=LoadCoderCache(coder_cache,xml,path,depth+1,
+                        exception);
                       xml=(char *) RelinquishMagickMemory(xml);
                     }
                 }
@@ -802,7 +886,7 @@ static MagickBooleanType LoadCoderList(const char *xml,const char *filename,
       continue;
     if (LocaleCompare(keyword,"/>") == 0)
       {
-        status=AddValueToSplayTree(coder_list,ConstantString(
+        status=AddValueToSplayTree(coder_cache,ConstantString(
           coder_info->magick),coder_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
@@ -854,103 +938,4 @@ static MagickBooleanType LoadCoderList(const char *xml,const char *filename,
   }
   token=(char *) RelinquishMagickMemory(token);
   return(status);
-}
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%  L o a d C o d e r L i s t s                                                %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  LoadCoderLists() loads one or more coder configuration file which
-%  provides a mapping between coder attributes and a coder name.
-%
-%  The format of the LoadCoderLists coder is:
-%
-%      MagickBooleanType LoadCoderLists(const char *filename,
-%        ExceptionInfo *exception)
-%
-%  A description of each parameter follows:
-%
-%    o filename: the font file name.
-%
-%    o exception: return any errors or warnings in this structure.
-%
-*/
-static MagickBooleanType LoadCoderLists(const char *filename,
-  ExceptionInfo *exception)
-{
-  const StringInfo
-    *option;
-
-  LinkedListInfo
-    *options;
-
-  MagickStatusType
-    status;
-
-  register ssize_t
-    i;
-
-  /*
-    Load external coder map.
-  */
-  if (coder_list == (SplayTreeInfo *) NULL)
-    {
-      coder_list=NewSplayTree(CompareSplayTreeString,RelinquishMagickMemory,
-        DestroyCoderNode);
-      if (coder_list == (SplayTreeInfo *) NULL)
-        {
-          ThrowFileException(exception,ResourceLimitError,
-            "MemoryAllocationFailed",filename);
-          return(MagickFalse);
-        }
-    }
-  status=MagickTrue;
-  options=GetConfigureOptions(filename,exception);
-  option=(const StringInfo *) GetNextValueInLinkedList(options);
-  while (option != (const StringInfo *) NULL)
-  {
-    status&=LoadCoderList((const char *) GetStringInfoDatum(option),
-      GetStringInfoPath(option),0,exception);
-    option=(const StringInfo *) GetNextValueInLinkedList(options);
-  }
-  options=DestroyConfigureOptions(options);
-  /*
-    Load built-in coder map.
-  */
-  for (i=0; i < (ssize_t) (sizeof(CoderMap)/sizeof(*CoderMap)); i++)
-  {
-    CoderInfo
-      *coder_info;
-
-    register const CoderMapInfo
-      *p;
-
-    p=CoderMap+i;
-    coder_info=(CoderInfo *) AcquireMagickMemory(sizeof(*coder_info));
-    if (coder_info == (CoderInfo *) NULL)
-      {
-        (void) ThrowMagickException(exception,GetMagickModule(),
-          ResourceLimitError,"MemoryAllocationFailed","`%s'",p->name);
-        continue;
-      }
-    (void) ResetMagickMemory(coder_info,0,sizeof(*coder_info));
-    coder_info->path=(char *) "[built-in]";
-    coder_info->magick=(char *) p->magick;
-    coder_info->name=(char *) p->name;
-    coder_info->exempt=MagickTrue;
-    coder_info->signature=MagickSignature;
-    status&=AddValueToSplayTree(coder_list,ConstantString(coder_info->magick),
-      coder_info);
-    if (status == MagickFalse)
-      (void) ThrowMagickException(exception,GetMagickModule(),
-        ResourceLimitError,"MemoryAllocationFailed","`%s'",coder_info->name);
-  }
-  return(status != 0 ? MagickTrue : MagickFalse);
 }

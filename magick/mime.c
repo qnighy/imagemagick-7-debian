@@ -54,6 +54,7 @@
 #include "magick/token.h"
 #include "magick/utility.h"
 #include "magick/xml-tree.h"
+#include "magick/xml-tree-private.h"
 
 /*
   Define declarations.
@@ -113,19 +114,81 @@ static const char
     "</mimemap>";
 
 static LinkedListInfo
-  *mime_list = (LinkedListInfo *) NULL;
+  *mime_cache = (LinkedListInfo *) NULL;
 
 static SemaphoreInfo
   *mime_semaphore = (SemaphoreInfo *) NULL;
-
-static volatile MagickBooleanType
-  instantiate_mime = MagickFalse;
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  InitializeMimeList(ExceptionInfo *);
+  IsMimeCacheInstantiated(ExceptionInfo *),
+  LoadMimeCache(LinkedListInfo *,const char *,const char *,const size_t,
+    ExceptionInfo *);
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%  A c q u i r e M i m e C a c h e                                            %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  AcquireMimeCache() caches one or more magic configurations which provides
+%  a mapping between magic attributes and a magic name.
+%
+%  The format of the AcquireMimeCache method is:
+%
+%      LinkedListInfo *AcquireMimeCache(const char *filename,
+%        ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o filename: the font file name.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+static LinkedListInfo *AcquireMimeCache(const char *filename,
+  ExceptionInfo *exception)
+{
+  LinkedListInfo
+    *mime_cache;
+
+  MagickStatusType
+    status;
+
+  mime_cache=NewLinkedList(0);
+  if (mime_cache == (LinkedListInfo *) NULL)
+    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+  status=MagickTrue;
+#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+  {
+    const StringInfo
+      *option;
+
+    LinkedListInfo
+      *options;
+
+    options=GetConfigureOptions(filename,exception);
+    option=(const StringInfo *) GetNextValueInLinkedList(options);
+    while (option != (const StringInfo *) NULL)
+    {
+      status&=LoadMimeCache(mime_cache,(const char *)
+        GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+      option=(const StringInfo *) GetNextValueInLinkedList(options);
+    }
+    options=DestroyConfigureOptions(options);
+  }
+#endif
+  if (IsLinkedListEmpty(mime_cache) != MagickFalse)
+    status&=LoadMimeCache(mime_cache,MimeMap,"built-in",0,exception);
+  return(mime_cache);
+}
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -185,16 +248,7 @@ MagickExport const MimeInfo *GetMimeInfo(const char *filename,
     value;
 
   assert(exception != (ExceptionInfo *) NULL);
-  if ((mime_list == (LinkedListInfo *) NULL) ||
-      (instantiate_mime == MagickFalse))
-    if (InitializeMimeList(exception) == MagickFalse)
-      return((const MimeInfo *) NULL);
-  if ((mime_list == (LinkedListInfo *) NULL) ||
-      (IsLinkedListEmpty(mime_list) != MagickFalse))
-    return((const MimeInfo *) NULL);
-  if ((magic == (const unsigned char *) NULL) || (length == 0))
-    return((const MimeInfo *) GetValueFromLinkedList(mime_list,0));
-  if (length == 0)
+  if (IsMimeCacheInstantiated(exception) == MagickFalse)
     return((const MimeInfo *) NULL);
   /*
     Search for mime tag.
@@ -202,22 +256,27 @@ MagickExport const MimeInfo *GetMimeInfo(const char *filename,
   mime_info=(const MimeInfo *) NULL;
   lsb_first=1;
   LockSemaphoreInfo(mime_semaphore);
-  ResetLinkedListIterator(mime_list);
-  p=(const MimeInfo *) GetNextValueInLinkedList(mime_list);
+  ResetLinkedListIterator(mime_cache);
+  p=(const MimeInfo *) GetNextValueInLinkedList(mime_cache);
+  if ((magic == (const unsigned char *) NULL) || (length == 0))
+    {
+      UnlockSemaphoreInfo(mime_semaphore);
+      return(p);
+    }
   while (p != (const MimeInfo *) NULL)
   {
     assert(p->offset >= 0);
     if (mime_info != (const MimeInfo *) NULL)
       if (p->priority > mime_info->priority)
         {
-          p=(const MimeInfo *) GetNextValueInLinkedList(mime_list);
+          p=(const MimeInfo *) GetNextValueInLinkedList(mime_cache);
           continue;
         }
     if ((p->pattern != (char *) NULL) && (filename != (char *) NULL))
       {
         if (GlobExpression(filename,p->pattern,MagickFalse) != MagickFalse)
           mime_info=p;
-        p=(const MimeInfo *) GetNextValueInLinkedList(mime_list);
+        p=(const MimeInfo *) GetNextValueInLinkedList(mime_cache);
         continue;
       }
     switch (p->data_type)
@@ -320,13 +379,13 @@ MagickExport const MimeInfo *GetMimeInfo(const char *filename,
         break;
       }
     }
-    p=(const MimeInfo *) GetNextValueInLinkedList(mime_list);
+    p=(const MimeInfo *) GetNextValueInLinkedList(mime_cache);
   }
   if (p != (const MimeInfo *) NULL)
-    (void) InsertValueInLinkedList(mime_list,0,
-      RemoveElementByValueFromLinkedList(mime_list,p));
+    (void) InsertValueInLinkedList(mime_cache,0,
+      RemoveElementByValueFromLinkedList(mime_cache,p));
   UnlockSemaphoreInfo(mime_semaphore);
-  return(mime_info);
+  return(p);
 }
 
 /*
@@ -403,21 +462,21 @@ MagickExport const MimeInfo **GetMimeInfoList(const char *pattern,
   if (p == (const MimeInfo *) NULL)
     return((const MimeInfo **) NULL);
   aliases=(const MimeInfo **) AcquireQuantumMemory((size_t)
-    GetNumberOfElementsInLinkedList(mime_list)+1UL,sizeof(*aliases));
+    GetNumberOfElementsInLinkedList(mime_cache)+1UL,sizeof(*aliases));
   if (aliases == (const MimeInfo **) NULL)
     return((const MimeInfo **) NULL);
   /*
     Generate mime list.
   */
   LockSemaphoreInfo(mime_semaphore);
-  ResetLinkedListIterator(mime_list);
-  p=(const MimeInfo *) GetNextValueInLinkedList(mime_list);
+  ResetLinkedListIterator(mime_cache);
+  p=(const MimeInfo *) GetNextValueInLinkedList(mime_cache);
   for (i=0; p != (const MimeInfo *) NULL; )
   {
     if ((p->stealth == MagickFalse) &&
         (GlobExpression(p->type,pattern,MagickFalse) != MagickFalse))
       aliases[i++]=p;
-    p=(const MimeInfo *) GetNextValueInLinkedList(mime_list);
+    p=(const MimeInfo *) GetNextValueInLinkedList(mime_cache);
   }
   UnlockSemaphoreInfo(mime_semaphore);
   qsort((void *) aliases,(size_t) i,sizeof(*aliases),MimeInfoCompare);
@@ -498,18 +557,18 @@ MagickExport char **GetMimeList(const char *pattern,
   if (p == (const MimeInfo *) NULL)
     return((char **) NULL);
   aliases=(char **) AcquireQuantumMemory((size_t)
-    GetNumberOfElementsInLinkedList(mime_list)+1UL,sizeof(*aliases));
+    GetNumberOfElementsInLinkedList(mime_cache)+1UL,sizeof(*aliases));
   if (aliases == (char **) NULL)
     return((char **) NULL);
   LockSemaphoreInfo(mime_semaphore);
-  ResetLinkedListIterator(mime_list);
-  p=(const MimeInfo *) GetNextValueInLinkedList(mime_list);
+  ResetLinkedListIterator(mime_cache);
+  p=(const MimeInfo *) GetNextValueInLinkedList(mime_cache);
   for (i=0; p != (const MimeInfo *) NULL; )
   {
     if ((p->stealth == MagickFalse) &&
         (GlobExpression(p->type,pattern,MagickFalse) != MagickFalse))
       aliases[i++]=ConstantString(p->type);
-    p=(const MimeInfo *) GetNextValueInLinkedList(mime_list);
+    p=(const MimeInfo *) GetNextValueInLinkedList(mime_cache);
   }
   UnlockSemaphoreInfo(mime_semaphore);
   qsort((void *) aliases,(size_t) i,sizeof(*aliases),MimeCompare);
@@ -583,40 +642,36 @@ MagickExport const char *GetMimeType(const MimeInfo *mime_info)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   I n i t i a l i z e M i m e L i s t                                       %
++   I s M i m e C a c h e I n s t a n t i a t e d                             %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  InitializeMimeList() initializes the mime list.
+%  IsMimeCacheInstantiated() determines if the mime list is instantiated.  If
+%  not, it instantiates the list and returns it.
 %
-%  The format of the InitializeMimeList method is:
+%  The format of the IsMimeInstantiated method is:
 %
-%      MagickBooleanType InitializeMimeList(ExceptionInfo *exception)
+%      MagickBooleanType IsMimeCacheInstantiated(ExceptionInfo *exception)
 %
 %  A description of each parameter follows.
 %
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static MagickBooleanType InitializeMimeList(ExceptionInfo *exception)
+static MagickBooleanType IsMimeCacheInstantiated(ExceptionInfo *exception)
 {
-  if ((mime_list == (LinkedListInfo *) NULL) ||
-      (instantiate_mime == MagickFalse))
+  if (mime_cache == (LinkedListInfo *) NULL)
     {
       if (mime_semaphore == (SemaphoreInfo *) NULL)
         ActivateSemaphoreInfo(&mime_semaphore);
       LockSemaphoreInfo(mime_semaphore);
-      if ((mime_list == (LinkedListInfo *) NULL) ||
-          (instantiate_mime == MagickFalse))
-        {
-          (void) LoadMimeLists(MimeFilename,exception);
-          instantiate_mime=MagickTrue;
-        }
+      if (mime_cache == (LinkedListInfo *) NULL)
+        mime_cache=AcquireMimeCache(MimeFilename,exception);
       UnlockSemaphoreInfo(mime_semaphore);
     }
-  return(mime_list != (LinkedListInfo *) NULL ? MagickTrue : MagickFalse);
+  return(mime_cache != (LinkedListInfo *) NULL ? MagickTrue : MagickFalse);
 }
 
 /*
@@ -714,13 +769,14 @@ MagickExport MagickBooleanType ListMimeInfo(FILE *file,ExceptionInfo *exception)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  LoadMimeList() loads the magic configuration file which provides a mapping
+%  LoadMimeCache() loads the magic configurations which provides a mapping
 %  between magic attributes and a magic name.
 %
-%  The format of the LoadMimeList method is:
+%  The format of the LoadMimeCache method is:
 %
-%      MagickBooleanType LoadMimeList(const char *xml,const char *filename,
-%        const size_t depth,ExceptionInfo *exception)
+%      MagickBooleanType LoadMimeCache(LinkedListInfo *mime_cache,
+%        const char *xml,const char *filename,const size_t depth,
+%        ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -733,8 +789,9 @@ MagickExport MagickBooleanType ListMimeInfo(FILE *file,ExceptionInfo *exception)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static MagickBooleanType LoadMimeList(const char *xml,const char *filename,
-  const size_t depth,ExceptionInfo *exception)
+static MagickBooleanType LoadMimeCache(LinkedListInfo *mime_cache,
+  const char *xml,const char *filename,const size_t depth,
+  ExceptionInfo *exception)
 {
   const char
     *attribute;
@@ -757,16 +814,6 @@ static MagickBooleanType LoadMimeList(const char *xml,const char *filename,
     "Loading mime map \"%s\" ...",filename);
   if (xml == (const char *) NULL)
     return(MagickFalse);
-  if (mime_list == (LinkedListInfo *) NULL)
-    {
-      mime_list=NewLinkedList(0);
-      if (mime_list == (LinkedListInfo *) NULL)
-        {
-          ThrowFileException(exception,ResourceLimitError,
-            "MemoryAllocationFailed",filename);
-          return(MagickFalse);
-        }
-    }
   mime_map=NewXMLTree(xml,exception);
   if (mime_map == (XMLTreeInfo *) NULL)
     return(MagickFalse);
@@ -797,10 +844,10 @@ static MagickBooleanType LoadMimeList(const char *xml,const char *filename,
               (void) CopyMagickString(path,attribute,MaxTextExtent);
             else
               (void) ConcatenateMagickString(path,attribute,MaxTextExtent);
-            xml=FileToString(path,~0UL,exception);
+            xml=FileToXML(path,~0UL);
             if (xml != (char *) NULL)
               {
-                status=LoadMimeList(xml,path,depth+1,exception);
+                status&=LoadMimeCache(mime_cache,xml,path,depth+1,exception);
                 xml=DestroyString(xml);
               }
           }
@@ -916,7 +963,7 @@ static MagickBooleanType LoadMimeList(const char *xml,const char *filename,
     attribute=GetXMLTreeAttribute(mime,"type");
     if (attribute != (const char *) NULL)
       mime_info->type=ConstantString(attribute);
-    status=AppendValueToLinkedList(mime_list,mime_info);
+    status=AppendValueToLinkedList(mime_cache,mime_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",filename);
@@ -924,66 +971,6 @@ static MagickBooleanType LoadMimeList(const char *xml,const char *filename,
   }
   mime_map=DestroyXMLTree(mime_map);
   return(status);
-}
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%  L o a d M i m e L i s t s                                                  %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  LoadMimeList() loads one or more magic configuration file which provides a
-%  mapping between magic attributes and a magic name.
-%
-%  The format of the LoadMimeLists method is:
-%
-%      MagickBooleanType LoadMimeLists(const char *filename,
-%        ExceptionInfo *exception)
-%
-%  A description of each parameter follows:
-%
-%    o filename: the font file name.
-%
-%    o exception: return any errors or warnings in this structure.
-%
-*/
-MagickExport MagickBooleanType LoadMimeLists(const char *filename,
-  ExceptionInfo *exception)
-{
-#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
-  return(LoadMimeList(MimeMap,"built-in",0,exception));
-#else
-  const StringInfo
-    *option;
-
-  LinkedListInfo
-    *options;
-
-  MagickStatusType
-    status;
-
-  status=MagickFalse;
-  options=GetConfigureOptions(filename,exception);
-  option=(const StringInfo *) GetNextValueInLinkedList(options);
-  while (option != (const StringInfo *) NULL)
-  {
-    status&=LoadMimeList((const char *) GetStringInfoDatum(option),
-      GetStringInfoPath(option),0,exception);
-    option=(const StringInfo *) GetNextValueInLinkedList(options);
-  }
-  options=DestroyConfigureOptions(options);
-  if ((mime_list == (LinkedListInfo *) NULL) ||
-      (IsLinkedListEmpty(mime_list) != MagickFalse))
-    status&=LoadMimeList(MimeMap,"built-in",0,exception);
-  else
-    ClearMagickException(exception);
-  return(status != 0 ? MagickTrue : MagickFalse);
-#endif
 }
 
 /*
@@ -1103,9 +1090,8 @@ MagickExport void MimeComponentTerminus(void)
   if (mime_semaphore == (SemaphoreInfo *) NULL)
     ActivateSemaphoreInfo(&mime_semaphore);
   LockSemaphoreInfo(mime_semaphore);
-  if (mime_list != (LinkedListInfo *) NULL)
-    mime_list=DestroyLinkedList(mime_list,DestroyMimeElement);
-  instantiate_mime=MagickFalse;
+  if (mime_cache != (LinkedListInfo *) NULL)
+    mime_cache=DestroyLinkedList(mime_cache,DestroyMimeElement);
   UnlockSemaphoreInfo(mime_semaphore);
   DestroySemaphoreInfo(&mime_semaphore);
 }

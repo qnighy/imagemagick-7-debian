@@ -1623,9 +1623,6 @@ static MagickBooleanType FloydSteinbergDither(Image *image,CubeInfo *cube_info)
           MagickBooleanType
             proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-          #pragma omp critical (MagickCore_FloydSteinbergDither)
-#endif
           proceed=SetImageProgress(image,DitherImageTag,(MagickOffsetType) y,
             image->rows);
           if (proceed == MagickFalse)
@@ -3083,7 +3080,8 @@ static void ReduceImageColors(const Image *image,CubeInfo *cube_info)
     span;
 
   cube_info->next_threshold=0.0;
-  if (cube_info->colors > cube_info->maximum_colors)
+  if ((cube_info->colors > cube_info->maximum_colors) &&
+      (cube_info->nodes > 128))
     {
       MagickRealType
         *quantize_error;

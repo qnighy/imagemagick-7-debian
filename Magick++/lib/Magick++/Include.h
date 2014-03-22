@@ -499,6 +499,13 @@ namespace Magick
   using MagickCore::ResizeDistortion;
   using MagickCore::SentinelDistortion;
 
+  // Dither methods
+  using MagickCore::DitherMethod;
+  using MagickCore::UndefinedDitherMethod;
+  using MagickCore::NoDitherMethod;
+  using MagickCore::RiemersmaDitherMethod;
+  using MagickCore::FloydSteinbergDitherMethod;
+
   // Endian options
   using MagickCore::EndianType;
   using MagickCore::UndefinedEndian;
@@ -1283,6 +1290,7 @@ namespace Magick
   using MagickCore::NoValue;
   using MagickCore::OilPaintImage;
   using MagickCore::OpaquePaintImage;
+  using MagickCore::OrderedPosterizeImage;
   using MagickCore::OptionError;
   using MagickCore::OptionFatalError;
   using MagickCore::OptionWarning;
@@ -1328,10 +1336,15 @@ namespace Magick
   using MagickCore::ResourceLimitWarning;
   using MagickCore::RollImage;
   using MagickCore::RotateImage;
+  using MagickCore::RotationalBlurImage;
+  using MagickCore::RotationalBlurImageChannel;
   using MagickCore::SampleImage;
   using MagickCore::ScaleImage;
   using MagickCore::SegmentImage;
+  using MagickCore::SelectiveBlurImage;
+  using MagickCore::SelectiveBlurImageChannel;
   using MagickCore::SeparateImageChannel;
+  using MagickCore::SepiaToneImage;
   using MagickCore::SetClientName;
   using MagickCore::SetGeometry;
   using MagickCore::SetImageAlphaChannel;
@@ -1364,6 +1377,8 @@ namespace Magick
   using MagickCore::SimilarityMetricImage;
   using MagickCore::SigmoidalContrastImageChannel;
   using MagickCore::SignatureImage;
+  using MagickCore::SketchImage;
+  using MagickCore::SmushImages;
   using MagickCore::SolarizeImage;
   using MagickCore::SparseColorImage;
   using MagickCore::SpliceImage;
@@ -1382,6 +1397,7 @@ namespace Magick
   using MagickCore::SyncAuthenticPixels;
   using MagickCore::TextureImage;
   using MagickCore::ThrowException;
+  using MagickCore::TintImage;
   using MagickCore::TransformImage;
   using MagickCore::TransformImageColorspace;
   using MagickCore::TransparentPaintImage;
@@ -1394,9 +1410,11 @@ namespace Magick
   using MagickCore::TypeWarning;
   using MagickCore::UndefinedException;
   using MagickCore::UndefinedRegistryType;
+  using MagickCore::UniqueImageColors;
   using MagickCore::UnregisterMagickInfo;
   using MagickCore::UnsharpMaskImage;
   using MagickCore::UnsharpMaskImageChannel;
+  using MagickCore::VignetteImage;
   using MagickCore::CacheView;
   using MagickCore::WaveImage;
   using MagickCore::WhiteThresholdImage;
@@ -1414,5 +1432,18 @@ namespace Magick
 #endif // MAGICKCORE_IMPLEMENTATION
 
 }
+
+//////////////////////////////////////////////////////////////////////
+//
+// No user-serviceable parts beyond this point
+//
+//////////////////////////////////////////////////////////////////////
+#define GetPPException \
+  MagickCore::ExceptionInfo \
+    exceptionInfo; \
+  MagickCore::GetExceptionInfo(&exceptionInfo)
+#define ThrowPPException \
+  throwException(exceptionInfo); \
+  (void) MagickCore::DestroyExceptionInfo(&exceptionInfo)
 
 #endif // Magick_Include_header

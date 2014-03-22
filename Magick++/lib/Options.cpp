@@ -23,14 +23,6 @@
 #define MagickPI  3.14159265358979323846264338327950288419716939937510
 #define DegreesToRadians(x)  (MagickPI*(x)/180.0)
 
-#define GetPPException \
-  ExceptionInfo \
-    exceptionInfo; \
-  GetExceptionInfo(&exceptionInfo)
-#define ThrowPPException \
-  throwException(exceptionInfo); \
-  (void) DestroyExceptionInfo(&exceptionInfo)
-
 Magick::Options::Options(void)
   : _imageInfo(static_cast<ImageInfo*>(AcquireMagickMemory(
       sizeof(ImageInfo)))),
@@ -440,6 +432,16 @@ void Magick::Options::quantizeDither(bool ditherFlag_)
 bool Magick::Options::quantizeDither(void) const
 {
   return(static_cast<bool>(_imageInfo->dither));
+}
+
+void Magick::Options::quantizeDitherMethod(DitherMethod ditherMethod_)
+{
+  _quantizeInfo->dither_method=ditherMethod_;
+}
+
+MagickCore::DitherMethod Magick::Options::quantizeDitherMethod(void) const
+{
+  return(_quantizeInfo->dither_method);
 }
 
 void Magick::Options::quantizeTreeDepth(size_t treeDepth_)

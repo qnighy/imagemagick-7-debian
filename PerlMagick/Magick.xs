@@ -8936,7 +8936,6 @@ Mogrify(ref,...)
           draw_info=CloneDrawInfo(info ? info->image_info : (ImageInfo *) NULL,
             (DrawInfo *) NULL);
           if (attribute_flag[0] != 0)
-          if (attribute_flag[0] != 0)
             flags=ParsePageGeometry(image,argument_list[0].string_reference,
               &geometry,exception);
           if (attribute_flag[1] != 0)
@@ -9073,18 +9072,15 @@ Mogrify(ref,...)
           if (attribute_flag[4] != 0)
             quantize_info->measure_error=
               argument_list[4].integer_reference != 0 ? MagickTrue : MagickFalse;
-          if (attribute_flag[5] != 0)
-            (void) QueryColorDatabase(argument_list[5].string_reference,
-              &image->transparent_color,exception);
-          if (attribute_flag[5] && argument_list[5].integer_reference)
-            {
-              (void) QuantizeImages(quantize_info,image);
-              goto PerlException;
-            }
           if (attribute_flag[6] != 0)
+            (void) QueryColorDatabase(argument_list[6].string_reference,
+              &image->transparent_color,exception);
+          if (attribute_flag[7] != 0)
             quantize_info->dither_method=(DitherMethod)
-              argument_list[6].integer_reference;
-          if ((image->storage_class == DirectClass) ||
+              argument_list[7].integer_reference;
+          if (attribute_flag[5] && argument_list[5].integer_reference)
+              (void) QuantizeImages(quantize_info,image);
+          else if ((image->storage_class == DirectClass) ||
               (image->colors > quantize_info->number_colors) ||
               (quantize_info->colorspace == GRAYColorspace))
             (void) QuantizeImage(quantize_info,image);
@@ -9810,7 +9806,7 @@ Mogrify(ref,...)
             geometry_info.rho=argument_list[1].real_reference;
           if (attribute_flag[2] != 0)
             channel=(ChannelType) argument_list[2].integer_reference;
-          image=RadialBlurImageChannel(image,channel,geometry_info.rho,
+          image=RotationalBlurImageChannel(image,channel,geometry_info.rho,
             exception);
           break;
         }

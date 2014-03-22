@@ -90,9 +90,6 @@ static SemaphoreInfo
 
 static SplayTreeInfo
   *module_list = (SplayTreeInfo *) NULL;
-
-static volatile MagickBooleanType
-  instantiate_module = MagickFalse;
 
 /*
   Forward declarations.
@@ -102,6 +99,7 @@ static const ModuleInfo
 
 static MagickBooleanType
   GetMagickModulePath(const char *,MagickModuleType,char *,ExceptionInfo *),
+  IsModuleTreeInstantiated(ExceptionInfo *),
   UnregisterModule(const ModuleInfo *,ExceptionInfo *);
 
 static void
@@ -180,13 +178,6 @@ MagickExport void DestroyModuleList(void)
 #if defined(MAGICKCORE_MODULES_SUPPORT)
   if (module_list != (SplayTreeInfo *) NULL)
     module_list=DestroySplayTree(module_list);
-  if (instantiate_module != MagickFalse)
-    {
-#if !defined(MAGICKCORE_JP2_DELEGATE)
-      (void) lt_dlexit();  /* Jasper has an errant atexit() handler */
-#endif
-      instantiate_module=MagickFalse;
-    }
 #endif
   UnlockSemaphoreInfo(module_semaphore);
 }
@@ -221,29 +212,26 @@ MagickExport void DestroyModuleList(void)
 */
 MagickExport ModuleInfo *GetModuleInfo(const char *tag,ExceptionInfo *exception)
 {
-  if ((module_list == (SplayTreeInfo *) NULL) ||
-      (instantiate_module == MagickFalse))
-    if (InitializeModuleList(exception) == MagickFalse)
-      return((ModuleInfo *) NULL);
-  if ((module_list == (SplayTreeInfo *) NULL) ||
-      (GetNumberOfNodesInSplayTree(module_list) == 0))
+  ModuleInfo
+    *module_info;
+
+  if (IsModuleTreeInstantiated(exception) == MagickFalse)
     return((ModuleInfo *) NULL);
+  LockSemaphoreInfo(module_semaphore);
+  ResetSplayTreeIterator(module_list);
   if ((tag == (const char *) NULL) || (LocaleCompare(tag,"*") == 0))
     {
-      ModuleInfo
-        *p;
-
 #if defined(MAGICKCORE_MODULES_SUPPORT)
       if (LocaleCompare(tag,"*") == 0)
         (void) OpenModules(exception);
 #endif
-      LockSemaphoreInfo(module_semaphore);
-      ResetSplayTreeIterator(module_list);
-      p=(ModuleInfo *) GetNextValueInSplayTree(module_list);
+      module_info=(ModuleInfo *) GetNextValueInSplayTree(module_list);
       UnlockSemaphoreInfo(module_semaphore);
-      return(p);
+      return(module_info);
     }
-  return((ModuleInfo *) GetValueFromSplayTree(module_list,tag));
+  module_info=(ModuleInfo *) GetValueFromSplayTree(module_list,tag);
+  UnlockSemaphoreInfo(module_semaphore);
+  return(module_info);
 }
 
 /*
@@ -830,17 +818,18 @@ static MagickBooleanType GetMagickModulePath(const char *filename,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   I n i t i a l i z e M o d u l e L i s t                                   %
+%   I s M o d u l e T r e e I n s t a n t i a t e d                           %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  InitializeModuleList() initializes the module loader.
+%  IsModuleTreeInstantiated() determines if the module tree is instantiated.
+%  If not, it instantiates the tree and returns it.
 %
-%  The format of the InitializeModuleList() method is:
+%  The format of the IsModuleTreeInstantiated() method is:
 %
-%      InitializeModuleList(Exceptioninfo *exception)
+%      IsModuleTreeInstantiated(Exceptioninfo *exception)
 %
 %  A description of each parameter follows.
 %
@@ -868,19 +857,17 @@ static void *DestroyModuleNode(void *module_info)
   return(RelinquishMagickMemory(p));
 }
 
-MagickExport MagickBooleanType InitializeModuleList(
+static MagickBooleanType IsModuleTreeInstantiated(
   ExceptionInfo *magick_unused(exception))
 {
   magick_unreferenced(exception);
 
-  if ((module_list == (SplayTreeInfo *) NULL) ||
-      (instantiate_module == MagickFalse))
+  if (module_list == (SplayTreeInfo *) NULL)
     {
       if (module_semaphore == (SemaphoreInfo *) NULL)
         ActivateSemaphoreInfo(&module_semaphore);
       LockSemaphoreInfo(module_semaphore);
-      if ((module_list == (SplayTreeInfo *) NULL) ||
-          (instantiate_module == MagickFalse))
+      if (module_list == (SplayTreeInfo *) NULL)
         {
           MagickBooleanType
             status;
@@ -902,7 +889,6 @@ MagickExport MagickBooleanType InitializeModuleList(
           if (lt_dlinit() != 0)
             ThrowFatalException(ModuleFatalError,
               "UnableToInitializeModuleLoader");
-          instantiate_module=MagickTrue;
         }
       UnlockSemaphoreInfo(module_semaphore);
     }
@@ -1174,7 +1160,7 @@ MagickExport MagickBooleanType ModuleComponentGenesis(void)
 
   module_semaphore=AllocateSemaphoreInfo();
   exception=AcquireExceptionInfo();
-  status=InitializeModuleList(exception);
+  status=IsModuleTreeInstantiated(exception);
   exception=DestroyExceptionInfo(exception);
   return(status);
 }

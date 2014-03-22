@@ -115,14 +115,13 @@ static SplayTreeInfo
   *magick_list = (SplayTreeInfo *) NULL;
 
 static volatile MagickBooleanType
-  instantiate_magick = MagickFalse,
   instantiate_magickcore = MagickFalse;
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  InitializeMagickList(ExceptionInfo *);
+  IsMagickTreeInstantiated(ExceptionInfo *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -407,28 +406,25 @@ MagickExport const MagickInfo *GetMagickInfo(const char *name,
     *p;
 
   assert(exception != (ExceptionInfo *) NULL);
-  if ((magick_list == (SplayTreeInfo *) NULL) ||
-      (instantiate_magick == MagickFalse))
-    if (InitializeMagickList(exception) == MagickFalse)
-      return((const MagickInfo *) NULL);
-  if ((name == (const char *) NULL) || (LocaleCompare(name,"*") == 0))
-    {
+  if (IsMagickTreeInstantiated(exception) == MagickFalse)
+    return((const MagickInfo *) NULL);
 #if defined(MAGICKCORE_MODULES_SUPPORT)
-      if (LocaleCompare(name,"*") == 0)
-        (void) OpenModules(exception);
+  if ((name != (const char *) NULL) && (LocaleCompare(name,"*") == 0))
+    (void) OpenModules(exception);
 #endif
-      LockSemaphoreInfo(magick_semaphore);
-      ResetSplayTreeIterator(magick_list);
-      p=(const MagickInfo *) GetNextValueInSplayTree(magick_list);
-      UnlockSemaphoreInfo(magick_semaphore);
-      return(p);
-    }
   /*
     Find name in list.
   */
   LockSemaphoreInfo(magick_semaphore);
   ResetSplayTreeIterator(magick_list);
   p=(const MagickInfo *) GetNextValueInSplayTree(magick_list);
+  if ((name == (const char *) NULL) || (LocaleCompare(name,"*") == 0))
+    {
+      ResetSplayTreeIterator(magick_list);
+      p=(const MagickInfo *) GetNextValueInSplayTree(magick_list);
+      UnlockSemaphoreInfo(magick_semaphore);
+      return(p);
+    }
   while (p != (const MagickInfo *) NULL)
   {
     if (LocaleCompare(p->name,name) == 0)
@@ -792,17 +788,18 @@ MagickExport MagickStatusType GetMagickThreadSupport(
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   I n i t i a l i z e M a g i c k L i s t                                   %
++   I s M a g i c k T r e e I n s t a n t i a t e d                           %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  InitializeMagickList() initializes the magick list.
+%  IsMagickTreeInstantiated() determines if the magick tree is instantiated.
+%  If not, it instantiates the tree and returns it.
 %
-%  The format of the InitializeMagickList() method is:
+%  The format of the IsMagickTreeInstantiated() method is:
 %
-%      InitializeMagickList(Exceptioninfo *exception)
+%      IsMagickTreeInstantiated(Exceptioninfo *exception)
 %
 %  A description of each parameter follows.
 %
@@ -828,20 +825,20 @@ static void *DestroyMagickNode(void *magick_info)
     p->description=DestroyString(p->description);
   if (p->name != (char *) NULL)
     p->name=DestroyString(p->name);
+  if (p->semaphore != (SemaphoreInfo *) NULL)
+    DestroySemaphoreInfo(&p->semaphore);
   return(RelinquishMagickMemory(p));
 }
 
-static MagickBooleanType InitializeMagickList(ExceptionInfo *exception)
+static MagickBooleanType IsMagickTreeInstantiated(ExceptionInfo *exception)
 {
   (void) exception;
-  if ((magick_list == (SplayTreeInfo *) NULL) ||
-      (instantiate_magick == MagickFalse))
+  if (magick_list == (SplayTreeInfo *) NULL)
     {
       if (magick_semaphore == (SemaphoreInfo *) NULL)
         ActivateSemaphoreInfo(&magick_semaphore);
       LockSemaphoreInfo(magick_semaphore);
-      if ((magick_list == (SplayTreeInfo *) NULL) ||
-          (instantiate_magick == MagickFalse))
+      if (magick_list == (SplayTreeInfo *) NULL)
         {
           MagickBooleanType
             status;
@@ -849,8 +846,8 @@ static MagickBooleanType InitializeMagickList(ExceptionInfo *exception)
           MagickInfo
             *magick_info;
 
-          magick_list=NewSplayTree(CompareSplayTreeString,
-            (void *(*)(void *)) NULL,DestroyMagickNode);
+          magick_list=NewSplayTree(CompareSplayTreeString,(void *(*)(void *))
+            NULL,DestroyMagickNode);
           if (magick_list == (SplayTreeInfo *) NULL)
             ThrowFatalException(ResourceLimitFatalError,
               "MemoryAllocationFailed");
@@ -872,7 +869,6 @@ static MagickBooleanType InitializeMagickList(ExceptionInfo *exception)
 #if !defined(MAGICKCORE_BUILD_MODULES)
           RegisterStaticModules();
 #endif
-          instantiate_magick=MagickTrue;
         }
       UnlockSemaphoreInfo(magick_semaphore);
     }
@@ -1098,7 +1094,6 @@ MagickExport void MagickComponentTerminus(void)
   LockSemaphoreInfo(magick_semaphore);
   if (magick_list != (SplayTreeInfo *) NULL)
     magick_list=DestroySplayTree(magick_list);
-  instantiate_magick=MagickFalse;
   UnlockSemaphoreInfo(magick_semaphore);
   DestroySemaphoreInfo(&magick_semaphore);
 }
@@ -1169,7 +1164,6 @@ static void MagickSignalHandler(int signal_number)
   (void) signal(signal_number,SIG_IGN);
 #endif
   AsynchronousResourceComponentTerminus();
-  instantiate_magick=MagickFalse;
   (void) SetMagickSignalHandler(signal_number,signal_handlers[signal_number]);
 #if defined(SIGQUIT)
   if (signal_number == SIGQUIT)
@@ -1336,7 +1330,6 @@ MagickExport void MagickCoreGenesis(const char *path,
   (void) ColorComponentGenesis();
   (void) TypeComponentGenesis();
   (void) MimeComponentGenesis();
-  (void) ConstituteComponentGenesis();
   (void) AnnotateComponentGenesis();
 #if defined(MAGICKCORE_X11_DELEGATE)
   (void) XComponentGenesis();
@@ -1376,7 +1369,6 @@ MagickExport void MagickCoreTerminus(void)
   XComponentTerminus();
 #endif
   AnnotateComponentTerminus();
-  ConstituteComponentTerminus();
   MimeComponentTerminus();
   TypeComponentTerminus();
   ColorComponentTerminus();
@@ -1446,6 +1438,8 @@ MagickExport MagickInfo *RegisterMagickInfo(MagickInfo *magick_info)
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",magick_info->name);
   if (magick_list == (SplayTreeInfo *) NULL)
     return((MagickInfo *) NULL);
+  if (magick_info->thread_support == NoThreadSupport)
+    magick_info->semaphore=AllocateSemaphoreInfo();
   status=AddValueToSplayTree(magick_list,magick_info->name,magick_info);
   if (status == MagickFalse)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
