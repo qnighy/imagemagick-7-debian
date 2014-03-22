@@ -1,3 +1,10 @@
+imagemagick (8:6.8.8.9-1) experimental; urgency=medium
+
+  * New upstream version.
+  * Fix html breakage in upstream documentation.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 22 Mar 2014 12:32:58 +0100
+
 imagemagick (8:6.8.8.8-1) UNRELEASED; urgency=medium
 
   * Add missing symbols from 32 bits due to s?size_t
