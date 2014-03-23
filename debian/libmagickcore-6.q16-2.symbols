@@ -3,14 +3,20 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  (regex|optional)"^.gomp_critical_user_.*@Base" 8:6.8.8.2
  AccelerateAddNoiseImage@Base 8:6.8.8.2
  AccelerateBlurImage@Base 8:6.8.8.2
+ AccelerateCompositeImage@Base 8:6.8.8.9
  AccelerateContrastImage@Base 8:6.8.8.2
+ AccelerateContrastStretchImageChannel@Base 8:6.8.8.9
  AccelerateConvolveImage@Base 8:6.8.8.2
  AccelerateConvolveImageChannel@Base 8:6.8.8.2
  AccelerateDespeckleImage@Base 8:6.8.8.2
  AccelerateEqualizeImage@Base 8:6.8.8.2
  AccelerateFunctionImage@Base 8:6.8.8.2
+ AccelerateGrayscaleImage@Base 8:6.8.8.9
  AccelerateModulateImage@Base 8:6.8.8.2
+ AccelerateMotionBlurImage@Base 8:6.8.8.9
+ AccelerateNegateImageChannel@Base 8:6.8.8.9
  AccelerateRadialBlurImage@Base 8:6.8.8.2
+ AccelerateRandomImage@Base 8:6.8.8.9
  AccelerateResizeImage@Base 8:6.8.8.2
  AccelerateUnsharpMaskImage@Base 8:6.8.8.2
  AcquireAlignedMemory@Base 8:6.8.8.2
@@ -32,6 +38,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  AcquireMagickMemory@Base 8:6.8.8.2
  AcquireMagickOpenCLEnv@Base 8:6.8.8.2
  AcquireMagickResource@Base 8:6.8.8.2
+ AcquireMatrixInfo@Base 8:6.8.8.9
  AcquireMemory@Base 8:6.8.8.2
  AcquireModuleInfo@Base 8:6.8.8.2
  AcquireNextImage@Base 8:6.8.8.2
@@ -62,6 +69,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  AcquireUniqueSymbolicLink@Base 8:6.8.8.2
  AcquireVirtualCacheView@Base 8:6.8.8.2
  AcquireVirtualMemory@Base 8:6.8.8.2
+ ActivateSemaphoreInfo@Base 8:6.8.8.9
  AdaptiveBlurImage@Base 8:6.8.8.2
  AdaptiveBlurImageChannel@Base 8:6.8.8.2
  AdaptiveResizeImage@Base 8:6.8.8.2
@@ -137,6 +145,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  CloneBlobInfo@Base 8:6.8.8.2
  CloneCacheView@Base 8:6.8.8.2
  CloneDrawInfo@Base 8:6.8.8.2
+ CloneExceptionInfo@Base 8:6.8.8.9
  CloneImage@Base 8:6.8.8.2
  CloneImageArtifacts@Base 8:6.8.8.2
  CloneImageAttributes@Base 8:6.8.8.2
@@ -280,6 +289,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  DestroyMagick@Base 8:6.8.8.2
  DestroyMagickMemory@Base 8:6.8.8.2
  DestroyMagickRegistry@Base 8:6.8.8.2
+ DestroyMatrixInfo@Base 8:6.8.8.9
  DestroyModuleList@Base 8:6.8.8.2
  DestroyMontageInfo@Base 8:6.8.8.2
  DestroyPixelCache@Base 8:6.8.8.2
@@ -459,6 +469,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  GetImageChannelKurtosis@Base 8:6.8.8.2
  GetImageChannelMean@Base 8:6.8.8.2
  GetImageChannelMoments@Base 8:6.8.8.2
+ GetImageChannelPerceptualHash@Base 8:6.8.8.9
  GetImageChannelRange@Base 8:6.8.8.2
  GetImageChannelStatistics@Base 8:6.8.8.2
  GetImageChannels@Base 8:6.8.8.2
@@ -557,6 +568,9 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  GetMagickThreadSupport@Base 8:6.8.8.2
  GetMagickToken@Base 8:6.8.8.2
  GetMagickVersion@Base 8:6.8.8.2
+ GetMatrixColumns@Base 8:6.8.8.9
+ GetMatrixElement@Base 8:6.8.8.9
+ GetMatrixRows@Base 8:6.8.8.9
  GetMimeDescription@Base 8:6.8.8.2
  GetMimeInfo@Base 8:6.8.8.2
  GetMimeInfoList@Base 8:6.8.8.2
@@ -698,7 +712,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  InitImageMagickOpenCL@Base 8:6.8.8.2
  InitOpenCLEnv@Base 8:6.8.8.2
  InitializeMagick@Base 8:6.8.8.2
- InitializeModuleList@Base 8:6.8.8.2
+ (optional=internalABInoAPI)InitializeModuleList@Base 8:6.8.8.2
  InitializeSignature@Base 8:6.8.8.2
  InjectImageBlob@Base 8:6.8.8.2
  InsertImageInList@Base 8:6.8.8.2
@@ -787,7 +801,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  LoadFontConfigFonts@Base 8:6.8.8.2
  LoadImageTag@Base 8:6.8.8.2
  LoadImagesTag@Base 8:6.8.8.2
- LoadMimeLists@Base 8:6.8.8.2
+ (optional=InternalABInoAPI)LoadMimeLists@Base 8:6.8.8.2
  LocaleCompare@Base 8:6.8.8.2
  LocaleComponentGenesis@Base 8:6.8.8.2
  LocaleComponentTerminus@Base 8:6.8.8.2
@@ -860,6 +874,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  NewXMLTreeTag@Base 8:6.8.8.2
  NormalizeImage@Base 8:6.8.8.2
  NormalizeImageChannel@Base 8:6.8.8.2
+ NullMatrix@Base 8:6.8.8.9
  OilPaintImage@Base 8:6.8.8.2
  OpaqueImage@Base 8:6.8.8.2
  OpaquePaintImage@Base 8:6.8.8.2
@@ -973,7 +988,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  RegistryComponentGenesis@Base 8:6.8.8.2
  RegistryComponentTerminus@Base 8:6.8.8.2
  RelinquishAlignedMemory@Base 8:6.8.8.2
- RelinquishCommandQueue@Base 8:6.8.8.2
+ (optional=InternalABInoAPI)RelinquishCommandQueue@Base 8:6.8.8.2
  RelinquishMagickMatrix@Base 8:6.8.8.2
  RelinquishMagickMemory@Base 8:6.8.8.2
  RelinquishMagickOpenCLEnv@Base 8:6.8.8.2
@@ -1027,6 +1042,8 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ReverseImageList@Base 8:6.8.8.2
  RollImage@Base 8:6.8.8.2
  RotateImage@Base 8:6.8.8.2
+ RotationalBlurImage@Base 8:6.8.8.9
+ RotationalBlurImageChannel@Base 8:6.8.8.9
  SampleImage@Base 8:6.8.8.2
  SaveImageTag@Base 8:6.8.8.2
  SaveImagesTag@Base 8:6.8.8.2
@@ -1041,6 +1058,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  SelectiveBlurImageChannel@Base 8:6.8.8.2
  SemaphoreComponentGenesis@Base 8:6.8.8.2
  SemaphoreComponentTerminus@Base 8:6.8.8.2
+ SeparateImage@Base 8:6.8.8.9
  SeparateImageChannel@Base 8:6.8.8.2
  SeparateImages@Base 8:6.8.8.2
  SepiaToneImage@Base 8:6.8.8.2
@@ -1099,6 +1117,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  SetMagickPrecision@Base 8:6.8.8.2
  SetMagickRegistry@Base 8:6.8.8.2
  SetMagickResourceLimit@Base 8:6.8.8.2
+ SetMatrixElement@Base 8:6.8.8.9
  SetMonitorHandler@Base 8:6.8.8.2
  SetPixelCacheMethods@Base 8:6.8.8.2
  SetPixelCacheVirtualMethod@Base 8:6.8.8.2
@@ -1321,6 +1340,11 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ZLIBEncodeImage@Base 8:6.8.8.2
  ZeroKernelNans@Base 8:6.8.8.2
  ZoomImage@Base 8:6.8.8.2
+ initAccelerateTimer@Base 8:6.8.8.9
  openclCachedFilesDirectory@Base 8:6.8.8.2
  openclCachedFilesDirectoryLock@Base 8:6.8.8.2
+ readAccelerateTimer@Base 8:6.8.8.9
+ resetAccelerateTimer@Base 8:6.8.8.9
  sRGBCompandor@Base 8:6.8.8.2
+ startAccelerateTimer@Base 8:6.8.8.9
+ stopAccelerateTimer@Base 8:6.8.8.9

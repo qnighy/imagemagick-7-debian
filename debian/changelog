@@ -1,6 +1,7 @@
 imagemagick (8:6.8.8.9-1) experimental; urgency=medium
 
-  * New upstream version.
+  * New upstream version:
+    - Fix symbols files by adding new symbols.
   * Fix html breakage in upstream documentation.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 22 Mar 2014 12:32:58 +0100
@@ -10,9 +11,9 @@ imagemagick (8:6.8.8.8-1) UNRELEASED; urgency=medium
   * Add missing symbols from 32 bits due to s?size_t
   and optionnal template from sparc.
   * Fix three security bugs (Closes: #740250):
-  - Fix CVE-2014-1958 and CVE-2014-2030, two buffer overflow
+    - Fix CVE-2014-1958 and CVE-2014-2030, two buffer overflow
     in psd file handling.
-  - Fix CVE-2014-1947 a buffer overflow in log handling.
+    - Fix CVE-2014-1947 a buffer overflow in log handling.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 22 Mar 2014 11:53:06 +0100
 
