@@ -70,6 +70,7 @@ libMagickWand-6.Q16.so.2 libmagickwand-6.q16-2 #MINVER#
  DrawGetTextAlignment@Base 8:6.8.8.2
  DrawGetTextAntialias@Base 8:6.8.8.2
  DrawGetTextDecoration@Base 8:6.8.8.2
+ DrawGetTextDirection@Base 8:6.8.8.9
  DrawGetTextEncoding@Base 8:6.8.8.2
  DrawGetTextInterlineSpacing@Base 8:6.8.8.2
  DrawGetTextInterwordSpacing@Base 8:6.8.8.2
@@ -149,6 +150,7 @@ libMagickWand-6.Q16.so.2 libmagickwand-6.q16-2 #MINVER#
  DrawSetTextAlignment@Base 8:6.8.8.2
  DrawSetTextAntialias@Base 8:6.8.8.2
  DrawSetTextDecoration@Base 8:6.8.8.2
+ DrawSetTextDirection@Base 8:6.8.8.9
  DrawSetTextEncoding@Base 8:6.8.8.2
  DrawSetTextInterlineSpacing@Base 8:6.8.8.2
  DrawSetTextInterwordSpacing@Base 8:6.8.8.2
@@ -471,6 +473,8 @@ libMagickWand-6.Q16.so.2 libmagickwand-6.q16-2 #MINVER#
  MagickResizeImage@Base 8:6.8.8.2
  MagickRollImage@Base 8:6.8.8.2
  MagickRotateImage@Base 8:6.8.8.2
+ MagickRotationalBlurImage@Base 8:6.8.8.9
+ MagickRotationalBlurImageChannel@Base 8:6.8.8.9
  MagickSampleImage@Base 8:6.8.8.2
  MagickScaleImage@Base 8:6.8.8.2
  MagickSegmentImage@Base 8:6.8.8.2

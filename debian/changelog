@@ -1,3 +1,9 @@
+imagemagick (8:6.8.8.9-2) experimental; urgency=low
+
+  * Update symbol files
+
+ -- Vincent Fourmond <fourmond@debian.org>  Sat, 29 Mar 2014 23:09:40 +0100
+
 imagemagick (8:6.8.8.9-1) experimental; urgency=medium
 
   * New upstream version:
