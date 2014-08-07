@@ -141,7 +141,7 @@ sub AutodetectDelegates {
 
 # Compute test specification
 my $delegate_tests='t/*.t';
-my @tested_delegates = qw/bzlib djvu fftw fontconfig freetype jpeg jng openjp2 lcms mpeg png rsvg tiff x11 xml wmf zlib/;
+my @tested_delegates = qw/bzlib djvu fftw fontconfig freetype jpeg jng jp2 lcms mpeg png rsvg tiff x11 xml wmf zlib/;
 my @supported_delegates = AutodetectDelegates();
 # find the intersection of tested and supported delegates
 my %seen_delegates = ();
@@ -161,11 +161,11 @@ foreach my $delegate (@tested_delegates) {
 }
 
 # defaults for LIBS & INC & CCFLAGS params that we later pass to Writemakefile
-my $INC_magick = '-I../ -I.. -pthread -I/usr/include/pango-1.0 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libdrm -I/usr/include/libpng16 -I/usr/include/freetype2 -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16 -I/usr/include/libxml2 -I"' . $Config{'usrinc'} . '/ImageMagick"';
-my $LIBS_magick = '-L../magick/.libs -lMagickCore-6.Q16 -lperl -lm';
+my $INC_magick = '-I../ -I../.. -pthread -I/usr/include/pango-1.0 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libdrm -I/usr/include/libpng16 -I/usr/include/freetype2 -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16 -I/usr/include/libxml2 -I"' . $Config{'usrinc'} . '/ImageMagick"';
+my $LIBS_magick = '-L../../magick/.libs -lMagickCore-6.Q16 -lperl -lm';
 my $CCFLAGS_magick = "$Config{'ccflags'} -pthread -I/usr/include/OpenEXR -I/usr/include/libdrm -I/usr/include/freetype2 -fopenmp -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -march=corei7-avx -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16";
-my $LDFLAGS_magick   = "-L../magick/.libs -lMagickCore-6.Q16 $Config{'ldflags'} -Wl,-z,relro";
-my $LDDLFLAGS_magick = "-L../magick/.libs -lMagickCore-6.Q16 $Config{'lddlflags'} -Wl,-z,relro";
+my $LDFLAGS_magick   = "-L../../magick/.libs -lMagickCore-6.Q16 $Config{'ldflags'} -Wl,-z,relro";
+my $LDDLFLAGS_magick = "-L../../magick/.libs -lMagickCore-6.Q16 $Config{'lddlflags'} -Wl,-z,relro";
 
 if (($^O eq 'MSWin32') && ($Config{cc} =~ /gcc/)) {
   my($Ipaths, $Lpaths) = AutodetectWin32gcc();
@@ -185,19 +185,16 @@ if (($^O eq 'MSWin32') && ($Config{cc} =~ /gcc/)) {
 WriteMakefile
   (
    # Module description
-   'ABSTRACT'	=> 'ImageMagick PERL Extension',
+   'ABSTRACT'	=> 'ImageMagick PERL Extension (Q16)',
 
    # Perl module name is Image::Magick
-   'NAME'	=> 'Image::Magick',
+   'NAME'	=> 'Image::Magick::Q16',
 
    # Module author
    'AUTHOR' => 'ImageMagick Studio LLC',
 
    # Module version
    'VERSION' => '6.89',
-
-   # Prerequisite version
-   'PREREQ_PM' => {'parent' => '0'},
 
    # Preprocessor defines
    'DEFINE'	=> ' -D_LARGE_FILES=1 -DHAVE_CONFIG_H',     # e.g., '-DHAVE_SOMETHING'
@@ -237,6 +234,8 @@ WriteMakefile
 
    # Use same compiler as ImageMagick
    'PERLMAINCC'	=> 'g++ -fopenmp',
+   'PM' => { 'Q16.pm' => '$(INST_LIBDIR)/Q16.pm' },
+   'XS' => { 'Q16.xs' => 'Q16.xs' },
    'AR' => 'ar',
    'LD' => 'g++',
 
@@ -248,7 +247,7 @@ WriteMakefile
 
    ($Config{'archname'} =~ /-object$/i ? ('CAPI' => 'TRUE') : ()),
 
-   # sane version
+# sane vesion
    depend => { '$(FIRST_MAKEFILE)' => '$(VERSION_FROM)' }
 );
 
