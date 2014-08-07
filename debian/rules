@@ -48,6 +48,9 @@ export NOQUANTUMDEPTH := $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
 export CONVERT ?= ./magick.sh convert
 export CONVERT_FLAGS ?= -background none -define filter:blur=0.75 -filter Gaussian
 
+# perl
+export DEB_PERL_ARCHLIB := $(shell perl -MConfig -e 'print $$Config{vendorarch}')
+
 # put QUANTUMDEPTH in lower case for package name
 #export QUANTUMDEPTH_LOWER ?= $(shell echo $(QUANTUMDEPTH) | sed -e 's/\(.*\)/\L\1/'))
 

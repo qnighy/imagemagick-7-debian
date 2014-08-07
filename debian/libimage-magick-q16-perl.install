@@ -1,3 +1,6 @@
-usr/lib/perl5/Image/Magick/
-usr/lib/perl5/auto
+#! /bin/sh
+sed s,@DEB_PERL_ARCHLIB@,$DEB_PERL_ARCHLIB, << EOF
+@DEB_PERL_ARCHLIB@/auto
+@DEB_PERL_ARCHLIB@/Image/Magick/
 usr/share/man/man3/Image::Magick::*.3pm
+EOF
