@@ -41,6 +41,7 @@
 #include "magick/blob.h"
 #include "magick/client.h"
 #include "magick/configure.h"
+#include "magick/deprecate.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/hashmap.h"
@@ -188,6 +189,13 @@ static LinkedListInfo *AcquireMimeCache(const char *filename,
   if (IsLinkedListEmpty(mime_cache) != MagickFalse)
     status&=LoadMimeCache(mime_cache,MimeMap,"built-in",0,exception);
   return(mime_cache);
+}
+
+MagickExport MagickBooleanType LoadMimeLists(const char *name,
+  ExceptionInfo *exception)
+{
+  mime_cache=AcquireMimeCache(name,exception);
+  return(mime_cache != (LinkedListInfo *) NULL ? MagickTrue : MagickFalse);
 }
 
 /*
@@ -340,16 +348,16 @@ MagickExport const MimeInfo *GetMimeInfo(const char *filename,
         if (endian == LSBEndian)
           {
             value=(ssize_t) (*q++);
-            value|=(*q++) << 8;
-            value|=(*q++) << 16;
-            value|=(*q++) << 24;
+            value|=((ssize_t) *q++) << 8;
+            value|=((ssize_t) *q++) << 16;
+            value|=((ssize_t) *q++) << 24;
           }
         else
           {
             value=(ssize_t) (*q++) << 24;
-            value|=(*q++) << 16;
-            value|=(*q++) << 8;
-            value|=(*q++);
+            value|=((ssize_t) *q++) << 16;
+            value|=((ssize_t) *q++) << 8;
+            value|=((ssize_t) *q++);
           }
         if (p->mask == 0)
           {
@@ -381,11 +389,11 @@ MagickExport const MimeInfo *GetMimeInfo(const char *filename,
     }
     p=(const MimeInfo *) GetNextValueInLinkedList(mime_cache);
   }
-  if (p != (const MimeInfo *) NULL)
+  if (mime_info != (const MimeInfo *) NULL)
     (void) InsertValueInLinkedList(mime_cache,0,
       RemoveElementByValueFromLinkedList(mime_cache,p));
   UnlockSemaphoreInfo(mime_semaphore);
-  return(p);
+  return(mime_info);
 }
 
 /*
@@ -763,14 +771,14 @@ MagickExport MagickBooleanType ListMimeInfo(FILE *file,ExceptionInfo *exception)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   L o a d M i m e L i s t                                                   %
++   L o a d M i m e C a c h e                                                 %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  LoadMimeCache() loads the magic configurations which provides a mapping
-%  between magic attributes and a magic name.
+%  LoadMimeCache() loads the mime configurations which provides a mapping
+%  between mime attributes and a mime name.
 %
 %  The format of the LoadMimeCache method is:
 %
@@ -799,7 +807,7 @@ static MagickBooleanType LoadMimeCache(LinkedListInfo *mime_cache,
   MimeInfo
     *mime_info = (MimeInfo *) NULL;
 
-  MagickBooleanType
+  MagickStatusType
     status;
 
   XMLTreeInfo
@@ -970,7 +978,7 @@ static MagickBooleanType LoadMimeCache(LinkedListInfo *mime_cache,
     mime=GetNextXMLTreeTag(mime);
   }
   mime_map=DestroyXMLTree(mime_map);
-  return(status);
+  return(status != 0 ? MagickTrue : MagickFalse);
 }
 
 /*
@@ -1042,7 +1050,8 @@ MagickExport char *MagickToMime(const char *magick)
 */
 MagickExport MagickBooleanType MimeComponentGenesis(void)
 {
-  mime_semaphore=AllocateSemaphoreInfo();
+  if (mime_semaphore == (SemaphoreInfo *) NULL)
+    mime_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 

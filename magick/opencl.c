@@ -1073,7 +1073,17 @@ static MagickBooleanType InitOpenCLPlatformDevice(MagickCLEnv clEnv, ExceptionIn
 
     for (i = 0; i < numPlatforms; i++)
     {
+      char version[MaxTextExtent];
       cl_uint numDevices;
+      status = clEnv->library->clGetPlatformInfo(clEnv->platform, CL_PLATFORM_VERSION, MaxTextExtent, version, NULL);
+      if (status != CL_SUCCESS)
+      {
+        (void) ThrowMagickException(exception, GetMagickModule(), DelegateWarning,
+          "clGetPlatformInfo failed.", "(%d)", status);
+        goto cleanup;
+      }
+      if (strncmp(version,"OpenCL 1.0 ",11) == 0)
+        continue;
       status = clEnv->library->clGetDeviceIDs(platforms[i], deviceType, 1, &(clEnv->device), &numDevices);
       if (status != CL_SUCCESS)
       {
@@ -2385,7 +2395,7 @@ MagickExport MagickBooleanType InitImageMagickOpenCL(
   ImageMagickOpenCLMode mode,void *userSelectedDevice,void *selectedDevice,
   ExceptionInfo *exception)
 {
-  MagickBooleanType status = MagickTrue;
+  MagickBooleanType status = MagickFalse;
   MagickCLEnv clEnv = NULL;
   MagickBooleanType flag;
 
@@ -2670,7 +2680,7 @@ MagickPrivate cl_command_queue AcquireOpenCLCommandQueue(
   return (cl_command_queue) NULL;
 }
 
-MagickPrivate MagickBooleanType RelinquishCommandQueue(
+MagickExport MagickBooleanType RelinquishCommandQueue(
   MagickCLEnv magick_unused(clEnv),cl_command_queue magick_unused(queue))
 {
   magick_unreferenced(clEnv);
@@ -2782,7 +2792,7 @@ const char* GetOpenCLCachedFilesDirectory() {
 
 
 
-      home=GetEnvironmentValue("IMAGEMAGICK_OPENCL_CACHE_DIR");
+      home=GetEnvironmentValue("MAGICK_OPENCL_CACHE_DIR");
       if (home == (char *) NULL)
       {
 #ifdef MAGICKCORE_WINDOWS_SUPPORT

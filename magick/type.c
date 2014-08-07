@@ -1090,7 +1090,7 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
   const char
     *q;
 
-  MagickBooleanType
+  MagickStatusType
     status;
 
   TypeInfo
@@ -1336,7 +1336,7 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
     }
   }
   token=(char *) RelinquishMagickMemory(token);
-  return(status);
+  return(status != 0 ? MagickTrue : MagickFalse);
 }
 
 /*
@@ -1359,7 +1359,8 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
 */
 MagickExport MagickBooleanType TypeComponentGenesis(void)
 {
-  type_semaphore=AllocateSemaphoreInfo();
+  if (type_semaphore == (SemaphoreInfo *) NULL)
+    type_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 

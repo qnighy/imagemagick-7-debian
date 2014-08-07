@@ -53,6 +53,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/option-private.h"
 #include "magick/profile.h"
 #include "magick/property.h"
 #include "magick/quantum.h"
@@ -98,6 +99,16 @@
 #define cmsOpenProfileFromMemTHR(context,profile,length) \
   cmsOpenProfileFromMem(profile,length)
 #endif
+
+/*
+  Forward declarations
+*/
+static MagickBooleanType
+  SetImageProfileInternal(Image *,const char *,const StringInfo *,
+    const MagickBooleanType);
+
+static void
+  WriteTo8BimProfile(Image *,const char*,const StringInfo *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -195,6 +206,7 @@ MagickExport MagickBooleanType DeleteImageProfile(Image *image,const char *name)
       image->iptc_profile.length=0;
       image->iptc_profile.info=(unsigned char *) NULL;
     }
+  WriteTo8BimProfile(image,name,(StringInfo *) NULL);
   return(DeleteNodeFromSplayTree((SplayTreeInfo *) image->profiles,name));
 }
 
@@ -423,8 +435,8 @@ static cmsHTRANSFORM *AcquireTransformThreadSet(Image *image,
   (void) ResetMagickMemory(transform,0,number_threads*sizeof(*transform));
   for (i=0; i < (ssize_t) number_threads; i++)
   {
-    transform[i]=cmsCreateTransformTHR(image,source_profile,source_type,
-      target_profile,target_type,intent,flags);
+    transform[i]=cmsCreateTransformTHR((cmsContext) image,source_profile,
+      source_type,target_profile,target_type,intent,flags);
     if (transform[i] == (cmsHTRANSFORM) NULL)
       return(DestroyTransformThreadSet(transform));
   }
@@ -488,44 +500,21 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
   if ((datum == (const void *) NULL) || (length == 0))
     {
       char
-        **arguments,
-        *names;
-
-      int
-        number_arguments;
-
-      register ssize_t
-        i;
+        *next;
 
       /*
         Delete image profile(s).
       */
-      names=ConstantString(name);
-      (void) SubstituteString(&names,","," ");
-      arguments=StringToArgv(names,&number_arguments);
-      names=DestroyString(names);
-      if (arguments == (char **) NULL)
-        return(MagickTrue);
       ResetImageProfileIterator(image);
-      for (name=GetNextImageProfile(image); name != (const char *) NULL; )
+      for (next=GetNextImageProfile(image); next != (const char *) NULL; )
       {
-        for (i=1; i < (ssize_t) number_arguments; i++)
-        {
-          if ((*arguments[i] == '!') &&
-              (LocaleCompare(name,arguments[i]+1) == 0))
-            break;
-          if (GlobExpression(name,arguments[i],MagickTrue) != MagickFalse)
-            {
-              (void) DeleteImageProfile(image,name);
-              ResetImageProfileIterator(image);
-              break;
-            }
-        }
-        name=GetNextImageProfile(image);
+        if (IsOptionMember(next,name) != MagickFalse)
+          {
+            (void) DeleteImageProfile(image,name);
+            ResetImageProfileIterator(image);
+          }
+        next=GetNextImageProfile(image);
       }
-      for (i=0; i < (ssize_t) number_arguments; i++)
-        arguments[i]=DestroyString(arguments[i]);
-      arguments=(char **) RelinquishMagickMemory(arguments);
       return(MagickTrue);
     }
   /*
@@ -581,7 +570,7 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
           Transform pixel colors as defined by the color profiles.
         */
         cmsSetLogErrorHandler(LCMSExceptionHandler);
-        source_profile=cmsOpenProfileFromMemTHR(image,
+        source_profile=cmsOpenProfileFromMemTHR((cmsContext) image,
           GetStringInfoDatum(profile),(cmsUInt32Number)
           GetStringInfoLength(profile));
         if (source_profile == (cmsHPROFILE) NULL)
@@ -641,7 +630,7 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
             if (icc_profile != (StringInfo *) NULL)
               {
                 target_profile=source_profile;
-                source_profile=cmsOpenProfileFromMemTHR(image,
+                source_profile=cmsOpenProfileFromMemTHR((cmsContext) image,
                   GetStringInfoDatum(icc_profile),(cmsUInt32Number)
                   GetStringInfoLength(icc_profile));
                 if (source_profile == (cmsHPROFILE) NULL)
@@ -1024,6 +1013,7 @@ MagickExport StringInfo *RemoveImageProfile(Image *image,const char *name)
       image->iptc_profile.length=0;
       image->iptc_profile.info=(unsigned char *) NULL;
     }
+  WriteTo8BimProfile(image,name,(StringInfo *) NULL);
   profile=(StringInfo *) RemoveNodeFromSplayTree((SplayTreeInfo *)
     image->profiles,name);
   return(profile);
@@ -1107,17 +1097,6 @@ static inline const unsigned char *ReadResourceByte(const unsigned char *p,
   return(p);
 }
 
-static inline const unsigned char *ReadResourceBytes(const unsigned char *p,
-  const ssize_t count,unsigned char *quantum)
-{
-  register ssize_t
-    i;
-
-  for (i=0; i < count; i++)
-    *quantum++=(*p++);
-  return(p);
-}
-
 static inline const unsigned char *ReadResourceLong(const unsigned char *p,
   unsigned int *quantum)
 {
@@ -1136,7 +1115,127 @@ static inline const unsigned char *ReadResourceShort(const unsigned char *p,
   return(p);
 }
 
-static MagickBooleanType GetProfilesFromResourceBlock(Image *image,
+static inline void WriteResourceLong(unsigned char *p,
+  const unsigned int quantum)
+{
+  unsigned char
+    buffer[4];
+
+  buffer[0]=(unsigned char) (quantum >> 24);
+  buffer[1]=(unsigned char) (quantum >> 16);
+  buffer[2]=(unsigned char) (quantum >> 8);
+  buffer[3]=(unsigned char) quantum;
+  (void) CopyMagickMemory(p,buffer,4);
+}
+
+static void WriteTo8BimProfile(Image *image,const char *name,
+  const StringInfo *profile)
+{
+
+  const unsigned char
+    *datum,
+    *s;
+
+  register const unsigned char
+    *p;
+
+  size_t
+    length;
+
+  StringInfo
+    *profile_8bim;
+
+  ssize_t
+    count;
+
+  unsigned char
+    length_byte;
+
+  unsigned int
+    value;
+
+  unsigned short
+    id,
+    profile_id;
+
+  if (LocaleCompare(name,"icc") == 0)
+    profile_id=0x040f;
+  else if (LocaleCompare(name,"iptc") == 0)
+    profile_id=0x0404;
+  else if (LocaleCompare(name,"xmp") == 0)
+    profile_id=0x0424;
+  else
+    return;
+  profile_8bim=(StringInfo *)GetValueFromSplayTree((SplayTreeInfo *)
+    image->profiles,"8bim");
+  if (profile_8bim == (StringInfo *) NULL)
+    return;
+  datum=GetStringInfoDatum(profile_8bim);
+  length=GetStringInfoLength(profile_8bim);
+  for (p=datum; p < (datum+length-16); )
+  {
+    s=p;
+    if (LocaleNCompare((char *) p,"8BIM",4) != 0)
+      break;
+    p+=4;
+    p=ReadResourceShort(p,&id);
+    p=ReadResourceByte(p,&length_byte);
+    p+=length_byte;
+    if (((length_byte+1) & 0x01) != 0)
+      p++;
+    if (p > (datum+length-4))
+      break;
+    p=ReadResourceLong(p,&value);
+    count=(ssize_t) value;
+    if ((p > (datum+length-count)) || (count > (ssize_t) length))
+      break;
+    if ((count & 0x01) != 0)
+      count++;
+    if (id == profile_id)
+      {
+        size_t
+          offset,
+          rest;
+
+        ssize_t
+          new_count;
+
+        StringInfo
+          *new_profile;
+
+        new_count=0;
+        rest=(datum+length)-(p+count);
+        if (profile == (StringInfo *) NULL)
+          {
+            offset=(s-datum);
+            new_profile=AcquireStringInfo(offset+rest);
+            (void) CopyMagickMemory(new_profile->datum,datum,offset);
+          }
+        else
+          {
+            offset=(p-datum);
+            new_count=profile->length;
+            if ((new_count & 0x01) != 0)
+              new_count++;
+            new_profile=AcquireStringInfo(offset+new_count+rest);
+            (void) CopyMagickMemory(new_profile->datum,datum,offset-4);
+            WriteResourceLong(new_profile->datum+offset-4,profile->length);
+            (void) CopyMagickMemory(new_profile->datum+offset,profile->datum,
+              profile->length);
+          }
+        (void) CopyMagickMemory(new_profile->datum+offset+new_count,p+count,
+          rest);
+        (void) AddValueToSplayTree((SplayTreeInfo *) image->profiles,
+          ConstantString("8bim"),CloneStringInfo(new_profile));
+        new_profile=DestroyStringInfo(new_profile);
+        break;
+      }
+    else
+      p+=count;
+  }
+}
+
+static void GetProfilesFromResourceBlock(Image *image,
   const StringInfo *resource_block)
 {
   const unsigned char
@@ -1179,7 +1278,7 @@ static MagickBooleanType GetProfilesFromResourceBlock(Image *image,
       break;
     p=ReadResourceLong(p,&value);
     count=(ssize_t) value;
-    if ((p > (datum+length-count)) || (count > length))
+    if ((p > (datum+length-count)) || (count > (ssize_t) length))
       break;
     switch (id)
     {
@@ -1219,7 +1318,7 @@ static MagickBooleanType GetProfilesFromResourceBlock(Image *image,
         */
         profile=AcquireStringInfo(count);
         SetStringInfoDatum(profile,p);
-        (void) SetImageProfile(image,"iptc",profile);
+        (void) SetImageProfileInternal(image,"iptc",profile,MagickTrue);
         profile=DestroyStringInfo(profile);
         p+=count;
         break;
@@ -1239,7 +1338,7 @@ static MagickBooleanType GetProfilesFromResourceBlock(Image *image,
         */
         profile=AcquireStringInfo(count);
         SetStringInfoDatum(profile,p);
-        (void) SetImageProfile(image,"icc",profile);
+        (void) SetImageProfileInternal(image,"icc",profile,MagickTrue);
         profile=DestroyStringInfo(profile);
         p+=count;
         break;
@@ -1251,7 +1350,7 @@ static MagickBooleanType GetProfilesFromResourceBlock(Image *image,
         */
         profile=AcquireStringInfo(count);
         SetStringInfoDatum(profile,p);
-        (void) SetImageProfile(image,"exif",profile);
+        (void) SetImageProfileInternal(image,"exif",profile,MagickTrue);
         profile=DestroyStringInfo(profile);
         p+=count;
         break;
@@ -1263,7 +1362,7 @@ static MagickBooleanType GetProfilesFromResourceBlock(Image *image,
         */
         profile=AcquireStringInfo(count);
         SetStringInfoDatum(profile,p);
-        (void) SetImageProfile(image,"xmp",profile);
+        (void) SetImageProfileInternal(image,"xmp",profile,MagickTrue);
         profile=DestroyStringInfo(profile);
         p+=count;
         break;
@@ -1277,11 +1376,10 @@ static MagickBooleanType GetProfilesFromResourceBlock(Image *image,
     if ((count & 0x01) != 0)
       p++;
   }
-  return(MagickTrue);
 }
 
-MagickExport MagickBooleanType SetImageProfile(Image *image,const char *name,
-  const StringInfo *profile)
+static MagickBooleanType SetImageProfileInternal(Image *image,const char *name,
+  const StringInfo *profile,const MagickBooleanType recursive)
 {
   char
     key[MaxTextExtent],
@@ -1298,6 +1396,7 @@ MagickExport MagickBooleanType SetImageProfile(Image *image,const char *name,
     image->profiles=NewSplayTree(CompareSplayTreeString,RelinquishMagickMemory,
       DestroyProfile);
   (void) CopyMagickString(key,name,MaxTextExtent);
+  LocaleLower(key);
   status=AddValueToSplayTree((SplayTreeInfo *) image->profiles,
     ConstantString(key),CloneStringInfo(profile));
   if ((status != MagickFalse) &&
@@ -1331,7 +1430,13 @@ MagickExport MagickBooleanType SetImageProfile(Image *image,const char *name,
           image->iptc_profile.length=GetStringInfoLength(iptc_profile);
           image->iptc_profile.info=GetStringInfoDatum(iptc_profile);
         }
-      (void) GetProfilesFromResourceBlock(image,profile);
+    }
+  if (status != MagickFalse)
+    {
+      if (LocaleCompare(name,"8bim") == 0)
+        GetProfilesFromResourceBlock(image,profile);
+      else if (recursive == MagickFalse)
+        WriteTo8BimProfile(image,name,profile);
     }
   /*
     Inject profile into image properties.
@@ -1339,6 +1444,12 @@ MagickExport MagickBooleanType SetImageProfile(Image *image,const char *name,
   (void) FormatLocaleString(property,MaxTextExtent,"%s:*",name);
   (void) GetImageProperty(image,property);
   return(status);
+}
+
+MagickExport MagickBooleanType SetImageProfile(Image *image,const char *name,
+  const StringInfo *profile)
+{
+  return(SetImageProfileInternal(image,name,profile,MagickFalse));
 }
 
 /*

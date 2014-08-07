@@ -83,6 +83,9 @@ static GhostInfo
 
 static void
   *ghost_handle = (void *) NULL;
+
+static SemaphoreInfo
+  *ghost_semaphore = (SemaphoreInfo *) NULL;
 
 struct
 {
@@ -1138,7 +1141,7 @@ static int NTGhostscriptGetString(const char *name,BOOL *is_64_bit,
       else
         is_64_bit_version=TRUE;
 #else
-      flags=KEY_WOW64_64KEY;
+        flags=KEY_WOW64_64KEY;
 #endif
 #endif
     }
@@ -1146,6 +1149,9 @@ static int NTGhostscriptGetString(const char *name,BOOL *is_64_bit,
     {
       (void) NTLocateGhostscript(flags,&root_index,&product_family,
         &major_version,&minor_version);
+#if !defined(_WIN64)
+      is_64_bit_version=TRUE;
+#endif
     }
   if (product_family == NULL)
     return(FALSE);
@@ -1357,14 +1363,28 @@ MagickPrivate int NTGhostscriptLoadDLL(void)
   char
     path[MaxTextExtent];
 
+  if (ghost_semaphore == (SemaphoreInfo *) NULL)
+    ActivateSemaphoreInfo(&ghost_semaphore);
+  LockSemaphoreInfo(ghost_semaphore);
   if (ghost_handle != (void *) NULL)
-    return(TRUE);
+    {
+      UnlockSemaphoreInfo(ghost_semaphore);
+      return(TRUE);
+    }
   if (NTGhostscriptDLL(path,sizeof(path)) == FALSE)
-    return(FALSE);
+    {
+      UnlockSemaphoreInfo(ghost_semaphore);
+      return(FALSE);
+    }
   ghost_handle=lt_dlopen(path);
   if (ghost_handle == (void *) NULL)
-    return(FALSE);
+    {
+      UnlockSemaphoreInfo(ghost_semaphore);
+      return(FALSE);
+    }
   (void) ResetMagickMemory((void *) &ghost_info,0,sizeof(GhostInfo));
+  ghost_info.delete_instance=(void (MagickDLLCall *) (gs_main_instance *)) (
+    lt_dlsym(ghost_handle,"gsapi_delete_instance"));
   ghost_info.exit=(int (MagickDLLCall *)(gs_main_instance*))
     lt_dlsym(ghost_handle,"gsapi_exit");
   ghost_info.init_with_args=(int (MagickDLLCall *)(gs_main_instance *,int,
@@ -1373,11 +1393,15 @@ MagickPrivate int NTGhostscriptLoadDLL(void)
     lt_dlsym(ghost_handle,"gsapi_new_instance"));
   ghost_info.run_string=(int (MagickDLLCall *)(gs_main_instance *,const char *,
     int,int *)) (lt_dlsym(ghost_handle,"gsapi_run_string"));
-  ghost_info.delete_instance=(void (MagickDLLCall *) (gs_main_instance *)) (
-    lt_dlsym(ghost_handle,"gsapi_delete_instance"));
-  if ((ghost_info.exit == NULL) || (ghost_info.init_with_args == NULL) ||
-      (ghost_info.new_instance == NULL) || (ghost_info.run_string == NULL) ||
-      (ghost_info.delete_instance == NULL))
+  ghost_info.set_stdio=(int (MagickDLLCall *)(gs_main_instance *,int(
+    MagickDLLCall *)(void *,char *,int),int(MagickDLLCall *)(void *,
+    const char *,int),int(MagickDLLCall *)(void *,const char *,int)))
+    (lt_dlsym(ghost_handle,"gsapi_set_stdio"));
+  UnlockSemaphoreInfo(ghost_semaphore);
+  if ((ghost_info.delete_instance == NULL) || (ghost_info.exit == NULL) ||
+      (ghost_info.init_with_args == NULL) || (ghost_info.new_instance == NULL)
+      || (ghost_info.run_string == NULL) || (ghost_info.set_stdio == NULL)
+      )
     return(FALSE);
   return(TRUE);
 }
@@ -1406,11 +1430,18 @@ MagickPrivate int NTGhostscriptUnLoadDLL(void)
   int
     status;
 
-  if (ghost_handle == (void *) NULL)
-    return(FALSE);
-  status=lt_dlclose(ghost_handle);
-  ghost_handle=(void *) NULL;
-  (void) ResetMagickMemory((void *) &ghost_info,0,sizeof(GhostInfo));
+  if (ghost_semaphore == (SemaphoreInfo *) NULL)
+    ActivateSemaphoreInfo(&ghost_semaphore);
+  LockSemaphoreInfo(ghost_semaphore);
+  status=FALSE;
+  if (ghost_handle != (void *) NULL)
+    {
+      status=lt_dlclose(ghost_handle);
+      ghost_handle=(void *) NULL;
+      (void) ResetMagickMemory((void *) &ghost_info,0,sizeof(GhostInfo));
+    }
+  UnlockSemaphoreInfo(ghost_semaphore);
+  DestroySemaphoreInfo(&ghost_semaphore);
   return(status);
 }
 
@@ -1558,7 +1589,7 @@ MagickPrivate DIR *NTOpenDirectory(const char *path)
   if (length == 0)
     return((DIR *) NULL);
   if(wcsncat(file_specification,(const wchar_t*) DirectorySeparator,
-       MaxTextExtent) == (wchar_t*)NULL)
+       MaxTextExtent-wcslen(file_specification)-1) == (wchar_t*)NULL)
     return((DIR *) NULL);
   entry=(DIR *) AcquireMagickMemory(sizeof(DIR));
   if (entry != (DIR *) NULL)
@@ -1569,7 +1600,7 @@ MagickPrivate DIR *NTOpenDirectory(const char *path)
   if (entry->hSearch == INVALID_HANDLE_VALUE)
     {
       if(wcsncat(file_specification,L"*.*",
-        MaxTextExtent) == (wchar_t*)NULL)
+        MaxTextExtent-wcslen(file_specification)-1) == (wchar_t*)NULL)
         {
           entry=(DIR *) RelinquishMagickMemory(entry);
           return((DIR *) NULL);

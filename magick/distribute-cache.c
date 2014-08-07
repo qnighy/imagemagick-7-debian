@@ -213,6 +213,7 @@ static int ConnectPixelCacheServer(const char *hostname,const int port,
   status=connect(client_socket,result->ai_addr,result->ai_addrlen);
   if (status == -1)
     {
+      (void) close(client_socket);
       (void) ThrowMagickException(exception,GetMagickModule(),CacheError,
         "DistributedPixelCache","'%s'",hostname);
       return(-1);
@@ -897,11 +898,14 @@ MagickExport void DistributePixelCacheServer(const int port,
     status=setsockopt(server_socket,SOL_SOCKET,SO_REUSEADDR,&one,(socklen_t)
       sizeof(one));
     if (status == -1)
-      continue;
+      {
+        (void) close(server_socket);
+        continue;
+      }
     status=bind(server_socket,p->ai_addr,p->ai_addrlen);
     if (status == -1)
       {
-        (void) close(status);
+        (void) close(server_socket);
         continue;
       }
     break;

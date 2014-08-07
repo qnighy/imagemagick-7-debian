@@ -199,10 +199,12 @@ extern MagickExport MagickBooleanType
     magick_attribute((deprecated)),
   FuzzyOpacityCompare(const Image *,const PixelPacket *,const PixelPacket *)
     magick_attribute((deprecated)),
+  InitializeModuleList(ExceptionInfo *) magick_attribute((deprecated)),
   IsMagickInstantiated(void) magick_attribute((deprecated)),
   LevelImageColors(Image *,const ChannelType,const MagickPixelPacket *,
     const MagickPixelPacket *, const MagickBooleanType)
     magick_attribute((deprecated)),
+  LoadMimeLists(const char *,ExceptionInfo *) magick_attribute((deprecated)),
   MagickMonitor(const char *,const MagickOffsetType,const MagickSizeType,
     void *) magick_attribute((deprecated)),
   MapImage(Image *,const Image *,const MagickBooleanType)
@@ -329,6 +331,7 @@ extern MagickExport void
   DestroyMagickRegistry(void) magick_attribute((deprecated)),
   *GetConfigureBlob(const char *,char *,size_t *,ExceptionInfo *)
     magick_attribute((deprecated)),
+  GetExceptionInfo(ExceptionInfo *),
   *GetMagickRegistry(const ssize_t,RegistryType *,size_t *,ExceptionInfo *)
     magick_attribute((deprecated)),
   IdentityAffine(AffineMatrix *) magick_attribute((deprecated)),

@@ -235,27 +235,6 @@ static void ConvertYCbCrToRGB(const double Y,const double Cb,
   ConvertYPbPrToRGB(Y,Cb,Cr,red,green,blue);
 }
 
-static inline void ConvertLCHabToXYZ(const double luma,const double chroma,
-  const double hue,double *X,double *Y,double *Z)
-{
-  ConvertLabToXYZ(luma,chroma*cos(hue*MagickPI/180.0),chroma*
-    sin(hue*MagickPI/180.0),X,Y,Z);
-}
-
-static inline void ConvertXYZToLCHab(const double X,const double Y,
-  const double Z,double *luma,double *chroma,double *hue)
-{
-  double
-    a,
-    b;
-
-  ConvertXYZToLab(X,Y,Z,luma,&a,&b);
-  *chroma=hypot(255.0*(a-0.5),255.0*(b-0.5))/255.0+0.5;
-  *hue=180.0*atan2(255.0*(b-0.5),255.0*(a-0.5))/MagickPI/360.0;
-  if (*hue < 0.0)
-    *hue+=1.0;
-}
-
 static inline void ConvertLMSToXYZ(const double L,const double M,const double S,
   double *X,double *Y,double *Z)
 {
@@ -1012,7 +991,7 @@ static size_t ValidateCompareCommand(ImageInfo *image_info,
     for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
-    if (status != MagickFalse)
+    if (status == MagickFalse)
       {
         (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
           GetMagickModule());
@@ -1104,7 +1083,7 @@ static size_t ValidateCompositeCommand(ImageInfo *image_info,
     for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
-    if (status != MagickFalse)
+    if (status == MagickFalse)
       {
         (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
           GetMagickModule());
@@ -1195,7 +1174,7 @@ static size_t ValidateConvertCommand(ImageInfo *image_info,
     for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
-    if (status != MagickFalse)
+    if (status == MagickFalse)
       {
         (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
           GetMagickModule());
@@ -1287,7 +1266,7 @@ static size_t ValidateIdentifyCommand(ImageInfo *image_info,
     for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
-    if (status != MagickFalse)
+    if (status == MagickFalse)
       {
         (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
           GetMagickModule());
@@ -1413,10 +1392,12 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       (void) CopyMagickString(image_info->filename,reference_filename,
         MaxTextExtent);
       reference_image=ReadImage(image_info,exception);
-      if (reference_image == (Image *) NULL)
+      if (reference_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -1431,20 +1412,22 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
         reference_formats[i].magick,output_filename);
       status=SetImageType(reference_image,reference_types[j].type);
       InheritException(exception,&reference_image->exception);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
         }
       status=SetImageDepth(reference_image,reference_types[j].depth);
       InheritException(exception,&reference_image->exception);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
@@ -1453,10 +1436,11 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       status=WriteImage(image_info,reference_image);
       InheritException(exception,&reference_image->exception);
       reference_image=DestroyImage(reference_image);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -1466,10 +1450,12 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       (void) FormatLocaleString(image_info->filename,MaxTextExtent,"%s:%s",
         reference_formats[i].magick,output_filename);
       ping_image=PingImage(image_info,exception);
-      if (ping_image == (Image *) NULL)
+      if (ping_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -1480,10 +1466,12 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       (void) FormatLocaleString(image_info->filename,MaxTextExtent,"%s:%s",
         reference_formats[i].magick,output_filename);
       reference_image=ReadImage(image_info,exception);
-      if (reference_image == (Image *) NULL)
+      if (reference_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -1498,10 +1486,12 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
       reference_image->compression=reference_formats[i].compression;
       length=8192;
       blob=ImageToBlob(image_info,reference_image,&length,exception);
-      if (blob == (unsigned char *) NULL)
+      if (blob == (unsigned char *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
@@ -1510,10 +1500,12 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
         Ping reference blob.
       */
       ping_image=PingBlob(image_info,blob,length,exception);
-      if (ping_image == (Image *) NULL)
+      if (ping_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           blob=(unsigned char *) RelinquishMagickMemory(blob);
           continue;
@@ -1526,10 +1518,12 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
         reference_formats[i].magick,output_filename);
       reconstruct_image=BlobToImage(image_info,blob,length,exception);
       blob=(unsigned char *) RelinquishMagickMemory(blob);
-      if (reconstruct_image == (Image *) NULL)
+      if (reconstruct_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
@@ -1544,10 +1538,12 @@ static size_t ValidateImageFormatsInMemory(ImageInfo *image_info,
         CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
       reference_image=DestroyImage(reference_image);
-      if (difference_image == (Image *) NULL)
+      if (difference_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -1665,10 +1661,12 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
       (void) CopyMagickString(image_info->filename,reference_filename,
         MaxTextExtent);
       reference_image=ReadImage(image_info,exception);
-      if (reference_image == (Image *) NULL)
+      if (reference_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -1683,20 +1681,22 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
         reference_formats[i].magick,output_filename);
       status=SetImageType(reference_image,reference_types[j].type);
       InheritException(exception,&reference_image->exception);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
         }
       status=SetImageDepth(reference_image,reference_types[j].depth);
       InheritException(exception,&reference_image->exception);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
@@ -1705,10 +1705,11 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
       status=WriteImage(image_info,reference_image);
       InheritException(exception,&reference_image->exception);
       reference_image=DestroyImage(reference_image);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -1718,10 +1719,12 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
       (void) FormatLocaleString(image_info->filename,MaxTextExtent,"%s:%s",
         reference_formats[i].magick,output_filename);
       reference_image=ReadImage(image_info,exception);
-      if (reference_image == (Image *) NULL)
+      if (reference_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -1734,10 +1737,11 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
       reference_image->compression=reference_formats[i].compression;
       status=WriteImage(image_info,reference_image);
       InheritException(exception,&reference_image->exception);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
@@ -1748,10 +1752,12 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
       (void) FormatLocaleString(image_info->filename,MaxTextExtent,"%s:%s",
         reference_formats[i].magick,output_filename);
       reconstruct_image=ReadImage(image_info,exception);
-      if (reconstruct_image == (Image *) NULL)
+      if (reconstruct_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
@@ -1766,10 +1772,12 @@ static size_t ValidateImageFormatsOnDisk(ImageInfo *image_info,
         CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
       reference_image=DestroyImage(reference_image);
-      if (difference_image == (Image *) NULL)
+      if (difference_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -1869,22 +1877,29 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
       (void) CopyMagickString(image_info->filename,reference_filename,
         MaxTextExtent);
       reference_image=ReadImage(image_info,exception);
-      if (reference_image == (Image *) NULL)
+      if (reference_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
       if (LocaleNCompare(reference_map[i],"cmy",3) == 0)
-        (void) TransformImageColorspace(reference_image,CMYKColorspace);
+        {
+          (void) TransformImageColorspace(reference_image,CMYKColorspace);
+          InheritException(exception,&reference_image->exception);
+        }
       length=strlen(reference_map[i])*reference_image->columns*
         reference_image->rows*reference_storage[j].quantum;
       pixels=(unsigned char *) AcquireQuantumMemory(length,sizeof(*pixels));
-      if (pixels == (unsigned char *) NULL)
+      if (pixels == (unsigned char *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
@@ -1893,10 +1908,11 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
       status=ExportImagePixels(reference_image,0,0,reference_image->columns,
         reference_image->rows,reference_map[i],reference_storage[j].type,pixels,
         exception);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           pixels=(unsigned char *) RelinquishMagickMemory(pixels);
           reference_image=DestroyImage(reference_image);
@@ -1907,10 +1923,11 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
         reference_image->rows,reference_map[i],reference_storage[j].type,
         pixels);
       InheritException(exception,&reference_image->exception);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
            pixels=(unsigned char *) RelinquishMagickMemory(pixels);
           reference_image=DestroyImage(reference_image);
@@ -1929,10 +1946,11 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
         pixels);
       InheritException(exception,&reconstruct_image->exception);
       pixels=(unsigned char *) RelinquishMagickMemory(pixels);
-      if (status == MagickFalse)
+      if (status == MagickFalse || exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           reference_image=DestroyImage(reference_image);
           continue;
@@ -1944,10 +1962,12 @@ static size_t ValidateImportExportPixels(ImageInfo *image_info,
         CompositeChannels,RootMeanSquaredErrorMetric,&distortion,exception);
       reconstruct_image=DestroyImage(reconstruct_image);
       reference_image=DestroyImage(reference_image);
-      if (difference_image == (Image *) NULL)
+      if (difference_image == (Image *) NULL ||
+          exception->severity >= ErrorException)
         {
           (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
+          CatchException(exception);
           (*fail)++;
           continue;
         }
@@ -2045,7 +2065,7 @@ static size_t ValidateMontageCommand(ImageInfo *image_info,
     for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
-    if (status != MagickFalse)
+    if (status == MagickFalse)
       {
         (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
@@ -2136,7 +2156,7 @@ static size_t ValidateStreamCommand(ImageInfo *image_info,
     for (j=0; j < (ssize_t) number_arguments; j++)
       arguments[j]=DestroyString(arguments[j]);
     arguments=(char **) RelinquishMagickMemory(arguments);
-    if (status != MagickFalse)
+    if (status == MagickFalse)
       {
         (void) FormatLocaleFile(stdout,"... fail @ %s/%s/%lu.\n",
             GetMagickModule());
@@ -2336,7 +2356,7 @@ int main(int argc,char **argv)
             if (*option == '+')
               break;
             i++;
-            if (i == (ssize_t) argc)
+            if (i >= (ssize_t) argc)
               ThrowValidateException(OptionError,"MissingArgument",option);
             validate=ParseCommandOption(MagickValidateOptions,MagickFalse,
               argv[i]);

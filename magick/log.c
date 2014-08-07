@@ -157,7 +157,7 @@ typedef struct _LogMapInfo
   Static declarations.
 */
 static const HandlerInfo
-  LogHandlers[] =
+  LogHandlers[32] =
   {
     { "Console", ConsoleHandler },
     { "Debug", DebugHandler },
@@ -166,6 +166,30 @@ static const HandlerInfo
     { "None", NoHandler },
     { "Stderr", StderrHandler },
     { "Stdout", StdoutHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
+    { (char *) NULL, UndefinedHandler },
     { (char *) NULL, UndefinedHandler }
   };
 
@@ -741,6 +765,8 @@ MagickExport MagickBooleanType ListLogInfo(FILE *file,ExceptionInfo *exception)
           size_t
             mask;
 
+          if (LogHandlers[j].name == (const char *) NULL)
+            break;
           mask=1;
           mask<<=j;
           if ((log_info[i]->handler_mask & mask) != 0)
@@ -796,7 +822,8 @@ MagickExport MagickBooleanType LogComponentGenesis(void)
   ExceptionInfo
     *exception;
 
-  log_semaphore=AllocateSemaphoreInfo();
+  if (log_semaphore == (SemaphoreInfo *) NULL)
+    log_semaphore=AllocateSemaphoreInfo();
   exception=AcquireExceptionInfo();
   (void) GetLogInfo("*",exception);
   exception=DestroyExceptionInfo(exception);

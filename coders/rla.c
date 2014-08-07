@@ -229,6 +229,7 @@ static Image *ReadRLAImage(const ImageInfo *image_info,ExceptionInfo *exception)
   rla_info.job_number=(int) ReadBlobMSBLong(image);
   count=ReadBlob(image,128,(unsigned char *) rla_info.name);
   count=ReadBlob(image,128,(unsigned char *) rla_info.description);
+  rla_info.description[127]='\0';
   count=ReadBlob(image,64,(unsigned char *) rla_info.program);
   count=ReadBlob(image,32,(unsigned char *) rla_info.machine);
   count=ReadBlob(image,32,(unsigned char *) rla_info.user);
@@ -264,7 +265,7 @@ static Image *ReadRLAImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (scanlines == (ssize_t *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   if (*rla_info.description != '\0')
-    (void) SetImageProperty(image,"comment",rla_info.description);
+    (void) SetImageProperty(image,"comment",(char *) rla_info.description);
   /*
     Read offsets to each scanline data.
   */

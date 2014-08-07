@@ -90,8 +90,7 @@
 %
 %  The format of the AcquireImageColormap method is:
 %
-%      MagickBooleanType AcquireImageColormap(Image *image,
-%        const size_t colors)
+%      MagickBooleanType AcquireImageColormap(Image *image,const size_t colors)
 %
 %  A description of each parameter follows:
 %
@@ -109,22 +108,11 @@ static inline size_t MagickMax(const size_t x,
   return(y);
 }
 
-static inline size_t MagickMin(const size_t x,
-  const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 MagickExport MagickBooleanType AcquireImageColormap(Image *image,
   const size_t colors)
 {
   register ssize_t
     i;
-
-  size_t
-    length;
 
   /*
     Allocate image colormap.
@@ -133,23 +121,26 @@ MagickExport MagickBooleanType AcquireImageColormap(Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  image->colors=colors;
-  length=(size_t) colors;
+  image->colors=MagickMax(colors,2);
   if (image->colormap == (PixelPacket *) NULL)
-    image->colormap=(PixelPacket *) AcquireQuantumMemory(length,
+    image->colormap=(PixelPacket *) AcquireQuantumMemory(image->colors,
       sizeof(*image->colormap));
   else
-    image->colormap=(PixelPacket *) ResizeQuantumMemory(image->colormap,length,
-      sizeof(*image->colormap));
+    image->colormap=(PixelPacket *) ResizeQuantumMemory(image->colormap,
+      image->colors,sizeof(*image->colormap));
   if (image->colormap == (PixelPacket *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
-      image->filename);
+    {
+      image->colors=0;
+      image->storage_class=DirectClass;
+      ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+        image->filename);
+    }
   for (i=0; i < (ssize_t) image->colors; i++)
   {
     size_t
       pixel;
 
-    pixel=(size_t) (i*(QuantumRange/MagickMax(colors-1,1)));
+    pixel=(size_t) (i*(QuantumRange/(image->colors-1)));
     image->colormap[i].red=(Quantum) pixel;
     image->colormap[i].green=(Quantum) pixel;
     image->colormap[i].blue=(Quantum) pixel;

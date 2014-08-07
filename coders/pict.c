@@ -95,17 +95,6 @@
     ThrowReaderException(CorruptImageError,"ImproperImageHeader"); \
 }
 
-#define ReadRectangle(image,rectangle) \
-{ \
-  rectangle.top=(short) ReadBlobMSBShort(image); \
-  rectangle.left=(short) ReadBlobMSBShort(image); \
-  rectangle.bottom=(short) ReadBlobMSBShort(image); \
-  rectangle.right=(short) ReadBlobMSBShort(image); \
-  if ((rectangle.left > rectangle.right) || \
-      (rectangle.top > rectangle.bottom)) \
-    ThrowReaderException(CorruptImageError,"ImproperImageHeader"); \
-}
-
 typedef struct _PICTCode
 {
   const char
@@ -795,6 +784,18 @@ static inline size_t MagickMax(const size_t x,
   return(y);
 }
 
+static MagickBooleanType ReadRectangle(Image *image,PICTRectangle *rectangle)
+{
+  rectangle->top=(short) ReadBlobMSBShort(image);
+  rectangle->left=(short) ReadBlobMSBShort(image);
+  rectangle->bottom=(short) ReadBlobMSBShort(image);
+  rectangle->right=(short) ReadBlobMSBShort(image);
+  if ((rectangle->left > rectangle->right) ||
+      (rectangle->top > rectangle->bottom))
+    return(MagickFalse);
+  return(MagickTrue);
+}
+
 static Image *ReadPICTImage(const ImageInfo *image_info,
   ExceptionInfo *exception)
 {
@@ -882,7 +883,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
     for (i=0; i < 508; i++)
       (void) ReadBlobByte(image);
   (void) ReadBlobMSBShort(image);  /* skip picture size */
-  ReadRectangle(image,frame);
+  if (ReadRectangle(image,&frame) == MagickFalse)
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   while ((c=ReadBlobByte(image)) == 0) ;
   if (c != 0x11)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
@@ -923,6 +925,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
       code=ReadBlobByte(image);
     if (version == 2)
       code=(int) ReadBlobMSBShort(image);
+    if (code < 0)
+      break;
     if (code > 0xa1)
       {
         if (image->debug != MagickFalse)
@@ -947,7 +951,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
                   (void) ReadBlobByte(image);
                 break;
               }
-            ReadRectangle(image,frame);
+            if (ReadRectangle(image,&frame) == MagickFalse)
+              ThrowReaderException(CorruptImageError,"ImproperImageHeader");
             if (((frame.left & 0x8000) != 0) || ((frame.top & 0x8000) != 0))
               break;
             image->columns=1UL*(frame.right-frame.left);
@@ -981,7 +986,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             if (pattern != 1)
               ThrowReaderException(CorruptImageError,"UnknownPatternType");
             length=ReadBlobMSBShort(image);
-            ReadRectangle(image,frame);
+            if (ReadRectangle(image,&frame) == MagickFalse)
+              ThrowReaderException(CorruptImageError,"ImproperImageHeader");
             ReadPixmap(pixmap);
             image->depth=1UL*pixmap.component_size;
             image->x_resolution=1.0*pixmap.horizontal_resolution;
@@ -1083,7 +1089,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
                 (void) ReadBlobMSBShort(image);
                 (void) ReadBlobMSBShort(image);
               }
-            ReadRectangle(image,frame);
+            if (ReadRectangle(image,&frame) == MagickFalse)
+              ThrowReaderException(CorruptImageError,"ImproperImageHeader");
             /*
               Initialize tile image.
             */
@@ -1151,8 +1158,10 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
                     }
                   }
               }
-            ReadRectangle(image,source);
-            ReadRectangle(image,destination);
+            if (ReadRectangle(image,&source) == MagickFalse)
+              ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+            if (ReadRectangle(image,&destination) == MagickFalse)
+              ThrowReaderException(CorruptImageError,"ImproperImageHeader");
             (void) ReadBlobMSBShort(image);
             if ((code == 0x91) || (code == 0x99) || (code == 0x9b))
               {
@@ -1329,6 +1338,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             /*
               Skip to next op code.
             */
+            if (code < 0)
+              break;
             if (codes[code].length == -1)
               (void) ReadBlobMSBShort(image);
             else
@@ -1375,6 +1386,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
           file=fdopen(unique_file,"wb");
         if ((unique_file == -1) || (file == (FILE *) NULL))
           {
+            if (file != (FILE *) NULL)
+              (void) fclose(file);
             (void) CopyMagickString(image->filename,read_info->filename,
               MaxTextExtent);
             ThrowFileException(exception,FileOpenError,
@@ -1385,7 +1398,11 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
         length=ReadBlobMSBLong(image);
         for (i=0; i < 6; i++)
           (void) ReadBlobMSBLong(image);
-        ReadRectangle(image,frame);
+        if (ReadRectangle(image,&frame) == MagickFalse)
+          {
+            (void) fclose(file);
+            ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+          }
         for (i=0; i < 122; i++)
           (void) ReadBlobByte(image);
         for (i=0; i < (ssize_t) (length-154); i++)
@@ -1394,6 +1411,7 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
           (void) fputc(c,file);
         }
         (void) fclose(file);
+        (void) close(unique_file);
         tile_image=ReadImage(read_info,exception);
         (void) RelinquishUniqueFileResource(read_info->filename);
         read_info=DestroyImageInfo(read_info);

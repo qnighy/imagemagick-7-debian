@@ -1144,13 +1144,6 @@ static inline double MagickMax(const double x,const double y)
   return(y);
 }
 
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
   ChannelType channel,const char *symbol,ExceptionInfo *exception)
 {
@@ -1440,7 +1433,8 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
   length=GetImageListLength(fx_info->images);
   while (i < 0)
     i+=(ssize_t) length;
-  i%=length;
+  if (length != 0)
+    i%=length;
   image=GetImageFromList(fx_info->images,i);
   if (image == (Image *) NULL)
     {
@@ -1760,7 +1754,7 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
       if (LocaleNCompare(symbol,"minima",6) == 0)
         return(FxChannelStatistics(fx_info,image,channel,symbol,exception));
       if (LocaleCompare(symbol,"m") == 0)
-        return(QuantumScale*pixel.blue);
+        return(QuantumScale*pixel.green);
       break;
     }
     case 'N':
@@ -1839,7 +1833,7 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
     case 'y':
     {
       if (LocaleCompare(symbol,"y") == 0)
-        return(QuantumScale*pixel.green);
+        return(QuantumScale*pixel.blue);
       break;
     }
     case 'Z':
@@ -1952,8 +1946,9 @@ static const char *FxOperatorPrecedence(const char *expression,
       case 'E':
       case 'e':
       {
-        if ((LocaleNCompare(expression,"E+",2) == 0) ||
-            (LocaleNCompare(expression,"E-",2) == 0))
+        if ((isdigit((int) ((unsigned char) c)) != 0) &&
+            ((LocaleNCompare(expression,"E+",2) == 0) ||
+             (LocaleNCompare(expression,"E-",2) == 0)))
           {
             expression+=2;  /* scientific notation */
             break;
@@ -2143,11 +2138,7 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
   while (isspace((int) ((unsigned char) *expression)) != 0)
     expression++;
   if (*expression == '\0')
-    {
-      (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "MissingExpression","`%s'",expression);
-      return(0.0);
-    }
+    return(0.0);
   *subexpression='\0';
   p=FxOperatorPrecedence(expression,exception);
   if (p != (const char *) NULL)
@@ -2250,7 +2241,7 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
         case EqualOperator:
         {
           *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,beta,exception);
-          return(fabs(alpha-(*beta)) < MagickEpsilon ? MagickEpsilon : 0.0);
+          return(fabs(alpha-(*beta)) < MagickEpsilon ? 1.0 : 0.0);
         }
         case NotEqualOperator:
         {
@@ -4180,6 +4171,7 @@ MagickExport Image *SepiaToneImage(const Image *image,const double threshold,
         SetPixelGreen(q,ClampToQuantum(tone));
       if ((double) GetPixelBlue(q) < tone)
         SetPixelBlue(q,ClampToQuantum(tone));
+      SetPixelOpacity(q,GetPixelOpacity(p));
       p++;
       q++;
     }

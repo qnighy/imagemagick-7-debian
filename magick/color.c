@@ -916,7 +916,8 @@ static LinkedListInfo *AcquireColorCache(const char *filename,
 */
 MagickExport MagickBooleanType ColorComponentGenesis(void)
 {
-  color_semaphore=AllocateSemaphoreInfo();
+  if (color_semaphore == (SemaphoreInfo *) NULL)
+    color_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -1112,7 +1113,7 @@ MagickExport const ColorInfo *GetColorInfo(const char *name,
 %
 %    o compliance: Adhere to this color standard: SVG, X11, or XPM.
 %
-%    tuple:  The color tuple.
+%    o tuple:  The color tuple.
 %
 */
 MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
@@ -1203,7 +1204,7 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
-  if (pixel->depth > 8)
+  if ((pixel->colorspace == LabColorspace) || (pixel->depth > 8))
     {
       (void) FormatLocaleString(component,MaxTextExtent,"%.*g%%",
         GetMagickPrecision(),(100.0*QuantumScale*color));
@@ -1676,9 +1677,9 @@ MagickExport MagickBooleanType IsColorSimilar(const Image *image,
       /*
         Transparencies are involved - set alpha distance
       */
-      pixel=(MagickRealType) ((image->matte != MagickFalse ? GetPixelOpacity(p) :
-        OpaqueOpacity)-(image->matte != MagickFalse ? q->opacity :
-        OpaqueOpacity));
+      pixel=(MagickRealType) ((image->matte != MagickFalse ?
+        GetPixelOpacity(p) : OpaqueOpacity)-(image->matte != MagickFalse ?
+        q->opacity : OpaqueOpacity));
       distance=pixel*pixel;
       if (distance > fuzz)
         return(MagickFalse);
@@ -1702,13 +1703,14 @@ MagickExport MagickBooleanType IsColorSimilar(const Image *image,
       (image->colorspace == HSLColorspace) ||
       (image->colorspace == HWBColorspace))
     {
-      /* This calculates a arc distance for hue.  Really it should be a vector
-         angle of 'S'/'W' length with 'L'/'B' forming appropriate cones.  In
-         other words this is a hack - Anthony
+      /*
+        This calculates a arc distance for hue.  Really it should be a vector
+        angle of 'S'/'W' length with 'L'/'B' forming appropriate cones.  In
+        other words this is a hack - Anthony
       */
-      if (fabs((double) pixel) > (QuantumRange/2))
+      if (fabs((double) pixel) > (QuantumRange/2.0))
         pixel-=QuantumRange;
-      pixel*=2;
+      pixel*=2.0;
     }
   distance+=scale*pixel*pixel;
   if (distance > fuzz)
@@ -1816,9 +1818,13 @@ MagickExport MagickBooleanType IsImageSimilar(const Image *image,
         for (i=0; i < (ssize_t) target_image->columns; i++)
         {
           p=GetCacheViewVirtualPixels(image_view,x+i,y+j,1,1,exception);
+          if (p == (const PixelPacket *) NULL)
+            break;
           indexes=GetCacheViewVirtualIndexQueue(image_view);
           SetMagickPixelPacket(image,p,indexes,&pixel);
           q=GetCacheViewVirtualPixels(target_view,i,j,1,1,exception);
+          if (q == (const PixelPacket *) NULL)
+            break;
           target_indexes=GetCacheViewVirtualIndexQueue(target_view);
           SetMagickPixelPacket(image,q,target_indexes,&target);
           if (IsMagickColorSimilar(&pixel,&target) == MagickFalse)
@@ -1960,14 +1966,14 @@ MagickExport MagickBooleanType IsMagickColorSimilar(const MagickPixelPacket *p,
   if ((p->colorspace == HCLColorspace) || (p->colorspace == HSBColorspace) ||
       (p->colorspace == HSLColorspace) || (p->colorspace == HWBColorspace))
     {
-      /* This calculates a arc distance for hue
-         Really if should be a vector angle of 'S'/'W' length
-         with 'L'/'B' forming appropriate cones.
-         In other words this is a hack - Anthony
+      /*
+        This calculates a arc distance for hue.  Really if should be a vector
+        angle of 'S'/'W' length with 'L'/'B' forming appropriate cones.  In
+        other words this is a hack - Anthony
       */
-      if (fabs((double) pixel) > (QuantumRange/2))
+      if (fabs((double) pixel) > (QuantumRange/2.))
         pixel-=QuantumRange;
-      pixel*=2;
+      pixel*=2.0;
     }
   distance+=pixel*pixel*scale;
   if (distance > fuzz)
@@ -2166,7 +2172,7 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
   const char
     *q;
 
-  MagickBooleanType
+  MagickStatusType
     status;
 
   /*
@@ -2332,7 +2338,7 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
     }
   }
   token=(char *) RelinquishMagickMemory(token);
-  return(status);
+  return(status != 0 ? MagickTrue : MagickFalse);
 }
 
 /*
@@ -2746,6 +2752,15 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
           if (((flags & ChiValue) != 0) && (color->matte != MagickFalse))
             color->opacity=(MagickRealType) ClampToQuantum((MagickRealType)
               (QuantumRange-QuantumRange*geometry_info.chi));
+          if (color->colorspace == LabColorspace)
+            {
+              if ((flags & SigmaValue) != 0)
+                color->green=(MagickRealType) ClampToQuantum(scale*
+                  geometry_info.sigma+(QuantumRange+1)/2.0);
+              if ((flags & XiValue) != 0)
+                color->blue=(MagickRealType) ClampToQuantum(scale*
+                  geometry_info.xi+(QuantumRange+1)/2.0);
+            }
           if (LocaleCompare(colorspace,"gray") == 0)
             {
               color->colorspace=GRAYColorspace;

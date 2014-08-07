@@ -21,6 +21,7 @@ magickincarchdir = $(INCLUDEARCH_PATH)/magick
 # Headers which are installed
 magickinc_HEADERS = \
 	$(MAGICK_INCLUDE_HDRS)
+
 magickincarch_HEADERS = \
 	$(MAGICK_INCLUDEARCH_HDRS)
 
@@ -49,7 +50,7 @@ else
 magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_SOURCES = $(MAGICK_BASE_SRCS) $(MAGICK_PLATFORM_SRCS) $(MAGICK_CODER_SRCS) $(MAGICK_FILTER_SRCS)
 magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_LIBADD = $(MAGICK_DEP_LIBS)
 endif # WITH_MODULES
-magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_CPPFLAGS = -I$(top_builddir)/ltdl -I$(top_srcdir)/ltdl $(LIBRARY_EXTRA_CPPFLAGS)
+magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBRARY_EXTRA_CPPFLAGS)
 
 if HAVE_LD_VERSION_SCRIPT
 magick_libMagickCore_@MAGICK_MAJOR_VERSION@_@MAGICK_ABI_SUFFIX@_la_LDFLAGS_VERSION =  -Wl,--version-script=$(top_srcdir)/magick/libMagickCore.map
@@ -207,6 +208,7 @@ MAGICK_BASE_SRCS = \
 	magick/opencl-private.h \
 	magick/option.c \
 	magick/option.h \
+	magick/option-private.h \
 	magick/paint.c \
 	magick/paint.h \
 	magick/pixel.c \
@@ -436,6 +438,7 @@ MAGICK_NOINST_HDRS = \
 	magick/nt-base-private.h \
 	magick/nt-feature.h \
 	magick/opencl.h \
+	magick/option-private.h \
 	magick/pixel-private.h \
 	magick/quantum-private.h \
 	magick/random-private.h \
@@ -471,15 +474,3 @@ MAGICK_EXTRA_DIST = \
 	magick/nt-feature.c \
 	magick/vms.c \
 	magick/xwdfile.h_vms 
-
-# Install magick-baseconfig.h
-MAGICK_INSTALL_DATA_LOCAL_TARGETS = magick-install-data-local
-magick-install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(magickincarchdir)
-	$(INSTALL_HEADER) magick/magick-baseconfig.h $(DESTDIR)$(magickincarchdir)/magick-baseconfig.h
-
-# Uninstall magick-config.h
-MAGICK_UNINSTALL_LOCAL_TARGETS = magick-uninstall-local
-magick-uninstall-local:
-	rm -f $(DESTDIR)$(magickincarchdir)/magick-baseconfig.h
-

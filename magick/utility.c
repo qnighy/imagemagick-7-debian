@@ -451,6 +451,7 @@ MagickExport unsigned char *Base64Decode(const char *source,size_t *length)
               decode=(unsigned char *) RelinquishMagickMemory(decode);
               return((unsigned char *) NULL);
             }
+          break;
         }
       }
     }
@@ -1793,9 +1794,6 @@ MagickPrivate MagickBooleanType ShredFile(const char *path)
   char
     *passes;
 
-  ExceptionInfo
-    *exception;
-
   int
     file,
     status;
@@ -1814,11 +1812,7 @@ MagickPrivate MagickBooleanType ShredFile(const char *path)
 
   if ((path == (const char *) NULL) || (*path == '\0'))
     return(MagickFalse);
-  exception=AcquireExceptionInfo();
-  passes=(char *) GetImageRegistry(StringRegistryType,"shred-passes",exception);
-  exception=DestroyExceptionInfo(exception);
-  if (passes == (char *) NULL)
-    passes=GetEnvironmentValue("MAGICK_SHRED_PASSES");
+  passes=GetEnvironmentValue("MAGICK_SHRED_PASSES");
   if (passes == (char *) NULL)
     {
       /*
@@ -1922,12 +1916,36 @@ MagickPrivate MagickBooleanType ShredFile(const char *path)
 %    o exception: return any errors here.
 %
 */
+static char *SanitizeSystemCommand(const char *command)
+{
+  char
+    *sanitize_command;
+
+  const char
+    *q;
+
+  register char
+    *p;
+
+  static char
+    whitelist[] =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_- "
+      ".@&;<>|/\\\'\":%=~";
+
+  sanitize_command=AcquireString(command);
+  p=sanitize_command;
+  q=sanitize_command+strlen(sanitize_command);
+  for (p+=strspn(p,whitelist); p != q; p+=strspn(p,whitelist))
+    *p='_';
+  return(sanitize_command);
+}
+
 MagickExport int SystemCommand(const MagickBooleanType asynchronous,
   const MagickBooleanType verbose,const char *command,ExceptionInfo *exception)
 {
   char
     **arguments,
-    *shell_command;
+    *sanitize_command;
 
   int
     number_arguments,
@@ -1970,19 +1988,16 @@ MagickExport int SystemCommand(const MagickBooleanType asynchronous,
       (void) FormatLocaleFile(stderr,"%s\n",command);
       (void) fflush(stderr);
     }
-  shell_command=(char *) command;
+  sanitize_command=SanitizeSystemCommand(command);
   if (asynchronous != MagickFalse)
-    {
-      shell_command=AcquireString(command);
-      (void) ConcatenateMagickString(shell_command,"&",MaxTextExtent);
-    }
+    (void) ConcatenateMagickString(sanitize_command,"&",MaxTextExtent);
 #if defined(MAGICKCORE_POSIX_SUPPORT)
 #if !defined(MAGICKCORE_HAVE_EXECVP)
-  status=system(shell_command);
+  status=system(sanitize_command);
 #else
   if ((asynchronous != MagickFalse) ||
-      (strpbrk(shell_command,"&;<>|") != (char *) NULL))
-    status=system(shell_command);
+      (strpbrk(sanitize_command,"&;<>|") != (char *) NULL))
+    status=system(sanitize_command);
   else
     {
       pid_t
@@ -1993,7 +2008,7 @@ MagickExport int SystemCommand(const MagickBooleanType asynchronous,
       */
       child_pid=(pid_t) fork();
       if (child_pid == (pid_t) -1)
-        status=system(command);
+        status=system(sanitize_command);
       else
         if (child_pid == 0)
           {
@@ -2024,19 +2039,18 @@ MagickExport int SystemCommand(const MagickBooleanType asynchronous,
     }
 #endif
 #elif defined(MAGICKCORE_WINDOWS_SUPPORT)
-  status=NTSystemCommand(shell_command);
+  status=NTSystemCommand(sanitize_command);
 #elif defined(macintosh)
-  status=MACSystemCommand(shell_command);
+  status=MACSystemCommand(sanitize_command);
 #elif defined(vms)
-  status=system(shell_command);
+  status=system(sanitize_command);
 #else
 #  error No suitable system() method.
 #endif
   if (status < 0)
     (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
-      "`%s' (%d)",command,status);
-  if (shell_command != command)
-    shell_command=DestroyString(shell_command);
+      "FailedToExecuteCommand","`%s' (%d)",command,status);
+  sanitize_command=DestroyString(sanitize_command);
   for (i=0; i < (ssize_t) number_arguments; i++)
     arguments[i]=DestroyString(arguments[i]);
   arguments=(char **) RelinquishMagickMemory(arguments);

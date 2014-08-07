@@ -244,20 +244,30 @@ static const char *CompositeOperatorToPSDBlendMode(CompositeOperator op)
 
   switch (op)
   {
-    case OverCompositeOp:    blend_mode = "norm";  break;
-    case MultiplyCompositeOp:  blend_mode = "mul ";  break;
-    case DissolveCompositeOp:  blend_mode = "diss";  break;
-    case DifferenceCompositeOp:  blend_mode = "diff";  break;
-    case DarkenCompositeOp:    blend_mode = "dark";  break;
-    case LightenCompositeOp:  blend_mode = "lite";  break;
-    case HueCompositeOp:    blend_mode = "hue ";  break;
-    case SaturateCompositeOp:  blend_mode = "sat ";  break;
-    case ColorizeCompositeOp:  blend_mode = "colr";  break;
-    case LuminizeCompositeOp:  blend_mode = "lum ";  break;
-    case ScreenCompositeOp:    blend_mode = "scrn";  break;
-    case OverlayCompositeOp:  blend_mode = "over";  break;
-    default:
-      blend_mode = "norm";
+    case ColorBurnCompositeOp:  blend_mode = "idiv";  break;
+    case ColorDodgeCompositeOp: blend_mode = "div ";  break;
+    case ColorizeCompositeOp:   blend_mode = "colr";  break;
+    case DarkenCompositeOp:     blend_mode = "dark";  break;
+    case DifferenceCompositeOp: blend_mode = "diff";  break;
+    case DissolveCompositeOp:   blend_mode = "diss";  break;
+    case ExclusionCompositeOp:  blend_mode = "smud";  break;
+    case HardLightCompositeOp:  blend_mode = "hLit";  break;
+    case HardMixCompositeOp:    blend_mode = "hMix";  break;
+    case HueCompositeOp:        blend_mode = "hue ";  break;
+    case LightenCompositeOp:    blend_mode = "lite";  break;
+    case LinearBurnCompositeOp: blend_mode = "lbrn";  break;
+    case LinearDodgeCompositeOp:blend_mode = "lddg";  break;
+    case LinearLightCompositeOp:blend_mode = "lLit";  break;
+    case LuminizeCompositeOp:   blend_mode = "lum ";  break;
+    case MultiplyCompositeOp:   blend_mode = "mul ";  break;
+    case OverCompositeOp:       blend_mode = "norm";  break;
+    case OverlayCompositeOp:    blend_mode = "over";  break;
+    case PinLightCompositeOp:   blend_mode = "pLit";  break;
+    case SaturateCompositeOp:   blend_mode = "sat ";  break;
+    case ScreenCompositeOp:     blend_mode = "scrn";  break;
+    case SoftLightCompositeOp:  blend_mode = "sLit";  break;
+    case VividLightCompositeOp: blend_mode = "vLit";  break;
+    default:                    blend_mode = "norm";  break;
   }
   return(blend_mode);
 }
@@ -465,7 +475,7 @@ static inline size_t GetPSDPacketSize(Image *image)
   return(1);
 }
 
-static inline MagickSizeType GetPSDSize(PSDInfo *psd_info,Image *image)
+static inline MagickSizeType GetPSDSize(const PSDInfo *psd_info,Image *image)
 {
   if (psd_info->version == 1)
     return((MagickSizeType) ReadBlobMSBLong(image));
@@ -571,6 +581,8 @@ static MagickBooleanType ParseImageResourceBlocks(Image *image,
       {
         if (*(p+4) == 0)
           *has_merged_image=MagickFalse;
+        p+=count;
+        break;
       }
       default:
       {
@@ -613,21 +625,33 @@ static CompositeOperator PSDBlendModeToCompositeOperator(const char *mode)
   if (LocaleNCompare(mode,"over",4) == 0)
     return(OverlayCompositeOp);
   if (LocaleNCompare(mode,"hLit",4) == 0)
-    return(OverCompositeOp);
+    return(HardLightCompositeOp);
   if (LocaleNCompare(mode,"sLit",4) == 0)
-    return(OverCompositeOp);
+    return(SoftLightCompositeOp);
   if (LocaleNCompare(mode,"smud",4) == 0)
-    return(OverCompositeOp);
+    return(ExclusionCompositeOp);
   if (LocaleNCompare(mode,"div ",4) == 0)
-    return(OverCompositeOp);
+    return(ColorDodgeCompositeOp);
   if (LocaleNCompare(mode,"idiv",4) == 0)
-    return(OverCompositeOp);
+    return(ColorBurnCompositeOp);
+  if (LocaleNCompare(mode,"lbrn",4) == 0)
+    return(LinearBurnCompositeOp);
+  if (LocaleNCompare(mode,"lddg",4) == 0)
+    return(LinearDodgeCompositeOp);
+  if (LocaleNCompare(mode,"lLit",4) == 0)
+    return(LinearLightCompositeOp);
+  if (LocaleNCompare(mode,"vLit",4) == 0)
+    return(VividLightCompositeOp);
+  if (LocaleNCompare(mode,"pLit",4) == 0)
+    return(PinLightCompositeOp);
+  if (LocaleNCompare(mode,"hMix",4) == 0)
+    return(HardMixCompositeOp);
   return(OverCompositeOp);
 }
 
-static MagickStatusType ReadPSDChannelPixels(Image *image,
-  const size_t channels,const size_t row,const ssize_t type,
-  const unsigned char *pixels,ExceptionInfo *exception)
+static MagickStatusType ReadPSDChannelPixels(Image *image,const size_t channels,
+  const size_t row,const ssize_t type,const unsigned char *pixels,
+  ExceptionInfo *exception)
 {
   Quantum
     pixel;
@@ -797,7 +821,7 @@ static MagickStatusType ReadPSDChannelRaw(Image *image,const size_t channels,
 }
 
 static inline MagickOffsetType *ReadPSDRLEOffsets(Image *image,
-  PSDInfo *psd_info,const size_t size)
+  const PSDInfo *psd_info,const size_t size)
 {
   MagickOffsetType
     *offsets;
@@ -819,7 +843,7 @@ static inline MagickOffsetType *ReadPSDRLEOffsets(Image *image,
   return offsets;
 }
 
-static MagickStatusType ReadPSDChannelRLE(Image *image,PSDInfo *psd_info,
+static MagickStatusType ReadPSDChannelRLE(Image *image,const PSDInfo *psd_info,
   const ssize_t type,MagickOffsetType *offsets,ExceptionInfo *exception)
 {
   MagickStatusType
@@ -1017,7 +1041,7 @@ static MagickStatusType ReadPSDChannelZip(Image *image,
 #endif
 }
 
-static MagickStatusType ReadPSDChannel(Image *image,PSDInfo *psd_info,
+static MagickStatusType ReadPSDChannel(Image *image,const PSDInfo *psd_info,
   const LayerInfo* layer_info,const size_t channel,
   const PSDCompressionType compression,ExceptionInfo *exception)
 {
@@ -1081,7 +1105,7 @@ static MagickStatusType ReadPSDChannel(Image *image,PSDInfo *psd_info,
   return(status);
 }
 
-static MagickStatusType ReadPSDLayer(Image *image,PSDInfo *psd_info,
+static MagickStatusType ReadPSDLayer(Image *image,const PSDInfo *psd_info,
   LayerInfo* layer_info,ExceptionInfo *exception)
 {
   char
@@ -1152,8 +1176,9 @@ static MagickStatusType ReadPSDLayer(Image *image,PSDInfo *psd_info,
   return(status);
 }
 
-static MagickStatusType ReadPSDLayers(Image *image,PSDInfo *psd_info,
-  MagickBooleanType skip_layers,ExceptionInfo *exception)
+static MagickStatusType ReadPSDLayers(Image *image,const ImageInfo *image_info,
+  const PSDInfo *psd_info,const MagickBooleanType skip_layers,
+  ExceptionInfo *exception)
 {
   char
     type[4];
@@ -1189,7 +1214,7 @@ static MagickStatusType ReadPSDLayers(Image *image,PSDInfo *psd_info,
       count=ReadBlob(image,4,(unsigned char *) type);
       if ((count == 0) || (LocaleNCompare(type,"8BIM",4) != 0))
         {
-          if (DiscardBlobBytes(image,size-quantum-8) == MagickFalse)
+          if (DiscardBlobBytes(image,(MagickSizeType) (size-quantum-8)) == MagickFalse)
             ThrowFileException(exception,CorruptImageError,
               "UnexpectedEndOfFile",image->filename);
         }
@@ -1199,7 +1224,7 @@ static MagickStatusType ReadPSDLayers(Image *image,PSDInfo *psd_info,
           if ((count != 0) && (LocaleNCompare(type,"Lr16",4) == 0))
             size=GetPSDSize(psd_info,image);
           else
-            if (DiscardBlobBytes(image,size-quantum-12) == MagickFalse)
+            if (DiscardBlobBytes(image,(MagickSizeType) (size-quantum-12)) == MagickFalse)
               ThrowFileException(exception,CorruptImageError,
                 "UnexpectedEndOfFile",image->filename);
         }
@@ -1343,7 +1368,7 @@ static MagickStatusType ReadPSDLayers(Image *image,PSDInfo *psd_info,
                 /*
                   Skip over the rest of the layer mask information.
                 */
-                if (DiscardBlobBytes(image,length-16) == MagickFalse)
+                if (DiscardBlobBytes(image,(MagickSizeType) (length-16)) == MagickFalse)
                   {
                     layer_info=DestroyLayerInfo(layer_info,number_layers);
                     ThrowFileException(exception,CorruptImageError,
@@ -1392,7 +1417,7 @@ static MagickStatusType ReadPSDLayers(Image *image,PSDInfo *psd_info,
                (void) LogMagickEvent(CoderEvent,GetMagickModule(),
                  "      unsupported data: length=%.20g",(double)
                  ((MagickOffsetType) (size-combined_length)));
-             if (DiscardBlobBytes(image,size-combined_length) == MagickFalse)
+             if (DiscardBlobBytes(image,(MagickSizeType) (size-combined_length)) == MagickFalse)
                {
                  layer_info=DestroyLayerInfo(layer_info,number_layers);
                  ThrowBinaryException(CorruptImageError,
@@ -1428,36 +1453,38 @@ static MagickStatusType ReadPSDLayers(Image *image,PSDInfo *psd_info,
           }
       }
 
-      for (i=0; i < number_layers; i++)
-      {
-        if (layer_info[i].image == (Image *) NULL)
+      if (image_info->ping == MagickFalse)
         {
-          for (j=0; j < layer_info[i].channels; j++)
+          for (i=0; i < number_layers; i++)
           {
-            if (DiscardBlobBytes(image,layer_info[i].channel_info[j].size) ==
-                  MagickFalse)
+            if (layer_info[i].image == (Image *) NULL)
               {
-                layer_info=DestroyLayerInfo(layer_info,number_layers);
-                ThrowBinaryException(CorruptImageError,
-                  "UnexpectedEndOfFile",image->filename);
+                for (j=0; j < layer_info[i].channels; j++)
+                {
+                  if (DiscardBlobBytes(image,(MagickSizeType)
+                      layer_info[i].channel_info[j].size) == MagickFalse)
+                    {
+                      layer_info=DestroyLayerInfo(layer_info,number_layers);
+                      ThrowBinaryException(CorruptImageError,
+                        "UnexpectedEndOfFile",image->filename);
+                    }
+                }
+                continue;
               }
+
+            if (image->debug != MagickFalse)
+              (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+                "  reading data for layer %.20g",(double) i);
+                status=ReadPSDLayer(image,psd_info,&layer_info[i],exception);
+                if (status == MagickFalse)
+                  break;
+
+            status=SetImageProgress(image,LoadImagesTag,i,(MagickSizeType)
+              number_layers);
+            if (status == MagickFalse)
+              break;
           }
-          continue;
         }
-
-        if (image->debug != MagickFalse)
-          (void) LogMagickEvent(CoderEvent,GetMagickModule(),
-            "  reading data for layer %.20g",(double) i);
-
-        status=ReadPSDLayer(image,psd_info,&layer_info[i],exception);
-        if (status == MagickFalse)
-          break;
-
-        status=SetImageProgress(image,LoadImagesTag,i,(MagickSizeType)
-          number_layers);
-        if (status == MagickFalse)
-          break;
-      }
 
       if (status != MagickFalse)
       {
@@ -1492,8 +1519,8 @@ static MagickStatusType ReadPSDLayers(Image *image,PSDInfo *psd_info,
   return(status);
 }
 
-static MagickStatusType ReadPSDMergedImage(Image* image,PSDInfo* psd_info,
-  ExceptionInfo *exception)
+static MagickStatusType ReadPSDMergedImage(Image* image,
+  const PSDInfo* psd_info,ExceptionInfo *exception)
 {
   MagickOffsetType
     *offsets;
@@ -1640,8 +1667,11 @@ static Image *ReadPSDImage(const ImageInfo *image_info,
   if (psd_info.mode == LabMode)
     SetImageColorspace(image,LabColorspace);
   if (psd_info.mode == CMYKMode)
+  {
     SetImageColorspace(image,CMYKColorspace);
-  if ((psd_info.mode == BitmapMode) || (psd_info.mode == GrayscaleMode) ||
+    image->matte=psd_info.channels > 4 ? MagickTrue : MagickFalse;
+  }
+  else if ((psd_info.mode == BitmapMode) || (psd_info.mode == GrayscaleMode) ||
       (psd_info.mode == DuotoneMode))
     {
       status=AcquireImageColormap(image,psd_info.depth != 16 ? 256 : 65536);
@@ -1651,8 +1681,10 @@ static Image *ReadPSDImage(const ImageInfo *image_info,
         (void) LogMagickEvent(CoderEvent,GetMagickModule(),
           "  Image colormap allocated");
       SetImageColorspace(image,GRAYColorspace);
+      image->matte=psd_info.channels > 1 ? MagickTrue : MagickFalse;
     }
-  image->matte=MagickFalse;
+  else
+    image->matte=psd_info.channels > 3 ? MagickTrue : MagickFalse;
   /*
     Read PSD raster colormap only present for indexed and duotone images.
   */
@@ -1722,14 +1754,6 @@ static Image *ReadPSDImage(const ImageInfo *image_info,
         &has_merged_image);
       blocks=(unsigned char *) RelinquishMagickMemory(blocks);
     }
-   /*
-     If we are only "pinging" the image, then we're done - so return.
-   */
-  if (image_info->ping != MagickFalse)
-    {
-      (void) CloseBlob(image);
-      return(GetFirstImageInList(image));
-    }
   /*
     Layer and mask block.
   */
@@ -1757,7 +1781,8 @@ static Image *ReadPSDImage(const ImageInfo *image_info,
     }
   else
     {
-      if (ReadPSDLayers(image,&psd_info,skip_layers,exception) != MagickTrue)
+      if (ReadPSDLayers(image,image_info,&psd_info,skip_layers,exception) !=
+          MagickTrue)
         {
           (void) CloseBlob(image);
           return((Image *) NULL);
@@ -1767,7 +1792,14 @@ static Image *ReadPSDImage(const ImageInfo *image_info,
       */
       SeekBlob(image,offset+length,SEEK_SET);
     }
-
+  /*
+    If we are only "pinging" the image, then we're done - so return.
+  */
+  if (image_info->ping != MagickFalse)
+    {
+      (void) CloseBlob(image);
+      return(image);
+    }
   /*
     Read the precombined layer, present for PSD < 4 compatibility.
   */
@@ -1781,7 +1813,7 @@ static Image *ReadPSDImage(const ImageInfo *image_info,
     length != 0)
     {
       SeekBlob(image,offset,SEEK_SET);
-      if (ReadPSDLayers(image,&psd_info,MagickFalse,exception) !=
+      if (ReadPSDLayers(image,image_info,&psd_info,MagickFalse,exception) !=
         MagickTrue)
         {
           (void) CloseBlob(image);
@@ -2619,14 +2651,13 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,Image *image)
       else
         rounded_layer_info_size=layer_info_size;
       (void) SetPSDSize(&psd_info,image,rounded_layer_info_size);
-      if (image->matte != MagickFalse)
+      if (base_image->matte != MagickFalse)
         (void) WriteBlobMSBShort(image,-(unsigned short) layer_count);
       else
         (void) WriteBlobMSBShort(image,(unsigned short) layer_count);
       layer_count=1;
       compression=base_image->compression;
-      next_image=base_image;
-      while (next_image != NULL)
+      for (next_image=base_image; next_image != NULL; )
       {
         next_image->compression=NoCompression;
         (void) WriteBlobMSBLong(image,(unsigned int) next_image->page.y);
@@ -2691,7 +2722,8 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,Image *image)
           CompositeOperatorToPSDBlendMode(next_image->compose));
         (void) WriteBlobByte(image,255); /* layer opacity */
         (void) WriteBlobByte(image,0);
-        (void) WriteBlobByte(image,1); /* layer propertys - visible, etc. */
+        (void) WriteBlobByte(image,next_image->compose==NoCompositeOp ?
+          1 << 0x02 : 1); /* layer properties - visible, etc. */
         (void) WriteBlobByte(image,0);
         property=(const char *) GetImageProperty(next_image,"label");
         if (property == (const char *) NULL)

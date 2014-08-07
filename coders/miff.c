@@ -214,8 +214,8 @@ static void PushRunlengthPacket(Image *image,const unsigned char *pixels,
       {
         case 32:
         {
-          *index=ConstrainColormapIndex(image,
-            (*p << 24) | (*(p+1) << 16) | (*(p+2) << 8) | *(p+3));
+          *index=ConstrainColormapIndex(image,((size_t) *p << 24) |
+            ((size_t) *(p+1) << 16) | ((size_t) *(p+2) << 8) | (size_t) *(p+3));
           p+=4;
           break;
         }
@@ -1730,18 +1730,22 @@ static unsigned char *PopRunlengthPacket(Image *image,unsigned char *pixels,
 {
   if (image->storage_class != DirectClass)
     {
+      unsigned int
+        value;
+
+      value=(unsigned int) index;
       switch (image->depth)
       {
         case 32:
         {
-          *pixels++=(unsigned char) ((size_t) index >> 24);
-          *pixels++=(unsigned char) ((size_t) index >> 16);
+          *pixels++=(unsigned char) (value >> 24);
+          *pixels++=(unsigned char) (value >> 16);
         }
         case 16:
-          *pixels++=(unsigned char) ((size_t) index >> 8);
+          *pixels++=(unsigned char) (value >> 8);
         case 8:
         {
-          *pixels++=(unsigned char) index;
+          *pixels++=(unsigned char) value;
           break;
         }
         default:

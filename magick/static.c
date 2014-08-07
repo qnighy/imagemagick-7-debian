@@ -283,6 +283,7 @@ MagickExport void RegisterStaticModules(void)
   (void) RegisterRLAImage();
   (void) RegisterRLEImage();
   (void) RegisterSCRImage();
+  (void) RegisterSCREENSHOTImage();
   (void) RegisterSCTImage();
   (void) RegisterSFWImage();
   (void) RegisterSGIImage();
@@ -304,6 +305,7 @@ MagickExport void RegisterStaticModules(void)
   (void) RegisterVICARImage();
   (void) RegisterVIDImage();
   (void) RegisterVIFFImage();
+  (void) RegisterVIPSImage();
   (void) RegisterWBMPImage();
 #if defined(MAGICKCORE_WEBP_DELEGATE)
   (void) RegisterWEBPImage();
@@ -468,6 +470,7 @@ MagickExport void UnregisterStaticModules(void)
   UnregisterRLAImage();
   UnregisterRLEImage();
   UnregisterSCRImage();
+  UnregisterSCREENSHOTImage();
   UnregisterSCTImage();
   UnregisterSFWImage();
   UnregisterSGIImage();
@@ -489,6 +492,7 @@ MagickExport void UnregisterStaticModules(void)
   UnregisterVICARImage();
   UnregisterVIDImage();
   UnregisterVIFFImage();
+  UnregisterVIPSImage();
   UnregisterWBMPImage();
 #if defined(MAGICKCORE_WEBP_DELEGATE)
   UnregisterWEBPImage();

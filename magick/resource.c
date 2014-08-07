@@ -414,9 +414,24 @@ MagickExport MagickBooleanType GetPathTemplate(char *path)
     (void) FormatLocaleString(path,MaxTextExtent,"%smagick-%.20gXXXXXXXXXXXX",
       directory,(double) getpid());
   else
-    (void) FormatLocaleString(path,MaxTextExtent,"%s%smagick-%.20gXXXXXXXXXXXX",
-      directory,DirectorySeparator,(double) getpid());
+    (void) FormatLocaleString(path,MaxTextExtent,
+      "%s%smagick-%.20gXXXXXXXXXXXX",directory,DirectorySeparator,
+      (double) getpid());
   directory=DestroyString(directory);
+#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+  {
+    register char
+      *p;
+
+    /*
+      Ghostscript does not like backslashes so we need to replace them. The
+      forward slash also works under Windows.
+    */
+    for (p=(path[1] == *DirectorySeparator ? path+2 : path); *p != '\0'; p++)
+      if (*p == *DirectorySeparator)
+        *p='/';
+  }
+#endif
   return(MagickTrue);
 }
 
@@ -954,7 +969,8 @@ MagickExport MagickBooleanType ResourceComponentGenesis(void)
   /*
     Set Magick resource limits.
   */
-  resource_semaphore=AllocateSemaphoreInfo();
+  if (resource_semaphore == (SemaphoreInfo *) NULL)
+    resource_semaphore=AllocateSemaphoreInfo();
   pagesize=GetMagickPageSize();
   pages=(-1);
 #if defined(MAGICKCORE_HAVE_SYSCONF) && defined(_SC_PHYS_PAGES)

@@ -138,7 +138,8 @@ static MagickBooleanType
 */
 MagickExport MagickBooleanType AnnotateComponentGenesis(void)
 {
-  annotate_semaphore=AllocateSemaphoreInfo();
+  if (annotate_semaphore == (SemaphoreInfo *) NULL)
+    annotate_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -1297,20 +1298,18 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       glyph.id=FT_Get_Char_Index(face,'?');
     if ((glyph.id != 0) && (last_glyph.id != 0))
       {
-        if (fabs(draw_info->kerning) >= MagickEpsilon)
-          origin.x+=(FT_Pos) (64.0*direction*draw_info->kerning);
-        else
-          if (FT_HAS_KERNING(face))
-            {
-              FT_Vector
-                kerning;
+        if (FT_HAS_KERNING(face))
+          {
+            FT_Vector
+              kerning;
 
-              ft_status=FT_Get_Kerning(face,last_glyph.id,glyph.id,
-                ft_kerning_default,&kerning);
-              if (ft_status == 0)
-                origin.x+=(FT_Pos) (direction*kerning.x);
-            }
-        }
+            ft_status=FT_Get_Kerning(face,last_glyph.id,glyph.id,
+              ft_kerning_default,&kerning);
+            if (ft_status == 0)
+              origin.x+=(FT_Pos) (direction*kerning.x);
+          }
+        origin.x+=(FT_Pos) (64.0*direction*draw_info->kerning);
+      }
     glyph.origin=origin;
     ft_status=FT_Load_Glyph(face,glyph.id,flags);
     if (ft_status != 0)
@@ -1431,10 +1430,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
               q=GetCacheViewAuthenticPixels(image_view,x_offset,y_offset,1,1,
                 exception);
             if (q == (PixelPacket *) NULL)
-              {
-                q++;
-                continue;
-              }
+              continue;
             (void) GetFillColor(draw_info,x_offset,y_offset,&fill_color);
             fill_opacity=QuantumRange-fill_opacity*(QuantumRange-
               fill_color.opacity);

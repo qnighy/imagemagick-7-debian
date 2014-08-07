@@ -1024,7 +1024,8 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
         sample=shift.opacity;
         while (((bmp_info.alpha_mask << sample) & 0x80000000UL) != 0)
           sample++;
-        quantum_bits.opacity=ClampToQuantum((MagickRealType) sample-shift.opacity);
+        quantum_bits.opacity=ClampToQuantum((MagickRealType) sample-
+          shift.opacity);
       }
     switch (bmp_info.bits_per_pixel)
     {
@@ -1196,13 +1197,11 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
             if (quantum_bits.opacity <= 8)
               opacity|=((opacity & 0xff00) >> 8);
             SetPixelRed(q,ScaleShortToQuantum((unsigned short) red));
-            SetPixelGreen(q,ScaleShortToQuantum((unsigned short)
-              green));
+            SetPixelGreen(q,ScaleShortToQuantum((unsigned short) green));
             SetPixelBlue(q,ScaleShortToQuantum((unsigned short) blue));
             SetPixelOpacity(q,OpaqueOpacity);
             if (image->matte != MagickFalse)
-              SetPixelAlpha(q,ScaleShortToQuantum((unsigned short)
-                opacity));
+              SetPixelAlpha(q,ScaleShortToQuantum((unsigned short) opacity));
             q++;
           }
           if (SyncAuthenticPixels(image,exception) == MagickFalse)
@@ -1276,9 +1275,9 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
           for (x=0; x < (ssize_t) image->columns; x++)
           {
             pixel=(size_t) (*p++);
-            pixel|=(*p++ << 8);
-            pixel|=(*p++ << 16);
-            pixel|=(*p++ << 24);
+            pixel|=((size_t) *p++ << 8);
+            pixel|=((size_t) *p++ << 16);
+            pixel|=((size_t) *p++ << 24);
             red=((pixel & bmp_info.red_mask) << shift.red) >> 16;
             if (quantum_bits.red == 8)
               red|=(red >> 8);
@@ -1292,8 +1291,7 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
             if (quantum_bits.opacity == 8)
               opacity|=(opacity >> 8);
             SetPixelRed(q,ScaleShortToQuantum((unsigned short) red));
-            SetPixelGreen(q,ScaleShortToQuantum((unsigned short)
-              green));
+            SetPixelGreen(q,ScaleShortToQuantum((unsigned short) green));
             SetPixelBlue(q,ScaleShortToQuantum((unsigned short) blue));
             SetPixelOpacity(q,OpaqueOpacity);
             if (image->matte != MagickFalse)

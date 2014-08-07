@@ -179,94 +179,91 @@ MagickExport void GetMagickToken(const char *start,const char **end,char *token)
   assert(start != (const char *) NULL);
   assert(token != (char *) NULL);
   i=0;
-  for (p=start; *p != '\0'; )
+  p=start;
+  while ((isspace((int) ((unsigned char) *p)) != 0) && (*p != '\0'))
+    p++;
+  switch (*p)
   {
-    while ((isspace((int) ((unsigned char) *p)) != 0) && (*p != '\0'))
-      p++;
-    if (*p == '\0')
+    case '\0':
       break;
-    switch (*p)
+    case '"':
+    case '\'':
+    case '`':
+    case '{':
     {
-      case '"':
-      case '\'':
-      case '`':
-      case '{':
-      {
-        register char
-          escape;
+      register char
+        escape;
 
-        switch (*p)
-        {
-          case '"': escape='"'; break;
-          case '\'': escape='\''; break;
-          case '`': escape='\''; break;
-          case '{': escape='}'; break;
-          default: escape=(*p); break;
-        }
-        for (p++; *p != '\0'; p++)
-        {
-          if ((*p == '\\') && ((*(p+1) == escape) || (*(p+1) == '\\')))
-            p++;
-          else
-            if (*p == escape)
-              {
-                p++;
-                break;
-              }
-          token[i++]=(*p);
-        }
-        break;
-      }
-      case '/':
+      switch (*p)
       {
-        token[i++]=(*p++);
-        if ((*p == '>') || (*p == '/'))
-          token[i++]=(*p++);
-        break;
+        case '"': escape='"'; break;
+        case '\'': escape='\''; break;
+        case '`': escape='\''; break;
+        case '{': escape='}'; break;
+        default: escape=(*p); break;
       }
-      default:
+      for (p++; *p != '\0'; p++)
       {
-        char
-          *q;
-
-        value=StringToDouble(p,&q);
-        (void) value;
-        if ((p != q) && (*p != ','))
-          {
-            for ( ; (p < q) && (*p != ','); p++)
-              token[i++]=(*p);
-            if (*p == '%')
-              token[i++]=(*p++);
-            break;
-          }
-        if ((*p != '\0') && (isalpha((int) ((unsigned char) *p)) == 0) &&
-            (*p != *DirectorySeparator) && (*p != '#') && (*p != '<'))
-          {
-            token[i++]=(*p++);
-            break;
-          }
-        for ( ; *p != '\0'; p++)
-        {
-          if (((isspace((int) ((unsigned char) *p)) != 0) || (*p == '=') ||
-              (*p == ',') || (*p == ':') || (*p == ';')) && (*(p-1) != '\\'))
-            break;
-          if ((i > 0) && (*p == '<'))
-            break;
-          token[i++]=(*p);
-          if (*p == '>')
-            break;
-          if (*p == '(')
-            for (p++; *p != '\0'; p++)
+        if ((*p == '\\') && ((*(p+1) == escape) || (*(p+1) == '\\')))
+          p++;
+        else
+          if (*p == escape)
             {
-              token[i++]=(*p);
-              if ((*p == ')') && (*(p-1) != '\\'))
-                break;
+              p++;
+              break;
             }
-        }
-        break;
+        token[i++]=(*p);
       }
+      break;
     }
-    break;
+    case '/':
+    {
+      token[i++]=(*p++);
+      if ((*p == '>') || (*p == '/'))
+        token[i++]=(*p++);
+      break;
+    }
+    default:
+    {
+      char
+        *q;
+
+      value=StringToDouble(p,&q);
+      (void) value;
+      if ((p != q) && (*p != ','))
+        {
+          for ( ; (p < q) && (*p != ','); p++)
+            token[i++]=(*p);
+          if (*p == '%')
+            token[i++]=(*p++);
+          break;
+        }
+      if ((*p != '\0') && (isalpha((int) ((unsigned char) *p)) == 0) &&
+          (*p != *DirectorySeparator) && (*p != '#') && (*p != '<'))
+        {
+          token[i++]=(*p++);
+          break;
+        }
+      for ( ; *p != '\0'; p++)
+      {
+        if (((isspace((int) ((unsigned char) *p)) != 0) || (*p == '=') ||
+            (*p == ',') || (*p == ':') || (*p == ';')) && (*(p-1) != '\\'))
+          break;
+        if ((i > 0) && (*p == '<'))
+          break;
+        token[i++]=(*p);
+        if (*p == '>')
+          break;
+        if (*p == '(')
+          for (p++; *p != '\0'; p++)
+          {
+            token[i++]=(*p);
+            if ((*p == ')') && (*(p-1) != '\\'))
+              break;
+          }
+      }
+      break;
+    }
   }
   token[i]='\0';
   if (LocaleNCompare(token,"url(",4) == 0)
@@ -1003,7 +1000,11 @@ MagickExport int Tokenizer(TokenInfo *token_info,const unsigned flag,
     switch (token_info->state)
     {
       case IN_WHITE:
+      {
         token_info->state=IN_TOKEN;
+        StoreToken(token_info,token,max_token_length,c);
+        break;
+      }
       case IN_TOKEN:
       case IN_QUOTE:
       {

@@ -24,7 +24,6 @@
 %  obtain a copy of the license at                                            %
 %                                                                             %
 %    http://www.imagemagick.org/script/license.php                            %
-%                                                                             %
 %  unless required by applicable law or agreed to in writing, software        %
 %  distributed under the license is distributed on an "as is" basis,          %
 %  without warranties or conditions of any kind, either express or implied.   %
@@ -100,7 +99,7 @@ static const unsigned char
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  AcquireString() returns an new extented string, containing a clone of the
+%  AcquireString() returns an new extended string, containing a clone of the
 %  given string.
 %
 %  An extended string is the string length, plus an extra MaxTextExtent space
@@ -174,15 +173,12 @@ MagickExport StringInfo *AcquireStringInfo(const size_t length)
   (void) ResetMagickMemory(string_info,0,sizeof(*string_info));
   string_info->signature=MagickSignature;
   string_info->length=length;
-  if (string_info->length != 0)
-    {
-      string_info->datum=(unsigned char *) NULL;
-      if (~string_info->length >= (MaxTextExtent-1))
-        string_info->datum=(unsigned char *) AcquireQuantumMemory(
-          string_info->length+MaxTextExtent,sizeof(*string_info->datum));
-      if (string_info->datum == (unsigned char *) NULL)
-        ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-    }
+  string_info->datum=(unsigned char *) NULL;
+  if (~string_info->length >= (MaxTextExtent-1))
+    string_info->datum=(unsigned char *) AcquireQuantumMemory(
+      string_info->length+MaxTextExtent,sizeof(*string_info->datum));
+  if (string_info->datum == (unsigned char *) NULL)
+    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   return(string_info);
 }
 
@@ -217,10 +213,15 @@ MagickExport StringInfo *BlobToStringInfo(const void *blob,const size_t length)
     *string_info;
 
   string_info=AcquireStringInfo(0);
+  if (~length < MaxTextExtent)
+    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   string_info->length=length;
-  if (~string_info->length >= (MaxTextExtent-1))
-    string_info->datum=(unsigned char *) AcquireQuantumMemory(
-      string_info->length+MaxTextExtent,sizeof(*string_info->datum));
+  if (string_info->datum == (unsigned char *) NULL)
+    string_info->datum=(unsigned char *) AcquireQuantumMemory(length+
+      MaxTextExtent,sizeof(*string_info->datum));
+  else
+    string_info->datum=(unsigned char *) ResizeQuantumMemory(string_info->datum,
+      length+MaxTextExtent,sizeof(*string_info->datum));
   if (string_info->datum == (unsigned char *) NULL)
     {
       string_info=DestroyStringInfo(string_info);
@@ -653,6 +654,9 @@ MagickExport StringInfo *ConfigureFileToStringInfo(const char *filename)
   string_info=AcquireStringInfo(0);
   (void) CopyMagickString(string_info->path,filename,MaxTextExtent);
   string_info->length=length;
+  if (string_info->datum != (unsigned char *) NULL)
+    string_info->datum=(unsigned char *) RelinquishMagickMemory( 
+      string_info->datum);
   string_info->datum=(unsigned char *) string;
   return(string_info);
 }
@@ -1030,6 +1034,9 @@ MagickExport StringInfo *FileToStringInfo(const char *filename,
   assert(exception != (ExceptionInfo *) NULL);
   string_info=AcquireStringInfo(0);
   (void) CopyMagickString(string_info->path,filename,MaxTextExtent);
+  if (string_info->datum != (unsigned char *) NULL)
+    string_info->datum=(unsigned char *) RelinquishMagickMemory( 
+      string_info->datum);
   string_info->datum=FileToBlob(filename,extent,&string_info->length,exception);
   if (string_info->datum == (unsigned char *) NULL)
     {
@@ -2250,8 +2257,8 @@ MagickExport char **StringToArgv(const char *text,int *argc)
 %
 %  The format of the StringToArrayOfDoubles method is:
 %
-%     double *StringToArrayOfDoubles(const char *string,
-%          size_t *count, ExceptionInfo *exception)
+%     double *StringToArrayOfDoubles(const char *string,size_t *count,
+%       ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -2336,7 +2343,7 @@ MagickExport double *StringToArrayOfDoubles(const char *string,ssize_t *count,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  StringToken() Looks for any one of given delimiters and splits the string
+%  StringToken() looks for any one of given delimiters and splits the string
 %  into two separate strings by replacing the delimiter character found with a
 %  nul character.
 %

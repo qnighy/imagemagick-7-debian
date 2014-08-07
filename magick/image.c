@@ -190,7 +190,7 @@ MagickExport Image *AcquireImage(const ImageInfo *image_info)
   image->ticks_per_second=UndefinedTicksPerSecond;
   image->compose=OverCompositeOp;
   image->blur=1.0;
-  GetExceptionInfo(&image->exception);
+  InitializeExceptionInfo(&image->exception);
   (void) QueryColorDatabase(BackgroundColor,&image->background_color,
     &image->exception);
   (void) QueryColorDatabase(BorderColor,&image->border_color,&image->exception);
@@ -831,7 +831,7 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
   (void) CloneImageProperties(clone_image,image);
   (void) CloneImageArtifacts(clone_image,image);
   GetTimerInfo(&clone_image->timer);
-  GetExceptionInfo(&clone_image->exception);
+  InitializeExceptionInfo(&clone_image->exception);
   InheritException(&clone_image->exception,&image->exception);
   if (image->ascii85 != (void *) NULL)
     Ascii85Initialize(clone_image);
@@ -861,7 +861,7 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
   clone_image->ping=image->ping;
   clone_image->debug=IsEventLogging();
   clone_image->semaphore=AllocateSemaphoreInfo();
-  if ((columns == 0) && (rows == 0))
+  if ((columns == 0) || (rows == 0))
     {
       if (image->montage != (char *) NULL)
         (void) CloneString(&clone_image->montage,image->montage);
@@ -883,11 +883,15 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
       if (image->mask != (Image *) NULL)
         clone_image->mask=CloneImage(image->mask,0,0,MagickTrue,exception);
     }
-  scale=(double) columns/(double) image->columns;
+  scale=1.0;
+  if (image->columns != 0)
+    scale=(double) columns/(double) image->columns;
   clone_image->page.width=(size_t) floor(scale*image->page.width+0.5);
   clone_image->page.x=(ssize_t) ceil(scale*image->page.x-0.5);
   clone_image->tile_offset.x=(ssize_t) ceil(scale*image->tile_offset.x-0.5);
-  scale=(double) rows/(double) image->rows;
+  scale=1.0;
+  if (image->rows != 0)
+    scale=(double) rows/(double) image->rows;
   clone_image->page.height=(size_t) floor(scale*image->page.height+0.5);
   clone_image->page.y=(ssize_t) ceil(scale*image->page.y-0.5);
   clone_image->tile_offset.y=(ssize_t) ceil(scale*image->tile_offset.y-0.5);
@@ -1059,7 +1063,7 @@ MagickExport Image *DestroyImage(Image *image)
   if (image->ascii85 != (Ascii85Info*) NULL)
     image->ascii85=(Ascii85Info *) RelinquishMagickMemory(image->ascii85);
   DestroyBlob(image);
-  (void) DestroyExceptionInfo(&image->exception);
+  (void) ClearExceptionInfo(&image->exception,MagickTrue);
   if (image->semaphore != (SemaphoreInfo *) NULL)
     DestroySemaphoreInfo(&image->semaphore);
   image->signature=(~MagickSignature);
@@ -1908,9 +1912,8 @@ MagickExport MagickBooleanType ModifyImage(Image **image,
 %
 %  The format of the NewMagickImage method is:
 %
-%      Image *NewMagickImage(const ImageInfo *image_info,
-%        const size_t width,const size_t height,
-%        const MagickPixelPacket *background)
+%      Image *NewMagickImage(const ImageInfo *image_info,const size_t width,
+%        const size_t height,const MagickPixelPacket *background)
 %
 %  A description of each parameter follows:
 %
@@ -1924,8 +1927,7 @@ MagickExport MagickBooleanType ModifyImage(Image **image,
 %
 */
 MagickExport Image *NewMagickImage(const ImageInfo *image_info,
-  const size_t width,const size_t height,
-  const MagickPixelPacket *background)
+  const size_t width,const size_t height,const MagickPixelPacket *background)
 {
   CacheView
     *image_view;
@@ -3352,6 +3354,9 @@ MagickExport Image *SmushImages(const Image *images,
 */
 MagickExport MagickBooleanType StripImage(Image *image)
 {
+  MagickBooleanType
+    status;
+
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
@@ -3359,8 +3364,9 @@ MagickExport MagickBooleanType StripImage(Image *image)
   (void) DeleteImageProperty(image,"comment");
   (void) DeleteImageProperty(image,"date:create");
   (void) DeleteImageProperty(image,"date:modify");
-  (void) SetImageArtifact(image,"png:include-chunk","none,trns,gama");
-  return(MagickTrue);
+  status=SetImageArtifact(image,"png:exclude-chunk",
+    "EXIF,iCCP,iTXt,sRGB,tEXt,zCCP,zTXt,date");
+  return(status);
 }
 
 /*

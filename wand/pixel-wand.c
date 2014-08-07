@@ -500,7 +500,7 @@ WandExport MagickBooleanType PixelClearException(PixelWand *wand)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  PixelGetAlpha() returns the normalized alpha color of the pixel wand.
+%  PixelGetAlpha() returns the normalized alpha value of the pixel wand.
 %
 %  The format of the PixelGetAlpha method is:
 %
@@ -741,7 +741,7 @@ WandExport char *PixelGetColorAsString(const PixelWand *wand)
 WandExport char *PixelGetColorAsNormalizedString(const PixelWand *wand)
 {
   char
-    color[MaxTextExtent];
+    color[2*MaxTextExtent];
 
   assert(wand != (const PixelWand *) NULL);
   assert(wand->signature == WandSignature);
@@ -1211,7 +1211,7 @@ WandExport void PixelGetMagickColor(const PixelWand *wand,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  PixelGetOpacity() returns the normalized opacity color of the pixel wand.
+%  PixelGetOpacity() returns the normalized opacity value of the pixel wand.
 %
 %  The format of the PixelGetOpacity method is:
 %
@@ -1242,7 +1242,7 @@ WandExport double PixelGetOpacity(const PixelWand *wand)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  PixelGetOpacityQuantum() returns the opacity color of the pixel wand.
+%  PixelGetOpacityQuantum() returns the opacity value of the pixel wand.
 %
 %  The format of the PixelGetOpacityQuantum method is:
 %
@@ -1445,7 +1445,7 @@ WandExport Quantum PixelGetYellowQuantum(const PixelWand *wand)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  PixelSetAlpha() sets the normalized alpha color of the pixel wand.
+%  PixelSetAlpha() sets the normalized alpha value of the pixel wand.
 %
 %  The format of the PixelSetAlpha method is:
 %
@@ -1480,7 +1480,7 @@ WandExport void PixelSetAlpha(PixelWand *wand,const double alpha)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  PixelSetAlphaQuantum() sets the alpha color of the pixel wand.
+%  PixelSetAlphaQuantum() sets the alpha value of the pixel wand.
 %
 %  The format of the PixelSetAlphaQuantum method is:
 %
@@ -1491,7 +1491,7 @@ WandExport void PixelSetAlpha(PixelWand *wand,const double alpha)
 %
 %    o wand: the pixel wand.
 %
-%    o opacity: the opacity color.
+%    o opacity: the opacity value.
 %
 */
 WandExport void PixelSetAlphaQuantum(PixelWand *wand,const Quantum opacity)
@@ -2105,7 +2105,7 @@ WandExport void PixelSetMagickColor(PixelWand *wand,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  PixelSetOpacity() sets the normalized opacity color of the pixel wand.
+%  PixelSetOpacity() sets the normalized opacity value of the pixel wand.
 %
 %  The format of the PixelSetOpacity method is:
 %
@@ -2115,7 +2115,7 @@ WandExport void PixelSetMagickColor(PixelWand *wand,
 %
 %    o wand: the pixel wand.
 %
-%    o opacity: the opacity color.
+%    o opacity: the opacity value.
 %
 */
 WandExport void PixelSetOpacity(PixelWand *wand,const double opacity)
@@ -2140,7 +2140,7 @@ WandExport void PixelSetOpacity(PixelWand *wand,const double opacity)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  PixelSetOpacityQuantum() sets the opacity color of the pixel wand.
+%  PixelSetOpacityQuantum() sets the opacity value of the pixel wand.
 %
 %  The format of the PixelSetOpacityQuantum method is:
 %
@@ -2151,7 +2151,7 @@ WandExport void PixelSetOpacity(PixelWand *wand,const double opacity)
 %
 %    o wand: the pixel wand.
 %
-%    o opacity: the opacity color.
+%    o opacity: the opacity value.
 %
 */
 WandExport void PixelSetOpacityQuantum(PixelWand *wand,const Quantum opacity)

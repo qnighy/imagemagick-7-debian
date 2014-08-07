@@ -61,6 +61,7 @@
 #include "magick/image-private.h"
 #include "magick/list.h"
 #include "magick/log.h"
+#include "magick/matrix.h"
 #include "magick/memory_.h"
 #include "magick/memory-private.h"
 #include "magick/monitor.h"
@@ -214,14 +215,14 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
       blur_image=DestroyImage(blur_image);
       return((Image *) NULL);
     }
-  (void) LevelImage(edge_image,"20%,95%");
+  (void) AutoLevelImage(edge_image);
   gaussian_image=BlurImage(edge_image,radius,sigma,exception);
   if (gaussian_image != (Image *) NULL)
     {
       edge_image=DestroyImage(edge_image);
       edge_image=gaussian_image;
     }
-  (void) LevelImage(edge_image,"10%,95%");
+  (void) AutoLevelImage(edge_image);
   /*
     Create a set of kernels from maximum (radius,sigma) to minimum.
   */
@@ -536,14 +537,14 @@ MagickExport Image *AdaptiveSharpenImageChannel(const Image *image,
       sharp_image=DestroyImage(sharp_image);
       return((Image *) NULL);
     }
-  (void) LevelImage(edge_image,"20%,95%");
+  (void) AutoLevelImage(edge_image);
   gaussian_image=BlurImage(edge_image,radius,sigma,exception);
   if (gaussian_image != (Image *) NULL)
     {
       edge_image=DestroyImage(edge_image);
       edge_image=gaussian_image;
     }
-  (void) LevelImage(edge_image,"10%,95%");
+  (void) AutoLevelImage(edge_image);
   /*
     Create a set of kernels from maximum (radius,sigma) to minimum.
   */
@@ -904,7 +905,7 @@ MagickExport Image *ConvolveImageChannel(const Image *image,
     kernel_info->values[i]=kernel[i];
   convolve_image=AccelerateConvolveImageChannel(image,channel,kernel_info,
     exception);
-  if (convolve_image == (Image *) NULL) 
+  if (convolve_image == (Image *) NULL)
     convolve_image=MorphologyApply(image,channel,ConvolveMorphology,1,
       kernel_info,UndefinedCompositeOp,0.0,exception);
   kernel_info=DestroyKernelInfo(kernel_info);
@@ -923,7 +924,7 @@ MagickExport Image *ConvolveImageChannel(const Image *image,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  DespeckleImage() reduces the speckle noise in an image while perserving the
-%  edges of the original image.  A speckle removing filter uses a complementary 
+%  edges of the original image.  A speckle removing filter uses a complementary
 %  hulling technique (raising pixels that are darker than their surrounding
 %  neighbors, then complementarily lowering pixels that are brighter than their
 %  surrounding neighbors) to reduce the speckle index of that image (reference
@@ -972,9 +973,7 @@ static void Hull(const Image *image,const ssize_t x_offset,
     SignedQuantum
       v;
 
-    /* i = y*(columns+2)+1; */
     i=(2*y+1)+y*columns;
-    
     if (polarity > 0)
       for (x=0; x < (ssize_t) columns; x++)
       {
@@ -1302,7 +1301,7 @@ MagickExport Image *EdgeImage(const Image *image,const double radius,
   kernel_info->values[i/2]=(double) kernel_info->width*kernel_info->height-1.0;
   edge_image=AccelerateConvolveImageChannel(image,DefaultChannels,kernel_info,
     exception);
-  if (edge_image == (Image *) NULL) 
+  if (edge_image == (Image *) NULL)
     edge_image=MorphologyApply(image,DefaultChannels,ConvolveMorphology,1,
       kernel_info,UndefinedCompositeOp,0.0,exception);
   kernel_info=DestroyKernelInfo(kernel_info);
@@ -1544,7 +1543,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
       message=DestroyString(message);
     }
   filter_image=AccelerateConvolveImageChannel(image,channel,kernel,exception);
-  if (filter_image != (Image *) NULL) 
+  if (filter_image != (Image *) NULL)
     {
 #ifdef MAGICKCORE_CLPERFMARKER
       clEndPerfMarkerAMD();
@@ -2354,8 +2353,7 @@ MagickExport Image *PreviewImage(const Image *image,const PreviewType preview,
         preview_image=CloneImage(thumbnail,0,0,MagickTrue,exception);
         if (preview_image == (Image *) NULL)
           break;
-        (void) FormatLocaleString(factor,MaxTextExtent,"100,%g",
-          2.0*percentage);
+        (void) FormatLocaleString(factor,MaxTextExtent,"100,%g",2.0*percentage);
         (void) ModulateImage(preview_image,factor);
         (void) FormatLocaleString(label,MaxTextExtent,"modulate %s",factor);
         break;
@@ -2475,14 +2473,14 @@ MagickExport Image *PreviewImage(const Image *image,const PreviewType preview,
             (void) CopyMagickString(factor,"impulse",MaxTextExtent);
             break;
           }
-          case 4:
+          case 5:
           {
             (void) CopyMagickString(factor,"laplacian",MaxTextExtent);
             break;
           }
-          case 5:
+          case 6:
           {
-            (void) CopyMagickString(factor,"Poisson",MaxTextExtent);
+            (void) CopyMagickString(factor,"poisson",MaxTextExtent);
             break;
           }
           default:
@@ -2832,14 +2830,13 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
     cos_theta[i]=cos((double) (theta*i-offset));
     sin_theta[i]=sin((double) (theta*i-offset));
   }
-
   blur_image=CloneImage(image,0,0,MagickTrue,exception);
-  if (blur_image == (Image *) NULL) 
-  {
-    cos_theta=(MagickRealType *) RelinquishMagickMemory(cos_theta);
-    sin_theta=(MagickRealType *) RelinquishMagickMemory(sin_theta);
-    return((Image *) NULL);
-  }
+  if (blur_image == (Image *) NULL)
+    {
+      cos_theta=(MagickRealType *) RelinquishMagickMemory(cos_theta);
+      sin_theta=(MagickRealType *) RelinquishMagickMemory(sin_theta);
+      return((Image *) NULL);
+    }
   if (SetImageStorageClass(blur_image,DirectClass) == MagickFalse)
   {
     cos_theta=(MagickRealType *) RelinquishMagickMemory(cos_theta);
@@ -2848,7 +2845,6 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
     blur_image=DestroyImage(blur_image);
     return((Image *) NULL);
   }
-
   /*
     Radial blur image.
   */
@@ -2968,8 +2964,7 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
               (blur_center.x+center.x*cos_theta[i]-center.y*sin_theta[i]+0.5),
               (ssize_t) (blur_center.y+center.x*sin_theta[i]+center.y*
               cos_theta[i]+0.5),&pixel,exception);
-            alpha=(MagickRealType) (QuantumScale*
-              GetPixelAlpha(&pixel));
+            alpha=(MagickRealType) (QuantumScale*GetPixelAlpha(&pixel));
             qixel.red+=alpha*pixel.red;
             qixel.green+=alpha*pixel.green;
             qixel.blue+=alpha*pixel.blue;

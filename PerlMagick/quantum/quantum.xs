@@ -190,7 +190,7 @@ struct PackageInfo
 };
 
 typedef void
-  *Image__Magick__Q16;  /* data type for the Image::Magick::@MAGICK_ABI_NAME@ package */
+  *Image__Magick__Q16;  /* data type for the Image::Magick::Q16 package */
 
 /*
   Static declarations.
@@ -419,8 +419,8 @@ static struct
       {"channel", MagickChannelOptions} } },
     { "WhiteThreshold", { {"threshold", StringReference},
       {"channel", MagickChannelOptions} } },
-    { "RadialBlur", { {"geometry", StringReference}, {"angle", RealReference},
-      {"channel", MagickChannelOptions} } },
+    { "RotationalBlur", { {"geometry", StringReference},
+      {"angle", RealReference}, {"channel", MagickChannelOptions} } },
     { "Thumbnail", { {"geometry", StringReference}, {"width", IntegerReference},
       {"height", IntegerReference} } },
     { "Strip", },
@@ -543,6 +543,15 @@ static struct
     { "Poly", { {"terms", ArrayReference},
       {"channel", MagickChannelOptions} } },
     { "Grayscale", { {"method", MagickPixelIntensityOptions} } },
+    { "CannyEdge", { {"geometry", StringReference},
+      {"radius", RealReference}, {"sigma", RealReference},
+      {"lower-percent", RealReference}, {"upper-percent", RealReference} } },
+    { "HoughLine", { {"geometry", StringReference},
+      {"width", IntegerReference}, {"height", IntegerReference},
+      {"threshold", IntegerReference} } },
+    { "MeanShift", { {"geometry", StringReference},
+      {"width", IntegerReference}, {"height", IntegerReference},
+      {"distance", RealReference} } },
   };
 
 static SplayTreeInfo
@@ -2415,7 +2424,7 @@ constant(name,argument)
 #
 void
 Animate(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     AnimateImage  = 1
     animate       = 2
@@ -2495,7 +2504,7 @@ Animate(ref,...)
 #
 void
 Append(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     AppendImage  = 1
     append       = 2
@@ -2633,7 +2642,7 @@ Append(ref,...)
 #
 void
 Average(ref)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     AverageImage   = 1
     average        = 2
@@ -2731,7 +2740,7 @@ Average(ref)
 #
 void
 BlobToImage(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     BlobToImage  = 1
     blobtoimage  = 2
@@ -2887,7 +2896,7 @@ BlobToImage(ref,...)
 #
 void
 Clone(ref)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     CopyImage   = 1
     copy        = 2
@@ -3016,7 +3025,7 @@ CLONE(ref,...)
 #
 void
 Coalesce(ref)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     CoalesceImage   = 1
     coalesce        = 2
@@ -3106,7 +3115,7 @@ Coalesce(ref)
 #
 void
 Compare(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     CompareImage = 1
     compare      = 2
@@ -3305,7 +3314,7 @@ Compare(ref,...)
 #
 void
 CompareLayers(ref)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     CompareImageLayers   = 1
     comparelayers        = 2
@@ -3432,6 +3441,163 @@ CompareLayers(ref)
 #                                                                             #
 #                                                                             #
 #                                                                             #
+#   C o m p l e x I m a g e s                                                 #
+#                                                                             #
+#                                                                             #
+#                                                                             #
+###############################################################################
+#
+#
+void
+ComplexImages(ref)
+  Image::Magick::Q16 ref = NO_INIT
+  ALIAS:
+    ComplexImages   = 1
+    compleximages   = 2
+  PPCODE:
+  {
+    AV
+      *av;
+
+    char
+      *attribute,
+      *p;
+
+    ExceptionInfo
+      *exception;
+
+    HV
+      *hv;
+
+    Image
+      *image;
+
+    ComplexOperator
+      op;
+
+    register ssize_t
+      i;
+
+    struct PackageInfo
+      *info;
+
+    SV
+      *perl_exception,
+      *reference,
+      *rv,
+      *sv;
+
+    PERL_UNUSED_VAR(ref);
+    PERL_UNUSED_VAR(ix);
+    exception=AcquireExceptionInfo();
+    perl_exception=newSVpv("",0);
+    sv=NULL;
+    if (sv_isobject(ST(0)) == 0)
+      {
+        ThrowPerlException(exception,OptionError,"ReferenceIsNotMyType",
+          PackageName);
+        goto PerlException;
+      }
+    reference=SvRV(ST(0));
+    hv=SvSTASH(reference);
+    image=SetupList(aTHX_ reference,&info,(SV ***) NULL,exception);
+    if (image == (Image *) NULL)
+      {
+        ThrowPerlException(exception,OptionError,"NoImagesDefined",
+          PackageName);
+        goto PerlException;
+      }
+    op=UndefinedComplexOperator;
+    if (items == 2)
+      {
+        ssize_t
+          in;
+
+        in=ParseCommandOption(MagickComplexOptions,MagickFalse,(char *)
+          SvPV(ST(1),na));
+        if (in < 0)
+          {
+            ThrowPerlException(exception,OptionError,"UnrecognizedType",
+              SvPV(ST(1),na));
+            return;
+          }
+        op=(ComplexOperator) in;
+      }
+    else
+      for (i=2; i < items; i+=2)
+      {
+        attribute=(char *) SvPV(ST(i-1),na);
+        switch (*attribute)
+        {
+          case 'O':
+          case 'o':
+          {
+            if (LocaleCompare(attribute,"operator") == 0)
+              {
+                ssize_t
+                  in;
+
+                in=!SvPOK(ST(i)) ? SvIV(ST(i)) : ParseCommandOption(
+                  MagickComplexOptions,MagickFalse,SvPV(ST(i),na));
+                if (in < 0)
+                  {
+                    ThrowPerlException(exception,OptionError,"UnrecognizedType",
+                      SvPV(ST(i),na));
+                    return;
+                  }
+                op=(ComplexOperator) in;
+                break;
+              }
+            ThrowPerlException(exception,OptionError,"UnrecognizedAttribute",
+              attribute);
+            break;
+          }
+          default:
+          {
+            ThrowPerlException(exception,OptionError,"UnrecognizedAttribute",
+              attribute);
+            break;
+          }
+        }
+      }
+    image=ComplexImages(image,op,exception);
+    if (image == (Image *) NULL)
+      goto PerlException;
+    /*
+      Create blessed Perl array for the returned image.
+    */
+    av=newAV();
+    ST(0)=sv_2mortal(sv_bless(newRV((SV *) av),hv));
+    SvREFCNT_dec(av);
+    AddImageToRegistry(sv,image);
+    rv=newRV(sv);
+    av_push(av,sv_bless(rv,hv));
+    SvREFCNT_dec(sv);
+    info=GetPackageInfo(aTHX_ (void *) av,info,exception);
+    (void) FormatLocaleString(info->image_info->filename,MaxTextExtent,
+      "complex-%.*s",(int) (MaxTextExtent-9),
+      ((p=strrchr(image->filename,'/')) ? p+1 : image->filename));
+    (void) CopyMagickString(image->filename,info->image_info->filename,
+      MaxTextExtent);
+    SetImageInfo(info->image_info,0,exception);
+    exception=DestroyExceptionInfo(exception);
+    SvREFCNT_dec(perl_exception);
+    XSRETURN(1);
+
+  PerlException:
+    InheritPerlException(exception,perl_exception);
+    exception=DestroyExceptionInfo(exception);
+    sv_setiv(perl_exception,(IV) SvCUR(perl_exception) != 0);
+    SvPOK_on(perl_exception);
+    ST(0)=sv_2mortal(perl_exception);
+    XSRETURN(1);
+  }
+
+#
+###############################################################################
+#                                                                             #
+#                                                                             #
+#                                                                             #
 #   D e s t r o y                                                             #
 #                                                                             #
 #                                                                             #
@@ -3441,7 +3607,7 @@ CompareLayers(ref)
 #
 void
 DESTROY(ref)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   PPCODE:
   {
     SV
@@ -3526,7 +3692,7 @@ DESTROY(ref)
 #
 void
 Display(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     DisplayImage  = 1
     display       = 2
@@ -3606,7 +3772,7 @@ Display(ref,...)
 #
 void
 EvaluateImages(ref)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     EvaluateImages   = 1
     evaluateimages   = 2
@@ -3763,7 +3929,7 @@ EvaluateImages(ref)
 #
 void
 Features(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     FeaturesImage = 1
     features      = 2
@@ -3869,8 +4035,7 @@ Features(ref,...)
           PackageName);
         goto PerlException;
       }
-    info=GetPackageInfo(aTHX_ (void *) av,info,exception);
-    distance=1;
+    distance=1.0;
     for (i=2; i < items; i+=2)
     {
       attribute=(char *) SvPV(ST(i-1),na);
@@ -3904,7 +4069,7 @@ Features(ref,...)
       if (channel_features == (ChannelFeatures *) NULL)
         continue;
       count++;
-      EXTEND(sp,75*count);
+      EXTEND(sp,280*count);
       for (i=0; i < 4; i++)
       {
         ChannelFeatures(RedChannel,i);
@@ -3939,7 +4104,7 @@ Features(ref,...)
 #
 void
 Flatten(ref)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     FlattenImage   = 1
     flatten        = 2
@@ -4076,7 +4241,7 @@ Flatten(ref)
 #
 void
 Fx(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     FxImage  = 1
     fx       = 2
@@ -4235,7 +4400,7 @@ Fx(ref,...)
 #
 void
 Get(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     GetAttributes = 1
     GetAttribute  = 2
@@ -5993,7 +6158,7 @@ GetVirtualIndexQueue(ref,...)
 #
 void
 Histogram(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     HistogramImage = 1
     histogram      = 2
@@ -6052,7 +6217,6 @@ Histogram(ref,...)
           PackageName);
         goto PerlException;
       }
-    info=GetPackageInfo(aTHX_ (void *) av,info,exception);
     count=0;
     for ( ; image; image=image->next)
     {
@@ -6108,7 +6272,7 @@ Histogram(ref,...)
 #
 void
 GetPixel(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     getpixel = 1
     getPixel = 2
@@ -6313,7 +6477,7 @@ GetPixel(ref,...)
 #
 void
 GetPixels(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     getpixels = 1
     getPixels = 2
@@ -6561,7 +6725,7 @@ GetPixels(ref,...)
 #
 void
 ImageToBlob(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     ImageToBlob  = 1
     imagetoblob  = 2
@@ -6667,7 +6831,7 @@ ImageToBlob(ref,...)
 #
 void
 Layers(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     Layers                = 1
     layers           = 2
@@ -6972,7 +7136,7 @@ Layers(ref,...)
 #
 SV *
 MagickToMime(ref,name)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   char *name
   ALIAS:
     magicktomime = 1
@@ -7004,7 +7168,7 @@ MagickToMime(ref,name)
 #
 void
 Mogrify(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     Comment            =   1
     CommentImage       =   2
@@ -7166,8 +7330,8 @@ Mogrify(ref,...)
     BlackThresholdImage= 160
     WhiteThreshold     = 161
     WhiteThresholdImage= 162
-    RadialBlur         = 163
-    RadialBlurImage    = 164
+    RotationalBlur     = 163
+    RotationalBlurImage= 164
     Thumbnail          = 165
     ThumbnailImage     = 166
     Strip              = 167
@@ -7284,6 +7448,12 @@ Mogrify(ref,...)
     PolyImage          = 278
     Grayscale          = 279
     GrayscaleImage     = 280
+    CannyEdge          = 281
+    CannyEdgeImage     = 282
+    HoughLine          = 283
+    HoughLineImage     = 284
+    MeanShift          = 285
+    MeanShiftImage     = 286
     MogrifyRegion      = 666
   PPCODE:
   {
@@ -8779,7 +8949,6 @@ Mogrify(ref,...)
           draw_info=CloneDrawInfo(info ? info->image_info : (ImageInfo *) NULL,
             (DrawInfo *) NULL);
           if (attribute_flag[0] != 0)
-          if (attribute_flag[0] != 0)
             flags=ParsePageGeometry(image,argument_list[0].string_reference,
               &geometry,exception);
           if (attribute_flag[1] != 0)
@@ -8916,18 +9085,15 @@ Mogrify(ref,...)
           if (attribute_flag[4] != 0)
             quantize_info->measure_error=
               argument_list[4].integer_reference != 0 ? MagickTrue : MagickFalse;
-          if (attribute_flag[5] != 0)
-            (void) QueryColorDatabase(argument_list[5].string_reference,
-              &image->transparent_color,exception);
-          if (attribute_flag[5] && argument_list[5].integer_reference)
-            {
-              (void) QuantizeImages(quantize_info,image);
-              goto PerlException;
-            }
           if (attribute_flag[6] != 0)
+            (void) QueryColorDatabase(argument_list[6].string_reference,
+              &image->transparent_color,exception);
+          if (attribute_flag[7] != 0)
             quantize_info->dither_method=(DitherMethod)
-              argument_list[6].integer_reference;
-          if ((image->storage_class == DirectClass) ||
+              argument_list[7].integer_reference;
+          if (attribute_flag[5] && argument_list[5].integer_reference)
+              (void) QuantizeImages(quantize_info,image);
+          else if ((image->storage_class == DirectClass) ||
               (image->colors > quantize_info->number_colors) ||
               (quantize_info->colorspace == GRAYColorspace))
             (void) QuantizeImage(quantize_info,image);
@@ -9640,7 +9806,7 @@ Mogrify(ref,...)
             argument_list[0].string_reference,exception);
           break;
         }
-        case 82:  /* RadialBlur */
+        case 82:  /* RotationalBlur */
         {
           if (attribute_flag[0] != 0)
             {
@@ -9653,7 +9819,7 @@ Mogrify(ref,...)
             geometry_info.rho=argument_list[1].real_reference;
           if (attribute_flag[2] != 0)
             channel=(ChannelType) argument_list[2].integer_reference;
-          image=RadialBlurImageChannel(image,channel,geometry_info.rho,
+          image=RotationalBlurImageChannel(image,channel,geometry_info.rho,
             exception);
           break;
         }
@@ -10698,6 +10864,80 @@ Mogrify(ref,...)
           (void) GrayscaleImage(image,method);
           break;
         }
+        case 141:  /* CannyEdge */
+        {
+          if (attribute_flag[0] != 0)
+            {
+              flags=ParseGeometry(argument_list[0].string_reference,
+                &geometry_info);
+              if ((flags & SigmaValue) == 0)
+                geometry_info.sigma=1.0;
+              if ((flags & XiValue) == 0)
+                geometry_info.xi=0.10;
+              if ((flags & PsiValue) == 0)
+                geometry_info.psi=0.30;
+              if ((flags & PercentValue) != 0)
+                {
+                  geometry_info.xi/=100.0;
+                  geometry_info.psi/=100.0;
+                }
+            }
+          if (attribute_flag[1] != 0)
+            geometry_info.rho=argument_list[1].real_reference;
+          if (attribute_flag[2] != 0)
+            geometry_info.sigma=argument_list[2].real_reference;
+          if (attribute_flag[3] != 0)
+            geometry_info.xi=argument_list[3].real_reference;
+          if (attribute_flag[4] != 0)
+            geometry_info.psi=argument_list[4].real_reference;
+          image=CannyEdgeImage(image,geometry_info.rho,geometry_info.sigma,
+            geometry_info.xi,geometry_info.psi,exception);
+          break;
+        }
+        case 142:  /* HoughLine */
+        {
+          if (attribute_flag[0] != 0)
+            {
+              flags=ParseGeometry(argument_list[0].string_reference,
+                &geometry_info);
+              if ((flags & SigmaValue) == 0)
+                geometry_info.sigma=geometry_info.rho;
+              if ((flags & XiValue) == 0)
+                geometry_info.xi=40;
+            }
+          if (attribute_flag[1] != 0)
+            geometry_info.rho=(double) argument_list[1].integer_reference;
+          if (attribute_flag[2] != 0)
+            geometry_info.sigma=(double) argument_list[2].integer_reference;
+          if (attribute_flag[3] != 0)
+            geometry_info.xi=(double) argument_list[3].integer_reference;
+          image=HoughLineImage(image,(size_t) geometry_info.rho,(size_t)
+            geometry_info.sigma,(size_t) geometry_info.xi,exception);
+          break;
+        }
+        case 143:  /* MeanShift */
+        {
+          if (attribute_flag[0] != 0)
+            {
+              flags=ParseGeometry(argument_list[0].string_reference,
+                &geometry_info);
+              if ((flags & SigmaValue) == 0)
+                geometry_info.sigma=geometry_info.rho;
+              if ((flags & XiValue) == 0)
+                geometry_info.xi=0.10*QuantumRange;
+              if ((flags & PercentValue) != 0)
+                geometry_info.xi=QuantumRange*geometry_info.xi/100.0;
+            }
+          if (attribute_flag[1] != 0)
+            geometry_info.rho=(double) argument_list[1].integer_reference;
+          if (attribute_flag[2] != 0)
+            geometry_info.sigma=(double) argument_list[2].integer_reference;
+          if (attribute_flag[3] != 0)
+            geometry_info.xi=(double) argument_list[3].real_reference;
+          image=MeanShiftImage(image,(size_t) geometry_info.rho,(size_t)
+            geometry_info.sigma,geometry_info.xi,exception);
+          break;
+        }
       }
       if (next != (Image *) NULL)
         (void) CatchImageException(next);
@@ -10755,7 +10995,7 @@ Mogrify(ref,...)
 #
 void
 Montage(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     MontageImage  = 1
     montage       = 2
@@ -11165,7 +11405,7 @@ Montage(ref,...)
 #
 void
 Morph(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     MorphImage  = 1
     morph       = 2
@@ -11296,7 +11536,7 @@ Morph(ref,...)
 #
 void
 Mosaic(ref)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     MosaicImage   = 1
     mosaic        = 2
@@ -11355,7 +11595,6 @@ Mosaic(ref)
     rv=newRV(sv);
     av_push(av,sv_bless(rv,hv));
     SvREFCNT_dec(sv);
-    info=GetPackageInfo(aTHX_ (void *) av,info,exception);
     (void) CopyMagickString(info->image_info->filename,image->filename,
       MaxTextExtent);
     SetImageInfo(info->image_info,0,&image->exception);
@@ -11386,7 +11625,7 @@ Mosaic(ref)
 #
 void
 Ping(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     PingImage  = 1
     ping       = 2
@@ -11595,7 +11834,7 @@ Ping(ref,...)
 #
 void
 Preview(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     PreviewImage = 1
     preview      = 2
@@ -11695,7 +11934,7 @@ Preview(ref,...)
 #
 void
 QueryColor(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     querycolor = 1
   PPCODE:
@@ -11775,7 +12014,7 @@ QueryColor(ref,...)
 #
 void
 QueryColorname(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     querycolorname = 1
   PPCODE:
@@ -11849,7 +12088,7 @@ QueryColorname(ref,...)
 #
 void
 QueryFont(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     queryfont = 1
   PPCODE:
@@ -11969,7 +12208,7 @@ QueryFont(ref,...)
 #
 void
 QueryFontMetrics(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     queryfontmetrics = 1
   PPCODE:
@@ -12380,7 +12619,7 @@ QueryFontMetrics(ref,...)
 #
 void
 QueryMultilineFontMetrics(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     querymultilinefontmetrics = 1
   PPCODE:
@@ -12753,7 +12992,7 @@ QueryMultilineFontMetrics(ref,...)
 #
 void
 QueryFormat(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     queryformat = 1
   PPCODE:
@@ -12845,7 +13084,7 @@ QueryFormat(ref,...)
 #
 void
 QueryOption(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     queryoption = 1
   PPCODE:
@@ -12905,7 +13144,7 @@ QueryOption(ref,...)
 #
 void
 Read(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     ReadImage  = 1
     read       = 2
@@ -13126,7 +13365,7 @@ Read(ref,...)
 #
 void
 Remote(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     RemoteCommand  = 1
     remote         = 2
@@ -13179,7 +13418,7 @@ Remote(ref,...)
 #
 void
 Set(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     SetAttributes  = 1
     SetAttribute   = 2
@@ -13245,7 +13484,7 @@ Set(ref,...)
 #
 void
 SetPixel(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     setpixel = 1
     setPixel = 2
@@ -13493,7 +13732,7 @@ SetPixel(ref,...)
 #
 void
 Smush(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     SmushImage  = 1
     smush       = 2
@@ -13646,7 +13885,7 @@ Smush(ref,...)
 #
 void
 Statistics(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     StatisticsImage = 1
     statistics      = 2
@@ -13727,7 +13966,6 @@ Statistics(ref,...)
           PackageName);
         goto PerlException;
       }
-    info=GetPackageInfo(aTHX_ (void *) av,info,exception);
     count=0;
     for ( ; image; image=image->next)
     {
@@ -13836,7 +14074,7 @@ SyncAuthenticPixels(ref,...)
 #
 void
 Transform(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     TransformImage = 1
     transform      = 2
@@ -13984,7 +14222,7 @@ Transform(ref,...)
 #
 void
 Write(ref,...)
-  Image::Magick::Q16 ref=NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     WriteImage    = 1
     write         = 2

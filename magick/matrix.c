@@ -48,6 +48,8 @@
 #include "magick/memory_.h"
 #include "magick/pixel-private.h"
 #include "magick/resource_.h"
+#include "magick/semaphore.h"
+#include "magick/thread-private.h"
 #include "magick/utility.h"
 
 /*
@@ -78,6 +80,9 @@ struct _MatrixInfo
 
   void
     *elements;
+
+  SemaphoreInfo
+    *semaphore;
 
   size_t
     signature;
@@ -139,8 +144,12 @@ static inline MagickOffsetType WriteMatrixElements(
     count;
 
 #if !defined(MAGICKCORE_HAVE_PWRITE)
+  LockSemaphoreInfo(matrix_info->semaphore);
   if (lseek(matrix_info->file,offset,SEEK_SET) < 0)
-    return((MagickOffsetType) -1);
+    {
+      UnlockSemaphoreInfo(matrix_info->semaphore);
+      return((MagickOffsetType) -1);
+    }
 #endif
   count=0;
   for (i=0; i < (MagickOffsetType) length; i+=count)
@@ -159,6 +168,9 @@ static inline MagickOffsetType WriteMatrixElements(
           break;
       }
   }
+#if !defined(MAGICKCORE_HAVE_PWRITE)
+  UnlockSemaphoreInfo(matrix_info->semaphore);
+#endif
   return(i);
 }
 
@@ -216,6 +228,7 @@ MagickExport MatrixInfo *AcquireMatrixInfo(const size_t columns,
   matrix_info->columns=columns;
   matrix_info->rows=rows;
   matrix_info->stride=stride;
+  matrix_info->semaphore=AllocateSemaphoreInfo();
   synchronize=GetEnvironmentValue("MAGICK_SYNCHRONIZE");
   if (synchronize != (const char *) NULL)
     {
@@ -371,6 +384,7 @@ MagickExport MatrixInfo *DestroyMatrixInfo(MatrixInfo *matrix_info)
 {
   assert(matrix_info != (MatrixInfo *) NULL);
   assert(matrix_info->signature == MagickSignature);
+  LockSemaphoreInfo(matrix_info->semaphore);
   switch (matrix_info->type)
   {
     case MemoryCache:
@@ -402,6 +416,8 @@ MagickExport MatrixInfo *DestroyMatrixInfo(MatrixInfo *matrix_info)
     default:
       break;
   }
+  UnlockSemaphoreInfo(matrix_info->semaphore);
+  DestroySemaphoreInfo(&matrix_info->semaphore);
   return((MatrixInfo *) RelinquishMagickMemory(matrix_info));
 }
 
@@ -642,6 +658,24 @@ MagickExport size_t GetMatrixColumns(const MatrixInfo *matrix_info)
 %
 */
 
+static inline ssize_t EdgeX(const ssize_t x,const size_t columns)
+{
+  if (x < 0L)
+    return(0L);
+  if (x >= (ssize_t) columns)
+    return((ssize_t) (columns-1));
+  return(x);
+}
+
+static inline ssize_t EdgeY(const ssize_t y,const size_t rows)
+{
+  if (y < 0L)
+    return(0L);
+  if (y >= (ssize_t) rows)
+    return((ssize_t) (rows-1));
+  return(y);
+}
+
 static inline MagickOffsetType ReadMatrixElements(
   const MatrixInfo *restrict matrix_info,const MagickOffsetType offset,
   const MagickSizeType length,unsigned char *restrict buffer)
@@ -653,8 +687,12 @@ static inline MagickOffsetType ReadMatrixElements(
     count;
 
 #if !defined(MAGICKCORE_HAVE_PREAD)
+  LockSemaphoreInfo(matrix_info->semaphore);
   if (lseek(matrix_info->file,offset,SEEK_SET) < 0)
-    return((MagickOffsetType) -1);
+    {
+      UnlockSemaphoreInfo(matrix_info->semaphore);
+      return((MagickOffsetType) -1);
+    }
 #endif
   count=0;
   for (i=0; i < (MagickOffsetType) length; i+=count)
@@ -673,6 +711,9 @@ static inline MagickOffsetType ReadMatrixElements(
           break;
       }
   }
+#if !defined(MAGICKCORE_HAVE_PREAD)
+  UnlockSemaphoreInfo(matrix_info->semaphore);
+#endif
   return(i);
 }
 
@@ -685,10 +726,8 @@ MagickExport MagickBooleanType GetMatrixElement(const MatrixInfo *matrix_info,
 
   assert(matrix_info != (const MatrixInfo *) NULL);
   assert(matrix_info->signature == MagickSignature);
-  i=(MagickOffsetType) matrix_info->rows*x+y;
-  if ((i < 0) ||
-      ((MagickSizeType) (i*matrix_info->stride) >= matrix_info->length))
-    return(MagickFalse);
+  i=(MagickOffsetType) EdgeY(y,matrix_info->rows)*matrix_info->columns+
+    EdgeX(x,matrix_info->columns);
   if (matrix_info->type != DiskCache)
     {
       (void) memcpy(value,(unsigned char *) matrix_info->elements+i*
@@ -696,7 +735,7 @@ MagickExport MagickBooleanType GetMatrixElement(const MatrixInfo *matrix_info,
       return(MagickTrue);
     }
   count=ReadMatrixElements(matrix_info,i*matrix_info->stride,
-    matrix_info->stride,value);
+    matrix_info->stride,(unsigned char *) value);
   if (count != (MagickOffsetType) matrix_info->stride)
     return(MagickFalse);
   return(MagickTrue);
@@ -818,6 +857,142 @@ MagickExport void LeastSquaresAddTerms(double **matrix,double **vectors,
       vectors[i][j]+=results[i]*terms[j];
   }
   return;
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   M a t r i x T o I m a g e                                                 %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  MatrixToImage() returns a matrix as an image.  The matrix elements must be
+%  of type double otherwise nonsense is returned.
+%
+%  The format of the MatrixToImage method is:
+%
+%      Image *MatrixToImage(const MatrixInfo *matrix_info,
+%        ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o matrix_info: the matrix.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+MagickExport Image *MatrixToImage(const MatrixInfo *matrix_info,
+  ExceptionInfo *exception)
+{
+  CacheView
+    *image_view;
+
+  double
+    max_value,
+    min_value,
+    scale_factor,
+    value;
+
+  Image
+    *image;
+
+  MagickBooleanType
+    status;
+
+  ssize_t
+    y;
+
+  assert(matrix_info != (const MatrixInfo *) NULL);
+  assert(matrix_info->signature == MagickSignature);
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickSignature);
+  if (matrix_info->stride < sizeof(double))
+    return((Image *) NULL);
+  /*
+    Determine range of matrix.
+  */
+  (void) GetMatrixElement(matrix_info,0,0,&value);
+  min_value=value;
+  max_value=value;
+  for (y=0; y < (ssize_t) matrix_info->rows; y++)
+  {
+    register ssize_t
+      x;
+
+    for (x=0; x < (ssize_t) matrix_info->columns; x++)
+    {
+      if (GetMatrixElement(matrix_info,x,y,&value) == MagickFalse)
+        continue;
+      if (value < min_value)
+        min_value=value;
+      else
+        if (value > max_value)
+          max_value=value;
+    }
+  }
+  if ((min_value == 0.0) && (max_value == 0.0))
+    scale_factor=0;
+  else
+    if (min_value == max_value)
+      {
+        scale_factor=(double) QuantumRange/min_value;
+        min_value=0;
+      }
+    else
+      scale_factor=(double) QuantumRange/(max_value-min_value);
+  /*
+    Convert matrix to image.
+  */
+  image=AcquireImage((ImageInfo *) NULL);
+  image->columns=matrix_info->columns;
+  image->rows=matrix_info->rows;
+  image->colorspace=GRAYColorspace;
+  status=MagickTrue;
+  image_view=AcquireAuthenticCacheView(image,exception);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  #pragma omp parallel for schedule(static,4) shared(status) \
+    magick_threads(image,image,image->rows,1)
+#endif
+  for (y=0; y < (ssize_t) image->rows; y++)
+  {
+    double
+      value;
+
+    register PixelPacket
+      *q;
+
+    register ssize_t
+      x;
+
+    if (status == MagickFalse)
+      continue;
+    q=QueueCacheViewAuthenticPixels(image_view,0,y,image->columns,1,exception);
+    if (q == (PixelPacket *) NULL)
+      {
+        status=MagickFalse;
+        continue;
+      }
+    for (x=0; x < (ssize_t) image->columns; x++)
+    {
+      if (GetMatrixElement(matrix_info,x,y,&value) == MagickFalse)
+        continue;
+      value=scale_factor*(value-min_value);
+      q->red=ClampToQuantum(value);
+      q->green=q->red;
+      q->blue=q->red;
+      q++;
+    }
+    if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
+      status=MagickFalse;
+  }
+  image_view=DestroyCacheView(image_view);
+  if (status == MagickFalse)
+    image=DestroyImage(image);
+  return(image);
 }
 
 /*
@@ -958,7 +1133,7 @@ MagickExport MagickBooleanType SetMatrixElement(const MatrixInfo *matrix_info,
 
   assert(matrix_info != (const MatrixInfo *) NULL);
   assert(matrix_info->signature == MagickSignature);
-  i=(MagickOffsetType) matrix_info->rows*x+y;
+  i=(MagickOffsetType) y*matrix_info->columns+x;
   if ((i < 0) ||
       ((MagickSizeType) (i*matrix_info->stride) >= matrix_info->length))
     return(MagickFalse);
@@ -969,7 +1144,7 @@ MagickExport MagickBooleanType SetMatrixElement(const MatrixInfo *matrix_info,
       return(MagickTrue);
     }
   count=WriteMatrixElements(matrix_info,i*matrix_info->stride,
-    matrix_info->stride,value);
+    matrix_info->stride,(unsigned char *) value);
   if (count != (MagickOffsetType) matrix_info->stride)
     return(MagickFalse);
   return(MagickTrue);

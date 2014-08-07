@@ -163,7 +163,7 @@ foreach my $delegate (@tested_delegates) {
 # defaults for LIBS & INC & CCFLAGS params that we later pass to Writemakefile
 my $INC_magick = '-I../.. -I../.. -pthread -I/usr/include/pango-1.0 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libdrm -I/usr/include/libpng16 -I/usr/include/freetype2 -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16 -I/usr/include/libxml2 -I"' . $Config{'usrinc'} . '/ImageMagick"';
 my $LIBS_magick = '-L../../magick/.libs -lMagickCore-6.Q16 -lperl -lm';
-my $CCFLAGS_magick = "$Config{'ccflags'} -pthread -I/usr/include/OpenEXR -I/usr/include/libdrm -I/usr/include/freetype2 -fopenmp -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16";
+my $CCFLAGS_magick = "$Config{'ccflags'} -pthread -I/usr/include/OpenEXR -I/usr/include/libdrm -I/usr/include/freetype2 -fopenmp -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic -march=corei7-avx -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16";
 my $LDFLAGS_magick   = "-L../../magick/.libs -lMagickCore-6.Q16 $Config{'ldflags'} -Wl,-z,relro";
 my $LDDLFLAGS_magick = "-L../../magick/.libs -lMagickCore-6.Q16 $Config{'lddlflags'} -Wl,-z,relro";
 
@@ -194,7 +194,7 @@ WriteMakefile
    'AUTHOR' => 'ImageMagick Studio LLC',
 
    # Module version
-   'VERSION' => '6.88',
+   'VERSION' => '6.89',
 
    # Prerequisite version
    'PREREQ_PM' => {'parent' => '0'},

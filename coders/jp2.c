@@ -340,12 +340,11 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   opj_stream_set_write_function(jp2_stream,JP2WriteHandler);
   opj_stream_set_seek_function(jp2_stream,JP2SeekHandler);
   opj_stream_set_skip_function(jp2_stream,JP2SkipHandler);
-  opj_stream_set_user_data(jp2_stream,image);
+  opj_stream_set_user_data(jp2_stream,image,NULL);
   opj_stream_set_user_data_length(jp2_stream,GetBlobSize(image));
   if (opj_read_header(jp2_stream,jp2_codec,&jp2_image) == 0)
     {
-      opj_stream_set_user_data(jp2_stream,NULL);
-      opj_stream_destroy_v3(jp2_stream);
+      opj_stream_destroy(jp2_stream);
       opj_destroy_codec(jp2_codec);
       ThrowReaderException(DelegateError,"UnableToDecodeImageFile");
     }
@@ -355,12 +354,11 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
         Extract an area from the image.
       */
       jp2_status=opj_set_decode_area(jp2_codec,jp2_image,image->extract_info.x,
-        image->extract_info.y,image->extract_info.x+image->columns,
-        image->extract_info.y+image->rows);
+        image->extract_info.y,image->extract_info.x+(ssize_t) image->columns,
+        image->extract_info.y+(ssize_t) image->rows);
       if (jp2_status == 0)
         {
-          opj_stream_set_user_data(jp2_stream,NULL);
-          opj_stream_destroy_v3(jp2_stream);
+          opj_stream_destroy(jp2_stream);
           opj_destroy_codec(jp2_codec);
           opj_image_destroy(jp2_image);
           ThrowReaderException(DelegateError,"UnableToDecodeImageFile");
@@ -368,7 +366,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     }
   if (image_info->number_scenes != 0)
     jp2_status=opj_get_decoded_tile(jp2_codec,jp2_stream,jp2_image,
-      image_info->scene);
+      (unsigned int) image_info->scene);
   else
     {
       jp2_status=opj_decode(jp2_codec,jp2_stream,jp2_image);
@@ -377,19 +375,16 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     }
   if (jp2_status == 0)
     {
-      opj_stream_set_user_data(jp2_stream,NULL);
-      opj_stream_destroy_v3(jp2_stream);
+      opj_stream_destroy(jp2_stream);
       opj_destroy_codec(jp2_codec);
       opj_image_destroy(jp2_image);
       ThrowReaderException(DelegateError,"UnableToDecodeImageFile");
     }
-  opj_stream_set_user_data(jp2_stream,NULL);
-  opj_stream_destroy_v3(jp2_stream);
+  opj_stream_destroy(jp2_stream);
   for (i=0; i < (ssize_t) jp2_image->numcomps; i++)
   {
     if ((jp2_image->comps[i].dx == 0) || (jp2_image->comps[i].dy == 0))
       {
-        opj_stream_set_user_data(jp2_stream,NULL);
         opj_destroy_codec(jp2_codec);
         opj_image_destroy(jp2_image);
         ThrowReaderException(CoderError,"IrregularChannelGeometryNotSupported")
@@ -793,7 +788,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   */
   opj_set_default_encoder_parameters(&parameters);
   for (i=1; i < 6; i++)
-    if (((1UL << (i+2)) > image->columns) && ((1UL << (i+2)) > image->rows))
+    if (((1U << (i+2)) > image->columns) && ((1U << (i+2)) > image->rows))
       break;
   parameters.numresolution=i;
   option=GetImageOption(image_info,"jp2:number-resolutions");
@@ -819,10 +814,10 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
         Set tile size.
       */
       flags=ParseAbsoluteGeometry(image_info->extract,&geometry);
-      parameters.cp_tdx=geometry.width;
-      parameters.cp_tdy=geometry.width;
+      parameters.cp_tdx=(ssize_t) geometry.width;
+      parameters.cp_tdy=(ssize_t) geometry.width;
       if ((flags & HeightValue) != 0)
-        parameters.cp_tdy=geometry.height;
+        parameters.cp_tdy=(ssize_t) geometry.height;
       if ((flags & XValue) != 0)
         parameters.cp_tx0=geometry.x;
       if ((flags & YValue) != 0)
@@ -841,7 +836,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
       p=option;
       for (i=0; sscanf(p,"%f",&parameters.tcp_distoratio[i]) == 1; i++)
       {
-        if (i > 100)
+        if (i >= 100)
           break;
         while ((*p != '\0') && (*p != ','))
           p++;
@@ -1028,7 +1023,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   opj_stream_set_write_function(jp2_stream,JP2WriteHandler);
   opj_stream_set_seek_function(jp2_stream,JP2SeekHandler);
   opj_stream_set_skip_function(jp2_stream,JP2SkipHandler);
-  opj_stream_set_user_data(jp2_stream,image);
+  opj_stream_set_user_data(jp2_stream,image,NULL);
   if (jp2_stream == (opj_stream_t *) NULL)
     ThrowWriterException(DelegateError,"UnableToEncodeImageFile");
   jp2_status=opj_start_compress(jp2_codec,jp2_image,jp2_stream);
@@ -1037,8 +1032,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   if ((opj_encode(jp2_codec,jp2_stream) == 0) ||
       (opj_end_compress(jp2_codec,jp2_stream) == 0))
     {
-      opj_stream_set_user_data(jp2_stream,NULL);
-      opj_stream_destroy_v3(jp2_stream);
+      opj_stream_destroy(jp2_stream);
       opj_destroy_codec(jp2_codec);
       opj_image_destroy(jp2_image);
       ThrowWriterException(DelegateError,"UnableToEncodeImageFile");
@@ -1046,8 +1040,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   /*
     Free resources.
   */
-  opj_stream_set_user_data(jp2_stream,NULL);
-  opj_stream_destroy_v3(jp2_stream);
+  opj_stream_destroy(jp2_stream);
   opj_destroy_codec(jp2_codec);
   opj_image_destroy(jp2_image);
   (void) CloseBlob(image);

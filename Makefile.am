@@ -17,13 +17,14 @@
 #  Top-Level Makefile for building ImageMagick.
 #
 
+topincludedir = @includedir@/magick
+
 AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
 
 ACLOCAL_AMFLAGS = -I m4
 
 MODULECOMMONFLAGS = -no-undefined -export-symbols-regex ".*" -shared -module -avoid-version
-
-SUBDIRS = .
+MODULECOMMONCPPFLAGS = $(AM_CPPFLAGS)
 
 # Options to pass when running configure in the distcheck target.
 #
@@ -184,9 +185,9 @@ all-local: $(MAGICKPP_LOCAL_TARGETS) $(PERLMAGICK_ALL_LOCAL_TARGETS) $(MAINTAINE
 
 install-exec-local: $(PERLMAGICK_INSTALL_EXEC_LOCAL_TARGETS)
 
-install-data-local: $(MAGICK_INSTALL_DATA_LOCAL_TARGETS) $(PERLMAGICK_INSTALL_DATA_LOCAL_TARGETS) $(HTML_INSTALL_DATA_TARGETS)
+install-data-local: $(PERLMAGICK_INSTALL_DATA_LOCAL_TARGETS) $(HTML_INSTALL_DATA_TARGETS)
 
-uninstall-local: $(MAGICK_UNINSTALL_LOCAL_TARGETS) $(PERLMAGICK_UNINSTALL_LOCAL_TARGETS) $(HTML_UNINSTALL_DATA_TARGETS)
+uninstall-local: $(PERLMAGICK_UNINSTALL_LOCAL_TARGETS) $(HTML_UNINSTALL_DATA_TARGETS)
 
 clean-local: $(PERLMAGICK_CLEAN_LOCAL_TARGETS)
 

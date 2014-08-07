@@ -64,6 +64,7 @@
 #include "magick/montage.h"
 #include "magick/morphology.h"
 #include "magick/option.h"
+#include "magick/option-private.h"
 #include "magick/policy.h"
 #include "magick/property.h"
 #include "magick/quantize.h"
@@ -245,6 +246,8 @@ static const OptionInfo
     { "-brightness-contrast", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+cache", 0L, GlobalOptionFlag, MagickFalse },
     { "-cache", 1L, GlobalOptionFlag, MagickFalse },
+    { "+canny", 1L, SimpleOperatorOptionFlag, MagickFalse },
+    { "-canny", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+cdl", 1L, DeprecateOptionFlag, MagickFalse },
     { "-cdl", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+channel", 0L, ImageInfoOptionFlag | ListOperatorOptionFlag, MagickFalse },
@@ -419,6 +422,8 @@ static const OptionInfo
     { "-help", 0L, SpecialOperatorOptionFlag, MagickFalse },
     { "+highlight-color", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "-highlight-color", 1L, SimpleOperatorOptionFlag, MagickFalse },
+    { "+hough-lines", 1L, SimpleOperatorOptionFlag, MagickFalse },
+    { "-hough-lines", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+iconGeometry", 0L, NonConvertOptionFlag, MagickFalse },
     { "-iconGeometry", 1L, NonConvertOptionFlag, MagickFalse },
     { "+iconic", 0L, NonConvertOptionFlag, MagickFalse },
@@ -487,6 +492,8 @@ static const OptionInfo
     { "-mattecolor", 1L, ImageInfoOptionFlag, MagickFalse },
     { "+maximum", 0L, DeprecateOptionFlag | FireOptionFlag, MagickFalse },
     { "-maximum", 0L, ListOperatorOptionFlag | FireOptionFlag | DeprecateOptionFlag, MagickFalse },
+    { "+mean-shift", 1L, SimpleOperatorOptionFlag, MagickFalse },
+    { "-mean-shift", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+median", 1L, DeprecateOptionFlag, MagickFalse },
     { "-median", 1L, SimpleOperatorOptionFlag | DeprecateOptionFlag, MagickFalse },
     { "+metric", 0L, DeprecateOptionFlag | FireOptionFlag, MagickFalse },
@@ -802,6 +809,7 @@ static const OptionInfo
     { "DstOver", DstOverCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "Exclusion", ExclusionCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "HardLight", HardLightCompositeOp, UndefinedOptionFlag, MagickFalse },
+    { "HardMix", HardMixCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "Hue", HueCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "In", InCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "Lighten", LightenCompositeOp, UndefinedOptionFlag, MagickFalse },
@@ -1025,6 +1033,8 @@ static const OptionInfo
     { "PoissonNoise", PoissonNoiseEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "Pow", PowEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "RightShift", RightShiftEvaluateOperator, UndefinedOptionFlag, MagickFalse },
+    { "RMS", RootMeanSquareEvaluateOperator, UndefinedOptionFlag, MagickFalse },
+    { "RootMeanSquare", RootMeanSquareEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "Set", SetEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "Sin", SineEvaluateOperator, UndefinedOptionFlag, MagickFalse },
     { "Sine", SineEvaluateOperator, UndefinedOptionFlag, MagickFalse },
@@ -1510,6 +1520,7 @@ static const OptionInfo
     { "Average", AveragePixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
     { "Brightness", BrightnessPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
     { "Lightness", LightnessPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
+    { "Mean", AveragePixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
     { "MS", MSPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
     { "Rec601Luma", Rec601LumaPixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
     { "Rec601Luminance", Rec601LuminancePixelIntensityMethod, UndefinedOptionFlag, MagickFalse },
@@ -1557,6 +1568,8 @@ static const OptionInfo
     { "Minimum", MinimumStatistic, UndefinedOptionFlag, MagickFalse },
     { "Mode", ModeStatistic, UndefinedOptionFlag, MagickFalse },
     { "Nonpeak", NonpeakStatistic, UndefinedOptionFlag, MagickFalse },
+    { "RMS", RootMeanSquareStatistic, UndefinedOptionFlag, MagickFalse },
+    { "RootMeanSquare", RootMeanSquareStatistic, UndefinedOptionFlag, MagickFalse },
     { "StandardDeviation", StandardDeviationStatistic, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedMethod, UndefinedOptionFlag, MagickFalse }
   },
@@ -2206,6 +2219,78 @@ MagickExport const char *CommandOptionToMnemonic(const CommandOption option,
   if (option_info[i].mnemonic == (const char *) NULL)
     return("undefined");
   return(option_info[i].mnemonic);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   I s O p t i o n M e m b e r                                               %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  IsOptionMember() returns MagickTrue if the option is a member of the options
+%  list (e.g. ICC is a member of xmp,icc,iptc).
+%
+%  The format of the IsOptionMember function is:
+%
+%      MagickBooleanType IsOptionMember(const char *option,
+%        const char *options)
+%
+%  A description of each parameter follows:
+%
+%    o option: an option or option expression (e.g. ICC or *).
+%
+%    o options: one or more options separated by commas.
+%
+*/
+MagickExport MagickBooleanType IsOptionMember(const char *option,
+  const char *options)
+{
+  char
+    **option_list,
+    *string;
+
+  int
+    number_options;
+
+  MagickBooleanType
+    member;
+
+  register ssize_t
+    i;
+
+  /*
+    Is option a member of the options list?
+  */
+  if (options == (const char *) NULL)
+    return(MagickFalse);
+  string=ConstantString(options);
+  (void) SubstituteString(&string,","," ");
+  option_list=StringToArgv(string,&number_options);
+  string=DestroyString(string);
+  if (option_list == (char **) NULL)
+    return(MagickFalse);
+  member=MagickFalse;
+  for (i=1; i < (ssize_t) number_options; i++)
+  {
+    if ((*option_list[i] == '!') &&
+        (LocaleCompare(option,option_list[i]+1) == 0))
+      break;
+    if (GlobExpression(option,option_list[i],MagickTrue) != MagickFalse)
+      {
+        member=MagickTrue;
+        break;
+      }
+    option_list[i]=DestroyString(option_list[i]);
+  }
+  for ( ; i < (ssize_t) number_options; i++)
+    option_list[i]=DestroyString(option_list[i]);
+  option_list=(char **) RelinquishMagickMemory(option_list);
+  return(member);
 }
 
 /*

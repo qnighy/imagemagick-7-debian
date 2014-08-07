@@ -663,7 +663,7 @@ MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
 %    Sobel:{angle}
 %      Sobel 'Edge' convolution kernel (3x3)
 %          | -1, 0, 1 |
-%          | -2, 0,-2 |
+%          | -2, 0, 2 |
 %          | -1, 0, 1 |
 %
 %    Roberts:{angle}
@@ -3864,7 +3864,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
     changed;        /* number pixels changed by last primitive operation */
 
   char
-    v_info[80];
+    v_info[MaxTextExtent];
 
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);

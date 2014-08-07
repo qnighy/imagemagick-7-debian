@@ -167,8 +167,8 @@ static inline double GetFITSPixel(Image *image,int bits_per_pixel)
   return(ReadBlobDouble(image));
 }
 
-static void GetFITSPixelExtrema(Image *image,const int bits_per_pixel,
-  double *minima,double *maxima)
+static MagickOffsetType GetFITSPixelExtrema(Image *image,
+  const int bits_per_pixel,double *minima,double *maxima)
 {
   double
     pixel;
@@ -183,6 +183,8 @@ static void GetFITSPixelExtrema(Image *image,const int bits_per_pixel,
     i;
 
   offset=TellBlob(image);
+  if (offset == -1)
+    return(-1);
   number_pixels=(MagickSizeType) image->columns*image->rows;
   *minima=GetFITSPixel(image,bits_per_pixel);
   *maxima=(*minima);
@@ -194,7 +196,7 @@ static void GetFITSPixelExtrema(Image *image,const int bits_per_pixel,
     if (pixel > *maxima)
       *maxima=pixel;
   }
-  (void) SeekBlob(image,offset,SEEK_SET);
+  return(SeekBlob(image,offset,SEEK_SET));
 }
 
 static inline double GetFITSPixelRange(const size_t depth)
@@ -334,9 +336,9 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
       }
       keyword[i]='\0';
       count=ReadBlob(image,72,(unsigned char *) value);
+      value[72]='\0';
       if (count != 72)
         break;
-      value[72]='\0';
       p=value;
       if (*p == '=')
         {
@@ -428,7 +430,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     if ((fits_info.min_data == 0.0) && (fits_info.max_data == 0.0))
       {
         if (fits_info.zero == 0.0)
-          GetFITSPixelExtrema(image,fits_info.bits_per_pixel,
+          (void) GetFITSPixelExtrema(image,fits_info.bits_per_pixel,
             &fits_info.min_data,&fits_info.max_data);
         else
           fits_info.max_data=GetFITSPixelRange((size_t)
@@ -663,8 +665,8 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   (void) strncpy(fits_info+offset,header,strlen(header));
   offset+=80;
   (void) FormatLocaleString(header,FITSBlocksize,"BITPIX  =           %10ld",
-    (long) (quantum_info->format == FloatingPointQuantumFormat ? -1 : 1)*
-    image->depth);
+    (long) ((quantum_info->format == FloatingPointQuantumFormat ? -1 : 1)*
+    image->depth));
   (void) strncpy(fits_info+offset,header,strlen(header));
   offset+=80;
   (void) FormatLocaleString(header,FITSBlocksize,"NAXIS   =           %10lu",

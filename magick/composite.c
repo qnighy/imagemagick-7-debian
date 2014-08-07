@@ -240,8 +240,7 @@ static inline void CompositeBumpmap(const MagickPixelPacket *p,
   composite->red=QuantumScale*intensity*q->red;
   composite->green=QuantumScale*intensity*q->green;
   composite->blue=QuantumScale*intensity*q->blue;
-  composite->opacity=(MagickRealType) QuantumScale*intensity*
-    p->opacity;
+  composite->opacity=(MagickRealType) QuantumScale*intensity*p->opacity;
   if (q->colorspace == CMYKColorspace)
     composite->index=QuantumScale*intensity*q->index;
 }
@@ -583,20 +582,20 @@ static inline void CompositeExclusion(const MagickPixelPacket *p,
         q->index*Da,Da);
   }
   else { /* handle channels as separate grayscale channels */
-    if ( (channel & AlphaChannel) != 0 )
+    if ((channel & AlphaChannel) != 0)
       composite->opacity=QuantumRange*(1.0-Exclusion(Sa,1.0,Da,1.0));
-    if ( (channel & RedChannel) != 0 )
-      composite->red=QuantumRange*
-          Exclusion(QuantumScale*p->red,1.0,QuantumScale*q->red,1.0);
-    if ( (channel & GreenChannel) != 0 )
-      composite->green=QuantumRange*
-          Exclusion(QuantumScale*p->green,1.0,QuantumScale*q->green,1.0);
-    if ( (channel & BlueChannel) != 0 )
-      composite->blue=QuantumRange*
-          Exclusion(QuantumScale*p->blue,1.0,QuantumScale*q->blue,1.0);
-    if ( (channel & IndexChannel) != 0 && q->colorspace == CMYKColorspace)
-      composite->index=QuantumRange*
-          Exclusion(QuantumScale*p->index,1.0,QuantumScale*q->index,1.0);
+    if ((channel & RedChannel) != 0)
+      composite->red=QuantumRange*Exclusion(QuantumScale*p->red,1.0,
+        QuantumScale*q->red,1.0);
+    if ((channel & GreenChannel) != 0)
+      composite->green=QuantumRange*Exclusion(QuantumScale*p->green,1.0,
+        QuantumScale*q->green,1.0);
+    if ((channel & BlueChannel) != 0)
+      composite->blue=QuantumRange*Exclusion(QuantumScale*p->blue,1.0,
+        QuantumScale*q->blue,1.0);
+    if (((channel & IndexChannel) != 0) && (q->colorspace == CMYKColorspace))
+      composite->index=QuantumRange*Exclusion(QuantumScale*p->index,1.0,
+        QuantumScale*q->index,1.0);
   }
 }
 
@@ -632,20 +631,41 @@ static inline void CompositeHardLight(const MagickPixelPacket *p,
       q->index*Da,Da);
 }
 
-static inline MagickRealType ConvertHueToRGB(MagickRealType m1,
-  MagickRealType m2,MagickRealType hue)
+static MagickRealType HardMix(const MagickRealType Sca,
+  const MagickRealType Sa,const MagickRealType Dca,const MagickRealType Da)
 {
-  if (hue < 0.0)
-    hue+=1.0;
-  if (hue > 1.0)
-    hue-=1.0;
-  if ((6.0*hue) < 1.0)
-    return(m1+6.0*(m2-m1)*hue);
-  if ((2.0*hue) < 1.0)
-    return(m2);
-  if ((3.0*hue) < 2.0)
-    return(m1+6.0*(m2-m1)*(2.0/3.0-hue));
-  return(m1);
+  MagickRealType
+    gamma;
+
+  if ((Sa+Da) < 1.0)
+    gamma=0.0;
+  else
+    gamma=1.0;
+  return((gamma*(1.0-Sca)*(1.0-Dca))+Sa*(1.0-Sca)*Dca+Da*(1.0-Dca)*Sca);
+}
+
+static inline void CompositeHardMix(const MagickPixelPacket *p,
+  const MagickPixelPacket *q,MagickPixelPacket *composite)
+{
+  MagickRealType
+    Da,
+    gamma,
+    Sa;
+
+  Sa=1.0-QuantumScale*p->opacity;  /* simplify and speed up equations */
+  Da=1.0-QuantumScale*q->opacity;
+  gamma=RoundToUnity(Sa+Da-Sa*Da); /* over blend, as per SVG doc */
+  composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
+  gamma=QuantumRange/(fabs(gamma) < MagickEpsilon ? MagickEpsilon : gamma);
+  composite->red=gamma*HardMix(QuantumScale*p->red*Sa,Sa,QuantumScale*
+    q->red*Da,Da);
+  composite->green=gamma*HardMix(QuantumScale*p->green*Sa,Sa,QuantumScale*
+    q->green*Da,Da);
+  composite->blue=gamma*HardMix(QuantumScale*p->blue*Sa,Sa,QuantumScale*
+    q->blue*Da,Da);
+  if (q->colorspace == CMYKColorspace)
+    composite->index=gamma*HardMix(QuantumScale*p->index*Sa,Sa,QuantumScale*
+      q->index*Da,Da);
 }
 
 static void HCLComposite(const double hue,const double chroma,const double luma,
@@ -1506,7 +1526,7 @@ static inline void CompositeSoftLight(const MagickPixelPacket *p,
 }
 
 /*
-  Depreciated
+  Deprecated
   Multiply difference by amount, if differance larger than threshold???
   What use this is is completely unknown
   The Opacity calculation appears to be inverted  -- Anthony Thyssen
@@ -2238,7 +2258,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     {
       /*
         Determine the amount and threshold.
-        This Composition method is depreciated
+        This Composition method is deprecated
       */
       value=GetImageArtifact(composite_image,"compose:args");
       if (value != (char *) NULL)
@@ -2625,6 +2645,11 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         case HardLightCompositeOp:
         {
           CompositeHardLight(&source,&destination,&composite);
+          break;
+        }
+        case HardMixCompositeOp:
+        {
+          CompositeHardMix(&source,&destination,&composite);
           break;
         }
         case OverlayCompositeOp:

@@ -575,19 +575,20 @@ static void TIFFGetProfiles(TIFF *tiff,Image *image)
   unsigned char
     *profile;
 
-#if defined(TIFFTAG_ICCPROFILE)
   length=0;
-  if (TIFFGetField(tiff,TIFFTAG_ICCPROFILE,&length,&profile) == 1)
+#if defined(TIFFTAG_ICCPROFILE)
+  if ((TIFFGetField(tiff,TIFFTAG_ICCPROFILE,&length,&profile) == 1) &&
+      (profile != (unsigned char *) NULL))
     (void) ReadProfile(image,"icc",profile,(ssize_t) length);
 #endif
 #if defined(TIFFTAG_PHOTOSHOP)
-  length=0;
-  if (TIFFGetField(tiff,TIFFTAG_PHOTOSHOP,&length,&profile) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_PHOTOSHOP,&length,&profile) == 1) &&
+      (profile != (unsigned char *) NULL))
     (void) ReadProfile(image,"8bim",profile,(ssize_t) length);
 #endif
 #if defined(TIFFTAG_RICHTIFFIPTC)
-  length=0;
-  if (TIFFGetField(tiff,TIFFTAG_RICHTIFFIPTC,&length,&profile) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_RICHTIFFIPTC,&length,&profile) == 1) &&
+      (profile != (unsigned char *) NULL))
     {
       if (TIFFIsByteSwapped(tiff) != 0)
         TIFFSwabArrayOfLong((uint32 *) profile,(size_t) length);
@@ -595,14 +596,15 @@ static void TIFFGetProfiles(TIFF *tiff,Image *image)
     }
 #endif
 #if defined(TIFFTAG_XMLPACKET)
-  length=0;
-  if (TIFFGetField(tiff,TIFFTAG_XMLPACKET,&length,&profile) == 1)
+  if ((TIFFGetField(tiff,TIFFTAG_XMLPACKET,&length,&profile) == 1) &&
+      (profile != (unsigned char *) NULL))
     (void) ReadProfile(image,"xmp",profile,(ssize_t) length);
 #endif
-  length=0;
-  if (TIFFGetField(tiff,37724,&length,&profile) == 1)
+  if ((TIFFGetField(tiff,37724,&length,&profile) == 1) &&
+      (profile != (unsigned char *) NULL))
     (void) ReadProfile(image,"tiff:37724",profile,(ssize_t) length);
-  if (TIFFGetField(tiff,34118,&length,&profile) == 1)
+  if ((TIFFGetField(tiff,34118,&length,&profile) == 1) &&
+      (profile != (unsigned char *) NULL))
     (void) ReadProfile(image,"tiff:34118",profile,(ssize_t) length);
 }
 
@@ -684,10 +686,10 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
     Read EXIF properties.
   */
   offset=0;
-  if (TIFFGetField(tiff,TIFFTAG_EXIFIFD,&offset) == 0)
+  if (TIFFGetField(tiff,TIFFTAG_EXIFIFD,&offset) != 1)
     return;
   directory=TIFFCurrentDirectory(tiff);
-  if (TIFFReadEXIFDirectory(tiff,offset) == 0)
+  if (TIFFReadEXIFDirectory(tiff,offset) != 1)
     {
       TIFFSetDirectory(tiff,directory);
       return;
@@ -704,7 +706,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           *ascii;
 
         ascii=(char *) NULL;
-        if ((TIFFGetField(tiff,exif_info[i].tag,&ascii,&sans,&sans) != 0) &&
+        if ((TIFFGetField(tiff,exif_info[i].tag,&ascii,&sans,&sans) == 1) &&
             (ascii != (char *) NULL) && (*ascii != '\0'))
           (void) CopyMagickString(value,ascii,MaxTextExtent);
         break;
@@ -713,10 +715,15 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
       {
         if (exif_info[i].variable_length != 0)
           {
+            int
+              tiff_status;
+
             uint16
               *shorty;
 
-            if (TIFFGetField(tiff,exif_info[i].tag,&sans,&shorty,&sans,&sans) != 0)
+            tiff_status=TIFFGetField(tiff,exif_info[i].tag,&sans,&shorty,&sans,
+              &sans);
+            if (tiff_status == 1)
               (void) FormatLocaleString(value,MaxTextExtent,"%d",shorty[0]);
           }
         else
@@ -725,7 +732,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
               shorty;
 
             shorty=0;
-            if (TIFFGetField(tiff,exif_info[i].tag,&shorty,&sans,&sans) != 0)
+            if (TIFFGetField(tiff,exif_info[i].tag,&shorty,&sans,&sans) == 1)
               (void) FormatLocaleString(value,MaxTextExtent,"%d",shorty);
           }
         break;
@@ -736,7 +743,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           longy;
 
         longy=0;
-        if (TIFFGetField(tiff,exif_info[i].tag,&longy,&sans,&sans) != 0)
+        if (TIFFGetField(tiff,exif_info[i].tag,&longy,&sans,&sans) == 1)
           (void) FormatLocaleString(value,MaxTextExtent,"%d",longy);
         break;
       }
@@ -747,7 +754,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           long8y;
 
         long8y=0;
-        if (TIFFGetField(tiff,exif_info[i].tag,&long8y,&sans,&sans) != 0)
+        if (TIFFGetField(tiff,exif_info[i].tag,&long8y,&sans,&sans) == 1)
           (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
             ((MagickOffsetType) long8y));
         break;
@@ -761,7 +768,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           floaty;
 
         floaty=0.0;
-        if (TIFFGetField(tiff,exif_info[i].tag,&floaty,&sans,&sans) != 0)
+        if (TIFFGetField(tiff,exif_info[i].tag,&floaty,&sans,&sans) == 1)
           (void) FormatLocaleString(value,MaxTextExtent,"%g",(double) floaty);
         break;
       }
@@ -771,7 +778,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           doubley;
 
         doubley=0.0;
-        if (TIFFGetField(tiff,exif_info[i].tag,&doubley,&sans,&sans) != 0)
+        if (TIFFGetField(tiff,exif_info[i].tag,&doubley,&sans,&sans) == 1)
           (void) FormatLocaleString(value,MaxTextExtent,"%g",doubley);
         break;
       }
@@ -891,6 +898,9 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
   Image
     *image;
 
+  int
+    tiff_status;
+
   MagickBooleanType
     associated_alpha,
     debug,
@@ -1003,26 +1013,25 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
   {
 DisableMSCWarning(4127)
     if (0 && (image_info->verbose != MagickFalse))
-RestoreMSCWarning
       TIFFPrintDirectory(tiff,stdout,MagickFalse);
-#if defined(MAGICKCORE_HAVE_TIFFISBIGENDIAN)
-    (void) SetImageProperty(image,"tiff:endian",TIFFIsBigEndian(tiff) == 0 ?
-      "lsb" : "msb");
-#endif
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_COMPRESSION,&compress_tag);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_ORIENTATION,&orientation);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_IMAGEWIDTH,&width);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_IMAGELENGTH,&height);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_FILLORDER,&endian);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_PLANARCONFIG,&interlace);
-    bits_per_sample=8;
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_BITSPERSAMPLE,&bits_per_sample);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_SAMPLEFORMAT,&sample_format);
+RestoreMSCWarning
+    if ((TIFFGetField(tiff,TIFFTAG_IMAGEWIDTH,&width) != 1) ||
+        (TIFFGetField(tiff,TIFFTAG_IMAGELENGTH,&height) != 1) ||
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_COMPRESSION,&compress_tag) != 1) ||
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_FILLORDER,&endian) != 1) ||
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_PLANARCONFIG,&interlace) != 1) ||
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_SAMPLESPERPIXEL,&samples_per_pixel) != 1) ||
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_BITSPERSAMPLE,&bits_per_sample) != 1) ||
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_SAMPLEFORMAT,&sample_format) != 1) ||
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_MINSAMPLEVALUE,&min_sample_value) != 1) ||
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_MAXSAMPLEVALUE,&max_sample_value) != 1) ||
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_PHOTOMETRIC,&photometric) != 1))
+      {
+        TIFFClose(tiff);
+        ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+      }
     if (sample_format == SAMPLEFORMAT_IEEEFP)
       (void) SetImageProperty(image,"quantum:format","floating-point");
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_MINSAMPLEVALUE,&min_sample_value);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_MAXSAMPLEVALUE,&max_sample_value);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_PHOTOMETRIC,&photometric);
     switch (photometric)
     {
       case PHOTOMETRIC_MINISBLACK:
@@ -1048,6 +1057,12 @@ RestoreMSCWarning
       case PHOTOMETRIC_CIELAB:
       {
         (void) SetImageProperty(image,"tiff:photometric","CIELAB");
+        break;
+      }
+      case PHOTOMETRIC_LOGL:
+      case PHOTOMETRIC_LOGLUV:
+      {
+        (void) TIFFSetField(tiff,TIFFTAG_SGILOGDATAFMT,SGILOGDATAFMT_FLOAT);
         break;
       }
       case PHOTOMETRIC_SEPARATED:
@@ -1090,6 +1105,18 @@ RestoreMSCWarning
     image->endian=MSBEndian;
     if (endian == FILLORDER_LSB2MSB)
       image->endian=LSBEndian;
+#if defined(MAGICKCORE_HAVE_TIFFISBIGENDIAN)
+    if (TIFFIsBigEndian(tiff) == 0)
+      {
+        (void) SetImageProperty(image,"tiff:endian","lsb");
+        image->endian=LSBEndian;
+      }
+    else
+      {
+        (void) SetImageProperty(image,"tiff:endian","msb");
+        image->endian=MSBEndian;
+      }
+#endif
     if ((photometric == PHOTOMETRIC_MINISBLACK) ||
         (photometric == PHOTOMETRIC_MINISWHITE))
       SetImageColorspace(image,GRAYColorspace);
@@ -1103,39 +1130,46 @@ RestoreMSCWarning
     if ((option == (const char *) NULL) ||
         (IsMagickTrue(option) != MagickFalse))
       TIFFGetEXIFProperties(tiff,image);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_SAMPLESPERPIXEL,
-      &samples_per_pixel);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_RESOLUTIONUNIT,&units);
-    x_resolution=(float) image->x_resolution;
-    y_resolution=(float) image->y_resolution;
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_XRESOLUTION,&x_resolution);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_YRESOLUTION,&y_resolution);
-    image->x_resolution=x_resolution;
-    image->y_resolution=y_resolution;
-    x_position=(float) PerceptibleReciprocal(x_resolution)*image->page.x;
-    y_position=(float) PerceptibleReciprocal(y_resolution)*image->page.y;
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_XPOSITION,&x_position);
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_YPOSITION,&y_position);
-    image->page.x=(ssize_t) ceil(x_position*x_resolution-0.5);
-    image->page.y=(ssize_t) ceil(y_position*y_resolution-0.5);
-    image->orientation=(OrientationType) orientation;
-    chromaticity=(float *) NULL;
-    (void) TIFFGetField(tiff,TIFFTAG_WHITEPOINT,&chromaticity);
-    if (chromaticity != (float *) NULL)
+    if ((TIFFGetFieldDefaulted(tiff,TIFFTAG_XRESOLUTION,&x_resolution) == 1) &&
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_YRESOLUTION,&y_resolution) == 1))
       {
-        image->chromaticity.white_point.x=chromaticity[0];
-        image->chromaticity.white_point.y=chromaticity[1];
+        image->x_resolution=x_resolution;
+        image->y_resolution=y_resolution;
       }
-    chromaticity=(float *) NULL;
-    (void) TIFFGetField(tiff,TIFFTAG_PRIMARYCHROMATICITIES,&chromaticity);
-    if (chromaticity != (float *) NULL)
+    if (TIFFGetFieldDefaulted(tiff,TIFFTAG_RESOLUTIONUNIT,&units) == 1)
       {
-        image->chromaticity.red_primary.x=chromaticity[0];
-        image->chromaticity.red_primary.y=chromaticity[1];
-        image->chromaticity.green_primary.x=chromaticity[2];
-        image->chromaticity.green_primary.y=chromaticity[3];
-        image->chromaticity.blue_primary.x=chromaticity[4];
-        image->chromaticity.blue_primary.y=chromaticity[5];
+        if (units == RESUNIT_INCH)
+          image->units=PixelsPerInchResolution;
+        if (units == RESUNIT_CENTIMETER)
+          image->units=PixelsPerCentimeterResolution;
+      }
+    if ((TIFFGetFieldDefaulted(tiff,TIFFTAG_XPOSITION,&x_position) == 1) &&
+        (TIFFGetFieldDefaulted(tiff,TIFFTAG_YPOSITION,&y_position) == 1))
+      {
+        image->page.x=(ssize_t) ceil(x_position*image->x_resolution-0.5);
+        image->page.y=(ssize_t) ceil(y_position*image->y_resolution-0.5);
+      }
+    if (TIFFGetFieldDefaulted(tiff,TIFFTAG_ORIENTATION,&orientation) == 1)
+      image->orientation=(OrientationType) orientation;
+    if (TIFFGetField(tiff,TIFFTAG_WHITEPOINT,&chromaticity) == 1)
+      {
+        if (chromaticity != (float *) NULL)
+          {
+            image->chromaticity.white_point.x=chromaticity[0];
+            image->chromaticity.white_point.y=chromaticity[1];
+          }
+      }
+    if (TIFFGetField(tiff,TIFFTAG_PRIMARYCHROMATICITIES,&chromaticity) == 1)
+      {
+        if (chromaticity != (float *) NULL)
+          {
+            image->chromaticity.red_primary.x=chromaticity[0];
+            image->chromaticity.red_primary.y=chromaticity[1];
+            image->chromaticity.green_primary.x=chromaticity[2];
+            image->chromaticity.green_primary.y=chromaticity[3];
+            image->chromaticity.blue_primary.x=chromaticity[4];
+            image->chromaticity.blue_primary.y=chromaticity[5];
+          }
       }
 #if defined(MAGICKCORE_HAVE_TIFFISCODECCONFIGURED) || (TIFFLIB_VERSION > 20040919)
     if ((compress_tag != COMPRESSION_NONE) &&
@@ -1158,18 +1192,24 @@ RestoreMSCWarning
            char
              sampling_factor[MaxTextExtent];
 
+           int
+             tiff_status;
+
            uint16
              horizontal,
              vertical;
 
-           (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_YCBCRSUBSAMPLING,
+           tiff_status=TIFFGetFieldDefaulted(tiff,TIFFTAG_YCBCRSUBSAMPLING,
              &horizontal,&vertical);
-           (void) FormatLocaleString(sampling_factor,MaxTextExtent,"%dx%d",
-             horizontal,vertical);
-           (void) SetImageProperty(image,"jpeg:sampling-factor",
-             sampling_factor);
-           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
-             "Sampling Factors: %s",sampling_factor);
+           if (tiff_status == 1)
+             {
+               (void) FormatLocaleString(sampling_factor,MaxTextExtent,"%dx%d",
+                 horizontal,vertical);
+               (void) SetImageProperty(image,"jpeg:sampling-factor",
+                 sampling_factor);
+               (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+                 "Sampling Factors: %s",sampling_factor);
+             }
          }
 #endif
         break;
@@ -1221,20 +1261,22 @@ RestoreMSCWarning
         break;
     }
     associated_alpha=MagickFalse;
-    extra_samples=0;
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_EXTRASAMPLES,&extra_samples,
+    tiff_status=TIFFGetFieldDefaulted(tiff,TIFFTAG_EXTRASAMPLES,&extra_samples,
       &sample_info);
-    if (extra_samples == 0)
+    if (tiff_status == 1)
       {
-        if ((samples_per_pixel == 4) && (photometric == PHOTOMETRIC_RGB))
-          image->matte=MagickTrue;
-      }
-    else
-      for (i=0; i < extra_samples; i++)
-      {
-        image->matte=MagickTrue;
-        if (sample_info[i] == EXTRASAMPLE_ASSOCALPHA)
-          SetQuantumAlphaType(quantum_info,DisassociatedQuantumAlpha);
+        if (extra_samples == 0)
+          {
+            if ((samples_per_pixel == 4) && (photometric == PHOTOMETRIC_RGB))
+              image->matte=MagickTrue;
+          }
+        else
+          for (i=0; i < extra_samples; i++)
+          {
+            image->matte=MagickTrue;
+            if (sample_info[i] == EXTRASAMPLE_ASSOCALPHA)
+              SetQuantumAlphaType(quantum_info,DisassociatedQuantumAlpha);
+          }
       }
     option=GetImageOption(image_info,"tiff:alpha");
     if (option != (const char *) NULL)
@@ -1256,13 +1298,8 @@ RestoreMSCWarning
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           }
       }
-    if (units == RESUNIT_INCH)
-      image->units=PixelsPerInchResolution;
-    if (units == RESUNIT_CENTIMETER)
-      image->units=PixelsPerCentimeterResolution;
-    value=(unsigned short) image->scene;
-    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_PAGENUMBER,&value,&pages);
-    image->scene=value;
+    if (TIFFGetFieldDefaulted(tiff,TIFFTAG_PAGENUMBER,&value,&pages) == 1)
+      image->scene=value;
     if (image_info->ping != MagickFalse)
       {
         if (image_info->number_scenes != 0)
@@ -1271,7 +1308,7 @@ RestoreMSCWarning
         goto next_tiff_frame;
       }
     method=ReadGenericMethod;
-    if (TIFFGetField(tiff,TIFFTAG_ROWSPERSTRIP,&rows_per_strip) != 0)
+    if (TIFFGetField(tiff,TIFFTAG_ROWSPERSTRIP,&rows_per_strip) == 1)
       {
         char
           value[MaxTextExtent];
@@ -1314,6 +1351,9 @@ RestoreMSCWarning
         if ((image->storage_class == PseudoClass) &&
             (photometric == PHOTOMETRIC_PALETTE))
           {
+            int
+              tiff_status;
+
             size_t
               range;
 
@@ -1325,32 +1365,33 @@ RestoreMSCWarning
             /*
               Initialize colormap.
             */
-            red_colormap=(uint16 *) NULL;
-            green_colormap=(uint16 *) NULL;
-            blue_colormap=(uint16 *) NULL;
-            (void) TIFFGetField(tiff,TIFFTAG_COLORMAP,&red_colormap,
+            tiff_status=TIFFGetField(tiff,TIFFTAG_COLORMAP,&red_colormap,
               &green_colormap,&blue_colormap);
-            if ((red_colormap != (uint16 *) NULL) &&
-                (green_colormap != (uint16 *) NULL) &&
-                (blue_colormap != (uint16 *) NULL))
+            if (tiff_status == 1)
               {
-                range=255;  /* might be old style 8-bit colormap */
-                for (i=0; i < (ssize_t) image->colors; i++)
-                  if ((red_colormap[i] >= 256) || (green_colormap[i] >= 256) ||
-                      (blue_colormap[i] >= 256))
+                if ((red_colormap != (uint16 *) NULL) &&
+                    (green_colormap != (uint16 *) NULL) &&
+                    (blue_colormap != (uint16 *) NULL))
+                  {
+                    range=255;  /* might be old style 8-bit colormap */
+                    for (i=0; i < (ssize_t) image->colors; i++)
+                      if ((red_colormap[i] >= 256) ||
+                          (green_colormap[i] >= 256) ||
+                          (blue_colormap[i] >= 256))
+                        {
+                          range=65535;
+                          break;
+                        }
+                    for (i=0; i < (ssize_t) image->colors; i++)
                     {
-                      range=65535;
-                      break;
+                      image->colormap[i].red=ClampToQuantum(((double)
+                        QuantumRange*red_colormap[i])/range);
+                      image->colormap[i].green=ClampToQuantum(((double)
+                        QuantumRange*green_colormap[i])/range);
+                      image->colormap[i].blue=ClampToQuantum(((double)
+                        QuantumRange*blue_colormap[i])/range);
                     }
-                for (i=0; i < (ssize_t) image->colors; i++)
-                {
-                  image->colormap[i].red=ClampToQuantum(((double)
-                    QuantumRange*red_colormap[i])/range);
-                  image->colormap[i].green=ClampToQuantum(((double)
-                    QuantumRange*green_colormap[i])/range);
-                  image->colormap[i].blue=ClampToQuantum(((double)
-                    QuantumRange*blue_colormap[i])/range);
-                }
+                  }
               }
           }
         quantum_type=IndexQuantum;
@@ -1596,8 +1637,8 @@ RestoreMSCWarning
         /*
           Convert tiled TIFF image to DirectClass MIFF image.
         */
-        if ((TIFFGetField(tiff,TIFFTAG_TILEWIDTH,&columns) == 0) ||
-            (TIFFGetField(tiff,TIFFTAG_TILELENGTH,&rows) == 0))
+        if ((TIFFGetField(tiff,TIFFTAG_TILEWIDTH,&columns) != 1) ||
+            (TIFFGetField(tiff,TIFFTAG_TILELENGTH,&rows) != 1))
           {
             TIFFClose(tiff);
             ThrowReaderException(CoderError,"ImageIsNotTiled");
@@ -1850,15 +1891,17 @@ static void TIFFIgnoreTags(TIFF *tiff)
   Image
    *image;
 
-  TIFFFieldInfo
-    *ignore;
-
   register ssize_t
     i;
 
   size_t
     count;
 
+  TIFFFieldInfo
+    *ignore;
+
+  if (TIFFGetReadProc(tiff) != TIFFReadBlob)
+    return;
   image=(Image *)TIFFClientdata(tiff);
   tags=GetImageArtifact(image,"tiff:ignore-tags");
   if (tags == (const char *) NULL)
@@ -2847,6 +2890,8 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
         (image_info->type != OptimizeType))
       (void) SetImageType(image,image_info->type);
     compression=UndefinedCompression;
+    if (image->compression != JPEGCompression)
+      compression=image->compression;
     if (image_info->compression != UndefinedCompression)
       compression=image_info->compression;
     switch (compression)
@@ -3052,8 +3097,6 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
                 }
           }
       }
-    if (photometric == PHOTOMETRIC_RGB)
-      (void) TransformImageColorspace(image,sRGBColorspace);
     switch (image->endian)
     {
       case LSBEndian:

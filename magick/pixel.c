@@ -4281,8 +4281,8 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
   x_offset=(ssize_t) floor(x);
   y_offset=(ssize_t) floor(y);
   interpolate = method;
-  if ( interpolate == UndefinedInterpolatePixel )
-    interpolate = image->interpolate;
+  if (interpolate == UndefinedInterpolatePixel)
+    interpolate=image->interpolate;
   switch (interpolate)
   {
     case AverageInterpolatePixel:        /* nearest 4 neighbours */
@@ -4320,6 +4320,7 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
       pixel->opacity=0.0;
       pixel->index=0.0;
       count*=count;  /* number of pixels - square of size */
+      GetMagickPixelPacket(image,pixels);
       for (i=0; i < (ssize_t) count; i++)
       {
         AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels,alpha);
@@ -4362,7 +4363,10 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
       for (i=0; i < 4L; i++)
+      {
+        GetMagickPixelPacket(image,pixels+i);
         AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
+      }
       delta.x=x-x_offset;
       delta.y=y-y_offset;
       epsilon.x=1.0-delta.x;
@@ -4399,7 +4403,10 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
       for (i=0; i < 4L; i++)
+      {
+        GetMagickPixelPacket(image,pixels+i);
         AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
+      }
       gamma=1.0;  /* number of pixels blended together */
       for (i=0; i <= 1L; i++)
       {
@@ -4420,13 +4427,13 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
               pixels[i].index+=pixels[i+2].index;
             }
       }
-      if ((x-x_offset) >= 0.75 )
+      if ((x-x_offset) >= 0.75)
         {
           alpha[0]=alpha[1];
           pixels[0]=pixels[1];
         }
       else
-        if ((x-x_offset) > 0.25 )
+        if ((x-x_offset) > 0.25)
           {
             gamma*=2.0;  /* double number of pixels blended */
             alpha[0]+=alpha[1];  /* add up alpha weights */
@@ -4461,7 +4468,10 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
       for (i=0; i < 16L; i++)
+      {
+        GetMagickPixelPacket(image,pixels+i);
         AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
+      }
       CatromWeights((MagickRealType) (x-x_offset),&cx);
       CatromWeights((MagickRealType) (y-y_offset),&cy);
       pixel->red=(cy[0]*(cx[0]*pixels[0].red+cx[1]*pixels[1].red+cx[2]*
@@ -4561,7 +4571,10 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
       for (i=0; i < 4L; i++)
+      {
+        GetMagickPixelPacket(image,pixels+i);
         AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
+      }
       delta.x=x-x_offset;
       delta.y=y-y_offset;
       luma.x=fabs(MagickPixelLuma(pixels+0)-MagickPixelLuma(pixels+3));
@@ -4692,7 +4705,10 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
       for (i=0; i < 16L; i++)
+      {
+        GetMagickPixelPacket(image,pixels+i);
         AlphaBlendMagickPixelPacket(image,p+i,indexes+i,pixels+i,alpha+i);
+      }
       SplineWeights((MagickRealType) (x-x_offset),&cx);
       SplineWeights((MagickRealType) (y-y_offset),&cy);
       pixel->red=(cy[0]*(cx[0]*pixels[0].red+cx[1]*pixels[1].red+cx[2]*

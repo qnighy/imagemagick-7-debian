@@ -104,7 +104,7 @@ const char* accelerateKernels =
   STRINGIFY(
     inline CLQuantum ScaleCharToQuantum(const unsigned char value)
     {
-      return((Quantum) (16843009.0*value));
+      return((CLQuantum) (16843009.0*value));
     }
   )
 
@@ -871,10 +871,10 @@ const char* accelerateKernels =
           //int cx = ClampToCanvas(groupX+i, columns);
           temp[i] = im[y * columns + ClampToCanvas(i+groupX-radius, columns)];
 
-          if (0 && y==0 && get_group_id(1) == 0)
+          /*if (0 && y==0 && get_group_id(1) == 0)
           {
             printf("(%d %d) temp %d load %d groupX %d\n", x, y, i, ClampToCanvas(groupX+i, columns), groupX);
-          }
+          }*/
         }
 
         // barrier        
@@ -954,10 +954,10 @@ const char* accelerateKernels =
           //int cx = ClampToCanvas(groupX+i, columns);
           temp[i] = im[y * columns + ClampToCanvas(i+groupX-radius, columns)];
 
-          if (0 && y==0 && get_group_id(1) == 0)
+          /*if (0 && y==0 && get_group_id(1) == 0)
           {
             printf("(%d %d) temp %d load %d groupX %d\n", x, y, i, ClampToCanvas(groupX+i, columns), groupX);
-          }
+          }*/
         }
 
         // barrier        

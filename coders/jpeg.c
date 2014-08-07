@@ -69,6 +69,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/option.h"
+#include "magick/option-private.h"
 #include "magick/pixel-accessor.h"
 #include "magick/profile.h"
 #include "magick/property.h"
@@ -453,7 +454,7 @@ static boolean ReadICCProfile(j_decompress_ptr jpeg_info)
     {
       while (length-- > 0)
         (void) GetCharacter(jpeg_info);
-      return(MagickTrue);
+      return(TRUE);
     }
   for (i=0; i < 12; i++)
     magick[i]=(char) GetCharacter(jpeg_info);
@@ -464,7 +465,7 @@ static boolean ReadICCProfile(j_decompress_ptr jpeg_info)
       */
       for (i=0; i < (ssize_t) (length-12); i++)
         (void) GetCharacter(jpeg_info);
-      return(MagickTrue);
+      return(TRUE);
     }
   (void) GetCharacter(jpeg_info);  /* id */
   (void) GetCharacter(jpeg_info);  /* markers */
@@ -494,8 +495,11 @@ static boolean ReadICCProfile(j_decompress_ptr jpeg_info)
       status=SetImageProfile(image,"icc",profile);
       profile=DestroyStringInfo(profile);
       if (status == MagickFalse)
-        ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
-          image->filename);
+        {
+          (void) ThrowMagickException(&image->exception,GetMagickModule(),
+            ResourceLimitError,"MemoryAllocationFailed","`%s'",image->filename);
+          return(FALSE);
+        }
     }
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -548,9 +552,9 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
   for (i=0; i < 10; i++)
     magick[i]=(char) GetCharacter(jpeg_info);
   magick[10]='\0';
-  if (length <= 10)
-    return(MagickTrue);
   length-=10;
+  if (length <= 10)
+    return(TRUE);
   if (LocaleCompare(magick,"Photoshop ") != 0)
     {
       /*
@@ -565,11 +569,9 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
   */
   for (i=0; i < 4; i++)
     (void) GetCharacter(jpeg_info);
-  if (length <= 4)
-    return(MagickTrue);
+  if (length <= 11)
+    return(TRUE);
   length-=4;
-  if (length == 0)
-    return(MagickTrue);
   error_manager=(ErrorManager *) jpeg_info->client_data;
   image=error_manager->image;
   profile=BlobToStringInfo((const void *) NULL,length);
@@ -595,8 +597,11 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
       status=SetImageProfile(image,"8bim",profile);
       profile=DestroyStringInfo(profile);
       if (status == MagickFalse)
-        ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
-          image->filename);
+        {
+          (void) ThrowMagickException(&image->exception,GetMagickModule(),
+            ResourceLimitError,"MemoryAllocationFailed","`%s'",image->filename);
+          return(FALSE);
+        }
     }
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -1054,11 +1059,15 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   jpeg_create_decompress(&jpeg_info);
   JPEGSourceManager(&jpeg_info,image);
   jpeg_set_marker_processor(&jpeg_info,JPEG_COM,ReadComment);
-  jpeg_set_marker_processor(&jpeg_info,ICC_MARKER,ReadICCProfile);
-  jpeg_set_marker_processor(&jpeg_info,IPTC_MARKER,ReadIPTCProfile);
+  option=GetImageOption(image_info,"profile:skip");
+  if (IsOptionMember("ICC",option) == MagickFalse)
+    jpeg_set_marker_processor(&jpeg_info,ICC_MARKER,ReadICCProfile);
+  if (IsOptionMember("IPTC",option) == MagickFalse)
+    jpeg_set_marker_processor(&jpeg_info,IPTC_MARKER,ReadIPTCProfile);
   for (i=1; i < 16; i++)
     if ((i != 2) && (i != 13) && (i != 14))
-      jpeg_set_marker_processor(&jpeg_info,(int) (JPEG_APP0+i),ReadProfile);
+      if (IsOptionMember("APP",option) == MagickFalse)
+        jpeg_set_marker_processor(&jpeg_info,(int) (JPEG_APP0+i),ReadProfile);
   i=(ssize_t) jpeg_read_header(&jpeg_info,TRUE);
   if ((image_info->colorspace == YCbCrColorspace) ||
       (image_info->colorspace == Rec601YCbCrColorspace) ||
@@ -1925,15 +1934,19 @@ static void WriteProfile(j_compress_ptr jpeg_info,Image *image)
           Add namespace to XMP profile.
         */
         xmp_profile=StringToStringInfo("http://ns.adobe.com/xap/1.0/ ");
-        ConcatenateStringInfo(xmp_profile,profile);
-        GetStringInfoDatum(xmp_profile)[28]='\0';
-        for (i=0; i < (ssize_t) GetStringInfoLength(xmp_profile); i+=65533L)
-        {
-          length=MagickMin(GetStringInfoLength(xmp_profile)-i,65533L);
-          jpeg_write_marker(jpeg_info,XML_MARKER,
-            GetStringInfoDatum(xmp_profile)+i,(unsigned int) length);
-        }
-        xmp_profile=DestroyStringInfo(xmp_profile);
+        if (xmp_profile != (StringInfo *) NULL)
+          {
+            if (profile != (StringInfo *) NULL)
+              ConcatenateStringInfo(xmp_profile,profile);
+            GetStringInfoDatum(xmp_profile)[28]='\0';
+            for (i=0; i < (ssize_t) GetStringInfoLength(xmp_profile); i+=65533L)
+            {
+              length=MagickMin(GetStringInfoLength(xmp_profile)-i,65533L);
+              jpeg_write_marker(jpeg_info,XML_MARKER,
+                GetStringInfoDatum(xmp_profile)+i,(unsigned int) length);
+            }
+            xmp_profile=DestroyStringInfo(xmp_profile);
+          }
       }
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
       "%s profile: %.20g bytes",name,(double) GetStringInfoLength(profile));
@@ -2207,7 +2220,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
           */
           status=AcquireMagickResource(MemoryResource,length);
           RelinquishMagickResource(MemoryResource,length);
-          jpeg_info.optimize_coding=status;
+          jpeg_info.optimize_coding=status == MagickFalse ? FALSE : TRUE;
         }
     }
 #if (JPEG_LIB_VERSION >= 61) && defined(C_PROGRESSIVE_SUPPORTED)
@@ -2314,7 +2327,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
         }
       jpeg_info=DestroyImageInfo(jpeg_info);
     }
-  jpeg_set_quality(&jpeg_info,quality,MagickTrue);
+  jpeg_set_quality(&jpeg_info,quality,TRUE);
 #if (JPEG_LIB_VERSION >= 70)
   option=GetImageOption(image_info,"quality");
   if (option != (const char *) NULL)
@@ -2335,7 +2348,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
             (geometry_info.rho+0.5));
           jpeg_info.q_scale_factor[1]=jpeg_quality_scaling((int)
             (geometry_info.sigma+0.5));
-          jpeg_default_qtables(&jpeg_info,MagickTrue);
+          jpeg_default_qtables(&jpeg_info,TRUE);
         }
     }
 #endif
@@ -2453,7 +2466,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
           table=DestroyQuantizationTable(table);
         }
     }
-  jpeg_start_compress(&jpeg_info,MagickTrue);
+  jpeg_start_compress(&jpeg_info,TRUE);
   if (image->debug != MagickFalse)
     {
       if (image->storage_class == PseudoClass)

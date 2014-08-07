@@ -194,6 +194,7 @@ static const CoderMapInfo
     { "RADIAL-GRADIENT", "GRADIENT" },
     { "RAF", "DNG" },
     { "RAS", "SUN" },
+    { "RAW", "DNG" },
     { "RGBA", "RGB" },
     { "RGBO", "RGB" },
     { "RMF", "DNG" },
@@ -377,7 +378,8 @@ static SplayTreeInfo *AcquireCoderCache(const char *filename,
 */
 MagickExport MagickBooleanType CoderComponentGenesis(void)
 {
-  coder_semaphore=AllocateSemaphoreInfo();
+  if (coder_semaphore == (SemaphoreInfo *) NULL)
+    coder_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -785,7 +787,7 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
   CoderInfo
     *coder_info;
 
-  MagickBooleanType
+  MagickStatusType
     status;
 
   /*
@@ -937,5 +939,5 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
     }
   }
   token=(char *) RelinquishMagickMemory(token);
-  return(status);
+  return(status != 0 ? MagickTrue : MagickFalse);
 }

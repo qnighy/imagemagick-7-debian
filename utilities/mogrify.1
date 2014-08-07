@@ -134,6 +134,7 @@ Image Operators:
   \-brightness-contrast geometry
                        improve brightness / contrast of the image
   \-cdl filename        color correct with a color decision list
+  \-canny geometry      detect edges in the image
   \-charcoal radius     simulate a charcoal drawing
   \-chop geometry       remove pixels from the image interior
   \-clamp               keep pixel values in range (0-QuantumRange)
@@ -179,6 +180,8 @@ Image Operators:
   \-grayscale method    convert image to grayscale
   \-ift                 implements the inverse discrete Fourier transform (DFT)
   \-help                print program options
+  \-hough-lines geometry
+                        identify lines in the image
   \-identify            identify the format and characteristics of the image
   \-ift                 implements the inverse discrete Fourier transform (DFT)
   \-implode amount      implode image pixels about the center
@@ -192,6 +195,7 @@ Image Operators:
   \-liquid-rescale geometry
                        rescale image with seam-carving
   \-magnify             double the size of the image with pixel art scaling
+  \-mean-shift geometry delineate arbitrarily shaped clusters in the image
   \-median geometry     apply a median filter to the image
   \-mode geometry       make each pixel the 'predominant color' of the neighborhood
   \-modulate value      vary the brightness, saturation, and hue

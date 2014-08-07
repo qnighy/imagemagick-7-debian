@@ -325,6 +325,9 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
   count=ReadBlob(image,1,&pcx_info.identifier);
   for (id=1; id < 1024; id++)
   {
+    int
+      bits_per_pixel;
+
     /*
       Verify PCX identifier.
     */
@@ -332,7 +335,10 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((count == 0) || (pcx_info.identifier != 0x0a))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     pcx_info.encoding=(unsigned char) ReadBlobByte(image);
-    pcx_info.bits_per_pixel=(unsigned char) ReadBlobByte(image);
+    bits_per_pixel=ReadBlobByte(image);
+    if (bits_per_pixel == -1)
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    pcx_info.bits_per_pixel=(unsigned char) bits_per_pixel;
     pcx_info.left=ReadBlobLSBShort(image);
     pcx_info.top=ReadBlobLSBShort(image);
     pcx_info.right=ReadBlobLSBShort(image);
@@ -361,6 +367,8 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     count=ReadBlob(image,3*image->colors,pcx_colormap);
     pcx_info.reserved=(unsigned char) ReadBlobByte(image);
     pcx_info.planes=(unsigned char) ReadBlobByte(image);
+    if ((pcx_info.bits_per_pixel*pcx_info.planes) >= 64)
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     one=1;
     if ((pcx_info.bits_per_pixel != 8) || (pcx_info.planes == 1))
       if ((pcx_info.version == 3) || (pcx_info.version == 5) ||
@@ -1088,9 +1096,6 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
           }
         else
           {
-            IndexPacket
-              polarity;
-
             register unsigned char
               bit,
               byte;
@@ -1098,16 +1103,9 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
             /*
               Convert PseudoClass image to a PCX monochrome image.
             */
-            polarity=(IndexPacket) (GetPixelLuma(image,
-              &image->colormap[0]) < (QuantumRange/2) ? 1 : 0);
-            if (image->colors == 2)
-              polarity=(IndexPacket) (
-                GetPixelLuma(image,&image->colormap[0]) <
-                GetPixelLuma(image,&image->colormap[1]) ? 1 : 0);
             for (y=0; y < (ssize_t) image->rows; y++)
             {
-              p=GetVirtualPixels(image,0,y,image->columns,1,
-                &image->exception);
+              p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
               if (p == (const PixelPacket *) NULL)
                 break;
               indexes=GetVirtualIndexQueue(image);
@@ -1117,7 +1115,7 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
               for (x=0; x < (ssize_t) image->columns; x++)
               {
                 byte<<=1;
-                if (GetPixelIndex(indexes+x) == polarity)
+                if (GetPixelLuma(image,p) >= (QuantumRange/2.0))
                   byte|=0x01;
                 bit++;
                 if (bit == 8)

@@ -845,7 +845,8 @@ MagickExport LinkedListInfo *GetLocaleOptions(const char *filename,
       {
         xml=AcquireStringInfo(0);
         SetStringInfoLength(xml,strlen(blob)+1);
-        SetStringInfoDatum(xml,(unsigned char *) blob);
+        SetStringInfoDatum(xml,(const unsigned char *) blob);
+        blob=(char *) RelinquishMagickMemory(blob);
         SetStringInfoPath(xml,filename);
         (void) AppendValueToLinkedList(messages,xml);
       }
@@ -1174,7 +1175,7 @@ static MagickBooleanType LoadLocaleCache(SplayTreeInfo *locale_cache,
   LocaleInfo
     *locale_info;
 
-  MagickBooleanType
+  MagickStatusType
     status;
 
   register char
@@ -1380,7 +1381,7 @@ static MagickBooleanType LoadLocaleCache(SplayTreeInfo *locale_cache,
   }
   token=(char *) RelinquishMagickMemory(token);
   (void) SetFatalErrorHandler(fatal_handler);
-  return(status);
+  return(status != 0 ? MagickTrue : MagickFalse);
 }
 
 /*
@@ -1403,7 +1404,8 @@ static MagickBooleanType LoadLocaleCache(SplayTreeInfo *locale_cache,
 */
 MagickExport MagickBooleanType LocaleComponentGenesis(void)
 {
-  locale_semaphore=AllocateSemaphoreInfo();
+  if (locale_semaphore == (SemaphoreInfo *) NULL)
+    locale_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 

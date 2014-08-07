@@ -550,14 +550,18 @@ RestoreMSCWarning \
 /* WPG2 raster reader. */
 static int UnpackWPG2Raster(Image *image,int bpp)
 {
+  int XorMe = 0;
+
+  int
+    RunCount;
+
   size_t
     x,
     y;
 
   ssize_t
+    i,
     ldblk;
-
-  int XorMe = 0;
 
   unsigned int
     SampleSize=1;
@@ -565,11 +569,7 @@ static int UnpackWPG2Raster(Image *image,int bpp)
   unsigned char
     bbuf,
     *BImgBuff,
-    RunCount,
     SampleBuffer[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-
-  unsigned int
-    i;
 
   x=0;
   y=0;
@@ -752,7 +752,7 @@ static Image *ExtractPostscript(Image *image,const ImageInfo *image_info,
   clone_info->length=0;
 
   /* Obtain temporary file */
-  AcquireUniqueFilename(postscript_file);
+  (void) AcquireUniqueFilename(postscript_file);
   ps_file=fopen_utf8(postscript_file,"wb");
   if (ps_file == (FILE *) NULL)
     goto FINISH;

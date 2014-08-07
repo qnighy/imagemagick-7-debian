@@ -3085,13 +3085,13 @@ MagickExport void XGetPixelPacket(Display *display,
   /*
     Set highlight color.
   */
-  pixel->highlight_color.red=(unsigned short) ((
+  pixel->highlight_color.red=(unsigned short) (((MagickRealType)
     pixel->matte_color.red*ScaleQuantumToShort(HighlightModulate))/65535L+
     (ScaleQuantumToShort((Quantum) (QuantumRange-HighlightModulate))));
-  pixel->highlight_color.green=(unsigned short) ((
+  pixel->highlight_color.green=(unsigned short) (((MagickRealType)
     pixel->matte_color.green*ScaleQuantumToShort(HighlightModulate))/65535L+
     (ScaleQuantumToShort((Quantum) (QuantumRange-HighlightModulate))));
-  pixel->highlight_color.blue=(unsigned short) ((
+  pixel->highlight_color.blue=(unsigned short) (((MagickRealType)
     pixel->matte_color.blue*ScaleQuantumToShort(HighlightModulate))/65535L+
     (ScaleQuantumToShort((Quantum) (QuantumRange-HighlightModulate))));
   pixel->highlight_color.pixel=
@@ -4864,8 +4864,7 @@ MagickExport Image *XImportImage(const ImageInfo *image_info,
   crop_info.height=0;
   root=XRootWindow(display,XDefaultScreen(display));
   target=(Window) NULL;
-  if ((image_info->filename != (char *) NULL) &&
-      (*image_info->filename != '\0'))
+  if (*image_info->filename != '\0')
     {
       if (LocaleCompare(image_info->filename,"root") == 0)
         target=root;
@@ -5026,8 +5025,7 @@ MagickExport Image *XImportImage(const ImageInfo *image_info,
       status=XGetWMName(display,target,&window_name);
       if (status == True)
         {
-          if ((image_info->filename != (char *) NULL) &&
-              (*image_info->filename == '\0'))
+          if (*image_info->filename == '\0')
             (void) CopyMagickString(image->filename,(char *) window_name.value,
               (size_t) window_name.nitems+1);
           (void) XFree((void *) window_name.value);
@@ -5477,9 +5475,12 @@ MagickExport MagickBooleanType XMakeImage(Display *display,
         (char *) NULL,&segment_info[1],width,height);
       if (ximage == (XImage *) NULL)
         window->shared_memory=MagickFalse;
-      length=(size_t) ximage->bytes_per_line*ximage->height;
-      if (CheckOverflowException(length,ximage->bytes_per_line,ximage->height))
-        window->shared_memory=MagickFalse;
+      else
+        {
+          length=(size_t) ximage->bytes_per_line*ximage->height;
+          if (CheckOverflowException(length,ximage->bytes_per_line,ximage->height))
+            window->shared_memory=MagickFalse;
+        }
       if (window->shared_memory != MagickFalse)
         segment_info[1].shmid=shmget(IPC_PRIVATE,length,IPC_CREAT | 0777);
       if (window->shared_memory != MagickFalse)
@@ -5531,12 +5532,9 @@ MagickExport MagickBooleanType XMakeImage(Display *display,
           window->shared_memory=MagickFalse;
           if (status != False)
             XShmDetach(display,&segment_info[1]);
-          if (ximage != (XImage *) NULL)
-            {
-              ximage->data=NULL;
-              XDestroyImage(ximage);
-              ximage=(XImage *) NULL;
-            }
+          ximage->data=NULL;
+          XDestroyImage(ximage);
+          ximage=(XImage *) NULL;
           if (segment_info[1].shmid >= 0)
             {
               if (segment_info[1].shmaddr != NULL)
@@ -7056,6 +7054,8 @@ MagickExport void XMakeMagnifyImage(Display *display,XWindows *windows)
     magnify>>=1;
   while (magnify > windows->magnify.height)
     magnify>>=1;
+  if (magnify == 0)
+    magnify=1;
   if (magnify != previous_magnify)
     {
       Status
@@ -8943,6 +8943,9 @@ MagickPrivate MagickBooleanType XRenderImage(Image *image,
   resource_info.background_color=AcquireString("#ffffffffffff");
   resource_info.foreground_color=AcquireString("#000000000000");
   map_info=XAllocStandardColormap();
+  visual_info=(XVisualInfo *) NULL;
+  font_info=(XFontStruct *) NULL;
+  pixel.pixels=(unsigned long *) NULL;
   if (map_info == (XStandardColormap *) NULL)
     {
       ThrowXWindowException(ResourceLimitError,"MemoryAllocationFailed",
@@ -8955,11 +8958,12 @@ MagickPrivate MagickBooleanType XRenderImage(Image *image,
   visual_info=XBestVisualInfo(display,map_info,&resource_info);
   if (visual_info == (XVisualInfo *) NULL)
     {
+      XFreeResources(display,visual_info,map_info,&pixel,font_info,
+        &resource_info,(XWindowInfo *) NULL);
       ThrowXWindowException(XServerError,"UnableToGetVisual",image->filename);
       return(MagickFalse);
     }
   map_info->colormap=(Colormap) NULL;
-  pixel.pixels=(unsigned long *) NULL;
   /*
     Initialize Standard Colormap info.
   */
@@ -8974,16 +8978,9 @@ MagickPrivate MagickBooleanType XRenderImage(Image *image,
   font_info=XBestFont(display,&resource_info,MagickFalse);
   if (font_info == (XFontStruct *) NULL)
     {
-      ThrowXWindowException(XServerError,"UnableToLoadFont",draw_info->font);
-      return(MagickFalse);
-    }
-  if ((map_info == (XStandardColormap *) NULL) ||
-      (visual_info == (XVisualInfo *) NULL) ||
-      (font_info == (XFontStruct *) NULL))
-    {
       XFreeResources(display,visual_info,map_info,&pixel,font_info,
         &resource_info,(XWindowInfo *) NULL);
-      ThrowXWindowException(XServerError,"UnableToLoadFont",image->filename);
+      ThrowXWindowException(XServerError,"UnableToLoadFont",draw_info->font);
       return(MagickFalse);
     }
   cache_info=(*draw_info);

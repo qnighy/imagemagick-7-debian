@@ -497,6 +497,9 @@
         <message name="ImageDepthNotSupported">
           image depth not supported
         </message>
+        <message name="ImageMorphologyDiffers">
+          image morphology differs
+        </message>
         <message name="ImageSequenceRequired">
           image sequence is required
         </message>
@@ -1301,6 +1304,11 @@
         dull image contrast
       </message>
     </DullContrast>
+    <Encode>
+      <message name="Image">
+        encode image
+      </message>
+    </Encode>
     <Equalize>
       <message name="Image">
         equalize image

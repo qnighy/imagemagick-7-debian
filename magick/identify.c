@@ -612,6 +612,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
           max_locations,channel_statistics);
       channel_statistics=(ChannelStatistics *) RelinquishMagickMemory(
         channel_statistics);
+      exception=DestroyExceptionInfo(exception);
       return(ferror(file) != 0 ? MagickFalse : MagickTrue);
     }
   *format='\0';
@@ -682,6 +683,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
         floor(elapsed_time))));
       (void) FormatLocaleFile(file,"\n");
       (void) fflush(file);
+      exception=DestroyExceptionInfo(exception);
       return(ferror(file) != 0 ? MagickFalse : MagickTrue);
     }
   /*
@@ -710,7 +712,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
   else
     (void) FormatLocaleFile(file,"  Format: %s (%s)\n",image->magick,
       GetMagickDescription(magick_info));
-  if ((magick_info == (const MagickInfo *) NULL) ||
+  if ((magick_info != (const MagickInfo *) NULL) &&
       (GetMagickMimeType(magick_info) != (const char *) NULL))
     (void) FormatLocaleFile(file,"  Mime type: %s\n",GetMagickMimeType(
       magick_info));

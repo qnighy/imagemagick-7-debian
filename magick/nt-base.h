@@ -37,6 +37,7 @@ extern "C" {
 #include <io.h>
 #include <process.h>
 #include <errno.h>
+#include <malloc.h>
 #if defined(_DEBUG) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #include <crtdbg.h>
 #endif
@@ -141,9 +142,13 @@ extern "C" {
 #endif
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
   !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
+#if !defined(lseek)
 #  define lseek  _lseeki64
+#endif
 #else
+#if !defined(lseek)
 #  define lseek  _lseek
+#endif
 #endif
 #if !defined(MAGICKCORE_LTDL_DELEGATE)
 #if !defined(lt_dlclose)

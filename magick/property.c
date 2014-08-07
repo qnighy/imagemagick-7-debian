@@ -173,8 +173,8 @@ MagickExport MagickBooleanType CloneImageProperties(Image *image,
   image->endian=clone_image->endian;
   image->gravity=clone_image->gravity;
   image->compose=clone_image->compose;
-  image->scene=clone_image->scene;
   image->orientation=clone_image->orientation;
+  image->scene=clone_image->scene;
   image->dispose=clone_image->dispose;
   image->delay=clone_image->delay;
   image->ticks_per_second=clone_image->ticks_per_second;
@@ -190,9 +190,8 @@ MagickExport MagickBooleanType CloneImageProperties(Image *image,
     {
       if (image->properties != (void *) NULL)
         DestroyImageProperties(image);
-      image->properties=CloneSplayTree((SplayTreeInfo *)
-        clone_image->properties,(void *(*)(void *)) ConstantString,
-        (void *(*)(void *)) ConstantString);
+      image->properties=CloneSplayTree((SplayTreeInfo *) clone_image->properties,
+        (void *(*)(void *)) ConstantString,(void *(*)(void *)) ConstantString);
     }
   return(MagickTrue);
 }
@@ -1577,10 +1576,28 @@ static MagickBooleanType GetICCProperty(const Image *image,const char *property)
   return(MagickTrue);
 }
 
+static MagickBooleanType SkipXMPValue(const char *value)
+{
+  if (value == (const char*) NULL)
+    return(MagickTrue);
+
+  while(*value != '\0')
+  {
+    if (!isspace((int) ((const char) *value)))
+      return(MagickFalse);
+    value++;
+  }
+
+  return(MagickTrue);
+}
+
 static MagickBooleanType GetXMPProperty(const Image *image,const char *property)
 {
   char
     *xmp_profile;
+
+  const char
+    *content;
 
   const StringInfo
     *profile;
@@ -1632,16 +1649,17 @@ static MagickBooleanType GetXMPProperty(const Image *image,const char *property)
         while (node != (XMLTreeInfo *) NULL)
         {
           child=GetXMLTreeChild(node,(const char *) NULL);
-          if (child == (XMLTreeInfo *) NULL)
+          content=GetXMLTreeContent(node);
+          if ((child == (XMLTreeInfo *) NULL) &&
+              (SkipXMPValue(content) == MagickFalse))
             (void) AddValueToSplayTree((SplayTreeInfo *) image->properties,
-              ConstantString(GetXMLTreeTag(node)),
-              ConstantString(GetXMLTreeContent(node)));
+              ConstantString(GetXMLTreeTag(node)),ConstantString(content));
           while (child != (XMLTreeInfo *) NULL)
           {
-            if (LocaleCompare(GetXMLTreeTag(child),"rdf:Seq") != 0)
+            content=GetXMLTreeContent(child);
+            if (SkipXMPValue(content) == MagickFalse)
               (void) AddValueToSplayTree((SplayTreeInfo *) image->properties,
-                ConstantString(GetXMLTreeTag(child)),
-                ConstantString(GetXMLTreeContent(child)));
+                ConstantString(GetXMLTreeTag(child)),ConstantString(content));
             child=GetXMLTreeSibling(child);
           }
           node=GetXMLTreeSibling(node);
@@ -1893,18 +1911,13 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
     return((char *) NULL);
   message=AcquireString((char *) NULL);
   (void) FormatLocaleString(message,MaxTextExtent,
-    "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n");
-  (void) ConcatenateString(&path,message);
-  (void) FormatLocaleString(message,MaxTextExtent,
-    "<svg width=\"%.20g\" height=\"%.20g\">\n",(double) columns,(double) rows);
-  (void) ConcatenateString(&path,message);
-  (void) FormatLocaleString(message,MaxTextExtent,"<g>\n");
-  (void) ConcatenateString(&path,message);
-  (void) FormatLocaleString(message,MaxTextExtent,
-    "<path style=\"fill:#00000000;stroke:#00000000;");
-  (void) ConcatenateString(&path,message);
-  (void) FormatLocaleString(message,MaxTextExtent,
-    "stroke-width:0;stroke-antialiasing:false\" d=\"\n");
+    ("<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\""
+    " width=\"%.20g\" height=\"%.20g\">\n"
+    "<g>\n"
+    "<path fill-rule=\"evenodd\" style=\"fill:#00000000;stroke:#00000000;"
+    "stroke-width:0;stroke-antialiasing:false\" d=\"\n"),
+    (double) columns,(double) rows);
   (void) ConcatenateString(&path,message);
   (void) ResetMagickMemory(point,0,sizeof(point));
   (void) ResetMagickMemory(first,0,sizeof(first));
@@ -1990,12 +2003,12 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
             else
               if ((last[1].x == last[2].x) && (last[1].y == last[2].y))
                 (void) FormatLocaleString(message,MaxTextExtent,
-                  "V %g %g %g %g\n",point[0].x,point[0].y,
+                  "Q %g %g %g %g\n",point[0].x,point[0].y,
                   point[1].x,point[1].y);
               else
                 if ((point[0].x == point[1].x) && (point[0].y == point[1].y))
                   (void) FormatLocaleString(message,MaxTextExtent,
-                    "Y %g %g %g %g\n",last[2].x,last[2].y,
+                    "S %g %g %g %g\n",last[2].x,last[2].y,
                     point[1].x,point[1].y);
                 else
                   (void) FormatLocaleString(message,MaxTextExtent,
@@ -2023,12 +2036,12 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
             else
               if ((last[1].x == last[2].x) && (last[1].y == last[2].y))
                 (void) FormatLocaleString(message,MaxTextExtent,
-                  "V %g %g %g %g Z\n",first[0].x,first[0].y,
+                  "Q %g %g %g %g Z\n",first[0].x,first[0].y,
                   first[1].x,first[1].y);
               else
                 if ((first[0].x == first[1].x) && (first[0].y == first[1].y))
                   (void) FormatLocaleString(message,MaxTextExtent,
-                    "Y %g %g %g %g Z\n",last[2].x,last[2].y,
+                    "S %g %g %g %g Z\n",last[2].x,last[2].y,
                     first[1].x,first[1].y);
                 else
                   (void) FormatLocaleString(message,MaxTextExtent,
@@ -2053,12 +2066,7 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
   /*
     Return an empty SVG image if the path does not have knots.
   */
-  (void) FormatLocaleString(message,MaxTextExtent,"\"/>\n");
-  (void) ConcatenateString(&path,message);
-  (void) FormatLocaleString(message,MaxTextExtent,"</g>\n");
-  (void) ConcatenateString(&path,message);
-  (void) FormatLocaleString(message,MaxTextExtent,"</svg>\n");
-  (void) ConcatenateString(&path,message);
+  (void) ConcatenateString(&path,"\"/>\n</g>\n</svg>\n");
   message=DestroyString(message);
   return(path);
 }
@@ -3339,9 +3347,8 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
           default:
             p++;
             *q++=(*p);
-            continue;
         }
-        continue; /* never reached! */
+        continue;
       case '&':
         if (LocaleNCompare("&lt;",p,4) == 0)
           *q++='<', p+=3;
@@ -3398,7 +3405,7 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
     */
     {
       char
-        pattern[MaxTextExtent];
+        pattern[2*MaxTextExtent];
 
       const char
         *key,

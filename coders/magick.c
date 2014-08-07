@@ -12993,7 +12993,7 @@ static const MagickImageInfo
     { "LOGO", "GIF", LogoImage, sizeof(LogoImage) },
     { "GRANITE", "GIF", GraniteImage, sizeof(GraniteImage) },
     { "NETSCAPE", "GIF", NetscapeImage, sizeof(NetscapeImage) },
-    { "ROSE", "PPM", RoseImage, sizeof(RoseImage) },
+    { "ROSE", "PNM", RoseImage, sizeof(RoseImage) },
     { "WIZARD", "GIF", WizardImage, sizeof(WizardImage) },
     { "", "", (const void *) NULL, 0 }
   };

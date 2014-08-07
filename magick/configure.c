@@ -232,7 +232,8 @@ static LinkedListInfo *AcquireConfigureCache(const char *filename,
 */
 MagickExport MagickBooleanType ConfigureComponentGenesis(void)
 {
-  configure_semaphore=AllocateSemaphoreInfo();
+  if (configure_semaphore == (SemaphoreInfo *) NULL)
+    configure_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -1138,7 +1139,7 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
   const char
     *q;
 
-  MagickBooleanType
+  MagickStatusType
     status;
 
   /*
@@ -1210,8 +1211,8 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
                   xml=FileToXML(path,~0UL);
                   if (xml != (char *) NULL)
                     {
-                      status=LoadConfigureCache(configure_cache,xml,path,depth+1,
-                        exception);
+                      status&=LoadConfigureCache(configure_cache,xml,path,
+                        depth+1,exception);
                       xml=(char *) RelinquishMagickMemory(xml);
                     }
                 }
@@ -1291,5 +1292,5 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
     }
   }
   token=(char *) RelinquishMagickMemory(token);
-  return(status);
+  return(status != 0 ? MagickTrue : MagickFalse);
 }

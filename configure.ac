@@ -22,8 +22,8 @@ AC_PREREQ(2.69)
 
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
-m4_define([magick_micro_version], [8])
-m4_define([magick_patchlevel_version], [9])
+m4_define([magick_micro_version], [9])
+m4_define([magick_patchlevel_version], [6])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -160,7 +160,7 @@ AC_SUBST(PACKAGE_VERSION_ADDENDUM)dnl
 # Ensure that make can run correctly
 AM_SANITY_CHECK
 
-AM_INIT_AUTOMAKE([1.11 color-tests foreign parallel-tests silent-rules subdir-objects dist-bzip2 dist-lzip dist-xz dist-zip])
+AM_INIT_AUTOMAKE([1.12 nostdinc color-tests foreign parallel-tests silent-rules subdir-objects dist-bzip2 dist-lzip dist-xz dist-zip])
 
 # Enable support for silent build rules
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -511,7 +511,7 @@ if test "$with_threads" != 'no'; then
         DEF_THREAD="$PTHREAD_CFLAGS"
         CFLAGS="$CFLAGS $DEF_THREAD"
         CXXFLAGS="$CXXFLAGS $DEF_THREAD"
-	THREAD_LIBS="$PTHREAD_LIBS"
+        THREAD_LIBS="$PTHREAD_LIBS"
         if test "$CC" != "$PTHREAD_CC"; then
             AC_MSG_WARN([Replacing compiler $CC with compiler $PTHREAD_CC to support pthreads.])
             CC="$PTHREAD_CC"
@@ -1306,7 +1306,7 @@ if test "$enable_delegate_build" != 'no'; then
     # Most delegates have includes in the same directory as the library, but not all...
     #
     # Includes
-    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/include lzma magick mupdf openjp2/include png tiff/libtiff ttf/include wand webp/src wmf/include xml/include zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/include lzma magick openjp2/include png tiff/libtiff ttf/include wand webp/src wmf/include xml/include zlib; do
         if test -d "$builddir/$dir"; then
             CPPFLAGS="$CPPFLAGS -I$builddir/$dir"
         else
@@ -1317,7 +1317,7 @@ if test "$enable_delegate_build" != 'no'; then
     done
 
     # Libraries
-    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/src lzma magick mupdf openjp2 png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
+    for dir in bzlib fftw fpx gslib/src jp2 jbig/libjbig jpeg lcms/src lzma magick openjp2 png tiff/libtiff ttf/objs wand webp wmf/src xml zlib; do
     if test -d "$builddir/$dir/.libs"; then
         LDFLAGS="$LDFLAGS -L$builddir/$dir/.libs"
     else
@@ -2408,7 +2408,7 @@ LIBOPENJP2_LIBS=""
 LIBOPENJP2_PKG=""
 if test "x$with_openjp2" = "xyes"; then
     AC_MSG_RESULT([-------------------------------------------------------------])
-    PKG_CHECK_MODULES(LIBOPENJP2,[libopenjp2 >= 2.0.0], have_openjp2=yes, have_openjp2=no)
+    PKG_CHECK_MODULES(LIBOPENJP2,[libopenjp2 >= 2.1.0], have_openjp2=yes, have_openjp2=no)
     AC_MSG_RESULT([])
 fi
 
@@ -2486,51 +2486,6 @@ fi
 AM_CONDITIONAL(LZMA_DELEGATE, test "$have_lzma" = 'yes')
 AC_SUBST(LZMA_CFLAGS)
 AC_SUBST(LZMA_LIBS)
-
-dnl ===========================================================================
-
-#
-# Check for MUPDF delegate library.
-#
-AC_ARG_WITH(mupdf,
-    [AC_HELP_STRING([--with-mupdf],
-                    [enable MUPDF support])],
-    [with_mupdf=$withval],
-    [with_mupdf='no'])
-
-if test "$with_mupdf" != 'yes'; then
-    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-mupdf=$with_mupdf "
-fi
-
-have_mupdf='no'
-MUPDF_LIBS=''
-if test "$with_mupdf" != 'no'; then
-    AC_MSG_RESULT([-------------------------------------------------------------])
-    AC_MSG_CHECKING([for MUPDF])
-    AC_MSG_RESULT([])
-    failed=0
-    passed=0
-    AC_CHECK_HEADER(mupdf/fitz.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-    AC_CHECK_LIB(mupdf,fz_new_context,passed=`expr $passed + 1`,failed=`expr $failed + 1`,-lmupdf $FREETYPE_LIBS)
-    AC_MSG_CHECKING([if MUPDF package is complete])
-    if test $passed -gt 0; then
-        if test $failed -gt 0; then
-            AC_MSG_RESULT([no -- some components failed test])
-            have_mupdf='no (failed tests)'
-        else
-            MUPDF_LIBS='-lmupdf'
-            LIBS="$MUPDF_LIBS $LIBS"
-            AC_DEFINE(MUPDF_DELEGATE,1,Define if you have MUPDF library)
-            AC_MSG_RESULT([yes])
-            have_mupdf='yes'
-        fi
-    else
-        AC_MSG_RESULT([no])
-    fi
-fi
-AM_CONDITIONAL(MUPDF_DELEGATE,test "$have_mupdf" = 'yes')
-AC_SUBST(MUPDF_LIBS)
-
 
 dnl ===========================================================================
 
@@ -3241,6 +3196,7 @@ BZIPDelegateDefault='bzip2'
 BrowseDelegateDefault='xdg-open'
 CatDelegateDefault='cat'
 DNGDecodeDelegateDefault='ufraw-batch'
+DOCDecodeDelegateDefault='soffice'
 GVCDecodeDelegateDefault='dot'
 DVIDecodeDelegateDefault='dvips'
 EchoDelegateDefault='echo'
@@ -3254,7 +3210,7 @@ HTMLDecodeDelegateDefault='html2ps'
 ILBMDecodeDelegateDefault='ilbmtoppm'
 ILBMEncodeDelegateDefault='ppmtoilbm'
 JXRDecodeDelegateDefault='JxrDecApp'
-JXRMEncodeDelegateDefault='JxrEncApp'
+JXREncodeDelegateDefault='JxrEncApp'
 LPDelegateDefault='lp'
 LPRDelegateDefault='lpr'
 LaunchDelegateDefault='gimp'
@@ -3293,15 +3249,15 @@ AC_PATH_PROG(BlenderDecodeDelegate, "$BlenderDecodeDelegateDefault", "$BlenderDe
 AC_PATH_PROG(BZIPDelegate, "$BZIPDelegateDefault", "$BZIPDelegateDefault")
 AC_PATH_PROGS(BrowseDelegate, "$BrowseDelegateDefault" google-chrome firefox konqueror mozilla lynx, "$BrowseDelegateDefault")
 AC_PATH_PROG(CatDelegate, "$CatDelegateDefault", "$CatDelegateDefault")
+AC_PATH_PROG(ConvertDelegate, "$ConvertDelegateDefault", "$ConvertDelegateDefault")
 AC_PATH_PROG(DNGDecodeDelegate, "$DNGDecodeDelegateDefault", "$DNGDecodeDelegateDefault")
-AC_PATH_PROG(GVCDecodeDelegate, "$GVCDecodeDelegateDefault", "$GVCDecodeDelegateDefault")
+AC_PATH_PROG(DOCDecodeDelegate, "$DOCDecodeDelegateDefault", "$DOCDecodeDelegateDefault")
 AC_PATH_PROG(DVIDecodeDelegate, "$DVIDecodeDelegateDefault", "$DVIDecodeDelegateDefault")
 AC_PATH_PROG(EchoDelegate, "$EchoDelegateDefault", "$EchoDelegateDefault")
 AC_PATH_PROG(EditorDelegate, "$EditorDelegateDefault", "$EditorDelegateDefault")
-AC_PATH_PROG(ConvertDelegate, "$ConvertDelegateDefault", "$ConvertDelegateDefault")
 AC_PATH_PROG(DisplayDelegate, "$DisplayDelegateDefault", "$DisplayDelegateDefault")
-AC_PATH_PROG(MogrifyDelegate, "$MogrifyDelegateDefault", "$MogrifyDelegateDefault")
 AC_PATH_PROG(GnuplotDecodeDelegate, "$GnuplotDecodeDelegateDefault", "$GnuplotDecodeDelegateDefault")
+AC_PATH_PROG(GVCDecodeDelegate, "$GVCDecodeDelegateDefault", "$GVCDecodeDelegateDefault")
 AC_PATH_PROG(HPGLDecodeDelegate, "$HPGLDecodeDelegateDefault", "$HPGLDecodeDelegateDefault")
 AC_PATH_PROG(HTMLDecodeDelegate, "$HTMLDecodeDelegateDefault", "$HTMLDecodeDelegateDefault")
 AC_PATH_PROG(ILBMDecodeDelegate, "$ILBMDecodeDelegateDefault", "$ILBMDecodeDelegateDefault")
@@ -3312,6 +3268,7 @@ AC_PATH_PROG(LPDelegate, "$LPDelegateDefault", no)
 AC_PATH_PROG(LPRDelegate, "$LPRDelegateDefault", "$LPRDelegateDefault")
 AC_PATH_PROG(LaunchDelegate, "$LaunchDelegateDefault", "$LaunchDelegateDefault")
 AC_PATH_PROG(MANDelegate, "$MANDelegateDefault", "$MANDelegateDefault")
+AC_PATH_PROG(MogrifyDelegate, "$MogrifyDelegateDefault", "$MogrifyDelegateDefault")
 AC_PATH_PROG(MPEGDecodeDelegate, "$MPEGDecodeDelegateDefault", "$MPEGDecodeDelegateDefault")
 if test "$MPEGDecodeDelegate" == "$MPEGDecodeDelegateDefault" ; then
   MPEGDecodeDelegateDefault='ffmpeg'
@@ -3472,6 +3429,7 @@ if test "$with_frozenpaths" != 'yes'; then
   ConvertDelegate="$ConvertDelegateDefault"
   DisplayDelegate="$DisplayDelegateDefault"
   DNGDecodeDelegate="$DNGDecodeDelegateDefault"
+  DOCDecodeDelegate="$DOCDecodeDelegateDefault"
   DVIDecodeDelegate="$DVIDecodeDelegateDefault"
   EchoDelegate="$EchoDelegateDefault"
   EditorDelegate="$EditorDelegateDefault"
@@ -3850,9 +3808,6 @@ fi
 if test "$have_fftw"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES fftw"
 fi
-if test "$have_mupdf"    = 'yes' ; then
-   MAGICK_DELEGATES="$MAGICK_DELEGATES mupdf"
-fi
 if test "$have_fpx"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES fpx"
 fi
@@ -3982,9 +3937,9 @@ fi
 #
 
 if test "$build_modules" != 'no'; then
-    MAGICK_DEP_LIBS="$LCMS_LIBS $FREETYPE_LIBS $LQR_LIBS $FFTW_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$USER_LIBS $LCMS_LIBS $FREETYPE_LIBS $LQR_LIBS $FFTW_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
 else
-    MAGICK_DEP_LIBS="$JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$USER_LIBS $JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
 fi
 AC_SUBST(MAGICK_DEP_LIBS)
 
@@ -4105,7 +4060,6 @@ LQR               --with-lqr=$with_lqr		$have_lqr
 LTDL              --with-ltdl=$with_ltdl		$have_ltdl
 LZMA              --with-lzma=$with_lzma		$have_lzma
 Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
-MUPDF             --with-mupdf=$with_mupdf		$have_mupdf
 OpenEXR           --with-openexr=$with_openexr		$have_openexr
 OpenJP2           --with-openjp2=$with_openjp2		$have_openjp2
 PANGO             --with-pango=$with_pango		$have_pango
@@ -4132,12 +4086,11 @@ Options used to compile and link:
   VERSION         = $PACKAGE_VERSION
   CC              = $CC
   CFLAGS          = $CFLAGS
-  CPPFLAGS        = $MAGICK_CPPFLAGS
-  PCFLAGS         = $MAGICK_PCFLAGS
+  CPPFLAGS        = $CPPFLAGS
+  PCFLAGS         = $PCFLAGS
   DEFS            = $DEFS
   LDFLAGS         = $LDFLAGS
-  MAGICK_LDFLAGS  = $MAGICK_LDFLAGS
-  LIBS            = $MAGICK_LIBS
+  LIBS            = $LIBS
   CXX             = $CXX
   CXXFLAGS        = $CXXFLAGS
   FEATURES        = $MAGICK_FEATURES

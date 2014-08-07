@@ -118,7 +118,6 @@ static const MagicMapInfo
     { "FIG", 0, MagickString("#FIG") },
     { "FITS", 0, MagickString("IT0") },
     { "FITS", 0, MagickString("SIMPLE") },
-    { "FPX", 0, MagickString("\320\317\021\340") },
     { "GIF", 0, MagickString("GIF8") },
     { "GPLT", 0, MagickString("#!/usr/local/bin/gnuplot") },
     { "HDF", 1, MagickString("HDF") },
@@ -762,11 +761,11 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
   const char
     *q;
 
-  MagickBooleanType
-    status;
-
   MagicInfo
     *magic_info;
+
+  MagickStatusType
+    status;
 
   /*
     Load the magic map file.
@@ -976,7 +975,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
     }
   }
   token=(char *) RelinquishMagickMemory(token);
-  return(status);
+  return(status != 0 ? MagickTrue : MagickFalse);
 }
 
 /*
@@ -999,7 +998,8 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
 */
 MagickExport MagickBooleanType MagicComponentGenesis(void)
 {
-  magic_semaphore=AllocateSemaphoreInfo();
+  if (magic_semaphore == (SemaphoreInfo *) NULL)
+    magic_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 

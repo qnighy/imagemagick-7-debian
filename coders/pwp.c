@@ -240,6 +240,8 @@ static Image *ReadPWPImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if (status == MagickFalse)
       break;
   }
+  if (unique_file != -1)
+    (void) close(unique_file);
   (void) RelinquishUniqueFileResource(read_info->filename);
   read_info=DestroyImageInfo(read_info);
   (void) CloseBlob(pwp_image);

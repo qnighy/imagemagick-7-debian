@@ -211,7 +211,7 @@ static LinkedListInfo *AcquireDelegateCache(const char *filename,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   D e l e g a t e C o m p o n e n t T e r m i n u s                         %
++   D e l e g a t e C o m p o n e n t G e n e s i s                           %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -226,7 +226,8 @@ static LinkedListInfo *AcquireDelegateCache(const char *filename,
 */
 MagickExport MagickBooleanType DelegateComponentGenesis(void)
 {
-  delegate_semaphore=AllocateSemaphoreInfo();
+  if (delegate_semaphore == (SemaphoreInfo *) NULL)
+    delegate_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -753,7 +754,7 @@ MagickExport MagickBooleanType GetDelegateThreadSupport(
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  IsDelegateCacheInstantiated() determines if the delegate cache is
-%  instantiated.  %  If not, it instantiates the cache and returns it.
+%  instantiated.  If not, it instantiates the cache and returns it.
 %
 %  The format of the IsDelegateInstantiated method is:
 %
@@ -883,6 +884,30 @@ static MagickBooleanType CopyDelegateFile(const char *source,
   (void) close(source_file);
   buffer=(unsigned char *) RelinquishMagickMemory(buffer);
   return(i != 0 ? MagickTrue : MagickFalse);
+}
+
+static char *SanitizeDelegateCommand(const char *command)
+{
+  char
+    *sanitize_command;
+
+  const char
+    *q;
+
+  register char
+    *p;
+
+  static char
+    whitelist[] =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_- "
+      ".@&;<>|/\\\'\":%=~";
+
+  sanitize_command=AcquireString(command);
+  p=sanitize_command;
+  q=sanitize_command+strlen(sanitize_command);
+  for (p+=strspn(p,whitelist); p != q; p+=strspn(p,whitelist))
+    *p='_';
+  return(sanitize_command);
 }
 
 MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
@@ -1086,11 +1111,16 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
     command=InterpretImageProperties(image_info,image,commands[i]);
     if (command != (char *) NULL)
       {
+        char
+          *sanitize_command;
+
         /*
           Execute delegate.
         */
-        status=SystemCommand(delegate_info->spawn,image_info->verbose,command,
-          exception) != 0 ? MagickTrue : MagickFalse;
+        sanitize_command=SanitizeDelegateCommand(command);
+        status=SystemCommand(delegate_info->spawn,image_info->verbose,
+          sanitize_command,exception) != 0 ? MagickTrue : MagickFalse;
+        sanitize_command=DestroyString(sanitize_command);        
         if (delegate_info->spawn != MagickFalse)
           {
             ssize_t
@@ -1279,7 +1309,7 @@ static MagickBooleanType LoadDelegateCache(LinkedListInfo *delegate_cache,
   DelegateInfo
     *delegate_info;
 
-  MagickBooleanType
+  MagickStatusType
     status;
 
   /*
@@ -1495,5 +1525,5 @@ static MagickBooleanType LoadDelegateCache(LinkedListInfo *delegate_cache,
     }
   }
   token=(char *) RelinquishMagickMemory(token);
-  return(status);
+  return(status != 0 ? MagickTrue : MagickFalse);
 }

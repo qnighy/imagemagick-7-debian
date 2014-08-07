@@ -329,7 +329,8 @@ MagickExport const void *AcquirePixelCachePixels(const Image *image,
 */
 MagickExport MagickBooleanType CacheComponentGenesis(void)
 {
-  cache_semaphore=AllocateSemaphoreInfo();
+  if (cache_semaphore == (SemaphoreInfo *) NULL)
+    cache_semaphore=AllocateSemaphoreInfo();
   return(MagickTrue);
 }
 
@@ -422,8 +423,9 @@ static MagickBooleanType ClipPixelCacheNexus(Image *image,
   */
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  if (image->clip_mask == (Image *) NULL)
-    return(MagickFalse);
+  if ((image->clip_mask == (Image *) NULL) ||
+      (image->storage_class == PseudoClass))
+    return(MagickTrue);
   cache_info=(CacheInfo *) image->cache;
   if (cache_info == (Cache) NULL)
     return(MagickFalse);
@@ -651,7 +653,8 @@ static MagickBooleanType ClonePixelCacheRepository(
       */
       CopyPixels(clone_info->pixels,cache_info->pixels,cache_info->columns*
         cache_info->rows);
-      if (cache_info->active_index_channel != MagickFalse)
+      if ((cache_info->active_index_channel != MagickFalse) &&
+          (clone_info->active_index_channel != MagickFalse))
         (void) memcpy(clone_info->indexes,cache_info->indexes,
           cache_info->columns*cache_info->rows*sizeof(*cache_info->indexes));
       return(MagickTrue);
@@ -702,7 +705,8 @@ static MagickBooleanType ClonePixelCacheRepository(
       clone_nexus[id],exception);
     if (pixels == (PixelPacket *) NULL)
       continue;
-    (void) ResetMagickMemory(clone_nexus[id]->pixels,0,clone_nexus[id]->length);
+    (void) ResetMagickMemory(clone_nexus[id]->pixels,0,(size_t)
+      clone_nexus[id]->length);
     (void) memcpy(clone_nexus[id]->pixels,cache_nexus[id]->pixels,length);
     status=WritePixelCachePixels(clone_info,clone_nexus[id],exception);
   }
@@ -1464,6 +1468,7 @@ MagickExport MagickSizeType GetImageExtent(const Image *image)
 %    o exception: return any errors or warnings in this structure.
 %
 */
+
 static inline MagickBooleanType ValidatePixelCacheMorphology(
   const Image *restrict image)
 {
@@ -3257,8 +3262,9 @@ static MagickBooleanType MaskPixelCacheNexus(Image *image,NexusInfo *nexus_info,
   */
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  if (image->mask == (Image *) NULL)
-    return(MagickFalse);
+  if ((image->mask == (Image *) NULL) ||
+      (image->storage_class == PseudoClass))
+    return(MagickTrue);
   cache_info=(CacheInfo *) image->cache;
   if (cache_info == (Cache) NULL)
     return(MagickFalse);
@@ -4992,10 +4998,12 @@ MagickExport MagickBooleanType SyncAuthenticPixelCacheNexus(Image *image,
   assert(cache_info->signature == MagickSignature);
   if (cache_info->type == UndefinedCache)
     return(MagickFalse);
-  if ((image->clip_mask != (Image *) NULL) &&
+  if ((image->storage_class == DirectClass) &&
+      (image->clip_mask != (Image *) NULL) &&
       (ClipPixelCacheNexus(image,nexus_info,exception) == MagickFalse))
     return(MagickFalse);
-  if ((image->mask != (Image *) NULL) &&
+  if ((image->storage_class == DirectClass) &&
+      (image->mask != (Image *) NULL) &&
       (MaskPixelCacheNexus(image,nexus_info,exception) == MagickFalse))
     return(MagickFalse);
   if (nexus_info->authentic_pixel_cache != MagickFalse)
@@ -5044,14 +5052,18 @@ static MagickBooleanType SyncAuthenticPixelsCache(Image *image,
   const int
     id = GetOpenMPThreadId();
 
+  MagickBooleanType
+    status;
+
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
   assert(image->cache != (Cache) NULL);
   cache_info=(CacheInfo *) image->cache;
   assert(cache_info->signature == MagickSignature);
   assert(id < (int) cache_info->number_threads);
-  return(SyncAuthenticPixelCacheNexus(image,cache_info->nexus_info[id],
-    exception));
+  status=SyncAuthenticPixelCacheNexus(image,cache_info->nexus_info[id],
+    exception);
+  return(status);
 }
 
 /*
@@ -5090,6 +5102,9 @@ MagickExport MagickBooleanType SyncAuthenticPixels(Image *image,
   const int
     id = GetOpenMPThreadId();
 
+  MagickBooleanType
+    status;
+
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
   assert(image->cache != (Cache) NULL);
@@ -5099,8 +5114,9 @@ MagickExport MagickBooleanType SyncAuthenticPixels(Image *image,
        (SyncAuthenticPixelsHandler) NULL)
     return(cache_info->methods.sync_authentic_pixels_handler(image,exception));
   assert(id < (int) cache_info->number_threads);
-  return(SyncAuthenticPixelCacheNexus(image,cache_info->nexus_info[id],
-    exception));
+  status=SyncAuthenticPixelCacheNexus(image,cache_info->nexus_info[id],
+    exception);
+  return(status);
 }
 
 /*

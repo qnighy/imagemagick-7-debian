@@ -192,7 +192,7 @@ typedef struct _DDSSingleColourLookup
 } DDSSingleColourLookup;
 
 typedef MagickBooleanType
-  DDSDecoder(Image *, DDSInfo *);
+  DDSDecoder(Image *, DDSInfo *, ExceptionInfo *);
 
 static const DDSSingleColourLookup DDSLookup_5_4[] =
 {
@@ -749,30 +749,33 @@ if (max - min < steps) \
   = value
 #define VectorInit3(vector, value) vector.x = vector.y = vector.z = value
 
+#define IsBitMask(mask, r, g, b, a) (mask.r_bitmask == r && mask.g_bitmask == \
+  g && mask.b_bitmask == b && mask.alpha_bitmask == a)
+
 /*
   Forward declarations
 */
 static MagickBooleanType
   ConstructOrdering(const size_t, const DDSVector4 *, const DDSVector3,
-  DDSVector4 *, DDSVector4 *, unsigned char *, size_t);
+    DDSVector4 *, DDSVector4 *, unsigned char *, size_t);
 
 static MagickBooleanType
   ReadDDSInfo(Image *, DDSInfo *);
 
 static MagickBooleanType
-  ReadDXT1(Image *, DDSInfo *);
+  ReadDXT1(Image *, DDSInfo *, ExceptionInfo *);
 
 static MagickBooleanType
-  ReadDXT3(Image *, DDSInfo *);
+  ReadDXT3(Image *, DDSInfo *, ExceptionInfo *);
 
 static MagickBooleanType
-  ReadDXT5(Image *, DDSInfo *);
+  ReadDXT5(Image *, DDSInfo *, ExceptionInfo *);
 
 static MagickBooleanType
-  ReadUncompressedRGB(Image *, DDSInfo *);
+  ReadUncompressedRGB(Image *, DDSInfo *, ExceptionInfo *);
 
 static MagickBooleanType
-  ReadUncompressedRGBA(Image *, DDSInfo *);
+  ReadUncompressedRGBA(Image *, DDSInfo *, ExceptionInfo *);
 
 static void
   RemapIndices(const ssize_t *, const unsigned char *, unsigned char *);
@@ -791,18 +794,18 @@ static void
 
 static void
   WriteFourCC(Image *, const size_t, const MagickBooleanType,
-  const MagickBooleanType, ExceptionInfo *);
+    const MagickBooleanType, ExceptionInfo *);
 
 static void
   WriteImageData(Image *, const size_t, const size_t, const MagickBooleanType,
-  const MagickBooleanType, ExceptionInfo *);
+    const MagickBooleanType, ExceptionInfo *);
 
 static void
   WriteIndices(Image *, const DDSVector3, const DDSVector3, unsigned char *);
 
 static MagickBooleanType
   WriteMipmaps(Image *, const size_t, const size_t, const size_t,
-  const MagickBooleanType, const MagickBooleanType, ExceptionInfo *);
+    const MagickBooleanType, const MagickBooleanType, ExceptionInfo *);
 
 static void
   WriteSingleColorFit(Image *, const DDSVector4 *, const ssize_t *);
@@ -1115,6 +1118,11 @@ static void CompressClusterFit(const size_t count,
   gridrcp.y = 1.0f/63.0f;
   gridrcp.z = 1.0f/31.0f;
   gridrcp.w = 0.0f;
+
+  xSumwSum.x = 0.0f;
+  xSumwSum.y = 0.0f;
+  xSumwSum.z = 0.0f;
+  xSumwSum.w = 0.0f;
 
   ConstructOrdering(count,points,principle,pointsWeights,&xSumwSum,order,0);
 
@@ -1694,7 +1702,8 @@ static Image *ReadDDSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     *decoder;
 
   size_t
-    n, num_images;
+    n,
+    num_images;
 
   /*
     Open image file.
@@ -1812,10 +1821,7 @@ static Image *ReadDDSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /* Start a new image */
         AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
-          {
-            image = DestroyImageList(image);
-            return((Image *) NULL);
-          }
+          return(DestroyImageList(image));
         image=SyncNextImageInList(image);
       }
  
@@ -1832,7 +1838,7 @@ static Image *ReadDDSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         return(GetFirstImageInList(image));
       }
 
-    if ((decoder)(image, &dds_info) != MagickTrue)
+    if ((decoder)(image, &dds_info, exception) != MagickTrue)
       {
         (void) CloseBlob(image);
         return(GetFirstImageInList(image));
@@ -1897,13 +1903,11 @@ static MagickBooleanType ReadDDSInfo(Image *image, DDSInfo *dds_info)
   return MagickTrue;
 }
 
-static MagickBooleanType ReadDXT1(Image *image, DDSInfo *dds_info)
+static MagickBooleanType ReadDXT1(Image *image, DDSInfo *dds_info,
+  ExceptionInfo *exception)
 {
   DDSColors
     colors;
-
-  ExceptionInfo
-    *exception;
 
   PixelPacket
     *q;
@@ -1926,7 +1930,6 @@ static MagickBooleanType ReadDXT1(Image *image, DDSInfo *dds_info)
     c0,
     c1;
 
-  exception=(&image->exception);
   for (y = 0; y < (ssize_t) dds_info->height; y += 4)
   {
     for (x = 0; x < (ssize_t) dds_info->width; x += 4)
@@ -1975,13 +1978,11 @@ static MagickBooleanType ReadDXT1(Image *image, DDSInfo *dds_info)
   return MagickTrue;
 }
 
-static MagickBooleanType ReadDXT3(Image *image, DDSInfo *dds_info)
+static MagickBooleanType ReadDXT3(Image *image, DDSInfo *dds_info,
+  ExceptionInfo *exception)
 {
   DDSColors
     colors;
-
-  ExceptionInfo
-    *exception;
 
   ssize_t
     j,
@@ -2007,7 +2008,6 @@ static MagickBooleanType ReadDXT3(Image *image, DDSInfo *dds_info)
     c0,
     c1;
 
-  exception=(&image->exception);
   for (y = 0; y < (ssize_t) dds_info->height; y += 4)
   {
     for (x = 0; x < (ssize_t) dds_info->width; x += 4)
@@ -2065,13 +2065,11 @@ static MagickBooleanType ReadDXT3(Image *image, DDSInfo *dds_info)
   return MagickTrue;
 }
 
-static MagickBooleanType ReadDXT5(Image *image, DDSInfo *dds_info)
+static MagickBooleanType ReadDXT5(Image *image, DDSInfo *dds_info,
+  ExceptionInfo *exception)
 {
   DDSColors
     colors;
-
-  ExceptionInfo
-    *exception;
 
   ssize_t
     j,
@@ -2101,7 +2099,6 @@ static MagickBooleanType ReadDXT5(Image *image, DDSInfo *dds_info)
     c0,
     c1;
 
-  exception=(&image->exception);
   for (y = 0; y < (ssize_t) dds_info->height; y += 4)
   {
     for (x = 0; x < (ssize_t) dds_info->width; x += 4)
@@ -2169,18 +2166,23 @@ static MagickBooleanType ReadDXT5(Image *image, DDSInfo *dds_info)
   return MagickTrue;
 }
 
-static MagickBooleanType ReadUncompressedRGB(Image *image, DDSInfo *dds_info)
+static MagickBooleanType ReadUncompressedRGB(Image *image, DDSInfo *dds_info,
+  ExceptionInfo *exception)
 {
-  ExceptionInfo
-    *exception;
+  PixelPacket
+    *q;
 
   ssize_t
     x, y;
 
-  PixelPacket
-    *q;
+  unsigned short
+    color;
 
-  exception=(&image->exception);
+  if (dds_info->pixelformat.rgb_bitcount == 16 && !IsBitMask(
+    dds_info->pixelformat,0xf800,0x07e0,0x001f,0x0000))
+    ThrowBinaryException(CorruptImageError,"ImageTypeNotSupported",
+      image->filename);
+
   for (y = 0; y < (ssize_t) dds_info->height; y++)
   {
     q = QueueAuthenticPixels(image, 0, y, dds_info->width, 1,exception);
@@ -2190,14 +2192,28 @@ static MagickBooleanType ReadUncompressedRGB(Image *image, DDSInfo *dds_info)
 
     for (x = 0; x < (ssize_t) dds_info->width; x++)
     {
-      SetPixelBlue(q,ScaleCharToQuantum((unsigned char)
-        ReadBlobByte(image)));
-      SetPixelGreen(q,ScaleCharToQuantum((unsigned char)
-        ReadBlobByte(image)));
-      SetPixelRed(q,ScaleCharToQuantum((unsigned char)
-        ReadBlobByte(image)));
-      if (dds_info->pixelformat.rgb_bitcount == 32)
-        (void) ReadBlobByte(image);
+      if (dds_info->pixelformat.rgb_bitcount == 16)
+        {
+           color=ReadBlobShort(image);
+           SetPixelRed(q,ScaleCharToQuantum((unsigned char)
+             (((color >> 11)/31.0)*255)));
+           SetPixelGreen(q,ScaleCharToQuantum((unsigned char)
+             ((((unsigned short)(color << 5) >> 10)/63.0)*255)));
+           SetPixelBlue(q,ScaleCharToQuantum((unsigned char)
+             ((((unsigned short)(color << 11) >> 11)/31.0)*255)));
+        }
+      else
+        {
+          SetPixelBlue(q,ScaleCharToQuantum((unsigned char)
+            ReadBlobByte(image)));
+          SetPixelGreen(q,ScaleCharToQuantum((unsigned char)
+            ReadBlobByte(image)));
+          SetPixelRed(q,ScaleCharToQuantum((unsigned char)
+            ReadBlobByte(image)));
+          if (dds_info->pixelformat.rgb_bitcount == 32)
+            (void) ReadBlobByte(image);
+        }
+      SetPixelAlpha(q,QuantumRange);
       q++;
     }
  
@@ -2210,18 +2226,32 @@ static MagickBooleanType ReadUncompressedRGB(Image *image, DDSInfo *dds_info)
   return MagickTrue;
 }
 
-static MagickBooleanType ReadUncompressedRGBA(Image *image, DDSInfo *dds_info)
+static MagickBooleanType ReadUncompressedRGBA(Image *image, DDSInfo *dds_info,
+  ExceptionInfo *exception)
 {
-  ExceptionInfo
-    *exception;
-
-  ssize_t
-    x, y;
-
   PixelPacket
     *q;
 
-  exception=(&image->exception);
+  ssize_t
+    alphaBits,
+    x,
+    y;
+
+  unsigned short
+    color;
+
+  alphaBits=0;
+  if (dds_info->pixelformat.rgb_bitcount == 16)
+    {
+      if (IsBitMask(dds_info->pixelformat,0x7c00,0x03e0,0x001f,0x8000))
+        alphaBits=1;
+      else if (IsBitMask(dds_info->pixelformat,0x0f00,0x00f0,0x000f,0xf000))
+        alphaBits=4;
+      else
+        ThrowBinaryException(CorruptImageError,"ImageTypeNotSupported",
+          image->filename);
+    }
+
   for (y = 0; y < (ssize_t) dds_info->height; y++)
   {
     q = QueueAuthenticPixels(image, 0, y, dds_info->width, 1,exception);
@@ -2231,14 +2261,42 @@ static MagickBooleanType ReadUncompressedRGBA(Image *image, DDSInfo *dds_info)
 
     for (x = 0; x < (ssize_t) dds_info->width; x++)
     {
-      SetPixelBlue(q,ScaleCharToQuantum((unsigned char)
-        ReadBlobByte(image)));
-      SetPixelGreen(q,ScaleCharToQuantum((unsigned char)
-        ReadBlobByte(image)));
-      SetPixelRed(q,ScaleCharToQuantum((unsigned char)
-        ReadBlobByte(image)));
-      SetPixelAlpha(q,ScaleCharToQuantum((unsigned char)
-        ReadBlobByte(image)));
+      if (dds_info->pixelformat.rgb_bitcount == 16)
+        {
+           color=ReadBlobShort(image);
+           if (alphaBits == 1)
+             {
+               SetPixelAlpha(q,(color & (1 << 15)) ? QuantumRange : 0);
+               SetPixelRed(q,ScaleCharToQuantum((unsigned char)
+                 ((((unsigned short)(color << 1) >> 11)/31.0)*255)));
+               SetPixelGreen(q,ScaleCharToQuantum((unsigned char)
+                 ((((unsigned short)(color << 6) >> 11)/31.0)*255)));
+               SetPixelBlue(q,ScaleCharToQuantum((unsigned char)
+                 ((((unsigned short)(color << 11) >> 11)/31.0)*255)));
+             }
+          else
+            {
+               SetPixelAlpha(q,ScaleCharToQuantum((unsigned char)
+                 (((color >> 12)/15.0)*255)));
+               SetPixelRed(q,ScaleCharToQuantum((unsigned char)
+                 ((((unsigned short)(color << 4) >> 12)/15.0)*255)));
+               SetPixelGreen(q,ScaleCharToQuantum((unsigned char)
+                 ((((unsigned short)(color << 8) >> 12)/15.0)*255)));
+               SetPixelBlue(q,ScaleCharToQuantum((unsigned char)
+                 ((((unsigned short)(color << 12) >> 12)/15.0)*255)));
+            }
+        }
+      else
+        {
+          SetPixelBlue(q,ScaleCharToQuantum((unsigned char)
+            ReadBlobByte(image)));
+          SetPixelGreen(q,ScaleCharToQuantum((unsigned char)
+            ReadBlobByte(image)));
+          SetPixelRed(q,ScaleCharToQuantum((unsigned char)
+            ReadBlobByte(image)));
+          SetPixelAlpha(q,ScaleCharToQuantum((unsigned char)
+            ReadBlobByte(image)));
+        }
       q++;
     }
 
@@ -2647,6 +2705,9 @@ static MagickBooleanType WriteDDSImage(const ImageInfo *image_info,
 static void WriteDDSInfo(Image *image, const size_t pixelFormat,
   const size_t compression, const size_t mipmaps)
 {
+  char
+    software[MaxTextExtent];
+
   register ssize_t
     i;
 
@@ -2684,7 +2745,9 @@ static void WriteDDSInfo(Image *image, const size_t pixelFormat,
 
   (void) WriteBlobLSBLong(image,0x00);
   (void) WriteBlobLSBLong(image,(unsigned int) mipmaps+1);
-  (void) WriteBlob(image,44,(unsigned char *) "IMAGEMAGICK");
+  (void) ResetMagickMemory(software,0,sizeof(software));
+  (void) strcpy(software,"IMAGEMAGICK");
+  (void) WriteBlob(image,44,(unsigned char *) software);
 
   (void) WriteBlobLSBLong(image,32);
   (void) WriteBlobLSBLong(image,format);
@@ -2771,6 +2834,8 @@ static void WriteFourCC(Image *image, const size_t compression,
         rows = image->rows - y;
 
       p=GetVirtualPixels(image,x,y,columns,rows,exception);
+      if (p == (const PixelPacket *) NULL)
+        break;
 
       for (i=0; i<16; i++)
       {
@@ -2969,22 +3034,29 @@ static MagickBooleanType WriteMipmaps(Image *image, const size_t pixelFormat,
 static void WriteSingleColorFit(Image *image, const DDSVector4* points,
   const ssize_t* map)
 {
-  unsigned char
-    color[3],
-    index,
-    indices[16];
-
   DDSVector3
     start,
     end;
+
+  register ssize_t
+    i;
+
+  unsigned char
+    color[3],
+    index,
+    indexes[16],
+    indices[16];
 
   color[0] = (unsigned char) ClampToLimit(255.0f*points->x,255);
   color[1] = (unsigned char) ClampToLimit(255.0f*points->y,255);
   color[2] = (unsigned char) ClampToLimit(255.0f*points->z,255);
 
+  index=0;
   ComputeEndPoints(DDS_LOOKUP,color,&start,&end,&index);
 
-  RemapIndices(map,&index,indices);
+  for (i=0; i< 16; i++)
+    indexes[i]=index;
+  RemapIndices(map,indexes,indices);
   WriteIndices(image,start,end,indices);
 }
 
@@ -3002,6 +3074,8 @@ static void WriteUncompressed(Image *image, ExceptionInfo *exception)
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);
+    if (p == (const PixelPacket *) NULL)
+      break;
 
     for (x=0; x < (ssize_t) image->columns; x++)
     {

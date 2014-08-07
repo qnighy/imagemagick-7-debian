@@ -1,3 +1,160 @@
+2014-07-25  6.8.9-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-6, SVN revision 16211.
+
+2014-07-25  6.8.9-7 Glenn Randers-Pehrson <glennrp@image...>
+  * Use IsOptionMember() instead of LocaleNCompare() in coders/png.c to
+    parse the list of excluded and included PNG chunks.
+
+2014-07-19  6.8.9-6 Dirk Lemstra <dirk@snakeware...>
+  * Fixed fill-rule in SVG clip path (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=25882).
+
+2014-07-14  6.8.9-6 Glenn Randers-Pehrson <glennrp@image...>
+  * Removed some dead code (testing image->matte) in PNG64 encoder.
+
+2014-07-07  6.8.9-6 Dirk Lemstra <dirk@snakeware...>
+  * Added support for R5G6B5, RGB5A1 and RGBA4 dds files.
+
+2014-07-01  6.8.9-6 Cristy  <quetzlzacatenango@image...>
+  * Write LAB pixels as percentages in the TXT image format (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25830).
+  * Throw exception when image morphology differs when comparing (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25927).
+  * Remove mogrify backup file (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25683).
+  * Read WEBP images from STDIN (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25886).
+
+2014-07-01  6.8.9-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-5, SVN revision 16123.
+
+2014-06-28  6.8.9-5 Glenn Randers-Pehrson <glennrp@image...>
+  * Do not let libpng16 check ICC/sRGB profiles in non-debug runs; we do
+    it ourselves anyway.  Avoids emitting "known incorrect profile" warnings.
+    For strict profile checking and warning, use "-debug coder".
+
+2014-06-27  6.8.9-5 Dirk Lemstra <dirk@snakeware...>
+  * Disabled OpenCL acceleration when image has a 'mask' or 'clip-mask'.
+
+2014-06-25  6.8.9-5 Cristy  <quetzlzacatenango@image...>
+  * Use -define profile:skip=icc, for example,  to skip color profiles on read.
+
+2014-06-23  6.8.9-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-4, SVN revision 16057.
+
+2014-06-15  6.8.9-4 Cristy  <quetzlzacatenango@image...>
+  * Support RMS argument for -evaluate-sequence and -statistic options.
+  * Fix lseek define for a successful compile under 64-bit MinGW.
+  * Pipe image to display program no longer reports an exception (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23532).
+  * Check that profile is non-NULL in coders/tiff.c (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25770).
+
+2014-06-08  6.8.9-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-3, SVN revision 15975.
+
+2014-06-07  6.8.9-3 Glenn Randers-Pehrson <glennrp@image...>
+  * Quiet warning about unused variable "skip_to_iend" in coders/png.c.
+
+2014-06-07  6.8.9-3 Dirk Lemstra <dirk@snakeware...>
+  * Fixed creation of SVG from 8bim clip path. (reference 
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=25594).
+
+2014-06-02  6.8.9-3 Cristy  <quetzlzacatenango@image...>
+  * The -version option returns 0 status (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25667).
+  * The inline coder can now read from standard input (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25641).
+  * Add '=' character to the sanitize whitelist.
+
+2014-05-30  6.8.9-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-2, SVN revision 15932.
+
+2014-05-18  6.8.9-2 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed some bugs in the PNG codec discovered by coverity analysis.
+
+2014-05-14  6.8.9-2 Cristy  <quetzlzacatenango@image...>
+  * The -fx equality operator returns a proper boolean result now (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25580).
+  * Permit spaces in the gradient color specification (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25614).
+  * Fix IdentifyImage() crash when image->magick member is null (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25615).
+  * The -format M and Y channels are no longer reversed (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25633).
+  * Remove Makefile race condition where two targets attempt to install
+    magick-baseconfig.h (reference
+    http://git.buildroot.net/buildroot/commit/?id=7395ee9d3b88e45798143e05a28d6d4b51409130)
+  * Fix memory leak in BlobToStringInfo() (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25639).
+  * In certain cases, -adaptive-sharpen failed to sharpen (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23211
+
+2014-05-12  6.8.9-2 Dirk Lemstra <dirk@snakeware...>
+  * Bump major Magick++ library version.
+  * Added support for writing RLE compressed TGA files (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=12335).
+  * Improved performance of parsing the xmp profile (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25612).
+  * Fixed detecting transparency in PSD files (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25634).
+
+2014-05-09  6.8.9-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-1, SVN revision 15697.
+
+2014-04-22  6.8.9-1 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed bug with the PNG00 subformat when the original format was PNG32.
+  * The "-strip" option now only removes profiles and comments from PNG
+    output.  Previously the background, density, and other metadata were
+    also discarded.
+
+2014-04-22  6.8.9-1 Cristy  <quetzlzacatenango@image...>
+  * Support new -hough-lines option.
+  * Support new -mean-shift option.
+  * identify -units without argument no longer faults (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25542).
+  * Require OpenJP2 version 2.1.0 (opj_stream_set_user_data() method signature
+    change between 2.0.0 and 2.1.0).
+
+2014-04-20  6.8.9-1 Dirk Lemstra <dirk@snakeware...>
+  * Added image moments, canny edge and hough line to Magick++.
+  * The 8bim profile will be updated when the icc/iptc/xmp profile is changed.
+  * Fix for stack overflow in DestroyXMLTree in Windows (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25457).
+  * Added new coder for VIPS image format (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=25445).
+  * Moved detection of type to a separate method in Magick++. The type() method
+    no longer modifies the type of the image. Use determineType() instead.
+  * Improved error messages when a coder uses Ghostscript.
+
+2014-04-11  6.8.9-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-0, SVN revision 15441.
+
+2014-04-03  6.8.9-0 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed bug with -strip failing to exclude PNG chunks (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25353).
+
+2014-03-30  6.8.9-0 Dirk Lemstra <dirk@snakeware...>
+  * Added new coder to take a screen shot of a monitor in Windows (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=23&t=25191).
+
+2014-03-24  6.8.9-0 Cristy  <quetzlzacatenango@image...>
+  * Don't transform sRGB compatible colorspaces to sRGB, doing so
+    inadvertently promotes colormapped images to DirectClass.
+  * Use temporary path rather then current working directory (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25313).
+  * Support -canny edge detection option.
+  * Use MAGICKCORE_LIBOPENJP2_DELEGATE instead of MAGICKCORE_JP2_DELEGATE
+    (reference www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25376).
+
+2014-03-28  6.8.8-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.8-9, SVN revision 15239.
+
+2014-03-23  6.8.8-10 Cristy  <quetzlzacatenango@image...>
+  * Although they are internal methods, deprecate InitializeModuleList(),
+    LoadMimeLists(), and RelinquishCommandQueue() (reference
+   http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25263).
+
 2014-03-20  6.8.8-9 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.8-9, SVN revision 15192.
 
