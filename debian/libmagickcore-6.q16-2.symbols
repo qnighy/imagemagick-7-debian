@@ -127,6 +127,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  BrightnessContrastImageChannel@Base 8:6.8.8.2
  CacheComponentGenesis@Base 8:6.8.8.2
  CacheComponentTerminus@Base 8:6.8.8.2
+ CannyEdgeImage@Base 8:6.8.9.6
  CanonicalXMLContent@Base 8:6.8.8.2
  CatchException@Base 8:6.8.8.2
  CatchImageException@Base 8:6.8.8.2
@@ -697,6 +698,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  HashPointerType@Base 8:6.8.8.2
  HashStringInfoType@Base 8:6.8.8.2
  HashStringType@Base 8:6.8.8.2
+ HoughLineImage@Base 8:6.8.9.6
  HuffmanDecodeImage@Base 8:6.8.8.2
  HuffmanEncodeImage@Base 8:6.8.8.2
  IdentifyImage@Base 8:6.8.8.2
@@ -758,6 +760,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  IsMonochromeImage@Base 8:6.8.8.2
  IsOpacitySimilar@Base 8:6.8.8.2
  IsOpaqueImage@Base 8:6.8.8.2
+ IsOptionMember@Base 8:6.8.9.6
  IsPaletteImage@Base 8:6.8.8.2
  IsPathAccessible@Base 8:6.8.8.2
  IsRightsAuthorized@Base 8:6.8.8.2
@@ -836,9 +839,11 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  MapBlob@Base 8:6.8.8.2
  MapImage@Base 8:6.8.8.2
  MapImages@Base 8:6.8.8.2
+ MatrixToImage@Base 8:6.8.9.6
  MatteColor@Base 8:6.8.8.2
  MatteFloodfillImage@Base 8:6.8.8.2
  MaximumImages@Base 8:6.8.8.2
+ MeanShiftImage@Base 8:6.8.9.6
  MedianFilterImage@Base 8:6.8.8.2
  MergeImageLayers@Base 8:6.8.8.2
  MimeComponentGenesis@Base 8:6.8.8.2
