@@ -62,7 +62,7 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::ChannelMoments::ellipseAxisY() const@Base" 8:6.8.9.6
  (c++)"Magick::ChannelMoments::ellipseEccentricity() const@Base" 8:6.8.9.6
  (c++)"Magick::ChannelMoments::ellipseIntensity() const@Base" 8:6.8.9.6
- (c++)"Magick::ChannelMoments::huInvariants(unsigned long) const@Base" 8:6.8.9.6
+ (c++|subst)"Magick::ChannelMoments::huInvariants({c++:size_t}) const@Base" 8:6.8.9.6
  (c++)"Magick::charcoalImage::charcoalImage(double, double)@Base" 8:6.8.9.6
  (c++)"Magick::charcoalImage::operator()(Magick::Image&) const@Base" 8:6.8.9.6
  (c++)"Magick::chopImage::chopImage(Magick::Geometry const&)@Base" 8:6.8.9.6
@@ -670,8 +670,8 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::Image::defineValue(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::density() const@Base" 8:6.8.9.6
  (c++)"Magick::Image::density(Magick::Geometry const&)@Base" 8:6.8.9.6
- (c++)"Magick::Image::depth()@Base" 8:6.8.9.6
- (c++|subst)"Magick::Image::depth({c++:size_t}) const@Base" 8:6.8.9.6
+ (c++)"Magick::Image::depth()@Base const" 8:6.8.9.6
+ (c++|subst)"Magick::Image::depth({c++:size_t})@Base" 8:6.8.9.6
  (c++)"Magick::Image::deskew(double)@Base" 8:6.8.9.6
  (c++)"Magick::Image::despeckle()@Base" 8:6.8.9.6
  (c++)"Magick::Image::determineType() const@Base" 8:6.8.9.6
@@ -754,7 +754,7 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::Image::grayscale(MagickCore::PixelIntensityMethod)@Base" 8:6.8.9.6
  (c++)"Magick::Image::haldClut(Magick::Image const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::highlightColor(Magick::Color)@Base" 8:6.8.9.6
- (c++)"Magick::Image::houghLine(unsigned long, unsigned long, unsigned long)@Base" 8:6.8.9.6
+ (c++)"Magick::Image::houghLine({c++:size_t}, {c++:size_t}, {c++:size_t})@Base" 8:6.8.9.6
  (c++)"Magick::Image::iccColorProfile() const@Base" 8:6.8.9.6
  (c++)"Magick::Image::iccColorProfile(Magick::Blob const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::image()@Base" 8:6.8.9.6
@@ -819,10 +819,10 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::Image::monochrome(bool)@Base" 8:6.8.9.6
  (c++)"Magick::Image::monochrome() const@Base" 8:6.8.9.6
  (c++)"Magick::Image::montageGeometry() const@Base" 8:6.8.9.6
- (c++)"Magick::Image::morphologyChannel(MagickCore::ChannelType, MagickCore::MorphologyMethod, MagickCore::KernelInfoType, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, long)@Base" 8:6.8.9.6
- (c++)"Magick::Image::morphologyChannel(MagickCore::ChannelType, MagickCore::MorphologyMethod, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, long)@Base" 8:6.8.9.6
- (c++)"Magick::Image::morphology(MagickCore::MorphologyMethod, MagickCore::KernelInfoType, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, long)@Base" 8:6.8.9.6
- (c++)"Magick::Image::morphology(MagickCore::MorphologyMethod, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, long)@Base" 8:6.8.9.6
+ (c++|subst)"Magick::Image::morphologyChannel(MagickCore::ChannelType, MagickCore::MorphologyMethod, MagickCore::KernelInfoType, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, {c++:ssize_t})@Base" 8:6.8.9.6
+ (c++|subst)"Magick::Image::morphologyChannel(MagickCore::ChannelType, MagickCore::MorphologyMethod, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, {c++:ssize_t})@Base" 8:6.8.9.6
+ (c++|subst)"Magick::Image::morphology(MagickCore::MorphologyMethod, MagickCore::KernelInfoType, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, {c++:ssize_t})@Base" 8:6.8.9.6
+ (c++|subst)"Magick::Image::morphology(MagickCore::MorphologyMethod, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, {c++:ssize_t})@Base" 8:6.8.9.6
  (c++)"Magick::Image::motionBlur(double, double, double)@Base" 8:6.8.9.6
  (c++)"Magick::Image::negate(bool)@Base" 8:6.8.9.6
  (c++)"Magick::Image::negateChannel(MagickCore::ChannelType, bool)@Base" 8:6.8.9.6
@@ -851,8 +851,8 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++|subst)"Magick::Image::pixelColor({c++:ssize_t}, {c++:ssize_t}) const@Base" 8:6.8.9.6
  (c++|subst)"Magick::Image::pixelColor({c++:ssize_t}, {c++:ssize_t}, Magick::Color const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::polaroid(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, double)@Base" 8:6.8.9.6
- (c++|subst)"Magick::Image::posterizeChannel(MagickCore::ChannelType, {c++:ssize_t}, bool)@Base" 8:6.8.9.6
- (c++|subst)"Magick::Image::posterize({c++:ssize_t}, bool)@Base" 8:6.8.9.6
+ (c++|subst)"Magick::Image::posterizeChannel(MagickCore::ChannelType, {c++:size_t}, bool)@Base" 8:6.8.9.6
+ (c++|subst)"Magick::Image::posterize({c++:size_t}, bool)@Base" 8:6.8.9.6
  (c++|subst)"Magick::Image::process(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, {c++:ssize_t}, char const**)@Base" 8:6.8.9.6
  (c++)"Magick::Image::profile(std::basic_string<char, std::char_traits<char>, std::allocator<char> >) const@Base" 8:6.8.9.6
  (c++)"Magick::Image::profile(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Magick::Blob const&)@Base" 8:6.8.9.6
@@ -914,7 +914,7 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::Image::selectiveBlur(double, double, double)@Base" 8:6.8.9.6
  (c++)"Magick::Image::separate(MagickCore::ChannelType)@Base" 8:6.8.9.6
  (c++)"Magick::Image::sepiaTone(double)@Base" 8:6.8.9.6
- (c++)"Magick::Image::setPixels({c++:ssize_t}, {c++:ssize_t}, {c++:size_t}, {c++:size_t})@Base" 8:6.8.9.6
+ (c++|subst)"Magick::Image::setPixels({c++:ssize_t}, {c++:ssize_t}, {c++:size_t}, {c++:size_t})@Base" 8:6.8.9.6
  (c++)"Magick::Image::shade(double, double, bool)@Base" 8:6.8.9.6
  (c++|subst)"Magick::Image::shadow(double, double, {c++:ssize_t}, {c++:ssize_t})@Base" 8:6.8.9.6
  (c++)"Magick::Image::sharpenChannel(MagickCore::ChannelType, double, double)@Base" 8:6.8.9.6
@@ -1002,7 +1002,7 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::Image::verbose() const@Base" 8:6.8.9.6
  (c++)"Magick::Image::view() const@Base" 8:6.8.9.6
  (c++)"Magick::Image::view(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
- (c++)"Magick::Image::vignette(double, double, long, long)@Base" 8:6.8.9.6
+ (c++|subst)"Magick::Image::vignette(double, double, {c++:ssize_t}, {c++:ssize_t})@Base" 8:6.8.9.6
  (c++)"Magick::Image::virtualPixelMethod() const@Base" 8:6.8.9.6
  (c++)"Magick::Image::virtualPixelMethod(MagickCore::VirtualPixelMethod)@Base" 8:6.8.9.6
  (c++)"Magick::Image::wave(double, double)@Base" 8:6.8.9.6
@@ -1382,10 +1382,10 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::pixelColorImage::operator()(Magick::Image&) const@Base" 8:6.8.9.6
  (c++|subst)"Magick::pixelColorImage::pixelColorImage({c++:ssize_t}, {c++:ssize_t}, Magick::Color const&)@Base" 8:6.8.9.6
  (c++)"Magick::PixelData::data() const@Base" 8:6.8.9.6
- (c++)"Magick::PixelData::init(Magick::Image&, long, long, unsigned long, unsigned long, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.8.9.6
+ (c++|subst)"Magick::PixelData::init(Magick::Image&, {c++:ssize_t}, {c++:ssize_t}, {c++:size_t}, {c++:size_t}, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.8.9.6
  (c++)"Magick::PixelData::length() const@Base" 8:6.8.9.6
  (c++)"Magick::PixelData::~PixelData()@Base" 8:6.8.9.6
- (c++)"Magick::PixelData::PixelData(Magick::Image&, long, long, unsigned long, unsigned long, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.8.9.6
+ (c++|subst)"Magick::PixelData::PixelData(Magick::Image&, {c++:ssize_t}, {c++:ssize_t}, {c++:size_t}, {c++:size_t}, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.8.9.6
  (c++)"Magick::PixelData::PixelData(Magick::Image&, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.8.9.6
  (c++)"Magick::PixelData::relinquish()@Base" 8:6.8.9.6
  (c++)"Magick::PixelData::size() const@Base" 8:6.8.9.6
