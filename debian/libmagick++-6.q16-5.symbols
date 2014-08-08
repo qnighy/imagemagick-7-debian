@@ -1583,23 +1583,7 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::x11DisplayImage::x11DisplayImage(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
  (c++)"Magick::zoomImage::operator()(Magick::Image&) const@Base" 8:6.8.9.6
  (c++)"Magick::zoomImage::zoomImage(Magick::Geometry const&)@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::Coordinate, std::allocator<Magick::Coordinate> >::~_List_base()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::Coordinate, std::allocator<Magick::Coordinate> >::_M_clear()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::Drawable, std::allocator<Magick::Drawable> >::~_List_base()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::Drawable, std::allocator<Magick::Drawable> >::_M_clear()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::PathArcArgs, std::allocator<Magick::PathArcArgs> >::~_List_base()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::PathArcArgs, std::allocator<Magick::PathArcArgs> >::_M_clear()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::PathCurvetoArgs, std::allocator<Magick::PathCurvetoArgs> >::~_List_base()" @Base 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::PathCurvetoArgs, std::allocator<Magick::PathCurvetoArgs> >::_M_clear()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::PathQuadraticCurvetoArgs, std::allocator<Magick::PathQuadraticCurvetoArgs> >::~_List_base()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::PathQuadraticCurvetoArgs, std::allocator<Magick::PathQuadraticCurvetoArgs> >::_M_clear()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::VPath, std::allocator<Magick::VPath> >::~_List_base()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::_List_base<Magick::VPath, std::allocator<Magick::VPath> >::_M_clear()@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::vector<double, std::allocator<double> >::_M_insert_aux(__gnu_cxx::__normal_iterator<double*, std::vector<double, std::allocator<double> > >, double const&)@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::vector<double, std::allocator<double> >::operator=(std::vector<double, std::allocator<double> > const&)@Base" 8:6.8.9.6
- (c++|optional=templinst)"std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::_M_insert_aux(__gnu_cxx::__normal_iterator<Magick::ChannelMoments*, std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> > >, Magick::ChannelMoments const&)@Base" 8:6.8.9.6
+ (c++|regex|optional=templinst)"^std::.*@Base" 8:6.8.9.6
  (c++)"typeinfo for Magick::Blob@Base" 8:6.8.9.6
  (c++)"typeinfo for Magick::Color@Base" 8:6.8.9.6
  (c++)"typeinfo for Magick::ColorGray@Base" 8:6.8.9.6
