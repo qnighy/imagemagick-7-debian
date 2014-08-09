@@ -3,9 +3,10 @@ imagemagick (8:6.8.9.6-1) experimental; urgency=medium
   * Prepare perl transition (/usr/lib/perl5 move to
      /usr/lib/$ARCH_TRIPLET/perl5/) and avoid FTBFS (closes: #750095).
   * New upstream version:
-    - sodump of magick++.
+    - sodump of magick++ needed because of
+      a small class layout change.
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 08 Aug 2014 09:11:58 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 09 Aug 2014 10:58:14 +0200
 
 imagemagick (8:6.8.8.9-3) experimental; urgency=low
 

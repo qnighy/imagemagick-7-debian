@@ -1,4 +1,5 @@
 libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
+ MagickPlusPlusDestroyMagick@Base 8:6.8.9.6
  (c++)"Magick::adaptiveBlurImage::adaptiveBlurImage(double, double)@Base" 8:6.8.9.6
  (c++)"Magick::adaptiveBlurImage::operator()(Magick::Image&) const@Base" 8:6.8.9.6
  (c++|subst)"Magick::adaptiveThresholdImage::adaptiveThresholdImage({c++:size_t}, {c++:size_t}, {c++:ssize_t})@Base" 8:6.8.9.6
@@ -670,7 +671,7 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::Image::defineValue(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::density() const@Base" 8:6.8.9.6
  (c++)"Magick::Image::density(Magick::Geometry const&)@Base" 8:6.8.9.6
- (c++)"Magick::Image::depth()@Base const" 8:6.8.9.6
+ (c++)"Magick::Image::depth() const@Base" 8:6.8.9.6
  (c++|subst)"Magick::Image::depth({c++:size_t})@Base" 8:6.8.9.6
  (c++)"Magick::Image::deskew(double)@Base" 8:6.8.9.6
  (c++)"Magick::Image::despeckle()@Base" 8:6.8.9.6
@@ -754,7 +755,7 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::Image::grayscale(MagickCore::PixelIntensityMethod)@Base" 8:6.8.9.6
  (c++)"Magick::Image::haldClut(Magick::Image const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::highlightColor(Magick::Color)@Base" 8:6.8.9.6
- (c++)"Magick::Image::houghLine({c++:size_t}, {c++:size_t}, {c++:size_t})@Base" 8:6.8.9.6
+ (c++|subst)"Magick::Image::houghLine({c++:size_t}, {c++:size_t}, {c++:size_t})@Base" 8:6.8.9.6
  (c++)"Magick::Image::iccColorProfile() const@Base" 8:6.8.9.6
  (c++)"Magick::Image::iccColorProfile(Magick::Blob const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::image()@Base" 8:6.8.9.6
@@ -1396,7 +1397,6 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::Pixels::Pixels(Magick::Image&)@Base" 8:6.8.9.6
  (c++|subst)"Magick::Pixels::set({c++:ssize_t}, {c++:ssize_t}, {c++:size_t}, {c++:size_t})@Base" 8:6.8.9.6
  (c++)"Magick::Pixels::sync()@Base" 8:6.8.9.6
- (c++)"MagickPlusPlusDestroyMagick@Base" 8:6.8.9.6
  (c++)"Magick::qualityImage::operator()(Magick::Image&) const@Base" 8:6.8.9.6
  (c++|subst)"Magick::qualityImage::qualityImage({c++:size_t})@Base" 8:6.8.9.6
  (c++)"Magick::quantizeColorsImage::operator()(Magick::Image&) const@Base" 8:6.8.9.6
