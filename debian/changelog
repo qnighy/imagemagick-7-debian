@@ -1,3 +1,11 @@
+imagemagick (8:6.8.9.6-2) experimental; urgency=high
+
+  * Do not tune the architecture for compiling.
+    Fix "Illegal instruction", thanks to 積丹尼 Dan Jacobson (Closes:
+    #757996).
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 13 Aug 2014 11:52:13 +0200
+
 imagemagick (8:6.8.9.6-1) experimental; urgency=medium
 
   * Prepare perl transition (/usr/lib/perl5 move to

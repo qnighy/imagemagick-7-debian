@@ -11,8 +11,6 @@ export CORESOVERSION ?= 2
 export WANDSOVERSION ?= 2
 export PPSOVERSION ?= 5
 
-
-
 # for hardening
 # export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
@@ -60,7 +58,9 @@ export CONFIGURE_CACHEFILE ?= $(STATIC_CONFIGURE_CACHEFILE)
 export STATIC_CONFIGURE_OPTIONS_CACHE := \
        --cache-file=../../$(CONFIGURE_CACHEFILE)
 export CONFIGURE_OPTIONS_CACHE ?= $(STATIC_CONFIGURE_OPTIONS_CACHE)
-
+# disable arch optimization see #757996 and AX_GCC_ARCHFLAG m4 macro
+export STATIC_CONFIGURE_ARCH_FLAGS := --without-gcc-arch
+export CONFIGURE_ARCH_FLAGS ?= $(STATIC_CONFIGURE_ARCH_FLAGS)
 
 # NOTICE: remove EPL delegate lib gvc (license problem)
 export STATIC_CONFIGURE_OPTIONS := \
@@ -86,7 +86,8 @@ export STATIC_CONFIGURE_OPTIONS := \
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg
 export CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS) \
-			    $(CONFIGURE_OPTIONS_CACHE)
+			    $(CONFIGURE_OPTIONS_CACHE) \
+			    $(CONFIGURE_ARCH_FLAGS)
 
 %:
 	@echo "Build $(DEB_SOURCE_PACKAGE) version $(DEB_VERSION) for quantum $(QUANTUMDEPTH)"
