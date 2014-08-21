@@ -1,3 +1,10 @@
+imagemagick (8:6.8.9.6-3) experimental; urgency=high
+
+  * Bug fix: "error: original symlink target is not an absolute path",
+    thanks to 積丹尼 Dan Jacobson (Closes: #758760).
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 21 Aug 2014 13:34:12 +0200
+
 imagemagick (8:6.8.9.6-2) experimental; urgency=high
 
   * Do not tune the architecture for compiling.
