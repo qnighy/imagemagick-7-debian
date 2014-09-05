@@ -1,3 +1,9 @@
+imagemagick (8:6.8.9.6-4) unstable; urgency=medium
+
+  * Upload to unstable
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 05 Sep 2014 21:58:20 +0200
+
 imagemagick (8:6.8.9.6-3) experimental; urgency=high
 
   * Bug fix: "error: original symlink target is not an absolute path",
