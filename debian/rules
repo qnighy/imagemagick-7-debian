@@ -607,7 +607,7 @@ maint-do-new-version:
 	# check if html doc is well formed in order to run xslt rule
 	find $(CURDIR)/www \
 	     	-maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
-		| xargs -r -0 -t xmllint --noout --nonet
+		| xargs -r -0 -t xmllint --noout --nonet || true
 
 maint-html-is-sane:
 	find $(CURDIR)/www \
