@@ -24,6 +24,8 @@ extern "C" {
 
 #include "magick/draw.h"
 
+#define MaximumNumberOfImageMoments  8
+
 typedef struct _ChannelStatistics
 {
   size_t

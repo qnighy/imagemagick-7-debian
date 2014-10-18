@@ -1148,11 +1148,13 @@ MagickExport ImageInfo *DestroyImageInfo(ImageInfo *image_info)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  DisassociateImageStream() disassociates the image stream.
+%  DisassociateImageStream() disassociates the image stream.  It checks if the
+%  blob of the specified image is referenced by other images. If the reference
+%  count is higher then 1 a new blob is assigned to the specified image.
 %
 %  The format of the DisassociateImageStream method is:
 %
-%      MagickBooleanType DisassociateImageStream(const Image *image)
+%      void DisassociateImageStream(const Image *image)
 %
 %  A description of each parameter follows:
 %
@@ -1161,11 +1163,11 @@ MagickExport ImageInfo *DestroyImageInfo(ImageInfo *image_info)
 */
 MagickExport void DisassociateImageStream(Image *image)
 {
-  assert(image != (const Image *) NULL);
+  assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  (void) DetachBlob(image->blob);
+  DisassociateBlob(image);
 }
 
 /*

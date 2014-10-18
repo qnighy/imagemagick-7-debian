@@ -37,7 +37,6 @@
 %
 */
 
-
 /*
   Include declarations.
 */
@@ -1583,7 +1582,7 @@ static MagickBooleanType SkipXMPValue(const char *value)
 
   while(*value != '\0')
   {
-    if (!isspace((int) ((const char) *value)))
+    if (!isspace((int) ((unsigned char) *value)))
       return(MagickFalse);
     value++;
   }
@@ -1965,12 +1964,12 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
         */
         for (i=0; i < 3; i++)
         {
-          size_t
+          unsigned int
             xx,
             yy;
 
-          yy=(size_t) ((int) ReadPropertyMSBLong(&blob,&length));
-          xx=(size_t) ((int) ReadPropertyMSBLong(&blob,&length));
+          yy=(unsigned int) ((int) ReadPropertyMSBLong(&blob,&length));
+          xx=(unsigned int) ((int) ReadPropertyMSBLong(&blob,&length));
           x=(ssize_t) xx;
           if (xx > 2147483647)
             x=(ssize_t) xx-4294967295U-1;
@@ -2001,19 +2000,9 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
               (void) FormatLocaleString(message,MaxTextExtent,
                 "L %g %g\n",point[1].x,point[1].y);
             else
-              if ((last[1].x == last[2].x) && (last[1].y == last[2].y))
-                (void) FormatLocaleString(message,MaxTextExtent,
-                  "Q %g %g %g %g\n",point[0].x,point[0].y,
-                  point[1].x,point[1].y);
-              else
-                if ((point[0].x == point[1].x) && (point[0].y == point[1].y))
-                  (void) FormatLocaleString(message,MaxTextExtent,
-                    "S %g %g %g %g\n",last[2].x,last[2].y,
-                    point[1].x,point[1].y);
-                else
-                  (void) FormatLocaleString(message,MaxTextExtent,
-                    "C %g %g %g %g %g %g\n",last[2].x,
-                    last[2].y,point[0].x,point[0].y,point[1].x,point[1].y);
+              (void) FormatLocaleString(message,MaxTextExtent,
+                "C %g %g %g %g %g %g\n",last[2].x,
+                last[2].y,point[0].x,point[0].y,point[1].x,point[1].y);
             for (i=0; i < 3; i++)
               last[i]=point[i];
           }
@@ -2034,19 +2023,9 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
               (void) FormatLocaleString(message,MaxTextExtent,
                 "L %g %g Z\n",first[1].x,first[1].y);
             else
-              if ((last[1].x == last[2].x) && (last[1].y == last[2].y))
-                (void) FormatLocaleString(message,MaxTextExtent,
-                  "Q %g %g %g %g Z\n",first[0].x,first[0].y,
-                  first[1].x,first[1].y);
-              else
-                if ((first[0].x == first[1].x) && (first[0].y == first[1].y))
-                  (void) FormatLocaleString(message,MaxTextExtent,
-                    "S %g %g %g %g Z\n",last[2].x,last[2].y,
-                    first[1].x,first[1].y);
-                else
-                  (void) FormatLocaleString(message,MaxTextExtent,
-                    "C %g %g %g %g %g %g Z\n",last[2].x,
-                    last[2].y,first[0].x,first[0].y,first[1].x,first[1].y);
+              (void) FormatLocaleString(message,MaxTextExtent,
+                "C %g %g %g %g %g %g Z\n",last[2].x,
+                last[2].y,first[0].x,first[0].y,first[1].x,first[1].y);
             (void) ConcatenateString(&path,message);
             in_subpath=MagickFalse;
           }

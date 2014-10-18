@@ -999,10 +999,17 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
       */
       for (i=0; i < (ssize_t) image_info->scene; i++)
       {
-        (void) TIFFReadDirectory(tiff);
+        status=TIFFReadDirectory(tiff) != 0 ? MagickTrue : MagickFalse;
+        if (status == MagickFalse)
+          {
+            TIFFClose(tiff);
+            image=DestroyImageList(image);
+            return((Image *) NULL);
+          }
         AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
+            TIFFClose(tiff);
             image=DestroyImageList(image);
             return((Image *) NULL);
           }
@@ -3097,25 +3104,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
                 }
           }
       }
-    switch (image->endian)
-    {
-      case LSBEndian:
-      {
-        endian=FILLORDER_LSB2MSB;
-        break;
-      }
-      case MSBEndian:
-      {
-        endian=FILLORDER_MSB2LSB;
-        break;
-      }
-      case UndefinedEndian:
-      default:
-      {
-        (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_FILLORDER,&endian);
-        break;
-      }
-    }
+    (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_FILLORDER,&endian);
     if ((compress_tag == COMPRESSION_CCITTFAX3) &&
         (photometric != PHOTOMETRIC_MINISWHITE))
       {
@@ -3242,6 +3231,8 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
                     geometry_info.rho,(uint16) geometry_info.sigma);
               }
           }
+        (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_BITSPERSAMPLE,
+          &bits_per_sample);
         if (bits_per_sample == 12)
           (void) TIFFSetField(tiff,TIFFTAG_JPEGTABLESMODE,JPEGTABLESMODE_QUANT);
 #endif

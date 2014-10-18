@@ -23,7 +23,7 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
 m4_define([magick_micro_version], [9])
-m4_define([magick_patchlevel_version], [6])
+m4_define([magick_patchlevel_version], [8])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -165,7 +165,7 @@ AM_INIT_AUTOMAKE([1.12 nostdinc color-tests foreign parallel-tests silent-rules 
 # Enable support for silent build rules
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
-# versionning of library
+# versioning of library
 MAGICK_LIB_VERSION="0x"
 if test ${MAGICK_LIBRARY_CURRENT} -lt 10 ; then
   MAGICK_LIB_VERSION=${MAGICK_LIB_VERSION}0
@@ -1810,50 +1810,6 @@ AC_SUBST(DPS_LIBS)
 dnl ===========================================================================
 
 #
-# Check for DJVU delegate library.
-#
-AC_ARG_WITH([djvu],
-    [AC_HELP_STRING([--without-djvu],
-                    [disable DjVu support])],
-    [with_djvu=$withval],
-    [with_djvu='yes'])
-
-if test "$with_djvu" != 'yes'; then
-    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-djvu=$with_djvu "
-fi
-
-have_djvu='no'
-DJVU_LIBS=''
-if test "$with_djvu" != 'no'; then
-    AC_MSG_RESULT([-------------------------------------------------------------])
-    AC_MSG_CHECKING([for DJVU])
-    AC_MSG_RESULT([])
-    failed=0
-    passed=0
-    AC_CHECK_HEADER(libdjvu/ddjvuapi.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-    AC_CHECK_LIB(djvulibre,ddjvu_context_create,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
-    AC_MSG_CHECKING([if DJVU package is complete])
-    if test $passed -gt 0; then
-        if test $failed -gt 0; then
-            AC_MSG_RESULT([no -- some components failed test])
-            have_djvu='no (failed tests)'
-        else
-            DJVU_LIBS='-ldjvulibre'
-            LIBS="$DJVU_LIBS $LIBS"
-            AC_DEFINE(DJVU_DELEGATE,1,Define if you have DJVU library)
-            AC_MSG_RESULT([yes])
-            have_djvu='yes'
-        fi
-    else
-        AC_MSG_RESULT([no])
-    fi
-fi
-AM_CONDITIONAL(DJVU_DELEGATE, test "$have_djvu" = 'yes')
-AC_SUBST(DJVU_LIBS)
-
-dnl ===========================================================================
-
-#
 # Set DejaVu font directory.
 #
 AC_ARG_WITH([dejavu-font-dir],
@@ -1955,6 +1911,50 @@ if test "$with_fpx" != 'no'; then
 fi
 AM_CONDITIONAL(FPX_DELEGATE, test "$have_fpx" = 'yes')
 AC_SUBST(FPX_LIBS)
+
+dnl ===========================================================================
+
+#
+# Check for DJVU delegate library.
+#
+AC_ARG_WITH([djvu],
+    [AC_HELP_STRING([--without-djvu],
+                    [disable DjVu support])],
+    [with_djvu=$withval],
+    [with_djvu='yes'])
+
+if test "$with_djvu" != 'yes'; then
+    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-djvu=$with_djvu "
+fi
+
+have_djvu='no'
+DJVU_LIBS=''
+if test "$with_djvu" != 'no'; then
+    AC_MSG_RESULT([-------------------------------------------------------------])
+    AC_MSG_CHECKING([for DJVU])
+    AC_MSG_RESULT([])
+    failed=0
+    passed=0
+    AC_CHECK_HEADER(libdjvu/ddjvuapi.h,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
+    AC_CHECK_LIB(djvulibre,ddjvu_context_create,passed=`expr $passed + 1`,failed=`expr $failed + 1`,)
+    AC_MSG_CHECKING([if DJVU package is complete])
+    if test $passed -gt 0; then
+        if test $failed -gt 0; then
+            AC_MSG_RESULT([no -- some components failed test])
+            have_djvu='no (failed tests)'
+        else
+            DJVU_LIBS='-ldjvulibre'
+            LIBS="$DJVU_LIBS $LIBS"
+            AC_DEFINE(DJVU_DELEGATE,1,Define if you have DJVU library)
+            AC_MSG_RESULT([yes])
+            have_djvu='yes'
+        fi
+    else
+        AC_MSG_RESULT([no])
+    fi
+fi
+AM_CONDITIONAL(DJVU_DELEGATE, test "$have_djvu" = 'yes')
+AC_SUBST(DJVU_LIBS)
 
 dnl ===========================================================================
 
@@ -3270,12 +3270,12 @@ AC_PATH_PROG(LaunchDelegate, "$LaunchDelegateDefault", "$LaunchDelegateDefault")
 AC_PATH_PROG(MANDelegate, "$MANDelegateDefault", "$MANDelegateDefault")
 AC_PATH_PROG(MogrifyDelegate, "$MogrifyDelegateDefault", "$MogrifyDelegateDefault")
 AC_PATH_PROG(MPEGDecodeDelegate, "$MPEGDecodeDelegateDefault", "$MPEGDecodeDelegateDefault")
-if test "$MPEGDecodeDelegate" == "$MPEGDecodeDelegateDefault" ; then
+if test "$MPEGDecodeDelegate" = "$MPEGDecodeDelegateDefault" ; then
   MPEGDecodeDelegateDefault='ffmpeg'
   AC_PATH_PROG(MPEGDecodeDelegate, "$MPEGDecodeDelegateDefault", "$MPEGDecodeDelegateDefault")
 fi;
 AC_PATH_PROG(MPEGEncodeDelegate, "$MPEGEncodeDelegateDefault", "$MPEGEncodeDelegateDefault")
-if test "$MPEGEncodeDelegate" == "$MPEGEncodeDelegateDefault" ; then
+if test "$MPEGEncodeDelegate" = "$MPEGEncodeDelegateDefault" ; then
   MPEGEncodeDelegateDefault='ffmpeg'
   AC_PATH_PROG(MPEGEncodeDelegate, "$MPEGEncodeDelegateDefault", "$MPEGEncodeDelegateDefault")
 fi;

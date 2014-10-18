@@ -794,7 +794,7 @@ static unsigned int stringSignature(const char* string)
   clBeginPerfMarkerAMD(__FUNCTION__,"");
 #endif
 
-  stringLength = strlen(string);
+  stringLength = (unsigned int) strlen(string);
   signature = stringLength;
   n = stringLength/sizeof(unsigned int);
   p.s = string;
@@ -1470,6 +1470,7 @@ typedef enum {
 
 typedef struct {
   ds_device_type  type;
+  cl_device_type  oclDeviceType;
   cl_device_id    oclDeviceID;
   char*           oclDeviceName;
   char*           oclDriverVersion;
@@ -1608,6 +1609,9 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
 
           OpenCLLib->clGetDeviceInfo(profile->devices[next].oclDeviceID, CL_DEVICE_MAX_COMPUTE_UNITS
             , sizeof(cl_uint), &profile->devices[next].oclMaxComputeUnits, NULL);
+
+          OpenCLLib->clGetDeviceInfo(profile->devices[next].oclDeviceID, CL_DEVICE_TYPE
+            , sizeof(cl_device_type), &profile->devices[next].oclDeviceType, NULL);
         }
       }
     }
@@ -2222,7 +2226,7 @@ ds_status AccelerateScoreSerializer(ds_device* device, void** serializedScore, u
     char* s = (char*)malloc(sizeof(char)*256);
     sprintf(s,"%.4f",*((AccelerateScoreType*)device->score));
     *serializedScore = (void*)s;
-    *serializedScoreSize = strlen(s);
+    *serializedScoreSize = (unsigned int) strlen(s);
     return DS_SUCCESS;
   }
   else {
@@ -2250,6 +2254,17 @@ ds_status AccelerateScoreRelease(void* score) {
   if (score!=NULL) {
     free(score);
   }
+  return DS_SUCCESS;
+}
+
+ds_status canWriteProfileToFile(const char *path)
+{
+  FILE* profileFile = fopen(path, "wb");
+
+  if (profileFile==NULL)
+    return DS_FILE_ERROR;
+
+  fclose(profileFile);
   return DS_SUCCESS;
 }
 
@@ -2294,34 +2309,48 @@ static MagickBooleanType autoSelectDevice(MagickCLEnv clEnv, ExceptionInfo* exce
          ,GetOpenCLCachedFilesDirectory()
          ,DirectorySeparator,IMAGEMAGICK_PROFILE_FILE);
 
-  if (clEnv->regenerateProfile != MagickFalse) {
-    profileType = DS_EVALUATE_ALL;
-  }
-  else {
-    readProfileFromFile(profile, AccelerateScoreDeserializer, path);
-    profileType = DS_EVALUATE_NEW_ONLY;
-  }
-  status = profileDevices(profile, profileType, AcceleratePerfEvaluator, NULL, &numDeviceProfiled);
+  if (canWriteProfileToFile(path) != DS_SUCCESS) {
+    /* We can not write out a device profile, so don't run the benchmark */
+    /* select the first GPU device */
 
-  if (status!=DS_SUCCESS) {
-    (void) ThrowMagickException(exception, GetMagickModule(), ModuleFatalError, "Error when initializing the profile", "'%s'", ".");
-    goto cleanup;
-  }
-  if (numDeviceProfiled > 0) {
-    status = writeProfileToFile(profile, AccelerateScoreSerializer, path);
-    if (status!=DS_SUCCESS) {
-      (void) ThrowMagickException(exception, GetMagickModule(), ModuleWarning, "Error when saving the profile into a file", "'%s'", ".");
+    bestDeviceIndex = 0;
+    for (i = 1; i < profile->numDevices; i++) {
+      if ((profile->devices[i].type == DS_DEVICE_OPENCL_DEVICE) && (profile->devices[i].oclDeviceType == CL_DEVICE_TYPE_GPU)) {
+        bestDeviceIndex = i;
+        break;
+      }
     }
   }
+  else {
+    if (clEnv->regenerateProfile != MagickFalse) {
+      profileType = DS_EVALUATE_ALL;
+    }
+    else {
+      readProfileFromFile(profile, AccelerateScoreDeserializer, path);
+      profileType = DS_EVALUATE_NEW_ONLY;
+    }
+    status = profileDevices(profile, profileType, AcceleratePerfEvaluator, NULL, &numDeviceProfiled);
 
-  /* pick the best device */
-  bestDeviceIndex = 0;
-  bestScore = *(AccelerateScoreType*)profile->devices[bestDeviceIndex].score;
-  for (i = 1; i < profile->numDevices; i++) {
-    AccelerateScoreType score = *(AccelerateScoreType*)profile->devices[i].score;
-    if (score < bestScore) {
-      bestDeviceIndex = i;
-      bestScore = score;
+    if (status!=DS_SUCCESS) {
+      (void) ThrowMagickException(exception, GetMagickModule(), ModuleFatalError, "Error when initializing the profile", "'%s'", ".");
+      goto cleanup;
+    }
+    if (numDeviceProfiled > 0) {
+      status = writeProfileToFile(profile, AccelerateScoreSerializer, path);
+      if (status!=DS_SUCCESS) {
+        (void) ThrowMagickException(exception, GetMagickModule(), ModuleWarning, "Error when saving the profile into a file", "'%s'", ".");
+      }
+    }
+
+    /* pick the best device */
+    bestDeviceIndex = 0;
+    bestScore = *(AccelerateScoreType*)profile->devices[bestDeviceIndex].score;
+    for (i = 1; i < profile->numDevices; i++) {
+      AccelerateScoreType score = *(AccelerateScoreType*)profile->devices[i].score;
+      if (score < bestScore) {
+        bestDeviceIndex = i;
+        bestScore = score;
+      }
     }
   }
 

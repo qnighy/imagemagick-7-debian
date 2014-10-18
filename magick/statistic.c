@@ -829,27 +829,59 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
+      MagickRealType
+        result;
+
       if ((channel & RedChannel) != 0)
-        SetPixelRed(q,ClampToQuantum(ApplyEvaluateOperator(random_info[id],
-          GetPixelRed(q),op,value)));
+        {
+          result=ApplyEvaluateOperator(random_info[id],GetPixelRed(q),op,value);
+          if (op == MeanEvaluateOperator)
+            result/=2.0;
+          SetPixelRed(q,ClampToQuantum(result));
+        }
       if ((channel & GreenChannel) != 0)
-        SetPixelGreen(q,ClampToQuantum(ApplyEvaluateOperator(random_info[id],
-          GetPixelGreen(q),op,value)));
+        {
+          result=ApplyEvaluateOperator(random_info[id],GetPixelGreen(q),op,
+            value);
+          if (op == MeanEvaluateOperator)
+            result/=2.0;
+          SetPixelGreen(q,ClampToQuantum(result));
+        }
       if ((channel & BlueChannel) != 0)
-        SetPixelBlue(q,ClampToQuantum(ApplyEvaluateOperator(random_info[id],
-          GetPixelBlue(q),op,value)));
+        {
+          result=ApplyEvaluateOperator(random_info[id],GetPixelBlue(q),op,
+            value);
+          if (op == MeanEvaluateOperator)
+            result/=2.0;
+          SetPixelBlue(q,ClampToQuantum(result));
+        }
       if ((channel & OpacityChannel) != 0)
         {
           if (image->matte == MagickFalse)
-            SetPixelOpacity(q,ClampToQuantum(ApplyEvaluateOperator(
-              random_info[id],GetPixelOpacity(q),op,value)));
+            {
+              result=ApplyEvaluateOperator(random_info[id],GetPixelOpacity(q),
+                op,value);
+              if (op == MeanEvaluateOperator)
+                result/=2.0;
+              SetPixelOpacity(q,ClampToQuantum(result));
+            }
           else
-            SetPixelAlpha(q,ClampToQuantum(ApplyEvaluateOperator(
-              random_info[id],(Quantum) GetPixelAlpha(q),op,value)));
+            {
+              result=ApplyEvaluateOperator(random_info[id],GetPixelAlpha(q),
+                op,value);
+              if (op == MeanEvaluateOperator)
+                result/=2.0;
+              SetPixelAlpha(q,ClampToQuantum(result));
+            }
         }
       if (((channel & IndexChannel) != 0) && (indexes != (IndexPacket *) NULL))
-        SetPixelIndex(indexes+x,ClampToQuantum(ApplyEvaluateOperator(
-          random_info[id],GetPixelIndex(indexes+x),op,value)));
+        {
+          result=ApplyEvaluateOperator(random_info[id],GetPixelIndex(indexes+x),
+            op,value);
+          if (op == MeanEvaluateOperator)
+            result/=2.0;
+          SetPixelIndex(indexes+x,ClampToQuantum(result));
+        }
       q++;
     }
     if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
@@ -1953,7 +1985,7 @@ MagickExport ChannelPerceptualHash *GetImageChannelPerceptualHash(
   if (perceptual_hash == (ChannelPerceptualHash *) NULL)
     return((ChannelPerceptualHash *) NULL);
   for (channel=0; channel <= CompositeChannels; channel++)
-    for (i=0; i < 7; i++)
+    for (i=0; i < MaximumNumberOfImageMoments; i++)
       perceptual_hash[channel].P[i]=(-MagickLog10(moments[channel].I[i]));
   moments=(ChannelMoments *) RelinquishMagickMemory(moments);
   /*
@@ -1983,7 +2015,7 @@ MagickExport ChannelPerceptualHash *GetImageChannelPerceptualHash(
       return((ChannelPerceptualHash *) NULL);
     }
   for (channel=0; channel <= CompositeChannels; channel++)
-    for (i=0; i < 7; i++)
+    for (i=0; i < MaximumNumberOfImageMoments; i++)
       perceptual_hash[channel].Q[i]=(-MagickLog10(moments[channel].I[i]));
   moments=(ChannelMoments *) RelinquishMagickMemory(moments);
   return(perceptual_hash);
@@ -2328,17 +2360,17 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
   for (i=0; i < (ssize_t) CompositeChannels; i++)
   {
     double
-      sum; // 'Fix' for Visual Studio compiler optimization issue.
+      mean;
 
-    sum = channel_statistics[i].sum/area;
-    channel_statistics[i].sum=sum;
+    mean=channel_statistics[i].sum/area;
+    channel_statistics[i].sum=mean;
     channel_statistics[i].sum_squared/=area;
     channel_statistics[i].sum_cubed/=area;
     channel_statistics[i].sum_fourth_power/=area;
-    channel_statistics[i].mean=sum;
+    channel_statistics[i].mean=mean;
     channel_statistics[i].variance=channel_statistics[i].sum_squared;
     channel_statistics[i].standard_deviation=sqrt(
-      channel_statistics[i].variance-(sum*sum));
+      channel_statistics[i].variance-(mean*mean));
   }
   for (i=0; i < (ssize_t) CompositeChannels; i++)
   {

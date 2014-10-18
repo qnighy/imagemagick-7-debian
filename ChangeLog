@@ -1,7 +1,30 @@
+2014-09-16  6.8.9-8 Cristy  <quetzlzacatenango@image...>
+  * JPEG library version >= 80 is thread safe (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=25495).
+
+2014-08-31  6.8.9-8 Dirk Lemstra <dirk@snakeware...>
+  * Added support for some legacy dds formats (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=26184).
+
+2014-08-16  6.8.9-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-7, SVN revision 16330.
+
+2014-08-14  6.8.9-7 Cristy  <quetzlzacatenango@image...>
+  * Fix off by one buglet when extracting profiles 8BIM (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=26095).
+
+2014-07-31  6.8.9-7 Dirk Lemstra <dirk@snakeware...>
+  * Fixed bug when reading 1 bit PSD. (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=26015).
+
+2014-07-25  6.8.9-7 Glenn Randers-Pehrson <glennrp@image...>
+  * Relocate initialization of "image_colors" in the PNG encoder, to avoid
+    a possible use of uninitialized variable.
+
 2014-07-25  6.8.9-6 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.9-6, SVN revision 16211.
 
-2014-07-25  6.8.9-7 Glenn Randers-Pehrson <glennrp@image...>
+2014-07-24  6.8.9-6 Glenn Randers-Pehrson <glennrp@image...>
   * Use IsOptionMember() instead of LocaleNCompare() in coders/png.c to
     parse the list of excluded and included PNG chunks.
 

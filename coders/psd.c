@@ -730,6 +730,8 @@ static MagickStatusType ReadPSDChannelPixels(Image *image,const size_t channels,
                   q++;
                   x++;
                 }
+                x--;
+                continue;
               }
           }
         break;
@@ -972,9 +974,9 @@ static MagickStatusType ReadPSDChannelZip(Image *image,
   (void) ReadBlob(image,compact_size,compact_pixels);
 
   stream.next_in=(Bytef *)compact_pixels;
-  stream.avail_in=compact_size;
+  stream.avail_in=(unsigned int) compact_size;
   stream.next_out=(Bytef *)pixels;
-  stream.avail_out=count;
+  stream.avail_out=(unsigned int) count;
 
   if(inflateInit(&stream) == Z_OK)
     {
@@ -2662,10 +2664,10 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,Image *image)
         next_image->compression=NoCompression;
         (void) WriteBlobMSBLong(image,(unsigned int) next_image->page.y);
         (void) WriteBlobMSBLong(image,(unsigned int) next_image->page.x);
-        (void) WriteBlobMSBLong(image,(unsigned int) next_image->page.y+
-          next_image->rows);
-        (void) WriteBlobMSBLong(image,(unsigned int) next_image->page.x+
-          next_image->columns);
+        (void) WriteBlobMSBLong(image,(unsigned int) (next_image->page.y+
+          next_image->rows));
+        (void) WriteBlobMSBLong(image,(unsigned int) (next_image->page.x+
+          next_image->columns));
         packet_size=next_image->depth > 8 ? 2UL : 1UL;
         channel_size=(unsigned int) ((packet_size*next_image->rows*
           next_image->columns)+2);
@@ -2734,7 +2736,7 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,Image *image)
             (void) WriteBlobMSBLong(image,16);
             (void) WriteBlobMSBLong(image,0);
             (void) WriteBlobMSBLong(image,0);
-            (void) FormatLocaleString(layer_name,MaxTextExtent,"L%03ld",(long)
+            (void) FormatLocaleString(layer_name,MaxTextExtent,"L%04ld",(long)
               layer_count++);
             WritePascalString(image,layer_name,4);
           }

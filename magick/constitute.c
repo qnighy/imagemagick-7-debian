@@ -600,7 +600,7 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
 
     next->taint=MagickFalse;
     GetPathComponent(magick_filename,MagickPath,magick_path);
-    if (*magick_path == '\0')
+    if (*magick_path == '\0' && *next->magick == '\0')
       (void) CopyMagickString(next->magick,magick,MaxTextExtent);
     (void) CopyMagickString(next->magick_filename,magick_filename,
       MaxTextExtent);
@@ -1048,6 +1048,7 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
          }
     }
   (void) SyncImageProfiles(image);
+  DisassociateImageStream(image);
   option=GetImageOption(image_info,"delegate:bimodal");
   if ((option != (const char *) NULL) &&
       (IsMagickTrue(option) != MagickFalse) &&
@@ -1253,9 +1254,6 @@ MagickExport MagickBooleanType WriteImages(const ImageInfo *image_info,
 {
 #define WriteImageTag  "Write/Image"
 
-  BlobInfo
-    *blob;
-
   ExceptionInfo
     *sans_exception;
 
@@ -1289,9 +1287,6 @@ MagickExport MagickBooleanType WriteImages(const ImageInfo *image_info,
   assert(exception != (ExceptionInfo *) NULL);
   write_info=CloneImageInfo(image_info);
   images=GetFirstImageInList(images);
-  blob=CloneBlobInfo(images->blob);  /* thread specific I/O handler */
-  DestroyBlob(images);
-  images->blob=blob;
   if (filename != (const char *) NULL)
     for (p=images; p != (Image *) NULL; p=GetNextImageInList(p))
       (void) CopyMagickString(p->filename,filename,MaxTextExtent);

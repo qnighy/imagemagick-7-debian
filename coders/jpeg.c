@@ -392,9 +392,9 @@ static boolean ReadComment(j_decompress_ptr jpeg_info)
   image=error_manager->image;
   length=(size_t) ((size_t) GetCharacter(jpeg_info) << 8);
   length+=GetCharacter(jpeg_info);
-  length-=2;
-  if (length <= 0)
+  if (length <= 2)
     return(TRUE);
+  length-=2;
   comment=BlobToStringInfo((const void *) NULL,length);
   if (comment == (StringInfo *) NULL)
     {
@@ -1473,7 +1473,9 @@ ModuleExport size_t RegisterJPEGImage(void)
   (void) FormatLocaleString(version,MaxTextExtent,"%d",JPEG_LIB_VERSION);
 #endif
   entry=SetMagickInfo("JPEG");
+#if JPEG_LIB_VERSION < 80
   entry->thread_support=NoThreadSupport;
+#endif
 #if defined(MAGICKCORE_JPEG_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadJPEGImage;
   entry->encoder=(EncodeImageHandler *) WriteJPEGImage;
@@ -1487,7 +1489,9 @@ ModuleExport size_t RegisterJPEGImage(void)
   entry->module=ConstantString("JPEG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("JPG");
+#if JPEG_LIB_VERSION < 80
   entry->thread_support=NoThreadSupport;
+#endif
 #if defined(MAGICKCORE_JPEG_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadJPEGImage;
   entry->encoder=(EncodeImageHandler *) WriteJPEGImage;
@@ -1500,7 +1504,9 @@ ModuleExport size_t RegisterJPEGImage(void)
   entry->module=ConstantString("JPEG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("PJPEG");
+#if JPEG_LIB_VERSION < 80
   entry->thread_support=NoThreadSupport;
+#endif
 #if defined(MAGICKCORE_JPEG_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadJPEGImage;
   entry->encoder=(EncodeImageHandler *) WriteJPEGImage;
