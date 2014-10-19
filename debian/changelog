@@ -5,6 +5,8 @@ imagemagick (8:6.8.9.8-1) UNRELEASED; urgency=medium
       (Closes: #712493).
   * Fix desktop file icons are not displayed due to wrong icon names.
     (Closes: #765416, #758276).
+  * Tighten up the depends between imagemagick-common and other components.
+    (Closes: #753770).
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 19 Oct 2014 11:10:53 +0200
 

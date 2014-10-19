@@ -48,6 +48,7 @@ Architecture: all
 Multi-Arch: foreign
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}
+Breaks: libmagickcore-6.q16-2 (<< ${source:Version})
 Description: image manipulation programs -- infrastructure
  imagemagick-common contains the filesystem infrastructure required for
  further installation of imagemagick in any configuration; it does not provide
