@@ -1,3 +1,13 @@
+imagemagick (8:6.8.9.8-1) UNRELEASED; urgency=medium
+
+  * New upstream version:
+    - Fix imagemagick changes contrast of b/w images
+      (Closes: #712493).
+  * Fix desktop file icons are not displayed due to wrong icon names.
+    (Closes: #765416, #758276).
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 19 Oct 2014 11:10:53 +0200
+
 imagemagick (8:6.8.9.6-4) unstable; urgency=medium
 
   * Upload to unstable

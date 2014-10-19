@@ -206,6 +206,7 @@ quantum_override_dh_auto_install-arch_%:
 	mkdir -p debian/tmp-$*/usr/share/applications/
 	sed < $(CURDIR)/debian/display.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/$*/g \
+		-e s/\$$\(LCQUANTUMDEPTH\)/${shell echo $* | sed -e 's/\(.*\)/\L\1/'}/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
 	        -e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
 		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
