@@ -7,8 +7,13 @@ imagemagick (8:6.8.9.8-1) UNRELEASED; urgency=medium
     (Closes: #765416, #758276).
   * Tighten up the depends between imagemagick-common and other components.
     (Closes: #753770).
+  * Add obsolete config scripts (not multiarch safe) to
+    /usr/lib/$DEB_HOST_MULTIARCH/ImageMagick-6/bin-$QUANTUMDEPTH/
+    where $DEB_HOST_MULTIARCH is the multiarch triplet and
+    $QUANTUMDEPTH is the current quantum depth.
+    (Closes: #764899). Document it under NEWS (Closes: #761927).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 19 Oct 2014 11:10:53 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 23 Oct 2014 18:31:59 +0200
 
 imagemagick (8:6.8.9.6-4) unstable; urgency=medium
 

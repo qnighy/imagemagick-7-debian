@@ -181,6 +181,13 @@ quantum_override_dh_auto_install-arch_%:
             fi ;\
         done < debian/imagemagick.install
 
+	# move config script to arch directory
+	# TODO: remove after jessie +1
+	for SCRIPT in 'Magick-config MagickCore-config MagickWand-config Wand-config Magick++-config'; do \
+		cp -f "debian/tmp-$*/usr/bin/$$SCRIPT" \
+                      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/"; \
+	done;
+
 
 	# build icons cache (build for each arch in order to get more testing)
 	while read SIZE; do \

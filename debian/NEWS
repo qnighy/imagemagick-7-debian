@@ -1,3 +1,24 @@
+imagemagick (8:6.8.9.8-1) UNRELEASED; urgency=medium
+
+  Obsolete config scripts (Magick-config, MagickCore-config,
+  MagickWand-config, Wand-config and Magick++-config) are
+  not multi-arch safe and thus have been removed from /usr/bin.
+  .
+  Moreover, these scripts are superseded by pkg-config
+  facilities.
+  .
+  However as a courtesy to our users, these scripts have
+  been moved to
+  /usr/lib/$DEB_HOST_MULTIARCH/ImageMagick-$VERSION/bin-$QUANTUMDEPTH/
+  where $DEB_HOST_MULTIARCH is the multi-arch triplet and
+  $QUANTUMDEPTH is the current quantum depth. $VERSION is the upstream
+  version without the revision number.
+  .
+  Please note that these scripts will be definitively removed after
+  jessie.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 19 Oct 2014 12:12:20 +0200
+
 imagemagick (8:6.6.9.7-3) unstable; urgency=low
   
   Please note that imagemagick version 6.6.9.7 has moved its global 
