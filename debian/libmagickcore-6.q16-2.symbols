@@ -203,6 +203,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ConfigureComponentGenesis@Base 8:6.8.8.2
  ConfigureComponentTerminus@Base 8:6.8.8.2
  ConfigureFileToStringInfo@Base 8:6.8.8.2
+ ConnectedComponentsImage@Base 8:6.8.9.9
  ConsolidateCMYKImages@Base 8:6.8.8.2
  ConstantString@Base 8:6.8.8.2
  ConstituteComponentGenesis@Base 8:6.8.8.2
@@ -350,6 +351,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ExportImagePixels@Base 8:6.8.8.2
  ExportQuantumPixels@Base 8:6.8.8.2
  ExtentImage@Base 8:6.8.8.2
+ ExternalDelegateCommand@Base 8:6.8.9.9
  ExtractSubimageFromImage@Base 8:6.8.8.2
  FileToBlob@Base 8:6.8.8.2
  FileToImage@Base 8:6.8.8.2
@@ -769,6 +771,8 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  IsStringTrue@Base 8:6.8.8.2
  IsSubimage@Base 8:6.8.8.2
  IsTaintImage@Base 8:6.8.8.2
+ KuwaharaImage@Base 8:6.8.9.9
+ KuwaharaImageChannel@Base 8:6.8.9.9
  LZWEncodeImage@Base 8:6.8.8.2
  LeastSquaresAddTerms@Base 8:6.8.8.2
  LevelColorsImage@Base 8:6.8.8.2

@@ -783,6 +783,8 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::Image::iptcProfile(Magick::Blob const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::isValid(bool)@Base" 8:6.8.9.6
  (c++)"Magick::Image::isValid() const@Base" 8:6.8.9.6
+ (c++)"Magick::Image::kuwaharaChannel(MagickCore::ChannelType, double, double)@Base" 8:6.8.9.9
+ (c++)"Magick::Image::kuwahara(double, double)@Base" 8:6.8.9.9
  (c++)"Magick::Image::label() const@Base" 8:6.8.9.6
  (c++)"Magick::Image::label(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::levelChannel(MagickCore::ChannelType, double, double, double)@Base" 8:6.8.9.6
@@ -882,6 +884,7 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++|subst)"Magick::Image::read(Magick::Blob const&, Magick::Geometry const&, {c++:size_t})@Base" 8:6.8.9.6
  (c++|subst)"Magick::Image::read(Magick::Blob const&, Magick::Geometry const&, {c++:size_t}, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::read(Magick::Blob const&, Magick::Geometry const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
+ (c++)"Magick::Image::read(MagickCore::_Image*, MagickCore::_ExceptionInfo*)@Base" 8:6.8.9.9
  (c++)"Magick::Image::read(Magick::Geometry const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
  (c++)"Magick::Image::readPixels(MagickCore::QuantumType, unsigned char const*)@Base" 8:6.8.9.6
  (c++)"Magick::Image::read(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.8.9.6
@@ -1412,6 +1415,16 @@ libMagick++-6.Q16.so.5 libmagick++-6.q16-5 #MINVER#
  (c++)"Magick::raiseGeometryDefault@Base" 8:6.8.9.6
  (c++)"Magick::raiseImage::operator()(Magick::Image&) const@Base" 8:6.8.9.6
  (c++)"Magick::raiseImage::raiseImage(Magick::Geometry const&, bool)@Base" 8:6.8.9.6
+ (c++)"Magick::ReadOptions::density() const@Base" 8:6.8.9.9
+ (c++)"Magick::ReadOptions::density(Magick::Geometry const&)@Base" 8:6.8.9.9
+ (c++)"Magick::ReadOptions::depth() const@Base" 8:6.8.9.9
+ (c++|subst)"Magick::ReadOptions::depth({c++:size_t})@Base" 8:6.8.9.9
+ (c++)"Magick::ReadOptions::imageInfo()@Base" 8:6.8.9.9
+ (c++)"Magick::ReadOptions::~ReadOptions()@Base" 8:6.8.9.9
+ (c++)"Magick::ReadOptions::ReadOptions()@Base" 8:6.8.9.9
+ (c++)"Magick::ReadOptions::ReadOptions(Magick::ReadOptions const&)@Base" 8:6.8.9.9
+ (c++)"Magick::ReadOptions::size() const@Base" 8:6.8.9.9
+ (c++)"Magick::ReadOptions::size(Magick::Geometry const&)@Base" 8:6.8.9.9
  (c++)"Magick::reduceNoiseImage::operator()(Magick::Image&) const@Base" 8:6.8.9.6
  (c++)"Magick::reduceNoiseImage::reduceNoiseImage()@Base" 8:6.8.9.6
  (c++|subst)"Magick::reduceNoiseImage::reduceNoiseImage({c++:size_t})@Base" 8:6.8.9.6

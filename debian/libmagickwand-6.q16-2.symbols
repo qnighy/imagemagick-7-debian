@@ -204,6 +204,7 @@ libMagickWand-6.Q16.so.2 libmagickwand-6.q16-2 #MINVER#
  MagickAutoGammaImageChannel@Base 8:6.8.8.2
  MagickAutoLevelImage@Base 8:6.8.8.2
  MagickAutoLevelImageChannel@Base 8:6.8.8.2
+ MagickAutoOrientImage@Base 8:6.8.9.9
  MagickAverageImages@Base 8:6.8.8.2
  MagickBlackThresholdImage@Base 8:6.8.8.2
  MagickBlueShiftImage@Base 8:6.8.8.2
