@@ -1,4 +1,4 @@
-imagemagick (8:6.8.9.8-1) UNRELEASED; urgency=medium
+imagemagick (8:6.8.9.9-1) unstable; urgency=high
 
   Obsolete config scripts (Magick-config, MagickCore-config,
   MagickWand-config, Wand-config and Magick++-config) are

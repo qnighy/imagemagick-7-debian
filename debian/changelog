@@ -15,14 +15,8 @@ imagemagick (8:6.8.9.9-1) unstable; urgency=high
   * Fix identify warning is now an error (Closes: #761918).
   * Fix unrecognized color in xpm image (Closes: #754107).
   * Fix display exits with non-zero return code (Closes: #763794).
-
- -- Bastien Roucaries <roucaries.bastien+debian@gmail.com>  Mon, 27 Oct 2014 09:48:07 +0100
-
-imagemagick (8:6.8.9.8-1) UNRELEASED; urgency=medium
-
-  * New upstream version:
-    - Fix imagemagick changes contrast of b/w images
-      (Closes: #712493).
+  * Fix imagemagick changes contrast of b/w images.
+    (Closes: #712493).
   * Fix desktop file icons are not displayed due to wrong icon names.
     (Closes: #765416, #758276).
   * Tighten up the depends between imagemagick-common and other components.
@@ -32,8 +26,9 @@ imagemagick (8:6.8.9.8-1) UNRELEASED; urgency=medium
     where $DEB_HOST_MULTIARCH is the multiarch triplet and
     $QUANTUMDEPTH is the current quantum depth.
     (Closes: #764899). Document it under NEWS (Closes: #761927).
+  * Bump policy version. No changes.
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 23 Oct 2014 18:31:59 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 27 Oct 2014 13:24:54 +0100
 
 imagemagick (8:6.8.9.6-4) unstable; urgency=medium
 
