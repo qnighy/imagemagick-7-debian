@@ -284,6 +284,8 @@ namespace Magick
   using MagickCore::TransparentAlphaChannel;
   using MagickCore::FlattenAlphaChannel;
   using MagickCore::RemoveAlphaChannel;
+  using MagickCore::AssociateAlphaChannel;
+  using MagickCore::DisassociateAlphaChannel;
 
   // Image class types
   using MagickCore::ClassType;
@@ -350,6 +352,7 @@ namespace Magick
   using MagickCore::YIQColorspace;
   using MagickCore::YPbPrColorspace;
   using MagickCore::YUVColorspace;
+  using MagickCore::xyYColorspace;
 
   // Command options
   using MagickCore::CommandOption;
@@ -1273,6 +1276,7 @@ namespace Magick
   using MagickCore::IsGeometry;
   using MagickCore::IsImagesEqual;
   using MagickCore::KernelInfo;
+  using MagickCore::KuwaharaImage;
   using MagickCore::LessValue;
   using MagickCore::LevelImage;
   using MagickCore::LevelImageChannel;

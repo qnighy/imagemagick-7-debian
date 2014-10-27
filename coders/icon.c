@@ -417,7 +417,7 @@ static Image *ReadICONImage(const ImageInfo *image_info,
             (void) LogMagickEvent(CoderEvent,GetMagickModule(),
               "   bpp    = %.20g",(double) icon_info.bits_per_pixel);
           }
-      if (icon_info.bits_per_pixel <= 16)
+      if ((icon_info.number_colors != 0) || (icon_info.bits_per_pixel <= 16U))
         {
           image->storage_class=PseudoClass;
           image->colors=icon_info.number_colors;
@@ -484,15 +484,15 @@ static Image *ReadICONImage(const ImageInfo *image_info,
               {
                 byte=(size_t) ReadBlobByte(image);
                 for (bit=0; bit < 8; bit++)
-                  SetPixelIndex(indexes+x+bit,
-                    ((byte & (0x80 >> bit)) != 0 ? 0x01 : 0x00));
+                  SetPixelIndex(indexes+x+bit,((byte & (0x80 >> bit)) != 0 ?
+                    0x01 : 0x00));
               }
               if ((image->columns % 8) != 0)
                 {
                   byte=(size_t) ReadBlobByte(image);
                   for (bit=0; bit < (image->columns % 8); bit++)
-                    SetPixelIndex(indexes+x+bit,
-                      ((byte & (0x80 >> bit)) != 0 ? 0x01 : 0x00));
+                    SetPixelIndex(indexes+x+bit,((byte & (0x80 >> bit)) != 0 ?
+                      0x01 : 0x00));
                 }
               for (x=0; x < (ssize_t) scanline_pad; x++)
                 (void) ReadBlobByte(image);
@@ -664,15 +664,15 @@ static Image *ReadICONImage(const ImageInfo *image_info,
               {
                 byte=(size_t) ReadBlobByte(image);
                 for (bit=0; bit < 8; bit++)
-                  SetPixelOpacity(q+x+bit,(((byte & (0x80 >> bit)) !=
-                    0) ? TransparentOpacity : OpaqueOpacity));
+                  SetPixelOpacity(q+x+bit,(((byte & (0x80 >> bit)) != 0) ?
+                    TransparentOpacity : OpaqueOpacity));
               }
               if ((image->columns % 8) != 0)
                 {
                   byte=(size_t) ReadBlobByte(image);
                   for (bit=0; bit < (image->columns % 8); bit++)
-                    SetPixelOpacity(q+x+bit,(((byte & (0x80 >> bit)) !=
-                      0) ? TransparentOpacity : OpaqueOpacity));
+                    SetPixelOpacity(q+x+bit,(((byte & (0x80 >> bit)) != 0) ?
+                      TransparentOpacity : OpaqueOpacity));
                 }
               if ((image->columns % 32) != 0)
                 for (x=0; x < (ssize_t) ((32-(image->columns % 32))/8); x++)

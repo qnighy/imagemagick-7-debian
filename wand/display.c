@@ -552,7 +552,6 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
                 display_image->delay=resource_info.delay;
               nexus=XDisplayImage(display,&resource_info,argv,argc,
                 &display_image,&state);
-              status&=nexus != (Image *) NULL;
               if (nexus == (Image *) NULL)
                 break;
               while ((nexus != (Image *) NULL) && ((state & ExitState) == 0))
@@ -1328,7 +1327,7 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
             status=MogrifyImageInfo(image_info,(int) (i-j+1),(const char **)
               argv+j,exception);
             DestroyDisplay();
-            return(status != 0 ? MagickFalse : MagickTrue);
+            return(status == 0 ? MagickTrue : MagickFalse);
           }
         if (LocaleCompare("log",option+1) == 0)
           {

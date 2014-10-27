@@ -1,3 +1,26 @@
+2014-10-25  6.8.9-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-9, SVN revision 16819.
+
+2014-10-03  6.8.9-9 Dirk Lemstra <dirk@snakeware...>
+  * Added sixel coder created by Hayaki Saito (@kefir_).
+  * Fixed buffer overflow in PCX and DCM coder (bug report from Hanno Böck).
+  * Added support for reading/writing the tIME chunk in the PNG coder.
+  * Added eps:fit-page option to the PS coder to set -dEPSFitPage.
+
+2014-09-30  6.8.9-9 Cristy  <quetzlzacatenango@image...>
+  * Support xyY colorspace (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=26324).
+  * Reduce noise while preserving edges with the -kuwahara option.
+  * Off-by-one count when parsing an 8BIM profile.
+  * Locale.c won't build if uselocale found but strtod_l isn't (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=26362).
+  * OpenCL no longer benchmarks are run on every initialization (patch
+    submitted by Jan Steffens).
+  * Don't clone a 0x0 image (bug report from Hanno Böck).
+
+2014-09-21  6.8.9-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.8.9-8, SVN revision 16502.
+
 2014-09-16  6.8.9-8 Cristy  <quetzlzacatenango@image...>
   * JPEG library version >= 80 is thread safe (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=25495).

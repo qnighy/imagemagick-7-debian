@@ -25,6 +25,7 @@ extern "C" {
 #include "magick/draw.h"
 
 #define MaximumNumberOfImageMoments  8
+#define MaximumNumberOfPerceptualHashes  7
 
 typedef struct _ChannelStatistics
 {
@@ -44,6 +45,8 @@ typedef struct _ChannelStatistics
     kurtosis,
     skewness;
 } ChannelStatistics;
+
+#undef I
 
 typedef struct _ChannelMoments
 {

@@ -2031,12 +2031,10 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
   /*
     Motion blur image.
   */
-  blur_image=AccelerateMotionBlurImage(image,channel,kernel,width,offset
-    ,exception);
-  if (blur_image != (Image*)NULL)
-  {
+  blur_image=AccelerateMotionBlurImage(image,channel,kernel,width,offset,
+    exception);
+  if (blur_image != (Image *) NULL)
     return blur_image;
-  }
   blur_image=CloneImage(image,0,0,MagickTrue,exception);
   if (blur_image == (Image *) NULL)
     {
@@ -2193,6 +2191,263 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
   if (status == MagickFalse)
     blur_image=DestroyImage(blur_image);
   return(blur_image);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%     K u w a h a r a I m a g e                                               %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  KuwaharaImage() is an edge preserving noise reduction filter.
+%
+%  The format of the KuwaharaImage method is:
+%
+%      Image *KuwaharaImage(const Image *image,const double width,
+%        const double sigma,ExceptionInfo *exception)
+%      Image *KuwaharaImageChannel(const Image *image,const ChannelType channel,
+%        const double width,const double sigma,ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o channel: the channel type.
+%
+%    o radius: the square window radius.
+%
+%    o sigma: the standard deviation of the Gaussian, in pixels.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+
+MagickExport Image *KuwaharaImage(const Image *image,const double radius,
+  const double sigma,ExceptionInfo *exception)
+{
+  Image
+    *kuwahara_image;
+
+  kuwahara_image=KuwaharaImageChannel(image,DefaultChannels,radius,sigma,
+    exception);
+  return(kuwahara_image);
+}
+
+MagickExport Image *KuwaharaImageChannel(const Image *image,
+  const ChannelType channel,const double radius,const double sigma,
+  ExceptionInfo *exception)
+{
+#define KuwaharaImageTag  "Kiwahara/Image"
+
+  CacheView
+    *image_view,
+    *kuwahara_view;
+
+  Image
+    *gaussian_image,
+    *kuwahara_image;
+
+  MagickBooleanType
+    status;
+
+  MagickOffsetType
+    progress;
+
+  size_t
+    width;
+
+  ssize_t
+    y;
+
+  /*
+    Initialize Kuwahara image attributes.
+  */
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickSignature);
+  (void) channel;
+  width=(size_t) radius+1;
+  gaussian_image=BlurImage(image,radius,sigma,exception);
+  if (gaussian_image == (Image *) NULL)
+    return((Image *) NULL);
+  kuwahara_image=CloneImage(image,image->columns,image->rows,MagickTrue,
+    exception);
+  if (kuwahara_image == (Image *) NULL)
+    {
+      gaussian_image=DestroyImage(gaussian_image);
+      return((Image *) NULL);
+    }
+  if (SetImageStorageClass(kuwahara_image,DirectClass) == MagickFalse)
+    {
+      InheritException(exception,&kuwahara_image->exception);
+      gaussian_image=DestroyImage(gaussian_image);
+      kuwahara_image=DestroyImage(kuwahara_image);
+      return((Image *) NULL);
+    }
+  /*
+    Edge preserving noise reduction filter.
+  */
+  status=MagickTrue;
+  progress=0;
+  image_view=AcquireVirtualCacheView(gaussian_image,exception);
+  kuwahara_view=AcquireAuthenticCacheView(kuwahara_image,exception);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    magick_threads(image,kuwahara_image,kuwahara_image->rows,1)
+#endif
+  for (y=0; y < (ssize_t) kuwahara_image->rows; y++)
+  {
+    register IndexPacket
+      *restrict kuwahara_indexes;
+
+    register PixelPacket
+      *restrict q;
+
+    register ssize_t
+      x;
+
+    if (status == MagickFalse)
+      continue;
+    q=QueueCacheViewAuthenticPixels(kuwahara_view,0,y,kuwahara_image->columns,1,
+      exception);
+    if (q == (PixelPacket *) NULL)
+      {
+        status=MagickFalse;
+        continue;
+      }
+    kuwahara_indexes=GetCacheViewAuthenticIndexQueue(kuwahara_view);
+    for (x=0; x < (ssize_t) kuwahara_image->columns; x++)
+    {
+      double
+        min_variance;
+
+      MagickPixelPacket
+        pixel;
+
+      RectangleInfo
+        quadrant,
+        target;
+
+      register ssize_t
+        i;
+
+      min_variance=MagickMaximumValue;
+      SetGeometry(gaussian_image,&target);
+      quadrant.width=width;
+      quadrant.height=width;
+      for (i=0; i < 4; i++)
+      {
+        const PixelPacket
+          *restrict p;
+
+        double
+          variance;
+
+        MagickPixelPacket
+          mean;
+
+        register const PixelPacket
+          *restrict k;
+
+        register ssize_t
+          n;
+
+        quadrant.x=x;
+        quadrant.y=y;
+        switch (i)
+        {
+          case 0:
+          {
+            quadrant.x=x-(ssize_t) (width-1);
+            quadrant.y=y-(ssize_t) (width-1);
+            break;
+          }
+          case 1:
+          {
+            quadrant.y=y-(ssize_t) (width-1);
+            break;
+          }
+          case 2:
+          {
+            quadrant.x=x-(ssize_t) (width-1);
+            break;
+          }
+          default:
+            break;
+        }
+        p=GetCacheViewVirtualPixels(image_view,quadrant.x,quadrant.y,
+          quadrant.width,quadrant.height,exception);
+        if (p == (const PixelPacket *) NULL)
+          break;
+        GetMagickPixelPacket(image,&mean);
+        k=p;
+        for (n=0; n < (ssize_t) (width*width); n++)
+        {
+          mean.red+=(double) k->red;
+          mean.green+=(double) k->green;
+          mean.blue+=(double) k->blue;
+          k++;
+        }
+        mean.red/=(double) (width*width);
+        mean.green/=(double) (width*width);
+        mean.blue/=(double) (width*width);
+        k=p;
+        variance=0.0;
+        for (n=0; n < (ssize_t) (width*width); n++)
+        {
+          double
+            luma;
+
+          luma=GetPixelLuma(image,k);
+          variance+=(luma-MagickPixelLuma(&mean))*(luma-MagickPixelLuma(&mean));
+          k++;
+        }
+        if (variance < min_variance)
+          {
+            min_variance=variance;
+            target=quadrant;
+          }
+      }
+      if (i < 4)
+        {
+          status=MagickFalse;
+          break;
+        }
+      (void) InterpolateMagickPixelPacket(gaussian_image,image_view,
+        UndefinedInterpolatePixel,(double) target.x+target.width/2.0,
+        (double) target.y+target.height/2.0,&pixel,exception);
+      SetPixelPacket(kuwahara_image,&pixel,q,kuwahara_indexes+x);
+      q++;
+    }
+    if (SyncCacheViewAuthenticPixels(kuwahara_view,exception) == MagickFalse)
+      status=MagickFalse;
+    if (image->progress_monitor != (MagickProgressMonitor) NULL)
+      {
+        MagickBooleanType
+          proceed;
+
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+        #pragma omp critical (MagickCore_KuwaharaImage)
+#endif
+        proceed=SetImageProgress(image,KuwaharaImageTag,progress++,image->rows);
+        if (proceed == MagickFalse)
+          status=MagickFalse;
+      }
+  }
+  kuwahara_view=DestroyCacheView(kuwahara_view);
+  image_view=DestroyCacheView(image_view);
+  gaussian_image=DestroyImage(gaussian_image);
+  if (status == MagickFalse)
+    kuwahara_image=DestroyImage(kuwahara_image);
+  return(kuwahara_image);
 }
 
 /*

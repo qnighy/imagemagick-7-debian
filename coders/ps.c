@@ -117,40 +117,42 @@ static MagickBooleanType
 */
 #if defined(MAGICKCORE_GS_DELEGATE) || defined(MAGICKCORE_WINDOWS_SUPPORT)
 static int MagickDLLCall PostscriptDelegateMessage(void *handle,
-  const char *msg,int len)
+  const char *message,int length)
 {
   char
     **messages;
 
-  size_t offset;
+  ssize_t
+    offset;
 
   offset=0;
-  messages=(char **)handle;
+  messages=(char **) handle;
   if (*messages == (char *) NULL)
-    *messages=(char *) AcquireQuantumMemory(len+1,sizeof(char *));
+    *messages=(char *) AcquireQuantumMemory(length+1,sizeof(char *));
   else
     {
       offset=strlen(*messages);
-      *messages=(char *) ResizeQuantumMemory(*messages,offset+len+1,
+      *messages=(char *) ResizeQuantumMemory(*messages,offset+length+1,
         sizeof(char *));
     }
-  (void) memcpy(*messages+offset,msg,len);
-  (*messages)[offset+len] ='\0';
-  return(len);
+  (void) memcpy(*messages+offset,message,length);
+  (*messages)[length+offset] ='\0';
+  return(length);
 }
 #endif
 
 static MagickBooleanType InvokePostscriptDelegate(
-  const MagickBooleanType verbose,const char *command,ExceptionInfo *exception)
+  const MagickBooleanType verbose,const char *command,char *message,
+  ExceptionInfo *exception)
 {
   int
     status;
 
 #if defined(MAGICKCORE_GS_DELEGATE) || defined(MAGICKCORE_WINDOWS_SUPPORT)
-#define SetArgsStart \
+#define SetArgsStart(command,args_start) \
   if (args_start == (const char *) NULL) \
     { \
-      if (command[0] != '"') \
+      if (*command != '"') \
         args_start=strchr(command,' '); \
       else \
         { \
@@ -160,24 +162,25 @@ static MagickBooleanType InvokePostscriptDelegate(
         } \
     }
 
-#define ExecuteGhostscriptCommand \
-  { \
-    status=SystemCommand(MagickFalse,verbose,command,exception); \
-    if (status == 0) \
-      return(MagickTrue); \
-    if (status < 0) \
-      return(MagickFalse); \
-    (void) ThrowMagickException(exception,GetMagickModule(),DelegateError, \
-      "FailedToExecuteCommand","`%s' (%d)",command,status); \
+#define ExecuteGhostscriptCommand(command,status) \
+{ \
+  status=ExternalDelegateCommand(MagickFalse,verbose,command,message, \
+    exception); \
+  if (status == 0) \
+    return(MagickTrue); \
+  if (status < 0) \
     return(MagickFalse); \
-  }
+  (void) ThrowMagickException(exception,GetMagickModule(),DelegateError, \
+    "FailedToExecuteCommand","`%s' (%d)",command,status); \
+  return(MagickFalse); \
+}
 
   char
     **argv,
     *errors;
 
   const char
-    *args_start=NULL;
+    *args_start = (const char *) NULL;
 
   const GhostInfo
     *ghost_info;
@@ -214,17 +217,17 @@ static MagickBooleanType InvokePostscriptDelegate(
     gsapi_set_stdio;
 #endif
   if (ghost_info == (GhostInfo *) NULL)
-    ExecuteGhostscriptCommand
+    ExecuteGhostscriptCommand(command,status);
   if (verbose != MagickFalse)
     {
       (void) fputs("[ghostscript library]",stdout);
-      SetArgsStart
+      SetArgsStart(command,args_start);
       (void) fputs(args_start,stdout);
     }
   errors=(char *) NULL;
   status=(ghost_info->new_instance)(&interpreter,(void *) &errors);
   if (status < 0)
-    ExecuteGhostscriptCommand
+    ExecuteGhostscriptCommand(command,status);
   code=0;
   argv=StringToArgv(command,&argc);
   if (argv == (char **) NULL)
@@ -240,23 +243,30 @@ static MagickBooleanType InvokePostscriptDelegate(
   for (i=0; i < (ssize_t) argc; i++)
     argv[i]=DestroyString(argv[i]);
   argv=(char **) RelinquishMagickMemory(argv);
-  if ((status != 0) && (status != -101))
+  if (status != 0)
     {
-      SetArgsStart
-      (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
-        "PostscriptDelegateFailed","`[ghostscript library]%s': %s",args_start,
-        errors);
-      if (errors != (char *) NULL)
-        errors=DestroyString(errors);
-      (void) LogMagickEvent(CoderEvent,GetMagickModule(),
-        "Ghostscript returns status %d, exit code %d",status,code);
-      return(MagickFalse);
+      SetArgsStart(command,args_start);
+      if (status == -101) /* quit */
+        (void) FormatLocaleString(message,MaxTextExtent,
+          "[ghostscript library]%s: %s",args_start,errors);
+      else
+        {
+          (void) ThrowMagickException(exception,GetMagickModule(),
+            DelegateError,"PostscriptDelegateFailed",
+            "`[ghostscript library]%s': %s",args_start,errors);
+          if (errors != (char *) NULL)
+            errors=DestroyString(errors);
+          (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+            "Ghostscript returns status %d, exit code %d",status,code);
+          return(MagickFalse);
+        }
     }
   if (errors != (char *) NULL)
     errors=DestroyString(errors);
   return(MagickTrue);
 #else
-  status=SystemCommand(MagickFalse,verbose,command,exception);
+  status=ExternalDelegateCommand(MagickFalse,verbose,command,(char *) NULL,
+    exception);
   return(status == 0 ? MagickTrue : MagickFalse);
 #endif
 }
@@ -401,6 +411,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     filename[MaxTextExtent],
     geometry[MaxTextExtent],
     input_filename[MaxTextExtent],
+    message[MaxTextExtent],
     options[MaxTextExtent],
     postscript_filename[MaxTextExtent];
 
@@ -427,6 +438,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   MagickBooleanType
     cmyk,
+    fitPage,
     skip,
     status;
 
@@ -771,6 +783,32 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       page.height=(size_t) ceil((double) ((hires_bounds.y2-hires_bounds.y1)*
         resolution.y/delta.y)-0.5);
     }
+  fitPage=MagickFalse;
+  option=GetImageOption(image_info,"eps:fit-page");
+  if (option != (char *) NULL)
+  {
+    char
+      *geometry;
+
+    MagickStatusType
+      flags;
+
+    geometry=GetPageGeometry(option);
+    flags=ParseMetaGeometry(geometry,&page.x,&page.y,&page.width,&page.height);
+    if (flags == NoValue)
+      {
+        (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+          "InvalidGeometry","`%s'",option);
+        image=DestroyImage(image);
+        return((Image *) NULL);
+      }
+    page.width=(size_t) ceil((double) (page.width*image->x_resolution/delta.x)
+      -0.5);
+    page.height=(size_t) ceil((double) (page.height*image->y_resolution/
+      delta.y) -0.5);
+    geometry=DestroyString(geometry);
+    fitPage=MagickTrue;
+  }
   (void) CloseBlob(image);
   if (IssRGBCompatibleColorspace(image_info->colorspace) != MagickFalse)
     cmyk=MagickFalse;
@@ -836,10 +874,15 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (read_info->scenes != (char *) NULL)
         *read_info->scenes='\0';
     }
-  option=GetImageOption(image_info,"eps:use-cropbox");
-  if ((*image_info->magick == 'E') && ((option == (const char *) NULL) ||
-      (IsMagickTrue(option) != MagickFalse)))
-    (void) ConcatenateMagickString(options,"-dEPSCrop ",MaxTextExtent);
+  if (*image_info->magick == 'E')
+    {
+      option=GetImageOption(image_info,"eps:use-cropbox");
+      if ((option == (const char *) NULL) ||
+          (IsStringTrue(option) != MagickFalse))
+        (void) ConcatenateMagickString(options,"-dEPSCrop ",MaxTextExtent);
+      if (fitPage != MagickFalse)
+        (void) ConcatenateMagickString(options,"-dEPSFitPage ",MaxTextExtent);
+    }
   (void) CopyMagickString(filename,read_info->filename,MaxTextExtent);
   (void) AcquireUniqueFilename(filename);
   (void) RelinquishUniqueFileResource(filename);
@@ -849,14 +892,16 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     read_info->antialias != MagickFalse ? 4 : 1,
     read_info->antialias != MagickFalse ? 4 : 1,density,options,filename,
     postscript_filename,input_filename);
-  status=InvokePostscriptDelegate(read_info->verbose,command,exception);
+  *message='\0';
+  status=InvokePostscriptDelegate(read_info->verbose,command,message,exception);
   (void) InterpretImageFilename(image_info,image,filename,1,
     read_info->filename);
   if ((status == MagickFalse) ||
       (IsPostscriptRendered(read_info->filename) == MagickFalse))
     {
       (void) ConcatenateMagickString(command," -c showpage",MaxTextExtent);
-      status=InvokePostscriptDelegate(read_info->verbose,command,exception);
+      status=InvokePostscriptDelegate(read_info->verbose,command,message,
+        exception);
     }
   (void) RelinquishUniqueFileResource(postscript_filename);
   (void) RelinquishUniqueFileResource(input_filename);
@@ -889,6 +934,9 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   read_info=DestroyImageInfo(read_info);
   if (postscript_image == (Image *) NULL)
     {
+      if (*message != '\0')
+        (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
+          "PostscriptDelegateFailed","`%s'",message);
       image=DestroyImageList(image);
       return((Image *) NULL);
     }

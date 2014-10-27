@@ -76,9 +76,7 @@
 #include "magick/utility.h"
 #if defined(MAGICKCORE_XML_DELEGATE)
 #  if defined(MAGICKCORE_WINDOWS_SUPPORT)
-#    if defined(__MINGW32__) || defined(__MINGW64__)
-#      define _MSC_VER
-#    else
+#    if !defined(__MINGW32__) && !defined(__MINGW64__)
 #      include <win32config.h>
 #    endif
 #  endif
@@ -2845,8 +2843,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
           (void) FormatLocaleString(command,MaxTextExtent,
             GetDelegateCommands(delegate_info),image->filename,filename,density,
               background,opacity,unique);
-          status=SystemCommand(MagickFalse,image_info->verbose,command,
-            exception);
+          status=ExternalDelegateCommand(MagickFalse,image_info->verbose,
+            command,(char *) NULL,exception);
           (void) RelinquishUniqueFileResource(unique);
           if (status == 0)
             {
@@ -2955,10 +2953,10 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
           }
         if (image_info->ping == MagickFalse)
           {
+#if defined(MAGICKCORE_CAIRO_DELEGATE)
             size_t
               stride;
 
-#if defined(MAGICKCORE_CAIRO_DELEGATE)
             stride=4*image->columns;
 #if defined(MAGICKCORE_PANGOCAIRO_DELEGATE)
             stride=(size_t) cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,
@@ -2976,8 +2974,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             (void) SetImageBackgroundColor(image);
 #if defined(MAGICKCORE_CAIRO_DELEGATE)
             cairo_surface=cairo_image_surface_create_for_data(pixels,
-              CAIRO_FORMAT_ARGB32,(int) image->columns,(int) image->rows,
-              4*(int) image->columns);
+              CAIRO_FORMAT_ARGB32,(int) image->columns,(int) image->rows, (int)
+              stride);
             if (cairo_surface == (cairo_surface_t *) NULL)
               {
                 pixel_info=RelinquishVirtualMemory(pixel_info);

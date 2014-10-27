@@ -3066,8 +3066,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
                 Minimize(min.opacity,
                             QuantumRange-(double) k_pixels[u].opacity);
                 if ( image->colorspace == CMYKColorspace)
-                  Minimize(min.index,(double) GetPixelIndex(
-                    k_indexes+u));
+                  Minimize(min.index,(double) GetPixelIndex(k_indexes+u));
               }
               k_pixels += virt_width;
               k_indexes += virt_width;
@@ -4326,6 +4325,18 @@ exit_cleanup:
 %
 */
 
+MagickExport Image *MorphologyImage(const Image *image,
+  const MorphologyMethod method,const ssize_t iterations,
+  const KernelInfo *kernel,ExceptionInfo *exception)
+{
+  Image
+    *morphology_image;
+
+  morphology_image=MorphologyImageChannel(image,DefaultChannels,method,
+    iterations,kernel,exception);
+  return(morphology_image);
+}
+
 MagickExport Image *MorphologyImageChannel(const Image *image,
   const ChannelType channel,const MorphologyMethod method,
   const ssize_t iterations,const KernelInfo *kernel,ExceptionInfo *exception)
@@ -4348,7 +4359,7 @@ MagickExport Image *MorphologyImageChannel(const Image *image,
    */
   curr_kernel = (KernelInfo *) kernel;
   bias=image->bias;
-  if ( method == ConvolveMorphology ||  method == CorrelateMorphology )
+  if ((method == ConvolveMorphology) || (method == CorrelateMorphology))
     {
       const char
         *artifact;
@@ -4398,20 +4409,7 @@ MagickExport Image *MorphologyImageChannel(const Image *image,
     curr_kernel=DestroyKernelInfo(curr_kernel);
   return(morphology_image);
 }
-
-MagickExport Image *MorphologyImage(const Image *image, const MorphologyMethod
-  method, const ssize_t iterations,const KernelInfo *kernel, ExceptionInfo
-  *exception)
-{
-  Image
-    *morphology_image;
-
-  morphology_image=MorphologyImageChannel(image,DefaultChannels,method,
-    iterations,kernel,exception);
-  return(morphology_image);
-}
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %

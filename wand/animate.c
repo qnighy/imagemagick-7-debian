@@ -1015,7 +1015,7 @@ WandExport MagickBooleanType AnimateImageCommand(ImageInfo *image_info,
             status=MogrifyImageInfo(image_info,(int) (i-j+1),(const char **)
               argv+j,exception);
             DestroyAnimate();
-            return(status != 0 ? MagickFalse : MagickTrue);
+            return(status == 0 ? MagickTrue : MagickFalse);
           }
         if (LocaleCompare("log",option+1) == 0)
           {
@@ -1436,7 +1436,6 @@ WandExport MagickBooleanType AnimateImageCommand(ImageInfo *image_info,
         Animate image to X server.
       */
       animate_image=XAnimateImages(display,&resource_info,argv,argc,image);
-      status&=animate_image != (Image *) NULL;
       while (animate_image != (Image *) NULL)
       {
         image=animate_image;

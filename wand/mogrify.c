@@ -173,11 +173,11 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
             status=MagickFalse;
           CatchException(exception);
         }
-        if ((metadata != (char **) NULL) && (*metadata != (char *) NULL))
-          {
-            (void) fputs(*metadata,stdout);
-            *metadata=DestroyString(*metadata);
-          }
+      if ((metadata != (char **) NULL) && (*metadata != (char *) NULL))
+        {
+          (void) fputs(*metadata,stdout);
+          *metadata=DestroyString(*metadata);
+        }
       return(status);
     }
   number_threads=GetOpenMPMaximumThreads();
@@ -1183,6 +1183,13 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             InheritException(exception,&(*image)->exception);
             break;
           }
+        if (LocaleCompare("connected-components",option+1) == 0)
+          {
+            (void) SyncImageSettings(mogrify_info,*image);
+            mogrify_image=ConnectedComponentsImage(*image,
+              StringToInteger(argv[i+1]),exception);
+            break;
+          }
         if (LocaleCompare("contrast",option+1) == 0)
           {
             (void) SyncImageSettings(mogrify_info,*image);
@@ -1906,6 +1913,19 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             else
               (void) ParseGeometry(argv[i+1],&geometry_info);
             draw_info->kerning=geometry_info.rho;
+            break;
+          }
+        if (LocaleCompare("kuwahara",option+1) == 0)
+          {
+            /*
+              Edge preserving blur.
+            */
+            (void) SyncImageSettings(mogrify_info,*image);
+            flags=ParseGeometry(argv[i+1],&geometry_info);
+            if ((flags & SigmaValue) == 0)
+              geometry_info.sigma=geometry_info.rho-0.5;
+            mogrify_image=KuwaharaImageChannel(*image,channel,geometry_info.rho,
+              geometry_info.sigma,exception);
             break;
           }
         break;
@@ -3311,8 +3331,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
   quantize_info=DestroyQuantizeInfo(quantize_info);
   draw_info=DestroyDrawInfo(draw_info);
   mogrify_info=DestroyImageInfo(mogrify_info);
-  status=(MagickStatusType) ((*image)->exception.severity ==
-    UndefinedException ? 1 : 0);
+  status=(MagickStatusType) (exception->severity < ErrorException ? 1 : 0);
   return(status == 0 ? MagickFalse : MagickTrue);
 }
 
@@ -3398,6 +3417,8 @@ static MagickBooleanType MogrifyUsage(void)
       "-clip-path id        clip along a named path from the 8BIM profile",
       "-colorize value      colorize the image with the fill color",
       "-color-matrix matrix apply color correction to the image",
+      "-connected-components connectivity",
+      "                     connected-components uniquely labeled",
       "-contrast            enhance or reduce the image contrast",
       "-contrast-stretch geometry",
       "                     improve contrast by `stretching' the intensity range",
@@ -3439,6 +3460,7 @@ static MagickBooleanType MogrifyUsage(void)
       "-identify            identify the format and characteristics of the image",
       "-ift                 implements the inverse discrete Fourier transform (DFT)",
       "-implode amount      implode image pixels about the center",
+      "-kuwahara geometry   edge preserving noise reduction filter",
       "-lat geometry        local adaptive thresholding",
       "-layers method       optimize, merge,  or compare image layers",
       "-level value         adjust the level of image contrast",
@@ -4322,6 +4344,15 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
           }
         if (LocaleCompare("concurrent",option+1) == 0)
           break;
+        if (LocaleCompare("connected-components",option+1) == 0)
+          {
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMogrifyInvalidArgumentException(option,argv[i]);
+            break;
+          }
         if (LocaleCompare("contrast",option+1) == 0)
           break;
         if (LocaleCompare("contrast-stretch",option+1) == 0)
@@ -5077,6 +5108,15 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
               ThrowMogrifyInvalidArgumentException(option,argv[i]);
             break;
           }
+        if (LocaleCompare("kuwahara",option+1) == 0)
+          {
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMogrifyInvalidArgumentException(option,argv[i]);
+            break;
+          }
         ThrowMogrifyException(OptionError,"UnrecognizedOption",option)
       }
       case 'l':
@@ -5197,7 +5237,7 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
               ThrowMogrifyException(OptionError,"UnrecognizedListType",argv[i]);
             status=MogrifyImageInfo(image_info,(int) (i-j+1),(const char **)
               argv+j,exception);
-            return(status != 0 ? MagickFalse : MagickTrue);
+            return(status == 0 ? MagickTrue : MagickFalse);
           }
         if (LocaleCompare("log",option+1) == 0)
           {

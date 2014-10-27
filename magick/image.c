@@ -801,6 +801,12 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
+  if ((image->columns == 0) || (image->rows == 0))
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageError,
+        "NegativeOrZeroImageSize","`%s'",image->filename);
+      return((Image *) NULL);
+    }
   clone_image=(Image *) AcquireMagickMemory(sizeof(*clone_image));
   if (clone_image == (Image *) NULL)
     ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
@@ -3414,7 +3420,8 @@ MagickExport MagickBooleanType SyncImage(Image *image)
 
   MagickBooleanType
     range_exception,
-    status;
+    status,
+    taint;
 
   ssize_t
     y;
@@ -3427,6 +3434,7 @@ MagickExport MagickBooleanType SyncImage(Image *image)
     return(MagickFalse);
   range_exception=MagickFalse;
   status=MagickTrue;
+  taint=image->taint;
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
@@ -3470,6 +3478,7 @@ MagickExport MagickBooleanType SyncImage(Image *image)
       status=MagickFalse;
   }
   image_view=DestroyCacheView(image_view);
+  image->taint=taint;
   if ((image->ping == MagickFalse) && (range_exception != MagickFalse))
     (void) ThrowMagickException(&image->exception,GetMagickModule(),
       CorruptImageError,"InvalidColormapIndex","`%s'",image->filename);

@@ -23,7 +23,7 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [8])
 m4_define([magick_micro_version], [9])
-m4_define([magick_patchlevel_version], [8])
+m4_define([magick_patchlevel_version], [9])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -2956,7 +2956,7 @@ if test "$with_xml" != 'no'; then
         # Debian installs libxml headers under /usr/include/libxml2/libxml with
         # the shared library installed under /usr/lib, whereas the package
         # installs itself under $prefix/libxml and $prefix/lib.
-        xml2_prefix=`xml2-config --prefix`
+        xml2_prefix=`${xml2_config} --prefix`
         if test -d "${xml2_prefix}/include/libxml2"; then
             CPPFLAGS="$CPPFLAGS -I${xml2_prefix}/include/libxml2"
         fi

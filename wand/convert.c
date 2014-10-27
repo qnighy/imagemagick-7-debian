@@ -179,6 +179,8 @@ static MagickBooleanType ConvertUsage(void)
       "-clip-path id        clip along a named path from the 8BIM profile",
       "-colorize value      colorize the image with the fill color",
       "-color-matrix matrix apply color correction to the image",
+      "-connected-components connectivity",
+      "                     connected-components uniquely labeled",
       "-contrast            enhance or reduce the image contrast",
       "-contrast-stretch geometry",
       "                     improve contrast by `stretching' the intensity range",
@@ -221,6 +223,7 @@ static MagickBooleanType ConvertUsage(void)
       "-implode amount      implode image pixels about the center",
       "-interpolative-resize geometry",
       "                     resize image using 'point sampled' interpolation",
+      "-kuwahara geometry   edge preserving noise reduction filter",
       "-lat geometry        local adaptive thresholding",
       "-level value         adjust the level of image contrast",
       "-level-colors color,color",
@@ -1104,6 +1107,15 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
           }
         if (LocaleCompare("concurrent",option+1) == 0)
           break;
+        if (LocaleCompare("connected-components",option+1) == 0)
+          {
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowConvertException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowConvertInvalidArgumentException(option,argv[i]);
+            break;
+          }
         if (LocaleCompare("contrast",option+1) == 0)
           break;
         if (LocaleCompare("contrast-stretch",option+1) == 0)
@@ -1870,6 +1882,17 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
               ThrowConvertInvalidArgumentException(option,argv[i]);
             break;
           }
+        if (LocaleCompare("kuwahara",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowConvertException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowConvertInvalidArgumentException(option,argv[i]);
+            break;
+          }
         ThrowConvertException(OptionError,"UnrecognizedOption",option)
       }
       case 'l':
@@ -2001,7 +2024,7 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
             status=MogrifyImageInfo(image_info,(int) (i-j+1),(const char **)
               argv+j,exception);
             DestroyConvert();
-            return(status != 0 ? MagickFalse : MagickTrue);
+            return(status == 0 ? MagickTrue : MagickFalse);
           }
         if (LocaleCompare("log",option+1) == 0)
           {

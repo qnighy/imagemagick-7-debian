@@ -126,41 +126,42 @@ static MagickBooleanType
 %
 */
 #if defined(MAGICKCORE_GS_DELEGATE) || defined(MAGICKCORE_WINDOWS_SUPPORT)
-static int MagickDLLCall PDFDelegateMessage(void *handle,const char *msg,
-  int len)
+static int MagickDLLCall PDFDelegateMessage(void *handle,const char *message,
+  int length)
 {
   char
     **messages;
 
-  size_t offset;
+  ssize_t
+    offset;
 
   offset=0;
-  messages=(char **)handle;
+  messages=(char **) handle;
   if (*messages == (char *) NULL)
-    *messages=(char *) AcquireQuantumMemory(len+1,sizeof(char *));
+    *messages=(char *) AcquireQuantumMemory(length+1,sizeof(char *));
   else
     {
       offset=strlen(*messages);
-      *messages=(char *) ResizeQuantumMemory(*messages,offset+len+1,
+      *messages=(char *) ResizeQuantumMemory(*messages,offset+length+1,
         sizeof(char *));
     }
-  (void) memcpy(*messages+offset,msg,len);
-  (*messages)[offset+len] ='\0';
-  return(len);
+  (void) memcpy(*messages+offset,message,length);
+  (*messages)[length+offset] ='\0';
+  return(length);
 }
 #endif
 
 static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
-  const char *command,ExceptionInfo *exception)
+  const char *command,char *message,ExceptionInfo *exception)
 {
   int
     status;
 
 #if defined(MAGICKCORE_GS_DELEGATE) || defined(MAGICKCORE_WINDOWS_SUPPORT)
-#define SetArgsStart \
+#define SetArgsStart(command,args_start) \
   if (args_start == (const char *) NULL) \
     { \
-      if (command[0] != '"') \
+      if (*command != '"') \
         args_start=strchr(command,' '); \
       else \
         { \
@@ -170,17 +171,18 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
         } \
     }
 
-#define ExecuteGhostscriptCommand \
-  { \
-    status=SystemCommand(MagickFalse,verbose,command,exception); \
-    if (status == 0) \
-      return(MagickTrue); \
-    if (status < 0) \
-      return(MagickFalse); \
-    (void) ThrowMagickException(exception,GetMagickModule(),DelegateError, \
-      "FailedToExecuteCommand","`%s' (%d)",command,status); \
+#define ExecuteGhostscriptCommand(command,status) \
+{ \
+  status=ExternalDelegateCommand(MagickFalse,verbose,command,message, \
+    exception); \
+  if (status == 0) \
+    return(MagickTrue); \
+  if (status < 0) \
     return(MagickFalse); \
-  }
+  (void) ThrowMagickException(exception,GetMagickModule(),DelegateError, \
+    "FailedToExecuteCommand","`%s' (%d)",command,status); \
+  return(MagickFalse); \
+}
 
   char
     **argv,
@@ -224,17 +226,17 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
     gsapi_set_stdio;
 #endif
   if (ghost_info == (GhostInfo *) NULL)
-    ExecuteGhostscriptCommand
+    ExecuteGhostscriptCommand(command,status);
   if (verbose != MagickFalse)
     {
       (void) fputs("[ghostscript library]",stdout);
-      SetArgsStart
+      SetArgsStart(command,args_start);
       (void) fputs(args_start,stdout);
     }
   errors=(char *) NULL;
   status=(ghost_info->new_instance)(&interpreter,(void *) &errors);
   if (status < 0)
-    ExecuteGhostscriptCommand
+    ExecuteGhostscriptCommand(command,status);
   code=0;
   argv=StringToArgv(command,&argc);
   if (argv == (char **) NULL)
@@ -250,23 +252,30 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
   for (i=0; i < (ssize_t) argc; i++)
     argv[i]=DestroyString(argv[i]);
   argv=(char **) RelinquishMagickMemory(argv);
-  if ((status != 0) && (status != -101))
+  if (status != 0)
     {
-      SetArgsStart
-      (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
-        "PDFDelegateFailed","`[ghostscript library]%s': %s",args_start,
-        errors);
-      if (errors != (char *) NULL)
-        errors=DestroyString(errors);
-      (void) LogMagickEvent(CoderEvent,GetMagickModule(),
-        "Ghostscript returns status %d, exit code %d",status,code);
-      return(MagickFalse);
+      SetArgsStart(command,args_start);
+      if (status == -101) /* quit */
+        (void) FormatLocaleString(message,MaxTextExtent,
+          "[ghostscript library]%s: %s",args_start,errors);
+      else
+        {
+          (void) ThrowMagickException(exception,GetMagickModule(),
+            DelegateError,"PDFDelegateFailed","`[ghostscript library]%s': %s",
+            args_start,errors);
+          if (errors != (char *) NULL)
+            errors=DestroyString(errors);
+          (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+            "Ghostscript returns status %d, exit code %d",status,code);
+          return(MagickFalse);
+        }
     }
   if (errors != (char *) NULL)
     errors=DestroyString(errors);
   return(MagickTrue);
 #else
-  status=SystemCommand(MagickFalse,verbose,command,exception);
+  status=ExternalDelegateCommand(MagickFalse,verbose,command,(char *) NULL,
+    exception);
   return(status == 0 ? MagickTrue : MagickFalse);
 #endif
 }
@@ -369,6 +378,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     geometry[MaxTextExtent],
     options[MaxTextExtent],
     input_filename[MaxTextExtent],
+    message[MaxTextExtent],
     postscript_filename[MaxTextExtent];
 
   const char
@@ -732,7 +742,8 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     read_info->antialias != MagickFalse ? 4 : 1,
     read_info->antialias != MagickFalse ? 4 : 1,density,options,filename,
     postscript_filename,input_filename);
-  status=InvokePDFDelegate(read_info->verbose,command,exception);
+  *message='\0';
+  status=InvokePDFDelegate(read_info->verbose,command,message,exception);
   (void) RelinquishUniqueFileResource(postscript_filename);
   (void) RelinquishUniqueFileResource(input_filename);
   pdf_image=(Image *) NULL;
@@ -763,6 +774,9 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   read_info=DestroyImageInfo(read_info);
   if (pdf_image == (Image *) NULL)
     {
+      if (*message != '\0')
+        (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
+          "PDFDelegateFailed","`%s'",message);
       image=DestroyImage(image);
       return((Image *) NULL);
     }

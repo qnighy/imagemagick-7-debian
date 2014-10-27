@@ -40,10 +40,6 @@ extern MagickExport char
   **GetPathComponents(const char *,size_t *),
   **ListFiles(const char *,const char *,size_t *);
 
-extern MagickExport int
-  SystemCommand(const MagickBooleanType,const MagickBooleanType,const char *,
-    ExceptionInfo *);
-
 extern MagickExport MagickBooleanType
   AcquireUniqueFilename(char *),
   AcquireUniqueSymbolicLink(const char *,char *),
