@@ -1,3 +1,23 @@
+imagemagick (8:6.8.9.9-1) unstable; urgency=high
+
+  * New upstream version, fixing four security problems:
+    - Remotely DOS: "convert +profile regression enters 
+      infinite loop exhausting memory", thanks to 
+      Yuri D'Elia (Closes: #764872).
+    - Fixed buffer overflow in PCX and DCM coder.
+    - Don't clone a 0x0 image breaking some assumption
+      in client code.
+    - Off-by-one count when parsing an 8BIM profile.
+  * Fix identify -quiet has non zero exit code on warnings
+    (Closes:  #763686).
+  * Fix "convert -crop" doesn't just crop, 
+    but makes the output darker than the input (Closes: #731157).
+  * Fix identify warning is now an error (Closes: #761918).
+  * Fix unrecognized color in xpm image (Closes: #754107).
+  * Fix display exits with non-zero return code (Closes: #763794).
+
+ -- Bastien Roucaries <roucaries.bastien+debian@gmail.com>  Mon, 27 Oct 2014 09:48:07 +0100
+
 imagemagick (8:6.8.9.8-1) UNRELEASED; urgency=medium
 
   * New upstream version:
