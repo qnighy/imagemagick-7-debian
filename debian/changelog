@@ -1,3 +1,9 @@
+imagemagick (8:6.8.9.9-2) unstable; urgency=high
+
+  * Remove build-dep loop. Remove inkscape.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 28 Oct 2014 18:48:01 +0100
+
 imagemagick (8:6.8.9.9-1) unstable; urgency=high
 
   * New upstream version, fixing four security problems:

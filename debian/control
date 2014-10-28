@@ -28,7 +28,7 @@ Build-Depends: debhelper (>= 9~),
  libwmf-dev,
 # libgraphviz-dev, incompatible license against fftw
 # for converting svg
- libpango1.0-dev, librsvg2-bin, inkscape,librsvg2-dev, libxml2-dev,
+ libpango1.0-dev, librsvg2-bin, librsvg2-dev, libxml2-dev,
 # for easy symbols of c++ lib
  pkg-kde-tools,
 # for libgomp symbols
