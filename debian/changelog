@@ -1,3 +1,12 @@
+imagemagick (8:6.8.9.9-3) unstable; urgency=high
+
+  * Fix a security bug (DOS). Some special crafted JPEG
+    files could create a dos due to missing check in
+    embeded EXIF properties (EXIF directory offsets
+    must be greater than 0).
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 07 Nov 2014 21:16:20 +0100
+
 imagemagick (8:6.8.9.9-2) unstable; urgency=high
 
   * Remove build-dep loop. Remove inkscape.
