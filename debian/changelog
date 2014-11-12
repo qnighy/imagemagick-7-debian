@@ -3,7 +3,8 @@ imagemagick (8:6.8.9.9-3) unstable; urgency=high
   * Fix a security bug (DOS). Some special crafted JPEG
     files could create a dos due to missing check in
     embeded EXIF properties (EXIF directory offsets
-    must be greater than 0).
+    must be greater than 0). Fix CVE-2014-8716
+    (Closes: #768494).
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 07 Nov 2014 21:16:20 +0100
 
@@ -18,10 +19,11 @@ imagemagick (8:6.8.9.9-1) unstable; urgency=high
   * New upstream version, fixing four security problems:
     - Remotely DOS: "convert +profile regression enters 
       infinite loop exhausting memory", thanks to 
-      Yuri D'Elia (Closes: #764872).
-    - Fixed buffer overflow in PCX and DCM coder.
+      Yuri D'Elia (Closes: #764872). Fix CVE-2014-8561.
+    - Fixed buffer overflow in PCX and DCM coder. Fix
+      CVE-2014-8562 and CVE-2014-8355.
     - Don't clone a 0x0 image breaking some assumption
-      in client code.
+      in client code. Fix CVE-2014-8354.
     - Off-by-one count when parsing an 8BIM profile.
   * Fix identify -quiet has non zero exit code on warnings
     (Closes:  #763686).
