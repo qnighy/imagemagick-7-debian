@@ -1,3 +1,16 @@
+imagemagick (8:6.8.9.9-5) unstable; urgency=high
+
+  * Fix incorrect fix for xpm security problem.
+    This patch fixed the buffer overflow but
+    xpm coder output garbage, thanks to Adam Sjøgren
+    (Closes: #773980).
+  * Workarround "Imagemagick FTBFS on mips on mips-aql-* not on ball".
+    Do not execute testsuite if FPU is not present. Security team
+    want this bug fixed in order to ease it work, thanks
+    to Ivo De Decker (Closes: #770009).
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 29 Dec 2014 11:51:58 +0100
+
 imagemagick (8:6.8.9.9-4) unstable; urgency=high
 
   * Fix a few security bugs (Closes: #773834):

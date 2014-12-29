@@ -62,6 +62,22 @@ export CONFIGURE_OPTIONS_CACHE ?= $(STATIC_CONFIGURE_OPTIONS_CACHE)
 export STATIC_CONFIGURE_ARCH_FLAGS := --without-gcc-arch
 export CONFIGURE_ARCH_FLAGS ?= $(STATIC_CONFIGURE_ARCH_FLAGS)
 
+# check if FPU
+HAVE_FPU_CMD:= case $(DEB_HOST_MULTIARCH) in \
+		mips*-*) \
+			if grep " FPU" /proc/cpuinfo > /dev/null; then \
+				echo "yes"; \
+			else \
+				echo "no"; \
+			fi ;;\
+		*) \
+			echo "yes" ;; \
+	       esac
+export STATIC_HAVE_FPU := $(shell $(HAVE_FPU_CMD))
+
+test_fpu_is present:
+	echo "CPU has FPU...$(STATIC_HAVE_FPU)"
+
 # NOTICE: remove EPL delegate lib gvc (license problem)
 export STATIC_CONFIGURE_OPTIONS := \
 	--prefix=/usr \
@@ -137,11 +153,13 @@ quantum_override_dh_auto_test-arch_%:
 	fi; \
 	else \
 	if test "$(DEB_HOST_GNU_TYPE)" = "$(DEB_BUILD_GNU_TYPE)"; then \
-            unset DISPLAY; \
-	    if ! dh_auto_test --builddirectory="debian/build-quantum-$*"; then \
-		find "debian/build-quantum-$*/tests" -name *.log -exec cat {} \; ; \
-	    fi; \
-	fi ;\
+	    if test X$(STATIC_HAVE_FPU) = "Xyes"; then \
+		unset DISPLAY; \
+		if ! dh_auto_test --builddirectory="debian/build-quantum-$*"; then \
+			find "debian/build-quantum-$*/tests" -name *.log -exec cat {} \; ; \
+	    	fi; \
+	    fi ;\
+	fi; \
 	fi
 override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_Q16
 override_dh_auto_test-indep:
