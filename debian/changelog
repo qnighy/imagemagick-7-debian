@@ -12,8 +12,10 @@ imagemagick (8:6.9.1.2-1) unstable; urgency=medium
     thanks to Mathieu Malaterre (Closes: #771312).
   * Bug fix: "desktop file icon is still not displayed", thanks to Markus
     Koschany (Closes: #767973,#780490).
+  * Bug fix: "please make the build reproducible", thanks to Reiner
+    Herrmann (Closes: #783933).
 
- --
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 03 May 2015 22:45:48 +0200
 
 imagemagick (8:6.8.9.9-5) unstable; urgency=high
 

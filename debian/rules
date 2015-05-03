@@ -80,6 +80,7 @@ test_fpu_is present:
 
 # NOTICE: remove EPL delegate lib gvc (license problem)
 export STATIC_CONFIGURE_OPTIONS := \
+        --enable-reproducible-build \
 	--prefix=/usr \
         --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
 	--sysconfdir=/etc \
