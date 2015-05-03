@@ -16,7 +16,7 @@
 %                              December 2001                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -51,6 +51,7 @@
 #include "magick/studio.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
+#include "magick/image-private.h"
 #include "magick/memory_.h"
 #include "magick/semaphore.h"
 #include "magick/random_.h"
@@ -162,13 +163,6 @@ static StringInfo
 %      RandomInfo *AcquireRandomInfo(void)
 %
 */
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 MagickExport RandomInfo *AcquireRandomInfo(void)
 {
@@ -463,11 +457,14 @@ static StringInfo *GenerateEntropicChaos(RandomInfo *random_info)
 
     (void) GetPathTemplate(path);
     file=mkstemp(path);
-#if defined(__OS2__)
-    setmode(file,O_BINARY);
-#endif
     if (file != -1)
-      (void) close(file);
+      {
+        (void) fchmod(file,0600);
+#if defined(__OS2__)
+        setmode(file,O_BINARY);
+#endif
+        (void) close(file);
+      }
     (void) remove_utf8(path);
     SetStringInfoLength(chaos,strlen(path));
     SetStringInfoDatum(chaos,(unsigned char *) path);

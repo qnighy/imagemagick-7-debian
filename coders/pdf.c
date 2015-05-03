@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -197,6 +197,9 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
   gs_main_instance
     *interpreter;
 
+  gsapi_revision_t
+    revision;
+
   int
     argc,
     code;
@@ -224,12 +227,16 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
   ghost_info_struct.set_stdio=(int (*)(gs_main_instance *,int(*)(void *,char *,
     int),int(*)(void *,const char *,int),int(*)(void *, const char *, int)))
     gsapi_set_stdio;
+  ghost_info_struct.revision=(int (*)(gsapi_revision_t *,int)) gsapi_revision;
 #endif
   if (ghost_info == (GhostInfo *) NULL)
     ExecuteGhostscriptCommand(command,status);
+  if ((ghost_info->revision)(&revision,sizeof(revision)) != 0)
+    revision.revision=0;
   if (verbose != MagickFalse)
     {
-      (void) fputs("[ghostscript library]",stdout);
+      (void) fprintf(stdout,"[ghostscript library %.2f]",(double)
+        revision.revision/100.0);
       SetArgsStart(command,args_start);
       (void) fputs(args_start,stdout);
     }
@@ -257,12 +264,14 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
       SetArgsStart(command,args_start);
       if (status == -101) /* quit */
         (void) FormatLocaleString(message,MaxTextExtent,
-          "[ghostscript library]%s: %s",args_start,errors);
+          "[ghostscript library %.2f]%s: %s",(double)revision.revision / 100,
+          args_start,errors);
       else
         {
           (void) ThrowMagickException(exception,GetMagickModule(),
-            DelegateError,"PDFDelegateFailed","`[ghostscript library]%s': %s",
-            args_start,errors);
+            DelegateError,"PDFDelegateFailed",
+            "`[ghostscript library %.2f]%s': %s",
+            (double)revision.revision / 100,args_start,errors);
           if (errors != (char *) NULL)
             errors=DestroyString(errors);
           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -373,10 +382,10 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   char
     command[MaxTextExtent],
-    density[MaxTextExtent],
+    *density,
     filename[MaxTextExtent],
     geometry[MaxTextExtent],
-    options[MaxTextExtent],
+    *options,
     input_filename[MaxTextExtent],
     message[MaxTextExtent],
     postscript_filename[MaxTextExtent];
@@ -409,8 +418,9 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     cmyk,
     cropbox,
     fitPage,
-    trimbox,
-    status;
+    status,
+    stop_on_error,
+    trimbox;
 
   MagickStatusType
     flags;
@@ -500,6 +510,10 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   option=GetImageOption(image_info,"pdf:use-cropbox");
   if (option != (const char *) NULL)
     cropbox=IsMagickTrue(option);
+  stop_on_error=MagickFalse;
+  option=GetImageOption(image_info,"pdf:stop-on-error");
+  if (option != (const char *) NULL)
+    stop_on_error=IsMagickTrue(option);
   trimbox=MagickFalse;
   option=GetImageOption(image_info,"pdf:use-trimbox");
   if (option != (const char *) NULL)
@@ -701,7 +715,8 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image=DestroyImage(image);
       return((Image *) NULL);
     }
-  *options='\0';
+  density=AcquireString("");
+  options=AcquireString("");
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",image->x_resolution,
     image->y_resolution);
   if ((image_info->page != (char *) NULL) || (fitPage != MagickFalse))
@@ -715,6 +730,8 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     (void) ConcatenateMagickString(options,"-dUseCropBox ",MaxTextExtent);
   if (trimbox != MagickFalse)
     (void) ConcatenateMagickString(options,"-dUseTrimBox ",MaxTextExtent);
+  if (stop_on_error != MagickFalse)
+    (void) ConcatenateMagickString(options,"-dPDFSTOPONERROR ",MaxTextExtent);
   read_info=CloneImageInfo(image_info);
   *read_info->magick='\0';
   if (read_info->number_scenes != 0)
@@ -742,6 +759,8 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     read_info->antialias != MagickFalse ? 4 : 1,
     read_info->antialias != MagickFalse ? 4 : 1,density,options,filename,
     postscript_filename,input_filename);
+  options=DestroyString(options);
+  density=DestroyString(density);
   *message='\0';
   status=InvokePDFDelegate(read_info->verbose,command,message,exception);
   (void) RelinquishUniqueFileResource(postscript_filename);
@@ -813,6 +832,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   do
   {
     (void) CopyMagickString(pdf_image->filename,filename,MaxTextExtent);
+    (void) CopyMagickString(pdf_image->magick,image->magick,MaxTextExtent);
     pdf_image->page=page;
     (void) CloneImageProfiles(pdf_image,image);
     (void) CloneImageProperties(pdf_image,image);
@@ -953,20 +973,6 @@ ModuleExport void UnregisterPDFImage(void)
 %    o image:  The image.
 %
 */
-
-static inline size_t MagickMax(const size_t x,const size_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 static char *EscapeParenthesis(const char *text)
 {
@@ -1327,7 +1333,7 @@ RestoreMSCWarning
       case FaxCompression:
       case Group4Compression:
       {
-        if ((IsMonochromeImage(image,&image->exception) == MagickFalse) ||
+        if ((SetImageMonochrome(image,&image->exception) == MagickFalse) ||
             (image->matte != MagickFalse))
           compression=RLECompression;
         break;
@@ -1679,7 +1685,7 @@ RestoreMSCWarning
       ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
     if ((compression == FaxCompression) || (compression == Group4Compression) ||
         ((image_info->type != TrueColorType) &&
-         (IsGrayImage(image,&image->exception) != MagickFalse)))
+         (SetImageGray(image,&image->exception) != MagickFalse)))
       {
         switch (compression)
         {
@@ -2027,7 +2033,7 @@ RestoreMSCWarning
       if ((compression == FaxCompression) ||
           (compression == Group4Compression) ||
           ((image_info->type != TrueColorType) &&
-           (IsGrayImage(image,&image->exception) != MagickFalse)))
+           (SetImageGray(image,&image->exception) != MagickFalse)))
           (void) CopyMagickString(buffer,"/DeviceGray\n",MaxTextExtent);
       else
         if ((image->storage_class == DirectClass) || (image->colors > 256) ||
@@ -2134,7 +2140,7 @@ RestoreMSCWarning
     if ((compression == FaxCompression) ||
         (compression == Group4Compression) ||
         ((image_info->type != TrueColorType) &&
-         (IsGrayImage(tile_image,&image->exception) != MagickFalse)))
+         (SetImageGray(tile_image,&image->exception) != MagickFalse)))
       {
         switch (compression)
         {

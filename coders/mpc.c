@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -277,6 +277,7 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Get the keyword.
             */
+            length=MaxTextExtent;
             p=keyword;
             do
             {
@@ -308,9 +309,6 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
                         break;
                       p=options+strlen(options);
                     }
-                  if (options == (char *) NULL)
-                    ThrowReaderException(ResourceLimitError,
-                      "MemoryAllocationFailed");
                   *p++=(char) c;
                   c=ReadBlobByte(image);
                   if (c == '\\')
@@ -326,6 +324,9 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     if (isspace((int) ((unsigned char) c)) != 0)
                       break;
                 }
+                if (options == (char *) NULL)
+                  ThrowReaderException(ResourceLimitError,
+                    "MemoryAllocationFailed");
               }
             *p='\0';
             if (*options == '{')
@@ -929,6 +930,12 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     /*
       Attach persistent pixel cache.
     */

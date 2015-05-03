@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -185,20 +185,6 @@ static voidpf AcquireZIPMemory(voidpf context,unsigned int items,
   return((voidpf) AcquireQuantumMemory(items,size));
 }
 #endif
-
-static inline size_t MagickMax(const size_t x,const size_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 static void PushRunlengthPacket(Image *image,const unsigned char *pixels,
   size_t *length,PixelPacket *pixel,IndexPacket *index)
@@ -477,6 +463,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
     i;
 
   size_t
+    compress_extent,
     length,
     packet_size;
 
@@ -585,6 +572,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
             /*
               Get the keyword.
             */
+            length=MaxTextExtent;
             p=keyword;
             do
             {
@@ -616,9 +604,6 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
                         break;
                       p=options+strlen(options);
                     }
-                  if (options == (char *) NULL)
-                    ThrowReaderException(ResourceLimitError,
-                      "MemoryAllocationFailed");
                   *p++=(char) c;
                   c=ReadBlobByte(image);
                   if (c == '\\')
@@ -634,6 +619,9 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
                     if (isspace((int) ((unsigned char) c)) != 0)
                       break;
                 }
+                if (options == (char *) NULL)
+                  ThrowReaderException(ResourceLimitError,
+                    "MemoryAllocationFailed");
               }
             *p='\0';
             if (*options == '{')
@@ -1246,6 +1234,12 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     /*
       Allocate image pixels.
     */
@@ -1269,11 +1263,10 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
       packet_size+=quantum_info->depth/8;
     if (image->compression == RLECompression)
       packet_size++;
-    length=image->columns;
-    length=MagickMax(MagickMax(BZipMaxExtent(packet_size*image->columns),
-      LZMAMaxExtent(packet_size*image->columns)),ZipMaxExtent(packet_size*
-      image->columns));
-    compress_pixels=(unsigned char *) AcquireQuantumMemory(length,
+    compress_extent=MagickMax(MagickMax(BZipMaxExtent(packet_size*
+      image->columns),LZMAMaxExtent(packet_size*image->columns)),
+      ZipMaxExtent(packet_size*image->columns));
+    compress_pixels=(unsigned char *) AcquireQuantumMemory(compress_extent,
       sizeof(*compress_pixels));
     if (compress_pixels == (unsigned char *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -1405,16 +1398,28 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
           bzip_info.avail_out=(unsigned int) (packet_size*image->columns);
           do
           {
+            int
+              code;
+
             if (bzip_info.avail_in == 0)
               {
                 bzip_info.next_in=(char *) compress_pixels;
                 length=(size_t) BZipMaxExtent(packet_size*image->columns);
                 if (version != 0.0)
                   length=(size_t) ReadBlobMSBLong(image);
+                if (length > compress_extent)
+                  ThrowReaderException(CorruptImageError,
+                    "UnableToReadImageData");
                 bzip_info.avail_in=(unsigned int) ReadBlob(image,length,
                   (unsigned char *) bzip_info.next_in);
               }
-            if (BZ2_bzDecompress(&bzip_info) == BZ_STREAM_END)
+            code=BZ2_bzDecompress(&bzip_info);
+            if (code < 0)
+              {
+                status=MagickFalse;
+                break;
+              }
+            if (code == BZ_STREAM_END)
               break;
           } while (bzip_info.avail_out != 0);
           (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
@@ -1436,6 +1441,9 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
               {
                 lzma_info.next_in=compress_pixels;
                 length=(size_t) ReadBlobMSBLong(image);
+                if (length > compress_extent)
+                  ThrowReaderException(CorruptImageError,
+                    "UnableToReadImageData");
                 lzma_info.avail_in=(unsigned int) ReadBlob(image,length,
                   (unsigned char *) lzma_info.next_in);
               }
@@ -1461,16 +1469,28 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
           zip_info.avail_out=(uInt) (packet_size*image->columns);
           do
           {
+            int
+              code;
+
             if (zip_info.avail_in == 0)
               {
                 zip_info.next_in=compress_pixels;
                 length=(size_t) ZipMaxExtent(packet_size*image->columns);
                 if (version != 0.0)
                   length=(size_t) ReadBlobMSBLong(image);
+                if (length > compress_extent)
+                  ThrowReaderException(CorruptImageError,
+                    "UnableToReadImageData");
                 zip_info.avail_in=(unsigned int) ReadBlob(image,length,
                   zip_info.next_in);
               }
-            if (inflate(&zip_info,Z_SYNC_FLUSH) == Z_STREAM_END)
+            code=inflate(&zip_info,Z_SYNC_FLUSH);
+            if (code < 0)
+              {
+                status=MagickFalse;
+                break;
+              }
+            if (code == Z_STREAM_END)
               break;
           } while (zip_info.avail_out != 0);
           (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
@@ -1973,17 +1993,6 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
       (void) SetImageStorageClass(image,DirectClass);
     image->depth=image->depth <= 8 ? 8UL : image->depth <= 16 ? 16UL :
       image->depth <= 32 ? 32UL : 64UL;
-    if (IsGrayImage(image,&image->exception) == MagickFalse)
-      {
-        /*
-          sRGB masquerading as a grayscale image?
-        */
-        if (IsGrayColorspace(image->colorspace) != MagickFalse)
-          (void) SetImageColorspace(image,sRGBColorspace);
-      }
-    else
-      if (IsGrayColorspace(image->colorspace) == MagickFalse)
-        (void) SetImageColorspace(image,GRAYColorspace);
     quantum_info=AcquireQuantumInfo(image_info,image);
     if (quantum_info == (QuantumInfo *) NULL)
       ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
@@ -2030,7 +2039,6 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
       packet_size+=quantum_info->depth/8;
     if (compression == RLECompression)
       packet_size++;
-    length=image->columns;
     length=MagickMax(BZipMaxExtent(packet_size*image->columns),ZipMaxExtent(
       packet_size*image->columns));
     if ((compression == BZipCompression) || (compression == ZipCompression))

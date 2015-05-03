@@ -18,7 +18,7 @@
 %                                August 2007                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -676,7 +676,8 @@ MagickExport MagickBooleanType ResamplePixelColor(
     Finialize results of resampling
   */
   divisor_m = 1.0/divisor_m;
-  pixel->opacity = (MagickRealType) ClampToQuantum(divisor_m*pixel->opacity);
+  if (pixel->matte != MagickFalse)
+    pixel->opacity = (MagickRealType) ClampToQuantum(divisor_m*pixel->opacity);
   divisor_c = 1.0/divisor_c;
   pixel->red   = (MagickRealType) ClampToQuantum(divisor_c*pixel->red);
   pixel->green = (MagickRealType) ClampToQuantum(divisor_c*pixel->green);

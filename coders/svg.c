@@ -18,7 +18,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2818,19 +2818,25 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
           char
             background[MaxTextExtent],
             command[MaxTextExtent],
-            density[MaxTextExtent],
-            filename[MaxTextExtent],
+            *density,
+            input_filename[MaxTextExtent],
             opacity[MaxTextExtent],
+            output_filename[MaxTextExtent],
             unique[MaxTextExtent];
 
           int
             status;
 
+          struct stat
+            attributes;
+
           /*
             Our best hope for compliance to the SVG standard.
           */
-          (void) AcquireUniqueFilename(filename);
+          status=AcquireUniqueSymbolicLink(image->filename,input_filename);
+          (void) AcquireUniqueFilename(output_filename);
           (void) AcquireUniqueFilename(unique);
+          density=AcquireString("");
           (void) FormatLocaleString(density,MaxTextExtent,"%.20g,%.20g",
             image->x_resolution,image->y_resolution);
           (void) FormatLocaleString(background,MaxTextExtent,
@@ -2840,27 +2846,36 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             100.0*QuantumScale*image->background_color.blue);
           (void) FormatLocaleString(opacity,MaxTextExtent,"%.20g",QuantumScale*
             (QuantumRange-image->background_color.opacity));
-          (void) FormatLocaleString(command,MaxTextExtent,
-            GetDelegateCommands(delegate_info),image->filename,filename,density,
-              background,opacity,unique);
+          (void) FormatLocaleString(command,MaxTextExtent,GetDelegateCommands(
+            delegate_info),input_filename,output_filename,density,background,
+            opacity,unique);
+          density=DestroyString(density);
           status=ExternalDelegateCommand(MagickFalse,image_info->verbose,
             command,(char *) NULL,exception);
           (void) RelinquishUniqueFileResource(unique);
-          if (status == 0)
+          (void) RelinquishUniqueFileResource(input_filename);
+          if ((status == 0) && (stat(output_filename,&attributes) == 0) &&
+              (attributes.st_size != 0))
             {
+              Image
+                *svg_image;
+
               ImageInfo
                 *read_info;
 
               read_info=CloneImageInfo(image_info);
-              (void) CopyMagickString(read_info->filename,filename,
+              (void) CopyMagickString(read_info->filename,output_filename,
                 MaxTextExtent);
-              image=ReadImage(read_info,exception);
+              svg_image=ReadImage(read_info,exception);
               read_info=DestroyImageInfo(read_info);
-              (void) RelinquishUniqueFileResource(filename);
-              if (image != (Image *) NULL)
-                return(image);
+              (void) RelinquishUniqueFileResource(output_filename);
+              if (svg_image != (Image *) NULL)
+                {
+                  image=DestroyImage(image);
+                  return(svg_image);
+                }
             }
-          (void) RelinquishUniqueFileResource(filename);
+          (void) RelinquishUniqueFileResource(output_filename);
         }
       {
 #if defined(MAGICKCORE_RSVG_DELEGATE)
@@ -2889,7 +2904,6 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
         register const guchar
           *p;
-
 #endif
 
         GError
@@ -2939,6 +2953,12 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         image->columns=gdk_pixbuf_get_width(pixel_buffer);
         image->rows=gdk_pixbuf_get_height(pixel_buffer);
 #endif
+        status=SetImageExtent(image,image->columns,image->rows);
+        if (status == MagickFalse)
+          {
+            InheritException(exception,&image->exception);
+            return(DestroyImageList(image));
+          }
         image->matte=MagickTrue;
         SetImageProperty(image,"svg:base-uri",
           rsvg_handle_get_base_uri(svg_handle));
@@ -3070,8 +3090,6 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Parse SVG file.
   */
-  if (image == (Image *) NULL)
-    return((Image *) NULL);
   svg_info=AcquireSVGInfo();
   if (svg_info == (SVGInfo *) NULL)
     {
@@ -3494,12 +3512,18 @@ static MagickBooleanType TraceSVGImage(Image *image,ExceptionInfo *exception)
     (void) WriteBlobString(image,
       "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
     (void) WriteBlobString(image,
-      "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 20010904//EN\"\n");
+      "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"");
     (void) WriteBlobString(image,
-      "  \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\">\n");
+      " \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n");
     (void) FormatLocaleString(message,MaxTextExtent,
-      "<svg width=\"%.20g\" height=\"%.20g\">\n",(double) image->columns,
-      (double) image->rows);
+      "<svg version=\"1.1\" id=\"Layer_1\" "
+      "xmlns=\"http://www.w3.org/2000/svg\" "
+      "xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" "
+      "width=\"%.20gpx\" height=\"%.20gpx\" viewBox=\"0 0 %.20g %.20g\" "
+      "enable-background=\"new 0 0 %.20g %.20g\" xml:space=\"preserve\">",
+      (double) image->columns,(double) image->rows,
+      (double) image->columns,(double) image->rows,
+      (double) image->columns,(double) image->rows);
     (void) WriteBlobString(image,message);
     clone_image=CloneImage(image,0,0,MagickTrue,exception);
     if (clone_image == (Image *) NULL)
@@ -3509,6 +3533,10 @@ static MagickBooleanType TraceSVGImage(Image *image,ExceptionInfo *exception)
     blob_length=2048;
     blob=(unsigned char *) ImageToBlob(image_info,clone_image,&blob_length,
       exception);
+    clone_image=DestroyImage(clone_image);
+    image_info=DestroyImageInfo(image_info);
+    if (blob == (unsigned char *) NULL)
+      return(MagickFalse);
     encode_length=0;
     base64=Base64Encode(blob,blob_length,&encode_length);
     blob=(unsigned char *) RelinquishMagickMemory(blob);
@@ -3527,6 +3555,7 @@ static MagickBooleanType TraceSVGImage(Image *image,ExceptionInfo *exception)
       if (i > 76)
         (void) WriteBlobString(image,"\n");
     }
+    base64=DestroyString(base64);
     (void) WriteBlobString(image,"\" />\n");
     (void) WriteBlobString(image,"</svg>\n");
   }

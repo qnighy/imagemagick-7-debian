@@ -23,7 +23,7 @@
 %                             February 1997                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -13954,6 +13954,9 @@ Statistics(ref,...)
   (void) FormatLocaleString(message,MaxTextExtent,"%.15g", \
     channel_statistics[channel].skewness); \
   PUSHs(sv_2mortal(newSVpv(message,0))); \
+  (void) FormatLocaleString(message,MaxTextExtent,"%.15g", \
+    channel_statistics[channel].entropy); \
+  PUSHs(sv_2mortal(newSVpv(message,0))); \
 }
 
     AV
@@ -14329,6 +14332,7 @@ Write(ref,...)
       (void) CopyMagickString(next->filename,filename,MaxTextExtent);
       next->scene=scene++;
     }
+    *package_info->image_info->magick='\0';
     SetImageInfo(package_info->image_info,(unsigned int)
       GetImageListLength(image),&image->exception);
     for (next=image; next; next=next->next)

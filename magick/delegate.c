@@ -16,7 +16,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -55,6 +55,7 @@
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/hashmap.h"
+#include "magick/image-private.h"
 #include "magick/list.h"
 #include "magick/memory_.h"
 #include "magick/nt-base-private.h"
@@ -84,10 +85,10 @@ static const char
     "  <delegate decode=\"avi:decode\" stealth=\"True\" command=\"&quot;mplayer&quot; &quot;%i&quot; -really-quiet -ao null -vo png:z=3\"/>"
     "  <delegate decode=\"browse\" stealth=\"True\" spawn=\"True\" command=\"&quot;xdg-open&quot; http://www.imagemagick.org/; rm &quot;%i&quot;\"/>"
     "  <delegate decode=\"cgm\" thread-support=\"False\" command=\"&quot;ralcgm&quot; -d ps -oC &lt; &quot;%i&quot; &gt; &quot;%o&quot; 2&gt; &quot;%u&quot;\"/>"
-    "  <delegate decode=\"dng:decode\" command=\"&quot;/usr/bin/ufraw-batch&quot; --silent --wb=camera --black-point=auto --exposure=auto --create-id=also --out-type=ppm16 &quot;--output=%u.pnm&quot; &quot;%i&quot;\"/>"
+    "  <delegate decode=\"dng:decode\" command=\"&quot;ufraw-batch&quot; --silent --create-id=also --out-type=png --out-depth=16 &quot;--output=%u.png&quot; &quot;%i&quot;\"/>"
     "  <delegate decode=\"edit\" stealth=\"True\" command=\"&quot;xterm&quot; -title &quot;Edit Image Comment&quot; -e vi &quot;%o&quot;\"/>"
     "  <delegate decode=\"eps\" encode=\"pdf\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=pdfwrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
-    "  <delegate decode=\"eps\" encode=\"ps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=pswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"eps\" encode=\"ps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=ps2write&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
     "  <delegate decode=\"fig\" command=\"&quot;fig2dev&quot; -L ps &quot;%i&quot; &quot;%o&quot;\"/>"
     "  <delegate decode=\"gplt\" command=\"&quot;echo&quot; &quot;set size 1.25,0.62     set terminal postscript portrait color solid; set output &quot;%o&quot;; load &quot;%i&quot;&quot; &gt; &quot;%u&quot;;&quot;gnuplot&quot; &quot;%u&quot;\"/>"
     "  <delegate decode=\"hpg\" command=\"&quot;hp2xx&quot; -q -m eps -f `basename &quot;%o&quot;` &quot;%i&quot;     mv -f `basename &quot;%o&quot;` &quot;%o&quot;\"/>"
@@ -102,12 +103,12 @@ static const char
     "  <delegate decode=\"pcl:color\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=ppmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
     "  <delegate decode=\"pcl:cmyk\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=bmpsep8&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
     "  <delegate decode=\"pcl:mono\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=pbmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
-    "  <delegate decode=\"pdf\" encode=\"eps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=epswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
-    "  <delegate decode=\"pdf\" encode=\"ps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=pswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"pdf\" encode=\"eps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=eps2write&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"pdf\" encode=\"ps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=ps2write&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
     "  <delegate decode=\"pnm\" encode=\"ilbm\" mode=\"encode\" command=\"&quot;ppmtoilbm&quot; -24if &quot;%i&quot; &gt; &quot;%o&quot;\"/>"
     "  <delegate decode=\"pnm\" encode=\"launch\" mode=\"encode\" command=\"&quot;gimp&quot; &quot;%i&quot;\"/>"
     "  <delegate decode=\"pov\" command=\"&quot;povray&quot; &quot;+i&quot;%i&quot;&quot; -D0 +o&quot;%o&quot; +fn%q +w%w +h%h +a -q9 -kfi&quot;%s&quot; -kff&quot;%n&quot;     &quot;convert&quot; -concatenate &quot;%o*.png&quot; &quot;%o&quot;\"/>"
-    "  <delegate decode=\"ps\" encode=\"eps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=epswrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
+    "  <delegate decode=\"ps\" encode=\"eps\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=eps2write&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
     "  <delegate decode=\"ps\" encode=\"pdf\" mode=\"bi\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=pdfwrite&quot; &quot;-sOutputFile=%o&quot; &quot;-f%i&quot;\"/>"
     "  <delegate decode=\"ps\" encode=\"print\" mode=\"encode\" command=\"lpr &quot;%i&quot;\"/>"
     "  <delegate decode=\"ps:alpha\" stealth=\"True\" command=\"&quot;gs&quot; -q -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=pngalpha&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;-f%s&quot; &quot;-f%s&quot;\"/>"
@@ -444,6 +445,27 @@ MagickExport int ExternalDelegateCommand(const MagickBooleanType asynchronous,
     }
 #endif
 #elif defined(MAGICKCORE_WINDOWS_SUPPORT)
+  {
+    register char
+      *p;
+
+    /*
+      If a command shell is executed we need to change the forward slashes in
+      files to a backslash. We need to do this to keep Windows happy when we
+      want to 'move' a file.
+
+      TODO: This won't work if one of the delegate parameters has a forward
+            slash as aparameter.
+    */
+    p=strstr(sanitize_command, "cmd.exe /c");
+    if (p != (char*) NULL)
+      {
+        p+=10;
+        for (; *p != '\0'; p++)
+          if (*p == '/')
+            *p=*DirectorySeparator;
+      }
+  }
   status=NTSystemCommand(sanitize_command,message);
 #elif defined(macintosh)
   status=MACSystemCommand(sanitize_command);
@@ -456,10 +478,10 @@ MagickExport int ExternalDelegateCommand(const MagickBooleanType asynchronous,
     {
       if ((message != (char *) NULL) && (*message != '\0'))
         (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
-          "FailedToExecuteCommand","`%s' (%s)",command,message);
+          "FailedToExecuteCommand","`%s' (%s)",sanitize_command,message);
       else
         (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
-          "FailedToExecuteCommand","`%s' (%d)",command,status);
+          "FailedToExecuteCommand","`%s' (%d)",sanitize_command,status);
     }
   sanitize_command=DestroyString(sanitize_command);
   for (i=0; i < (ssize_t) number_arguments; i++)
@@ -704,9 +726,13 @@ static int DelegateInfoCompare(const void *x,const void *y)
     **p,
     **q;
 
+  int
+    cmp;
+
   p=(const DelegateInfo **) x,
   q=(const DelegateInfo **) y;
-  if (LocaleCompare((*p)->path,(*q)->path) == 0)
+  cmp=LocaleCompare((*p)->path,(*q)->path);
+  if (cmp == 0)
     {
       if ((*p)->decode == (char *) NULL)
         if (((*p)->encode != (char *) NULL) &&
@@ -716,7 +742,7 @@ static int DelegateInfoCompare(const void *x,const void *y)
           ((*q)->decode != (char *) NULL))
         return(strcmp((*p)->decode,(*q)->decode));
     }
-  return(LocaleCompare((*p)->path,(*q)->path));
+  return(cmp);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -995,13 +1021,6 @@ static MagickBooleanType IsDelegateCacheInstantiated(ExceptionInfo *exception)
 %
 */
 
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static MagickBooleanType CopyDelegateFile(const char *source,
   const char *destination)
 {
@@ -1034,7 +1053,7 @@ static MagickBooleanType CopyDelegateFile(const char *source,
   assert(source != (const char *) NULL);
   assert(destination != (char *) NULL);
   status=GetPathAttributes(destination,&attributes);
-  if ((status != MagickFalse) && (attributes.st_size != 0))
+  if (status != MagickFalse)
     return(MagickTrue);
   destination_file=open_utf8(destination,O_WRONLY | O_BINARY | O_CREAT,S_MODE);
   if (destination_file == -1)

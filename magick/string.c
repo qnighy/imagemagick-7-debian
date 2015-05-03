@@ -17,7 +17,7 @@
 %                               August 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the license.  You may  %
@@ -43,6 +43,7 @@
 #include "magick/blob-private.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
+#include "magick/image-private.h"
 #include "magick/list.h"
 #include "magick/locale_.h"
 #include "magick/log.h"
@@ -355,13 +356,6 @@ MagickExport StringInfo *CloneStringInfo(const StringInfo *string_info)
 %    o source: the source string.
 %
 */
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 MagickExport int CompareStringInfo(const StringInfo *target,
   const StringInfo *source)
@@ -944,17 +938,14 @@ MagickExport char *EscapeString(const char *source,const char escape)
   if (destination == (char *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"UnableToEscapeString");
   *destination='\0';
-  if (source != (char *) NULL)
-    {
-      q=destination;
-      for (p=source; *p != '\0'; p++)
-      {
-        if ((*p == '\\') || (*p == escape))
-          *q++='\\';
-        *q++=(*p);
-      }
-      *q='\0';
-    }
+  q=destination;
+  for (p=source; *p != '\0'; p++)
+  {
+    if ((*p == '\\') || (*p == escape))
+      *q++='\\';
+    *q++=(*p);
+  }
+  *q='\0';
   return(destination);
 }
 
@@ -1409,7 +1400,7 @@ MagickExport double InterpretSiPrefixValue(const char *restrict string,
                 }
             }
         }
-      if (*q == 'B')
+      if ((*q == 'B') || (*q == 'P'))
         q++;
     }
   if (sentinal != (char **) NULL)

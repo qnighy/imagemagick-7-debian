@@ -19,7 +19,7 @@
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -6717,7 +6717,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
       else if (LocaleCompare((const char *) tag,"stegano") == 0)
       {
         Image *
-          watermark = (Image*)NULL;
+          watermark = (Image*) NULL;
 
         if (msl_info->image[n] == (Image *) NULL)
           {
@@ -6782,7 +6782,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
       else if (LocaleCompare((const char *) tag,"stereo") == 0)
       {
         Image *
-          stereoImage = (Image*)NULL;
+          stereoImage = (Image*) NULL;
 
         if (msl_info->image[n] == (Image *) NULL)
           {
@@ -7252,6 +7252,7 @@ static void MSLStartElement(void *context,const xmlChar *tag,
 
           /* process */
           {
+            *msl_info->image_info[n]->magick='\0';
             (void) WriteImage(msl_info->image_info[n], msl_info->image[n]);
             break;
           }
@@ -7629,8 +7630,8 @@ static void MSLExternalSubset(void *context,const xmlChar *name,
 }
 #endif
 
-static MagickBooleanType ProcessMSLScript(const ImageInfo *image_info,Image **image,
-  ExceptionInfo *exception)
+static MagickBooleanType ProcessMSLScript(const ImageInfo *image_info,
+  Image **image,ExceptionInfo *exception)
 {
   char
     message[MaxTextExtent];

@@ -23,7 +23,7 @@
 %                                 August 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -4005,7 +4005,7 @@ WandExport MagickWand *MagickGetImage(MagickWand *wand)
 %
 %  The format of the MagickGetImageAlphaChannel method is:
 %
-%      size_t MagickGetImageAlphaChannel(MagickWand *wand)
+%      MagickBooleanType MagickGetImageAlphaChannel(MagickWand *wand)
 %
 %  A description of each parameter follows:
 %
@@ -9615,13 +9615,17 @@ WandExport MagickBooleanType MagickSetImageBackgroundColor(MagickWand *wand,
 WandExport MagickBooleanType MagickSetImageBias(MagickWand *wand,
   const double bias)
 {
+  char
+    option[MaxTextExtent];
+
   assert(wand != (MagickWand *) NULL);
   assert(wand->signature == WandSignature);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   if (wand->images == (Image *) NULL)
     ThrowWandException(WandError,"ContainsNoImages",wand->name);
-  wand->images->bias=bias;
+  (void) FormatLocaleString(option,MaxTextExtent,"%+g",bias);
+  (void) SetImageOption(wand->image_info,"bias",option);
   return(MagickTrue);
 }
 

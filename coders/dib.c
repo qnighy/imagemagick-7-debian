@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -143,14 +143,6 @@ static MagickBooleanType
 %      the decoding process.
 %
 */
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static MagickBooleanType DecodeImage(Image *image,
   const MagickBooleanType compression,unsigned char *pixels)
 {
@@ -159,6 +151,10 @@ static MagickBooleanType DecodeImage(Image *image,
 #define BI_RLE8  1
 #define BI_RLE4  2
 #define BI_BITFIELDS  3
+#undef BI_JPEG
+#define BI_JPEG  4
+#undef BI_PNG
+#define BI_PNG  5
 #endif
 
   int
@@ -437,21 +433,6 @@ static MagickBooleanType IsDIB(const unsigned char *magick,const size_t length)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline ssize_t MagickAbsoluteValue(const ssize_t x)
-{
-  if (x < 0)
-    return(-x);
-  return(x);
-}
-
-static inline size_t MagickMax(const size_t x,const size_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
 static Image *ReadDIBImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   DIBInfo
@@ -520,7 +501,7 @@ static Image *ReadDIBImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   (void) ResetMagickMemory(&dib_info,0,sizeof(dib_info));
   dib_info.size=ReadBlobLSBLong(image);
-  if (dib_info.size!=40)
+  if (dib_info.size != 40)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   /*
     Microsoft Windows 3.X DIB image file.
@@ -535,6 +516,10 @@ static Image *ReadDIBImage(const ImageInfo *image_info,ExceptionInfo *exception)
   dib_info.y_pixels=ReadBlobLSBLong(image);
   dib_info.number_colors=ReadBlobLSBLong(image);
   dib_info.colors_important=ReadBlobLSBLong(image);
+  if ((dib_info.bits_per_pixel != 1) && (dib_info.bits_per_pixel != 4) &&
+      (dib_info.bits_per_pixel != 8) && (dib_info.bits_per_pixel != 16) &&
+      (dib_info.bits_per_pixel != 24) && (dib_info.bits_per_pixel != 32))
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   if ((dib_info.compression == BI_BITFIELDS) &&
       ((dib_info.bits_per_pixel == 16) || (dib_info.bits_per_pixel == 32)))
     {
@@ -542,10 +527,47 @@ static Image *ReadDIBImage(const ImageInfo *image_info,ExceptionInfo *exception)
       dib_info.green_mask=ReadBlobLSBLong(image);
       dib_info.blue_mask=ReadBlobLSBLong(image);
     }
-  image->matte=dib_info.bits_per_pixel == 32 ? MagickTrue : MagickFalse;
+  if (EOFBlob(image) != MagickFalse)
+    ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
+  if (dib_info.width <= 0)
+    ThrowReaderException(CorruptImageError,"NegativeOrZeroImageSize");
+  if (dib_info.height == 0)
+    ThrowReaderException(CorruptImageError,"NegativeOrZeroImageSize");
+  if (dib_info.planes != 1)
+    ThrowReaderException(CorruptImageError,"StaticPlanesValueNotEqualToOne");
+  if ((dib_info.bits_per_pixel != 1) && (dib_info.bits_per_pixel != 4) &&
+      (dib_info.bits_per_pixel != 8) && (dib_info.bits_per_pixel != 16) &&
+      (dib_info.bits_per_pixel != 24) && (dib_info.bits_per_pixel != 32))
+    ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
+  if (dib_info.bits_per_pixel < 16 &&
+      dib_info.number_colors > (1UL << dib_info.bits_per_pixel))
+    ThrowReaderException(CorruptImageError,"UnrecognizedNumberOfColors");
+  if ((dib_info.compression == 1) && (dib_info.bits_per_pixel != 8))
+    ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
+  if ((dib_info.compression == 2) && (dib_info.bits_per_pixel != 4))
+    ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
+  if ((dib_info.compression == 3) && (dib_info.bits_per_pixel < 16))
+    ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
+  switch (dib_info.compression)
+  {
+    case BI_RGB:
+    case BI_RLE8:
+    case BI_RLE4:
+    case BI_BITFIELDS:
+      break;
+    case BI_JPEG:
+      ThrowReaderException(CoderError,"JPEGCompressNotSupported");
+    case BI_PNG:
+      ThrowReaderException(CoderError,"PNGCompressNotSupported");
+    default:
+      ThrowReaderException(CorruptImageError,"UnrecognizedImageCompression");
+  }
   image->columns=(size_t) MagickAbsoluteValue(dib_info.width);
   image->rows=(size_t) MagickAbsoluteValue(dib_info.height);
+  image->matte=dib_info.bits_per_pixel == 32 ? MagickTrue : MagickFalse;
   image->depth=8;
+  if ((dib_info.number_colors > 256) || (dib_info.colors_important > 256))
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   if ((dib_info.number_colors != 0) || (dib_info.bits_per_pixel < 16))
     {
       size_t
@@ -572,6 +594,12 @@ static Image *ReadDIBImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (flags & HeightValue)
         if ((geometry.height != 0) && (geometry.height < image->rows))
           image->rows=geometry.height;
+    }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   if (image->storage_class == PseudoClass)
     {
@@ -1030,7 +1058,7 @@ static MagickBooleanType WriteDIBImage(const ImageInfo *image_info,Image *image)
       dib_info.bits_per_pixel=8;
       if (image_info->depth > 8)
         dib_info.bits_per_pixel=16;
-      if (IsMonochromeImage(image,&image->exception) != MagickFalse)
+      if (SetImageMonochrome(image,&image->exception) != MagickFalse)
         dib_info.bits_per_pixel=1;
       dib_info.number_colors=(dib_info.bits_per_pixel == 16) ? 0 :
         (1UL << dib_info.bits_per_pixel);

@@ -16,7 +16,7 @@
 %                              December 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -269,12 +269,6 @@ MagickExport void FinalizeSignature(SignatureInfo *signature_info)
     *q++=(unsigned char) (*p & 0xff);
     p++;
   }
-  /*
-    Reset working registers.
-  */
-  count=0;
-  high_order=0;
-  low_order=0;
 }
 
 
@@ -830,10 +824,4 @@ MagickExport void UpdateSignature(SignatureInfo *signature_info,
   }
   (void) CopyMagickMemory(GetStringInfoDatum(signature_info->message),p,n);
   signature_info->offset=n;
-  /*
-    Reset working registers.
-  */
-  i=0;
-  n=0;
-  length=0;
 }

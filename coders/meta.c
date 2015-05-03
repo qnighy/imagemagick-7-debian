@@ -17,7 +17,7 @@
 %                                 July 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -140,8 +140,6 @@ static MagickBooleanType IsMETA(const unsigned char *magick,const size_t length)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-#define BUFFER_SZ 4096
-
 typedef struct _html_code
 {
   short
@@ -196,7 +194,7 @@ static int stringnicmp(const char *p,const char *q,size_t n)
 
 static int convertHTMLcodes(char *s, int len)
 {
-  if (len <=0 || s==(char*)NULL || *s=='\0')
+  if (len <=0 || s==(char*) NULL || *s=='\0')
     return 0;
 
   if (s[1] == '#')
@@ -213,7 +211,7 @@ static int convertHTMLcodes(char *s, int len)
             break;
         }
         if (o < 6)
-          (void) strcpy(s+1,s+1+o);
+          (void) memmove(s+1,s+1+o,strlen(s+1+o)+1);
         *s = val;
         return o;
       }
@@ -229,7 +227,8 @@ static int convertHTMLcodes(char *s, int len)
         if (html_codes[i].len <= len)
           if (stringnicmp(s,html_codes[i].code,(size_t) html_codes[i].len) == 0)
             {
-              (void) strcpy(s+1,s+html_codes[i].len);
+              (void) memmove(s+1,s+html_codes[i].len,
+                strlen(s+html_codes[i].len)+1);
               *s = html_codes[i].val;
               return html_codes[i].len-1;
             }
@@ -285,7 +284,6 @@ static char *super_fgets(char **b, int *blen, Image *file)
   return((char *) p);
 }
 
-#define BUFFER_SZ 4096
 #define IPTC_ID 1028
 #define THUMBNAIL_ID 1033
 
@@ -310,7 +308,7 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
     recnum;
 
   int
-    inputlen = BUFFER_SZ;
+    inputlen = MaxTextExtent;
 
   MagickOffsetType
     savedpos,
@@ -326,7 +324,9 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
   dataset = 0;
   recnum = 0;
   line = (char *) AcquireQuantumMemory((size_t) inputlen,sizeof(*line));
-  name = token = (char *)NULL;
+  if (line == (char *) NULL)
+    return(-1);
+  newstr = name = token = (char *) NULL;
   savedpos = 0;
   token_info=AcquireTokenInfo();
   while (super_fgets(&line,&inputlen,ifile)!=NULL)
@@ -335,7 +335,11 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
     next=0;
 
     token=(char *) AcquireQuantumMemory((size_t) inputlen,sizeof(*token));
+    if (token == (char *) NULL)
+      break;
     newstr=(char *) AcquireQuantumMemory((size_t) inputlen,sizeof(*newstr));
+    if (newstr == (char *) NULL)
+      break;
     while (Tokenizer(token_info,0,token,(size_t) inputlen,line,"","=","\"",0,
            &brkused,&next,&quoted)==0)
     {
@@ -417,6 +421,8 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
 
                     ssize_t diff = outputlen - savedolen;
                     currentpos = TellBlob(ofile);
+                    if (currentpos < 0)
+                      return(-1);
                     offset=SeekBlob(ofile,savedpos,SEEK_SET);
                     if (offset < 0)
                       return(-1);
@@ -466,6 +472,8 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
                   {
                     /* patch in a fake length for now and fix it later */
                     savedpos = TellBlob(ofile);
+                    if (savedpos < 0)
+                      return(-1);
                     (void) WriteBlobMSBLong(ofile,0xFFFFFFFFU);
                     outputlen += 4;
                     savedolen = outputlen;
@@ -489,12 +497,20 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
           }
       state++;
     }
-    token=DestroyString(token);
-    newstr=DestroyString(newstr);
+    if (token != (char *) NULL)
+      token=DestroyString(token);
+    if (newstr != (char *) NULL)
+      newstr=DestroyString(newstr);
     if (name != (char *) NULL)
       name=DestroyString(name);
   }
   token_info=DestroyTokenInfo(token_info);
+  if (token != (char *) NULL)
+    token=DestroyString(token);
+  if (newstr != (char *) NULL)
+    newstr=DestroyString(newstr);
+  if (name != (char *) NULL)
+    name=DestroyString(name);
   line=DestroyString(line);
   if (savedolen > 0)
     {
@@ -504,6 +520,8 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
       ssize_t diff = outputlen - savedolen;
 
       currentpos = TellBlob(ofile);
+      if (currentpos < 0)
+        return(-1);
       offset=SeekBlob(ofile,savedpos,SEEK_SET);
       if (offset < 0)
         return(-1);
@@ -513,7 +531,7 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
         return(-1);
       savedolen = 0L;
     }
-  return outputlen;
+  return(outputlen);
 }
 
 static char *super_fgets_w(char **b, int *blen, Image *file)
@@ -586,7 +604,7 @@ static ssize_t parse8BIMW(Image *ifile, Image *ofile)
     recnum;
 
   int
-    inputlen = BUFFER_SZ;
+    inputlen = MaxTextExtent;
 
   ssize_t
     savedolen = 0L,
@@ -602,7 +620,9 @@ static ssize_t parse8BIMW(Image *ifile, Image *ofile)
   dataset = 0;
   recnum = 0;
   line=(char *) AcquireQuantumMemory((size_t) inputlen,sizeof(*line));
-  name = token = (char *)NULL;
+  if (line == (char *) NULL)
+    return(-1);
+  newstr = name = token = (char *) NULL;
   savedpos = 0;
   token_info=AcquireTokenInfo();
   while (super_fgets_w(&line,&inputlen,ifile) != NULL)
@@ -611,7 +631,11 @@ static ssize_t parse8BIMW(Image *ifile, Image *ofile)
     next=0;
 
     token=(char *) AcquireQuantumMemory((size_t) inputlen,sizeof(*token));
+    if (token == (char *) NULL)
+      break;
     newstr=(char *) AcquireQuantumMemory((size_t) inputlen,sizeof(*newstr));
+    if (newstr == (char *) NULL)
+      break;
     while (Tokenizer(token_info,0,token,(size_t) inputlen,line,"","=","\"",0,
       &brkused,&next,&quoted)==0)
     {
@@ -693,6 +717,8 @@ static ssize_t parse8BIMW(Image *ifile, Image *ofile)
 
                     ssize_t diff = outputlen - savedolen;
                     currentpos = TellBlob(ofile);
+                    if (currentpos < 0)
+                      return(-1);
                     offset=SeekBlob(ofile,savedpos,SEEK_SET);
                     if (offset < 0)
                       return(-1);
@@ -742,6 +768,8 @@ static ssize_t parse8BIMW(Image *ifile, Image *ofile)
                   {
                     /* patch in a fake length for now and fix it later */
                     savedpos = TellBlob(ofile);
+                    if (savedpos < 0)
+                      return(-1);
                     (void) WriteBlobMSBLong(ofile,0xFFFFFFFFU);
                     outputlen += 4;
                     savedolen = outputlen;
@@ -765,11 +793,20 @@ static ssize_t parse8BIMW(Image *ifile, Image *ofile)
           }
       state++;
     }
-    token=DestroyString(token);
-    newstr=DestroyString(newstr);
-    name=DestroyString(name);
+    if (token != (char *) NULL)  
+      token=DestroyString(token);
+    if (newstr != (char *) NULL)  
+      newstr=DestroyString(newstr);
+    if (name != (char *) NULL)  
+      name=DestroyString(name);
   }
   token_info=DestroyTokenInfo(token_info);
+  if (token != (char *) NULL)  
+    token=DestroyString(token);
+  if (newstr != (char *) NULL)  
+    newstr=DestroyString(newstr);
+  if (name != (char *) NULL)  
+    name=DestroyString(name);
   line=DestroyString(line);
   if (savedolen > 0)
     {
@@ -779,6 +816,8 @@ static ssize_t parse8BIMW(Image *ifile, Image *ofile)
       ssize_t diff = outputlen - savedolen;
 
       currentpos = TellBlob(ofile);
+      if (currentpos < 0)
+        return(-1);
       offset=SeekBlob(ofile,savedpos,SEEK_SET);
       if (offset < 0)
         return(-1);
@@ -991,7 +1030,7 @@ static int jpeg_embed(Image *ifile, Image *ofile, Image *iptc)
         /* APP0 is in each and every JPEG, so when we hit APP0 we insert our new APP13! */
         jpeg_skip_variable(ifile, ofile);
 
-        if (iptc != (Image *)NULL)
+        if (iptc != (Image *) NULL)
           {
             char
               psheader[] = "\xFF\xED\0\0Photoshop 3.0\0" "8BIM\x04\x04\0\0\0\0";

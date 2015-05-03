@@ -16,7 +16,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1254,11 +1254,15 @@ static int ColorInfoCompare(const void *x,const void *y)
     **p,
     **q;
 
+  int
+    cmp;
+
   p=(const ColorInfo **) x,
   q=(const ColorInfo **) y;
-  if (LocaleCompare((*p)->path,(*q)->path) == 0)
+  cmp=LocaleCompare((*p)->path,(*q)->path);
+  if (cmp == 0)
     return(LocaleCompare((*p)->name,(*q)->name));
-  return(LocaleCompare((*p)->path,(*q)->path));
+  return(cmp);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -1648,14 +1652,6 @@ static MagickBooleanType IsColorCacheInstantiated(ExceptionInfo *exception)
 %    o q: Pixel q.
 %
 */
-
-static inline double MagickMax(const double x,const double y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
 MagickExport MagickBooleanType IsColorSimilar(const Image *image,
   const PixelPacket *p,const PixelPacket *q)
 {
@@ -1669,7 +1665,8 @@ MagickExport MagickBooleanType IsColorSimilar(const Image *image,
 
   if ((image->fuzz == 0.0) && (image->matte == MagickFalse))
     return(IsColorEqual(p,q));
-  fuzz=MagickMax(image->fuzz,MagickSQ1_2)*MagickMax(image->fuzz,MagickSQ1_2);
+  fuzz=(double) MagickMax(image->fuzz,(MagickRealType) MagickSQ1_2);
+  fuzz*=fuzz;
   scale=1.0;
   distance=0.0;
   if (image->matte != MagickFalse)
@@ -1863,6 +1860,55 @@ MagickExport MagickBooleanType IsImageSimilar(const Image *image,
 %                                                                             %
 %                                                                             %
 %                                                                             %
++   I s I n t e n s i t y S i m i l a r                                       %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  IsIntensitySimilar() returns true if the distance between two intensity
+%  values is less than the specified distance in a linear color space.
+%
+%  The format of the IsIntensitySimilar method is:
+%
+%      void IsIntensitySimilar(const Image *image,const PixelPacket *p,
+%        const PixelPacket *q)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o p: Pixel p.
+%
+%    o q: Pixel q.
+%
+*/
+MagickPrivate MagickBooleanType IsIntensitySimilar(const Image *image,
+  const PixelPacket *p,const PixelPacket *q)
+{
+  MagickRealType
+    fuzz,
+    pixel;
+
+  register MagickRealType
+    distance;
+
+  if (GetPixelIntensity(image,p) == GetPixelIntensity(image,q))
+    return(MagickTrue);
+  fuzz=(MagickRealType) MagickMax(image->fuzz,MagickSQ1_2);
+  fuzz*=fuzz;
+  pixel=GetPixelIntensity(image,p)-GetPixelIntensity(image,q);
+  distance=pixel*pixel;
+  if (distance > fuzz)
+    return(MagickFalse);
+  return(MagickTrue);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 +   I s M a g i c k C o l o r S i m i l a r                                   %
 %                                                                             %
 %                                                                             %
@@ -1916,12 +1962,9 @@ MagickExport MagickBooleanType IsMagickColorSimilar(const MagickPixelPacket *p,
 
   if ((p->fuzz == 0.0) && (q->fuzz == 0.0))
     return(IsMagickColorEqual(p,q));
-  if (p->fuzz == 0.0)
-    fuzz=MagickMax(q->fuzz,MagickSQ1_2)*MagickMax(q->fuzz,MagickSQ1_2);
-  else if (q->fuzz == 0.0)
-    fuzz=MagickMax(p->fuzz,MagickSQ1_2)*MagickMax(p->fuzz,MagickSQ1_2);
-  else
-    fuzz=MagickMax(p->fuzz,MagickSQ1_2)*MagickMax(q->fuzz,MagickSQ1_2);
+  fuzz=(MagickRealType) MagickMax(MagickMax(p->fuzz,q->fuzz),(double)
+    MagickSQ1_2);
+  fuzz*=fuzz;
   scale=1.0;
   distance=0.0;
   if ((p->matte != MagickFalse) || (q->matte != MagickFalse))
@@ -2031,12 +2074,13 @@ MagickExport MagickBooleanType IsOpacitySimilar(const Image *image,
 
   if (image->matte == MagickFalse)
     return(MagickTrue);
-  if (GetPixelOpacity(p) == q->opacity)
+  if (GetPixelOpacity(p) == GetPixelOpacity(q))
     return(MagickTrue);
-  fuzz=MagickMax(image->fuzz,MagickSQ1_2)*MagickMax(image->fuzz,MagickSQ1_2);
-  pixel=(MagickRealType) GetPixelOpacity(p)-(MagickRealType) q->opacity;
+  fuzz=MagickMax(image->fuzz,(double) MagickSQ1_2);
+  fuzz*=fuzz;
+  pixel=(MagickRealType) GetPixelOpacity(p)-(MagickRealType) GetPixelOpacity(q);
   distance=pixel*pixel;
-  if (distance > fuzz)
+  if (distance > (fuzz*fuzz))
     return(MagickFalse);
   return(MagickTrue);
 }
@@ -2373,14 +2417,6 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 MagickExport MagickBooleanType QueryColorCompliance(const char *name,
   const ComplianceType compliance,PixelPacket *color,ExceptionInfo *exception)
 {

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -148,6 +148,9 @@ static Image *ReadVICARImage(const ImageInfo *image_info,
     keyword[MaxTextExtent],
     value[MaxTextExtent];
 
+  const void
+    *pixels;
+
   Image
     *image;
 
@@ -173,9 +176,6 @@ static Image *ReadVICARImage(const ImageInfo *image_info,
   ssize_t
     count,
     y;
-
-  unsigned char
-    *pixels;
 
   /*
     Open image file.
@@ -275,6 +275,8 @@ static Image *ReadVICARImage(const ImageInfo *image_info,
   while (count < (ssize_t) length)
   {
     c=ReadBlobByte(image);
+    if (c == EOF)
+      break;
     count++;
   }
   if ((image->columns == 0) || (image->rows == 0))
@@ -285,6 +287,12 @@ static Image *ReadVICARImage(const ImageInfo *image_info,
       (void) CloseBlob(image);
       return(GetFirstImageInList(image));
     }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   /*
     Read VICAR pixels.
   */
@@ -293,14 +301,16 @@ static Image *ReadVICARImage(const ImageInfo *image_info,
   quantum_info=AcquireQuantumInfo(image_info,image);
   if (quantum_info == (QuantumInfo *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-  pixels=GetQuantumPixels(quantum_info);
   length=GetQuantumExtent(image,quantum_info,quantum_type);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
     if (q == (PixelPacket *) NULL)
       break;
-    count=ReadBlob(image,length,pixels);
+    pixels=ReadBlobStream(image,length,GetQuantumPixels(quantum_info),
+      &count);
+    if (count != (ssize_t) length)
+      break;
     (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
       quantum_type,pixels,exception);
     if (SyncAuthenticPixels(image,exception) == MagickFalse)

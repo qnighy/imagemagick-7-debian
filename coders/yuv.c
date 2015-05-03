@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -146,6 +146,12 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image=AcquireImage(image_info);
   if ((image->columns == 0) || (image->rows == 0))
     ThrowReaderException(OptionError,"MustSpecifyImageSize");
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   quantum=(size_t) (image->depth <= 8 ? 1 : 2);
   interlace=image_info->interlace;
   horizontal_factor=2;
@@ -196,7 +202,7 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
     scanline=(unsigned char *) AcquireQuantumMemory((size_t) 2UL*
       image->columns+2UL,quantum*sizeof(*scanline));
   else
-    scanline=(unsigned char *) AcquireQuantumMemory((size_t) image->columns,
+    scanline=(unsigned char *) AcquireQuantumMemory(image->columns,
       quantum*sizeof(*scanline));
   if (scanline == (unsigned char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -213,6 +219,12 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     if (interlace == PartitionInterlace)
       {
         AppendImageFormat("Y",image->filename);

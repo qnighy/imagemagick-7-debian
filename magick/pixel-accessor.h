@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -113,6 +113,19 @@ static inline MagickRealType AbsolutePixelValue(const MagickRealType x)
   return(x < 0.0f ? -x : x);
 }
 
+static inline Quantum ClampPixel(const MagickRealType value)
+{ 
+  if (value < 0.0f)
+    return(0); 
+  if (value >= (MagickRealType) QuantumRange)
+    return((Quantum) QuantumRange);
+#if !defined(MAGICKCORE_HDRI_SUPPORT)
+  return((Quantum) (value+0.5f));
+#else
+  return((Quantum) value);
+#endif
+}
+
 static inline MagickRealType GetPixelLuma(const Image *restrict image,
   const PixelPacket *restrict pixel)
 {
@@ -181,6 +194,16 @@ static inline Quantum PixelPacketIntensity(const PixelPacket *pixel)
   intensity=(MagickRealType) (0.212656*pixel->red+0.715158*pixel->green+
     0.072186*pixel->blue);
   return(ClampToQuantum(intensity));
+}
+
+static inline void SetPixelViaMagickPixel(const Image *restrict image,
+  const MagickPixelPacket *restrict magick_pixel,PixelPacket *restrict pixel)
+{ 
+  pixel->red=ClampToQuantum(magick_pixel->red);
+  pixel->green=ClampToQuantum(magick_pixel->green);
+  pixel->blue=ClampToQuantum(magick_pixel->blue);
+  if (image->matte != MagickFalse)
+    pixel->opacity=ClampToQuantum(magick_pixel->opacity);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

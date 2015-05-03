@@ -17,7 +17,7 @@
 %                                April 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -958,28 +958,30 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
         if (LocaleCompare("clone",option+1) == 0)
           {
             Image
-              *clone_images;
-
-            clone_images=image;
+              *clone_images,
+              *clone_list;
+            
+            clone_list=CloneImageList(image,exception);
             if (k != 0)
-              clone_images=image_stack[k-1].image;
-            if (clone_images == (Image *) NULL)
+              clone_list=CloneImageList(image_stack[k-1].image,exception);
+            if (clone_list == (Image *) NULL)
               ThrowConvertException(ImageError,"ImageSequenceRequired",option);
             FireImageStack(MagickTrue,MagickTrue,MagickTrue);
             if (*option == '+')
-              clone_images=CloneImages(clone_images,"-1",exception);
+              clone_images=CloneImages(clone_list,"-1",exception);
             else
-              {
+              { 
                 i++;
                 if (i == (ssize_t) argc)
                   ThrowConvertException(OptionError,"MissingArgument",option);
                 if (IsSceneGeometry(argv[i],MagickFalse) == MagickFalse)
                   ThrowConvertInvalidArgumentException(option,argv[i]);
-                clone_images=CloneImages(clone_images,argv[i],exception);
+                clone_images=CloneImages(clone_list,argv[i],exception);
               }
             if (clone_images == (Image *) NULL)
               ThrowConvertException(OptionError,"NoSuchImage",option);
             AppendImageStack(clone_images);
+            clone_list=DestroyImageList(clone_list);
             break;
           }
         if (LocaleCompare("clut",option+1) == 0)

@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002, 2003
+// Copyright Dirk Lemstra 2014
 //
 // Geometry implementation
 //
@@ -287,7 +288,7 @@ Magick::Geometry::operator std::string() const
   char
     buffer[MaxTextExtent];
 
-  string
+  std::string
     geometry;
 
   if (!isValid())

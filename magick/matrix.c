@@ -17,7 +17,7 @@
 %                              August 2007                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -44,6 +44,7 @@
 #include "magick/blob-private.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
+#include "magick/image-private.h"
 #include "magick/matrix.h"
 #include "magick/memory_.h"
 #include "magick/pixel-private.h"
@@ -118,14 +119,6 @@ struct _MatrixInfo
 %
 */
 
-static inline MagickSizeType MagickMin(const MagickSizeType x,
-  const MagickSizeType y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 #if defined(SIGBUS)
 static void MatrixSignalHandler(int status)
 {
@@ -193,14 +186,7 @@ static MagickBooleanType SetMatrixExtent(MatrixInfo *restrict matrix_info,
   count=WriteMatrixElements(matrix_info,extent,1,(const unsigned char *) "");
 #if defined(MAGICKCORE_HAVE_POSIX_FALLOCATE)
   if (matrix_info->synchronize != MagickFalse)
-    {
-      int
-        status;
-
-      status=posix_fallocate(matrix_info->file,offset+1,extent-offset);
-      if (status != 0)
-        return(MagickFalse);
-    }
+    (void) posix_fallocate(matrix_info->file,offset+1,extent-offset);
 #endif
 #if defined(SIGBUS)
   (void) signal(SIGBUS,MatrixSignalHandler);
@@ -340,7 +326,7 @@ MagickExport double **AcquireMagickMatrix(const size_t number_rows,
 
   matrix=(double **) AcquireQuantumMemory(number_rows,sizeof(*matrix));
   if (matrix == (double **) NULL)
-    return((double **)NULL);
+    return((double **) NULL);
   for (i=0; i < (ssize_t) number_rows; i++)
   {
     matrix[i]=(double *) AcquireQuantumMemory(size,sizeof(*matrix[i]));

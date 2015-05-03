@@ -15,7 +15,7 @@
 %                                February 2008                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -253,7 +253,7 @@ static MagickBooleanType WriteBRAILLEImage(const ImageInfo *image_info,
   polarity=0;
   if (image->storage_class == PseudoClass) {
     polarity=(IndexPacket) (GetPixelLuma(image,&image->colormap[0]) >=
-      (QuantumRange/2));
+      (QuantumRange/2.0));
     if (image->colors == 2)
       polarity=(IndexPacket) (GetPixelLuma(image,&image->colormap[0]) >=
         GetPixelLuma(image,&image->colormap[1]));

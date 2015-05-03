@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -267,7 +267,6 @@ static const struct ReferenceFormats
     { "ICO", UndefinedCompression, 0.0 },
     { "ICON", UndefinedCompression, 0.0 },
     { "INFO", UndefinedCompression, 0.0 },
-    { "INLINE", UndefinedCompression, 0.0 },
     { "JBG", UndefinedCompression, 0.0 },
     { "JNG", UndefinedCompression, 0.004 },
     { "JNG", JPEGCompression, 0.004 },

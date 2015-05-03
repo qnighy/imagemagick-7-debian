@@ -18,7 +18,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -41,8 +41,7 @@
 % algorithm, and minor rendering improvements.
 %
 */
-
-
+
 /*
   Include declarations.
 */
@@ -86,14 +85,12 @@
 #include "magick/token.h"
 #include "magick/transform.h"
 #include "magick/utility.h"
-
-
+
 /*
   Define declarations.
 */
 #define BezierQuantum  200
-
-
+
 /*
   Typedef declarations.
 */
@@ -157,8 +154,7 @@ typedef struct _PathInfo
   PathInfoCode
     code;
 } PathInfo;
-
-
+
 /*
   Forward declarations.
 */
@@ -183,8 +179,7 @@ static void
   TraceRoundRectangle(PrimitiveInfo *,const PointInfo,const PointInfo,
     PointInfo),
   TraceSquareLinecap(PrimitiveInfo *,const size_t,const double);
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1076,27 +1071,6 @@ static AffineMatrix InverseAffineMatrix(const AffineMatrix *affine)
   inverse_affine.ty=(-affine->tx)*inverse_affine.rx-affine->ty*
     inverse_affine.sy;
   return(inverse_affine);
-}
-
-static inline ssize_t MagickAbsoluteValue(const ssize_t x)
-{
-  if (x < 0)
-    return(-x);
-  return(x);
-}
-
-static inline double MagickMax(const double x,const double y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
 }
 
 MagickExport MagickBooleanType DrawAffineImage(Image *image,
@@ -2885,7 +2859,16 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
       }
       case RoundRectanglePrimitive:
       {
-        length*=5+8*BezierQuantum;
+        double
+          alpha,
+          beta,
+          radius;
+
+        alpha=bounds.x2-bounds.x1;
+        beta=bounds.y2-bounds.y1;
+        radius=hypot((double) alpha,(double) beta);
+        length*=5;
+        length+=2*((size_t) ceil((double) MagickPI*radius))+6*BezierQuantum+360;
         break;
       }
       case BezierPrimitive:
@@ -3455,8 +3438,8 @@ MagickExport MagickBooleanType DrawGradientImage(Image *image,
                     repeat=gradient->radius-fmod(-repeat,gradient->radius);
                   else
                     repeat=fmod(offset,gradient->radius);
-                  antialias=repeat+1.0 > gradient->radius ?
-                    MagickTrue : MagickFalse;
+                  antialias=repeat+1.0 > gradient->radius ? MagickTrue :
+                    MagickFalse;
                   offset=repeat/gradient->radius;
                 }
             }
@@ -5279,10 +5262,10 @@ static size_t TracePath(PrimitiveInfo *primitive_info,const char *path)
     last_attribute;
 
   PointInfo
-    end,
-    points[4],
-    point,
-    start;
+    end = {0.0, 0.0},
+    points[4] = { {0.0,0.0}, {0.0,0.0}, {0.0,0.0}, {0.0,0.0} },
+    point = {0.0, 0.0},
+    start = {0.0, 0.0};
 
   PrimitiveType
     primitive_type;
@@ -5298,15 +5281,8 @@ static size_t TracePath(PrimitiveInfo *primitive_info,const char *path)
     z_count;
 
   attribute=0;
-  end.x=0.0;
-  end.y=0.0;
-  point.x=0.0;
-  point.y=0.0;
-  start.x=0.0;
-  start.y=0.0;
   number_coordinates=0;
   z_count=0;
-  (void) ResetMagickMemory(points,0,sizeof(*points));
   primitive_type=primitive_info->primitive;
   q=primitive_info;
   for (p=path; *p != '\0'; )
@@ -5540,8 +5516,8 @@ static size_t TracePath(PrimitiveInfo *primitive_info,const char *path)
           }
           if (strchr("CcSs",last_attribute) == (char *) NULL)
             {
-              points[0]=points[2];
-              points[1]=points[3];
+              points[0]=point;
+              points[1]=point;
             }
           for (i=0; i < 4; i++)
             (q+i)->point=points[i];
@@ -5578,8 +5554,8 @@ static size_t TracePath(PrimitiveInfo *primitive_info,const char *path)
           }
           if (strchr("QqTt",last_attribute) == (char *) NULL)
             {
-              points[0]=points[2];
-              points[1]=points[3];
+              points[0]=point;
+              points[1]=point;
             }
           for (i=0; i < 3; i++)
             (q+i)->point=points[i];
@@ -5778,7 +5754,7 @@ static void TraceSquareLinecap(PrimitiveInfo *primitive_info,
 
 static inline double DrawEpsilonReciprocal(const double x)
 {
-#define DrawEpsilon  (1.0e-10)
+#define DrawEpsilon  (1.0e-6)
 
   double sign = x < 0.0 ? -1.0 : 1.0;
   return((sign*x) >= DrawEpsilon ? 1.0/x : sign*(1.0/DrawEpsilon));

@@ -1,4 +1,4 @@
-#  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -141,7 +141,7 @@ sub AutodetectDelegates {
 
 # Compute test specification
 my $delegate_tests='t/*.t';
-my @tested_delegates = qw/bzlib djvu fftw fontconfig freetype jpeg jng jp2 lcms mpeg png rsvg tiff x11 xml wmf zlib/;
+my @tested_delegates = qw/bzlib djvu fftw fontconfig freetype jpeg jng jp2 lcms png rsvg tiff x11 xml wmf zlib/;
 my @supported_delegates = AutodetectDelegates();
 # find the intersection of tested and supported delegates
 my %seen_delegates = ();

@@ -17,7 +17,7 @@
 %                                 May 2002                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -108,6 +108,9 @@ static Image *ReadCLIPBOARDImage(const ImageInfo *image_info,
   Image
     *image;
 
+  MagickBooleanType
+    status;
+
   register ssize_t
     x;
 
@@ -136,7 +139,7 @@ static Image *ReadCLIPBOARDImage(const ImageInfo *image_info,
     bitmapH=(HBITMAP) GetClipboardData(CF_BITMAP);
     hPal=(HPALETTE) GetClipboardData(CF_PALETTE);
     CloseClipboard();
-    if ( bitmapH == NULL )
+    if (bitmapH == NULL)
       ThrowReaderException(CoderError,"NoBitmapOnClipboard");
     {
       BITMAPINFO
@@ -163,8 +166,14 @@ static Image *ReadCLIPBOARDImage(const ImageInfo *image_info,
       GetObject(bitmapH,sizeof(BITMAP),(LPSTR) &bitmap);
       if ((image->columns == 0) || (image->rows == 0))
         {
-          image->rows=bitmap.bmHeight;
           image->columns=bitmap.bmWidth;
+          image->rows=bitmap.bmHeight;
+        }
+      status=SetImageExtent(image,image->columns,image->rows);
+      if (status == MagickFalse)
+        {
+          InheritException(exception,&image->exception);
+          return(DestroyImageList(image));
         }
       /*
         Initialize the bitmap header info.

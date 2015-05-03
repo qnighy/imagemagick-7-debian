@@ -17,7 +17,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -582,9 +582,6 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
           image=GetFirstImageInList(clones);
         }
     }
-  if (GetBlobError(image) != MagickFalse)
-    ThrowFileException(exception,FileOpenError,
-      "AnErrorHasOccurredReadingFromFile",read_info->filename);
   for (next=image; next != (Image *) NULL; next=GetNextImageInList(next))
   {
     char
@@ -812,9 +809,11 @@ MagickExport Image *ReadImages(const ImageInfo *image_info,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  (void) InterpretImageFilename(image_info,(Image *) NULL,image_info->filename,
-    (int) image_info->scene,filename);
-  if (LocaleCompare(filename,image_info->filename) != 0)
+  read_info=CloneImageInfo(image_info);
+  *read_info->magick='\0';
+  (void) InterpretImageFilename(read_info,(Image *) NULL,read_info->filename,
+    (int) read_info->scene,filename);
+  if (LocaleCompare(filename,read_info->filename) != 0)
     {
       ExceptionInfo
         *sans;
@@ -826,7 +825,6 @@ MagickExport Image *ReadImages(const ImageInfo *image_info,
       /*
         Images of the form image-%d.png[1-5].
       */
-      read_info=CloneImageInfo(image_info);
       sans=AcquireExceptionInfo();
       (void) SetImageInfo(read_info,0,sans);
       sans=DestroyExceptionInfo(sans);
@@ -850,7 +848,9 @@ MagickExport Image *ReadImages(const ImageInfo *image_info,
       read_info=DestroyImageInfo(read_info);
       return(images);
     }
-  return(ReadImage(image_info,exception));
+  image=ReadImage(read_info,exception);
+  read_info=DestroyImageInfo(read_info);
+  return(image);
 }
 
 /*
@@ -1001,9 +1001,9 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
   sans_exception=AcquireExceptionInfo();
   write_info=CloneImageInfo(image_info);
   (void) CopyMagickString(write_info->filename,image->filename,MaxTextExtent);
+  (void) SetImageInfo(write_info,1,sans_exception);
   if (*write_info->magick == '\0')
     (void) CopyMagickString(write_info->magick,image->magick,MaxTextExtent);
-  (void) SetImageInfo(write_info,1,sans_exception);
   if (LocaleCompare(write_info->magick,"clipmask") == 0)
     {
       if (image->clip_mask == (Image *) NULL)
@@ -1187,9 +1187,6 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
             }
         }
     }
-  if (GetBlobError(image) != MagickFalse)
-    ThrowFileException(exception,FileOpenError,
-      "AnErrorHasOccurredWritingToFile",image->filename);
   if (temporary != MagickFalse)
     {
       /*
@@ -1286,17 +1283,18 @@ MagickExport MagickBooleanType WriteImages(const ImageInfo *image_info,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   assert(exception != (ExceptionInfo *) NULL);
   write_info=CloneImageInfo(image_info);
+  *write_info->magick='\0';
   images=GetFirstImageInList(images);
   if (filename != (const char *) NULL)
     for (p=images; p != (Image *) NULL; p=GetNextImageInList(p))
       (void) CopyMagickString(p->filename,filename,MaxTextExtent);
   (void) CopyMagickString(write_info->filename,images->filename,MaxTextExtent);
-  if (*write_info->magick == '\0')
-    (void) CopyMagickString(write_info->magick,images->magick,MaxTextExtent);
   sans_exception=AcquireExceptionInfo();
   (void) SetImageInfo(write_info,(unsigned int) GetImageListLength(images),
     sans_exception);
   sans_exception=DestroyExceptionInfo(sans_exception);
+  if (*write_info->magick == '\0')
+    (void) CopyMagickString(write_info->magick,images->magick,MaxTextExtent);
   p=images;
   for ( ; GetNextImageInList(p) != (Image *) NULL; p=GetNextImageInList(p))
     if (p->scene >= GetNextImageInList(p)->scene)

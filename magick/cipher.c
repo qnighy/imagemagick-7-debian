@@ -16,7 +16,7 @@
 %                               March  2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -532,13 +532,6 @@ static inline void IncrementCipherNonce(const size_t length,
       return;
   }
   ThrowFatalException(ResourceLimitFatalError,"Sequence wrap error `%s'");
-}
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
 }
 
 MagickExport MagickBooleanType DecipherImage(Image *image,

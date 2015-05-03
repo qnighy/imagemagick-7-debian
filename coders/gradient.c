@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -151,7 +151,7 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
     }
   (void) QueryMagickColor(colorname,&start_pixel,exception);
   (void) CopyMagickString(colorname,"white",MaxTextExtent);
-  if (GetPixelLuma(image,&start_color) > (QuantumRange/2))
+  if (GetPixelLuma(image,&start_color) > (QuantumRange/2.0))
     (void) CopyMagickString(colorname,"black",MaxTextExtent);
   if (icc_color == MagickFalse)
     (void) sscanf(image_info->filename,"%*[^-]-%[^-]",colorname);
@@ -164,6 +164,9 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
     }
   (void) QueryMagickColor(colorname,&stop_pixel,exception);
   (void) SetImageColorspace(image,start_pixel.colorspace);
+  image->matte=start_pixel.matte;
+  if (stop_pixel.matte != MagickFalse)
+    image->matte=MagickTrue;
   status=GradientImage(image,LocaleCompare(image_info->magick,"GRADIENT") == 0 ?
     LinearGradient : RadialGradient,PadSpread,&start_color,&stop_color);
   if (status == MagickFalse)
@@ -171,8 +174,6 @@ static Image *ReadGRADIENTImage(const ImageInfo *image_info,
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  if ((start_pixel.matte == MagickFalse) && (stop_pixel.matte == MagickFalse))
-    (void) SetImageAlphaChannel(image,DeactivateAlphaChannel);
   return(GetFirstImageInList(image));
 }
 

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -223,11 +223,8 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
      Read in header information.
   */
   count=ReadBlob(image,sz_XWDheader,(unsigned char *) &header);
-  if (count == 0)
+  if (count != sz_XWDheader)
     ThrowReaderException(CorruptImageError,"UnableToReadImageHeader");
-  image->columns=header.pixmap_width;
-  image->rows=header.pixmap_height;
-  image->depth=8;
   /*
     Ensure the header byte-order is most-significant byte first.
   */
@@ -241,6 +238,25 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     ThrowReaderException(CorruptImageError,"FileFormatVersionMismatch");
   if (header.header_size < sz_XWDheader)
     ThrowReaderException(CorruptImageError,"CorruptImage");
+  switch (header.visual_class) {
+    case StaticGray:
+    case GrayScale:
+    case StaticColor:
+    case PseudoColor:
+    case TrueColor:
+    case DirectColor:
+      break;
+    default:
+      ThrowReaderException(CorruptImageError,"CorruptImage");
+    }
+  switch (header.pixmap_format) {
+    case XYBitmap:
+    case XYPixmap:
+    case ZPixmap:
+      break;
+    default:
+      ThrowReaderException(CorruptImageError,"CorruptImage");
+  }
   length=(size_t) header.header_size-sz_XWDheader;
   comment=(char *) AcquireQuantumMemory(length+1,sizeof(*comment));
   if (comment == (char *) NULL)
@@ -272,14 +288,30 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
   ximage->red_mask=header.red_mask;
   ximage->green_mask=header.green_mask;
   ximage->blue_mask=header.blue_mask;
-  if ((ximage->depth < 0) || (ximage->width < 0) || (ximage->height < 0) ||
-      (ximage->bitmap_pad < 0) || (ximage->bytes_per_line < 0))
-    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+  if ((ximage->width < 0) || (ximage->height < 0) || (ximage->depth < 0) || 
+      (ximage->format < 0) || (ximage->byte_order < 0) ||
+      (ximage->bitmap_bit_order < 0) || (ximage->bitmap_pad < 0) ||
+      (ximage->bytes_per_line < 0))
+    {
+      ximage=(XImage *) RelinquishMagickMemory(ximage);
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    }
+  if ((ximage->width > 65535) || (ximage->height > 65535))
+    {
+      ximage=(XImage *) RelinquishMagickMemory(ximage);
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    }
   if ((ximage->bits_per_pixel > 32) || (ximage->bitmap_unit > 32))
-    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    {
+      ximage=(XImage *) RelinquishMagickMemory(ximage);
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    }
   x_status=XInitImage(ximage);
   if (x_status == 0)
-    ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
+    {
+      ximage=(XImage *) RelinquishMagickMemory(ximage);
+      ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
+    }
   /*
     Read colormap.
   */
@@ -293,12 +325,18 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
       length=(size_t) header.ncolors;
       colors=(XColor *) AcquireQuantumMemory(length,sizeof(*colors));
       if (colors == (XColor *) NULL)
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        {
+          ximage=(XImage *) RelinquishMagickMemory(ximage);
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        }
       for (i=0; i < (ssize_t) header.ncolors; i++)
       {
         count=ReadBlob(image,sz_XWDColor,(unsigned char *) &color);
-        if (count == 0)
-          ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
+        if (count != sz_XWDColor)
+          {
+            ximage=(XImage *) RelinquishMagickMemory(ximage);
+            ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
+          }
         colors[i].pixel=color.pixel;
         colors[i].red=color.red;
         colors[i].green=color.green;
@@ -325,7 +363,10 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   length=(size_t) ximage->bytes_per_line*ximage->height;
   if (CheckOverflowException(length,ximage->bytes_per_line,ximage->height))
-    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    {
+      ximage=(XImage *) RelinquishMagickMemory(ximage);
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    }
   if (ximage->format != ZPixmap)
     {
       size_t
@@ -334,20 +375,37 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
       extent=length;
       length*=ximage->depth;
       if (CheckOverflowException(length,extent,ximage->depth))
-        ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+        {
+          ximage=(XImage *) RelinquishMagickMemory(ximage);
+          ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+        }
     }
   ximage->data=(char *) AcquireQuantumMemory(length,sizeof(*ximage->data));
   if (ximage->data == (char *) NULL)
-    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    {
+      ximage=(XImage *) RelinquishMagickMemory(ximage);
+      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+     }
   count=ReadBlob(image,length,(unsigned char *) ximage->data);
-  if (count == 0)
-    ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
+  if (count != (ssize_t) length)
+    {
+      ximage->data=DestroyString(ximage->data);
+      ximage=(XImage *) RelinquishMagickMemory(ximage);
+      ThrowReaderException(CorruptImageError,"UnableToReadImageData");
+    }
   /*
     Convert image to MIFF format.
   */
   image->columns=(size_t) ximage->width;
   image->rows=(size_t) ximage->height;
-  if ((colors == (XColor *) NULL) || (ximage->red_mask != 0) ||
+  image->depth=8;
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
+  if ((header.ncolors == 0U) || (ximage->red_mask != 0) ||
       (ximage->green_mask != 0) || (ximage->blue_mask != 0))
     image->storage_class=DirectClass;
   else
@@ -407,14 +465,16 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
             {
               pixel=XGetPixel(ximage,(int) x,(int) y);
               index=(IndexPacket) ((pixel >> red_shift) & red_mask);
-              SetPixelRed(q,ScaleShortToQuantum(colors[(ssize_t)
-                index].red));
+              if (index < header.ncolors)
+                SetPixelRed(q,ScaleShortToQuantum(colors[(ssize_t) index].red));
               index=(IndexPacket) ((pixel >> green_shift) & green_mask);
-              SetPixelGreen(q,ScaleShortToQuantum(colors[(ssize_t)
-                index].green));
+              if (index < header.ncolors)
+                SetPixelGreen(q,ScaleShortToQuantum(colors[(ssize_t)
+                  index].green));
               index=(IndexPacket) ((pixel >> blue_shift) & blue_mask);
-              SetPixelBlue(q,ScaleShortToQuantum(colors[(ssize_t)
-                index].blue));
+              if (index < header.ncolors)
+                SetPixelBlue(q,ScaleShortToQuantum(colors[(ssize_t)
+                  index].blue));
               q++;
             }
             if (SyncAuthenticPixels(image,exception) == MagickFalse)
@@ -436,18 +496,15 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
               color=(pixel >> red_shift) & red_mask;
               if (red_mask != 0)
                 color=(color*65535UL)/red_mask;
-              SetPixelRed(q,ScaleShortToQuantum((unsigned short)
-                color));
+              SetPixelRed(q,ScaleShortToQuantum((unsigned short) color));
               color=(pixel >> green_shift) & green_mask;
               if (green_mask != 0)
                 color=(color*65535UL)/green_mask;
-              SetPixelGreen(q,ScaleShortToQuantum((unsigned short)
-                color));
+              SetPixelGreen(q,ScaleShortToQuantum((unsigned short) color));
               color=(pixel >> blue_shift) & blue_mask;
               if (blue_mask != 0)
                 color=(color*65535UL)/blue_mask;
-              SetPixelBlue(q,ScaleShortToQuantum((unsigned short)
-                color));
+              SetPixelBlue(q,ScaleShortToQuantum((unsigned short) color));
               q++;
             }
             if (SyncAuthenticPixels(image,exception) == MagickFalse)
@@ -465,7 +522,11 @@ static Image *ReadXWDImage(const ImageInfo *image_info,ExceptionInfo *exception)
           Convert X image to PseudoClass packets.
         */
         if (AcquireImageColormap(image,image->colors) == MagickFalse)
-          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          {
+            ximage->data=DestroyString(ximage->data);
+            ximage=(XImage *) RelinquishMagickMemory(ximage);
+            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          }
         for (i=0; i < (ssize_t) image->colors; i++)
         {
           image->colormap[i].red=ScaleShortToQuantum(colors[i].red);
@@ -705,7 +766,7 @@ static MagickBooleanType WriteXWDImage(const ImageInfo *image_info,Image *image)
   (void) WriteBlob(image,1,(const unsigned char *) "\0");
   if (image->storage_class == PseudoClass)
     {
-      register unsigned int
+      register ssize_t
         i;
 
       XColor
@@ -724,7 +785,7 @@ static MagickBooleanType WriteXWDImage(const ImageInfo *image_info,Image *image)
         ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
       for (i=0; i < (ssize_t) image->colors; i++)
       {
-        colors[i].pixel=i;
+        colors[i].pixel=(unsigned long) i;
         colors[i].red=ScaleQuantumToShort(image->colormap[i].red);
         colors[i].green=ScaleQuantumToShort(image->colormap[i].green);
         colors[i].blue=ScaleQuantumToShort(image->colormap[i].blue);

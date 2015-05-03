@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -178,10 +178,14 @@ extern MagickExport MagickPixelPacket
 extern MagickExport MagickRealType
   DecodePixelGamma(const MagickRealType) magick_hot_spot,
   EncodePixelGamma(const MagickRealType) magick_hot_spot,
+  GetMagickPixelIntensity(const Image *image,const MagickPixelPacket *restrict)
+    magick_hot_spot,
   GetPixelIntensity(const Image *image,const PixelPacket *restrict)
     magick_hot_spot;
 
 extern MagickExport void
+  ConformMagickPixelPacket(Image *,const MagickPixelPacket *,
+    MagickPixelPacket *,ExceptionInfo *),
   GetMagickPixelPacket(const Image *,MagickPixelPacket *);
 
 #if defined(__cplusplus) || defined(c_plusplus)

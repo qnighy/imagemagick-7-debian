@@ -17,7 +17,7 @@
 %                               January 2010                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -88,14 +88,6 @@
 /*
   Other global definitions used by module.
 */
-static inline double MagickMin(const double x,const double y)
-{
-  return( x < y ? x : y);
-}
-static inline double MagickMax(const double x,const double y)
-{
-  return( x > y ? x : y);
-}
 #define Minimize(assign,value) assign=MagickMin(assign,value)
 #define Maximize(assign,value) assign=MagickMax(assign,value)
 
@@ -129,7 +121,7 @@ static inline KernelInfo *LastKernelInfo(KernelInfo *kernel)
     kernel=kernel->next;
   return(kernel);
 }
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -243,7 +235,7 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
     args;
 
   kernel=(KernelInfo *) AcquireMagickMemory(sizeof(*kernel));
-  if (kernel == (KernelInfo *)NULL)
+  if (kernel == (KernelInfo *) NULL)
     return(kernel);
   (void) ResetMagickMemory(kernel,0,sizeof(*kernel));
   kernel->minimum = kernel->maximum = kernel->angle = 0.0;
@@ -402,7 +394,7 @@ static KernelInfo *ParseKernelName(const char *kernel_string)
   GetMagickToken(kernel_string,&p,token);
   type=ParseCommandOption(MagickKernelOptions,MagickFalse,token);
   if ( type < 0 || type == UserDefinedKernel )
-    return((KernelInfo *)NULL);  /* not a valid named kernel */
+    return((KernelInfo *) NULL);  /* not a valid named kernel */
 
   while (((isspace((int) ((unsigned char) *p)) != 0) ||
           (*p == ',') || (*p == ':' )) && (*p != '\0') && (*p != ';'))
@@ -496,6 +488,7 @@ MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
     *new_kernel;
 
   char
+    *kernel_cache,
     token[MaxTextExtent];
 
   const char
@@ -504,6 +497,16 @@ MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
   if (kernel_string == (const char *) NULL)
     return(ParseKernelArray(kernel_string));
   p=kernel_string;
+  kernel_cache=(char *) NULL;
+  if (*kernel_string == '@')
+    {
+      ExceptionInfo *exception=AcquireExceptionInfo();
+      kernel_cache=FileToString(kernel_string+1,~0UL,exception);
+      exception=DestroyExceptionInfo(exception);
+      if (kernel_cache == (char *) NULL)
+        return((KernelInfo *) NULL);
+      p=(const char *) kernel_cache;
+    }
   kernel=NULL;
 
   while (GetMagickToken(p,NULL,token), *token != '\0')
@@ -538,11 +541,11 @@ MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
       break;
     p++;
   }
+  if (kernel_cache != (char *) NULL)
+    kernel_cache=DestroyString(kernel_cache);
   return(kernel);
 }
-
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -944,7 +947,6 @@ MagickExport KernelInfo *AcquireKernelInfo(const char *kernel_string)
 %    fractional results, and as such scaling is vital even for binary shapes.
 %
 */
-
 MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
    const GeometryInfo *args)
 {
@@ -966,7 +968,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
   switch(type) {
     case UndefinedKernel:    /* These should not call this function */
     case UserDefinedKernel:
-      assert("Should not call this function" != (char *)NULL);
+      assert("Should not call this function" != (char *) NULL);
       break;
     case LaplacianKernel:   /* Named Descrete Convolution Kernels */
     case SobelKernel:       /* these are defined using other kernels */
@@ -2789,7 +2791,8 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
             }
             /* Sync'ed channels, all channels are modified */
             gamma=PerceptibleReciprocal(gamma);
-            gamma*=(double) kernel->height/count;
+            if (count != 0)
+              gamma*=(double) kernel->height/count;
             SetPixelRed(q,ClampToQuantum(gamma*result.red));
             SetPixelGreen(q,ClampToQuantum(gamma*result.green));
             SetPixelBlue(q,ClampToQuantum(gamma*result.blue));
@@ -2802,9 +2805,10 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
         if (   ( p[r].red != GetPixelRed(q))
             || ( p[r].green != GetPixelGreen(q))
             || ( p[r].blue != GetPixelBlue(q))
-            || ( p[r].opacity != GetPixelOpacity(q))
-            || ( image->colorspace == CMYKColorspace &&
-                GetPixelIndex(p_indexes+r) != GetPixelIndex(q_indexes+y) ) )
+            || ( (image->matte != MagickFalse) &&
+                 (p[r].opacity != GetPixelOpacity(q)))
+            || ( (image->colorspace == CMYKColorspace) &&
+                 (GetPixelIndex(p_indexes+r) != GetPixelIndex(q_indexes+y))) )
           changes[id]++;
         p++;
         q++;
@@ -3034,7 +3038,8 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
                 }
                 /* Sync'ed channels, all channels are modified */
                 gamma=PerceptibleReciprocal(gamma);
-                gamma*=(double) kernel->height*kernel->width/count;
+                if (count != 0)
+                  gamma*=(double) kernel->height*kernel->width/count;
                 SetPixelRed(q,ClampToQuantum((MagickRealType) (gamma*result.red)));
                 SetPixelGreen(q,ClampToQuantum((MagickRealType) (gamma*result.green)));
                 SetPixelBlue(q,ClampToQuantum((MagickRealType) (gamma*result.blue)));
@@ -3326,9 +3331,10 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
       if (   ( p[r].red != GetPixelRed(q) )
           || ( p[r].green != GetPixelGreen(q) )
           || ( p[r].blue != GetPixelBlue(q) )
-          || ( p[r].opacity != GetPixelOpacity(q) )
-          || ( image->colorspace == CMYKColorspace &&
-               GetPixelIndex(p_indexes+r) != GetPixelIndex(q_indexes+x) ) )
+          || ( (image->matte != MagickFalse) &&
+               (p[r].opacity != GetPixelOpacity(q)))
+          || ( (image->colorspace == CMYKColorspace) &&
+               (GetPixelIndex(p_indexes+r) != GetPixelIndex(q_indexes+x))) )
         changes[id]++;
       p++;
       q++;
@@ -3597,9 +3603,10 @@ static ssize_t MorphologyPrimitiveDirect(Image *image,
       if (   ( p[r].red != GetPixelRed(q) )
           || ( p[r].green != GetPixelGreen(q) )
           || ( p[r].blue != GetPixelBlue(q) )
-          || ( p[r].opacity != GetPixelOpacity(q) )
-          || ( image->colorspace == CMYKColorspace &&
-               GetPixelIndex(p_indexes+r) != GetPixelIndex(q_indexes+x) ) )
+          || ( (image->matte != MagickFalse) &&
+               (p[r].opacity != GetPixelOpacity(q)))
+          || ( (image->colorspace == CMYKColorspace) &&
+               (GetPixelIndex(p_indexes+r) != GetPixelIndex(q_indexes+x))) )
         changed++;  /* The pixel was changed in some way! */
 
       p++; /* increment pixel buffers */
@@ -3787,9 +3794,10 @@ static ssize_t MorphologyPrimitiveDirect(Image *image,
       if (   ( p[r].red != GetPixelRed(q) )
           || ( p[r].green != GetPixelGreen(q) )
           || ( p[r].blue != GetPixelBlue(q) )
-          || ( p[r].opacity != GetPixelOpacity(q) )
-          || ( image->colorspace == CMYKColorspace &&
-               GetPixelIndex(p_indexes+r) != GetPixelIndex(q_indexes+x) ) )
+          || ( (image->matte != MagickFalse) &&
+               (p[r].opacity != GetPixelOpacity(q)))
+          || ( (image->colorspace == CMYKColorspace) &&
+               (GetPixelIndex(p_indexes+r) != GetPixelIndex(q_indexes+x))) )
         changed++;  /* The pixel was changed in some way! */
 
       p--; /* go backward through pixel buffers */
@@ -3874,7 +3882,7 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
 
   count = 0;      /* number of low-level morphology primitives performed */
   if ( iterations == 0 )
-    return((Image *)NULL);   /* null operation - nothing to do! */
+    return((Image *) NULL);   /* null operation - nothing to do! */
 
   kernel_limit = (size_t) iterations;
   if ( iterations < 0 )  /* negative interations = infinite (well alomst) */
@@ -4369,7 +4377,7 @@ MagickExport Image *MorphologyImageChannel(const Image *image,
         bias=StringToDoubleInterval(artifact,(double) QuantumRange+1.0);
 
       artifact = GetImageArtifact(image,"convolve:scale");
-      if ( artifact != (const char *)NULL ) {
+      if ( artifact != (const char *) NULL ) {
         if ( curr_kernel == kernel )
           curr_kernel = CloneKernelInfo(kernel);
         if (curr_kernel == (KernelInfo *) NULL) {

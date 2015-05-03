@@ -18,7 +18,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -335,7 +335,7 @@ static MagickBooleanType SerializeImageChannel(const ImageInfo *image_info,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=MagickTrue;
-  pack=IsMonochromeImage(image,&image->exception) == MagickFalse ? 1UL : 8UL;
+  pack=SetImageMonochrome(image,&image->exception) == MagickFalse ? 1UL : 8UL;
   padded_columns=((image->columns+pack-1)/pack)*pack;
   *length=(size_t) padded_columns*image->rows/pack;
   *pixel_info=AcquireVirtualMemory(*length,sizeof(*q));
@@ -474,11 +474,15 @@ static MagickBooleanType WritePS3MaskImage(const ImageInfo *image_info,
     Note BeginData DSC comment for update later.
   */
   start=TellBlob(image);
+  if (start < 0)
+    ThrowWriterException(CorruptImageError,"ImproperImageHeader");
   (void) FormatLocaleString(buffer,MaxTextExtent,
     "%%%%BeginData:%13ld %s Bytes\n",0L,compression == NoCompression ?
     "ASCII" : "BINARY");
   (void) WriteBlobString(image,buffer);
   stop=TellBlob(image);
+  if (stop < 0)
+    ThrowWriterException(CorruptImageError,"ImproperImageHeader");
   /*
     Only lossless compressions for the mask.
   */
@@ -598,6 +602,8 @@ static MagickBooleanType WritePS3MaskImage(const ImageInfo *image_info,
   (void) WriteBlobByte(image,'\n');
   length=(size_t) (TellBlob(image)-stop);
   stop=TellBlob(image);
+  if (stop < 0)
+    ThrowWriterException(CorruptImageError,"ImproperImageHeader");
   offset=SeekBlob(image,start,SEEK_SET);
   if (offset < 0)
     ThrowWriterException(CorruptImageError,"ImproperImageHeader");
@@ -893,7 +899,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
     case FaxCompression:
     case Group4Compression:
     {
-      if ((IsMonochromeImage(image,&image->exception) == MagickFalse) ||
+      if ((SetImageMonochrome(image,&image->exception) == MagickFalse) ||
           (image->matte != MagickFalse))
         compression=RLECompression;
       break;
@@ -1037,7 +1043,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
               (void) WriteBlobString(image,
                 "%%DocumentProcessColors: Cyan Magenta Yellow Black\n");
             else
-              if (IsGrayImage(image,&image->exception) != MagickFalse)
+              if (SetImageGray(image,&image->exception) != MagickFalse)
                 (void) WriteBlobString(image,
                   "%%DocumentProcessColors: Black\n");
           }
@@ -1123,7 +1129,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
       (void) WriteBlobString(image,
         "%%PageProcessColors: Cyan Magenta Yellow Black\n");
     else
-      if (IsGrayImage(image,&image->exception) != MagickFalse)
+      if (SetImageGray(image,&image->exception) != MagickFalse)
         (void) WriteBlobString(image,"%%PageProcessColors: Black\n");
     /*
       Adjust document bounding box to bound page bounding box.
@@ -1177,11 +1183,15 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
       Remember position of BeginData comment so we can update it.
     */
     start=TellBlob(image);
+    if (start < 0)
+      ThrowWriterException(CorruptImageError,"ImproperImageHeader");
     (void) FormatLocaleString(buffer,MaxTextExtent,
       "%%%%BeginData:%13ld %s Bytes\n",0L,
       compression == NoCompression ? "ASCII" : "BINARY");
     (void) WriteBlobString(image,buffer);
     stop=TellBlob(image);
+    if (stop < 0)
+      ThrowWriterException(CorruptImageError,"ImproperImageHeader");
     (void) WriteBlobString(image,"DisplayImage\n");
     /*
       Translate, scale, and font point size.
@@ -1248,7 +1258,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
     */
     option=GetImageOption(image_info,"ps3:imagemask");
     (void) WriteBlobString(image,((option != (const char *) NULL) &&
-      (IsMonochromeImage(image,&image->exception) != MagickFalse)) ?
+      (SetImageMonochrome(image,&image->exception) != MagickFalse)) ?
       "true\n" : "false\n");
     /*
       Output pixel data.
@@ -1260,8 +1270,8 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
         (image_info->type != ColorSeparationType) &&
         (image_info->type != ColorSeparationMatteType) &&
         (image->colorspace != CMYKColorspace) &&
-        ((IsGrayImage(image,&image->exception) != MagickFalse) ||
-         (IsMonochromeImage(image,&image->exception) != MagickFalse)))
+        ((SetImageGray(image,&image->exception) != MagickFalse) ||
+         (SetImageMonochrome(image,&image->exception) != MagickFalse)))
       {
         /*
           Gray images.
@@ -1310,7 +1320,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
           1 bit or 8 bit components?
         */
         (void) FormatLocaleString(buffer,MaxTextExtent,"%d\n",
-          IsMonochromeImage(image,&image->exception) != MagickFalse ? 1 : 8);
+          SetImageMonochrome(image,&image->exception) != MagickFalse ? 1 : 8);
         (void) WriteBlobString(image,buffer);
         /*
           Image data.
@@ -1468,11 +1478,6 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
                 (void) WriteBlobString(image,PS3_NoCompression"\n");
                 break;
               }
-              case JPEGCompression:
-              {
-                (void) WriteBlobString(image,PS3_JPEGCompression"\n");
-                break;
-              }
               case RLECompression:
               {
                 (void) WriteBlobString(image,PS3_RLECompression"\n");
@@ -1544,12 +1549,6 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
                 status=MagickTrue;
                 break;
               }
-              case JPEGCompression:
-              {
-                status=InjectImageBlob(image_info,image,image,"jpeg",
-                  &image->exception);
-                break;
-              }
               case RLECompression:
               {
                 status=PackbitsEncodeImage(image,length,pixels);
@@ -1579,6 +1578,8 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
     */
     length=(size_t) (TellBlob(image)-stop);
     stop=TellBlob(image);
+    if (stop < 0)
+      ThrowWriterException(CorruptImageError,"ImproperImageHeader");
     offset=SeekBlob(image,start,SEEK_SET);
     if (offset < 0)
       ThrowWriterException(CorruptImageError,"ImproperImageHeader");

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -90,13 +90,6 @@
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline size_t MagickMax(const size_t x,const size_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
 
 static inline void PlasmaPixel(Image *image,RandomInfo *random_info,double x,
   double y)
@@ -218,7 +211,6 @@ static Image *ReadPlasmaImage(const ImageInfo *image_info,
     if (status == MagickFalse)
       break;
   }
-  (void) SetImageAlphaChannel(image,SetAlphaChannel);
   return(GetFirstImageInList(image));
 }
 

@@ -17,7 +17,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -109,7 +109,7 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
   const MagickPixelPacket *target,const ssize_t x_offset,const ssize_t y_offset,
   const MagickBooleanType invert)
 {
-#define MaxStacksize  131072UL
+#define MaxStacksize  262144UL
 #define PushSegmentStack(up,left,right,delta) \
 { \
   if (s >= (segment_stack+MaxStacksize)) \
@@ -418,13 +418,8 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
 %
 % This provides a good example of making use of the DrawGradientImage
 % function and the gradient structure in draw_info.
+%
 */
-
-static inline double MagickMax(const double x,const double y)
-{
-  return(x > y ? x : y);
-}
-
 MagickExport MagickBooleanType GradientImage(Image *image,
   const GradientType type,const SpreadMethod method,
   const PixelPacket *start_color,const PixelPacket *stop_color)
@@ -799,6 +794,8 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
     progress;
 
   MagickPixelPacket
+    conform_fill,
+    conform_target,
     zero;
 
   ssize_t
@@ -812,17 +809,14 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
-      (IsMagickGray(fill) == MagickFalse))
-    (void) SetImageColorspace(image,sRGBColorspace);
-  if ((fill->opacity != OpaqueOpacity) && (image->matte == MagickFalse))
-    (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
+  exception=(&image->exception);
+  ConformMagickPixelPacket(image,fill,&conform_fill,exception);
+  ConformMagickPixelPacket(image,target,&conform_target,exception);
   /*
     Make image color opaque.
   */
   status=MagickTrue;
   progress=0;
-  exception=(&image->exception);
   GetMagickPixelPacket(image,&zero);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
@@ -856,19 +850,19 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       SetMagickPixelPacket(image,q,indexes+x,&pixel);
-      if (IsMagickColorSimilar(&pixel,target) != invert)
+      if (IsMagickColorSimilar(&pixel,&conform_target) != invert)
         {
           if ((channel & RedChannel) != 0)
-            SetPixelRed(q,ClampToQuantum(fill->red));
+            SetPixelRed(q,ClampToQuantum(conform_fill.red));
           if ((channel & GreenChannel) != 0)
-            SetPixelGreen(q,ClampToQuantum(fill->green));
+            SetPixelGreen(q,ClampToQuantum(conform_fill.green));
           if ((channel & BlueChannel) != 0)
-            SetPixelBlue(q,ClampToQuantum(fill->blue));
+            SetPixelBlue(q,ClampToQuantum(conform_fill.blue));
           if ((channel & OpacityChannel) != 0)
-            SetPixelOpacity(q,ClampToQuantum(fill->opacity));
+            SetPixelOpacity(q,ClampToQuantum(conform_fill.opacity));
           if (((channel & IndexChannel) != 0) &&
               (image->colorspace == CMYKColorspace))
-            SetPixelIndex(indexes+x,ClampToQuantum(fill->index));
+            SetPixelIndex(indexes+x,ClampToQuantum(conform_fill.index));
         }
       q++;
     }

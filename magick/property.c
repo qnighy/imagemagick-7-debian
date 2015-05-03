@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -457,20 +457,6 @@ static MagickBooleanType GetIPTCProperty(const Image *image,const char *key)
   (void) SetImageProperty((Image *) image,key,(const char *) attribute);
   attribute=DestroyString(attribute);
   return(MagickTrue);
-}
-
-static inline ssize_t MagickMax(const ssize_t x,const ssize_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline ssize_t MagickMin(const ssize_t x,const ssize_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
 }
 
 static inline int ReadPropertyByte(const unsigned char **p,size_t *length)
@@ -1136,12 +1122,14 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
     If EXIF data exists, then try to parse the request for a tag.
   */
   profile=GetImageProfile(image,"exif");
-  if (profile == (StringInfo *) NULL)
+  if (profile == (const StringInfo *) NULL)
     return(MagickFalse);
   if ((property == (const char *) NULL) || (*property == '\0'))
     return(MagickFalse);
   while (isspace((int) ((unsigned char) *property)) != 0)
     property++;
+  if (strlen(property) <= 5)
+    return(MagickFalse);
   all=0;
   tag=(~0UL);
   switch (*(property+5))
@@ -1281,6 +1269,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
         entry=directory_stack[level].entry;
         tag_offset=directory_stack[level].offset;
       }
+    if ((directory < exif) || (directory > (exif+length-2)))
+      break;
     /*
       Determine how many entries there are in the current IFD.
     */
@@ -1321,6 +1311,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
             The directory entry contains an offset.
           */
           offset=(ssize_t) ((int) ReadPropertyLong(endian,q+8));
+          if ((offset < 0) || (size_t) offset >= length)
+            continue;
           if ((ssize_t) (offset+number_bytes) < offset)
             continue;  /* prevent overflow */
           if ((size_t) (offset+number_bytes) > length)
@@ -1426,8 +1418,6 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
                 *p;
 
               key=AcquireString(property);
-              if (level == 2)
-                (void) SubstituteString(&key,"exif:","exif:thumbnail:");
               switch (all)
               {
                 case 1:
@@ -1450,6 +1440,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
                       }
                   }
                   (void) FormatLocaleString(key,MaxTextExtent,"%s",description);
+                  if (level == 2)
+                    (void) SubstituteString(&key,"exif:","exif:thumbnail:");
                   break;
                 }
                 case 2:
@@ -1464,6 +1456,11 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
                     else
                       (void) FormatLocaleString(key,MaxTextExtent,"unknown");
                   break;
+                }
+                default:
+                {
+                  if (level == 2)
+                    (void) SubstituteString(&key,"exif:","exif:thumbnail:");
                 }
               }
               p=(const char *) NULL;
@@ -2227,7 +2224,55 @@ MagickExport const char *GetImageProperty(const Image *image,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  GetMagickProperty() gets attributes or calculated values that is associated
-%  with a fixed known property name, or single letter property.
+%  with a fixed known property name, or single letter property:
+%
+%    \n   newline
+%    \r   carriage return
+%    <    less-than character.
+%    >    greater-than character.
+%    &    ampersand character.
+%    %%   a percent sign
+%    %b   file size of image read in
+%    %c   comment meta-data property
+%    %d   directory component of path
+%    %e   filename extension or suffix
+%    %f   filename (including suffix)
+%    %g   layer canvas page geometry   (equivalent to "%Wx%H%X%Y")
+%    %h   current image height in pixels
+%    %i   image filename (note: becomes output filename for "info:")
+%    %k   CALCULATED: number of unique colors
+%    %l   label meta-data property
+%    %m   image file format (file magic)
+%    %n   number of images in current image sequence
+%    %o   output filename  (used for delegates)
+%    %p   index of image in current image list
+%    %q   quantum depth (compile-time constant)
+%    %r   image class and colorspace
+%    %s   scene number (from input unless re-assigned)
+%    %t   filename without directory or extension (suffix)
+%    %u   unique temporary filename (used for delegates)
+%    %w   current width in pixels
+%    %x   x resolution (density)
+%    %y   y resolution (density)
+%    %z   image depth (as read in unless modified, image save depth)
+%    %A   image transparency channel enabled (true/false)
+%    %C   image compression type
+%    %D   image GIF dispose method
+%    %G   original image size (%wx%h; before any resizes)
+%    %H   page (canvas) height
+%    %M   Magick filename (original file exactly as given,  including read mods)
+%    %O   page (canvas) offset ( = %X%Y )
+%    %P   page (canvas) size ( = %Wx%H )
+%    %Q   image compression quality ( 0 = default )
+%    %S   ?? scenes ??
+%    %T   image time delay (in centi-seconds)
+%    %U   image resolution units
+%    %W   page (canvas) width
+%    %X   page (canvas) x offset (including sign)
+%    %Y   page (canvas) y offset (including sign)
+%    %Z   unique filename (used for delegates)
+%    %@   CALCULATED: trim bounding box (without actually trimming)
+%    %#   CALCULATED: 'signature' hash of image values
 %
 %  This does not return, special profile or property expressions. Nor does it
 %  return free-form property strings, unless referenced by a single letter
@@ -2266,7 +2311,7 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   *value='\0';
-  string=(char *)NULL;
+  string=(char *) NULL;
   switch (letter)
   {
     case 'b':
@@ -2274,11 +2319,7 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
       /*
         Image size read in - in bytes.
       */
-      (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
-        ((MagickOffsetType) image->extent));
-      if (image->extent != (MagickSizeType) ((size_t) image->extent))
-        (void) FormatMagickSize(image->extent,MagickFalse,value);
-      ConcatenateMagickString(value,"B",MaxTextExtent);
+      (void) FormatMagickSize(image->extent,MagickFalse,value);
       break;
     }
     case 'c':
@@ -2413,7 +2454,7 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
         Image storage class and colorspace.
       */
       colorspace=image->colorspace;
-      if (IsGrayImage(image,&image->exception) != MagickFalse)
+      if (SetImageGray(image,&image->exception) != MagickFalse)
         colorspace=GRAYColorspace;
       (void) FormatLocaleString(value,MaxTextExtent,"%s %s %s",
         CommandOptionToMnemonic(MagickClassOptions,(ssize_t)
@@ -2672,7 +2713,7 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
       (void) SetImageArtifact(image,"get-property",string);
       return(GetImageArtifact(image,"get-property"));
     }
-  return((char *)NULL);
+  return((char *) NULL);
 }
 
 MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
@@ -2755,6 +2796,17 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
     }
     case 'e':
     {
+      if (LocaleCompare("entropy",property) == 0)
+        {
+          double
+            entropy;
+
+          (void) GetImageChannelEntropy(image,image_info->channel,&entropy,
+            &image->exception);
+          (void) FormatLocaleString(value,MaxTextExtent,"%.*g",
+            GetMagickPrecision(),entropy);
+          break;
+        }
       if (LocaleCompare("extension",property) == 0)
         {
           GetPathComponent(image->magick_filename,ExtensionPath,value);
@@ -2986,11 +3038,7 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
         }
       if (LocaleCompare("size",property) == 0)
         {
-          char
-            format[MaxTextExtent];
-
-          (void) FormatMagickSize(GetBlobSize(image),MagickFalse,format);
-          (void) FormatLocaleString(value,MaxTextExtent,"%sB",format);
+          (void) FormatMagickSize(GetBlobSize(image),MagickFalse,value);
           break;
         }
       if (LocaleCompare("skewness",property) == 0)
@@ -3085,7 +3133,7 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
           (LocaleCompare("y-resolution",property) == 0) )
         {
           (void) FormatLocaleString(value,MaxTextExtent,"%.20g",
-           image->y_resolution);
+            image->y_resolution);
           break;
         }
       break;
@@ -3108,7 +3156,7 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
       (void) SetImageArtifact(image,"get-property", string);
       return(GetImageArtifact(image,"get-property"));
     }
-  return((char *)NULL);
+  return((char *) NULL);
 }
 
 /*
@@ -3207,7 +3255,7 @@ DisableMSCWarning(4127) \
        interpret_text=(char *) ResizeQuantumMemory(interpret_text, \
              extent+MaxTextExtent,sizeof(*interpret_text)); \
        if (interpret_text == (char *) NULL) \
-         return((char *)NULL); \
+         return((char *) NULL); \
        q=interpret_text+strlen(interpret_text); \
    } } while (0)  /* no trailing ; */ \
 RestoreMSCWarning
@@ -3221,7 +3269,7 @@ DisableMSCWarning(4127) \
        interpret_text=(char *) ResizeQuantumMemory(interpret_text, \
              extent+MaxTextExtent,sizeof(*interpret_text)); \
        if (interpret_text == (char *) NULL) \
-         return((char *)NULL); \
+         return((char *) NULL); \
        q=interpret_text+strlen(interpret_text); \
       } \
      (void) CopyMagickString(q,(string),extent); \
@@ -3238,7 +3286,7 @@ DisableMSCWarning(4127) \
       interpret_text=(char *) ResizeQuantumMemory(interpret_text, \
               extent+MaxTextExtent,sizeof(*interpret_text)); \
       if (interpret_text == (char *) NULL) \
-        return((char *)NULL); \
+        return((char *) NULL); \
       q=interpret_text+strlen(interpret_text); \
      } \
      q+=FormatLocaleString(q,extent,"%s=%s\n",(key),(value)); \
@@ -3347,9 +3395,9 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
     /*
       Doubled Percent - or percent at end of string
     */
-    if ( *p == '\0' )
-       p--;
-    if ( *p == '%' ) {
+    if ((*p == '\0') || (*p == '\'') || (*p == '"'))
+      p--;
+    if (*p == '%') {
         *q++='%';
         continue;
       }
@@ -3430,7 +3478,7 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
         (void) ThrowMagickException(&image->exception,GetMagickModule(),
             OptionError,"UnbalancedBraces","\"%%[%s\"",pattern);
         interpret_text=DestroyString(interpret_text);
-        return((char *)NULL);
+        return((char *) NULL);
       }
 
       /*
@@ -3463,8 +3511,6 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
       /* artifact - direct image artifact lookup (with glob) */
       if (LocaleNCompare("artifact:",pattern,9) == 0)
       {
-        if (image == (Image *) NULL)
-          continue; /* else no image to retrieve artifact */
         if (IsGlob(pattern+9) != MagickFalse)
         {
           ResetImageArtifactIterator(image);

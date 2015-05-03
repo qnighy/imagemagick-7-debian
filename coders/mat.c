@@ -548,6 +548,7 @@ int status;
   }
 DblBreak:
 
+  inflateEnd(&zip_info);
   (void)fclose(mat_file);
   RelinquishMagickMemory(CacheBlock);
   RelinquishMagickMemory(DecompressBlock);
@@ -600,14 +601,6 @@ UnlinkFile:
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static Image *ReadMATImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   Image *image, *image2=NULL,
@@ -874,6 +867,12 @@ RestoreMSCWarning
       image->rows = temp;
       goto done_reading; /* !!!!!! BAD  !!!! */
     }
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
 
   /* ----- Load raster data ----- */
     BImgBuff = (unsigned char *) AcquireQuantumMemory((size_t) (ldblk),sizeof(unsigned char));    /* Ldblk was set in the check phase */
@@ -895,7 +894,7 @@ RestoreMSCWarning
       for (i = 0; i < (ssize_t) MATLAB_HDR.SizeY; i++)
       {
         q=GetAuthenticPixels(image,0,MATLAB_HDR.SizeY-i-1,image->columns,1,exception);
-        if (q == (PixelPacket *)NULL)
+        if (q == (PixelPacket *) NULL)
   {
     if (logging) (void)LogMagickEvent(CoderEvent,GetMagickModule(),
               "  MAT set image pixels returns unexpected NULL on a row %u.", (unsigned)(MATLAB_HDR.SizeY-i-1));
@@ -1058,7 +1057,7 @@ done_reading:
     */
     p=image;
     image=NULL;
-    while (p != (Image *)NULL)
+    while (p != (Image *) NULL)
       {
         Image *tmp=p;
         if ((p->rows == 0) || (p->columns == 0)) {
@@ -1245,7 +1244,7 @@ static MagickBooleanType WriteMATImage(const ImageInfo *image_info,Image *image)
   do
   {
     (void) TransformImageColorspace(image,sRGBColorspace);
-    is_gray = IsGrayImage(image,&image->exception);
+    is_gray = SetImageGray(image,&image->exception);
     z = is_gray ? 0 : 3;
 
     /*

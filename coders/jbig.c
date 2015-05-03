@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -177,7 +177,10 @@ static Image *ReadJBIGImage(const ImageInfo *image_info,
   buffer=(unsigned char *) AcquireQuantumMemory(MagickMaxBufferExtent,
     sizeof(*buffer));
   if (buffer == (unsigned char *) NULL)
-    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    {
+      jbg_dec_free(&jbig_info);
+      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    }
   status=JBG_EAGAIN;
   do
   {
@@ -203,6 +206,7 @@ static Image *ReadJBIGImage(const ImageInfo *image_info,
   image->compression=JBIG2Compression;
   if (AcquireImageColormap(image,2) == MagickFalse)
     {
+      jbg_dec_free(&jbig_info);
       buffer=(unsigned char *) RelinquishMagickMemory(buffer);
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
     }
@@ -216,8 +220,18 @@ static Image *ReadJBIGImage(const ImageInfo *image_info,
   image->y_resolution=300;
   if (image_info->ping != MagickFalse)
     {
+      jbg_dec_free(&jbig_info);
+      buffer=(unsigned char *) RelinquishMagickMemory(buffer);
       (void) CloseBlob(image);
       return(GetFirstImageInList(image));
+    }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      jbg_dec_free(&jbig_info);
+      buffer=(unsigned char *) RelinquishMagickMemory(buffer);
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   /*
     Convert X bitmap image to pixel packets.

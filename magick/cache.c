@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -449,7 +449,7 @@ static MagickBooleanType ClipPixelCacheNexus(Image *image,
   {
     if ((p == (PixelPacket *) NULL) || (r == (const PixelPacket *) NULL))
       break;
-    if (GetPixelIntensity(image,r) > (QuantumRange/2))
+    if (GetPixelIntensity(image,r) > (QuantumRange/2.0))
       {
         SetPixelRed(q,GetPixelRed(p));
         SetPixelGreen(q,GetPixelGreen(p));
@@ -583,37 +583,6 @@ MagickExport void ClonePixelCacheMethods(Cache clone,const Cache cache)
 %
 */
 
-static inline void CopyPixels(PixelPacket *destination,
-  const PixelPacket *source,const MagickSizeType number_pixels)
-{
-#if !defined(MAGICKCORE_OPENMP_SUPPORT) || (MAGICKCORE_QUANTUM_DEPTH <= 8)
-  (void) memcpy(destination,source,(size_t) number_pixels*sizeof(*source));
-#else
-  {
-    register MagickOffsetType
-      i;
-
-    if ((number_pixels*sizeof(*source)) < MagickMaxBufferExtent)
-      {
-        (void) memcpy(destination,source,(size_t) number_pixels*
-          sizeof(*source));
-        return;
-      }
-    #pragma omp parallel for
-    for (i=0; i < (MagickOffsetType) number_pixels; i++)
-      destination[i]=source[i];
-  }
-#endif
-}
-
-static inline MagickSizeType MagickMin(const MagickSizeType x,
-  const MagickSizeType y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static MagickBooleanType ClonePixelCacheRepository(
   CacheInfo *restrict clone_info,CacheInfo *restrict cache_info,
   ExceptionInfo *exception)
@@ -651,8 +620,8 @@ static MagickBooleanType ClonePixelCacheRepository(
       /*
         Identical pixel cache morphology.
       */
-      CopyPixels(clone_info->pixels,cache_info->pixels,cache_info->columns*
-        cache_info->rows);
+      (void) memcpy(clone_info->pixels,cache_info->pixels,cache_info->columns*
+        cache_info->rows*sizeof(*cache_info->pixels));
       if ((cache_info->active_index_channel != MagickFalse) &&
           (clone_info->active_index_channel != MagickFalse))
         (void) memcpy(clone_info->indexes,cache_info->indexes,
@@ -1500,7 +1469,7 @@ static Cache GetImagePixelCache(Image *image,const MagickBooleanType clone,
     status;
 
   static MagickSizeType
-    cpu_throttle = 0,
+    cpu_throttle = MagickResourceInfinity,
     cycles = 0,
     time_limit = 0;
 
@@ -1508,10 +1477,9 @@ static Cache GetImagePixelCache(Image *image,const MagickBooleanType clone,
     cache_timestamp = 0;
 
   status=MagickTrue;
-  LockSemaphoreInfo(image->semaphore);
-  if (cpu_throttle == 0)
+  if (cpu_throttle == MagickResourceInfinity)
     cpu_throttle=GetMagickResourceLimit(ThrottleResource);
-  if ((cpu_throttle != MagickResourceInfinity) && ((cycles++ % 32) == 0))
+  if ((cpu_throttle != 0) && ((cycles++ % 32) == 0))
     MagickDelay(cpu_throttle);
   if (time_limit == 0)
     {
@@ -1529,6 +1497,7 @@ static Cache GetImagePixelCache(Image *image,const MagickBooleanType clone,
 #endif
        ThrowFatalException(ResourceLimitFatalError,"TimeLimitExceeded");
      }
+  LockSemaphoreInfo(image->semaphore);
   assert(image->cache != (Cache) NULL);
   cache_info=(CacheInfo *) image->cache;
   destroy=MagickFalse;
@@ -3484,14 +3453,7 @@ static MagickBooleanType SetPixelCacheExtent(Image *image,MagickSizeType length)
   count=WritePixelCacheRegion(cache_info,extent,1,(const unsigned char *) "");
 #if defined(MAGICKCORE_HAVE_POSIX_FALLOCATE)
   if (cache_info->synchronize != MagickFalse)
-    {
-      int
-        status;
-
-      status=posix_fallocate(cache_info->file,offset+1,extent-offset);
-      if (status != 0)
-        return(MagickFalse);
-    }
+    (void) posix_fallocate(cache_info->file,offset+1,extent-offset);
 #endif
 #if defined(SIGBUS)
   (void) signal(SIGBUS,CacheSignalHandler);
@@ -3531,6 +3493,10 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if ((image->columns == 0) || (image->rows == 0))
     ThrowBinaryException(CacheError,"NoPixelsDefinedInCache",image->filename);
+  if ((AcquireMagickResource(WidthResource,image->columns) == MagickFalse) ||
+      (AcquireMagickResource(HeightResource,image->rows) == MagickFalse))
+    ThrowBinaryException(ResourceLimitError,"PixelCacheAllocationFailed",
+      image->filename);
   cache_info=(CacheInfo *) image->cache;
   assert(cache_info->signature == MagickSignature);
   source_info=(*cache_info);
@@ -3559,7 +3525,8 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
     packet_size+=sizeof(IndexPacket);
   length=number_pixels*packet_size;
   columns=(size_t) (length/cache_info->rows/packet_size);
-  if (cache_info->columns != columns)
+  if ((cache_info->columns != columns) || ((ssize_t) cache_info->columns < 0) ||
+      ((ssize_t) cache_info->rows < 0))
     ThrowBinaryException(ResourceLimitError,"PixelCacheAllocationFailed",
       image->filename);
   cache_info->length=length;

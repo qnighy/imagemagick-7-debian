@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -248,6 +248,14 @@ ModuleExport size_t RegisterMPEGImage(void)
   entry->description=ConstantString("Microsoft Audio/Visual Interleaved");
   entry->module=ConstantString("MPEG");
   (void) RegisterMagickInfo(entry);
+  entry=SetMagickInfo("MKV");
+  entry->decoder=(DecodeImageHandler *) ReadMPEGImage;
+  entry->encoder=(EncodeImageHandler *) WriteMPEGImage;
+  entry->magick=(IsImageFormatHandler *) IsMPEG;
+  entry->blob_support=MagickFalse;
+  entry->description=ConstantString("Multimedia Container");
+  entry->module=ConstantString("MPEG");
+  (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("MOV");
   entry->decoder=(DecodeImageHandler *) ReadMPEGImage;
   entry->encoder=(EncodeImageHandler *) WriteMPEGImage;
@@ -329,12 +337,13 @@ ModuleExport size_t RegisterMPEGImage(void)
 ModuleExport void UnregisterMPEGImage(void)
 {
   (void) UnregisterMagickInfo("WMV");
+  (void) UnregisterMagickInfo("MOV");
   (void) UnregisterMagickInfo("M4V");
   (void) UnregisterMagickInfo("M2V");
   (void) UnregisterMagickInfo("MP4");
   (void) UnregisterMagickInfo("MPG");
   (void) UnregisterMagickInfo("MPEG");
-  (void) UnregisterMagickInfo("MOV");
+  (void) UnregisterMagickInfo("MKV");
   (void) UnregisterMagickInfo("AVI");
 }
 
@@ -365,21 +374,6 @@ ModuleExport void UnregisterMPEGImage(void)
 %    o image:  The image.
 %
 */
-
-static inline double MagickMax(const double x,const double y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static MagickBooleanType CopyDelegateFile(const char *source,
   const char *destination)
 {
@@ -518,6 +512,7 @@ static MagickBooleanType WriteMPEGImage(const ImageInfo *image_info,
     basename);
   count=0;
   write_info=CloneImageInfo(image_info);
+  *write_info->magick='\0';
   for (p=coalesce_image; p != (Image *) NULL; p=GetNextImageInList(p))
   {
     char

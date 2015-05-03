@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -141,7 +141,9 @@ extern MagickExport Image
 
 extern MagickExport void
   ScaleGeometryKernelInfo(KernelInfo *,const char *),
-  ShowKernelInfo(const KernelInfo *);
+  ScaleKernelInfo(KernelInfo *,const double,const GeometryFlags),
+  ShowKernelInfo(const KernelInfo *),
+  UnityAddKernelInfo(KernelInfo *,const double);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -46,6 +46,7 @@
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/geometry.h"
+#include "magick/image-private.h"
 #include "magick/list.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
@@ -146,14 +147,6 @@ MagickExport MagickBooleanType AcquireUniqueFilename(char *path)
 %   o  destination:  the destination path.
 %
 */
-
-static inline MagickSizeType MagickMin(const MagickSizeType x,
-  const MagickSizeType y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 MagickExport MagickBooleanType AcquireUniqueSymbolicLink(const char *source,
   char *destination)
@@ -727,7 +720,6 @@ MagickExport MagickBooleanType ExpandFilenames(int *number_arguments,
   char ***arguments)
 {
   char
-    *directory,
     home_directory[MaxTextExtent],
     **vector;
 
@@ -814,8 +806,7 @@ MagickExport MagickBooleanType ExpandFilenames(int *number_arguments,
         GetPathComponent(option,SubimagePath,subimage);
         ExpandFilename(path);
         if (*home_directory == '\0')
-          directory=getcwd(home_directory,MaxTextExtent-1);
-        (void) directory;
+          getcwd_utf8(home_directory,MaxTextExtent-1);
         filelist=ListFiles(*path == '\0' ? home_directory : path,filename,
           &number_files);
       }
@@ -1160,6 +1151,7 @@ MagickExport MagickBooleanType GetPathAttributes(const char *path,
       errno=EINVAL;
       return(MagickFalse);
     }
+  (void) ResetMagickMemory(attributes,0,sizeof(struct stat));
   status=stat_utf8(path,(struct stat *) attributes) == 0 ? MagickTrue :
     MagickFalse;
   return(status);
@@ -1768,7 +1760,7 @@ MagickExport size_t MultilineCensus(const char *label)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   S h r e a d F i l e                                                       %
+%   S h r e d F i l e                                                         %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -1819,7 +1811,11 @@ MagickPrivate MagickBooleanType ShredFile(const char *path)
       */
       status=remove_utf8(path);
       if (status == -1)
-        return(MagickFalse);
+        {
+          (void) LogMagickEvent(ExceptionEvent,GetMagickModule(),
+            "Failed to remove: %s",path);
+          return(MagickFalse);
+        }
       return(MagickTrue);
     }
   file=open_utf8(path,O_WRONLY | O_EXCL | O_BINARY,S_MODE);
@@ -1829,6 +1825,9 @@ MagickPrivate MagickBooleanType ShredFile(const char *path)
         Don't shred the file, just remove it.
       */
       status=remove_utf8(path);
+      if (status == -1)
+        (void) LogMagickEvent(ExceptionEvent,GetMagickModule(),
+          "Failed to remove: %s",path);
       return(MagickFalse);
     }
   /*

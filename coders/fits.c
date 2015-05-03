@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -392,6 +392,10 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
       c=ReadBlobByte(image);
     if (fits_info.extend == MagickFalse)
       break;
+    if ((fits_info.bits_per_pixel != 8) && (fits_info.bits_per_pixel != 16) &&
+        (fits_info.bits_per_pixel != 32) && (fits_info.bits_per_pixel != 64) &&
+        (fits_info.bits_per_pixel != -32) && (fits_info.bits_per_pixel != -64))
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     number_pixels=(MagickSizeType) fits_info.columns*fits_info.rows;
     if ((fits_info.simple != MagickFalse) && (fits_info.number_axes >= 1) &&
         (fits_info.number_axes <= 4) && (number_pixels != 0))
@@ -423,6 +427,12 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     /*
       Initialize image structure.
     */
@@ -465,7 +475,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
       if (image->previous == (Image *) NULL)
         {
           status=SetImageProgress(image,LoadImageTag,(MagickOffsetType) y,
-                image->rows);
+            image->rows);
           if (status == MagickFalse)
             break;
         }
@@ -656,7 +666,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   */
   image->depth=GetImageQuantumDepth(image,MagickFalse);
   image->endian=MSBEndian;
-  quantum_info=AcquireQuantumInfo((const ImageInfo *) NULL,image);
+  quantum_info=AcquireQuantumInfo(image_info,image);
   if (quantum_info == (QuantumInfo *) NULL)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
   offset=0;
@@ -670,7 +680,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   (void) strncpy(fits_info+offset,header,strlen(header));
   offset+=80;
   (void) FormatLocaleString(header,FITSBlocksize,"NAXIS   =           %10lu",
-    IsGrayImage(image,&image->exception) != MagickFalse ? 2UL : 3UL);
+    SetImageGray(image,&image->exception) != MagickFalse ? 2UL : 3UL);
   (void) strncpy(fits_info+offset,header,strlen(header));
   offset+=80;
   (void) FormatLocaleString(header,FITSBlocksize,"NAXIS1  =           %10lu",
@@ -681,7 +691,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
     (unsigned long) image->rows);
   (void) strncpy(fits_info+offset,header,strlen(header));
   offset+=80;
-  if (IsGrayImage(image,&image->exception) == MagickFalse)
+  if (SetImageGray(image,&image->exception) == MagickFalse)
     {
       (void) FormatLocaleString(header,FITSBlocksize,
         "NAXIS3  =           %10lu",3UL);
@@ -720,7 +730,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
     Convert image to fits scale PseudoColor class.
   */
   pixels=GetQuantumPixels(quantum_info);
-  if (IsGrayImage(image,&image->exception) != MagickFalse)
+  if (SetImageGray(image,&image->exception) != MagickFalse)
     {
       length=GetQuantumExtent(image,quantum_info,GrayQuantum);
       for (y=(ssize_t) image->rows-1; y >= 0; y--)

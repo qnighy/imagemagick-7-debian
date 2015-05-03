@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2616,8 +2616,7 @@ static const DicomInfo
     { 0xfffe, 0xe0dd, "!!", "Sequence Delimitation Item" },
     { 0xffff, 0xffff, "xs", (char *) NULL }
   };
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2651,8 +2650,7 @@ static MagickBooleanType IsDCM(const unsigned char *magick,const size_t length)
     return(MagickTrue);
   return(MagickFalse);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2679,20 +2677,6 @@ static MagickBooleanType IsDCM(const unsigned char *magick,const size_t length)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline size_t MagickMax(const size_t x,const size_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 typedef struct _DCMStreamInfo
 {
@@ -2764,7 +2748,7 @@ static int ReadDCMByte(DCMStreamInfo *stream_info,Image *image)
   return(ReadBlobByte(image));
 }
 
-static unsigned short ReadDCMLSBShort(DCMStreamInfo *stream_info,Image *image)
+static unsigned short ReadDCMShort(DCMStreamInfo *stream_info,Image *image)
 {
   int
     shift;
@@ -2777,21 +2761,6 @@ static unsigned short ReadDCMLSBShort(DCMStreamInfo *stream_info,Image *image)
   shift=image->depth < 16 ? 4 : 8;
   value=ReadDCMByte(stream_info,image) | (unsigned short)
     (ReadDCMByte(stream_info,image) << shift);
-  return(value);
-}
-
-static unsigned short ReadDCMMSBShort(DCMStreamInfo *stream_info,Image *image)
-{
-  int
-    shift;
-  unsigned short
-    value;
-
-  if (image->compression != RLECompression)
-    return(ReadBlobMSBShort(image));
-  shift=image->depth < 16 ? 4 : 8;
-  value=(ReadDCMByte(stream_info,image) << shift) | (unsigned short)
-    ReadDCMByte(stream_info,image);
   return(value);
 }
 
@@ -2863,14 +2832,16 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   ssize_t
     count,
-    element,
-    group,
     scene,
     window_center,
     y;
 
   unsigned char
     *data;
+
+  unsigned short
+    group,
+    element;
 
   /*
     Open image file.
@@ -2890,6 +2861,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return((Image *) NULL);
     }
   image->depth=8UL;
+  image->endian=LSBEndian;
   /*
     Read DCM preamble.
   */
@@ -2945,30 +2917,36 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
       Read a group.
     */
     image->offset=(ssize_t) TellBlob(image);
-    group=(ssize_t) ReadBlobLSBShort(image);
-    element=(ssize_t) ReadBlobLSBShort(image);
+    group=ReadBlobLSBShort(image);
+    element=ReadBlobLSBShort(image);
+    if ((group != 0x0002) && (image->endian == MSBEndian))
+      {
+        group=(unsigned short) ((group << 8) | ((group >> 8) & 0xFF));
+        element=(unsigned short) ((element << 8) | ((element >> 8) & 0xFF));
+      }
     quantum=0;
     /*
       Find corresponding VR for this group and element.
     */
     for (i=0; dicom_info[i].group < 0xffff; i++)
-      if ((group == (ssize_t) dicom_info[i].group) &&
-          (element == (ssize_t) dicom_info[i].element))
+      if ((group == dicom_info[i].group) && (element == dicom_info[i].element))
         break;
     (void) CopyMagickString(implicit_vr,dicom_info[i].vr,MaxTextExtent);
     count=ReadBlob(image,2,(unsigned char *) explicit_vr);
+    if (count != 2)
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     /*
       Check for "explicitness", but meta-file headers always explicit.
     */
     if ((explicit_file == MagickFalse) && (group != 0x0002))
       explicit_file=(isupper((unsigned char) *explicit_vr) != MagickFalse) &&
-        (isupper((unsigned char) *(explicit_vr+1)) != MagickFalse) ? 
+        (isupper((unsigned char) *(explicit_vr+1)) != MagickFalse) ?
         MagickTrue : MagickFalse;
     use_explicit=((group == 0x0002) && (explicit_retry == MagickFalse)) ||
       (explicit_file != MagickFalse) ? MagickTrue : MagickFalse;
-    if ((use_explicit != MagickFalse) && (strcmp(implicit_vr,"xs") == 0))
+    if ((use_explicit != MagickFalse) && (strncmp(implicit_vr,"xs",2) == 0))
       (void) CopyMagickString(implicit_vr,explicit_vr,MaxTextExtent);
-    if ((use_explicit == MagickFalse) || (strcmp(implicit_vr,"!!") == 0))
+    if ((use_explicit == MagickFalse) || (strncmp(implicit_vr,"!!",2) == 0))
       {
         offset=SeekBlob(image,(MagickOffsetType) -2,SEEK_CUR);
         if (offset < 0)
@@ -2981,9 +2959,10 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           Assume explicit type.
         */
         quantum=2;
-        if ((strcmp(explicit_vr,"OB") == 0) ||
-            (strcmp(explicit_vr,"UN") == 0) ||
-            (strcmp(explicit_vr,"OW") == 0) || (strcmp(explicit_vr,"SQ") == 0))
+        if ((strncmp(explicit_vr,"OB",2) == 0) ||
+            (strncmp(explicit_vr,"UN",2) == 0) ||
+            (strncmp(explicit_vr,"OW",2) == 0) ||
+            (strncmp(explicit_vr,"SQ",2) == 0))
           {
             (void) ReadBlobLSBShort(image);
             quantum=4;
@@ -2991,24 +2970,34 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
     datum=0;
     if (quantum == 4)
-      datum=(int) ReadBlobLSBLong(image);
+      {
+        if (group == 0x0002)
+          datum=(int) ReadBlobLSBLong(image);
+        else
+          datum=(int) ReadBlobLong(image);
+      }
     else
       if (quantum == 2)
-        datum=(int) ReadBlobLSBShort(image);
+        {
+          if (group == 0x0002)
+            datum=(int) ReadBlobLSBShort(image);
+          else
+            datum=(int) ReadBlobShort(image);
+        }
     quantum=0;
     length=1;
     if (datum != 0)
       {
-        if ((strcmp(implicit_vr,"SS") == 0) ||
-            (strcmp(implicit_vr,"US") == 0))
+        if ((strncmp(implicit_vr,"SS",2) == 0) ||
+            (strncmp(implicit_vr,"US",2) == 0))
           quantum=2;
         else
-          if ((strcmp(implicit_vr,"UL") == 0) ||
-              (strcmp(implicit_vr,"SL") == 0) ||
-              (strcmp(implicit_vr,"FL") == 0))
+          if ((strncmp(implicit_vr,"UL",2) == 0) ||
+              (strncmp(implicit_vr,"SL",2) == 0) ||
+              (strncmp(implicit_vr,"FL",2) == 0))
             quantum=4;
           else
-            if (strcmp(implicit_vr,"FD") != 0)
+            if (strncmp(implicit_vr,"FD",2) != 0)
               quantum=1;
             else
               quantum=8;
@@ -3031,12 +3020,12 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (use_explicit == MagickFalse)
           explicit_vr[0]='\0';
         for (i=0; dicom_info[i].description != (char *) NULL; i++)
-          if ((group == (ssize_t) dicom_info[i].group) &&
-              (element == (ssize_t) dicom_info[i].element))
+          if ((group == dicom_info[i].group) &&
+              (element == dicom_info[i].element))
             break;
         (void) FormatLocaleFile(stdout,"0x%04lX %4ld %s-%s (0x%04lx,0x%04lx)",
-          (unsigned long) image->offset,(long) length,implicit_vr,
-          explicit_vr,(unsigned long) group,(unsigned long) element);
+          (unsigned long) image->offset,(long) length,implicit_vr,explicit_vr,
+          (unsigned long) group,(unsigned long) element);
         if (dicom_info[i].description != (char *) NULL)
           (void) FormatLocaleFile(stdout," %s",dicom_info[i].description);
         (void) FormatLocaleFile(stdout,": ");
@@ -3055,14 +3044,23 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
       datum=(int) ReadBlobByte(image);
     else
       if ((length == 1) && (quantum == 2))
-        datum=(int) ReadBlobLSBShort(image);
+        {
+          if (group == 0x0002)
+            datum=(int) ReadBlobLSBShort(image);
+          else
+            datum=(int) ReadBlobShort(image);
+        }
       else
         if ((length == 1) && (quantum == 4))
-          datum=(int) ReadBlobLSBLong(image);
+          {
+            if (group == 0x0002)
+              datum=(int) ReadBlobLSBLong(image);
+            else
+              datum=(int) ReadBlobLong(image);
+          }
         else
           if ((quantum != 0) && (length != 0))
             {
-              data=(unsigned char *) NULL;
               if (~length >= 1)
                 data=(unsigned char *) AcquireQuantumMemory(length+1,quantum*
                   sizeof(*data));
@@ -3087,16 +3085,19 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 sequence=MagickTrue;
                 continue;
               }
-
-    if (((group << 16) | element) == 0xFFFEE0DD)
+    if ((unsigned int) ((group << 16) | element) == 0xFFFEE0DD)
       {
+        if (data != (unsigned char *) NULL)
+          data=(unsigned char *) RelinquishMagickMemory(data);
         sequence=MagickFalse;
         continue;
       }
-
     if (sequence != MagickFalse)
-      continue;
-
+      {
+        if (data != (unsigned char *) NULL)
+          data=(unsigned char *) RelinquishMagickMemory(data);
+        continue;
+      }
     switch (group)
     {
       case 0x0002:
@@ -3128,16 +3129,19 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 MaxTextExtent);
             if (image_info->verbose != MagickFalse)
               (void) FormatLocaleFile(stdout,"transfer_syntax=%s\n",
-                (const char*) transfer_syntax);
+                (const char *) transfer_syntax);
             if (strncmp(transfer_syntax,"1.2.840.10008.1.2",17) == 0)
               {
                 int
+                  count,
                   subtype,
                   type;
 
                 type=0;
                 subtype=0;
-                (void) sscanf(transfer_syntax+17,".%d.%d",&type,&subtype);
+                count=sscanf(transfer_syntax+17,".%d.%d",&type,&subtype);
+                if (count < 1)
+                  ThrowReaderException(CorruptImageError,"ImproperImageHeader");
                 switch (type)
                 {
                   case 1:
@@ -3184,7 +3188,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Samples per pixel.
             */
-            samples_per_pixel=datum;
+            samples_per_pixel=(size_t) datum;
             break;
           }
           case 0x0004:
@@ -3221,7 +3225,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Image rows.
             */
-            height=datum;
+            height=(size_t) datum;
             break;
           }
           case 0x0011:
@@ -3229,7 +3233,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Image columns.
             */
-            width=datum;
+            width=(size_t) datum;
             break;
           }
           case 0x0100:
@@ -3237,7 +3241,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Bits allocated.
             */
-            bits_allocated=datum;
+            bits_allocated=(size_t) datum;
             bytes_per_pixel=1;
             if (datum > 8)
               bytes_per_pixel=2;
@@ -3252,7 +3256,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Bits stored.
             */
-            significant_bits=datum;
+            significant_bits=(size_t) datum;
             bytes_per_pixel=1;
             if (significant_bits > 8)
               bytes_per_pixel=2;
@@ -3275,7 +3279,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Pixel representation.
             */
-            signed_data=datum;
+            signed_data=(size_t) datum;
             break;
           }
           case 0x1050:
@@ -3284,7 +3288,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
               Visible pixel range: center.
             */
             if (data != (unsigned char *) NULL)
-              window_center=StringToLong((char *) data);
+              window_center=(ssize_t) StringToLong((char *) data);
             break;
           }
           case 0x1051:
@@ -3413,7 +3417,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           case 0x0020:
           {
             if ((data != (unsigned char *) NULL) &&
-                (strncmp((char*) data,"INVERSE", 7) == 0))
+                (strncmp((char *) data,"INVERSE",7) == 0))
               polarity=MagickTrue;
             break;
           }
@@ -3431,8 +3435,8 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           *attribute;
 
         for (i=0; dicom_info[i].description != (char *) NULL; i++)
-          if ((group == (ssize_t) dicom_info[i].group) &&
-              (element == (ssize_t) dicom_info[i].element))
+          if ((group == dicom_info[i].group) &&
+              (element == dicom_info[i].element))
             break;
         if (dicom_info[i].description != (char *) NULL)
           {
@@ -3532,7 +3536,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           if (stream_info->offsets == (ssize_t *) NULL)
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           for (i=0; i < (ssize_t) stream_info->offset_count; i++)
-            stream_info->offsets[i]=(int) ReadBlobLSBLong(image);
+            stream_info->offsets[i]=(ssize_t) ((int) ReadBlobLSBLong(image));
           offset=TellBlob(image);
           for (i=0; i < (ssize_t) stream_info->offset_count; i++)
             stream_info->offsets[i]+=offset;
@@ -3563,42 +3567,40 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         unsigned int
           tag;
 
+        tag=(ReadBlobLSBShort(image) << 16) | ReadBlobLSBShort(image);
+        length=(size_t) ReadBlobLSBLong(image);
+        if (tag == 0xFFFEE0DD)
+          break; /* sequence delimiter tag */
+        if (tag != 0xFFFEE000)
+          ThrowReaderException(CorruptImageError,"ImproperImageHeader");
         file=(FILE *) NULL;
         unique_file=AcquireUniqueFileResource(filename);
         if (unique_file != -1)
           file=fdopen(unique_file,"wb");
-        if ((unique_file == -1) || (file == (FILE *) NULL))
+        if (file == (FILE *) NULL)
           {
+            (void) RelinquishUniqueFileResource(filename);
             ThrowFileException(exception,FileOpenError,
               "UnableToCreateTemporaryFile",filename);
             break;
-          }
-        tag=(ReadBlobLSBShort(image) << 16) | ReadBlobLSBShort(image);
-        length=(size_t) ReadBlobLSBLong(image);
-        if (tag == 0xFFFEE0DD)
-          {
-            (void) fclose(file);
-            break; /* sequence delimiter tag */
-          }
-        if (tag != 0xFFFEE000)
-          {
-            (void) fclose(file);
-            ThrowReaderException(CorruptImageError,"ImproperImageHeader");
           }
         for ( ; length != 0; length--)
         {
           c=ReadBlobByte(image);
           if (c == EOF)
-            ThrowFileException(exception,CorruptImageError,
-              "UnexpectedEndOfFile",image->filename);
+            {
+              ThrowFileException(exception,CorruptImageError,
+                "UnexpectedEndOfFile",image->filename);
+              break;
+            }
           (void) fputc(c,file);
         }
         (void) fclose(file);
-        (void) FormatLocaleString(read_info->filename,MaxTextExtent,
-          "jpeg:%s",filename);
+        (void) FormatLocaleString(read_info->filename,MaxTextExtent,"jpeg:%s",
+          filename);
         if (image->compression == JPEG2000Compression)
-          (void) FormatLocaleString(read_info->filename,MaxTextExtent,
-            "j2k:%s",filename);
+          (void) FormatLocaleString(read_info->filename,MaxTextExtent,"j2k:%s",
+            filename);
         jpeg_image=ReadImage(read_info,exception);
         if (jpeg_image != (Image *) NULL)
           {
@@ -3664,7 +3666,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           if (stream_info->offsets == (ssize_t *) NULL)
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           for (i=0; i < (ssize_t) stream_info->offset_count; i++)
-            stream_info->offsets[i]=(int) ReadBlobLSBLong(image);
+            stream_info->offsets[i]=(ssize_t) ((int) ReadBlobLSBLong(image));
           offset=TellBlob(image);
           for (i=0; i < (ssize_t) stream_info->offset_count; i++)
             stream_info->offsets[i]+=offset;
@@ -3677,6 +3679,12 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->columns=(size_t) width;
     image->rows=(size_t) height;
     image->depth=depth;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        break;
+      }
     image->colorspace=RGBColorspace;
     if ((image->colormap == (PixelPacket *) NULL) && (samples_per_pixel == 1))
       {
@@ -3694,7 +3702,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             index=redmap[i];
             if ((scale != (Quantum *) NULL) && (index <= (int) max_value))
               index=(int) scale[index];
-            image->colormap[i].red=index;
+            image->colormap[i].red=(Quantum) index;
           }
         if (greenmap != (int *) NULL)
           for (i=0; i < (ssize_t) colors; i++)
@@ -3702,7 +3710,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             index=greenmap[i];
             if ((scale != (Quantum *) NULL) && (index <= (int) max_value))
               index=(int) scale[index];
-            image->colormap[i].green=index;
+            image->colormap[i].green=(Quantum) index;
           }
         if (bluemap != (int *) NULL)
           for (i=0; i < (ssize_t) colors; i++)
@@ -3710,7 +3718,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             index=bluemap[i];
             if ((scale != (Quantum *) NULL) && (index <= (int) max_value))
               index=(int) scale[index];
-            image->colormap[i].blue=index;
+            image->colormap[i].blue=(Quantum) index;
           }
         if (graymap != (int *) NULL)
           for (i=0; i < (ssize_t) colors; i++)
@@ -3718,9 +3726,9 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             index=graymap[i];
             if ((scale != (Quantum *) NULL) && (index <= (int) max_value))
               index=(int) scale[index];
-            image->colormap[i].red=index;
-            image->colormap[i].green=index;
-            image->colormap[i].blue=index;
+            image->colormap[i].red=(Quantum) index;
+            image->colormap[i].green=(Quantum) index;
+            image->colormap[i].blue=(Quantum) index;
           }
       }
     if (image->compression == RLECompression)
@@ -3746,7 +3754,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             depth=8;
           }
         for (i=0; i < 15; i++)
-          stream_info->segments[i]=(int) ReadBlobLSBLong(image);
+          stream_info->segments[i]=(ssize_t) ((int) ReadBlobLSBLong(image));
         stream_info->remaining-=64;
       }
     if ((samples_per_pixel > 1) && (image->interlace == PlaneInterlace))
@@ -3845,21 +3853,14 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                   pixel_value;
 
                 if (bytes_per_pixel == 1)
-                  pixel_value=polarity != MagickFalse ?
-                    ((int) max_value-ReadDCMByte(stream_info,image)) :
+                  pixel_value=polarity != MagickFalse ? ((int) max_value-
+                    ReadDCMByte(stream_info,image)) :
                     ReadDCMByte(stream_info,image);
                 else
                   if ((bits_allocated != 12) || (significant_bits != 12))
-                    {
-                      if (image->endian == MSBEndian)
-                        pixel_value=(int) (polarity != MagickFalse ? (max_value-
-                          ReadDCMMSBShort(stream_info,image)) :
-                          ReadDCMMSBShort(stream_info,image));
-                      else
-                        pixel_value=(int) (polarity != MagickFalse ? (max_value-
-                          ReadDCMLSBShort(stream_info,image)) :
-                          ReadDCMLSBShort(stream_info,image));
-                    }
+                    pixel_value=(int) (polarity != MagickFalse ? (max_value-
+                      ReadDCMShort(stream_info,image)) :
+                      ReadDCMShort(stream_info,image));
                   else
                     {
                       if ((i & 0x01) != 0)
@@ -3867,12 +3868,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                           byte;
                       else
                         {
-                          if (image->endian == MSBEndian)
-                            pixel_value=(int) ReadDCMMSBShort(stream_info,
-                              image);
-                          else
-                            pixel_value=(int) ReadDCMLSBShort(stream_info,
-                              image);
+                          pixel_value=(int) ReadDCMShort(stream_info,image);
                           byte=(int) (pixel_value & 0x0f);
                           pixel_value>>=4;
                         }
@@ -3890,10 +3886,10 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                       window_max,
                       window_min;
 
-                    window_min=(ssize_t) ceil(window_center-(window_width-1)/
-                      2.0-0.5);
-                    window_max=(ssize_t) floor(window_center+(window_width-1)/
-                      2.0+0.5);
+                    window_min=(ssize_t) ceil((double) window_center-
+                      (window_width-1.0)/2.0-0.5);
+                    window_max=(ssize_t) floor((double) window_center+
+                      (window_width-1.0)/2.0+0.5);
                     if ((ssize_t) pixel_value <= window_min)
                       index=0;
                     else
@@ -3906,32 +3902,23 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 index&=mask;
                 index=(int) ConstrainColormapIndex(image,(size_t) index);
                 SetPixelIndex(indexes+x,index);
-                pixel.red=1UL*image->colormap[index].red;
-                pixel.green=1UL*image->colormap[index].green;
-                pixel.blue=1UL*image->colormap[index].blue;
+                pixel.red=1U*image->colormap[index].red;
+                pixel.green=1U*image->colormap[index].green;
+                pixel.blue=1U*image->colormap[index].blue;
               }
             else
               {
                 if (bytes_per_pixel == 1)
                   {
-                    pixel.red=(size_t) ReadDCMByte(stream_info,image);
-                    pixel.green=(size_t) ReadDCMByte(stream_info,image);
-                    pixel.blue=(size_t) ReadDCMByte(stream_info,image);
+                    pixel.red=(unsigned int) ReadDCMByte(stream_info,image);
+                    pixel.green=(unsigned int) ReadDCMByte(stream_info,image);
+                    pixel.blue=(unsigned int) ReadDCMByte(stream_info,image);
                   }
                 else
                   {
-                    if (image->endian == MSBEndian)
-                      {
-                        pixel.red=ReadDCMMSBShort(stream_info,image);
-                        pixel.green=ReadDCMMSBShort(stream_info,image);
-                        pixel.blue=ReadDCMMSBShort(stream_info,image);
-                      }
-                    else
-                      {
-                        pixel.red=ReadDCMLSBShort(stream_info,image);
-                        pixel.green=ReadDCMLSBShort(stream_info,image);
-                        pixel.blue=ReadDCMLSBShort(stream_info,image);
-                      }
+                    pixel.red=ReadDCMShort(stream_info,image);
+                    pixel.green=ReadDCMShort(stream_info,image);
+                    pixel.blue=ReadDCMShort(stream_info,image);
                   }
                 pixel.red&=mask;
                 pixel.green&=mask;
@@ -3973,20 +3960,15 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     pixel_value;
 
                   if (bytes_per_pixel == 1)
-                    pixel_value=polarity != MagickFalse ?
-                      ((int) max_value-ReadDCMByte(stream_info,image)) :
+                    pixel_value=polarity != MagickFalse ? ((int) max_value-
+                      ReadDCMByte(stream_info,image)) :
                       ReadDCMByte(stream_info,image);
                   else
                     if ((bits_allocated != 12) || (significant_bits != 12))
                       {
-                        if (image->endian == MSBEndian)
-                          pixel_value=(int) (polarity != MagickFalse ?
-                            (max_value-ReadDCMMSBShort(stream_info,image)) :
-                            ReadDCMMSBShort(stream_info,image));
-                        else
-                          pixel_value=(int) (polarity != MagickFalse ?
-                            (max_value-ReadDCMLSBShort(stream_info,image)) :
-                            ReadDCMLSBShort(stream_info,image));
+                        pixel_value=(int) (polarity != MagickFalse ? (max_value-
+                          ReadDCMShort(stream_info,image)) :
+                          ReadDCMShort(stream_info,image));
                         if (signed_data == 1)
                           pixel_value=((signed short) pixel_value);
                       }
@@ -3997,12 +3979,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                             byte;
                         else
                           {
-                            if (image->endian == MSBEndian)
-                              pixel_value=(int) ReadDCMMSBShort(stream_info,
-                                image);
-                            else
-                              pixel_value=(int) ReadDCMLSBShort(stream_info,
-                                image);
+                            pixel_value=(int) ReadDCMShort(stream_info,image);
                             byte=(int) (pixel_value & 0x0f);
                             pixel_value>>=4;
                           }
@@ -4020,10 +3997,10 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                         window_max,
                         window_min;
 
-                      window_min=(ssize_t) ceil(window_center-(window_width-1)/
-                        2.0-0.5);
-                      window_max=(ssize_t) floor(window_center+(window_width-1)/
-                        2.0+0.5);
+                      window_min=(ssize_t) ceil((double) window_center-
+                        (window_width-1.0)/2.0-0.5);
+                      window_max=(ssize_t) floor((double) window_center+
+                        (window_width-1.0)/2.0+0.5);
                       if ((ssize_t) pixel_value <= window_min)
                         index=0;
                       else
@@ -4035,35 +4012,25 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     }
                   index&=mask;
                   index=(int) ConstrainColormapIndex(image,(size_t) index);
-                  SetPixelIndex(indexes+x,(((size_t)
-                    GetPixelIndex(indexes+x)) | (((size_t) index) <<
-                    8)));
-                  pixel.red=1UL*image->colormap[index].red;
-                  pixel.green=1UL*image->colormap[index].green;
-                  pixel.blue=1UL*image->colormap[index].blue;
+                  SetPixelIndex(indexes+x,(((size_t) GetPixelIndex(indexes+x)) |
+                    (((size_t) index) << 8)));
+                  pixel.red=1U*image->colormap[index].red;
+                  pixel.green=1U*image->colormap[index].green;
+                  pixel.blue=1U*image->colormap[index].blue;
                 }
               else
                 {
                   if (bytes_per_pixel == 1)
                     {
-                      pixel.red=(size_t) ReadDCMByte(stream_info,image);
-                      pixel.green=(size_t) ReadDCMByte(stream_info,image);
-                      pixel.blue=(size_t) ReadDCMByte(stream_info,image);
+                      pixel.red=(unsigned int) ReadDCMByte(stream_info,image);
+                      pixel.green=(unsigned int) ReadDCMByte(stream_info,image);
+                      pixel.blue=(unsigned int) ReadDCMByte(stream_info,image);
                     }
                   else
                     {
-                      if (image->endian == MSBEndian)
-                        {
-                          pixel.red=ReadDCMMSBShort(stream_info,image);
-                          pixel.green=ReadDCMMSBShort(stream_info,image);
-                          pixel.blue=ReadDCMMSBShort(stream_info,image);
-                        }
-                      else
-                        {
-                          pixel.red=ReadDCMLSBShort(stream_info,image);
-                          pixel.green=ReadDCMLSBShort(stream_info,image);
-                          pixel.blue=ReadDCMLSBShort(stream_info,image);
-                        }
+                      pixel.red=ReadDCMShort(stream_info,image);
+                      pixel.green=ReadDCMShort(stream_info,image);
+                      pixel.blue=ReadDCMShort(stream_info,image);
                     }
                   pixel.red&=mask;
                   pixel.green&=mask;
@@ -4094,7 +4061,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
               }
           }
       }
-    if (IsGrayImage(image,exception) != MagickFalse)
+    if (SetImageGray(image,exception) != MagickFalse)
       (void) SetImageColorspace(image,GRAYColorspace);
     if (EOFBlob(image) != MagickFalse)
       {
@@ -4146,8 +4113,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4198,8 +4164,7 @@ ModuleExport size_t RegisterDCMImage(void)
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %

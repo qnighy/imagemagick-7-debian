@@ -17,7 +17,7 @@
 %                                 April 2014                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -416,6 +416,12 @@ static Image *ReadVIPSImage(const ImageInfo *image_info,
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   image->columns=(size_t) ReadBlobLong(image);
   image->rows=(size_t) ReadBlobLong(image);
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   channels=ReadBlobLong(image);
   (void) ReadBlobLong(image); /* Legacy */
   format=(VIPSBandFormat) ReadBlobLong(image);
@@ -657,7 +663,7 @@ static MagickBooleanType WriteVIPSImage(const ImageInfo *image_info,
   (void) WriteBlobLong(image,(unsigned int) image->rows);
   (void) SetImageStorageClass(image,DirectClass);
   channels=image->matte ? 4 : 3;
-  if (IsGrayImage(image,&image->exception) != MagickFalse)
+  if (SetImageGray(image,&image->exception) != MagickFalse)
     channels=image->matte ? 2 : 1;
   else if (image->colorspace == CMYKColorspace)
     channels=image->matte ? 5 : 4;

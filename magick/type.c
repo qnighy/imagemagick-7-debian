@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -47,6 +47,7 @@
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/hashmap.h"
+#include "magick/image-private.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
 #include "magick/nt-base-private.h"
@@ -328,20 +329,6 @@ MagickExport const TypeInfo *GetTypeInfo(const char *name,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline size_t MagickMax(const size_t x,const size_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 MagickExport const TypeInfo *GetTypeInfoByFamily(const char *family,
   const StyleType style,const StretchType stretch,const size_t weight,

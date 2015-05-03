@@ -23,7 +23,7 @@
 %                               December 2004                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -52,6 +52,7 @@
 #include "magick/blob-private.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
+#include "magick/image-private.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
 #include "magick/semaphore.h"
@@ -594,14 +595,6 @@ MagickExport XMLTreeInfo *DestroyXMLTree(XMLTreeInfo *xml_info)
 %    o extent: Maximum length of the string.
 %
 */
-
-static inline MagickSizeType MagickMin(const MagickSizeType x,
-  const MagickSizeType y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 MagickPrivate char *FileToXML(const char *filename,const size_t extent)
 {
@@ -1521,12 +1514,16 @@ static char *ParseEntities(char *xml,char **entities,int state)
   }
   if (state == '*')
     {
+     
       /*
         Normalize spaces for non-CDATA attributes.
       */
       for (xml=p; *xml != '\0'; xml++)
       {
-        i=(ssize_t) strspn(xml," ");
+        char
+          accept[] = " ";
+
+        i=(ssize_t) strspn(xml,accept);
         if (i != 0)
           (void) CopyMagickMemory(xml,xml+i,strlen(xml+i)+1);
         while ((*xml != '\0') && (*xml != ' '))
@@ -1667,7 +1664,7 @@ static void ParseProcessingInstructions(XMLTreeRoot *root,char *xml,
     j++;
   root->processing_instructions[i]=(char **) ResizeQuantumMemory(
     root->processing_instructions[i],(size_t) (j+3),
-    sizeof(**root->processing_instructions));
+    sizeof(*root->processing_instructions));
   if (root->processing_instructions[i] == (char **) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   root->processing_instructions[i][j+2]=(char *) ResizeQuantumMemory(
@@ -1921,7 +1918,7 @@ static const char
   {
     "rdf:Bag",
     "rdf:Seq",
-    (const char *)NULL
+    (const char *) NULL
   };
 
 static inline MagickBooleanType IsSkipTag(const char *tag)
@@ -2780,9 +2777,7 @@ MagickExport char *XMLTreeInfoToXML(XMLTreeInfo *xml_info)
   root=(XMLTreeRoot *) xml_info;
   while (root->root.parent != (XMLTreeInfo *) NULL)
     root=(XMLTreeRoot *) root->root.parent;
-  parent=(XMLTreeInfo *) NULL;
-  if (xml_info != (XMLTreeInfo *) NULL)
-    parent=xml_info->parent;
+  parent=xml_info->parent;
   if (parent == (XMLTreeInfo *) NULL)
     for (i=0; root->processing_instructions[i] != (char **) NULL; i++)
     {
@@ -2811,9 +2806,7 @@ MagickExport char *XMLTreeInfoToXML(XMLTreeInfo *xml_info)
         p=root->processing_instructions[i][j];
       }
     }
-  ordered=(XMLTreeInfo *) NULL;
-  if (xml_info != (XMLTreeInfo *) NULL)
-    ordered=xml_info->ordered;
+  ordered=xml_info->ordered;
   xml_info->parent=(XMLTreeInfo *) NULL;
   xml_info->ordered=(XMLTreeInfo *) NULL;
   xml=XMLTreeTagToXML(xml_info,&xml,&length,&extent,0,root->attributes);

@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002, 2004
+// Copyright Dirk Lemstra 2015
 //
 // Implementation of Blob
 //
@@ -14,7 +15,7 @@
 
 #include <string.h>
 
-Magick::BlobRef::BlobRef(const void* data_,size_t length_)
+Magick::BlobRef::BlobRef(const void* data_,const size_t length_)
   : _data(0),
     _length(length_),
     _allocator(Magick::Blob::NewAllocator),

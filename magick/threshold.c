@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -734,19 +734,6 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
 %    o channel: the channel type.
 %
 */
-
-static inline Quantum ClampPixel(const MagickRealType value)
-{
-#if !defined(MAGICKCORE_HDRI_SUPPORT)
-  return((Quantum) value);
-#else
-  if (value < 0.0f)
-    return(0.0f);
-  if (value >= (MagickRealType) QuantumRange)
-    return((Quantum) QuantumRange);
-  return(value);
-#endif
-}
 
 MagickExport MagickBooleanType ClampImage(Image *image)
 {
@@ -1964,11 +1951,9 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
         ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename);
       random_info=AcquireRandomInfoThreadSet();
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-      key=GetRandomSecretKey(random_info[0]);
-#endif
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
+      key=GetRandomSecretKey(random_info[0]);
       #pragma omp parallel for schedule(static,4) shared(progress,status) \
         magick_threads(image,image,image->rows,key == ~0UL)
 #endif
@@ -2047,11 +2032,9 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
       return(MagickFalse);
     }
   random_info=AcquireRandomInfoThreadSet();
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  key=GetRandomSecretKey(random_info[0]);
-#endif
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
+  key=GetRandomSecretKey(random_info[0]);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
     magick_threads(image,image,image->rows,key == ~0UL)
 #endif

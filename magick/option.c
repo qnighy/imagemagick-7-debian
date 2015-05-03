@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -966,11 +966,10 @@ static const OptionInfo
   },
   DisposeOptions[] =
   {
-    { "Undefined", UndefinedDispose, UndefinedOptionFlag, MagickTrue },
+    { "Undefined", UndefinedDispose, UndefinedOptionFlag, MagickFalse },
     { "Background", BackgroundDispose, UndefinedOptionFlag, MagickFalse },
     { "None", NoneDispose, UndefinedOptionFlag, MagickFalse },
     { "Previous", PreviousDispose, UndefinedOptionFlag, MagickFalse },
-    { "Undefined", UndefinedDispose, UndefinedOptionFlag, MagickFalse },
     { "0", UndefinedDispose, UndefinedOptionFlag, MagickFalse },
     { "1", NoneDispose, UndefinedOptionFlag, MagickFalse },
     { "2", BackgroundDispose, UndefinedOptionFlag, MagickFalse },
@@ -1552,10 +1551,12 @@ static const OptionInfo
     { "Area", AreaResource, UndefinedOptionFlag, MagickFalse },
     { "Disk", DiskResource, UndefinedOptionFlag, MagickFalse },
     { "File", FileResource, UndefinedOptionFlag, MagickFalse },
+    { "Height", HeightResource, UndefinedOptionFlag, MagickFalse },
     { "Map", MapResource, UndefinedOptionFlag, MagickFalse },
     { "Memory", MemoryResource, UndefinedOptionFlag, MagickFalse },
     { "Thread", ThreadResource, UndefinedOptionFlag, MagickFalse },
     { "Time", TimeResource, UndefinedOptionFlag, MagickFalse },
+    { "Width", WidthResource, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedResource, UndefinedOptionFlag, MagickFalse }
   },
   SparseColorOptions[] =
@@ -2222,7 +2223,7 @@ MagickExport const char *CommandOptionToMnemonic(const CommandOption option,
     if (type == option_info[i].type)
       break;
   if (option_info[i].mnemonic == (const char *) NULL)
-    return("undefined");
+    return("Unrecognized");
   return(option_info[i].mnemonic);
 }
 

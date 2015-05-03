@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -615,13 +615,6 @@ MagickExport Image *CannyEdgeImage(const Image *image,const double radius,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline ssize_t MagickAbsoluteValue(const ssize_t x)
-{
-  if (x < 0)
-    return(-x);
-  return(x);
-}
 
 static inline double MagickLog10(const double x)
 {
@@ -1881,7 +1874,7 @@ MagickExport Image *HoughLineImage(const Image *image,const size_t width,
       }
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if (GetPixelIntensity(image,p) > (QuantumRange/2))
+      if (GetPixelIntensity(image,p) > (QuantumRange/2.0))
         {
           register ssize_t
             i;

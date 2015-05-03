@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -89,7 +89,9 @@ typedef struct _PCXInfo
 
   unsigned short
     bytes_per_line,
-    palette_info;
+    palette_info,
+    horizontal_screensize,
+    vertical_screensize;
 
   unsigned char
     colormap_signature;
@@ -197,28 +199,6 @@ static MagickBooleanType IsPCX(const unsigned char *magick,const size_t length)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline ssize_t MagickAbsoluteValue(const ssize_t x)
-{
-  if (x < 0)
-    return(-x);
-  return(x);
-}
-
-static inline size_t MagickMax(const size_t x,const size_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
 #define ThrowPCXException(severity,tag) \
@@ -338,7 +318,7 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       Verify PCX identifier.
     */
     pcx_info.version=(unsigned char) ReadBlobByte(image);
-    if ((count == 0) || (pcx_info.identifier != 0x0a))
+    if ((count != 1) || (pcx_info.identifier != 0x0a))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     pcx_info.encoding=(unsigned char) ReadBlobByte(image);
     bits_per_pixel=ReadBlobByte(image);
@@ -359,14 +339,19 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->rows=(size_t) MagickAbsoluteValue((ssize_t) pcx_info.bottom-
       pcx_info.top)+1UL;
     if ((image->columns == 0) || (image->rows == 0) ||
-        (pcx_info.bits_per_pixel == 0))
+        ((pcx_info.bits_per_pixel != 1) &&
+         (pcx_info.bits_per_pixel != 2) &&
+         (pcx_info.bits_per_pixel != 4) &&
+         (pcx_info.bits_per_pixel != 8)))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
-    image->depth=pcx_info.bits_per_pixel <= 8 ? 8U : MAGICKCORE_QUANTUM_DEPTH;
+    image->depth=pcx_info.bits_per_pixel;
     image->units=PixelsPerInchResolution;
     image->x_resolution=(double) pcx_info.horizontal_resolution;
     image->y_resolution=(double) pcx_info.vertical_resolution;
     image->colors=16;
     count=ReadBlob(image,3*image->colors,pcx_colormap);
+    if (count != (ssize_t) (3*image->colors))
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     pcx_info.reserved=(unsigned char) ReadBlobByte(image);
     pcx_info.planes=(unsigned char) ReadBlobByte(image);
     if ((pcx_info.bits_per_pixel*pcx_info.planes) >= 64)
@@ -390,11 +375,19 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     }
     pcx_info.bytes_per_line=ReadBlobLSBShort(image);
     pcx_info.palette_info=ReadBlobLSBShort(image);
-    for (i=0; i < 58; i++)
+    pcx_info.horizontal_screensize=ReadBlobLSBShort(image);
+    pcx_info.vertical_screensize=ReadBlobLSBShort(image);
+    for (i=0; i < 54; i++)
       (void) ReadBlobByte(image);
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     /*
       Read image data.
     */
@@ -404,7 +397,7 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     scanline=(unsigned char *) AcquireQuantumMemory(MagickMax(image->columns,
       pcx_info.bytes_per_line),MagickMax(8,pcx_info.planes)*sizeof(*scanline));
-    pixel_info=AcquireVirtualMemory(pcx_packets,sizeof(*pixels));
+    pixel_info=AcquireVirtualMemory(pcx_packets,2*sizeof(*pixels));
     if ((scanline == (unsigned char *) NULL) ||
         (pixel_info == (MemoryInfo *) NULL))
       {
@@ -929,7 +922,7 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
     pcx_info.encoding=image_info->compression == NoCompression ? 0 : 1;
     pcx_info.bits_per_pixel=8;
     if ((image->storage_class == PseudoClass) &&
-        (IsMonochromeImage(image,&image->exception) != MagickFalse))
+        (SetImageMonochrome(image,&image->exception) != MagickFalse))
       pcx_info.bits_per_pixel=1;
     pcx_info.left=0;
     pcx_info.top=0;

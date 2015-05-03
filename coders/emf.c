@@ -18,7 +18,7 @@
 %                               Dirk Lemstra                                  %
 %                               January 2014                                  %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -431,8 +431,7 @@ static HENHMETAFILE ReadEnhMetaFile(const char *path,ssize_t *width,
 
 #define CENTIMETERS_INCH 2.54
 
-static Image *ReadEMFImage(const ImageInfo *image_info,
-  ExceptionInfo *exception)
+static Image *ReadEMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   BITMAPINFO
     DIBinfo;
@@ -449,6 +448,9 @@ static Image *ReadEMFImage(const ImageInfo *image_info,
 
   Image
     *image;
+
+  MagickBooleanType
+    status;
 
   RECT
     rect;
@@ -506,6 +508,12 @@ static Image *ReadEMFImage(const ImageInfo *image_info,
       x=0;
       y=0;
       (void) GetGeometry(image_info->size,&x,&y,&image->columns,&image->rows);
+    }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   if (image_info->page != (char *) NULL)
     {

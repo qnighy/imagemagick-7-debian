@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -152,10 +152,10 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   char
     command[MaxTextExtent],
-    density[MaxTextExtent],
+    *density,
     filename[MaxTextExtent],
     geometry[MaxTextExtent],
-    options[MaxTextExtent],
+    *options,
     input_filename[MaxTextExtent];
 
   const DelegateInfo
@@ -320,11 +320,12 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
        delegate_info=GetDelegateInfo("pcl:color",(char *) NULL,exception);
   if (delegate_info == (const DelegateInfo *) NULL)
     return((Image *) NULL);
-  *options='\0';
   if ((page.width == 0) || (page.height == 0))
     (void) ParseAbsoluteGeometry(PSPageGeometry,&page);
   if (image_info->page != (char *) NULL)
     (void) ParseAbsoluteGeometry(image_info->page,&page);
+  density=AcquireString("");
+  options=AcquireString("");
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",
     image->x_resolution,image->y_resolution);
   page.width=(size_t) floor((double) page.width*image->x_resolution/delta.x+
@@ -359,6 +360,8 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
     read_info->antialias != MagickFalse ? 4 : 1,
     read_info->antialias != MagickFalse ? 4 : 1,density,options,
     read_info->filename,input_filename);
+  options=DestroyString(options);
+  density=DestroyString(density);
   status=ExternalDelegateCommand(MagickFalse,read_info->verbose,command,
     (char *) NULL,exception) != 0 ? MagickTrue : MagickFalse;
   image=ReadImage(read_info,exception);
@@ -724,7 +727,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image)
       density);
     (void) WriteBlobString(image,buffer);
     (void) WriteBlobString(image,"\033&l0E");  /* top margin 0 */
-    if (IsMonochromeImage(image,&image->exception) != MagickFalse)
+    if (SetImageMonochrome(image,&image->exception) != MagickFalse)
       {
         /*
           Monochrome image: use default printer monochrome setup.

@@ -20,7 +20,7 @@
 %                               October 2003                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -392,6 +392,9 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
   CINInfo
     cin;
 
+  const void
+    *pixels;
+
   Image
     *image;
 
@@ -421,8 +424,7 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
     y;
 
   unsigned char
-    magick[4],
-    *pixels;
+    magick[4];
 
   /*
     Open image file.
@@ -716,15 +718,30 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (void) SetImageProfile(image,"dpx:user.data",profile);
       profile=DestroyStringInfo(profile);
     }
-  for ( ; offset < (MagickOffsetType) cin.file.image_offset; offset++)
-    (void) ReadBlobByte(image);
   image->depth=cin.image.channel[0].bits_per_pixel;
   image->columns=cin.image.channel[0].pixels_per_line;
   image->rows=cin.image.channel[0].lines_per_image;
-  if (image_info->ping)
+  if (image_info->ping != MagickFalse)
     {
       (void) CloseBlob(image);
       return(image);
+    }
+  for ( ; offset < (MagickOffsetType) cin.file.image_offset; offset++)
+  {
+    int
+      c;
+
+    c=ReadBlobByte(image);
+    if (c == EOF)
+      break;
+  }
+  if (offset < (MagickOffsetType) cin.file.image_offset)
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   /*
     Convert CIN raster image to pixel packets.
@@ -735,7 +752,6 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
   quantum_info->quantum=32;
   quantum_info->pack=MagickFalse;
   quantum_type=RGBQuantum;
-  pixels=GetQuantumPixels(quantum_info);
   length=GetQuantumExtent(image,quantum_info,quantum_type);
   length=GetBytesPerRow(image->columns,3,image->depth,MagickTrue);
   if (cin.image.number_channels == 1)
@@ -748,7 +764,8 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
     if (q == (PixelPacket *) NULL)
       break;
-    count=ReadBlob(image,length,pixels);
+    pixels=ReadBlobStream(image,length,GetQuantumPixels(quantum_info),
+      &count);
     if ((size_t) count != length)
       break;
     (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
@@ -772,8 +789,7 @@ static Image *ReadCINImage(const ImageInfo *image_info,ExceptionInfo *exception)
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %

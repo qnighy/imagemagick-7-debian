@@ -17,7 +17,7 @@
 %                                 July 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -46,6 +46,7 @@
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/hashmap.h"
+#include "magick/image-private.h"
 #include "magick/locale_.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
@@ -63,14 +64,6 @@
 */
 #define LocaleFilename  "locale.xml"
 #define MaxRecursionDepth  200
-
-/*
-  Typedef declarations.
-*/
-#if defined(__CYGWIN__)
-typedef struct _locale_t
-  *locale_t;
-#endif
 
 /*
   Static declarations.
@@ -93,7 +86,7 @@ static SemaphoreInfo
 static SplayTreeInfo
   *locale_cache = (SplayTreeInfo *) NULL;
 
-#if defined(MAGICKCORE_HAVE_STRTOD_L)
+#if defined(MAGICKCORE_HAVE_LOCALE_H)
 static volatile locale_t
   c_locale = (locale_t) NULL;
 #endif
@@ -106,7 +99,7 @@ static MagickBooleanType
   LoadLocaleCache(SplayTreeInfo *,const char *,const char *,const char *,
     const size_t,ExceptionInfo *);
 
-#if defined(MAGICKCORE_HAVE_STRTOD_L)
+#if defined(MAGICKCORE_HAVE_LOCALE_H)
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -236,7 +229,7 @@ static SplayTreeInfo *AcquireLocaleSplayTree(const char *filename,
   return(locale_cache);
 }
 
-#if defined(MAGICKCORE_HAVE_STRTOD_L)
+#if defined(MAGICKCORE_HAVE_LOCALE_H)
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -338,7 +331,7 @@ MagickExport ssize_t FormatLocaleFileList(FILE *file,
   ssize_t
     n;
 
-#if defined(MAGICKCORE_HAVE_VFPRINTF_L)
+#if defined(MAGICKCORE_HAVE_LOCALE_H) && defined(MAGICKCORE_HAVE_VFPRINTF_L)
   {
     locale_t
       locale;
@@ -354,7 +347,7 @@ MagickExport ssize_t FormatLocaleFileList(FILE *file,
 #endif
   }
 #else
-#if defined(MAGICKCORE_HAVE_USELOCALE) && defined(MAGICKCORE_HAVE_STRTOD_L)
+#if defined(MAGICKCORE_HAVE_LOCALE_H) && defined(MAGICKCORE_HAVE_USELOCALE)
   {
     locale_t
       locale,
@@ -429,7 +422,7 @@ MagickExport ssize_t FormatLocaleStringList(char *restrict string,
   ssize_t
     n;
 
-#if defined(MAGICKCORE_HAVE_VSNPRINTF_L)
+#if defined(MAGICKCORE_HAVE_LOCALE_H) && defined(MAGICKCORE_HAVE_VSNPRINTF_L)
   {
     locale_t
       locale;
@@ -445,7 +438,7 @@ MagickExport ssize_t FormatLocaleStringList(char *restrict string,
 #endif
   }
 #elif defined(MAGICKCORE_HAVE_VSNPRINTF)
-#if defined(MAGICKCORE_HAVE_USELOCALE) && defined(MAGICKCORE_HAVE_STRTOD_L)
+#if defined(MAGICKCORE_HAVE_LOCALE_H) && defined(MAGICKCORE_HAVE_USELOCALE)
   {
     locale_t
       locale,
@@ -988,7 +981,7 @@ MagickExport double InterpretLocaleValue(const char *restrict string,
     value=(double) strtoul(string,&q,16);
   else
     {
-#if defined(MAGICKCORE_HAVE_STRTOD_L)
+#if defined(MAGICKCORE_HAVE_LOCALE_H) && defined(MAGICKCORE_HAVE_STRTOD_L)
       locale_t
         locale;
 
@@ -1147,13 +1140,6 @@ static void LocaleFatalErrorHandler(
   (void) FormatLocaleFile(stderr,".\n");
   (void) fflush(stderr);
   exit(1);
-}
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
 }
 
 static MagickBooleanType LoadLocaleCache(SplayTreeInfo *locale_cache,
@@ -1434,7 +1420,7 @@ MagickExport void LocaleComponentTerminus(void)
   LockSemaphoreInfo(locale_semaphore);
   if (locale_cache != (SplayTreeInfo *) NULL)
     locale_cache=DestroySplayTree(locale_cache);
-#if defined(MAGICKCORE_HAVE_STRTOD_L)
+#if defined(MAGICKCORE_HAVE_LOCALE_H)
   DestroyCLocale();
 #endif
   UnlockSemaphoreInfo(locale_semaphore);

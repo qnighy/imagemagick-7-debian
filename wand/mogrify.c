@@ -17,7 +17,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -377,13 +377,6 @@ static inline MagickBooleanType IsPathWritable(const char *path)
   return(MagickTrue);
 }
 
-static inline ssize_t MagickMax(const ssize_t x,const ssize_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
 static MagickBooleanType MonitorProgress(const char *text,
   const MagickOffsetType offset,const MagickSizeType extent,
   void *wand_unused(client_data))
@@ -503,7 +496,7 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
         (void) ThrowMagickException(exception,GetMagickModule(),
             OptionError, "InvalidArgument", "`%s': %s", "sparse-color",
             "Color arg given, when colors are coming from image");
-        return( (Image *)NULL);
+        return( (Image *) NULL);
       }
       x += number_colors;  /* color argument */
     }
@@ -526,7 +519,7 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
     (void) ThrowMagickException(exception,GetMagickModule(),
                OptionError, "InvalidArgument", "`%s': %s", "sparse-color",
                "Invalid number of Arguments");
-    return( (Image *)NULL);
+    return( (Image *) NULL);
   }
 
   /* Allocate and fill in the floating point arguments */
@@ -535,7 +528,7 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
   if (sparse_arguments == (double *) NULL) {
     (void) ThrowMagickException(exception,GetMagickModule(),ResourceLimitError,
       "MemoryAllocationFailed","%s","SparseColorOption");
-    return( (Image *)NULL);
+    return( (Image *) NULL);
   }
   (void) ResetMagickMemory(sparse_arguments,0,number_arguments*
     sizeof(*sparse_arguments));
@@ -635,10 +628,10 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
     (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
       "InvalidArgument","`%s': %s","sparse-color","Argument Parsing Error");
     sparse_arguments=(double *) RelinquishMagickMemory(sparse_arguments);
-    return( (Image *)NULL);
+    return( (Image *) NULL);
   }
   if ( error )
-    return( (Image *)NULL);
+    return( (Image *) NULL);
 
   /* Call the Interpolation function with the parsed arguments */
   sparse_image=SparseColorImage(image,channels,method,number_arguments,
@@ -729,7 +722,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
     if ((i+count) >= (ssize_t) argc)
       break;
     status=MogrifyImageInfo(mogrify_info,(int) count+1,argv+i,exception);
-    mogrify_image=(Image *)NULL;
+    mogrify_image=(Image *) NULL;
     switch (*(option+1))
     {
       case 'a':
@@ -1233,23 +1226,28 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               gamma;
 
             KernelInfo
-              *kernel;
+              *kernel_info;
 
             register ssize_t
               j;
 
+            size_t
+              extent;
+
             (void) SyncImageSettings(mogrify_info,*image);
-            kernel=AcquireKernelInfo(argv[i+1]);
-            if (kernel == (KernelInfo *) NULL)
+            kernel_info=AcquireKernelInfo(argv[i+1]);
+            if (kernel_info == (KernelInfo *) NULL)
               break;
+            extent=kernel_info->width*kernel_info->height;
             gamma=0.0;
-            for (j=0; j < (ssize_t) (kernel->width*kernel->height); j++)
-              gamma+=kernel->values[j];
+            for (j=0; j < (ssize_t) extent; j++)
+              gamma+=kernel_info->values[j];
             gamma=1.0/(fabs((double) gamma) <= MagickEpsilon ? 1.0 : gamma);
-            for (j=0; j < (ssize_t) (kernel->width*kernel->height); j++)
-              kernel->values[j]*=gamma;
-            mogrify_image=FilterImageChannel(*image,channel,kernel,exception);
-            kernel=DestroyKernelInfo(kernel);
+            for (j=0; j < (ssize_t) extent; j++)
+              kernel_info->values[j]*=gamma;
+            mogrify_image=MorphologyImage(*image,CorrelateMorphology,1,
+              kernel_info,exception);
+            kernel_info=DestroyKernelInfo(kernel_info);
             break;
           }
         if (LocaleCompare("crop",option+1) == 0)
@@ -1266,7 +1264,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
 #endif
 #if 0
             mogrify_image=CloneImage(*image,0,0,MagickTrue,&(*image)->exception);
-            mogrify_image->next = mogrify_image->previous = (Image *)NULL;
+            mogrify_image->next = mogrify_image->previous = (Image *) NULL;
             (void) TransformImage(&mogrify_image,argv[i+1],(char *) NULL);
             InheritException(exception,&mogrify_image->exception);
 #else
@@ -7882,7 +7880,8 @@ WandExport MagickBooleanType MogrifyImageList(ImageInfo *image_info,
                     /*
                       Set a blending mask for the composition.
                     */
-                    /* POSIBLE ERROR; what if image->mask already set */
+                    if (image->mask != (Image *) NULL)
+                      image->mask=DestroyImage(image->mask);
                     image->mask=mask_image;
                     (void) NegateImage(image->mask,MagickFalse);
                   }
@@ -7890,7 +7889,10 @@ WandExport MagickBooleanType MogrifyImageList(ImageInfo *image_info,
             (void) CompositeImageChannel(image,channel,image->compose,
               composite_image,geometry.x,geometry.y);
             if (mask_image != (Image *) NULL)
-              mask_image=image->mask=DestroyImage(image->mask);
+              {
+                image->mask=DestroyImage(image->mask);
+                mask_image=image->mask;
+              }
             composite_image=DestroyImage(composite_image);
             InheritException(exception,&image->exception);
             *images=DestroyImageList(*images);

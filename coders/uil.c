@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -333,7 +333,7 @@ static MagickBooleanType WriteUILImage(const ImageInfo *image_info,Image *image)
     else
       (void) FormatLocaleString(buffer,MaxTextExtent,
         "    color('%s',%s) = '%s'",name,
-        GetPixelLuma(image,image->colormap+i) < (QuantumRange/2) ?
+        GetPixelLuma(image,image->colormap+i) < (QuantumRange/2.0) ?
         "background" : "foreground",symbol);
     (void) WriteBlobString(image,buffer);
     (void) FormatLocaleString(buffer,MaxTextExtent,"%s",

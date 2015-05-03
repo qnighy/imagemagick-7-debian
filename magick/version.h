@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@ extern "C" {
   Define declarations.
 */
 #define MagickPackageName "ImageMagick"
-#define MagickCopyright  "Copyright (C) 1999-2014 ImageMagick Studio LLC"
-#define MagickSVNRevision  "16820"
-#define MagickLibVersion  0x689
-#define MagickLibVersionText  "6.8.9"
+#define MagickCopyright  "Copyright (C) 1999-2015 ImageMagick Studio LLC"
+#define MagickSVNRevision  "18428"
+#define MagickLibVersion  0x691
+#define MagickLibVersionText  "6.9.1"
 #define MagickLibVersionNumber  2,0,0
-#define MagickLibAddendum  "-9"
+#define MagickLibAddendum  "-2"
 #define MagickLibInterface  2
 #define MagickLibMinInterface  2
 #if defined(_WINDOWS)
@@ -43,16 +43,18 @@ extern "C" {
 #else
 #define MagickPlatform  "x86_64"
 #endif
-#define MagickppLibVersionText  "6.8.9"
-#define MagickppLibVersionNumber  5:0:0
-#define MagickppLibAddendum  "-9"
-#define MagickppLibInterface  5
-#define MagickppLibMinInterface  5
-#define MagickReleaseDate  "2014-10-25"
-#define MagickChangeDate   "20141025"
+#define MagickppLibVersionText  "6.9.1"
+#define MagickppLibVersionNumber  6:0:0
+#define MagickppLibAddendum  "-2"
+#define MagickppLibInterface  6
+#define MagickppLibMinInterface  6
+#define MagickReleaseDate  "2015-04-19"
+#define MagickChangeDate   "20140409"
 #define MagickFeatures "DPC OpenMP"
 #define MagickDelegates "bzlib djvu mpeg fftw fpx fontconfig freetype jbig lzma openexr pango png ps tiff webp x xml zlib"
 #define MagickHomeURL  "file:///usr/share/doc/ImageMagick-6/index.html"
+#define MagickAuthoritativeLicense  \
+  "http://www.imagemagick.org/script/license.php"
 #define MagickAuthoritativeURL  "http://www.imagemagick.org"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
 #define MagickQuantumDepth  "Q8"
@@ -82,6 +84,7 @@ extern MagickExport const char
   *GetMagickCopyright(void),
   *GetMagickDelegates(void),
   *GetMagickFeatures(void),
+  *GetMagickLicense(void),
   *GetMagickPackageName(void),
   *GetMagickQuantumDepth(size_t *),
   *GetMagickQuantumRange(size_t *),

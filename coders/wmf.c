@@ -17,7 +17,7 @@
 %                               December 2000                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -178,6 +178,7 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     (void *) image);
   if (wmf_status != wmf_E_None)
     {
+      ipa_device_close(wmf_info);
       wmf_api_destroy(wmf_info);
       ThrowFileException(exception,FileOpenError,"UnableToOpenFile",
         image->filename);
@@ -187,6 +188,7 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   wmf_status=wmf_scan(wmf_info,0,&bounding_box);
   if (wmf_status != wmf_E_None)
     {
+      ipa_device_close(wmf_info);
       wmf_api_destroy(wmf_info);
       ThrowReaderException(DelegateError,"FailedToScanFile");
     }
@@ -197,6 +199,7 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     file=fdopen(unique_file,"wb");
   if ((unique_file == -1) || (file == (FILE *) NULL))
     {
+      ipa_device_close(wmf_info);
       wmf_api_destroy(wmf_info);
       ThrowReaderException(FileOpenError,"UnableToCreateTemporaryFile");
     }
@@ -205,6 +208,7 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   wmf_status=wmf_play(wmf_info,0,&bounding_box);
   if (wmf_status != wmf_E_None)
     {
+      ipa_device_close(wmf_info);
       wmf_api_destroy(wmf_info);
       ThrowReaderException(DelegateError,"FailedToRenderFile");
     }
@@ -525,7 +529,7 @@ static void draw_pattern_push( wmfAPI* API,
                                unsigned long rows )
 {
   char
-    pattern_id[30];
+    pattern_id[MaxTextExtent];
 
   (void) FormatLocaleString(pattern_id,MaxTextExtent,"brush_%lu",id);
   (void) DrawPushPattern(WmfDrawingWand,pattern_id,0,0,columns,rows);
@@ -823,8 +827,16 @@ static void ipa_device_close(wmfAPI * API)
   wmf_magick_t
     *ddata = WMF_MAGICK_GetData(API);
 
-  DestroyDrawingWand(ddata->draw_wand);
-  DestroyDrawInfo(ddata->draw_info);
+  if (ddata->draw_wand != (DrawingWand *) NULL)
+    {
+      DestroyDrawingWand(ddata->draw_wand);
+      ddata->draw_wand=(DrawingWand *) NULL;
+    }
+  if (ddata->draw_info != (DrawInfo *) NULL)
+    {
+      DestroyDrawInfo(ddata->draw_info);
+      ddata->draw_info=(DrawInfo *)NULL;
+    }
   RelinquishMagickMemory(WMF_MAGICK_GetFontData(API)->ps_name);
 }
 
@@ -896,7 +908,7 @@ static void ipa_device_begin(wmfAPI * API)
       if (image)
         {
           char
-            pattern_id[30];
+            pattern_id[MaxTextExtent];
 
           MagickWand
             *magick_wand;
@@ -1354,7 +1366,7 @@ static void ipa_region_clip(wmfAPI *API, wmfPolyRectangle_t *poly_rect)
   if (poly_rect->count > 0)
     {
       char
-        clip_mask_id[30];
+        clip_mask_id[MaxTextExtent];
 
       /* Define clip path */
       ddata->clip_mask_id++;
@@ -1714,7 +1726,7 @@ static void ipa_udata_set(wmfAPI * API, wmfUserData_t * userdata)
 
 }
 
-static void ipa_udata_free(wmfAPI * API, wmfUserData_t * userdata)
+static void ipa_udata_free(wmfAPI *API, wmfUserData_t *userdata)
 {
   (void) API;
   (void) userdata;
@@ -1722,14 +1734,7 @@ static void ipa_udata_free(wmfAPI * API, wmfUserData_t * userdata)
 
 }
 
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
-static void util_set_brush(wmfAPI * API, wmfDC * dc, const BrushApply brush_apply)
+static void util_set_brush(wmfAPI *API, wmfDC *dc,const BrushApply brush_apply)
 {
   wmf_magick_t
     *ddata = WMF_MAGICK_GetData(API);
@@ -1841,7 +1846,7 @@ static void util_set_brush(wmfAPI * API, wmfDC * dc, const BrushApply brush_appl
         DrawPopDefs(WmfDrawingWand);
         {
           char
-            pattern_id[30];
+            pattern_id[MaxTextExtent];
 
           (void) FormatLocaleString(pattern_id,MaxTextExtent,"#brush_%lu",
             ddata->pattern_id);
@@ -1954,7 +1959,7 @@ static void util_set_brush(wmfAPI * API, wmfDC * dc, const BrushApply brush_appl
 
             {
               char
-                pattern_id[30];
+                pattern_id[MaxTextExtent];
 
               (void) FormatLocaleString(pattern_id,MaxTextExtent,"#brush_%lu",
                 ddata->pattern_id);
@@ -1992,13 +1997,6 @@ static void util_set_brush(wmfAPI * API, wmfDC * dc, const BrushApply brush_appl
       {
       }
     }
-}
-
-static inline double MagickMax(const double x,const double y)
-{
-  if (x > y)
-    return(x);
-  return(y);
 }
 
 static void util_set_pen(wmfAPI * API, wmfDC * dc)
@@ -2144,7 +2142,7 @@ static void util_set_pen(wmfAPI * API, wmfDC * dc)
       case PS_SOLID:
       default:
         {
-          (void) DrawSetStrokeDashArray(WmfDrawingWand,0,(double *)NULL);
+          (void) DrawSetStrokeDashArray(WmfDrawingWand,0,(double *) NULL);
           break;
         }
       }
@@ -2584,6 +2582,9 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   Image
     *image;
 
+  MagickBooleanType
+    status;
+
   unsigned long
     wmf_options_flags = 0;
 
@@ -2874,6 +2875,12 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
         (void) LogMagickEvent(CoderEvent,GetMagickModule(),
           "leave ReadWMFImage()");
       return(GetFirstImageInList(image));
+    }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),

@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1507,9 +1507,6 @@ MagickExport Image *FilterImageChannel(const Image *image,
   assert(exception->signature == MagickSignature);
   if ((kernel->width % 2) == 0)
     ThrowImageException(OptionError,"KernelWidthMustBeAnOddNumber");
-
-
-
   if (image->debug != MagickFalse)
     {
       char
@@ -1554,23 +1551,22 @@ MagickExport Image *FilterImageChannel(const Image *image,
   if (filter_image == (Image *) NULL)
     return((Image *) NULL);
   if (SetImageStorageClass(filter_image,DirectClass) == MagickFalse)
-  {
-    InheritException(exception,&filter_image->exception);
-    filter_image=DestroyImage(filter_image);
-    return((Image *) NULL);
-  }
-
+    {
+      InheritException(exception,&filter_image->exception);
+      filter_image=DestroyImage(filter_image);
+      return((Image *) NULL);
+    }
   /*
     Normalize kernel.
   */
   filter_kernel=(MagickRealType *) MagickAssumeAligned(AcquireAlignedMemory(
-    kernel->width,kernel->width*sizeof(*filter_kernel)));
+    kernel->width,kernel->height*sizeof(*filter_kernel)));
   if (filter_kernel == (MagickRealType *) NULL)
     {
       filter_image=DestroyImage(filter_image);
       ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
     }
-  for (i=0; i < (ssize_t) (kernel->width*kernel->width); i++)
+  for (i=0; i < (ssize_t) (kernel->width*kernel->height); i++)
     filter_kernel[i]=(MagickRealType) kernel->values[i];
   /*
     Filter image.
@@ -1718,7 +1714,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
             }
             kernel_pixels+=image->columns+kernel->width;
           }
-          gamma=PerceptibleReciprocal(gamma);
+          gamma=PerceptibleReciprocal(gamma); 
           if ((channel & RedChannel) != 0)
             SetPixelRed(q,ClampToQuantum(gamma*pixel.red));
           if ((channel & GreenChannel) != 0)
@@ -1790,7 +1786,6 @@ MagickExport Image *FilterImageChannel(const Image *image,
   filter_kernel=(MagickRealType *) RelinquishAlignedMemory(filter_kernel);
   if (status == MagickFalse)
     filter_image=DestroyImage(filter_image);
-
 #ifdef MAGICKCORE_CLPERFMARKER
   clEndPerfMarkerAMD();
 #endif
@@ -4183,10 +4178,14 @@ MagickExport Image *SpreadImage(const Image *image,const double radius,
     pixel=bias;
     for (x=0; x < (ssize_t) spread_image->columns; x++)
     {
+      PointInfo
+        point;
+
+      point.x=GetPseudoRandomValue(random_info[id]);
+      point.y=GetPseudoRandomValue(random_info[id]);
       (void) InterpolateMagickPixelPacket(image,image_view,
-        UndefinedInterpolatePixel,(double) x+width*(GetPseudoRandomValue(
-        random_info[id])-0.5),(double) y+width*(GetPseudoRandomValue(
-        random_info[id])-0.5),&pixel,exception);
+        UndefinedInterpolatePixel,(double) x+width*(point.x-0.5),(double)
+        y+width*(point.y-0.5),&pixel,exception);
       SetPixelPacket(spread_image,&pixel,q,indexes+x);
       q++;
     }

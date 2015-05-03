@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -312,6 +312,12 @@ static Image *ReadICONImage(const ImageInfo *image_info,
       ReadBlobLSBShort(image);
     icon_file.directory[i].size=ReadBlobLSBLong(image);
     icon_file.directory[i].offset=ReadBlobLSBLong(image);
+    if (EOFBlob(image) != MagickFalse)
+      {
+        ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
+          image->filename);
+        break;
+      }
   }
   one=1;
   for (i=0; i < icon_file.count; i++)
@@ -328,6 +334,12 @@ static Image *ReadICONImage(const ImageInfo *image_info,
     icon_info.height=(unsigned char) ((int) ReadBlobLSBLong(image)/2);
     icon_info.planes=ReadBlobLSBShort(image);
     icon_info.bits_per_pixel=ReadBlobLSBShort(image);
+    if (EOFBlob(image) != MagickFalse)
+      {
+        ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
+          image->filename);
+        break;
+      }
     if (((icon_info.planes == 18505) && (icon_info.bits_per_pixel == 21060)) || 
         (icon_info.size == 0x474e5089))
       {
@@ -462,6 +474,12 @@ static Image *ReadICONImage(const ImageInfo *image_info,
             (image_info->number_scenes != 0))
           if (image->scene >= (image_info->scene+image_info->number_scenes-1))
             break;
+        status=SetImageExtent(image,image->columns,image->rows);
+        if (status == MagickFalse)
+          {
+            InheritException(exception,&image->exception);
+            return(DestroyImageList(image));
+          }
         bytes_per_line=(((image->columns*icon_info.bits_per_pixel)+31) &
           ~31) >> 3;
         (void) bytes_per_line;

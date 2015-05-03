@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -163,13 +163,6 @@ static MagickBooleanType IsSGI(const unsigned char *magick,const size_t length)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 static MagickBooleanType SGIDecode(const size_t bytes_per_pixel,
   ssize_t number_packets,unsigned char *packets,ssize_t number_pixels,
@@ -374,6 +367,12 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((image_info->ping != MagickFalse)  && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     /*
       Allocate SGI pixels.
     */
@@ -946,7 +945,7 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
     else
       {
         if ((image_info->type != TrueColorType) &&
-            (IsGrayImage(image,&image->exception) != MagickFalse))
+            (SetImageGray(image,&image->exception) != MagickFalse))
           {
             iris_info.dimension=2;
             iris_info.depth=1;

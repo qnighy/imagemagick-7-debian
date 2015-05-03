@@ -17,7 +17,7 @@
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -827,8 +827,7 @@ MagickExport char *AllocateString(const char *source)
   if (destination == (char *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   *destination='\0';
-  if (source != (char *) NULL)
-    (void) CopyMagickString(destination,source,length);
+  (void) CopyMagickString(destination,source,length);
   return(destination);
 }
 
@@ -3552,13 +3551,6 @@ MagickExport void InitializeMagick(const char *path)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline double MagickMax(const double x,const double y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
 
 static void BicubicInterpolate(const MagickPixelPacket *pixels,const double dx,
   MagickPixelPacket *pixel)
@@ -7068,7 +7060,7 @@ MagickExport MagickBooleanType SyncImagePixels(Image *image)
 MagickExport int SystemCommand(const MagickBooleanType asynchronous,
   const MagickBooleanType verbose,const char *command,ExceptionInfo *exception)
 {
-  MagickBooleanType
+  int
     status;
 
   status=ExternalDelegateCommand(asynchronous,verbose,command,(char *) NULL,
@@ -7384,14 +7376,6 @@ MagickExport unsigned int TransformColorspace(Image *image,
 %      component of the HSL color space.
 %
 */
-
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 MagickExport void TransformHSL(const Quantum red,const Quantum green,
   const Quantum blue,double *hue,double *saturation,double *lightness)
 {

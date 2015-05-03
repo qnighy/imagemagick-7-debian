@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ typedef struct _ChannelStatistics
     variance,
     standard_deviation,
     kurtosis,
-    skewness;
+    skewness,
+    entropy;
 } ChannelStatistics;
 
 #undef I
@@ -158,6 +159,8 @@ extern MagickExport MagickBooleanType
     ExceptionInfo *),
   FunctionImageChannel(Image *,const ChannelType,const MagickFunction,
     const size_t,const double *,ExceptionInfo *),
+  GetImageChannelEntropy(const Image *,const ChannelType,double *,
+    ExceptionInfo *),
   GetImageChannelExtrema(const Image *,const ChannelType,size_t *,size_t *,
     ExceptionInfo *),
   GetImageChannelMean(const Image *,const ChannelType,double *,double *,
@@ -166,6 +169,7 @@ extern MagickExport MagickBooleanType
     ExceptionInfo *),
   GetImageChannelRange(const Image *,const ChannelType,double *,double *,
     ExceptionInfo *),
+  GetImageEntropy(const Image *,double *,ExceptionInfo *),
   GetImageExtrema(const Image *,size_t *,size_t *,ExceptionInfo *),
   GetImageMean(const Image *,double *,double *,ExceptionInfo *),
   GetImageKurtosis(const Image *,double *,double *,ExceptionInfo *),

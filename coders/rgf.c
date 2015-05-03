@@ -17,7 +17,7 @@
 %                               August 2013                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -172,8 +172,12 @@ static Image *ReadRGFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (void) CloseBlob(image);
       return(GetFirstImageInList(image));
     }
-
-
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   /*
     Read hex image data.
   */
@@ -371,7 +375,7 @@ static MagickBooleanType WriteRGFImage(const ImageInfo *image_info,Image *image,
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       byte>>=1;
-      if (GetPixelLuma(image,p) < (QuantumRange/2))
+      if (GetPixelLuma(image,p) < (QuantumRange/2.0))
         byte|=0x80;
       bit++;
       if (bit == 8)

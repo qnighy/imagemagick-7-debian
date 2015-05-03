@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -274,7 +274,7 @@ static Image *ReadHDRImage(const ImageInfo *image_info,ExceptionInfo *exception)
           if (value_expected == MagickFalse)
             continue;
           p=value;
-          while ((c != '\n') && (c != '\0'))
+          while ((c != '\n') && (c != '\0') && (c != EOF))
           {
             if ((size_t) (p-value) < (MaxTextExtent-1))
               *p++=c;
@@ -319,18 +319,24 @@ static Image *ReadHDRImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     chromaticity[6],
                     white_point[2];
 
-                  (void) sscanf(value,"%g %g %g %g %g %g %g %g",
-                    &chromaticity[0],&chromaticity[1],&chromaticity[2],
-                    &chromaticity[3],&chromaticity[4],&chromaticity[5],
-                    &white_point[0],&white_point[1]);
-                  image->chromaticity.red_primary.x=chromaticity[0];
-                  image->chromaticity.red_primary.y=chromaticity[1];
-                  image->chromaticity.green_primary.x=chromaticity[2];
-                  image->chromaticity.green_primary.y=chromaticity[3];
-                  image->chromaticity.blue_primary.x=chromaticity[4];
-                  image->chromaticity.blue_primary.y=chromaticity[5];
-                  image->chromaticity.white_point.x=white_point[0],
-                  image->chromaticity.white_point.y=white_point[1];
+                  int
+                    count;
+
+                  count=sscanf(value,"%g %g %g %g %g %g %g %g",&chromaticity[0],
+                    &chromaticity[1],&chromaticity[2],&chromaticity[3],
+                    &chromaticity[4],&chromaticity[5],&white_point[0],
+                    &white_point[1]);
+                  if (count == 8)
+                    {
+                      image->chromaticity.red_primary.x=chromaticity[0];
+                      image->chromaticity.red_primary.y=chromaticity[1];
+                      image->chromaticity.green_primary.x=chromaticity[2];
+                      image->chromaticity.green_primary.y=chromaticity[3];
+                      image->chromaticity.blue_primary.x=chromaticity[4];
+                      image->chromaticity.blue_primary.y=chromaticity[5];
+                      image->chromaticity.white_point.x=white_point[0],
+                      image->chromaticity.white_point.y=white_point[1];
+                    }
                   break;
                 }
               (void) FormatLocaleString(tag,MaxTextExtent,"hdr:%s",keyword);
@@ -340,15 +346,20 @@ static Image *ReadHDRImage(const ImageInfo *image_info,ExceptionInfo *exception)
             case 'Y':
             case 'y':
             {
-              if (strcmp(keyword,"Y") == 0)
+              char
+                target[] = "Y";
+
+              if (strcmp(keyword,target) == 0)
                 {
                   int
                     height,
                     width;
 
-                  (void) sscanf(value,"%d +X %d",&height,&width);
-                  image->columns=(size_t) width;
-                  image->rows=(size_t) height;
+                  if (sscanf(value,"%d +X %d",&height,&width) == 2)
+                    {
+                      image->columns=(size_t) width;
+                      image->rows=(size_t) height;
+                    }
                   break;
                 }
               (void) FormatLocaleString(tag,MaxTextExtent,"hdr:%s",keyword);
@@ -381,6 +392,12 @@ static Image *ReadHDRImage(const ImageInfo *image_info,ExceptionInfo *exception)
     {
       (void) CloseBlob(image);
       return(GetFirstImageInList(image));
+    }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   /*
     Read RGBE (red+green+blue+exponent) pixels.
@@ -703,7 +720,7 @@ static MagickBooleanType WriteHDRImage(const ImageInfo *image_info,Image *image)
   if (property != (const char *) NULL)
     {
       count=FormatLocaleString(header,MaxTextExtent,"EXPOSURE=%g\n",
-        atof(property));
+        strtod(property,(char **) NULL));
       (void) WriteBlob(image,(size_t) count,(unsigned char *) header);
     }
   if (image->gamma != 0.0)

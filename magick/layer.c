@@ -16,7 +16,7 @@
 %                               January 2006                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -854,6 +854,16 @@ MagickExport Image *CompareImageLayers(const Image *image,
   next=GetNextImageInList(next);
   for ( ; next != (const Image *) NULL; next=GetNextImageInList(next))
   {
+    if ((bounds[i].x == -1) && (bounds[i].y == -1) &&
+        (bounds[i].width == 1) && (bounds[i].height == 1))
+      {
+        /*
+          An empty frame is returned from CompareImageBounds(), which means the
+          current frame is identical to the previous frame.
+        */
+        i++;
+        continue;
+      }
     image_a=CloneImage(next,0,0,MagickTrue,exception);
     if (image_a == (Image *) NULL)
       break;
@@ -1072,8 +1082,8 @@ static Image *OptimizeLayerFrames(const Image *image,
     Compute the bounding box of changes for each pair of images.
   */
   i=1;
-  bgnd_image=(Image *)NULL;
-  dup_image=(Image *)NULL;
+  bgnd_image=(Image *) NULL;
+  dup_image=(Image *) NULL;
   dup_bounds.width=0;
   dup_bounds.height=0;
   dup_bounds.x=0;
@@ -1326,7 +1336,7 @@ static Image *OptimizeLayerFrames(const Image *image,
         if ( disposals[i-1] != PreviousDispose )
           prev_image=DestroyImage(prev_image);
         if ( disposals[i-1] == BackgroundDispose )
-          prev_image=bgnd_image,  bgnd_image=(Image *)NULL;
+          prev_image=bgnd_image,  bgnd_image=(Image *) NULL;
         if (bgnd_image != (Image *) NULL)
           bgnd_image=DestroyImage(bgnd_image);
         if ( disposals[i-1] == NoneDispose )

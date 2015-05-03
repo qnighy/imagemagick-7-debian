@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -281,20 +281,6 @@ static void GetMontageGeometry(char *geometry,const size_t number_images,
     *tiles_per_column=(size_t) ceil((double) number_images/(*tiles_per_row));
   if ((*tiles_per_row == 0) && (*tiles_per_column != 0))
     *tiles_per_row=(size_t) ceil((double) number_images/(*tiles_per_column));
-}
-
-static inline ssize_t MagickMax(const ssize_t x,const ssize_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline ssize_t MagickMin(const ssize_t x,const ssize_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
 }
 
 #if defined(__cplusplus) || defined(c_plusplus)

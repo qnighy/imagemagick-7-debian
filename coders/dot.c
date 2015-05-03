@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -142,7 +142,10 @@ static Image *ReadDOTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   graph=agread(GetBlobFileHandle(image),(Agdisc_t *) NULL);
 #endif
   if (graph == (graph_t *) NULL)
-    return ((Image *) NULL);
+    {
+      (void) RelinquishUniqueFileResource(read_info->filename);
+      return ((Image *) NULL);
+    }
   option=GetImageOption(image_info,"dot:layout-engine");
   if (option == (const char *) NULL)
     gvLayout(graphic_context,graph,(char *) "dot");

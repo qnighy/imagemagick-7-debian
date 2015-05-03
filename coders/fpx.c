@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -351,6 +351,12 @@ static Image *ReadFPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (void) FPX_CloseImage(flashpix);
       FPX_ClearSystem();
       return(GetFirstImageInList(image));
+    }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   /*
     Allocate memory for the image and pixel buffer.
@@ -830,7 +836,7 @@ static MagickBooleanType WriteFPXImage(const ImageInfo *image_info,Image *image)
   if (image->matte != MagickFalse)
     colorspace.numberOfComponents=4;
   if ((image_info->type != TrueColorType) &&
-      IsGrayImage(image,&image->exception))
+      SetImageGray(image,&image->exception))
     {
       colorspace.numberOfComponents=1;
       colorspace.theComponents[0].myColor=MONOCHROME;
@@ -942,13 +948,13 @@ static MagickBooleanType WriteFPXImage(const ImageInfo *image_info,Image *image)
       image->columns*fpx_info.components[i].columnStride;
     fpx_info.components[i].theData=pixels+i;
   }
-  fpx_info.components[0].myColorType.myColor=fpx_info.numberOfComponents != 1
-    ? NIFRGB_R : MONOCHROME;
+  fpx_info.components[0].myColorType.myColor=fpx_info.numberOfComponents != 1 ?
+    NIFRGB_R : MONOCHROME;
   fpx_info.components[1].myColorType.myColor=NIFRGB_G;
   fpx_info.components[2].myColorType.myColor=NIFRGB_B;
   fpx_info.components[3].myColorType.myColor=ALPHA;
   /*
-    Write image pixelss.
+    Write image pixels.
   */
   quantum_type=RGBQuantum;
   if (image->matte != MagickFalse)

@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -128,6 +128,7 @@ static const CoderMapInfo
     { "GRANITE", "MAGICK" },
     { "GROUP4", "TIFF" },
     { "GV", "DOT" },
+    { "IIQ", "DNG" },
     { "K25", "DNG" },
     { "KDC", "DNG" },
     { "H", "MAGICK" },
@@ -150,13 +151,16 @@ static const CoderMapInfo
     { "JPM", "JP2" },
     { "J2C", "JP2" },
     { "J2K", "JP2" },
+    { "JPE", "JPEG" },
     { "JPG", "JPEG" },
+    { "JPS", "JPEG" },
     { "JPX", "JP2" },
     { "K", "RAW" },
     { "LOGO", "MAGICK" },
     { "M2V", "MPEG" },
     { "M4V", "MPEG" },
     { "M", "RAW" },
+    { "MKV", "MPEG" },
     { "MNG", "PNG" },
     { "MOV", "MPEG" },
     { "MP4", "MPEG" },

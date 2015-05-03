@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1212,10 +1212,10 @@ MagickExport MagickBooleanType TransformImageColorspace(Image *image,
     return(MagickTrue);
   if ((image->colorspace == Rec709LumaColorspace) &&
       (colorspace == sRGBColorspace))
-    return(MagickTrue);
+    return(SetImageColorspace(image,colorspace));
   if ((image->colorspace == GRAYColorspace) && (image->gamma != 1.0) &&
       (colorspace == sRGBColorspace))
-    return(MagickTrue);
+    return(SetImageColorspace(image,colorspace));
   if (colorspace == UndefinedColorspace)
     return(SetImageColorspace(image,colorspace));
   /*
@@ -1314,16 +1314,6 @@ static inline ssize_t RoundToYCC(const MagickRealType value)
   if (value >= 1388.0)
     return(1388);
   return((ssize_t) (value+0.5));
-}
-
-static inline void ConvertCMYKToRGB(MagickPixelPacket *pixel)
-{
-  pixel->red=((QuantumRange-(QuantumScale*pixel->red*
-    (QuantumRange-pixel->index)+pixel->index)));
-  pixel->green=((QuantumRange-(QuantumScale*pixel->green*
-    (QuantumRange-pixel->index)+pixel->index)));
-  pixel->blue=((QuantumRange-(QuantumScale*pixel->blue*
-    (QuantumRange-pixel->index)+pixel->index)));
 }
 
 static inline void ConvertLabToRGB(const double L,const double a,
@@ -1982,9 +1972,9 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
             }
             default:
             {
-              red=QuantumRange*X;
-              green=QuantumRange*Y;
-              blue=QuantumRange*Z;
+              red=ClampToQuantum(QuantumRange*X);
+              green=ClampToQuantum(QuantumRange*Y);
+              blue=ClampToQuantum(QuantumRange*Z);
               break;
             }
           }

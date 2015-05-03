@@ -18,7 +18,7 @@
 %                                December 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -261,7 +261,7 @@ MagickExport MagickBooleanType NTIsMagickConflict(const char *magick)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   N T A c q u i r e T y pe C a c h e                                        %
+%   N T A c q u i r e T y p e C a c h e                                       %
 %                                                                             %
 %                                                                             %
 %                                                                             %

@@ -18,7 +18,7 @@
 %                                 June 2007                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -78,15 +78,6 @@
 /*
   Numerous internal routines for image distortions.
 */
-static inline double MagickMin(const double x,const double y)
-{
-  return( x < y ? x : y);
-}
-static inline double MagickMax(const double x,const double y)
-{
-  return( x > y ? x : y);
-}
-
 static inline void AffineArgsToCoefficients(double *affine)
 {
   /* map  external sx,ry,rx,sy,tx,ty  to  internal c0,c2,c4,c1,c3,c5 */
@@ -433,13 +424,6 @@ static double *GenerateCoefficients(const Image *image,
       break;
     case PolynomialDistortion:
       /* number of coefficents depend on the given polynomal 'order' */
-      if ( number_arguments <= 1 && (number_arguments-1)%cp_size != 0)
-      {
-        (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-                   "InvalidArgument","%s : '%s'","Polynomial",
-                   "Invalid number of args: order [CPs]...");
-        return((double *) NULL);
-      }
       i = poly_number_terms(arguments[0]);
       number_coeff = 2 + i*number_values;
       if ( i == 0 ) {

@@ -19,7 +19,7 @@
 %                               January 2010                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1040,7 +1040,7 @@ static Image *ComputeBlurImage(const Image* image,const ChannelType channel,
         clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&kernelWidth);
         clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&imageColumns);
         clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&imageRows);
-        clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(CLPixelPacket)*(chunkSize+kernel->width),(void *)NULL);
+        clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(CLPixelPacket)*(chunkSize+kernel->width),(void *) NULL);
         if (clStatus != CL_SUCCESS)
         {
           (void) OpenCLThrowMagickException(exception, GetMagickModule(), ResourceLimitWarning, "clEnv->library->clSetKernelArg failed.", "'%s'", ".");
@@ -1086,7 +1086,7 @@ static Image *ComputeBlurImage(const Image* image,const ChannelType channel,
         clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(unsigned int),(void *)&kernelWidth);
         clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(unsigned int),(void *)&imageColumns);
         clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(unsigned int),(void *)&imageRows);
-        clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(cl_float4)*(chunkSize+kernel->width),(void *)NULL);
+        clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(cl_float4)*(chunkSize+kernel->width),(void *) NULL);
         if (clStatus != CL_SUCCESS)
         {
           (void) OpenCLThrowMagickException(exception, GetMagickModule(), ResourceLimitWarning, "clEnv->library->clSetKernelArg failed.", "'%s'", ".");
@@ -1398,7 +1398,7 @@ static Image* ComputeBlurImageSection(const Image* image,
           clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&kernelWidth);
           clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&imageColumns);
           clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&imageRows);
-          clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(CLPixelPacket)*(chunkSize+kernel->width),(void *)NULL);
+          clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(CLPixelPacket)*(chunkSize+kernel->width),(void *) NULL);
           clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&offsetRows);
           clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&sec);
           if (clStatus != CL_SUCCESS)
@@ -1452,7 +1452,7 @@ static Image* ComputeBlurImageSection(const Image* image,
           clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(unsigned int),(void *)&kernelWidth);
           clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(unsigned int),(void *)&imageColumns);
           clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(unsigned int),(void *)&imageRows);
-          clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(cl_float4)*(chunkSize+kernel->width),(void *)NULL);
+          clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(cl_float4)*(chunkSize+kernel->width),(void *) NULL);
           clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(unsigned int),(void *)&offsetRows);
           clStatus|=clEnv->library->clSetKernelArg(blurColumnKernel,i++,sizeof(unsigned int),(void *)&sec);
           if (clStatus != CL_SUCCESS)
@@ -2191,7 +2191,7 @@ static Image *ComputeUnsharpMaskImage(const Image *image,
       clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&kernelWidth);
       clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&imageColumns);
       clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&imageRows);
-      clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(CLPixelPacket)*(chunkSize+kernel->width),(void *)NULL);
+      clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(CLPixelPacket)*(chunkSize+kernel->width),(void *) NULL);
       if (clStatus != CL_SUCCESS)
       {
         (void) OpenCLThrowMagickException(exception, GetMagickModule(), ResourceLimitWarning, "clEnv->library->clSetKernelArg failed.", "'%s'", ".");
@@ -2562,7 +2562,7 @@ static Image *ComputeUnsharpMaskImageSection(const Image *image,
         clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&kernelWidth);
         clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&imageColumns);
         clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&imageRows);
-        clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(CLPixelPacket)*(chunkSize+kernel->width),(void *)NULL);
+        clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(CLPixelPacket)*(chunkSize+kernel->width),(void *) NULL);
         clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&offsetRows);
         clStatus|=clEnv->library->clSetKernelArg(blurRowKernel,i++,sizeof(unsigned int),(void *)&sec);
         if (clStatus != CL_SUCCESS)
@@ -2911,7 +2911,7 @@ static Image *ComputeUnsharpMaskImageSingle(const Image *image,
       clStatus|=clEnv->library->clSetKernelArg(unsharpMaskKernel,i++,sizeof(unsigned int),(void *)&kernelWidth);
       clStatus|=clEnv->library->clSetKernelArg(unsharpMaskKernel,i++,sizeof(unsigned int),(void *)&imageColumns);
       clStatus|=clEnv->library->clSetKernelArg(unsharpMaskKernel,i++,sizeof(unsigned int),(void *)&imageRows);
-      clStatus|=clEnv->library->clSetKernelArg(unsharpMaskKernel,i++,sizeof(cl_float4)*(8 * (32 + kernel->width)),(void *)NULL);
+      clStatus|=clEnv->library->clSetKernelArg(unsharpMaskKernel,i++,sizeof(cl_float4)*(8 * (32 + kernel->width)),(void *) NULL);
       clStatus|=clEnv->library->clSetKernelArg(unsharpMaskKernel,i++,sizeof(float),(void *)&fGain);
       clStatus|=clEnv->library->clSetKernelArg(unsharpMaskKernel,i++,sizeof(float),(void *)&fThreshold);
       clStatus|=clEnv->library->clSetKernelArg(unsharpMaskKernel,i++,sizeof(cl_uint),(void *)&justBlur);
@@ -5074,7 +5074,7 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
   (void) ResetMagickMemory(histogram,0,(MaxMap+1)*sizeof(*histogram));
 
   /*
-  if (IsGrayImage(image,exception) != MagickFalse)
+  if (SetImageGray(image,exception) != MagickFalse)
     (void) SetImageColorspace(image,GRAYColorspace);
   */
 

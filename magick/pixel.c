@@ -16,7 +16,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -47,6 +47,7 @@
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/cache.h"
+#include "magick/colorspace-private.h"
 #include "magick/constitute.h"
 #include "magick/delegate.h"
 #include "magick/geometry.h"
@@ -101,6 +102,73 @@ MagickExport MagickPixelPacket *CloneMagickPixelPacket(
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   *clone_pixel=(*pixel);
   return(clone_pixel);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   C o n f o r m M a g i c k P i x e l P a c k e t                           %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ConformMagickPixelPacket() ensures the pixel conforms with the colorspace
+%  and alpha attribute of the image.
+%
+%  The format of the ConformMagickPixelPacket method is:
+%
+%      void *ConformMagickPixelPacket(Image *image,
+%        const MagickPixelPacket *source,MagickPixelPacket *destination,
+%        ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o source: the source magick pixel packet.
+%
+%    o destination: the destination magick pixel packet.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+MagickExport void ConformMagickPixelPacket(Image *image,
+  const MagickPixelPacket *source,MagickPixelPacket *destination,
+  ExceptionInfo *exception)
+{
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  assert(destination != (const MagickPixelPacket *) NULL);
+
+  (void) exception;
+
+  *destination=(*source);
+  if (image->colorspace == CMYKColorspace)
+    {
+      if (IssRGBCompatibleColorspace(destination->colorspace))
+        ConvertRGBToCMYK(destination);
+    }
+  else
+    if (destination->colorspace == CMYKColorspace)
+      {
+        if (IssRGBCompatibleColorspace(image->colorspace))
+          ConvertCMYKToRGB(destination);
+      }
+#if 0
+  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
+      (IsMagickGray(destination) == MagickFalse))
+    /* TODO: Add this method. */
+    SetMagickPixelPacketGray(destination);
+#else
+  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
+      (IsMagickGray(destination) == MagickFalse))
+    (void) TransformImageColorspace(image,sRGBColorspace);
+#endif
+  if ((destination->matte != MagickFalse) && (image->matte == MagickFalse))
+    (void) SetImageOpacity(image,OpaqueOpacity);
 }
 
 /*
@@ -2008,6 +2076,134 @@ MagickExport MagickBooleanType ExportImagePixels(const Image *image,
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%   G e t M a g i c k P i x e l I n t e n s i t y                             %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetMagickPixelIntensity() returns a single sample intensity value from the
+%  red, green, and blue components of a pixel based on the selected method:
+%
+%    Rec601Luma       0.298839R' + 0.586811G' + 0.114350B'
+%    Rec601Luminance  0.298839R + 0.586811G + 0.114350B
+%    Rec709Luma       0.212656R' + 0.715158G' + 0.072186B'
+%    Rec709Luminance  0.212656R + 0.715158G + 0.072186B
+%    Brightness       max(R', G', B')
+%    Lightness        (min(R', G', B') + max(R', G', B')) / 2.0
+%
+%    MS               (R^2 + G^2 + B^2) / 3.0
+%    RMS              sqrt(R^2 + G^2 + B^2) / 3.0
+%    Average          (R + G + B) / 3.0
+%
+%  The format of the GetMagickPixelIntensity method is:
+%
+%      MagickRealType GetMagickPixelIntensity(const Image *image,
+%        const MagickPixelPacket *pixel)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o pixel: Specifies a pointer to a MagickPixelPacket structure.
+%
+*/
+MagickExport MagickRealType GetMagickPixelIntensity(const Image *image,
+  const MagickPixelPacket *restrict pixel)
+{
+  MagickRealType
+    blue,
+    green,
+    intensity,
+    red;
+
+  red=pixel->red;
+  green=pixel->green;
+  blue=pixel->blue;
+  switch (image->intensity)
+  {
+    case AveragePixelIntensityMethod:
+    {
+      intensity=(red+green+blue)/3.0;
+      break;
+    }
+    case BrightnessPixelIntensityMethod:
+    {
+      intensity=MagickMax(MagickMax(red,green),blue);
+      break;
+    }
+    case LightnessPixelIntensityMethod:
+    {
+      intensity=(MagickMin(MagickMin(red,green),blue)+
+        MagickMax(MagickMax(red,green),blue))/2.0;
+      break;
+    }
+    case MSPixelIntensityMethod:
+    {
+      intensity=(MagickRealType) (((double) red*red+green*green+blue*blue)/
+        (3.0*QuantumRange));
+      break;
+    }
+    case Rec601LumaPixelIntensityMethod:
+    {
+      if (pixel->colorspace == RGBColorspace)
+        {
+          red=EncodePixelGamma(red);
+          green=EncodePixelGamma(green);
+          blue=EncodePixelGamma(blue);
+        }
+      intensity=0.298839*red+0.586811*green+0.114350*blue;
+      break;
+    }
+    case Rec601LuminancePixelIntensityMethod:
+    {
+      if (pixel->colorspace == sRGBColorspace)
+        {
+          red=DecodePixelGamma(red);
+          green=DecodePixelGamma(green);
+          blue=DecodePixelGamma(blue);
+        }
+      intensity=0.298839*red+0.586811*green+0.114350*blue;
+      break;
+    }
+    case Rec709LumaPixelIntensityMethod:
+    default:
+    {
+      if (pixel->colorspace == RGBColorspace)
+        {
+          red=EncodePixelGamma(red);
+          green=EncodePixelGamma(green);
+          blue=EncodePixelGamma(blue);
+        }
+      intensity=0.212656*red+0.715158*green+0.072186*blue;
+      break;
+    }
+    case Rec709LuminancePixelIntensityMethod:
+    {
+      if (pixel->colorspace == sRGBColorspace)
+        {
+          red=DecodePixelGamma(red);
+          green=DecodePixelGamma(green);
+          blue=DecodePixelGamma(blue);
+        }
+      intensity=0.212656*red+0.715158*green+0.072186*blue;
+      break;
+    }
+    case RMSPixelIntensityMethod:
+    {
+      intensity=(MagickRealType) (sqrt((double) red*red+green*green+blue*blue)/
+        sqrt(3.0));
+      break;
+    }
+  }
+  return(intensity);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   G e t M a g i c k P i x e l P a c k e t                                   %
 %                                                                             %
 %                                                                             %
@@ -2086,23 +2282,6 @@ MagickExport void GetMagickPixelPacket(const Image *image,
 %    o pixel: Specifies a pointer to a PixelPacket structure.
 %
 */
-
-static inline MagickRealType MagickMax(const MagickRealType x,
-  const MagickRealType y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline MagickRealType MagickMin(const MagickRealType x,
-  const MagickRealType y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 MagickExport MagickRealType GetPixelIntensity(const Image *image,
   const PixelPacket *restrict pixel)
 {
@@ -4388,7 +4567,7 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
           pixels[3].index));
       gamma=((epsilon.y*(epsilon.x+delta.x)+delta.y*(epsilon.x+delta.x)));
       gamma=PerceptibleReciprocal(gamma);
-      pixel->opacity=(epsilon.y*(epsilon.x*pixels[0].opacity+delta.x*
+      pixel->opacity=gamma*(epsilon.y*(epsilon.x*pixels[0].opacity+delta.x*
         pixels[1].opacity)+delta.y*(epsilon.x*pixels[2].opacity+delta.x*
         pixels[3].opacity));
       break;

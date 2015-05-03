@@ -17,7 +17,7 @@
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1782,20 +1782,6 @@ MagickExport MagickBooleanType RemoteDisplayCommand(const ImageInfo *image_info,
 %    o image: the image; returned from ReadImage.
 %
 */
-
-static inline ssize_t MagickMax(const ssize_t x,const ssize_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline ssize_t MagickMin(const ssize_t x,const ssize_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 static MagickBooleanType XAnnotateEditImage(Display *display,
   XResourceInfo *resource_info,XWindows *windows,Image *image)
@@ -10210,6 +10196,7 @@ static Image *XOpenImage(Display *display,XResourceInfo *resource_info,
           (void) XFreeStringList(files);
           ThrowXWindowException(ResourceLimitError,
             "MemoryAllocationFailed","...");
+          return((Image *) NULL);
         }
       j=0;
       for (i=1; i < count; i++)

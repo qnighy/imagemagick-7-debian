@@ -16,7 +16,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -46,6 +46,9 @@
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/cache.h"
+#include "magick/cache-private.h"
+#include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
 #include "magick/constitute.h"
 #include "magick/delegate.h"
 #include "magick/geometry.h"
@@ -137,7 +140,7 @@ MagickExport QuantumInfo *AcquireQuantumInfo(const ImageInfo *image_info,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  AcquireQuantumPixels() allocates the unsigned char structure.
+%  AcquireQuantumPixels() allocates the pixel staging area.
 %
 %  The format of the AcquireQuantumPixels method is:
 %
@@ -172,7 +175,12 @@ static MagickBooleanType AcquireQuantumPixels(QuantumInfo *quantum_info,
     quantum_info->pixels[i]=(unsigned char *) AcquireQuantumMemory(extent+1,
       sizeof(**quantum_info->pixels));
     if (quantum_info->pixels[i] == (unsigned char *) NULL)
-      return(MagickFalse);
+      {
+        while (--i >= 0)
+          quantum_info->pixels[i]=(unsigned char *) RelinquishMagickMemory(
+            quantum_info->pixels[i]);
+        return(MagickFalse);
+      }
     (void) ResetMagickMemory(quantum_info->pixels[i],0,(extent+1)*
       sizeof(**quantum_info->pixels));
     quantum_info->pixels[i][extent]=QuantumSignature;
@@ -513,6 +521,7 @@ MagickExport QuantumType GetQuantumType(Image *image,ExceptionInfo *exception)
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  (void) exception;
   quantum_type=RGBQuantum;
   if (image->matte != MagickFalse)
     quantum_type=RGBAQuantum;
@@ -522,7 +531,7 @@ MagickExport QuantumType GetQuantumType(Image *image,ExceptionInfo *exception)
       if (image->matte != MagickFalse)
         quantum_type=CMYKAQuantum;
     }
-  if (IsGrayImage(image,exception) != MagickFalse)
+  if (IsGrayColorspace(image->colorspace) != MagickFalse)
     {
       quantum_type=GrayQuantum;
       if (image->matte != MagickFalse)
@@ -645,8 +654,9 @@ MagickExport void SetQuantumAlphaType(QuantumInfo *quantum_info,
 MagickExport MagickBooleanType SetQuantumDepth(const Image *image,
   QuantumInfo *quantum_info,const size_t depth)
 {
-  MagickBooleanType
-    status;
+  size_t
+    extent,
+    quantum;
 
   /*
     Allocate the quantum pixel buffer.
@@ -670,9 +680,11 @@ MagickExport MagickBooleanType SetQuantumDepth(const Image *image,
     }
   if (quantum_info->pixels != (unsigned char **) NULL)
     DestroyQuantumPixels(quantum_info);
-  status=AcquireQuantumPixels(quantum_info,(6+quantum_info->pad)*image->columns*
-    ((quantum_info->depth+7)/8));  /* allow for CMYKA + RLE byte + pad */
-  return(status);
+  quantum=(quantum_info->pad+6)*(quantum_info->depth+7)/8;
+  extent=image->columns*quantum;
+  if (quantum != (extent/image->columns))
+    return(MagickFalse);
+  return(AcquireQuantumPixels(quantum_info,extent));
 }
 
 /*

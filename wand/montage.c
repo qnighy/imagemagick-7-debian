@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -116,6 +116,7 @@ static MagickBooleanType MontageUsage(void)
       "-repage geometry     size and location of an image canvas (operator)",
       "-resize geometry     resize the image",
       "-rotate degrees      apply Paeth rotation to the image",
+      "-scale geometry      scale the image",
       "-strip               strip image of all profiles and comments",
       "-transform           affine transform image",
       "-transpose           flip image vertically and rotate 90 degrees",
@@ -621,28 +622,30 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
         if (LocaleCompare("clone",option+1) == 0)
           {
             Image
-              *clone_images;
-
-            clone_images=image;
+              *clone_images,
+              *clone_list;
+            
+            clone_list=CloneImageList(image,exception);
             if (k != 0)
-              clone_images=image_stack[k-1].image;
-            if (clone_images == (Image *) NULL)
+              clone_list=CloneImageList(image_stack[k-1].image,exception);
+            if (clone_list == (Image *) NULL)
               ThrowMontageException(ImageError,"ImageSequenceRequired",option);
             FireImageStack(MagickTrue,MagickTrue,MagickTrue);
             if (*option == '+')
-              clone_images=CloneImages(clone_images,"-1",exception);
+              clone_images=CloneImages(clone_list,"-1",exception);
             else
-              {
+              { 
                 i++;
                 if (i == (ssize_t) argc)
                   ThrowMontageException(OptionError,"MissingArgument",option);
                 if (IsSceneGeometry(argv[i],MagickFalse) == MagickFalse)
                   ThrowMontageInvalidArgumentException(option,argv[i]);
-                clone_images=CloneImages(clone_images,argv[i],exception);
+                clone_images=CloneImages(clone_list,argv[i],exception);
               }
             if (clone_images == (Image *) NULL)
               ThrowMontageException(OptionError,"NoSuchImage",option);
             AppendImageStack(clone_images);
+            clone_list=DestroyImageList(clone_list);
             break;
           }
         if (LocaleCompare("coalesce",option+1) == 0)
@@ -1430,7 +1433,7 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
               ThrowMontageInvalidArgumentException(option,argv[i]);
             break;
           }
-        if (LocaleCompare("seed",option+1) == 0)
+        if (LocaleCompare("scale",option+1) == 0)
           {
             if (*option == '+')
               break;
@@ -1455,6 +1458,17 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
             first_scene=(int) StringToLong(argv[i]);
             last_scene=first_scene;
             (void) sscanf(argv[i],"%ld-%ld",&first_scene,&last_scene);
+            break;
+          }
+        if (LocaleCompare("seed",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMontageException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMontageInvalidArgumentException(option,argv[i]);
             break;
           }
         if (LocaleCompare("set",option+1) == 0)

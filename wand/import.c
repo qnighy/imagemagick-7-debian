@@ -17,7 +17,7 @@
 %                              July 1992                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -44,8 +44,9 @@
 #include "wand/studio.h"
 #include "wand/MagickWand.h"
 #include "wand/mogrify-private.h"
-#include "magick/xwindow-private.h"
 #include "magick/string-private.h"
+#include "magick/image-private.h"
+#include "magick/xwindow-private.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -207,13 +208,6 @@ static MagickBooleanType ImportUsage(void)
     "the filename suffix (i.e. image.ps).  Specify 'file' as '-' for\n");
   (void) printf("standard input or output.\n");
   return(MagickFalse);
-}
-
-static inline ssize_t MagickMax(const ssize_t x,const ssize_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
 }
 
 WandExport MagickBooleanType ImportImageCommand(ImageInfo *image_info,

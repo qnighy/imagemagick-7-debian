@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -200,6 +200,7 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
   status=GetMultilineTypeMetrics(image,draw_info,&metrics);
   if (status == MagickFalse)
     {
+      draw_info=DestroyDrawInfo(draw_info);
       InheritException(exception,&image->exception);
       image=DestroyImageList(image);
       return((Image *) NULL);
@@ -213,28 +214,29 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
       draw_info->stroke_width+0.5);
   if (image->rows == 0)
     image->rows=(size_t) (draw_info->pointsize+draw_info->stroke_width+0.5);
-  if (draw_info->gravity == UndefinedGravity)
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
     {
-      (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",
-        -metrics.bounds.x1+draw_info->stroke_width/2.0,metrics.ascent+
-        draw_info->stroke_width/2.0);
-      (void) CloneString(&draw_info->geometry,geometry);
-    }
-  if (draw_info->direction == RightToLeftDirection)
-    {
-      if (draw_info->direction == RightToLeftDirection)
-        (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",
-          image->columns-(metrics.bounds.x2+draw_info->stroke_width/2.0),
-          metrics.ascent+draw_info->stroke_width/2.0);
-      (void) CloneString(&draw_info->geometry,geometry);
+      draw_info=DestroyDrawInfo(draw_info);
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   if (SetImageBackgroundColor(image) == MagickFalse)
     {
+      draw_info=DestroyDrawInfo(draw_info);
       InheritException(exception,&image->exception);
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  (void) AnnotateImage(image,draw_info);
+  /*
+    Draw label.
+  */
+  (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",
+    draw_info->direction == RightToLeftDirection ? image->columns-
+    metrics.bounds.x2 : 0.0,draw_info->gravity == UndefinedGravity ?
+    metrics.ascent : 0.0);
+  draw_info->geometry=AcquireString(geometry);
+  status=AnnotateImage(image,draw_info);
   if (image_info->pointsize == 0.0)
     {
       char
@@ -245,6 +247,11 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
       (void) SetImageProperty(image,"label:pointsize",pointsize);
     }
   draw_info=DestroyDrawInfo(draw_info);
+  if (status == MagickFalse)
+    {
+      image=DestroyImageList(image);
+      return((Image *) NULL);
+    }
   return(GetFirstImageInList(image));
 }
 

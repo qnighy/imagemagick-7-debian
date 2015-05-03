@@ -18,7 +18,7 @@
 %                              September 1993                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -311,28 +311,6 @@ static void XDrawBevel(Display *display,const XWindowInfo *window_info,
 %      contains the extents of the button.
 %
 */
-
-static inline int MagickAbsoluteValue(const int x)
-{
-  if (x < 0)
-    return(-x);
-  return(x);
-}
-
-static inline int MagickMax(const int x,const int y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline int MagickMin(const int x,const int y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static void XDrawBeveledButton(Display *display,const XWindowInfo *window_info,
   const XWidgetInfo *button_info)
 {

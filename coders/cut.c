@@ -371,7 +371,13 @@ static Image *ReadCUTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->depth=8;
   image->colors=(size_t) (GetQuantumRange(1UL*i)+1);
 
-  if (image_info->ping) goto Finish;
+  if (image_info->ping != MagickFalse) goto Finish;
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
 
   /* ----- Do something with palette ----- */
   if ((clone_info=CloneImageInfo(image_info)) == NULL) goto NoPalette;
@@ -557,7 +563,7 @@ static Image *ReadCUTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if(palette==NULL)
     {    /*attempt to detect binary (black&white) images*/
       if ((image->storage_class == PseudoClass) &&
-          (IsGrayImage(image,&image->exception) != MagickFalse))
+          (SetImageGray(image,&image->exception) != MagickFalse))
         {
           if(GetCutColors(image)==2)
             {

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -188,6 +188,9 @@ static MagickBooleanType InvokePostscriptDelegate(
   gs_main_instance
     *interpreter;
 
+  gsapi_revision_t
+    revision;
+
   int
     argc,
     code;
@@ -215,12 +218,16 @@ static MagickBooleanType InvokePostscriptDelegate(
   ghost_info_struct.set_stdio=(int (*)(gs_main_instance *,int(*)(void *,char *,
     int),int(*)(void *,const char *,int),int(*)(void *, const char *, int)))
     gsapi_set_stdio;
+  ghost_info_struct.revision=(int (*)(gsapi_revision_t *,int)) gsapi_revision;
 #endif
   if (ghost_info == (GhostInfo *) NULL)
     ExecuteGhostscriptCommand(command,status);
+  if ((ghost_info->revision)(&revision,sizeof(revision)) != 0)
+    revision.revision=0;
   if (verbose != MagickFalse)
     {
-      (void) fputs("[ghostscript library]",stdout);
+      (void) fprintf(stdout,"[ghostscript library %.2f]",(double)
+        revision.revision/100.0);
       SetArgsStart(command,args_start);
       (void) fputs(args_start,stdout);
     }
@@ -248,12 +255,14 @@ static MagickBooleanType InvokePostscriptDelegate(
       SetArgsStart(command,args_start);
       if (status == -101) /* quit */
         (void) FormatLocaleString(message,MaxTextExtent,
-          "[ghostscript library]%s: %s",args_start,errors);
+          "[ghostscript library %.2f]%s: %s",(double)revision.revision / 100,
+          args_start,errors);
       else
         {
           (void) ThrowMagickException(exception,GetMagickModule(),
             DelegateError,"PostscriptDelegateFailed",
-            "`[ghostscript library]%s': %s",args_start,errors);
+            "`[ghostscript library %.2f]%s': %s",
+            (double)revision.revision / 100,args_start,errors);
           if (errors != (char *) NULL)
             errors=DestroyString(errors);
           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -407,12 +416,12 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   char
     command[MaxTextExtent],
-    density[MaxTextExtent],
+    *density,
     filename[MaxTextExtent],
     geometry[MaxTextExtent],
     input_filename[MaxTextExtent],
     message[MaxTextExtent],
-    options[MaxTextExtent],
+    *options,
     postscript_filename[MaxTextExtent];
 
   const char
@@ -643,11 +652,14 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
           continue;
         length=extent;
         profile=BlobToStringInfo((const void *) NULL,length);
-        p=GetStringInfoDatum(profile);
-        for (i=0; i < (ssize_t) length; i++)
-          *p++=(unsigned char) ProfileInteger(image,hex_digits);
-        (void) SetImageProfile(image,"8bim",profile);
-        profile=DestroyStringInfo(profile);
+        if (profile != (StringInfo *) NULL)
+          {
+            p=GetStringInfoDatum(profile);
+            for (i=0; i < (ssize_t) length; i++)
+              *p++=(unsigned char) ProfileInteger(image,hex_digits);
+            (void) SetImageProfile(image,"8bim",profile);
+            profile=DestroyStringInfo(profile);
+          }
         continue;
       }
     if (LocaleNCompare(BeginXMPPacket,command,strlen(BeginXMPPacket)) == 0)
@@ -854,7 +866,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  *options='\0';
+  density=AcquireString("");
+  options=AcquireString("");
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",resolution.x,
     resolution.y);
   (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
@@ -892,6 +905,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     read_info->antialias != MagickFalse ? 4 : 1,
     read_info->antialias != MagickFalse ? 4 : 1,density,options,filename,
     postscript_filename,input_filename);
+  options=DestroyString(options);
+  density=DestroyString(density);
   *message='\0';
   status=InvokePostscriptDelegate(read_info->verbose,command,message,exception);
   (void) InterpretImageFilename(image_info,image,filename,1,
@@ -973,6 +988,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   do
   {
     (void) CopyMagickString(postscript_image->filename,filename,MaxTextExtent);
+    (void) CopyMagickString(postscript_image->magick,image->magick,
+      MaxTextExtent);
     if (columns != 0)
       postscript_image->magick_columns=columns;
     if (rows != 0)
@@ -1136,13 +1153,6 @@ ModuleExport void UnregisterPSImage(void)
 %    o image: the image.
 %
 */
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 static inline unsigned char *PopHexPixel(const char **hex_digits,
   const size_t pixel,unsigned char *pixels)
@@ -1882,9 +1892,9 @@ RestoreMSCWarning
     index=(IndexPacket) 0;
     x=0;
     if ((image_info->type != TrueColorType) &&
-        (IsGrayImage(image,&image->exception) != MagickFalse))
+        (SetImageGray(image,&image->exception) != MagickFalse))
       {
-        if (IsMonochromeImage(image,&image->exception) == MagickFalse)
+        if (SetImageMonochrome(image,&image->exception) == MagickFalse)
           {
             Quantum
               pixel;

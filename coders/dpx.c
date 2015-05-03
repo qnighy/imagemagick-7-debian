@@ -17,7 +17,7 @@
 %                                March 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -65,6 +65,11 @@
 #include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/string-private.h"
+
+/*
+  Define declaration.
+*/
+#define MaxNumberImageElements  8
 
 /*
   Typedef declaration.
@@ -230,7 +235,7 @@ typedef struct _DPXImageInfo
     lines_per_element;
 
   DPXImageElement
-    image_element[8];
+    image_element[MaxNumberImageElements];
 
   unsigned char
     reserve[52];
@@ -436,8 +441,14 @@ static size_t GetBytesPerRow(const size_t columns,
     }
     case 16:
     {
-      bytes_per_row=2*(((size_t) samples_per_pixel*columns*bits_per_pixel+8)/
-        16);
+      if (pad == MagickFalse)
+        {
+          bytes_per_row=2*(((size_t) samples_per_pixel*columns*bits_per_pixel+
+            15)/16);
+          break;
+        }
+      bytes_per_row=4*(((size_t) samples_per_pixel*columns*bits_per_pixel+31)/
+        32);
       break;
     }
     case 32:
@@ -780,6 +791,8 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Read DPX image header.
   */
   dpx.image.orientation=ReadBlobShort(image);
+  if (dpx.image.orientation > 7)
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   offset+=2;
   if (dpx.image.orientation != (unsigned short) ~0)
     (void) FormatImageProperty(image,"dpx:image.orientation","%d",
@@ -797,6 +810,8 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     case 7: image->orientation=RightBottomOrientation; break;
   }
   dpx.image.number_elements=ReadBlobShort(image);
+  if (dpx.image.number_elements > MaxNumberImageElements)
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   offset+=2;
   dpx.image.pixels_per_line=ReadBlobLong(image);
   offset+=4;
@@ -1117,6 +1132,12 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (void) CloseBlob(image);
       return(GetFirstImageInList(image));
     }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   for (n=0; n < (ssize_t) dpx.image.number_elements; n++)
   {
     /*
@@ -1214,6 +1235,9 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       MagickTrue : MagickFalse);
     for (y=0; y < (ssize_t) image->rows; y++)
     {
+      const void
+        *pixels;
+
       MagickBooleanType
         sync;
 
@@ -1227,29 +1251,24 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
         count,
         offset;
 
-      unsigned char
-        *pixels;
-
       if (status == MagickFalse)
         continue;
-      pixels=GetQuantumPixels(quantum_info);
-      {
-        count=ReadBlob(image,extent,pixels);
-        if ((image->progress_monitor != (MagickProgressMonitor) NULL) &&
-            (image->previous == (Image *) NULL))
-          {
-            MagickBooleanType
-              proceed;
-
-            proceed=SetImageProgress(image,LoadImageTag,(MagickOffsetType) row,
-              image->rows);
-            if (proceed == MagickFalse)
-              status=MagickFalse;
-          }
-        offset=row++;
-      }
+      pixels=ReadBlobStream(image,extent,GetQuantumPixels(quantum_info),
+        &count);
       if (count != (ssize_t) extent)
         status=MagickFalse;
+      if ((image->progress_monitor != (MagickProgressMonitor) NULL) &&
+          (image->previous == (Image *) NULL))
+        {
+          MagickBooleanType
+            proceed;
+
+          proceed=SetImageProgress(image,LoadImageTag,(MagickOffsetType) row,
+            image->rows);
+          if (proceed == MagickFalse)
+            status=MagickFalse;
+        }
+      offset=row++;
       q=QueueAuthenticPixels(image,0,offset,image->columns,1,exception);
       if (q == (PixelPacket *) NULL)
         {
@@ -1607,7 +1626,7 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,Image *image)
             dpx.image.image_element[i].descriptor=RGBAComponentType;
           if ((image_info->type != TrueColorType) &&
               (image->matte == MagickFalse) &&
-              (IsGrayImage(image,&image->exception) != MagickFalse))
+              (SetImageGray(image,&image->exception) != MagickFalse))
             dpx.image.image_element[i].descriptor=LumaComponentType;
           break;
         }
@@ -1940,12 +1959,14 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,Image *image)
         quantum_type=CbYCrYQuantum;
     }
   extent=GetBytesPerRow(image->columns,image->matte != MagickFalse ? 4UL : 3UL,
-    image->depth,MagickTrue);
+    image->depth,dpx.image.image_element[0].packing == 0 ? MagickFalse :
+    MagickTrue);
   if ((image_info->type != TrueColorType) && (image->matte == MagickFalse) &&
-      (IsGrayImage(image,&image->exception) != MagickFalse))
+      (SetImageGray(image,&image->exception) != MagickFalse))
     {
       quantum_type=GrayQuantum;
-      extent=GetBytesPerRow(image->columns,1UL,image->depth,MagickTrue);
+      extent=GetBytesPerRow(image->columns,1UL,image->depth,
+        dpx.image.image_element[0].packing == 0 ? MagickFalse : MagickTrue);
     }
   pixels=GetQuantumPixels(quantum_info);
   for (y=0; y < (ssize_t) image->rows; y++)

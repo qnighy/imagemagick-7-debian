@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002, 2003
+// Copyright Dirk Lemstra 2013-2015
 //
 // Definition of Image, the representation of a single image in Magick++
 //
@@ -128,7 +129,7 @@ namespace Magick
 
     // Anti-alias Postscript and TrueType fonts (default true)
     void antiAlias(const bool flag_);
-    bool antiAlias(void);
+    bool antiAlias(void) const;
 
     // Time in 1/100ths of a second which must expire before
     // displaying the next image in an animated sequence.
@@ -201,7 +202,7 @@ namespace Magick
 
     // Colormap size (number of colormap entries)
     void colorMapSize(const size_t entries_);
-    size_t colorMapSize(void);
+    size_t colorMapSize(void) const;
 
     // Image Color Space
     void colorSpace(const ColorspaceType colorSpace_);
@@ -413,6 +414,10 @@ namespace Magick
     void quantizeTreeDepth(const size_t treeDepth_);
     size_t quantizeTreeDepth(void) const;
 
+    // Suppress all warning messages. Error messages are still reported.
+    void quiet(const bool quiet_);
+    bool quiet(void) const;
+
     // The type of rendering intent
     void renderingIntent(const RenderingIntent renderingIntent_);
     RenderingIntent renderingIntent(void) const;
@@ -522,7 +527,7 @@ namespace Magick
     std::string tileName(void) const;
 
     // Number of colors in the image
-    size_t totalColors(void);
+    size_t totalColors(void) const;
 
     // Rotation to use when annotating with text or drawing
     void transformRotation(const double angle_);
@@ -638,11 +643,11 @@ namespace Magick
     void artifact(const std::string &name_,const std::string &value_);
 
     // Returns the value of the artifact with the specified name.
-    std::string artifact(const std::string &name_);
+    std::string artifact(const std::string &name_) const;
 
     // Access/Update a named image attribute
     void attribute(const std::string name_,const std::string value_);
-    std::string attribute(const std::string name_ );
+    std::string attribute(const std::string name_ ) const;
 
     // Extracts the 'mean' from the image and adjust the image to try
     // make set its gamma appropriatally.
@@ -787,6 +792,9 @@ namespace Magick
       const CompositeOperator compose_=InCompositeOp);
     void composite(const Image &compositeImage_,const ::ssize_t xOffset_,
       const ::ssize_t yOffset_,const CompositeOperator compose_=InCompositeOp);
+
+    // Determines the connected-components of the image
+    void connectedComponents(const size_t connectivity_);
 
     // Contrast image (enhance intensity differences in image)
     void contrast(const size_t sharpen_);
@@ -1085,7 +1093,7 @@ namespace Magick
       const double hue_);
 
     // Returns the normalized moments of one or more image channels.
-    ImageMoments moments(void);
+    ImageMoments moments(void) const;
 
     // Applies a kernel to the image according to the given mophology method.
     void morphology(const MorphologyMethod method_,const std::string kernel_,
@@ -1256,6 +1264,9 @@ namespace Magick
     void reduceNoise(void);
     void reduceNoise(const double order_);
 
+    // Resets the image page canvas and position.
+    void repage();
+
     // Resize image in terms of its pixel size.
     void resample(const Geometry &geometry_);
 
@@ -1297,7 +1308,7 @@ namespace Magick
       const double sigma_,const double threshold_);
 
     // Separates a channel from the image and returns it as a grayscale image.
-    Image separate(const ChannelType channel_);
+    Image separate(const ChannelType channel_) const;
 
     // Applies a special effect to the image, similar to the effect achieved in
     // a photo darkroom by sepia toning.  Threshold ranges from 0 to 
@@ -1440,7 +1451,7 @@ namespace Magick
     void trim(void);
 
     // Returns the unique colors of an image.
-    Image uniqueColors(void);
+    Image uniqueColors(void) const;
 
     // Replace image with a sharpened version of the original image
     // using the unsharp mask algorithm.
@@ -1524,17 +1535,11 @@ namespace Magick
     // Prepare to update image (copy if reference > 1)
     void modifyImage(void);
 
-    // Register image with image registry or obtain registration id
-    ::ssize_t registerId(void);
-
     // Replace current image (reference counted)
     MagickCore::Image *replaceImage(MagickCore::Image *replacement_);
 
     // Test for ImageMagick error and throw exception if error
     void throwImageException(void) const;
-
-    // Unregister image from image registry
-    void unregisterId(void);
 
   private:
 

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -936,12 +936,9 @@ MagickExport Image *CropImageToTiles(const Image *image,
           crop.width-=crop.x;
           crop.x+=image->page.x;
           next=CropImage(image,&crop,exception);
-          if (next == (Image *) NULL)
-            break;
-          AppendImageToList(&crop_image,next);
+          if (next != (Image *) NULL)
+            AppendImageToList(&crop_image,next);
         }
-        if (next == (Image *) NULL)
-          break;
       }
       ClearMagickException(exception);
       return(crop_image);
@@ -1186,6 +1183,10 @@ MagickExport Image *ExtentImage(const Image *image,
   assert(geometry != (const RectangleInfo *) NULL);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
+  if ((image->columns == geometry->width) && 
+      (image->rows == geometry->height) &&
+      (geometry->x == 0) && (geometry->y == 0))
+    return(CloneImage(image,0,0,MagickTrue,exception));
   extent_image=CloneImage(image,geometry->width,geometry->height,MagickTrue,
     exception);
   if (extent_image == (Image *) NULL)

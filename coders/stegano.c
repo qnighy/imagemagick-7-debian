@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -87,15 +87,6 @@
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline size_t MagickMin(const size_t x,
-  const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static Image *ReadSTEGANOImage(const ImageInfo *image_info,
   ExceptionInfo *exception)
 {
@@ -168,6 +159,12 @@ static Image *ReadSTEGANOImage(const ImageInfo *image_info,
     {
       (void) CloseBlob(image);
       return(GetFirstImageInList(image));
+    }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   /*
     Get hidden watermark from low-order bits of image.

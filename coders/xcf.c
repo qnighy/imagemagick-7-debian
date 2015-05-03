@@ -17,7 +17,7 @@
 %                               November 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -289,13 +289,6 @@ static CompositeOperator GIMPBlendModeToCompositeOperator(
 %    o string: the address of a character buffer.
 %
 */
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
 
 static char *ReadBlobStringWithLongSize(Image *image,char *string,size_t max)
 {
@@ -1049,7 +1042,7 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return((Image *) NULL);
     }
   count=ReadBlob(image,14,(unsigned char *) magick);
-  if ((count == 0) ||
+  if ((count != 14) ||
       (LocaleNCompare((char *) magick,"gimp xcf",8) != 0))
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   (void) ResetMagickMemory(&doc_info,0,sizeof(XCFDocInfo));
@@ -1275,6 +1268,12 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       XCFLayerInfo
         *layer_info;
 
+      status=SetImageExtent(image,image->columns,image->rows);
+      if (status == MagickFalse)
+        {
+          InheritException(exception,&image->exception);
+          return(DestroyImageList(image));
+        }
       /*
         The read pointer.
       */

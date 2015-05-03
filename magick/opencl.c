@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -198,7 +198,7 @@ MagickExport MagickCLEnv AcquireMagickOpenCLEnv()
 
 MagickExport MagickBooleanType RelinquishMagickOpenCLEnv(MagickCLEnv clEnv)
 {
-  if (clEnv != (MagickCLEnv)NULL)
+  if (clEnv != (MagickCLEnv) NULL)
   {
     DestroySemaphoreInfo(&clEnv->lock);
     RelinquishMagickMemory(clEnv);
@@ -2000,7 +2000,7 @@ RestoreMSCWarning
         }
         memcpy(tmp,tmpStart,tmpEnd-tmpStart);
         tmp[tmpEnd-tmpStart] = '\0';
-        maxComputeUnits = atoi(tmp);
+        maxComputeUnits = strtol(tmp,(char **) NULL,10);
 
 
         tmpStart = findString(dataStart, contentEnd, DS_TAG_DEVICE_MAX_CLOCK_FREQ);
@@ -2016,7 +2016,7 @@ RestoreMSCWarning
         }
         memcpy(tmp,tmpStart,tmpEnd-tmpStart);
         tmp[tmpEnd-tmpStart] = '\0';
-        maxClockFrequency = atoi(tmp);
+        maxClockFrequency = strtol(tmp,(char **) NULL,10);
 
 
         /* check if this device is on the system */
@@ -2241,7 +2241,8 @@ ds_status AccelerateScoreDeserializer(ds_device* device, const unsigned char* se
     memcpy(s, serializedScore, serializedScoreSize);
     s[serializedScoreSize] = (char)'\0';
     device->score = malloc(sizeof(AccelerateScoreType));
-    *((AccelerateScoreType*)device->score) = (AccelerateScoreType)atof(s);
+    *((AccelerateScoreType*)device->score) = (AccelerateScoreType)
+      strtod(s, (char **) NULL);
     free(s);
     return DS_SUCCESS;
   }
@@ -2726,7 +2727,7 @@ MagickPrivate cl_kernel AcquireOpenCLKernel(
   magick_unreferenced(program);
   magick_unreferenced(kernelName);
 
-  return (cl_kernel)NULL;
+  return (cl_kernel) NULL;
 }
 
 MagickPrivate MagickBooleanType RelinquishOpenCLKernel(

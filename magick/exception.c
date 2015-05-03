@@ -17,7 +17,7 @@
 %                                July 1993                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -630,6 +630,7 @@ MagickExport void InheritException(ExceptionInfo *exception,
   assert(exception->signature == MagickSignature);
   assert(relative != (ExceptionInfo *) NULL);
   assert(relative->signature == MagickSignature);
+  assert(exception != relative);
   if (relative->exceptions == (void *) NULL)
     return;
   LockSemaphoreInfo(relative->semaphore);

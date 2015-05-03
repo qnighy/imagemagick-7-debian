@@ -16,7 +16,7 @@
 %                                April 2004                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -156,14 +156,6 @@ ModuleExport void UnregisterCIPImage(void)
 %    o image:  The image.
 %
 */
-
-static inline ssize_t MagickMin(const ssize_t x,const ssize_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static MagickBooleanType WriteCIPImage(const ImageInfo *image_info,Image *image)
 {
   char

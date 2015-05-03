@@ -17,7 +17,7 @@
 %                            September 1994                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -351,22 +351,24 @@ static ssize_t PrintChannelLocations(FILE *file,const Image *image,
       {
         case RedChannel:
         {
-          match=fabs((double) p->red-target) < 0.5 ? MagickTrue : MagickFalse;
+          match=fabs((double) (p->red-target)) < 0.5 ? MagickTrue : MagickFalse;
           break;
         }
         case GreenChannel:
         {
-          match=fabs((double) p->green-target) < 0.5 ? MagickTrue : MagickFalse;
+          match=fabs((double) (p->green-target)) < 0.5 ? MagickTrue :
+            MagickFalse;
           break;
         }
         case BlueChannel:
         {
-          match=fabs((double) p->blue-target) < 0.5 ? MagickTrue : MagickFalse;
+          match=fabs((double) (p->blue-target)) < 0.5 ? MagickTrue :
+            MagickFalse;
           break;
         }
         case AlphaChannel:
         {
-          match=fabs((double) p->opacity-target) < 0.5 ? MagickTrue :
+          match=fabs((double) (p->opacity-target)) < 0.5 ? MagickTrue :
             MagickFalse;
           break;
         }
@@ -448,7 +450,7 @@ static ssize_t PrintChannelStatistics(FILE *file,const ChannelType channel,
 #define StatisticsFormat "    %s:\n      min: " QuantumFormat  \
   " (%g)\n      max: " QuantumFormat " (%g)\n"  \
   "      mean: %g (%g)\n      standard deviation: %g (%g)\n"  \
-  "      kurtosis: %g\n      skewness: %g\n"
+  "      kurtosis: %g\n      skewness: %g\n      entropy: %g\n"
 
   ssize_t
     n;
@@ -465,7 +467,8 @@ static ssize_t PrintChannelStatistics(FILE *file,const ChannelType channel,
         channel_statistics[channel].standard_deviation,
         channel_statistics[channel].standard_deviation/(double) QuantumRange,
         channel_statistics[channel].kurtosis,
-        channel_statistics[channel].skewness);
+        channel_statistics[channel].skewness,
+        channel_statistics[channel].entropy);
       return(n);
     }
   n=FormatLocaleFile(file,StatisticsFormat,name,ClampToQuantum(scale*
@@ -476,7 +479,8 @@ static ssize_t PrintChannelStatistics(FILE *file,const ChannelType channel,
     channel_statistics[channel].mean/(double) QuantumRange,scale*
     channel_statistics[channel].standard_deviation,
     channel_statistics[channel].standard_deviation/(double) QuantumRange,
-    channel_statistics[channel].kurtosis,channel_statistics[channel].skewness);
+    channel_statistics[channel].kurtosis,channel_statistics[channel].skewness,
+    channel_statistics[channel].entropy);
   return(n);
 }
 
@@ -573,7 +577,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
       if (channel_statistics == (ChannelStatistics *) NULL)
         return(MagickFalse);
       colorspace=image->colorspace;
-      if (IsGrayImage(image,exception) != MagickFalse)
+      if (SetImageGray(image,exception) != MagickFalse)
         colorspace=GRAYColorspace;
       (void) FormatLocaleFile(file,"  Channel %s locations:\n",locate);
       switch (colorspace)
@@ -783,7 +787,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
         (void) FormatLocaleFile(file,"  Depth: %.20g/%.20g-bit\n",(double)
           image->depth,(double) depth);
       (void) FormatLocaleFile(file,"  Channel depth:\n");
-      if (IsGrayImage(image,exception) != MagickFalse)
+      if (SetImageGray(image,exception) != MagickFalse)
         colorspace=GRAYColorspace;
       switch (colorspace)
       {
@@ -822,14 +826,14 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
           channel_statistics[OpacityChannel].depth);
       scale=1.0;
       if (image->depth <= MAGICKCORE_QUANTUM_DEPTH)
-        scale=(double) (QuantumRange/((size_t) QuantumRange >> ((size_t)
-          MAGICKCORE_QUANTUM_DEPTH-image->depth)));
+        scale=(double) QuantumRange/((size_t) QuantumRange >> ((size_t)
+          MAGICKCORE_QUANTUM_DEPTH-image->depth));
     }
   if (channel_statistics != (ChannelStatistics *) NULL)
     {
       (void) FormatLocaleFile(file,"  Channel statistics:\n");
-      (void) FormatLocaleFile(file,"    Pixels: %.20g\n",
-        (double) image->columns*image->rows);
+      (void) FormatLocaleFile(file,"    Pixels: %.20g\n",(double)
+        image->columns*image->rows);
       switch (colorspace)
       {
         case RGBColorspace:

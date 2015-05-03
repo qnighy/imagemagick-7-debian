@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -158,10 +158,16 @@ static Image *ReadMTVImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     /*
       Convert MTV raster image to pixel packets.
     */
-    pixels=(unsigned char *) AcquireQuantumMemory((size_t) image->columns,
+    pixels=(unsigned char *) AcquireQuantumMemory(image->columns,
       3UL*sizeof(*pixels));
     if (pixels == (unsigned char *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -361,7 +367,7 @@ static MagickBooleanType WriteMTVImage(const ImageInfo *image_info,Image *image)
       Allocate memory for pixels.
     */
     (void) TransformImageColorspace(image,sRGBColorspace);
-    pixels=(unsigned char *) AcquireQuantumMemory((size_t) image->columns,
+    pixels=(unsigned char *) AcquireQuantumMemory(image->columns,
       3UL*sizeof(*pixels));
     if (pixels == (unsigned char *) NULL)
       ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");

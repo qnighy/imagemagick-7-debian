@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -313,11 +313,9 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
-
   noise_image=AccelerateAddNoiseImage(image,channel,noise_type,exception);
   if (noise_image != (Image *) NULL)
     return(noise_image);
-
   noise_image=CloneImage(image,0,0,MagickTrue,exception);
   if (noise_image == (Image *) NULL)
     return((Image *) NULL);
@@ -337,12 +335,10 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
   status=MagickTrue;
   progress=0;
   random_info=AcquireRandomInfoThreadSet();
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  key=GetRandomSecretKey(random_info[0]);
-#endif
   image_view=AcquireVirtualCacheView(image,exception);
   noise_view=AcquireAuthenticCacheView(noise_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
+  key=GetRandomSecretKey(random_info[0]);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
     magick_threads(image,noise_image,image->rows,key == ~0UL)
 #endif
@@ -1137,13 +1133,6 @@ MagickExport FxInfo *DestroyFxInfo(FxInfo *fx_info)
 %
 */
 
-static inline double MagickMax(const double x,const double y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
 static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
   ChannelType channel,const char *symbol,ExceptionInfo *exception)
 {
@@ -1520,9 +1509,7 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
           return(QuantumScale*pixel.index);
         }
         case DefaultChannels:
-        {
-          return(QuantumScale*MagickPixelIntensityToQuantum(&pixel));
-        }
+          return(QuantumScale*GetMagickPixelIntensity(image,&pixel));
         default:
           break;
       }
@@ -1700,7 +1687,7 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
       if (LocaleCompare(symbol,"image.resolution.y") == 0)
         return(image->y_resolution);
       if (LocaleCompare(symbol,"intensity") == 0)
-        return(QuantumScale*MagickPixelIntensityToQuantum(&pixel));
+        return(QuantumScale*GetMagickPixelIntensity(image,&pixel));
       if (LocaleCompare(symbol,"i") == 0)
         return((double) x);
       break;
@@ -2454,6 +2441,16 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
             exception);
           return(ceil((double) alpha));
         }
+      if (LocaleNCompare(expression,"clamp",5) == 0)
+        {
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,beta,
+            exception);
+          if (alpha < 0.0)
+            return(0.0);
+          if (alpha > 1.0)
+            return(1.0);
+          return(alpha);
+        }
       if (LocaleNCompare(expression,"cosh",4) == 0)
         {
           alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,beta,
@@ -2756,7 +2753,16 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     case 'r':
     {
       if (LocaleNCompare(expression,"rand",4) == 0)
-        return(GetPseudoRandomValue(fx_info->random_info));
+        {
+          double
+            alpha;
+
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+          #pragma omp critical (MagickCore_FxEvaluateSubexpression)
+#endif
+          alpha=GetPseudoRandomValue(fx_info->random_info);
+          return(alpha);
+        }
       if (LocaleNCompare(expression,"round",5) == 0)
         {
           alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,beta,
@@ -4435,11 +4441,9 @@ MagickExport Image *SketchImage(const Image *image,const double radius,
     status=MagickTrue;
     GetMagickPixelPacket(random_image,&zero);
     random_info=AcquireRandomInfoThreadSet();
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-    key=GetRandomSecretKey(random_info[0]);
-#endif
     random_view=AcquireAuthenticCacheView(random_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
+    key=GetRandomSecretKey(random_info[0]);
 #pragma omp parallel for schedule(static,4) shared(status) \
   magick_threads(random_image,random_image,random_image->rows,key == ~0UL)
 #endif

@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002, 2003
+// Copyright Dirk Lemstra 2014-2015
 //
 // Implementation of Exception and derived classes
 //
@@ -685,7 +686,7 @@ Magick::WarningXServer::~WarningXServer() throw()
 std::string Magick::formatExceptionMessage(const MagickCore::ExceptionInfo *exception_)
 {
   // Format error message ImageMagick-style
-  std::string message=SetClientName(0);
+  std::string message=GetClientName();
   if (exception_->reason != (char *) NULL)
     {
       message+=std::string(": ");
@@ -812,10 +813,11 @@ MagickPPExport void Magick::throwExceptionExplicit(
 
   GetPPException;
   ThrowException(exceptionInfo,severity_,reason_, description_);
-  ThrowPPException;
+  ThrowPPException(false);
 }
 
-MagickPPExport void Magick::throwException(ExceptionInfo *exception_)
+MagickPPExport void Magick::throwException(ExceptionInfo *exception_,
+  const bool quiet_)
 {
   const ExceptionInfo
     *p;
@@ -862,6 +864,13 @@ MagickPPExport void Magick::throwException(ExceptionInfo *exception_)
     }
   severity=exception_->severity;
   UnlockSemaphoreInfo(exception_->semaphore);
+
+  if ((quiet_) && (severity < MagickCore::ErrorException))
+    {
+      delete nestedException;
+      return;
+    }
+
   DestroyExceptionInfo(exception_);
 
   switch (severity)

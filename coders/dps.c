@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -92,14 +92,6 @@
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static Image *ReadDPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   const char
@@ -327,6 +319,12 @@ static Image *ReadDPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     {
       (void) CloseBlob(image);
       return(GetFirstImageInList(image));
+    }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
   switch (image->storage_class)
   {

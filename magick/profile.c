@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -265,9 +265,6 @@ MagickExport void DestroyImageProfiles(Image *image)
 MagickExport const StringInfo *GetImageProfile(const Image *image,
   const char *name)
 {
-  char
-    key[MaxTextExtent];
-
   const StringInfo
     *profile;
 
@@ -277,9 +274,8 @@ MagickExport const StringInfo *GetImageProfile(const Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->profiles == (SplayTreeInfo *) NULL)
     return((StringInfo *) NULL);
-  (void) CopyMagickString(key,name,MaxTextExtent);
   profile=(const StringInfo *) GetValueFromSplayTree((SplayTreeInfo *)
-    image->profiles,key);
+    image->profiles,name);
   return(profile);
 }
 
@@ -753,11 +749,11 @@ static MagickBooleanType SetsRGBImageProfile(Image *image)
 
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
-  if (GetImageProfile(image,"icm") != (const StringInfo *) NULL)
+  if (GetImageProfile(image,"icc") != (const StringInfo *) NULL)
     return(MagickFalse);
   profile=AcquireStringInfo(sizeof(sRGBProfile));
   SetStringInfoDatum(profile,sRGBProfile);
-  status=SetImageProfile(image,"icm",profile);
+  status=SetImageProfile(image,"icc",profile);
   profile=DestroyStringInfo(profile);
   return(status);
 }
@@ -1055,7 +1051,7 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
               ThrowProfileException(ImageError,"ColorspaceColorProfileMismatch",
                 name);
              if ((source_colorspace == GRAYColorspace) &&
-                 (IsGrayImage(image,exception) == MagickFalse))
+                 (SetImageGray(image,exception) == MagickFalse))
               ThrowProfileException(ImageError,"ColorspaceColorProfileMismatch",
                 name);
              if ((source_colorspace == CMYKColorspace) &&
@@ -1913,13 +1909,13 @@ static MagickBooleanType Sync8BimProfile(Image *image,StringInfo *profile)
       return(MagickFalse);
     id=ReadProfileMSBShort(&p,&length);
     count=(ssize_t) ReadProfileByte(&p,&length);
-    if (count > length)
+    if (count > (ssize_t) length)
       return(MagickFalse);
     p+=count;
     if ((*p & 0x01) == 0)
       (void) ReadProfileByte(&p,&length);
     count=(ssize_t) ReadProfileMSBLong(&p,&length);
-    if (count > length)
+    if (count > (ssize_t) length)
       return(MagickFalse);
     if ((id == 0x3ED) && (count == 16))
       {
@@ -2046,6 +2042,8 @@ static MagickBooleanType SyncExifProfile(Image *image, StringInfo *profile)
         directory=directory_stack[level].directory;
         entry=directory_stack[level].entry;
       }
+    if ((directory < exif) || (directory > (exif+length-2)))
+      break;
     /*
       Determine how many entries there are in the current IFD.
     */

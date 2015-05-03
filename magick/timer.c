@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -51,11 +51,8 @@
 /*
   Define declarations.
 */
-#if defined(macintosh)
-#define CLK_TCK  CLOCKS_PER_SEC
-#endif
-#if !defined(CLK_TCK)
-#define CLK_TCK  sysconf(_SC_CLK_TCK)
+#if !defined(CLOCKS_PER_SEC)
+#define CLOCKS_PER_SEC  100
 #endif
 
 /*
@@ -195,12 +192,12 @@ static double ElapsedTime(void)
   struct tms
     timer;
 
-  return((double) times(&timer)/CLK_TCK);
+  return((double) times(&timer)/CLOCKS_PER_SEC);
 #else
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
   return(NTElapsedTime());
 #else
-  return((double) clock()/CLK_TCK);
+  return((double) clock()/CLOCKS_PER_SEC);
 #endif
 #endif
 }
@@ -450,12 +447,12 @@ static double UserTime(void)
     timer;
 
   (void) times(&timer);
-  return((double) (timer.tms_utime+timer.tms_stime)/CLK_TCK);
+  return((double) (timer.tms_utime+timer.tms_stime)/CLOCKS_PER_SEC);
 #else
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
   return(NTUserTime());
 #else
-  return((double) clock()/CLK_TCK);
+  return((double) clock()/CLOCKS_PER_SEC);
 #endif
 #endif
 }

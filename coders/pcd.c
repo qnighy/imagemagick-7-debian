@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -385,14 +385,6 @@ static MagickBooleanType IsPCD(const unsigned char *magick,const size_t length)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static Image *OverviewImage(const ImageInfo *image_info,Image *image,
   ExceptionInfo *exception)
 {
@@ -547,7 +539,7 @@ static Image *ReadPCDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   count=ReadBlob(image,3*0x800,header);
   overview=LocaleNCompare((char *) header,"PCD_OPA",7) == 0;
-  if ((count == 0) ||
+  if ((count != (3*0x800)) ||
       ((LocaleNCompare((char *) header+0x800,"PCD",3) != 0) && (overview == 0)))
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   rotate=header[0x0e02] & 0x03;
@@ -594,6 +586,12 @@ static Image *ReadPCDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->columns<<=1;
     image->rows<<=1;
   }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   /*
     Allocate luma and chroma memory.
   */

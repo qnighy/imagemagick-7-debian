@@ -17,7 +17,7 @@
 %                                January 2014                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -469,22 +469,24 @@ static ssize_t PrintChannelLocations(FILE *file,const Image *image,
       {
         case RedChannel:
         {
-          match=fabs((double) p->red-target) < 0.5 ? MagickTrue : MagickFalse;
+          match=fabs((double) (p->red-target)) < 0.5 ? MagickTrue : MagickFalse;
           break;
         }
         case GreenChannel:
         {
-          match=fabs((double) p->green-target) < 0.5 ? MagickTrue : MagickFalse;
+          match=fabs((double) (p->green-target)) < 0.5 ? MagickTrue :
+            MagickFalse;
           break;
         }
         case BlueChannel:
         {
-          match=fabs((double) p->blue-target) < 0.5 ? MagickTrue : MagickFalse;
+          match=fabs((double) (p->blue-target)) < 0.5 ? MagickTrue :
+            MagickFalse;
           break;
         }
         case AlphaChannel:
         {
-          match=fabs((double) p->opacity-target) < 0.5 ? MagickTrue :
+          match=fabs((double) (p->opacity-target)) < 0.5 ? MagickTrue :
             MagickFalse;
           break;
         }
@@ -706,7 +708,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
       (GetMagickDescription(magick_info) != (const char *) NULL))
     (void) FormatLocaleFile(file,"    \"formatDescription\": \"%s\",\n",
       GetMagickDescription(magick_info));
-  if ((magick_info == (const MagickInfo *) NULL) ||
+  if ((magick_info != (const MagickInfo *) NULL) &&
       (GetMagickMimeType(magick_info) != (const char *) NULL))
     (void) FormatLocaleFile(file,"    \"mimeType\": \"%s\",\n",
       GetMagickMimeType(magick_info));
@@ -774,7 +776,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
       if (channel_statistics == (ChannelStatistics *) NULL)
         return(MagickFalse);
       colorspace=image->colorspace;
-      if (IsGrayImage(image,exception) != MagickFalse)
+      if (SetImageGray(image,exception) != MagickFalse)
         colorspace=GRAYColorspace;
       (void) CopyMagickString(target,locate,MaxTextExtent);
       *target=(char) toupper((int) ((unsigned char) *target));
@@ -854,7 +856,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
   (void) FormatLocaleFile(file,"    \"baseDepth\": \"%.20g\",\n",(double)
     image->depth);
   (void) FormatLocaleFile(file,"    \"channelDepth\": {\n");
-  if (IsGrayImage(image,exception) != MagickFalse)
+  if (SetImageGray(image,exception) != MagickFalse)
     colorspace=GRAYColorspace;
   if (image->matte != MagickFalse)
     (void) FormatLocaleFile(file,"      \"alpha\": \"%.20g\",\n",(double)

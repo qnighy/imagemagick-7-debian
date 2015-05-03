@@ -18,7 +18,7 @@
 %                    Based on kmiya's sixel (2014-03-28)                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -685,7 +685,8 @@ static MagickBooleanType sixel_encode_impl(unsigned char *pixels, size_t width,s
 
     int x, y, i, n, c;
     int left, right;
-    int len, pix;
+    int pix;
+    size_t len;
     unsigned char *map;
     sixel_node_t *np, *tp, top;
     int nwrite;
@@ -712,7 +713,7 @@ static MagickBooleanType sixel_encode_impl(unsigned char *pixels, size_t width,s
         return (MagickFalse);
     }
     sixel_advance(context, nwrite);
-    nwrite = sprintf((char *)context->buffer + context->pos, "\"1;1;%d;%d", width, height);
+    nwrite = sprintf((char *)context->buffer + context->pos, "\"1;1;%d;%d", (int) width, (int) height);
     if (nwrite <= 0) {
         RelinquishNodesAndMap;
         return (MagickFalse);
@@ -720,7 +721,7 @@ static MagickBooleanType sixel_encode_impl(unsigned char *pixels, size_t width,s
     sixel_advance(context, nwrite);
 
     if (ncolors != 2 || keycolor == -1) {
-        for (n = 0; n < ncolors; n++) {
+        for (n = 0; n < (ssize_t) ncolors; n++) {
             /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
             nwrite = sprintf((char *)context->buffer + context->pos, "#%d;2;%d;%d;%d",
                              n,
@@ -739,36 +740,36 @@ static MagickBooleanType sixel_encode_impl(unsigned char *pixels, size_t width,s
         }
     }
 
-    for (y = i = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
+    for (y = i = 0; y < (ssize_t) height; y++) {
+        for (x = 0; x < (ssize_t) width; x++) {
             pix = pixels[y * width + x];
-            if (pix >= 0 && pix < ncolors && pix != keycolor) {
+            if (pix >= 0 && pix < (ssize_t) ncolors && pix != keycolor) {
                 map[pix * width + x] |= (1 << i);
             }
         }
 
-        if (++i < 6 && (y + 1) < height) {
+        if (++i < 6 && (y + 1) < (ssize_t) height) {
             continue;
         }
 
-        for (c = 0; c < ncolors; c++) {
-            for (left = 0; left < width; left++) {
+        for (c = 0; c < (ssize_t) ncolors; c++) {
+            for (left = 0; left < (ssize_t) width; left++) {
                 if (*(map + c * width + left) == 0) {
                     continue;
                 }
 
-                for (right = left + 1; right < width; right++) {
+                for (right = left + 1; right < (ssize_t) width; right++) {
                     if (*(map + c * width + right) != 0) {
                         continue;
                     }
 
-                    for (n = 1; (right + n) < width; n++) {
+                    for (n = 1; (right + n) < (ssize_t) width; n++) {
                         if (*(map + c * width + right + n) != 0) {
                             break;
                         }
                     }
 
-                    if (n >= 10 || right + n >= width) {
+                    if (n >= 10 || right + n >= (ssize_t) width) {
                         break;
                     }
                     right = right + n - 1;
@@ -1027,7 +1028,12 @@ static Image *ReadSIXELImage(const ImageInfo *image_info,ExceptionInfo *exceptio
   sixel_buffer=(char *) RelinquishMagickMemory(sixel_buffer);
   image->depth=24;
   image->storage_class=PseudoClass;
-
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   if (AcquireImageColormap(image,image->colors) == MagickFalse)
     {
       sixel_pixels=(unsigned char *) RelinquishMagickMemory(sixel_pixels);
@@ -1285,7 +1291,7 @@ static MagickBooleanType WriteSIXELImage(const ImageInfo *image_info,Image *imag
     Define SIXEL pixels.
   */
   output = sixel_output_create(image);
-  sixel_pixels =(unsigned char *) AcquireQuantumMemory((size_t) image->columns * image->rows,1);
+  sixel_pixels =(unsigned char *) AcquireQuantumMemory(image->columns * image->rows,1);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     (void) GetVirtualPixels(image,0,y,image->columns,1,exception);

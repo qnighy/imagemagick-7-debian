@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -152,28 +152,26 @@ static int CompareXPMColor(const void *target,const void *source)
   return(strcmp(p,q));
 }
 
-static char *CopyXPMColor(char *destination,const char *source,size_t length)
+static ssize_t CopyXPMColor(char *destination,const char *source,size_t length)
 {
-  while (length-- && (*source != '\0'))
-    *destination++=(*source++);
-  *destination='\0';
-  return(destination-length);
+  register const char
+    *p;
+
+  p=source;
+  while (length-- && (*p != '\0'))
+    *destination++=(*p++);
+  if (length != 0)
+    *destination='\0';
+  return((ssize_t) (p-source));
 }
 
 static char *NextXPMLine(char *p)
 {
-  assert(p != (char*)NULL);
+  assert(p != (char *) NULL);
   p=strchr(p,'\n');
   if (p != (char *) NULL)
     p++;
   return(p);
-}
-
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
 }
 
 static char *ParseXPMColor(char *color,MagickBooleanType search_start)
@@ -219,24 +217,21 @@ static char *ParseXPMColor(char *color,MagickBooleanType search_start)
       }
       return((char *) NULL);
     }
-  else
+  for (p=color+1; *p != '\0'; p++)
+  {
+    if (*p == '\n')
+      break;
+    if (isspace((int) ((unsigned char) (*(p-1)))) == 0)
+      continue;
+    if (isspace((int) ((unsigned char) (*p))) != 0)
+      continue;
+    for (i=0; i < NumberTargets; i++)
     {
-      for (p=color+1; *p != '\0'; p++)
-      {
-        if (*p == '\n')
-          break;
-        if (isspace((int) ((unsigned char) (*(p-1)))) == 0)
-          continue;
-        if (isspace((int) ((unsigned char) (*p))) != 0)
-          continue;
-        for (i=0; i < NumberTargets; i++)
-        {
-          if (*p == *targets[i] && *(p+1) == *(targets[i]+1))
-            return(p);
-        }
-      }
-      return(p);
+      if ((*p == *targets[i]) && (*(p+1) == *(targets[i]+1)))
+        return(p);
     }
+  }
+  return(p);
 }
 
 static Image *ReadXPMImage(const ImageInfo *image_info,ExceptionInfo *exception)
@@ -307,24 +302,26 @@ static Image *ReadXPMImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   length=MaxTextExtent;
   xpm_buffer=(char *) AcquireQuantumMemory((size_t) length,sizeof(*xpm_buffer));
+  if (xpm_buffer == (char *) NULL)
+    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+  *xpm_buffer='\0';
   p=xpm_buffer;
-  if (xpm_buffer != (char *) NULL)
-    while (ReadBlobString(image,p) != (char *) NULL)
-    {
-      if ((*p == '#') && ((p == xpm_buffer) || (*(p-1) == '\n')))
-        continue;
-      if ((*p == '}') && (*(p+1) == ';'))
-        break;
-      p+=strlen(p);
-      if ((size_t) (p-xpm_buffer+MaxTextExtent) < length)
-        continue;
-      length<<=1;
-      xpm_buffer=(char *) ResizeQuantumMemory(xpm_buffer,length+MaxTextExtent,
-        sizeof(*xpm_buffer));
-      if (xpm_buffer == (char *) NULL)
-        break;
-      p=xpm_buffer+strlen(xpm_buffer);
-    }
+  while (ReadBlobString(image,p) != (char *) NULL)
+  {
+    if ((*p == '#') && ((p == xpm_buffer) || (*(p-1) == '\n')))
+      continue;
+    if ((*p == '}') && (*(p+1) == ';'))
+      break;
+    p+=strlen(p);
+    if ((size_t) (p-xpm_buffer+MaxTextExtent) < length)
+      continue;
+    length<<=1;
+    xpm_buffer=(char *) ResizeQuantumMemory(xpm_buffer,length+MaxTextExtent,
+      sizeof(*xpm_buffer));
+    if (xpm_buffer == (char *) NULL)
+      break;
+    p=xpm_buffer+strlen(xpm_buffer);
+  }
   if (xpm_buffer == (char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   /*
@@ -345,7 +342,10 @@ static Image *ReadXPMImage(const ImageInfo *image_info,ExceptionInfo *exception)
   }
   if ((count != 4) || (width > 10) || (image->columns == 0) ||
       (image->rows == 0) || (image->colors == 0))
-    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    {
+      xpm_buffer=DestroyString(xpm_buffer);
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    }
   /*
     Remove unquoted characters.
   */
@@ -369,20 +369,23 @@ static Image *ReadXPMImage(const ImageInfo *image_info,ExceptionInfo *exception)
   xpm_colors=NewSplayTree(CompareXPMColor,RelinquishMagickMemory,
     (void *(*)(void *)) NULL);
   if (AcquireImageColormap(image,image->colors) == MagickFalse)
-    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    {
+      xpm_buffer=DestroyString(xpm_buffer);
+      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    }
   /*
     Read image colormap.
   */
   image->depth=1;
   next=NextXPMLine(xpm_buffer);
-  for (j=0; (j < (ssize_t) image->colors) && (next != (char*) NULL); j++)
+  for (j=0; (j < (ssize_t) image->colors) && (next != (char *) NULL); j++)
   {
     MagickPixelPacket
       pixel;
 
     p=next;
     next=NextXPMLine(p);
-    (void) CopyXPMColor(key,p,MagickMin((size_t) width,MaxTextExtent));
+    (void) CopyXPMColor(key,p,MagickMin((size_t) width,MaxTextExtent-1));
     status=AddValueToSplayTree(xpm_colors,ConstantString(key),(void *) j);
     /*
       Parse color.
@@ -393,9 +396,11 @@ static Image *ReadXPMImage(const ImageInfo *image_info,ExceptionInfo *exception)
       {
         while ((isspace((int) ((unsigned char) *q)) == 0) && (*q != '\0'))
           q++;
+        if ((next-q) < 0)
+          break;
         if (next != (char *) NULL)
           (void) CopyXPMColor(target,q,MagickMin((size_t) (next-q),
-            MaxTextExtent));
+            MaxTextExtent-1));
         else
           (void) CopyMagickString(target,q,MaxTextExtent);
         q=ParseXPMColor(target,MagickFalse);
@@ -420,13 +425,23 @@ static Image *ReadXPMImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image->depth=pixel.depth;
   }
   if (j < (ssize_t) image->colors)
-    ThrowReaderException(CorruptImageError,"CorruptImage");
+    {
+      xpm_colors=DestroySplayTree(xpm_colors);
+      xpm_buffer=DestroyString(xpm_buffer);
+      ThrowReaderException(CorruptImageError,"CorruptImage");
+    }
   j=0;
   if (image_info->ping == MagickFalse)
     {
       /*
         Read image pixels.
       */
+      status=SetImageExtent(image,image->columns,image->rows);
+      if (status == MagickFalse)
+        {
+          InheritException(exception,&image->exception);
+          return(DestroyImageList(image));
+        }
       for (y=0; y < (ssize_t) image->rows; y++)
       {
         p=NextXPMLine(p);
@@ -438,24 +453,33 @@ static Image *ReadXPMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         indexes=GetAuthenticIndexQueue(image);
         for (x=0; x < (ssize_t) image->columns; x++)
         {
-          (void) CopyXPMColor(key,p,(size_t) width);
+          ssize_t count=CopyXPMColor(key,p,MagickMin(width,MaxTextExtent-1));
+          if (count != (ssize_t) width)
+            break;
           j=(ssize_t) GetValueFromSplayTree(xpm_colors,key);
           if (image->storage_class == PseudoClass)
             SetPixelIndex(indexes+x,j);
           *r=image->colormap[j];
+          p+=count;
           r++;
-          p+=width;
         }
+        if (x < (ssize_t) image->columns)
+          break;
         if (SyncAuthenticPixels(image,exception) == MagickFalse)
           break;
       }
       if (y < (ssize_t) image->rows)
-        ThrowReaderException(CorruptImageError,"NotEnoughPixelData");
+        {
+          xpm_colors=DestroySplayTree(xpm_colors);
+          xpm_buffer=DestroyString(xpm_buffer);
+          ThrowReaderException(CorruptImageError,"NotEnoughPixelData");
+        }
     }
   /*
     Relinquish resources.
   */
   xpm_colors=DestroySplayTree(xpm_colors);
+  xpm_buffer=DestroyString(xpm_buffer);
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
 }
@@ -679,7 +703,7 @@ static MagickBooleanType WritePICONImage(const ImageInfo *image_info,
   blob_info=CloneImageInfo(image_info);
   (void) AcquireUniqueFilename(blob_info->filename);
   if ((image_info->type != TrueColorType) &&
-      (IsGrayImage(image,&image->exception) != MagickFalse))
+      (SetImageGray(image,&image->exception) != MagickFalse))
     affinity_image=BlobToImage(blob_info,Graymap,GraymapExtent,
       &image->exception);
   else

@@ -17,7 +17,7 @@
 %                                December 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -85,7 +85,11 @@ static void
   *ghost_handle = (void *) NULL;
 
 static SemaphoreInfo
-  *ghost_semaphore = (SemaphoreInfo *) NULL;
+  *ghost_semaphore = (SemaphoreInfo *) NULL,
+  *winsock_semaphore = (SemaphoreInfo *) NULL;
+
+static WSADATA
+  *wsaData = (WSADATA*) NULL;
 
 struct
 {
@@ -176,7 +180,7 @@ static inline char *create_utf8_string(const wchar_t *wideChar)
 %                   and DLL_PROCESS_DETACH.
 %
 */
-#if defined(_DLL) && defined( ProvideDllMain )
+#if defined(_DLL) && defined(ProvideDllMain)
 BOOL WINAPI DllMain(HINSTANCE handle,DWORD reason,LPVOID lpvReserved)
 {
   magick_unreferenced(lpvReserved);
@@ -194,6 +198,7 @@ BOOL WINAPI DllMain(HINSTANCE handle,DWORD reason,LPVOID lpvReserved)
       wchar_t
         *wide_path;
 
+      MagickCoreGenesis((const char*) NULL,MagickFalse);
       wide_path=(wchar_t *) AcquireQuantumMemory(MaxTextExtent,
         sizeof(*wide_path));
       if (wide_path == (wchar_t *) NULL)
@@ -211,7 +216,6 @@ BOOL WINAPI DllMain(HINSTANCE handle,DWORD reason,LPVOID lpvReserved)
                 module_path[count+1]='\0';
                 break;
               }
-          MagickCoreGenesis(module_path,MagickFalse);
           path=(char *) AcquireQuantumMemory(16UL*MaxTextExtent,sizeof(*path));
           if (path == (char *) NULL)
             {
@@ -746,7 +750,7 @@ MagickPrivate MagickBooleanType NTGetExecutionPath(char *path,
   wchar_t
     wide_path[MaxTextExtent];
 
-  (void) GetModuleFileNameW(0,wide_path,(DWORD) extent);
+  (void) GetModuleFileNameW((HMODULE) NULL,wide_path,(DWORD) extent);
   (void) WideCharToMultiByte(CP_UTF8,0,wide_path,-1,path,(int) extent,NULL,
     NULL);
   return(MagickTrue);
@@ -1383,7 +1387,7 @@ MagickPrivate int NTGhostscriptLoadDLL(void)
       return(FALSE);
     }
   (void) ResetMagickMemory((void *) &ghost_info,0,sizeof(GhostInfo));
-  ghost_info.delete_instance=(void (MagickDLLCall *) (gs_main_instance *)) (
+  ghost_info.delete_instance=(void (MagickDLLCall *)(gs_main_instance *)) (
     lt_dlsym(ghost_handle,"gsapi_delete_instance"));
   ghost_info.exit=(int (MagickDLLCall *)(gs_main_instance*))
     lt_dlsym(ghost_handle,"gsapi_exit");
@@ -1397,11 +1401,13 @@ MagickPrivate int NTGhostscriptLoadDLL(void)
     MagickDLLCall *)(void *,char *,int),int(MagickDLLCall *)(void *,
     const char *,int),int(MagickDLLCall *)(void *,const char *,int)))
     (lt_dlsym(ghost_handle,"gsapi_set_stdio"));
+  ghost_info.revision=(int (MagickDLLCall *)(gsapi_revision_t *,int)) (
+    lt_dlsym(ghost_handle,"gsapi_revision"));
   UnlockSemaphoreInfo(ghost_semaphore);
   if ((ghost_info.delete_instance == NULL) || (ghost_info.exit == NULL) ||
-      (ghost_info.init_with_args == NULL) || (ghost_info.new_instance == NULL)
-      || (ghost_info.run_string == NULL) || (ghost_info.set_stdio == NULL)
-      )
+      (ghost_info.init_with_args == NULL) ||
+      (ghost_info.new_instance == NULL) || (ghost_info.run_string == NULL) ||
+      (ghost_info.set_stdio == NULL) || (ghost_info.revision == NULL))
     return(FALSE);
   return(TRUE);
 }
@@ -1466,6 +1472,42 @@ MagickPrivate int NTGhostscriptUnLoadDLL(void)
 MagickPrivate int NTInitializeLibrary(void)
 {
   return(0);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   N T I n i t i a l i z e W i n s o c k                                     %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  NTInitializeWinsock() initializes Winsock.
+%
+%  The format of the NTInitializeWinsock method is:
+%
+%      void NTInitializeWinsock(void)
+%
+*/
+MagickPrivate void NTInitializeWinsock(MagickBooleanType use_lock)
+{
+  if (use_lock)
+    {
+      if (winsock_semaphore == (SemaphoreInfo *) NULL)
+        ActivateSemaphoreInfo(&winsock_semaphore);
+      LockSemaphoreInfo(winsock_semaphore);
+    }
+  if (wsaData == (WSADATA *) NULL)
+    {
+      wsaData=(WSADATA *) AcquireMagickMemory(sizeof(WSADATA));
+      if (WSAStartup(MAKEWORD(2,2),wsaData) != 0)
+        ThrowFatalException(CacheFatalError,"WSAStartup failed");
+    }
+  if (use_lock)
+    UnlockSemaphoreInfo(winsock_semaphore);
 }
 
 /*
@@ -1589,7 +1631,7 @@ MagickPrivate DIR *NTOpenDirectory(const char *path)
   if (length == 0)
     return((DIR *) NULL);
   if(wcsncat(file_specification,(const wchar_t*) DirectorySeparator,
-       MaxTextExtent-wcslen(file_specification)-1) == (wchar_t*)NULL)
+       MaxTextExtent-wcslen(file_specification)-1) == (wchar_t*) NULL)
     return((DIR *) NULL);
   entry=(DIR *) AcquireMagickMemory(sizeof(DIR));
   if (entry != (DIR *) NULL)
@@ -1600,7 +1642,7 @@ MagickPrivate DIR *NTOpenDirectory(const char *path)
   if (entry->hSearch == INVALID_HANDLE_VALUE)
     {
       if(wcsncat(file_specification,L"*.*",
-        MaxTextExtent-wcslen(file_specification)-1) == (wchar_t*)NULL)
+        MaxTextExtent-wcslen(file_specification)-1) == (wchar_t*) NULL)
         {
           entry=(DIR *) RelinquishMagickMemory(entry);
           return((DIR *) NULL);
@@ -2261,7 +2303,7 @@ MagickPrivate int NTSystemCommand(const char *command,char *output)
     if (PeekNamedPipe(read_output,(LPVOID) NULL,0,(LPDWORD) NULL,&size,
           (LPDWORD) NULL))
       if ((size > 0) && (ReadFile(read_output,output,MaxTextExtent-1,
-          &bytes_read,NULL))) 
+          &bytes_read,NULL)))
         output[bytes_read]='\0';
   CleanupOutputHandles;
   return((int) child_status);
@@ -2578,11 +2620,19 @@ MagickPrivate void NTWarningHandler(const ExceptionType severity,
 %      void NTWindowsGenesis(void)
 %
 */
+
+static LONG WINAPI NTUncaughtException(EXCEPTION_POINTERS *info)
+{
+  AsynchronousResourceComponentTerminus();
+  return(EXCEPTION_CONTINUE_SEARCH);
+}
+
 MagickPrivate void NTWindowsGenesis(void)
 {
   char
     *mode;
 
+  SetUnhandledExceptionFilter(NTUncaughtException);
   mode=GetEnvironmentValue("MAGICK_ERRORMODE");
   if (mode != (char *) NULL)
     {
@@ -2596,10 +2646,44 @@ MagickPrivate void NTWindowsGenesis(void)
         debug;
 
       debug=_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-      debug|=_CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_DELAY_FREE_MEM_DF | _CRTDBG_LEAK_CHECK_DF;
+      debug|=_CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_DELAY_FREE_MEM_DF |
+        _CRTDBG_LEAK_CHECK_DF;
       (void) _CrtSetDbgFlag(debug);
       _ASSERTE(_CrtCheckMemory());
     }
 #endif
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   N T W i n d o w s T e r m i n u s                                         %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  NTWindowsTerminus() terminates the MagickCore Windows environment.
+%
+%  The format of the NTWindowsTerminus method is:
+%
+%      void NTWindowsTerminus(void)
+%
+*/
+MagickPrivate void NTWindowsTerminus(void)
+{
+  NTGhostscriptUnLoadDLL();
+  if (winsock_semaphore == (SemaphoreInfo *) NULL)
+    ActivateSemaphoreInfo(&winsock_semaphore);
+  LockSemaphoreInfo(winsock_semaphore);
+  if (wsaData != (WSADATA *) NULL)
+    {
+      WSACleanup();
+      wsaData=(WSADATA *) RelinquishMagickMemory((void *) wsaData);
+    }
+  UnlockSemaphoreInfo(winsock_semaphore);
+  DestroySemaphoreInfo(&winsock_semaphore);
 }
 #endif

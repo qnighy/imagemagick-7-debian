@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -125,6 +125,12 @@ static Image *ReadHALDImage(const ImageInfo *image_info,
   cube_size=level*level;
   image->columns=(size_t) (level*cube_size);
   image->rows=(size_t) (level*cube_size);
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   for (y=0; y < (ssize_t) image->rows; y+=(ssize_t) level)
   {
     ssize_t
@@ -137,8 +143,7 @@ static Image *ReadHALDImage(const ImageInfo *image_info,
 
     if (status == MagickFalse)
       continue;
-    q=QueueAuthenticPixels(image,0,y,image->columns,(size_t) level,
-      exception);
+    q=QueueAuthenticPixels(image,0,y,image->columns,(size_t) level,exception);
     if (q == (PixelPacket *) NULL)
       {
         status=MagickFalse;
@@ -200,6 +205,7 @@ ModuleExport size_t RegisterHALDImage(void)
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
   entry->description=ConstantString("Identity Hald color lookup table image");
+  entry->module=ConstantString("HALD");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

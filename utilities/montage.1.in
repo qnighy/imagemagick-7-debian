@@ -107,6 +107,7 @@ Image Operators:
   \-repage geometry     size and location of an image canvas (operator)
   \-resize geometry     resize the image
   \-rotate degrees      apply Paeth rotation to the image
+  \-scale geometry      scale the image
   \-strip               strip image of all profiles and comments
   \-transform           affine transform image
   \-transpose           flip image vertically and rotate 90 degrees
@@ -142,4 +143,4 @@ ImageMagick(1)
 
 .SH COPYRIGHT
 
-\fBCopyright (C) 1999-2014 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP
+\fBCopyright (C) 1999-2015 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2174,6 +2174,7 @@ MagickExport MagickBooleanType SetImageBackgroundColor(Image *image)
   if (image->colorspace == CMYKColorspace)
     ConvertRGBToCMYK(&background);
   index=0;
+  pixel.opacity=OpaqueOpacity;
   SetPixelPacket(image,&background,&pixel,&index);
   /*
     Set image background color.
@@ -2578,7 +2579,8 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
         }
     }
   *extension='\0';
-  GetPathComponent(image_info->filename,ExtensionPath,extension);
+  if (*image_info->magick == '\0')
+    GetPathComponent(image_info->filename,ExtensionPath,extension);
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
   if (*extension != '\0')
     if ((LocaleCompare(extension,"gz") == 0) ||

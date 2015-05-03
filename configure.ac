@@ -1,4 +1,4 @@
-#  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -18,16 +18,23 @@
 #  are permitted in any medium without royalty provided the copyright
 #  notice and this notice are preserved.
 
+# Process this file with autoconf to create configure script.
 AC_PREREQ(2.69)
 
+# ==============================================================================
+# ImageMagick release
+# ==============================================================================
 m4_define([magick_major_version], [6])
-m4_define([magick_minor_version], [8])
-m4_define([magick_micro_version], [9])
-m4_define([magick_patchlevel_version], [9])
+m4_define([magick_minor_version], [9])
+m4_define([magick_micro_version], [1])
+m4_define([magick_patchlevel_version], [2])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_svn_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
 
+# ==============================================================================
+# Initalize Automake
+# ==============================================================================
 AC_INIT([ImageMagick],[magick_version],[http://www.imagemagick.org],[ImageMagick])
 AC_CONFIG_SRCDIR([magick/MagickCore.h])
 AC_CONFIG_AUX_DIR([config])
@@ -35,53 +42,10 @@ AC_REQUIRE_AUX_FILE([tap-driver.sh])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config/config.h])
 AX_PREFIX_CONFIG_H([magick/magick-baseconfig.h],[MagickCore])
-AC_CONFIG_FILES([\
-    common.shi \
-    config/configure.xml \
-    config/delegates.xml \
-    config/ImageMagick.rdf \
-    config/MagickCore.dox \
-    config/MagickWand.dox \
-    config/Magick++.dox \
-    config/type-dejavu.xml \
-    config/type-ghostscript.xml \
-    config/type-windows.xml \
-    config/type.xml \
-    ImageMagick.spec \
-    Magick++/bin/Magick++-config \
-    magick/ImageMagick.pc \
-    Magick++/lib/ImageMagick++.pc \
-    Magick++/lib/Magick++.pc \
-    magick/Magick-config \
-    magick/MagickCore-config \
-    magick/MagickCore.pc \
-    magick/version.h \
-    Makefile \
-    magick.sh \
-    PerlMagick/check.sh \
-    PerlMagick/default/Magick.pm \
-    PerlMagick/Makefile.PL \
-    PerlMagick/default/Makefile.PL \
-    PerlMagick/quantum/Makefile.PL \
-    PerlMagick/quantum/quantum.pm \
-    PerlMagick/quantum/quantum.xs \
-    PerlMagick/quantum/typemap \
-    utilities/animate.1 \
-    utilities/compare.1 \
-    utilities/composite.1 \
-    utilities/conjure.1 \
-    utilities/convert.1 \
-    utilities/display.1 \
-    utilities/identify.1 \
-    utilities/ImageMagick.1 \
-    utilities/import.1 \
-    utilities/mogrify.1 \
-    utilities/montage.1 \
-    utilities/stream.1 \
-    wand/MagickWand-config \
-    wand/MagickWand.pc \
-    wand/Wand-config \
-    wand/Wand.pc ])
+AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
+AM_INIT_AUTOMAKE([1.12 nostdinc color-tests foreign parallel-tests silent-rules subdir-objects dist-bzip2 dist-lzip dist-xz dist-zip])
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 #
 # Save initial user-tunable values
@@ -103,10 +67,6 @@ AC_SUBST(CONFIGURE_ARGS)
 . ${srcdir}/version.sh
 
 echo "configuring ${PACKAGE_NAME} ${PACKAGE_VERSION}${PACKAGE_VERSION_ADDENDUM}"
-AC_CANONICAL_SYSTEM
-AC_CANONICAL_BUILD
-AC_CANONICAL_HOST
-AC_CANONICAL_TARGET
 
 MAGICK_TARGET_CPU=$host_cpu
 AC_SUBST(MAGICK_TARGET_CPU)
@@ -159,11 +119,6 @@ AC_SUBST(PACKAGE_VERSION_ADDENDUM)dnl
 
 # Ensure that make can run correctly
 AM_SANITY_CHECK
-
-AM_INIT_AUTOMAKE([1.12 nostdinc color-tests foreign parallel-tests silent-rules subdir-objects dist-bzip2 dist-lzip dist-xz dist-zip])
-
-# Enable support for silent build rules
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 # versioning of library
 MAGICK_LIB_VERSION="0x"
@@ -307,7 +262,10 @@ AC_SUBST(DIRSEP)
 #
 AC_USE_SYSTEM_EXTENSIONS
 
-# Check for programs
+# ==============================================================================
+# Find required base packages
+# ==============================================================================
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CC_STDC
@@ -326,6 +284,8 @@ AM_WITH_DMALLOC
 AX_C___ATTRIBUTE__
 AX_GCC_ARCHFLAG([no])
 PKG_PROG_PKG_CONFIG
+AC_CANONICAL_BUILD
+AC_CANONICAL_HOST
 
 # Check for linker script support 
 gl_LD_VERSION_SCRIPT 
@@ -862,6 +822,15 @@ AC_ARG_WITH([perl-options],
                     [options to pass on command-line when generating PerlMagick build file])],
 PERL_MAKE_OPTIONS=$withval)
 AC_SUBST(PERL_MAKE_OPTIONS)
+
+# Enable jemalloc, object-caching memory allocation library.
+AC_ARG_WITH(jemalloc,
+        [  --with-jemalloc         enable jemalloc memory allocation library support],
+        [with_jemalloc=$withval],
+        [with_jemalloc='no'])
+if test "$with_jemalloc" != 'yes' ; then
+    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-jemalloc=$with_jemalloc "
+fi
 
 # Enable umem, object-caching memory allocation library.
 AC_ARG_WITH(umem,
@@ -1429,7 +1398,36 @@ if test "$enable_openmp" != 'no'; then
 fi
 AC_SUBST(GOMP_LIBS)
 
-
+#
+# Check for jemalloc.
+#
+have_jemalloc='no'
+JEMALLOC_LIBS=''
+if test "$with_jemalloc" != 'no'; then
+  AC_MSG_CHECKING(for JEMALLOC support )
+  AC_MSG_RESULT()
+  failed=0
+  passed=0
+  AC_CHECK_HEADER([jemalloc/jemalloc.h],[passed=`expr $passed + 1`],[failed=`expr $failed + 1`])
+  AC_CHECK_LIB(jemalloc,[malloc_stats_print],[passed=`expr $passed + 1`],[failed=`expr $failed + 1`],)
+  AC_MSG_CHECKING(if jemalloc memory allocation library is complete)
+  if test $passed -gt 0; then
+    if test $failed -gt 0; then
+      AC_MSG_RESULT(no -- some components failed test)
+      have_jemalloc='no (failed tests)'
+    else
+      JEMALLOC_LIBS='-ljemalloc'
+      LIBS="$JEMALLOC_LIBS $LIBS"
+      AC_DEFINE(HasJEMALLOC,1,Define if you have jemalloc memory allocation library)
+      AC_MSG_RESULT(yes)
+      have_jemalloc='yes'
+    fi
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+AM_CONDITIONAL(HasJEMALLOC, test "$have_jemalloc" = 'yes')
+AC_SUBST(JEMALLOC_LIBS)
 
 #
 # Check for umem.
@@ -1700,6 +1698,21 @@ if test "$enable_profiling" = 'yes'; then
     LIBS="$LIB_DL $LIBS"
 fi
 AC_SUBST(LIB_DL)
+
+dnl ===========================================================================
+
+#
+# Set Apple font directory.
+#
+AC_ARG_WITH([apple-font-dir],
+    [AC_HELP_STRING([--with-apple-font-dir=DIR],
+                    [Apple font directory])],
+    [with_apple_font_dir=$withval],
+    [with_apple_font_dir='default'])
+
+if test "$with_apple_font_dir" != 'default'; then
+    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-apple-font-dir=$with_apple_font_dir "
+fi
 
 dnl ===========================================================================
 
@@ -2851,10 +2864,11 @@ dnl ===========================================================================
 #
 AC_ARG_WITH([windows-font-dir],
     [AC_HELP_STRING([--with-windows-font-dir=DIR],
-                    [directory containing MS-Windows fonts])],
-                    [with_windows_font_dir=$withval],
-                    [with_windows_font_dir=''])
-if test "$with_windows_font_dir" != '' ; then
+                    [Windows font directory])],
+    [with_windows_font_dir=$withval],
+    [with_windows_font_dir='default'])
+
+if test "$with_windows_font_dir" != 'default'; then
     DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-windows-font-dir=$with_windows_font_dir "
 fi
 
@@ -3191,6 +3205,8 @@ AC_MSG_RESULT([-------------------------------------------------------------])
 AC_MSG_CHECKING([for ImageMagick delegate programs])
 AC_MSG_RESULT([])
 AutotraceDecodeDelegateDefault='autotrace'
+BPGDecodeDelegateDefault='bpgdec'
+BPGEncodeDelegateDefault='bpgenc'
 BlenderDecodeDelegateDefault='blender'
 BZIPDelegateDefault='bzip2'
 BrowseDelegateDefault='xdg-open'
@@ -3245,6 +3261,8 @@ ZipDelegateDefault='gzip'
 
 # Search for delegates
 AC_PATH_PROG(AutotraceDecodeDelegate, "$AutotraceDecodeDelegateDefault", "$AutotraceDecodeDelegateDefault")
+AC_PATH_PROG(BGPDecodeDelegate, "$BPGDecodeDelegateDefault", "$BPGDecodeDelegateDefault")
+AC_PATH_PROG(BGPEncodeDelegate, "$BPGEncodeDelegateDefault", "$BPGEncodeDelegateDefault")
 AC_PATH_PROG(BlenderDecodeDelegate, "$BlenderDecodeDelegateDefault", "$BlenderDecodeDelegateDefault")
 AC_PATH_PROG(BZIPDelegate, "$BZIPDelegateDefault", "$BZIPDelegateDefault")
 AC_PATH_PROGS(BrowseDelegate, "$BrowseDelegateDefault" google-chrome firefox konqueror mozilla lynx, "$BrowseDelegateDefault")
@@ -3327,6 +3345,27 @@ have_xps='no'        ; if test "$XPSDelegate" != "$XPSDelegateDefault"; then hav
 #
 type_include_files=''
 
+# Apple fonts.
+AC_MSG_CHECKING(for Apple fonts directory)
+apple_font_dir=''
+if test "${with_apple_font_dir}" != 'default'; then
+  apple_font_dir="${with_apple_font_dir}/"
+else
+  for font_dir in '/Library/Fonts/'; do
+    if test -f "${font_dir}Arial.ttf"; then
+      apple_font_dir="${font_dir}"
+      break 1
+    fi
+  done
+fi
+if test "${apple_font_dir}x" != 'x'; then
+  type_include_files="${type_include_files} "'<include file="type-apple.xml" />'
+  AC_MSG_RESULT([$apple_font_dir])
+else
+  AC_MSG_RESULT([not found!]);
+fi
+AC_SUBST(apple_font_dir)
+
 # Dejavu fonts.
 AC_MSG_CHECKING(for Dejavu fonts directory)
 dejavu_font_dir=''
@@ -3347,27 +3386,6 @@ else
   AC_MSG_RESULT([not found!]);
 fi
 AC_SUBST(dejavu_font_dir)
-
-# Windows
-windows_font_dir=''
-if test "$with_windows_font_dir" != "no" && test -n "$with_windows_font_dir"; then
-   windows_font_dir="${with_windows_font_dir}/"
-fi
-if test "${windows_font_dir}x" != 'x'; then
-    if test -f '/usr/X11R6/lib/X11/fonts/truetype/arial.ttf'; then
-      windows_font_dir='/usr/X11R6/lib/X11/fonts/truetype/'
-    fi
-    if test -f '/usr/X11R7/lib/X11/fonts/truetype/arial.ttf'; then
-      windows_font_dir='/usr/X11R7/lib/X11/fonts/truetype/'
-    fi
-    if test -f '/usr/share/fonts/msttcore/arial.ttf'; then
-      windows_font_dir='/usr/share/fonts/msttcore/truetype/'
-    fi
-fi
-if test "${windows_font_dir}x" != 'x'; then
-  type_include_files="$type_include_files "'<include file="type-windows.xml" />'
-fi
-AC_SUBST(windows_font_dir)
 
 # Ghostscript
 AC_MSG_CHECKING(for Ghostscript fonts directory)
@@ -3414,6 +3432,27 @@ case "${build_os}" in
     ;;
 esac
 
+# Windows fonts.
+AC_MSG_CHECKING(for Windows fonts directory)
+windows_font_dir=''
+if test "${with_windows_font_dir}" != 'default'; then
+  windows_font_dir="${with_windows_font_dir}/"
+else
+  for font_dir in '/usr/X11R6/lib/X11/fonts/truetype/' '/usr/X11R7/lib/X11/fonts/truetype/' '/usr/share/fonts/msttcore/'; do
+    if test -f "${font_dir}arial.ttf"; then
+      windows_font_dir="${font_dir}"
+      break 1
+    fi
+  done
+fi
+if test "${windows_font_dir}x" != 'x'; then
+  type_include_files="${type_include_files} "'<include file="type-windows.xml" />'
+  AC_MSG_RESULT([$windows_font_dir])
+else
+  AC_MSG_RESULT([not found!]);
+fi
+AC_SUBST(windows_font_dir)
+
 AC_SUBST(type_include_files)
 
 #
@@ -3423,6 +3462,8 @@ if test "$with_frozenpaths" != 'yes'; then
   # Re-set delegate definitions to default (no paths)
   AutotraceDecodeDelegate="$AutotraceDecodeDelegateDefault"
   BlenderDecodeDelegate="$BlenderDecodeDelegateDefault"
+  BPGDecodeDelegate="$BPGDecodeDelegateDefault"
+  BPGEncodeDelegate="$BPGEncodeDelegateDefault"
   BZIPDelegate="$BZIPDelegateDefault"
   BrowseDelegate="$BrowseDelegateDefault"
   CatDelegate="$CatDelegateDefault"
@@ -3471,6 +3512,8 @@ fi
 
 # Delegate substitutions
 AC_SUBST(AutotraceDecodeDelegate)
+AC_SUBST(BPGDecodeDelegate)
+AC_SUBST(BPGEncodeDelegate)
 AC_SUBST(BlenderDecodeDelegate)
 AC_SUBST(BZIPDelegate)
 AC_SUBST(BrowseDelegate)
@@ -3643,7 +3686,7 @@ GSCMYKDevice=pam
 GSMonoDevice=pbmraw
 GSPDFDevice=pdfwrite
 GSPSDevice=ps2write
-GSEPSDevice=epswrite
+GSEPSDevice=eps2write
 GSVersion='unknown'
 if test $have_gs = 'yes'; then
     AC_MSG_RESULT([-------------------------------------------------------------])
@@ -3707,7 +3750,7 @@ if test $have_gs = 'yes'; then
     if $PSDelegate -q -dBATCH -sDEVICE=$GSPSDevice -sOutputFile=/dev/null < /dev/null 2> /dev/null; then
         :
     else
-        GSPSDevice=nodevice
+        GSPSDevice=pswrite
     fi
     AC_MSG_RESULT([$GSPSDevice])
 
@@ -3716,7 +3759,7 @@ if test $have_gs = 'yes'; then
     if $PSDelegate -q -dBATCH -sDEVICE=$GSEPSDevice -sOutputFile=/dev/null < /dev/null 2> /dev/null; then
         :
     else
-        GSEPSDevice=nodevice
+        GSEPSDevice=epswrite
     fi
     AC_MSG_RESULT([$GSEPSDevice])
 fi
@@ -3937,9 +3980,9 @@ fi
 #
 
 if test "$build_modules" != 'no'; then
-    MAGICK_DEP_LIBS="$USER_LIBS $LCMS_LIBS $FREETYPE_LIBS $LQR_LIBS $FFTW_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$USER_LIBS $LCMS_LIBS $FREETYPE_LIBS $LQR_LIBS $FFTW_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $JEMALLOC_LIBS $THREAD_LIBS"
 else
-    MAGICK_DEP_LIBS="$USER_LIBS $JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$USER_LIBS $JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $JEMALLOC_LIBS $THREAD_LIBS"
 fi
 AC_SUBST(MAGICK_DEP_LIBS)
 
@@ -3997,7 +4040,6 @@ AC_CONFIG_COMMANDS([PerlMagick/check.sh.in],[chmod +x PerlMagick/check.sh])
 
 AC_MSG_RESULT([-------------------------------------------------------------])
 AC_MSG_RESULT([Update ImageMagick configuration])
-AC_OUTPUT
 
 rm -f magick-version
 
@@ -4011,88 +4053,156 @@ if test "${ghostscript_font_dir}x" != 'x'; then
     result_ghostscript_font_dir=$ghostscript_font_dir
 fi
 
+result_apple_font_dir='none'
+if test "${apple_font_dir}x" != 'x'; then
+    result_apple_font_dir=${apple_font_dir}
+fi
+
 result_windows_font_dir='none'
 if test "${windows_font_dir}x" != 'x'; then
     result_windows_font_dir=${windows_font_dir}
 fi
 
-AC_MSG_RESULT([
+# ==============================================================================
+# Generate build environment
+# ==============================================================================
+AC_CONFIG_FILES([\
+    common.shi \
+    config/configure.xml \
+    config/delegates.xml \
+    config/ImageMagick.rdf \
+    config/MagickCore.dox \
+    config/MagickWand.dox \
+    config/Magick++.dox \
+    config/type-apple.xml \
+    config/type-dejavu.xml \
+    config/type-ghostscript.xml \
+    config/type-windows.xml \
+    config/type.xml \
+    ImageMagick.spec \
+    Magick++/bin/Magick++-config \
+    magick/ImageMagick.pc \
+    Magick++/lib/ImageMagick++.pc \
+    Magick++/lib/Magick++.pc \
+    magick/Magick-config \
+    magick/MagickCore-config \
+    magick/MagickCore.pc \
+    magick/version.h \
+    Makefile \
+    magick.sh \
+    PerlMagick/check.sh \
+    PerlMagick/default/Magick.pm \
+    PerlMagick/Makefile.PL \
+    PerlMagick/default/Makefile.PL \
+    PerlMagick/quantum/Makefile.PL \
+    PerlMagick/quantum/quantum.pm \
+    PerlMagick/quantum/quantum.xs \
+    PerlMagick/quantum/typemap \
+    utilities/animate.1 \
+    utilities/compare.1 \
+    utilities/composite.1 \
+    utilities/conjure.1 \
+    utilities/convert.1 \
+    utilities/display.1 \
+    utilities/identify.1 \
+    utilities/ImageMagick.1 \
+    utilities/import.1 \
+    utilities/mogrify.1 \
+    utilities/montage.1 \
+    utilities/stream.1 \
+    wand/MagickWand-config \
+    wand/MagickWand.pc \
+    wand/Wand-config \
+    wand/Wand.pc ])
+AC_OUTPUT
+
+# ==============================================================================
+# ImageMagick Configuration
+# ==============================================================================
+AC_MSG_NOTICE([
+==============================================================================
 ImageMagick is configured as follows. Please verify that this configuration
 matches your expectations.
-
-Host system type: $host
-Build system type: $build
-
-                  Option                        Value
--------------------------------------------------------------------------------
-Shared libraries  --enable-shared=$enable_shared		$libtool_build_shared_libs
-Static libraries  --enable-static=$enable_static		$libtool_build_static_libs
-Module support    --with-modules=$build_modules		$build_modules
-GNU ld            --with-gnu-ld=$with_gnu_ld		$lt_cv_prog_gnu_ld
-Quantum depth     --with-quantum-depth=$with_quantum_depth	$with_quantum_depth
-High Dynamic Range Imagery
-                  --enable-hdri=$enable_hdri		$enable_hdri
-
-Install documentation:		$wantdocs
-
-Delegate Configuration:
-BZLIB             --with-bzlib=$with_bzlib		$have_bzlib
-Autotrace         --with-autotrace=$with_autotrace		$have_autotrace
-Dejavu fonts      --with-dejavu-font-dir=$with_dejavu_font_dir	$result_dejavu_font_dir
-DJVU              --with-djvu=$with_djvu		$have_djvu
-DPS               --with-dps=$with_dps		$have_dps
-FFTW              --with-fftw=$with_fftw		$have_fftw
-FlashPIX          --with-fpx=$with_fpx		$have_fpx
-FontConfig        --with-fontconfig=$with_fontconfig		$have_fontconfig
-FreeType          --with-freetype=$with_freetype		$have_freetype
-GhostPCL          None				$PCLDelegate ($PCLVersion)
-GhostXPS          None				$XPSDelegate ($XPSVersion)
-Ghostscript       None				$PSDelegate ($GSVersion)
-Ghostscript fonts --with-gs-font-dir=$with_gs_font_dir	$result_ghostscript_font_dir
-Ghostscript lib   --with-gslib=$with_gslib		$have_gslib
-Graphviz          --with-gvc=$with_gvc		$have_gvc
-JBIG              --with-jbig=$with_jbig		$have_jbig
-JPEG v1           --with-jpeg=$with_jpeg		$have_jpeg
-JPEG-2000         --with-jp2=$with_jp2		$have_jp2
-LCMS v1           --with-lcms=$with_lcms		$have_lcms
-LCMS v2           --with-lcms2=$with_lcms2		$have_lcms2
-LQR               --with-lqr=$with_lqr		$have_lqr
-LTDL              --with-ltdl=$with_ltdl		$have_ltdl
-LZMA              --with-lzma=$with_lzma		$have_lzma
-Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
-OpenEXR           --with-openexr=$with_openexr		$have_openexr
-OpenJP2           --with-openjp2=$with_openjp2		$have_openjp2
-PANGO             --with-pango=$with_pango		$have_pango
-PERL              --with-perl=$with_perl		$have_perl
-PNG               --with-png=$with_png		$have_png
-RSVG              --with-rsvg=$with_rsvg		$have_rsvg
-TIFF              --with-tiff=$with_tiff		$have_tiff
-WEBP              --with-webp=$with_webp		$have_webp
-Windows fonts     --with-windows-font-dir=$with_windows_font_dir	$result_windows_font_dir
-WMF               --with-wmf=$with_wmf		$have_wmf
-X11               --with-x=$with_x			$have_x
-XML               --with-xml=$with_xml		$have_xml
-ZLIB              --with-zlib=$with_zlib		$have_zlib
-
-X11 Configuration:
-      X_CFLAGS        = $X_CFLAGS
-      X_PRE_LIBS      = $X_PRE_LIBS
-      X_LIBS          = $X_LIBS
-      X_EXTRA_LIBS    = $X_EXTRA_LIBS
-
-Options used to compile and link:
-  PREFIX          = $PREFIX_DIR
-  EXEC-PREFIX     = $EXEC_PREFIX_DIR
-  VERSION         = $PACKAGE_VERSION
-  CC              = $CC
-  CFLAGS          = $CFLAGS
-  CPPFLAGS        = $CPPFLAGS
-  PCFLAGS         = $PCFLAGS
-  DEFS            = $DEFS
-  LDFLAGS         = $LDFLAGS
-  LIBS            = $LIBS
-  CXX             = $CXX
-  CXXFLAGS        = $CXXFLAGS
-  FEATURES        = $MAGICK_FEATURES
-  DELEGATES       = $MAGICK_DELEGATES
+  
+  Host system type: $host
+  Build system type: $build
+  
+                 Option                        Value
+  ------------------------------------------------------------------------------
+  Shared libraries  --enable-shared=$enable_shared		$libtool_build_shared_libs
+  Static libraries  --enable-static=$enable_static		$libtool_build_static_libs
+  Module support    --with-modules=$build_modules		$build_modules
+  GNU ld            --with-gnu-ld=$with_gnu_ld		$lt_cv_prog_gnu_ld
+  Quantum depth     --with-quantum-depth=$with_quantum_depth	$with_quantum_depth
+  High Dynamic Range Imagery
+                    --enable-hdri=$enable_hdri		$enable_hdri
+  
+  Install documentation:			$wantdocs
+  
+  Delegate Library Configuration:
+  BZLIB             --with-bzlib=$with_bzlib		$have_bzlib
+  Autotrace         --with-autotrace=$with_autotrace		$have_autotrace
+  DJVU              --with-djvu=$with_djvu		$have_djvu
+  DPS               --with-dps=$with_dps		$have_dps
+  FFTW              --with-fftw=$with_fftw		$have_fftw
+  FlashPIX          --with-fpx=$with_fpx		$have_fpx
+  FontConfig        --with-fontconfig=$with_fontconfig		$have_fontconfig
+  FreeType          --with-freetype=$with_freetype		$have_freetype
+  Ghostscript lib   --with-gslib=$with_gslib		$have_gslib
+  Graphviz          --with-gvc=$with_gvc		$have_gvc
+  JBIG              --with-jbig=$with_jbig		$have_jbig
+  JPEG v1           --with-jpeg=$with_jpeg		$have_jpeg
+  JPEG-2000         --with-jp2=$with_jp2		$have_jp2
+  LCMS v1           --with-lcms=$with_lcms		$have_lcms
+  LCMS v2           --with-lcms2=$with_lcms2		$have_lcms2
+  LQR               --with-lqr=$with_lqr		$have_lqr
+  LTDL              --with-ltdl=$with_ltdl		$have_ltdl
+  LZMA              --with-lzma=$with_lzma		$have_lzma
+  Magick++          --with-magick-plus-plus=$with_magick_plus_plus	$have_magick_plus_plus
+  OpenEXR           --with-openexr=$with_openexr		$have_openexr
+  OpenJP2           --with-openjp2=$with_openjp2		$have_openjp2
+  PANGO             --with-pango=$with_pango		$have_pango
+  PERL              --with-perl=$with_perl		$have_perl
+  PNG               --with-png=$with_png		$have_png
+  RSVG              --with-rsvg=$with_rsvg		$have_rsvg
+  TIFF              --with-tiff=$with_tiff		$have_tiff
+  WEBP              --with-webp=$with_webp		$have_webp
+  WMF               --with-wmf=$with_wmf		$have_wmf
+  X11               --with-x=$with_x			$have_x
+  XML               --with-xml=$with_xml		$have_xml
+  ZLIB              --with-zlib=$with_zlib		$have_zlib
+  
+  Delegate Program Configuration:
+  GhostPCL          None				$PCLDelegate ($PCLVersion)
+  GhostXPS          None				$XPSDelegate ($XPSVersion)
+  Ghostscript       None				$PSDelegate ($GSVersion)
+  
+  Font Configuration:
+  Apple fonts       --with-apple-font-dir=$with_apple_font_dir	$result_apple_font_dir
+  Dejavu fonts      --with-dejavu-font-dir=$with_dejavu_font_dir	$result_dejavu_font_dir
+  Ghostscript fonts --with-gs-font-dir=$with_gs_font_dir	$result_ghostscript_font_dir
+  Windows fonts     --with-windows-font-dir=$with_windows_font_dir	$result_windows_font_dir
+  
+  X11 Configuration:
+        X_CFLAGS        = $X_CFLAGS
+        X_PRE_LIBS      = $X_PRE_LIBS
+        X_LIBS          = $X_LIBS
+        X_EXTRA_LIBS    = $X_EXTRA_LIBS
+  
+  Options used to compile and link:
+    PREFIX          = $PREFIX_DIR
+    EXEC-PREFIX     = $EXEC_PREFIX_DIR
+    VERSION         = $PACKAGE_VERSION
+    CC              = $CC
+    CFLAGS          = $CFLAGS
+    CPPFLAGS        = $CPPFLAGS
+    PCFLAGS         = $PCFLAGS
+    DEFS            = $DEFS
+    LDFLAGS         = $LDFLAGS
+    LIBS            = $LIBS
+    CXX             = $CXX
+    CXXFLAGS        = $CXXFLAGS
+    FEATURES        = $MAGICK_FEATURES
+    DELEGATES       = $MAGICK_DELEGATES
+==============================================================================
 ])

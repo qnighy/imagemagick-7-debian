@@ -17,7 +17,7 @@
 %                                 March 2012                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -375,11 +375,17 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
         (image->y_resolution == 0.0 ? 90.0 : image->y_resolution)+45.0)/90.0+
         0.5));
     }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   /*
     Render markup.
   */
-  stride=(size_t) cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,
-    (int) image->columns);
+  stride=(size_t) cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,(int)
+    image->columns);
   pixel_info=AcquireVirtualMemory(image->rows,stride*sizeof(*pixels));
   if (pixel_info == (MemoryInfo *) NULL)
     {

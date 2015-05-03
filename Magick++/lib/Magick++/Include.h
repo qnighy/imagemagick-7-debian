@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002
+// Copyright Dirk Lemstra 2013-2015
 //
 // Inclusion of ImageMagick headers (with namespace magic)
 
@@ -112,6 +113,9 @@ namespace MagickCore
 #          pragma comment(lib, "CORE_DB_bzlib_.lib")
 #        endif
 #        pragma comment(lib, "CORE_DB_coders_.lib")
+#        if defined(MAGICKCORE_OPENEXR_DELEGATE)
+#          pragma comment(lib, "CORE_DB_exr_.lib")
+#        endif
 #        if defined(MAGICKCORE_LQR_DELEGATE)
 #          pragma comment(lib, "CORE_DB_ffi_.lib")
 #        endif
@@ -174,6 +178,9 @@ namespace MagickCore
 #          pragma comment(lib, "CORE_RL_bzlib_.lib")
 #        endif
 #        pragma comment(lib, "CORE_RL_coders_.lib")
+#        if defined(MAGICKCORE_OPENEXR_DELEGATE)
+#          pragma comment(lib, "CORE_RL_exr_.lib")
+#        endif
 #        if defined(MAGICKCORE_LQR_DELEGATE)
 #          pragma comment(lib, "CORE_RL_ffi_.lib")
 #        endif
@@ -1056,6 +1063,7 @@ namespace Magick
   using MagickCore::ConfigureError;
   using MagickCore::ConfigureFatalError;
   using MagickCore::ConfigureWarning;
+  using MagickCore::ConnectedComponentsImage;
   using MagickCore::ConstituteImage;
   using MagickCore::ContrastImage;
   using MagickCore::ContrastStretchImageChannel;
@@ -1215,6 +1223,7 @@ namespace Magick
   using MagickCore::GetCacheViewAuthenticIndexQueue;
   using MagickCore::GetCacheViewAuthenticPixels;
   using MagickCore::GetCacheViewVirtualPixels;
+  using MagickCore::GetClientName;
   using MagickCore::GetColorTuple;
   using MagickCore::GetDrawInfo;
   using MagickCore::GetGeometry;
@@ -1381,7 +1390,6 @@ namespace Magick
   using MagickCore::SelectiveBlurImageChannel;
   using MagickCore::SeparateImageChannel;
   using MagickCore::SepiaToneImage;
-  using MagickCore::SetClientName;
   using MagickCore::SetGeometry;
   using MagickCore::SetImageAlphaChannel;
   using MagickCore::SetImageArtifact;
@@ -1480,8 +1488,8 @@ namespace Magick
   MagickCore::ExceptionInfo \
     *exceptionInfo; \
   exceptionInfo=MagickCore::AcquireExceptionInfo()
-#define ThrowPPException \
-  throwException(exceptionInfo); \
+#define ThrowPPException(quiet) \
+  throwException(exceptionInfo,quiet); \
   (void) MagickCore::DestroyExceptionInfo(exceptionInfo)
 
 #endif // Magick_Include_header

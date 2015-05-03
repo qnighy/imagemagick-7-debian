@@ -18,7 +18,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -73,6 +73,7 @@
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && \
     !(defined(__MINGW32__) || defined(__MINGW64__))
 #  include <urlmon.h>
+#  pragma comment(lib, "urlmon.lib")
 #endif
 
 

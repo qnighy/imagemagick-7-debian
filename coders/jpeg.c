@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1090,7 +1090,8 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
     image->units=PixelsPerCentimeterResolution;
   number_pixels=(MagickSizeType) image->columns*image->rows;
   option=GetImageOption(image_info,"jpeg:size");
-  if (option != (const char *) NULL)
+  if ((option != (const char *) NULL) &&
+      (jpeg_info.out_color_space != JCS_YCbCr))
     {
       double
         scale_factor;
@@ -1261,6 +1262,19 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
       jpeg_destroy_decompress(&jpeg_info);
       (void) CloseBlob(image);
       return(GetFirstImageInList(image));
+    }
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      jpeg_destroy_decompress(&jpeg_info);
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
+  if ((jpeg_info.output_components != 1) &&
+      (jpeg_info.output_components != 3) && (jpeg_info.output_components != 4))
+    {
+      jpeg_destroy_decompress(&jpeg_info);
+      ThrowReaderException(CorruptImageError,"ImageTypeNotSupported");
     }
   memory_info=AcquireVirtualMemory((size_t) image->columns,
     jpeg_info.output_components*sizeof(*jpeg_pixels));
@@ -1472,8 +1486,24 @@ ModuleExport size_t RegisterJPEGImage(void)
 #if defined(JPEG_LIB_VERSION)
   (void) FormatLocaleString(version,MaxTextExtent,"%d",JPEG_LIB_VERSION);
 #endif
+  entry=SetMagickInfo("JPE");
+#if (JPEG_LIB_VERSION < 80) && !defined(LIBJPEG_TURBO_VERSION)
+  entry->thread_support=NoThreadSupport;
+#endif
+#if defined(MAGICKCORE_JPEG_DELEGATE)
+  entry->decoder=(DecodeImageHandler *) ReadJPEGImage;
+  entry->encoder=(EncodeImageHandler *) WriteJPEGImage;
+#endif
+  entry->magick=(IsImageFormatHandler *) IsJPEG;
+  entry->adjoin=MagickFalse;
+  entry->description=ConstantString(description);
+  if (*version != '\0')
+    entry->version=ConstantString(version);
+  entry->mime_type=ConstantString("image/jpeg");
+  entry->module=ConstantString("JPEG");
+  (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("JPEG");
-#if JPEG_LIB_VERSION < 80
+#if (JPEG_LIB_VERSION < 80) && !defined(LIBJPEG_TURBO_VERSION)
   entry->thread_support=NoThreadSupport;
 #endif
 #if defined(MAGICKCORE_JPEG_DELEGATE)
@@ -1489,7 +1519,22 @@ ModuleExport size_t RegisterJPEGImage(void)
   entry->module=ConstantString("JPEG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("JPG");
-#if JPEG_LIB_VERSION < 80
+#if (JPEG_LIB_VERSION < 80) && !defined(LIBJPEG_TURBO_VERSION)
+  entry->thread_support=NoThreadSupport;
+#endif
+#if defined(MAGICKCORE_JPEG_DELEGATE)
+  entry->decoder=(DecodeImageHandler *) ReadJPEGImage;
+  entry->encoder=(EncodeImageHandler *) WriteJPEGImage;
+#endif
+  entry->adjoin=MagickFalse;
+  entry->description=ConstantString(description);
+  if (*version != '\0')
+    entry->version=ConstantString(version);
+  entry->mime_type=ConstantString("image/jpeg");
+  entry->module=ConstantString("JPEG");
+  (void) RegisterMagickInfo(entry);
+  entry=SetMagickInfo("JPS");
+#if (JPEG_LIB_VERSION < 80) && !defined(LIBJPEG_TURBO_VERSION)
   entry->thread_support=NoThreadSupport;
 #endif
 #if defined(MAGICKCORE_JPEG_DELEGATE)
@@ -1504,7 +1549,7 @@ ModuleExport size_t RegisterJPEGImage(void)
   entry->module=ConstantString("JPEG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("PJPEG");
-#if JPEG_LIB_VERSION < 80
+#if (JPEG_LIB_VERSION < 80) && !defined(LIBJPEG_TURBO_VERSION)
   entry->thread_support=NoThreadSupport;
 #endif
 #if defined(MAGICKCORE_JPEG_DELEGATE)
@@ -1543,8 +1588,11 @@ ModuleExport size_t RegisterJPEGImage(void)
 ModuleExport void UnregisterJPEGImage(void)
 {
   (void) UnregisterMagickInfo("PJPG");
-  (void) UnregisterMagickInfo("JPEG");
+  (void) UnregisterMagickInfo("JPS");
   (void) UnregisterMagickInfo("JPG");
+  (void) UnregisterMagickInfo("JPG");
+  (void) UnregisterMagickInfo("JPEG");
+  (void) UnregisterMagickInfo("JPE");
 }
 
 #if defined(MAGICKCORE_JPEG_DELEGATE)
@@ -1813,13 +1861,6 @@ static void InitializeDestination(j_compress_ptr cinfo)
   destination->manager.free_in_buffer=MaxBufferExtent;
 }
 
-static inline size_t MagickMin(const size_t x,const size_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static void TerminateDestination(j_compress_ptr cinfo)
 {
   DestinationManager
@@ -2035,6 +2076,9 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
   ErrorManager
     error_manager;
 
+  ExceptionInfo
+    *exception;
+
   int
     colorspace,
     quality;
@@ -2078,7 +2122,11 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
+  exception=(&image->exception);
+  if ((LocaleCompare(image_info->magick,"JPS") == 0) &&
+      (image->next != (Image *) NULL))
+    image=AppendImages(image,MagickFalse,exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
   if (status == MagickFalse)
     return(status);
   /*
@@ -2140,7 +2188,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
       (void) TransformImageColorspace(image,sRGBColorspace);
       if (image_info->type == TrueColorType)
         break;
-      if (IsGrayImage(image,&image->exception) != MagickFalse)
+      if (SetImageGray(image,&image->exception) != MagickFalse)
         {
           jpeg_info.input_components=1;
           jpeg_info.in_color_space=JCS_GRAYSCALE;
@@ -2316,7 +2364,9 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
           extent=(MagickSizeType) SiPrefixToDoubleInterval(option,100.0);
           (void) DeleteImageOption(jpeg_info,"jpeg:extent");
           (void) DeleteImageArtifact(jpeg_image,"jpeg:extent");
-          maximum=101;
+          maximum=image->quality;
+          if (maximum < 2)
+            maximum=2;
           for (minimum=2; minimum < maximum; )
           {
             (void) AcquireUniqueFilename(jpeg_image->filename);
@@ -2328,7 +2378,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
               maximum=jpeg_image->quality-1;
             (void) RelinquishUniqueFileResource(jpeg_image->filename);
           }
-          quality=minimum-1;
+          quality=(int) minimum-1;
           jpeg_image=DestroyImage(jpeg_image);
         }
       jpeg_info=DestroyImageInfo(jpeg_info);
@@ -2382,7 +2432,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     sampling_factor=image_info->sampling_factor;
   if (sampling_factor == (const char *) NULL)
     {
-      if (image->quality >= 90)
+      if (quality >= 90)
         for (i=0; i < MAX_COMPONENTS; i++)
         {
           jpeg_info.comp_info[i].h_samp_factor=1;

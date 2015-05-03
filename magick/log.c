@@ -17,7 +17,7 @@
 %                                September 2002                               %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1248,8 +1248,7 @@ static char *TranslateFilename(const LogInfo *log_info)
 }
 
 MagickBooleanType LogMagickEventList(const LogEventType type,const char *module,
-  const char *function,const size_t line,const char *format,
-  va_list operands)
+  const char *function,const size_t line,const char *format,va_list operands)
 {
   char
     event[MaxTextExtent],

@@ -17,7 +17,7 @@
 %                                  July 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1116,22 +1116,6 @@ MagickExport void XBestPixel(Display *display,const Colormap colormap,
 %    o resource_info: Specifies a pointer to a X11 XResourceInfo structure.
 %
 */
-
-static inline int MagickMax(const int x,const int y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline size_t MagickMin(const unsigned int x,
-  const unsigned int y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 MagickExport XVisualInfo *XBestVisualInfo(Display *display,
   XStandardColormap *map_info,XResourceInfo *resource_info)
 {
@@ -3023,7 +3007,7 @@ MagickExport void XGetPixelPacket(Display *display,
   if (pixel->pixels != (unsigned long *) NULL)
     pixel->pixels=(unsigned long *) RelinquishMagickMemory(pixel->pixels);
   pixel->pixels=(unsigned long *) AcquireQuantumMemory(packets,
-    sizeof(pixel->pixels));
+    sizeof(*pixel->pixels));
   if (pixel->pixels == (unsigned long *) NULL)
     ThrowXWindowFatalException(ResourceLimitFatalError,"UnableToGetPixelInfo",
       image->filename);
@@ -5885,7 +5869,7 @@ static void XMakeImageLSBFirst(const XResourceInfo *resource_info,
         (XPixelIntensity(&window->pixel_info->background_color) <
          XPixelIntensity(&window->pixel_info->foreground_color) ? 0x80 : 0x00);
       polarity=(unsigned short) ((GetPixelIntensity(image,
-        &canvas->colormap[0])) < (QuantumRange/2) ? 1 : 0);
+        &canvas->colormap[0])) < (QuantumRange/2.0) ? 1 : 0);
       if (canvas->colors == 2)
         polarity=GetPixelIntensity(canvas,&canvas->colormap[0]) <
           GetPixelIntensity(canvas,&canvas->colormap[1]);
@@ -6493,7 +6477,7 @@ static void XMakeImageMSBFirst(const XResourceInfo *resource_info,
         (XPixelIntensity(&window->pixel_info->background_color) <
          XPixelIntensity(&window->pixel_info->foreground_color) ?  0x01 : 0x00);
       polarity=(unsigned short) ((GetPixelIntensity(image,
-        &canvas->colormap[0])) < (QuantumRange/2) ? 1 : 0);
+        &canvas->colormap[0])) < (QuantumRange/2.0) ? 1 : 0);
       if (canvas->colors == 2)
         polarity=GetPixelIntensity(canvas,&canvas->colormap[0]) <
           GetPixelIntensity(canvas,&canvas->colormap[1]);
@@ -8321,7 +8305,7 @@ MagickExport void XMakeWindow(Display *display,Window parent,char **argv,
         if ((isspace((int) ((unsigned char) *p)) == 0) && (*p != '%'))
           p++;
         else
-          (void) CopyMagickString(p,p+1,MaxTextExtent);
+          (void) CopyMagickString(p,p+1,MaxTextExtent-(p-geometry));
       }
       flags=XWMGeometry(display,window_info->screen,geometry,default_geometry,
         window_info->border_width,size_hints,&size_hints->x,&size_hints->y,

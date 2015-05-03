@@ -17,7 +17,7 @@
 %                              July 1992                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -451,19 +451,6 @@ static inline void AssociateAlphaPixel(const CubeInfo *cube_info,
   alpha_pixel->green=alpha*GetPixelGreen(pixel);
   alpha_pixel->blue=alpha*GetPixelBlue(pixel);
   alpha_pixel->opacity=(MagickRealType) GetPixelOpacity(pixel);
-}
-
-static inline Quantum ClampPixel(const MagickRealType value)
-{
-  if (value < 0.0f)
-    return(0);
-  if (value >= (MagickRealType) QuantumRange)
-    return((Quantum) QuantumRange);
-#if !defined(MAGICKCORE_HDRI_SUPPORT)
-  return((Quantum) (value+0.5f));
-#else
-  return(value);
-#endif
 }
 
 static inline size_t ColorToNodeId(const CubeInfo *cube_info,
@@ -1862,20 +1849,6 @@ static MagickBooleanType RiemersmaDither(Image *image,CacheView *image_view,
   return(MagickTrue);
 }
 
-static inline ssize_t MagickMax(const ssize_t x,const ssize_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline ssize_t MagickMin(const ssize_t x,const ssize_t y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static MagickBooleanType DitherImage(Image *image,CubeInfo *cube_info)
 {
   CacheView
@@ -2191,17 +2164,20 @@ MagickExport MagickBooleanType GetImageQuantizeError(Image *image)
           beta=(MagickRealType) (QuantumScale*(QuantumRange-
             image->colormap[index].opacity));
         }
-      distance=fabs(alpha*GetPixelRed(p)-beta*image->colormap[index].red);
+      distance=fabs((double) (alpha*GetPixelRed(p)-beta*
+        image->colormap[index].red));
       mean_error_per_pixel+=distance;
       mean_error+=distance*distance;
       if (distance > maximum_error)
         maximum_error=distance;
-      distance=fabs(alpha*GetPixelGreen(p)-beta*image->colormap[index].green);
+      distance=fabs((double) (alpha*GetPixelGreen(p)-beta*
+        image->colormap[index].green));
       mean_error_per_pixel+=distance;
       mean_error+=distance*distance;
       if (distance > maximum_error)
         maximum_error=distance;
-      distance=fabs(alpha*GetPixelBlue(p)-beta*image->colormap[index].blue);
+      distance=fabs((double) (alpha*GetPixelBlue(p)-beta*
+        image->colormap[index].blue));
       mean_error_per_pixel+=distance;
       mean_error+=distance*distance;
       if (distance > maximum_error)
@@ -2709,12 +2685,17 @@ MagickExport MagickBooleanType QuantizeImage(const QuantizeInfo *quantize_info,
     {
       if ((image->columns*image->rows) <= maximum_colors)
         (void) DirectToColormapImage(image,&image->exception);
-      if (IsGrayImage(image,&image->exception) != MagickFalse)
+      if (SetImageGray(image,&image->exception) != MagickFalse)
         (void) SetGrayscaleImage(image);
     }
   if ((image->storage_class == PseudoClass) &&
       (image->colors <= maximum_colors))
-    return(MagickTrue);
+    {
+      if ((quantize_info->colorspace != UndefinedColorspace) &&
+          (quantize_info->colorspace != CMYKColorspace))
+        (void) TransformImageColorspace(image,quantize_info->colorspace);
+      return(MagickTrue);
+    }
   depth=quantize_info->tree_depth;
   if (depth == 0)
     {
@@ -2731,7 +2712,7 @@ MagickExport MagickBooleanType QuantizeImage(const QuantizeInfo *quantize_info,
         depth--;
       if ((image->matte != MagickFalse) && (depth > 5))
         depth--;
-      if (IsGrayImage(image,&image->exception) != MagickFalse)
+      if (SetImageGray(image,&image->exception) != MagickFalse)
         depth=MaxTreeDepth;
     }
   /*
@@ -2910,7 +2891,7 @@ MagickExport MagickBooleanType QuantizeImages(const QuantizeInfo *quantize_info,
 %
 %  Contributed by Yoya.
 %
-%  The format of the QuantizeImages method is:
+%  The format of the QuantizeErrorFlatten method is:
 %
 %      size_t QuantizeErrorFlatten(const Image *image,const CubeInfo *cube_info,
 %        const NodeInfo *node_info,const ssize_t offset,
@@ -3092,8 +3073,7 @@ static void ReduceImageColors(const Image *image,CubeInfo *cube_info)
     span;
 
   cube_info->next_threshold=0.0;
-  if ((cube_info->colors > cube_info->maximum_colors) &&
-      (cube_info->nodes > 128))
+  if (cube_info->colors > cube_info->maximum_colors)
     {
       MagickRealType
         *quantize_error;
@@ -3109,8 +3089,9 @@ static void ReduceImageColors(const Image *image,CubeInfo *cube_info)
             quantize_error);
           qsort(quantize_error,cube_info->nodes,sizeof(MagickRealType),
             MagickRealTypeCompare);
-          cube_info->next_threshold=quantize_error[MagickMax((ssize_t)
-            cube_info->nodes-110*(cube_info->maximum_colors+1)/100,0)];
+          if (cube_info->nodes > (110*(cube_info->maximum_colors+1)/100))
+            cube_info->next_threshold=quantize_error[cube_info->nodes-110*
+              (cube_info->maximum_colors+1)/100];
           quantize_error=(MagickRealType *) RelinquishMagickMemory(
             quantize_error);
         }
@@ -3373,7 +3354,7 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
         register IndexPacket
           *restrict indexes;
 
-        register const PixelPacket
+        register PixelPacket
           *restrict q;
 
         register ssize_t
@@ -3476,7 +3457,7 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
   image_view=DestroyCacheView(image_view);
   colormap_index=(ssize_t *) RelinquishMagickMemory(colormap_index);
   image->type=GrayscaleType;
-  if (IsMonochromeImage(image,&image->exception) != MagickFalse)
+  if (SetImageMonochrome(image,&image->exception) != MagickFalse)
     image->type=BilevelType;
   return(status);
 }

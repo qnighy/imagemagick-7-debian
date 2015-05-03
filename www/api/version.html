@@ -18,10 +18,10 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
   <meta http-equiv="reply-to" content="magick-users@imagemagick.org"/>
   <meta name="application-name" content="ImageMagick"/>
-  <meta name="description" content="A collection of tools and libraries to read, write, and manipulate an image in any of the more popular image formats."/>
+  <meta name="description" content="ImageMagick® is a software suite to create, edit, compose, or convert bitmap images. It can read and write images in a variety of formats (over 200) including PNG, JPEG, JPEG-2000, GIF, WebP, Postscript, PDF, and SVG. Use ImageMagick to resize, flip, mirror, rotate, distort, shear and transform images, adjust image colors, apply various special effects, or draw text, lines, polygons, ellipses and Bézier curves."/>
   <meta name="application-url" content="http://www.imagemagick.org"/>
   <meta name="generator" content="PHP"/>
-  <meta name="keywords" content="magickcore, c, api, for, imagemagick:, get, the, version, copyrights, convert, edit, compose, image, pixel"/>
+  <meta name="keywords" content="magickcore, c, api, for, imagemagick:, get, the, version, copyrights, ImageMagick, PerlMagick, image processing, image, photo, software, Magick++, OpenMP, convert"/>
   <meta name="rating" content="GENERAL"/>
   <meta name="robots" content="INDEX, FOLLOW"/>
   <meta name="generator" content="ImageMagick Studio LLC"/>
@@ -189,25 +189,6 @@
 <div class="eastbar">
   <script type="text/javascript">
     /* <![CDATA[ */
-    window.___gcfg = {
-      lang: 'en-US'
-    };
-
-    (function() {
-      var po = document.createElement('offline-script');
-      po.type = 'text/javascript';
-      po.async = true;
-      po.src = 'https://apis.google.com/js/plusone.js';
-      var script = document.getElementsByTagName('offline-script')[0];
-      script.parentNode.insertBefore(po, script);
-    })();
-    var gplusone = document.getElementById("gplusone");
-    gplusone.setAttribute("data-size","medium");
-    gplusone.setAttribute("data-count","true");
-    /* ]]> */
-  </script>
-  <script type="text/javascript">
-    /* <![CDATA[ */
     (function() {
         var po = document.createElement('offline-script'), t = document.getElementsByTagName('offline-script')[0];
         po.type = 'text/javascript';
@@ -218,18 +199,17 @@
     })();
     /* ]]> */
   </script>
-  <div> <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="../../index.html"></a></div>
+  <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="../../index.html"></a>
   <noscript>
     <a href="http://flattr.com/thing/947300/Convert-Edit-And-Compose-Images" target="_blank">
     <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" width="93" height="20" border="0" /></a>
   </noscript>
-  <div class="g-plusone" data-size="standard" data-count="true"></div>
 </div>
 
 <div class="main">
 
 <h1>Module version Methods</h1>
-<p class="navigation-index">[<a href="version.html#GetMagickCopyright">GetMagickCopyright</a> &#8226; <a href="version.html#GetMagickDelegates">GetMagickDelegates</a> &#8226; <a href="version.html#GetMagickFeatures">GetMagickFeatures</a> &#8226; <a href="version.html#GetMagickHomeURL">GetMagickHomeURL</a> &#8226; <a href="version.html#GetMagickPackageName">GetMagickPackageName</a> &#8226; <a href="version.html#GetMagickQuantumDepth">GetMagickQuantumDepth</a> &#8226; <a href="version.html#GetMagickQuantumRange">GetMagickQuantumRange</a> &#8226; <a href="version.html#GetMagickReleaseDate">GetMagickReleaseDate</a> &#8226; <a href="version.html#GetMagickSignature">GetMagickSignature</a> &#8226; <a href="version.html#GetMagickVersion">GetMagickVersion</a> &#8226; <a href="version.html#ListMagickVersion">ListMagickVersion</a>]</p>
+<p class="navigation-index">[<a href="version.html#GetMagickCopyright">GetMagickCopyright</a> &#8226; <a href="version.html#GetMagickDelegates">GetMagickDelegates</a> &#8226; <a href="version.html#GetMagickFeatures">GetMagickFeatures</a> &#8226; <a href="version.html#GetMagickHomeURL">GetMagickHomeURL</a> &#8226; <a href="version.html#GetMagickLicense">GetMagickLicense</a> &#8226; <a href="version.html#GetMagickPackageName">GetMagickPackageName</a> &#8226; <a href="version.html#GetMagickQuantumDepth">GetMagickQuantumDepth</a> &#8226; <a href="version.html#GetMagickQuantumRange">GetMagickQuantumRange</a> &#8226; <a href="version.html#GetMagickReleaseDate">GetMagickReleaseDate</a> &#8226; <a href="version.html#GetMagickSignature">GetMagickSignature</a> &#8226; <a href="version.html#GetMagickVersion">GetMagickVersion</a> &#8226; <a href="version.html#ListMagickVersion">ListMagickVersion</a>]</p>
 
 <h2><a href="http://www.imagemagick.org/api/MagickCore/version_8c.html" id="GetMagickCopyright">GetMagickCopyright</a></h2>
 <div class="doc-section">
@@ -280,6 +260,18 @@
 
 <pre class="code">
   char *GetMagickHomeURL(void)
+</pre>
+
+ </div>
+<h2><a href="http://www.imagemagick.org/api/MagickCore/version_8c.html" id="GetMagickLicense">GetMagickLicense</a></h2>
+<div class="doc-section">
+
+<p>GetMagickLicense() returns the ImageMagick API license as a string.</p>
+
+<p>The format of the GetMagickLicense method is:</p>
+
+<pre class="code">
+  const char *GetMagickLicense(void)
 </pre>
 
  </div>
@@ -411,10 +403,9 @@
     <span id="linkbar-east"> </span>
 </div>
 <div class="footer">
-  <span id="footer-west">©  1999-2014 ImageMagick Studio LLC</span>
+  <span id="footer-west">©  1999-2015 ImageMagick Studio LLC</span>
   <span id="footer-east"> <a href="../../www/contact.html">Contact the Wizards</a></span>
 </div>
 <div style="clear: both; margin: 0; width: 100%; "></div>
 </body>
 </html>
-<!-- Magick Cache 25th July 2014 04:05 -->

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -161,6 +161,9 @@ static MagickBooleanType WriteMATTEImage(const ImageInfo *image_info,
   Image
     *matte_image;
 
+  ImageInfo
+    *write_info;
+
   MagickBooleanType
     status;
 
@@ -210,9 +213,12 @@ static MagickBooleanType WriteMATTEImage(const ImageInfo *image_info,
     if (status == MagickFalse)
       break;
   }
-  (void) FormatLocaleString(matte_image->filename,MaxTextExtent,
-    "MIFF:%s",image->filename);
-  status=WriteImage(image_info,matte_image);
+  write_info=CloneImageInfo(image_info);
+  if (LocaleCompare(write_info->magick,"MATTE") == 0)
+    (void) FormatLocaleString(matte_image->filename,MaxTextExtent,
+      "MIFF:%s",image->filename);
+  status=WriteImage(write_info,matte_image);
+  write_info=DestroyImageInfo(write_info);
   matte_image=DestroyImage(matte_image);
   return(status);
 }

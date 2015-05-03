@@ -18,7 +18,7 @@
 %                             November 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -115,7 +115,8 @@ static SplayTreeInfo
   *magick_list = (SplayTreeInfo *) NULL;
 
 static volatile MagickBooleanType
-  instantiate_magickcore = MagickFalse;
+  instantiate_magickcore = MagickFalse,
+  magickcore_signal_in_progress = MagickFalse;
 
 /*
   Forward declarations.
@@ -1161,11 +1162,10 @@ static SignalHandler *SetMagickSignalHandler(int signal_number,
 
 static void MagickSignalHandler(int signal_number)
 {
-#if !defined(MAGICKCORE_HAVE_SIGACTION)
-  (void) signal(signal_number,SIG_IGN);
-#endif
+  if (magickcore_signal_in_progress != MagickFalse)
+    (void) SetMagickSignalHandler(signal_number,signal_handlers[signal_number]);
+  magickcore_signal_in_progress=MagickTrue;
   AsynchronousResourceComponentTerminus();
-  (void) SetMagickSignalHandler(signal_number,signal_handlers[signal_number]);
 #if defined(SIGQUIT)
   if (signal_number == SIGQUIT)
     abort();
@@ -1197,7 +1197,7 @@ static void MagickSignalHandler(int signal_number)
   if (signal_number == SIGHUP)
     exit(signal_number);
 #endif
-#if defined(SIGINT) && !defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(SIGINT)
   if (signal_number == SIGINT)
     exit(signal_number);
 #endif
@@ -1263,10 +1263,15 @@ MagickExport void MagickCoreGenesis(const char *path,
   /*
     Set client name and execution path.
   */
-  (void) GetExecutionPath(execution_path,MaxTextExtent);
+#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+  if ((path != (const char *) NULL) && (IsPathAccessible(path) != MagickFalse))
+#else
   if ((path != (const char *) NULL) && (*path == *DirectorySeparator) &&
       (IsPathAccessible(path) != MagickFalse))
+#endif
     (void) CopyMagickString(execution_path,path,MaxTextExtent);
+  else
+    (void) GetExecutionPath(execution_path,MaxTextExtent);
   GetPathComponent(execution_path,TailPath,filename);
   (void) SetClientName(filename);
   GetPathComponent(execution_path,HeadPath,execution_path);
@@ -1292,7 +1297,7 @@ MagickExport void MagickCoreGenesis(const char *path,
       if (signal_handlers[SIGHUP] == (SignalHandler *) NULL)
         signal_handlers[SIGHUP]=RegisterMagickSignalHandler(SIGHUP);
 #endif
-#if defined(SIGINT) && !defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(SIGINT)
       if (signal_handlers[SIGINT] == (SignalHandler *) NULL)
         signal_handlers[SIGINT]=RegisterMagickSignalHandler(SIGINT);
 #endif
@@ -1375,7 +1380,7 @@ MagickExport void MagickCoreTerminus(void)
   TypeComponentTerminus();
   ColorComponentTerminus();
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
-  NTGhostscriptUnLoadDLL();
+  NTWindowsTerminus();
 #endif
   MagicComponentTerminus();
   DelegateComponentTerminus();

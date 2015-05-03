@@ -17,7 +17,7 @@
 %                                 June 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -398,6 +398,12 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   image->columns=(size_t) jp2_image->comps[0].w;
   image->rows=(size_t) jp2_image->comps[0].h;
   image->depth=jp2_image->comps[0].prec;
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   image->compression=JPEG2000Compression;
   if (jp2_image->numcomps <= 2)
     {
@@ -480,7 +486,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
            }
            case 3:
            {
-             q->opacity=ClampToQuantum(pixel);
+             q->opacity=ClampToQuantum(QuantumRange-pixel);
              break;
            }
         }
@@ -547,7 +553,6 @@ ModuleExport size_t RegisterJP2Image(void)
   entry->magick=(IsImageFormatHandler *) IsJP2;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=NoThreadSupport;
 #if defined(MAGICKCORE_LIBOPENJP2_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadJP2Image;
   entry->encoder=(EncodeImageHandler *) WriteJP2Image;
@@ -562,7 +567,6 @@ ModuleExport size_t RegisterJP2Image(void)
   entry->magick=(IsImageFormatHandler *) IsJ2K;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=NoThreadSupport;
 #if defined(MAGICKCORE_LIBOPENJP2_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadJP2Image;
   entry->encoder=(EncodeImageHandler *) WriteJP2Image;
@@ -577,7 +581,6 @@ ModuleExport size_t RegisterJP2Image(void)
   entry->magick=(IsImageFormatHandler *) IsJ2K;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=NoThreadSupport;
 #if defined(MAGICKCORE_LIBOPENJP2_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadJP2Image;
   entry->encoder=(EncodeImageHandler *) WriteJP2Image;
@@ -592,7 +595,6 @@ ModuleExport size_t RegisterJP2Image(void)
   entry->magick=(IsImageFormatHandler *) IsJP2;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=NoThreadSupport;
 #if defined(MAGICKCORE_LIBOPENJP2_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadJP2Image;
   entry->encoder=(EncodeImageHandler *) WriteJP2Image;
@@ -607,7 +609,6 @@ ModuleExport size_t RegisterJP2Image(void)
   entry->magick=(IsImageFormatHandler *) IsJP2;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=NoThreadSupport;
 #if defined(MAGICKCORE_LIBOPENJP2_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadJP2Image;
   entry->encoder=(EncodeImageHandler *) WriteJP2Image;
@@ -622,7 +623,6 @@ ModuleExport size_t RegisterJP2Image(void)
   entry->magick=(IsImageFormatHandler *) IsJP2;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=NoThreadSupport;
 #if defined(MAGICKCORE_LIBOPENJP2_DELEGATE)
   entry->decoder=(DecodeImageHandler *) ReadJP2Image;
   entry->encoder=(EncodeImageHandler *) WriteJP2Image;
@@ -965,6 +965,11 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
       ((image->columns == 2048) || (image->rows == 1080) ||
        (image->columns == 4096) || (image->rows == 2160)))
     CinemaProfileCompliance(jp2_image,&parameters);
+  if (channels == 4)
+    jp2_image->comps[3].alpha=1;
+  else
+   if ((channels == 2) && (jp2_colorspace == OPJ_CLRSPC_GRAY))
+     jp2_image->comps[1].alpha=1;
   /*
     Convert to JP2 pixels.
   */

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -172,7 +172,7 @@ static Image *ReadPWPImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (status == MagickFalse)
     return((Image *) NULL);
   count=ReadBlob(pwp_image,5,magick);
-  if ((count == 0) || (LocaleNCompare((char *) magick,"SFW95",5) != 0))
+  if ((count != 5) || (LocaleNCompare((char *) magick,"SFW95",5) != 0))
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   read_info=CloneImageInfo(image_info);
   (void) SetImageInfoProgressMonitor(read_info,(MagickProgressMonitor) NULL,
@@ -192,7 +192,10 @@ static Image *ReadPWPImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if (c == EOF)
       break;
     if (LocaleNCompare((char *) (magick+12),"SFW94A",6) != 0)
-      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+      {
+        (void) RelinquishUniqueFileResource(read_info->filename);
+        ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+      }
     /*
       Dump SFW image to a temporary file.
     */
@@ -201,6 +204,7 @@ static Image *ReadPWPImage(const ImageInfo *image_info,ExceptionInfo *exception)
       file=fdopen(unique_file,"wb");
     if ((unique_file == -1) || (file == (FILE *) NULL))
       {
+        (void) RelinquishUniqueFileResource(read_info->filename);
         ThrowFileException(exception,FileOpenError,"UnableToWriteFile",
           image->filename);
         image=DestroyImageList(image);

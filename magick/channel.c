@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -897,6 +897,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
         NULL,&background);
       if (image->colorspace == CMYKColorspace)
         ConvertRGBToCMYK(&background);
+      (void) ResetMagickMemory(&pixel,0,sizeof(pixel));
       index=0;
       SetPixelPacket(image,&background,&pixel,&index);
       image_view=AcquireAuthenticCacheView(image,exception);

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -731,7 +731,7 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
       ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
     if ((compression == FaxCompression) || (compression == Group4Compression) ||
         ((image_info->type != TrueColorType) &&
-         (IsGrayImage(image,&image->exception) != MagickFalse)))
+         (SetImageGray(image,&image->exception) != MagickFalse)))
       {
         (void) FormatLocaleString(buffer,MaxTextExtent,"%.20g %.20g\n1\n%d\n",
           (double) image->columns,(double) image->rows,(int)

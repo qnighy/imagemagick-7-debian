@@ -17,7 +17,7 @@
 %                               September 2002                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -290,6 +290,29 @@ MagickExport char *GetMagickHomeURL(void)
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%   G e t M a g i c k L i c e n s e                                           %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetMagickLicense() returns the ImageMagick API license as a string.
+%
+%  The format of the GetMagickLicense method is:
+%
+%      const char *GetMagickLicense(void)
+%
+*/
+MagickExport const char *GetMagickLicense(void)
+{
+  return(MagickAuthoritativeLicense);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   G e t M a g i c k P a c k a g e N a m e                                   %
 %                                                                             %
 %                                                                             %
@@ -553,6 +576,8 @@ MagickExport void ListMagickVersion(FILE *file)
   (void) FormatLocaleFile(file,"Version: %s\n",
     GetMagickVersion((size_t *) NULL));
   (void) FormatLocaleFile(file,"Copyright: %s\n",GetMagickCopyright());
+  (void) FormatLocaleFile(file,"License: %s\n",GetMagickLicense());
   (void) FormatLocaleFile(file,"Features: %s\n",GetMagickFeatures());
-  (void) FormatLocaleFile(file,"Delegates: %s\n\n",GetMagickDelegates());
+  (void) FormatLocaleFile(file,"Delegates (built-in): %s\n\n",
+    GetMagickDelegates());
 }

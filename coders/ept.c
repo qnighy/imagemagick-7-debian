@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -397,6 +397,7 @@ static MagickBooleanType WriteEPTImage(const ImageInfo *image_info,Image *image)
   if (write_image == (Image *) NULL)
     return(MagickFalse);
   write_info=CloneImageInfo(image_info);
+  *write_info->magick='\0';
   (void) CopyMagickString(write_info->magick,"EPS",MaxTextExtent);
   if (LocaleCompare(image_info->magick,"EPT2") == 0)
     (void) CopyMagickString(write_info->magick,"EPS2",MaxTextExtent);

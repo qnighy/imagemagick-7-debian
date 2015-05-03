@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2002, 2003
+// Copyright Dirk Lemstra 2014
 //
 // Simple C++ function wrappers for ImageMagick equivalents
 //
@@ -28,7 +29,7 @@ MagickPPExport void Magick::DisableOpenCL(void)
   GetPPException;
   MagickCore::InitImageMagickOpenCL(MagickCore::MAGICK_OPENCL_OFF,NULL,NULL,
     exceptionInfo);
-  ThrowPPException;
+  ThrowPPException(false);
 }
 
 MagickPPExport bool Magick::EnableOpenCL(const bool useCache_)
@@ -45,7 +46,7 @@ MagickPPExport bool Magick::EnableOpenCL(const bool useCache_)
     status=MagickCore::InitImageMagickOpenCL(
       MagickCore::MAGICK_OPENCL_DEVICE_SELECT_AUTO_CLEAR_CACHE,NULL,NULL,
       exceptionInfo) == MagickTrue;
-  ThrowPPException;
+  ThrowPPException(false);
   return(status);
 }
 

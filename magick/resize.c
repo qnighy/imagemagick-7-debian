@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2435,20 +2435,6 @@ static ContributionInfo **AcquireContributionThreadSet(const size_t count)
   return(contribution);
 }
 
-static inline double MagickMax(const double x,const double y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
-static inline double MagickMin(const double x,const double y)
-{
-  if (x < y)
-    return(x);
-  return(y);
-}
-
 static MagickBooleanType HorizontalFilter(const ResizeFilter *resize_filter,
   const Image *image,Image *resize_image,const MagickRealType x_factor,
   const MagickSizeType span,MagickOffsetType *offset,ExceptionInfo *exception)
@@ -3555,7 +3541,7 @@ MagickExport Image *ScaleImage(const Image *image,const size_t columns,
         for (x=0; x < (ssize_t) scale_image->columns; x++)
         {
           if (scale_image->matte != MagickFalse)
-            alpha=QuantumScale*(QuantumRange-s->opacity);
+            alpha=QuantumScale*GetPixelAlpha(s);
           alpha=PerceptibleReciprocal(alpha);
           SetPixelRed(q,ClampToQuantum(alpha*s->red));
           SetPixelGreen(q,ClampToQuantum(alpha*s->green));
@@ -3654,7 +3640,7 @@ MagickExport Image *ScaleImage(const Image *image,const size_t columns,
       for (x=0; x < (ssize_t) scale_image->columns; x++)
       {
         if (scale_image->matte != MagickFalse)
-          alpha=QuantumScale*(QuantumRange-t->opacity);
+          alpha=QuantumScale*GetPixelAlpha(t);
         alpha=PerceptibleReciprocal(alpha);
         SetPixelRed(q,ClampToQuantum(alpha*t->red));
         SetPixelGreen(q,ClampToQuantum(alpha*t->green));

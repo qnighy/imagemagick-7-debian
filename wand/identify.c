@@ -17,7 +17,7 @@
 %                            September 1994                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -351,8 +351,6 @@ WandExport MagickBooleanType IdentifyImageCommand(ImageInfo *image_info,
                   "MemoryAllocationFailed",GetExceptionMessage(errno));
               (void) ConcatenateString(&(*metadata),text);
               text=DestroyString(text);
-              if (GlobExpression(format,"*%n*",MagickFalse) != MagickFalse)
-                break;
             }
         }
         RemoveAllImageStack();

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -169,14 +169,6 @@ ModuleExport void UnregisterHISTOGRAMImage(void)
 %    o image:  The image.
 %
 */
-
-static inline size_t MagickMax(const size_t x,const size_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
 static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
   Image *image)
 {
@@ -292,7 +284,9 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
     if (((channel & BlueChannel) != 0) && (maximum < histogram[x].blue))
       maximum=histogram[x].blue;
   }
-  scale=(MagickRealType) histogram_image->rows/maximum;
+  scale=0.0;
+  if (fabs(maximum) >= MagickEpsilon)
+    scale=(MagickRealType) histogram_image->rows/maximum;
   /*
     Initialize histogram image.
   */

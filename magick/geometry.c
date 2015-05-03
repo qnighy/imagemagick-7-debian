@@ -17,7 +17,7 @@
 %                              January 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -45,6 +45,7 @@
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/geometry.h"
+#include "magick/image-private.h"
 #include "magick/memory_.h"
 #include "magick/string_.h"
 #include "magick/string-private.h"
@@ -462,7 +463,8 @@ MagickExport char *GetPageGeometry(const char *page_geometry)
 %                                                                             %
 %   G r a v i t y A d j u s t G e o m e t r y                                 %
 %                                                                             %
-%                                                                             % %                                                                             %
+%                                                                             %
+%                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  GravityAdjustGeometry() adjusts the offset of a region with regard to the
@@ -1242,14 +1244,6 @@ MagickExport MagickStatusType ParseGravityGeometry(const Image *image,
 %
 */
 
-static inline size_t MagickMax(const size_t x,
-  const size_t y)
-{
-  if (x > y)
-    return(x);
-  return(y);
-}
-
 MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
   ssize_t *y,size_t *width,size_t *height)
 {
@@ -1379,7 +1373,7 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
         Geometry is a maximum area in pixels.
       */
       (void) ParseGeometry(geometry,&geometry_info);
-      area=geometry_info.rho;
+      area=geometry_info.rho+sqrt(MagickEpsilon);
       distance=sqrt((double) former_width*former_height);
       scale.x=former_width/(distance/sqrt(area));
       scale.y=former_height/(distance/sqrt(area));
