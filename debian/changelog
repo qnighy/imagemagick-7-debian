@@ -5,6 +5,8 @@ imagemagick (8:6.9.1.2-1) unstable; urgency=medium
   * Use http instead of ftp for uscan.
   * Fix regression: "missing JPEG-2000 support", thanks to Yuriy Yevtukhov
     (Closes: #773530).
+  * libmagickcore-6.q16-2-extra recommends libjxr-tools,
+    thanks to Mathieu Malaterre (Closes: #771312).
 
  --
 

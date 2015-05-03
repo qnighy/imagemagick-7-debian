@@ -230,6 +230,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Enhances: libmagickcore-6.q16-2
 Provides: libmagickcore-extra, libmagickcore-6.q16-1-extra
 Suggests: inkscape
+Recommends: libjxr-tools
 Description: low-level image manipulation library - extra codecs (Q16)
  This package adds support for SVG, WMF, OpenEXR, DjVu and Graphviz to
  MagickCore.
