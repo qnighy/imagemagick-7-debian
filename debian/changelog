@@ -1,6 +1,8 @@
-imagemagick (8:6.8.9.9-6) unstable; urgency=medium
+imagemagick (8:6.9.1.2-1) unstable; urgency=medium
 
   * Fix build on mips by printing progress (Closes: #770009).
+  * Drop previous security patches, merged upstream.
+  * Use http instead of ftp for uscan.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 14 Jan 2015 20:04:45 +0100
 
