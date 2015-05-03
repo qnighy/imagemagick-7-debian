@@ -271,6 +271,7 @@ override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 	sed < $(CURDIR)/debian/display-im6.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/$(DEFAULTQUANTUMDEPTH)/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
+                -e s/\$$\(LCQUANTUMDEPTH\)/${shell echo $* | sed -e 's/\(.*\)/\L\1/'}/g \
 	        -e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
 		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
 		> $(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/share/applications/display-im$(IMVERSION).desktop

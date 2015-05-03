@@ -7,6 +7,8 @@ imagemagick (8:6.9.1.2-1) unstable; urgency=medium
     (Closes: #773530).
   * libmagickcore-6.q16-2-extra recommends libjxr-tools,
     thanks to Mathieu Malaterre (Closes: #771312).
+  * Bug fix: "desktop file icon is still not displayed", thanks to Markus
+    Koschany (Closes: #767973,#780490).
 
  --
 
