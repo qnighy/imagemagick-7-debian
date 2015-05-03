@@ -1,5 +1,8 @@
 imagemagick (8:6.9.1.2-1) unstable; urgency=medium
 
+  * New upstream version:
+  - Fix MagickSetImageBias() has no effect for MagickConvolveImage()
+    (Closes: #779939)
   * Fix build on mips by printing progress (Closes: #770009).
   * Drop previous security patches, merged upstream.
   * Use http instead of ftp for uscan.
