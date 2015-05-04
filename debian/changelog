@@ -3,6 +3,16 @@ imagemagick (8:6.9.1.2-1) unstable; urgency=medium
   * New upstream version:
   - Fix MagickSetImageBias() has no effect for MagickConvolveImage()
     (Closes: #779939)
+  - Fix segmentation fault using corrupted file
+    (LP: #144963, #1448801, #1448795, #1448767).
+  - Fix a denial of service flaw in MIFF file processing.
+    Fix TEMP-0000000-FDAC72.
+  - Fix a denial of service flaw in VICAR file processing.
+    Fix TEMP-0000000-EEF23C.
+  - Fix a denial of service flaw in HDR file processing.
+    Fix TEMP-0000000-7C079F.
+  - Fix a denial of service flaw in PDB file processing.
+    Fix TEMP-0000000-2FC21E
   * Fix build on mips by printing progress (Closes: #770009).
   * Drop previous security patches, merged upstream.
   * Use http instead of ftp for uscan.
@@ -15,7 +25,7 @@ imagemagick (8:6.9.1.2-1) unstable; urgency=medium
   * Bug fix: "please make the build reproducible", thanks to Reiner
     Herrmann (Closes: #783933).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 03 May 2015 22:45:48 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 04 May 2015 20:01:59 +0200
 
 imagemagick (8:6.8.9.9-5) unstable; urgency=high
 
@@ -32,7 +42,7 @@ imagemagick (8:6.8.9.9-5) unstable; urgency=high
 
 imagemagick (8:6.8.9.9-4) unstable; urgency=high
 
-  * Fix a few security bugs (Closes: #773834):
+  * Fix a few security bugs see TEMP-0773834-5EB6CF (Closes: #773834):
   - Avoid a DOS in vision.c due to an infinite loop.
   - Avoid a SEGV due to a corrupted pnm file.
   - Do not leak fd due to corrupted file.
