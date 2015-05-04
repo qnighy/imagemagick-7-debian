@@ -1,4 +1,4 @@
-imagemagick (8:6.9.1.2-1) unstable; urgency=medium
+imagemagick (8:6.9.1.2-1) experimental; urgency=medium
 
   * New upstream version:
   - Fix MagickSetImageBias() has no effect for MagickConvolveImage()
@@ -24,6 +24,9 @@ imagemagick (8:6.9.1.2-1) unstable; urgency=medium
     Koschany (Closes: #767973,#780490).
   * Bug fix: "please make the build reproducible", thanks to Reiner
     Herrmann (Closes: #783933).
+  * Upstream break c++ ABI:
+    - Bump c++ soname.
+    - Add new symbols to symbols file.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 04 May 2015 20:01:59 +0200
 

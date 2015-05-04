@@ -203,6 +203,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ConfigureComponentGenesis@Base 8:6.8.8.2
  ConfigureComponentTerminus@Base 8:6.8.8.2
  ConfigureFileToStringInfo@Base 8:6.8.8.2
+ ConformMagickPixelPacket@Base 8:6.9.1.2
  ConnectedComponentsImage@Base 8:6.8.9.9
  ConsolidateCMYKImages@Base 8:6.8.8.2
  ConstantString@Base 8:6.8.8.2
@@ -467,6 +468,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  GetImageChannelDepth@Base 8:6.8.8.2
  GetImageChannelDistortion@Base 8:6.8.8.2
  GetImageChannelDistortions@Base 8:6.8.8.2
+ GetImageChannelEntropy@Base 8:6.9.1.2
  GetImageChannelExtrema@Base 8:6.8.8.2
  GetImageChannelFeatures@Base 8:6.8.8.2
  GetImageChannelKurtosis@Base 8:6.8.8.2
@@ -483,6 +485,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  GetImageDistortion@Base 8:6.8.8.2
  GetImageDynamicThreshold@Base 8:6.8.8.2
  GetImageEncoder@Base 8:6.8.8.2
+ GetImageEntropy@Base 8:6.9.1.2
  GetImageException@Base 8:6.8.8.2
  GetImageExtent@Base 8:6.8.8.2
  GetImageExtrema@Base 8:6.8.8.2
@@ -550,12 +553,14 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  GetMagickHomeURL@Base 8:6.8.8.2
  GetMagickInfo@Base 8:6.8.8.2
  GetMagickInfoList@Base 8:6.8.8.2
+ GetMagickLicense@Base 8:6.9.1.2
  GetMagickList@Base 8:6.8.8.2
  GetMagickMemoryMethods@Base 8:6.8.8.2
  GetMagickMimeType@Base 8:6.8.8.2
  GetMagickOpenCLEnvParam@Base 8:6.8.8.2
  GetMagickPackageName@Base 8:6.8.8.2
  GetMagickPageSize@Base 8:6.8.8.2
+ GetMagickPixelIntensity@Base 8:6.9.1.2
  GetMagickPixelPacket@Base 8:6.8.8.2
  GetMagickPrecision@Base 8:6.8.8.2
  GetMagickProperty@Base 8:6.8.8.2
@@ -982,6 +987,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ReadBlobMSBLongLong@Base 8:6.8.8.2
  ReadBlobMSBShort@Base 8:6.8.8.2
  ReadBlobShort@Base 8:6.8.8.2
+ ReadBlobStream@Base 8:6.9.1.2
  ReadBlobString@Base 8:6.8.8.2
  ReadImage@Base 8:6.8.8.2
  ReadImages@Base 8:6.8.8.2
@@ -1097,12 +1103,14 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  SetImageColorspace@Base 8:6.8.8.2
  SetImageDepth@Base 8:6.8.8.2
  SetImageExtent@Base 8:6.8.8.2
+ SetImageGray@Base 8:6.9.1.2
  SetImageInfo@Base 8:6.8.8.2
  SetImageInfoBlob@Base 8:6.8.8.2
  SetImageInfoFile@Base 8:6.8.8.2
  SetImageInfoProgressMonitor@Base 8:6.8.8.2
  SetImageList@Base 8:6.8.8.2
  SetImageMask@Base 8:6.8.8.2
+ SetImageMonochrome@Base 8:6.9.1.2
  SetImageOpacity@Base 8:6.8.8.2
  SetImageOption@Base 8:6.8.8.2
  SetImagePixels@Base 8:6.8.8.2
