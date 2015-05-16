@@ -83,11 +83,12 @@ export STATIC_CONFIGURE_OPTIONS := \
         --enable-reproducible-build \
 	--prefix=/usr \
         --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
+        --docdir=/usr/share/doc/imagemagick-doc/ \
+        --with-extra-doc-dir=' (on debian system you may install the imagemagick-doc package)' \
 	--sysconfdir=/etc \
 	--with-includearch-dir=/usr/include/$(DEB_HOST_MULTIARCH)/ \
 	--mandir=/usr/share/man \
 	--infodir=/usr/share/info \
-	--docdir=/usr/share/doc/imagemagick \
 	--with-modules \
 	--with-gs-font-dir=/usr/share/fonts/type1/gsfonts \
 	--with-magick-plus-plus \
@@ -262,12 +263,6 @@ override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
                 fi \
         done < debian/imagemagick.install
 
-	# Fix HTML location inside manpages (TODO proper patch please)
-	sed -i 's/doc\/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
-		$(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/share/man/man*/*
-	sed -i 's/doc\/ImageMagick\\-$(DEB_UPSTREAM_VERSION_DROPREVISION)/doc\/imagemagick-common/' \
-		$(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/share/man/man*/*
-
 	# add desktop for default version
 	mkdir -p $(CURDIR)/debian/tmp-indep/usr/share/applications/
 	sed < $(CURDIR)/debian/display-im6.desktop.in \
@@ -289,7 +284,6 @@ override_dh_auto_install-indep:
 		        --  install-configlibDATA install-data-html \
 	                    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
-	                    pkgdocdir=/usr/share/doc/imagemagick-common \
 			    V=1;\
 	else \
 	cd "$(CURDIR)/debian/build-quantum-indep" && \
@@ -297,7 +291,6 @@ override_dh_auto_install-indep:
 	                    install-configlibDATA install-data-html \
 	                    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
-	                    pkgdocdir=/usr/share/doc/imagemagick-doc \
 			    V=1 ;\
 	fi;
 

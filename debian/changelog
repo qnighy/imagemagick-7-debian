@@ -29,8 +29,12 @@ imagemagick (8:6.9.1.2-1) experimental; urgency=medium
     - Add new symbols to symbols file.
   * Fix perlmagick: "Text functions segfault on i386", thanks to Matthias
     Großmann (Closes: #777158).
+  * Bug fix: "wrong path to documentation in convert man page", thanks to
+    Yvan Masson (Closes: #778541).
+  * Suggest to install imagemagick doc in man page, thanks to Gregor
+    Herrmann (Closes: #727739).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 15 May 2015 23:28:40 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 16 May 2015 19:23:39 +0200
 
 imagemagick (8:6.8.9.9-5) unstable; urgency=high
 
