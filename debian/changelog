@@ -1,3 +1,13 @@
+imagemagick (8:6.9.2.1-1) experimental; urgency=medium
+
+  * New upstream version:
+  - Fix a Null dereference in coders/png.c (LP: #1492881).
+  - Fix a double free in coders/tga.c (LP: #1490362).
+  - Fix density of JPEG working arround TeX bug
+    (Closes: #763799).
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 14 Sep 2015 23:43:48 +0200
+
 imagemagick (8:6.9.1.2-1) experimental; urgency=low
 
   * New upstream version:
