@@ -95,7 +95,7 @@ static MagickBooleanType
 */
 static Image *ReadRAWImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
-  const void
+  const unsigned char
     *pixels;
 
   Image
@@ -153,7 +153,7 @@ static Image *ReadRAWImage(const ImageInfo *image_info,ExceptionInfo *exception)
   quantum_info=AcquireQuantumInfo(image_info,canvas_image);
   if (quantum_info == (QuantumInfo *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-  pixels=(const void *) NULL;
+  pixels=(const unsigned char *) NULL;
   if (image_info->number_scenes != 0)
     while (image->scene < image_info->scene)
     {
@@ -164,8 +164,8 @@ static Image *ReadRAWImage(const ImageInfo *image_info,ExceptionInfo *exception)
       length=GetQuantumExtent(canvas_image,quantum_info,quantum_type);
       for (y=0; y < (ssize_t) image->rows; y++)
       {
-        pixels=ReadBlobStream(image,length,GetQuantumPixels(quantum_info),
-          &count);
+        pixels=(const unsigned char *) ReadBlobStream(image,length,
+          GetQuantumPixels(quantum_info),&count);
         if (count != (ssize_t) length)
           break;
       }
@@ -190,8 +190,8 @@ static Image *ReadRAWImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if (scene == 0)
       {
         length=GetQuantumExtent(canvas_image,quantum_info,quantum_type);
-        pixels=ReadBlobStream(image,length,GetQuantumPixels(quantum_info),
-          &count);
+        pixels=(const unsigned char *) ReadBlobStream(image,length,
+          GetQuantumPixels(quantum_info),&count);
       }
     for (y=0; y < (ssize_t) image->extract_info.height; y++)
     {
@@ -244,8 +244,8 @@ static Image *ReadRAWImage(const ImageInfo *image_info,ExceptionInfo *exception)
           if (status == MagickFalse)
             break;
         }
-      pixels=ReadBlobStream(image,length,GetQuantumPixels(quantum_info),
-        &count);
+      pixels=(const unsigned char *) ReadBlobStream(image,length,
+        GetQuantumPixels(quantum_info),&count);
     }
     SetQuantumImageType(image,quantum_type);
     /*
@@ -312,6 +312,7 @@ ModuleExport size_t RegisterRAWImage(void)
   entry->encoder=(EncodeImageHandler *) WriteRAWImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Raw red samples");
   entry->module=ConstantString("RAW");
   (void) RegisterMagickInfo(entry);
@@ -320,6 +321,7 @@ ModuleExport size_t RegisterRAWImage(void)
   entry->encoder=(EncodeImageHandler *) WriteRAWImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Raw cyan samples");
   entry->module=ConstantString("RAW");
   (void) RegisterMagickInfo(entry);
@@ -328,6 +330,7 @@ ModuleExport size_t RegisterRAWImage(void)
   entry->encoder=(EncodeImageHandler *) WriteRAWImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Raw green samples");
   entry->module=ConstantString("RAW");
   (void) RegisterMagickInfo(entry);
@@ -336,6 +339,7 @@ ModuleExport size_t RegisterRAWImage(void)
   entry->encoder=(EncodeImageHandler *) WriteRAWImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Raw magenta samples");
   entry->module=ConstantString("RAW");
   (void) RegisterMagickInfo(entry);
@@ -344,6 +348,7 @@ ModuleExport size_t RegisterRAWImage(void)
   entry->encoder=(EncodeImageHandler *) WriteRAWImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Raw blue samples");
   entry->module=ConstantString("RAW");
   (void) RegisterMagickInfo(entry);
@@ -352,6 +357,7 @@ ModuleExport size_t RegisterRAWImage(void)
   entry->encoder=(EncodeImageHandler *) WriteRAWImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Raw yellow samples");
   entry->module=ConstantString("RAW");
   (void) RegisterMagickInfo(entry);
@@ -360,6 +366,7 @@ ModuleExport size_t RegisterRAWImage(void)
   entry->encoder=(EncodeImageHandler *) WriteRAWImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Raw alpha samples");
   entry->module=ConstantString("RAW");
   (void) RegisterMagickInfo(entry);
@@ -368,6 +375,7 @@ ModuleExport size_t RegisterRAWImage(void)
   entry->encoder=(EncodeImageHandler *) WriteRAWImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Raw opacity samples");
   entry->module=ConstantString("RAW");
   (void) RegisterMagickInfo(entry);
@@ -376,6 +384,7 @@ ModuleExport size_t RegisterRAWImage(void)
   entry->encoder=(EncodeImageHandler *) WriteRAWImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Raw black samples");
   entry->module=ConstantString("RAW");
   (void) RegisterMagickInfo(entry);

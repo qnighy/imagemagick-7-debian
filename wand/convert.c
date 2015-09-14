@@ -325,6 +325,8 @@ static MagickBooleanType ConvertUsage(void)
       "-compare             mathematically and visually annotate the difference between an image and its reconstruction",
       "-complex operator    perform complex mathematics on an image sequence",
       "-composite           composite image",
+      "-copy geometry offset",
+      "                     copy pixels from one area of an image to another",
       "-crop geometry       cut out a rectangular region of the image",
       "-deconstruct         break down an image sequence into constituent parts",
       "-evaluate-sequence operator",
@@ -1143,6 +1145,22 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
             if (kernel_info == (KernelInfo *) NULL)
               ThrowConvertInvalidArgumentException(option,argv[i]);
             kernel_info=DestroyKernelInfo(kernel_info);
+            break;
+          }
+        if (LocaleCompare("copy",option+1) == 0)
+          {
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowConvertException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowConvertInvalidArgumentException(option,argv[i]);
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowConvertException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowConvertInvalidArgumentException(option,argv[i]);
             break;
           }
         if (LocaleCompare("crop",option+1) == 0)
@@ -3221,6 +3239,7 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
         *text;
 
       text=InterpretImageProperties(image_info,image,format);
+      InheritException(exception,&image->exception);
       if (text == (char *) NULL)
         ThrowConvertException(ResourceLimitError,"MemoryAllocationFailed",
           GetExceptionMessage(errno));

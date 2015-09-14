@@ -98,8 +98,8 @@ static const char
     "  <delegate decode=\"https\" command=\"&quot;wget&quot; -q -O &quot;%o&quot; &quot;https:%M&quot;\"/>"
     "  <delegate decode=\"ilbm\" command=\"&quot;ilbmtoppm&quot; &quot;%i&quot; &gt; &quot;%o&quot;\"/>"
     "  <delegate decode=\"man\" command=\"&quot;groff&quot; -man -Tps &quot;%i&quot; &gt; &quot;%o&quot;\"/>"
-    "  <delegate decode=\"mpeg:decode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; -v -1 -vframes %S -i &quot;%i&quot; -vcodec pam -an -f rawvideo -y &quot;%u.pam&quot; 2&gt; &quot;%Z&quot;\"/>"
-    "  <delegate decode=\"null\" encode=\"mpeg:encode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; -v -1 -mbd rd -trellis 2 -cmp 2 -subcmp 2 -g 300 -i &quot;%M%%d.jpg&quot; &quot;%u.%m&quot; 2&gt; &quot;%Z&quot;\"/>"
+    "  <delegate decode=\"mpeg:decode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; -nostdin -v -1 -vframes %S -i &quot;%i&quot; -vcodec pam -an -f rawvideo -y &quot;%u.pam&quot; 2&gt; &quot;%Z&quot;\"/>"
+    "  <delegate decode=\"null\" encode=\"mpeg:encode\" stealth=\"True\" command=\"&quot;ffmpeg&quot; -nostdin -v -1 -mbd rd -trellis 2 -cmp 2 -subcmp 2 -g 300 -i &quot;%M%%d.jpg&quot; &quot;%u.%m&quot; 2&gt; &quot;%Z&quot;\"/>"
     "  <delegate decode=\"pcl:color\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=ppmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
     "  <delegate decode=\"pcl:cmyk\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=bmpsep8&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
     "  <delegate decode=\"pcl:mono\" stealth=\"True\" command=\"&quot;pcl6&quot; -dQUIET -dSAFER -dBATCH -dNOPAUSE -dNOPROMPT -dMaxBitmap=500000000 -dAlignToPixels=0 -dGridFitTT=2 &quot;-sDEVICE=pbmraw&quot; -dTextAlphaBits=%u -dGraphicsAlphaBits=%u &quot;-r%s&quot; %s &quot;-sOutputFile=%s&quot; &quot;%s&quot;\"/>"
@@ -333,7 +333,7 @@ static char *SanitizeDelegateCommand(const char *command)
   static char
     whitelist[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_- "
-      ".@&;<>()|/\\\'\":%=~";
+      ".@&;<>()|/\\\'\":%=~`";
 
   sanitize_command=AcquireString(command);
   p=sanitize_command;
@@ -1022,7 +1022,7 @@ static MagickBooleanType IsDelegateCacheInstantiated(ExceptionInfo *exception)
 */
 
 static MagickBooleanType CopyDelegateFile(const char *source,
-  const char *destination)
+  const char *destination,const MagickBooleanType overwrite)
 {
   int
     destination_file,
@@ -1052,9 +1052,12 @@ static MagickBooleanType CopyDelegateFile(const char *source,
   */
   assert(source != (const char *) NULL);
   assert(destination != (char *) NULL);
-  status=GetPathAttributes(destination,&attributes);
-  if (status != MagickFalse)
-    return(MagickTrue);
+  if (overwrite == MagickFalse)
+    {
+      status=GetPathAttributes(destination,&attributes);
+      if (status != MagickFalse)
+        return(MagickTrue);
+    }
   destination_file=open_utf8(destination,O_WRONLY | O_BINARY | O_CREAT,S_MODE);
   if (destination_file == -1)
     return(MagickFalse);
@@ -1065,7 +1068,7 @@ static MagickBooleanType CopyDelegateFile(const char *source,
       return(MagickFalse);
     }
   quantum=(size_t) MagickMaxBufferExtent;
-  if ((fstat(source_file,&attributes) == 0) && (attributes.st_size != 0))
+  if ((fstat(source_file,&attributes) == 0) && (attributes.st_size > 0))
     quantum=MagickMin((size_t) attributes.st_size,MagickMaxBufferExtent);
   buffer=(unsigned char *) AcquireQuantumMemory(quantum,sizeof(*buffer));
   if (buffer == (unsigned char *) NULL)
@@ -1313,10 +1316,10 @@ MagickExport MagickBooleanType InvokeDelegate(ImageInfo *image_info,
       }
     if (LocaleCompare(decode,"SCAN") != 0)
       {
-        if (CopyDelegateFile(image->filename,input_filename) == MagickFalse)
+        if (CopyDelegateFile(image->filename,input_filename,MagickFalse) == MagickFalse)
           (void) RelinquishUniqueFileResource(input_filename);
       }
-    if (CopyDelegateFile(image_info->filename,output_filename) == MagickFalse)
+    if (CopyDelegateFile(image_info->filename,output_filename,MagickTrue) == MagickFalse)
       (void) RelinquishUniqueFileResource(output_filename);
     if (image_info->temporary != MagickFalse)
       (void) RelinquishUniqueFileResource(image_info->filename);

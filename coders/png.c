@@ -2234,6 +2234,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 #if defined(PNG_UNKNOWN_CHUNKS_SUPPORTED)
     else
     {
+       /* Ignore the iCCP chunk */
        png_set_keep_unknown_chunks(ping, 1, mng_iCCP, 1);
     }
 #endif
@@ -4549,11 +4550,7 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
 
   if (color_image == (Image *) NULL)
     {
-      if (alpha_image != (Image *) NULL)
-        {
-          alpha_image=DestroyImage(alpha_image);
-          alpha_image_info=DestroyImageInfo(alpha_image_info);
-        }
+      assert(alpha_image == (Image *) NULL);
       return((Image *) NULL);
     }
 
@@ -5078,8 +5075,12 @@ static Image *ReadMNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
         if (memcmp(type,mng_MHDR,4) == 0)
           {
-            if (length < 12)
-              ThrowReaderException(CorruptImageError,"CorruptImage");
+            if (length != 28)
+              {
+                if (chunk == (unsigned char *) NULL)
+                  chunk=(unsigned char *) RelinquishMagickMemory(chunk);
+                ThrowReaderException(CorruptImageError,"CorruptImage");
+              }
 
             mng_info->mng_width=(size_t) ((p[0] << 24) | (p[1] << 16) |
                 (p[2] << 8) | p[3]);
@@ -5108,12 +5109,9 @@ static Image *ReadMNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             frame_delay=default_frame_delay;
             simplicity=0;
 
-            if (length > 27)
-              {
-                /* Skip nominal layer count, frame count, and play time */
-                p+=16;
-                simplicity=(size_t) mng_get_long(p);
-              }
+            /* Skip nominal layer count, frame count, and play time */
+            p+=16;
+            simplicity=(size_t) mng_get_long(p);
 
             mng_type=1;    /* Full MNG */
 
@@ -5164,7 +5162,6 @@ static Image *ReadMNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
           {
             int
               repeat=0;
-
 
             if (length != 0)
               repeat=p[0];
@@ -5362,7 +5359,7 @@ static Image *ReadMNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
           {
             /* read global tRNS */
 
-            if (length < 257)
+            if (length > 0 && length < 257)
               for (i=0; i < (ssize_t) length; i++)
                 mng_info->global_trns[i]=p[i];
 
@@ -5690,9 +5687,9 @@ static Image *ReadMNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 register ssize_t
                   j;
 
-                for (j=0; j < (ssize_t) length; j+=2)
+                for (j=1; j < (ssize_t) length; j+=2)
                 {
-                  i=p[j] << 8 | p[j+1];
+                  i=p[j-1] << 8 | p[j];
                   MngInfoDiscardObject(mng_info,i);
                 }
               }
@@ -7440,7 +7437,7 @@ ModuleExport size_t RegisterPNGImage(void)
   entry->magick=(IsImageFormatHandler *) IsPNG;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString(
-     "PNG inheriting bit-depth and color-type from original");
+     "PNG inheriting bit-depth, color-type from original if possible");
   entry->mime_type=ConstantString("image/png");
   entry->module=ConstantString("PNG");
   (void) RegisterMagickInfo(entry);
@@ -8114,6 +8111,8 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
       if (image->storage_class == PseudoClass)
           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
           "    image->storage_class=PseudoClass");
+      (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+          "    image_info->magick= %s",image_info->magick);
       (void) LogMagickEvent(CoderEvent,GetMagickModule(), image->taint ?
           "    image->taint=MagickTrue":
           "    image->taint=MagickFalse");
@@ -11344,8 +11343,9 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 %
 %    o PNG00:   A PNG that inherits its colortype and bit-depth from the input
 %               image, if the input was a PNG, is written.  If these values
-%               cannot be found, then "PNG00" falls back to the regular "PNG"
-%               format.
+%               cannot be found, or if the pixels have been changed in a way
+%               that makes this impossible, then "PNG00" falls back to the
+%               regular "PNG" format.
 %
 %    o -define: For more precise control of the PNG output, you can use the
 %               Image options "png:bit-depth" and "png:color-type".  These
@@ -11476,8 +11476,6 @@ static MagickBooleanType WritePNGImage(const ImageInfo *image_info,Image *image)
   mng_info->write_png64=LocaleCompare(image_info->magick,"PNG64") == 0;
 
   value=GetImageOption(image_info,"png:format");
-  if (value == (char *) NULL)
-    if (LocaleCompare(image_info->magick,"PNG00") == 0)
 
   if (value != (char *) NULL || LocaleCompare(image_info->magick,"PNG00") == 0)
     {
@@ -13112,8 +13110,8 @@ static MagickBooleanType WriteMNGImage(const ImageInfo *image_info,Image *image)
 
          if (need_defi && final_delay > 2 && (final_delay != 4) &&
             (final_delay != 5) && (final_delay != 10) && (final_delay != 20) &&
-            (final_delay != 25) && (final_delay != 50) && (1UL*final_delay !=
-               1UL*image->ticks_per_second))
+            (final_delay != 25) && (final_delay != 50) &&
+            (final_delay != (size_t) image->ticks_per_second))
            mng_info->need_fram=MagickTrue;  /* make it exact; cannot be VLC */
        }
 

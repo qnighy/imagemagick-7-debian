@@ -248,12 +248,6 @@
 /* Define if you have the <lcms2/lcms2.h> header file. */
 #undef HAVE_LCMS2_LCMS2_H
 
-/* Define if you have the <lcms.h> header file. */
-#undef HAVE_LCMS_H
-
-/* Define if you have the <lcms/lcms.h> header file. */
-#undef HAVE_LCMS_LCMS_H
-
 /* Define to 1 if you have the `gcov' library (-lgcov). */
 #undef HAVE_LIBGCOV
 
@@ -268,6 +262,9 @@
 
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
+
+/* Define to 1 if the system has the type `locale_t'. */
+#undef HAVE_LOCALE_T
 
 /* Define to 1 if you have the `localtime_r' function. */
 #undef HAVE_LOCALTIME_R
@@ -401,6 +398,9 @@
 
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
+
+/* Define to 1 if you have the `sendfile' function. */
+#undef HAVE_SENDFILE
 
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
@@ -541,6 +541,9 @@
 
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H
+
+/* Define to 1 if you have the <sys/sendfile.h> header file. */
+#undef HAVE_SYS_SENDFILE_H
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
@@ -727,7 +730,7 @@
 /* Define if you have JPEG library */
 #undef JPEG_DELEGATE
 
-/* Define if you have LCMS (v1.11 or later) library */
+/* Define if you have LCMS library */
 #undef LCMS_DELEGATE
 
 /* Define if you have OPENJP2 library */
@@ -958,10 +961,7 @@
 /* Define if using the dmalloc debugging malloc package */
 #undef WITH_DMALLOC
 
-/* Define if you have wmflite library */
-#undef WMFLITE_DELEGATE
-
-/* Define if you have wmf library */
+/* Define if you have WMF library */
 #undef WMF_DELEGATE
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
@@ -991,7 +991,7 @@
 /* Build self-contained, embeddable, zero-configuration ImageMagick */
 #undef ZERO_CONFIGURATION_SUPPORT
 
-/* Define if you have zlib compression library */
+/* Define if you have ZLIB library */
 #undef ZLIB_DELEGATE
 
 /* Enable large inode numbers on Mac OS X 10.5.  */

@@ -76,7 +76,6 @@
 #include "magick/paint.h"
 #include "magick/pixel.h"
 #include "magick/pixel-private.h"
-#include "magick/PreRvIcccm.h"
 #include "magick/property.h"
 #include "magick/quantum.h"
 #include "magick/resize.h"
@@ -2900,6 +2899,7 @@ static MagickBooleanType XChopImage(Display *display,
   (void) XSelectInput(display,windows->image.id,
     windows->image.attributes.event_mask | PointerMotionMask);
   state=DefaultState;
+  (void) ResetMagickMemory(&segment_info,0,sizeof(segment_info));
   do
   {
     if (windows->info.mapped != MagickFalse)
@@ -3067,10 +3067,6 @@ static MagickBooleanType XChopImage(Display *display,
   chop_info.height=0;
   chop_info.x=0;
   chop_info.y=0;
-  segment_info.x1=0;
-  segment_info.x2=0;
-  segment_info.y1=0;
-  segment_info.y2=0;
   distance=0;
   (void) XSetFunction(display,windows->image.highlight_context,GXinvert);
   state=DefaultState;
@@ -5116,10 +5112,10 @@ static MagickBooleanType XCropImage(Display *display,
             case XK_Home:
             case XK_KP_Home:
             {
-              crop_info.x=(ssize_t) (windows->image.width/2L-
-                crop_info.width/2L);
-              crop_info.y=(ssize_t) (windows->image.height/2L-
-                crop_info.height/2L);
+              crop_info.x=(ssize_t) (windows->image.width/2L-crop_info.width/
+                2L);
+              crop_info.y=(ssize_t) (windows->image.height/2L-crop_info.height/
+                2L);
               break;
             }
             case XK_Left:
@@ -14975,10 +14971,7 @@ MagickExport Image *XDisplayImage(Display *display,XResourceInfo *resource_info,
                         nexus=ReadImage(resource_info->image_info,
                           &display_image->exception);
                         if (nexus != (Image *) NULL)
-                          {
-                            nexus=DestroyImage(nexus);
-                            *state|=NextImageState | ExitState;
-                          }
+                          *state|=NextImageState | ExitState;
                       }
                   delay=display_image->delay/MagickMax(
                     display_image->ticks_per_second,1L);

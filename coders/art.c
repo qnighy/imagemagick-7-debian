@@ -98,7 +98,7 @@ static MagickBooleanType
 */
 static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
-  const void
+  const unsigned char
     *pixels;
 
   Image
@@ -178,13 +178,13 @@ static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
     if (q == (PixelPacket *) NULL)
       break;
-    pixels=ReadBlobStream(image,length,GetQuantumPixels(quantum_info),
-      &count);
+    pixels=(const unsigned char *) ReadBlobStream(image,length,
+      GetQuantumPixels(quantum_info),&count);
     if (count != (ssize_t) length)
       ThrowReaderException(CorruptImageError,"UnableToReadImageData");
     (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
       quantum_type,pixels,exception);
-    pixels=ReadBlobStream(image,(size_t) (-(ssize_t) length) & 0x01,
+    (void) ReadBlobStream(image,(size_t) (-(ssize_t) length) & 0x01,
       GetQuantumPixels(quantum_info),&count);
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
@@ -350,7 +350,7 @@ static MagickBooleanType WriteARTImage(const ImageInfo *image_info,Image *image)
     count=WriteBlob(image,length,pixels);
     if (count != (ssize_t) length)
       ThrowWriterException(CorruptImageError,"UnableToWriteImageData");
-    count=WriteBlob(image,(size_t) (-(ssize_t) length) & 0x01,pixels);
+    (void) WriteBlob(image,(size_t) (-(ssize_t) length) & 0x01,pixels);
     status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) y,
       image->rows);
     if (status == MagickFalse)

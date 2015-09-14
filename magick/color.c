@@ -1199,8 +1199,12 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
       (pixel->colorspace == HSVColorspace) ||
       (pixel->colorspace == HWBColorspace))
     {
-      (void) FormatLocaleString(component,MaxTextExtent,"%.*g%%",
-        GetMagickPrecision(),(100.0*QuantumScale*color));
+      if (channel == RedChannel)
+        (void) FormatLocaleString(component,MaxTextExtent,"%.*g",
+          GetMagickPrecision(),(360.0*QuantumScale*color));
+      else
+        (void) FormatLocaleString(component,MaxTextExtent,"%.*g%%",
+          GetMagickPrecision(),(100.0*QuantumScale*color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
@@ -1526,7 +1530,7 @@ MagickExport void GetColorTuple(const MagickPixelPacket *pixel,
       ConcatentateHexColorComponent(pixel,BlueChannel,tuple);
       if (pixel->colorspace == CMYKColorspace)
         ConcatentateHexColorComponent(pixel,IndexChannel,tuple);
-      if ((pixel->matte != MagickFalse) && (pixel->opacity != OpaqueOpacity))
+      if (pixel->matte != MagickFalse)
         ConcatentateHexColorComponent(pixel,OpacityChannel,tuple);
       return;
     }
@@ -1663,8 +1667,6 @@ MagickExport MagickBooleanType IsColorSimilar(const Image *image,
     distance,
     scale;
 
-  if ((image->fuzz == 0.0) && (image->matte == MagickFalse))
-    return(IsColorEqual(p,q));
   fuzz=(double) MagickMax(image->fuzz,(MagickRealType) MagickSQ1_2);
   fuzz*=fuzz;
   scale=1.0;
@@ -1985,7 +1987,7 @@ MagickExport MagickBooleanType IsMagickColorSimilar(const MagickPixelPacket *p,
         scale=(QuantumScale*GetPixelAlpha(p));
       if (q->matte != MagickFalse)
         scale*=(QuantumScale*GetPixelAlpha(q));
-      if ( scale <= MagickEpsilon )
+      if (scale <= MagickEpsilon)
         return(MagickTrue);
     }
   /*
@@ -2014,7 +2016,7 @@ MagickExport MagickBooleanType IsMagickColorSimilar(const MagickPixelPacket *p,
         angle of 'S'/'W' length with 'L'/'B' forming appropriate cones.  In
         other words this is a hack - Anthony
       */
-      if (fabs((double) pixel) > (QuantumRange/2.))
+      if (fabs((double) pixel) > (QuantumRange/2.0))
         pixel-=QuantumRange;
       pixel*=2.0;
     }
@@ -2080,7 +2082,7 @@ MagickExport MagickBooleanType IsOpacitySimilar(const Image *image,
   fuzz*=fuzz;
   pixel=(MagickRealType) GetPixelOpacity(p)-(MagickRealType) GetPixelOpacity(q);
   distance=pixel*pixel;
-  if (distance > (fuzz*fuzz))
+  if (distance > fuzz)
     return(MagickFalse);
   return(MagickTrue);
 }
@@ -2814,10 +2816,6 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
               PixelPacket
                 pixel;
 
-              scale=1.0/360.0;
-              if ((flags & PercentValue) != 0)
-                scale=1.0/100.0;
-              geometry_info.rho*=360.0*scale;
               scale=1.0/255.0;
               if ((flags & PercentValue) != 0)
                 scale=1.0/100.0;

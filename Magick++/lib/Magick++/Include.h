@@ -363,7 +363,10 @@ namespace Magick
 
   // Command options
   using MagickCore::CommandOption;
+  using MagickCore::MagickDirectionOptions;
+  using MagickCore::MagickGravityOptions;
   using MagickCore::MagickKernelOptions;
+  using MagickCore::MagickStyleOptions;
 
   // Composition operations
   using MagickCore::CompositeOperator;
@@ -758,6 +761,14 @@ namespace Magick
   using MagickCore::AccelerateEvent;
   using MagickCore::AllEvents;
 
+  // Magick functions
+  using MagickCore::MagickFunction;
+  using MagickCore::UndefinedFunction;
+  using MagickCore::ArcsinFunction;
+  using MagickCore::ArctanFunction;
+  using MagickCore::PolynomialFunction;
+  using MagickCore::SinusoidFunction;
+
   // Metric types
   using MagickCore::MetricType;
   using MagickCore::UndefinedMetric;
@@ -1052,6 +1063,7 @@ namespace Magick
   using MagickCore::CoderError;
   using MagickCore::CoderFatalError;
   using MagickCore::CoderWarning;
+  using MagickCore::CopyImagePixels;
   using MagickCore::ColorDecisionListImage;
   using MagickCore::ColorizeImage;
   using MagickCore::ColorMatrixImage;
@@ -1284,6 +1296,7 @@ namespace Magick
   using MagickCore::IsEventLogging;
   using MagickCore::IsGeometry;
   using MagickCore::IsImagesEqual;
+  using MagickCore::IsOpaqueImage;
   using MagickCore::KernelInfo;
   using MagickCore::KuwaharaImage;
   using MagickCore::LessValue;
@@ -1326,6 +1339,7 @@ namespace Magick
   using MagickCore::NoiseType;
   using MagickCore::NormalizeImage;
   using MagickCore::NoValue;
+  using MagickCore::OffsetInfo;
   using MagickCore::OilPaintImage;
   using MagickCore::OpaquePaintImage;
   using MagickCore::OrderedPosterizeImage;

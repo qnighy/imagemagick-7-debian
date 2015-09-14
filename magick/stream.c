@@ -534,7 +534,7 @@ MagickExport const void *GetStreamInfoClientData(StreamInfo *stream_info)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   G e t  V i r t u a l P i x e l s F r o m S t r e a m                      %
++   G e t V i r t u a l P i x e l s F r o m S t r e a m                       %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -957,8 +957,8 @@ MagickExport Image *ReadStream(const ImageInfo *image_info,StreamHandler stream,
   read_info->cache=AcquirePixelCache(0);
   GetPixelCacheMethods(&cache_methods);
   cache_methods.get_virtual_pixel_handler=GetVirtualPixelStream;
-  cache_methods.get_virtual_indexes_from_handler=GetVirtualIndexesFromStream;
   cache_methods.get_virtual_pixels_handler=GetVirtualPixelsStream;
+  cache_methods.get_virtual_indexes_from_handler=GetVirtualIndexesFromStream;
   cache_methods.get_authentic_pixels_handler=GetAuthenticPixelsStream;
   cache_methods.queue_authentic_pixels_handler=QueueAuthenticPixelsStream;
   cache_methods.sync_authentic_pixels_handler=SyncAuthenticPixelsStream;
@@ -2004,7 +2004,8 @@ static MagickBooleanType StreamImagePixels(const StreamInfo *stream_info,
             break;
           for (x=0; x < (ssize_t) GetImageExtent(image); x++)
           {
-            *q++=(unsigned int) ScaleQuantumToLong(ClampToQuantum(GetPixelIntensity(image,p)));
+            *q++=(unsigned int) ScaleQuantumToLong(ClampToQuantum(
+              GetPixelIntensity(image,p)));
             p++;
           }
           break;
@@ -2103,7 +2104,8 @@ static MagickBooleanType StreamImagePixels(const StreamInfo *stream_info,
             }
             case IndexQuantum:
             {
-              *q=(unsigned int) ScaleQuantumToLong(ClampToQuantum(GetPixelIntensity(image,p)));
+              *q=(unsigned int) ScaleQuantumToLong(ClampToQuantum(
+                GetPixelIntensity(image,p)));
               break;
             }
             default:
@@ -2483,7 +2485,7 @@ static MagickBooleanType StreamImagePixels(const StreamInfo *stream_info,
       if (LocaleCompare(stream_info->map,"BGRP") == 0)
         {
           p=GetAuthenticPixelQueue(image);
-            if (p == (const PixelPacket *) NULL)
+          if (p == (const PixelPacket *) NULL)
             break;
           for (x=0; x < (ssize_t) GetImageExtent(image); x++)
           {
@@ -2502,7 +2504,8 @@ static MagickBooleanType StreamImagePixels(const StreamInfo *stream_info,
             break;
           for (x=0; x < (ssize_t) GetImageExtent(image); x++)
           {
-            *q++=ScaleQuantumToShort(ClampToQuantum(GetPixelIntensity(image,p)));
+            *q++=ScaleQuantumToShort(ClampToQuantum(GetPixelIntensity(image,
+              p)));
             p++;
           }
           break;
@@ -2598,7 +2601,8 @@ static MagickBooleanType StreamImagePixels(const StreamInfo *stream_info,
             }
             case IndexQuantum:
             {
-              *q=ScaleQuantumToShort(ClampToQuantum(GetPixelIntensity(image,p)));
+              *q=ScaleQuantumToShort(ClampToQuantum(GetPixelIntensity(image,
+                p)));
               break;
             }
             default:

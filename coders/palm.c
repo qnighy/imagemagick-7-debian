@@ -985,11 +985,11 @@ static MagickBooleanType WritePALMImage(const ImageInfo *image_info,
     for (cc=(GetBlobSize(image)) % 4; cc > 0; cc--)
       (void) WriteBlobByte(image,0);
     /* write nextDepthOffset and return to end of image */
-    offset=SeekBlob(image,currentOffset+10,SEEK_SET);
+    (void) SeekBlob(image,currentOffset+10,SEEK_SET);
     nextDepthOffset=(size_t) ((GetBlobSize(image)-currentOffset)/4);
     (void) WriteBlobMSBShort(image,(unsigned short) nextDepthOffset);
     currentOffset=(MagickOffsetType) GetBlobSize(image);
-    offset=SeekBlob(image,currentOffset,SEEK_SET);
+    (void) SeekBlob(image,currentOffset,SEEK_SET);
     image=SyncNextImageInList(image);
     status=SetImageProgress(image,SaveImagesTag,scene++,
       GetImageListLength(image));

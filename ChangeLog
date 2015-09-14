@@ -1,4 +1,172 @@
-2014-04-09  6.9.0-2 Glenn Randers-Pehrson <glennrp@image...>
+2015-09-12  6.9.2-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.2-1, GIT revision 10201:5879612:20150913.
+
+2015-09-13  6.9.2-1 Dirk Lemstra <dirk@lem.....org>
+  * Preserving image origin in TGA files (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=28310).
+
+2015-08-15  6.9.2-1 Cristy  <quetzlzacatenango@image...>
+  * Support color compliance for TXT format (e.g. -define txt:compliance=css)
+    (bug report from Anthony).
+  * The first argument of a hsl() color is integer, not percentage (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=26072).
+  * Limit -fx recursive to avoid stack overflow (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28200).
+  * Support inline images with data URLS.
+  * Report progress less often (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28299).
+  * Don't set image colorspace to gray for -alpha copy option.
+  * Fixed a possible memory leak associated with the -sampling-factor option.
+  * GetImageType() no longer has side-effects to match behavior of IMv7.
+
+2015-08-15  6.9.2-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.2-0, GIT revision 10143:3534f6d:20150815.
+
+2015-08-10  6.9.2-0 Cristy  <quetzlzacatenango@image...>
+  * Swap pixels for -spread command-line option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=28043).
+  * fx logical operations short circuit (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28179).
+  * Type cast intensity variable (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28182).
+  * Fix ModulusAdd & ModulusSubstract for HDRI compositing (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28186).
+
+2015-07-25  6.9.2-0 Dirk Lemstra <dirk@lem.....org>
+  * Added "-set colorspace:auto-grayscale=false" that will prevent automatic
+    conversion to grayscale inside coders that support grayscale.
+  * Fixed -list weight and the options for -weight.
+  * Added fontFamily, fontStyle, fontWeight and textUnderColor to the Image
+    class of Magick++.
+  * Fixed reading Photoshop layers of LSB TIFF files (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=28045).
+  * Fixed memory leak in font cache under Windows (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=6&t=28191).
+
+2015-07-25  6.9.1-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.1-10, SVN revision 19269.
+
+2015-07-20  6.9.1-10 Glenn Randers-Pehrson <glennrp@image...>
+  * coders/magick.c: added "-define h:format=FMT" and
+    "-define magick:format=FMT" options. FMT can be any output format
+    supported by ImageMagick except "H" or "MAGICK". If this define is
+    omitted, the encoder uses GIF by default for pseudoclass images and
+    PNM for directclass images, as previously.  Made "MAGICK" (read-write)
+    and "H" (write-only) visible in the format list.
+
+2015-07-18  6.9.1-10 Dirk lemstra <dirk@lem.....org>
+  * Removed incorrect EOF check in the DDS reader (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28065).
+
+2015-07-18  6.9.1-10 Cristy  <quetzlzacatenango@image...>
+  * Fixed undefined behaviors (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28067).
+  * Return exception message for unknown image properties.
+  * Color shift removed when reading transparent gray images (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28081)
+
+2015-07-18  6.9.1-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.1-9, SVN revision 19200.
+
+2015-07-12  6.9.1-9 Dirk Lemstra <dirk@lem.....org>
+  * Fixed issue with radial gradient in MVG (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=27995).
+
+2015-07-11  6.9.1-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.1-8, SVN revision 19167.
+
+2015-06-25  6.9.1-8 Cristy  <quetzlzacatenango@image...>
+  * Correct install location of the Magick++ headers (reference
+    https://github.com/ImageMagick/ImageMagick/pull/17/commits).
+  * Different gif cropping behavior between versions (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28013).
+  * Cannot read properly simple psd file (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28002).
+
+2015-07-04  6.9.1-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.1-7, SVN revision 19121.
+
+2015-06-27  6.9.1-7 Eric Dalquist
+  * Fixed and escaped output of the json coder. (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&p=27894).
+
+2015-06-25  6.9.1-7 Cristy  <quetzlzacatenango@image...>
+  * Support BPG image format (respects -quality option).
+  * A bordered transparent image now remains transparent (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=5&t=27937).
+  * The -update option behavior restored (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=27939).
+
+2015-06-13  6.9.1-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.1-6, SVN revision 18945.
+
+2015-06-14  6.9.1-6 Cristy  <quetzlzacatenango@image...>
+  * Cache cloning on disk optimized with sendfile() (if available).
+  * Add an additional check for end-of-file for the RLE coder (reference
+    http://www.imagemagick.org/discourse-server/viewforum.php?f=3&t=27870).
+  * Respect resource limits in AVS coder.
+
+2015-06-13  6.9.1-6 Glenn Randers-Pehrson <glennrp@image...>
+  * Reverted change to 6.9.1-3 that skipped palette-building.
+
+2015-06-13  6.9.1-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.1-5, SVN revision 18882.
+
+2015-06-03  6.9.1-5 Cristy  <quetzlzacatenango@image...>
+  * Use correct scale when interpretting alpha (e.g. rgba(0,0,0,1)).
+  * DrawGetVectorGraphics() now returns proper XML (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=27751).
+  * Support writing EXR files with different color types (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=27759).
+  * Prefer PKG_CHECK_MODULES() when searching for delegate libraries.
+  * Throw exception if frame option bevel exceeds to the image width / height.
+  * Resolve undefined behaviors (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=27811).
+
+2015-06-01  6.9.1-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.1-4, SVN revision 18697.
+
+2015-06-01  6.9.1-4 Cristy  <quetzlzacatenango@image...>
+  * Support 'restrict' keyword under Windows.
+
+2015-05-25  6.9.1-4 Dirk Lemstra <dirk@lem.....org>
+  * Added support for reading a user supplied layer mask in PSD files.
+  * Added support for reading photoshop layers in TIFF files.
+
+2015-05-24  6.9.1-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.1-3, SVN revision 18623.
+
+2015-05-03  6.9.1-3 Dirk Lemstra <dirk@lem.....org>
+  * Fixed transparency issue with 16-bit tga files (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=27469).
+  * Fixed writing label and comment in tiff images (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=25516).
+  * Jpeg images no longer have pixels per inch as a default value for density
+    units when the density is not set (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=27589).
+  * Added support for setting the font color with -fill to the pango coder.
+
+2015-05-03  6.9.1-3 Glenn Randers-Pehrson <glennrp@image...>
+  * Fixed bug with "-define png:format=x" in png.c, introduced in version
+    6.8.9-0, that caused the define to be ignored.
+  * Replaced some dead code in ReadJNGImage with an assert().
+  * Avoid palette-building when writing a grayscale PNG (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=27580).
+
+2015-04-20  6.9.1-3 Cristy  <quetzlzacatenango@image...>
+  * Support -define compose:clamp=false option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=26946).
+  * Don't extend any user supplied image buffer in SeekBlob() (bug report
+    from a.chernij@corp...).
+  * Improved reproducible builds (reference
+    https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=783933).
+  * Draw a rectangle of width & height of 1 (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=24874).
+
+2015-04-19  6.9.1-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.1-2, SVN revision 18429.
+
+2015-04-09  6.9.1-2 Glenn Randers-Pehrson <glennrp@image...>
   * Avoid using a NULL alpha_image or color_image in the JNG decoder.
 
 2015-04-07  6.9.1-2 Cristy  <quetzlzacatenango@image...>
@@ -10,7 +178,7 @@
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=27369).
 
 2015-04-06  6.9.1-2 Dirk Lemstra <dirk@lem.....org>
-  * Reduce draw epsilon to increate mathematical stability.
+  * Reduce draw epsilon to increase mathematical stability.
   * Fixed UTF8 issue when determining the current working directory
     on Windows (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=27295).
@@ -955,6 +1123,8 @@
     user can specify a newline in the formatting expression.
   * The -level option is no longer returning a darkened image (reference
     http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=23479).
+  * Identify SVG image as "SVG" (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=27654).
 
 2013-05-20  6.8.5-7 Cristy  <quetzlzacatenango@image...>
   * New version 6.8.5-7, SVN revision 12310.

@@ -308,7 +308,6 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
   fits_info.bits_per_pixel=8;
   fits_info.columns=1;
   fits_info.rows=1;
-  fits_info.rows=1;
   fits_info.number_planes=1;
   fits_info.min_data=0.0;
   fits_info.max_data=0.0;
@@ -558,7 +557,7 @@ ModuleExport size_t RegisterFITSImage(void)
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Flexible Image Transport System");
-  entry->module=ConstantString("FTS");
+  entry->module=ConstantString("FITS");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

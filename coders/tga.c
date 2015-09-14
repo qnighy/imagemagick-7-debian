@@ -40,6 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/artifact.h"
 #include "magick/attribute.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
@@ -58,6 +59,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/option.h"
 #include "magick/pixel-accessor.h"
 #include "magick/property.h"
 #include "magick/quantum-private.h"
@@ -247,14 +249,10 @@ static Image *ReadTGAImage(const ImageInfo *image_info,
   if ((tga_info.image_type != TGAColormap) &&
       (tga_info.image_type != TGARLEColormap))
     image->depth=(size_t) ((tga_info.bits_per_pixel <= 8) ? 8 :
-      (tga_info.bits_per_pixel <= 16) ? 5 :
-      (tga_info.bits_per_pixel == 24) ? 8 :
-      (tga_info.bits_per_pixel == 32) ? 8 : 8);
+      (tga_info.bits_per_pixel <= 16) ? 5 : 8);
   else
     image->depth=(size_t) ((tga_info.colormap_size <= 8) ? 8 :
-      (tga_info.colormap_size <= 16) ? 5 :
-      (tga_info.colormap_size == 24) ? 8 :
-      (tga_info.colormap_size == 32) ? 8 : 8);
+      (tga_info.colormap_size <= 16) ? 5 : 8);
   if ((tga_info.image_type == TGAColormap) ||
       (tga_info.image_type == TGAMonochrome) ||
       (tga_info.image_type == TGARLEColormap) ||
@@ -262,7 +260,8 @@ static Image *ReadTGAImage(const ImageInfo *image_info,
     image->storage_class=PseudoClass;
   image->compression=NoCompression;
   if ((tga_info.image_type == TGARLEColormap) ||
-      (tga_info.image_type == TGARLEMonochrome))
+      (tga_info.image_type == TGARLEMonochrome) ||
+      (tga_info.image_type == TGARLERGB))
     image->compression=RLECompression;
   if (image->storage_class == PseudoClass)
     {
@@ -297,10 +296,24 @@ static Image *ReadTGAImage(const ImageInfo *image_info,
           sizeof(*comment));
       if (comment == (char *) NULL)
         ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-      count=ReadBlob(image,tga_info.id_length,(unsigned char *) comment);
+      (void) ReadBlob(image,tga_info.id_length,(unsigned char *) comment);
       comment[tga_info.id_length]='\0';
       (void) SetImageProperty(image,"comment",comment);
       comment=DestroyString(comment);
+    }
+  if (tga_info.attributes & (1UL << 4))
+    {
+      if (tga_info.attributes & (1UL << 5))
+        SetImageArtifact(image,"tga:image-origin","TopRight");
+      else
+        SetImageArtifact(image,"tga:image-origin","BottomRight");
+    }
+  else
+    {
+      if (tga_info.attributes & (1UL << 5))
+        SetImageArtifact(image,"tga:image-origin","TopLeft");
+      else
+        SetImageArtifact(image,"tga:image-origin","BottomLeft");
     }
   if (image_info->ping != MagickFalse)
     {
@@ -320,6 +333,8 @@ static Image *ReadTGAImage(const ImageInfo *image_info,
       /*
         Read TGA raster colormap.
       */
+      if (image->colors < tga_info.colormap_index)
+        image->colors=tga_info.colormap_index;
       if (AcquireImageColormap(image,image->colors) == MagickFalse)
         ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
       for (i=0; i < (ssize_t) tga_info.colormap_index; i++)
@@ -464,8 +479,8 @@ static Image *ReadTGAImage(const ImageInfo *image_info,
               (1UL*(j & 0xe0) >> 5),range);
             pixel.blue=ScaleAnyToQuantum(1UL*(j & 0x1f),range);
             if (image->matte != MagickFalse)
-              pixel.opacity=(k & 0x80) == 0 ? (Quantum) OpaqueOpacity :
-                (Quantum) TransparentOpacity;
+              pixel.opacity=(k & 0x80) == 0 ? (Quantum) TransparentOpacity :
+                (Quantum) OpaqueOpacity;
             if (image->storage_class == PseudoClass)
               index=ConstrainColormapIndex(image,((size_t) k << 8)+j);
             break;
@@ -508,10 +523,12 @@ static Image *ReadTGAImage(const ImageInfo *image_info,
         SetPixelOpacity(q,pixel.opacity);
       q++;
     }
-    if (((tga_info.attributes & 0xc0) >> 6) == 4)
-      offset+=4;
-    else
-      if (((tga_info.attributes & 0xc0) >> 6) == 2)
+    /*
+      if (((unsigned char) (tga_info.attributes & 0xc0) >> 6) == 4)
+        offset+=4;
+      else
+    */
+      if (((unsigned char) (tga_info.attributes & 0xc0) >> 6) == 2)
         offset+=2;
       else
         offset++;
@@ -671,8 +688,8 @@ static inline void WriteTGAPixel(Image *image,TGAImageType image_type,
                 ((green & 0x07) << 5);
               (void) WriteBlobByte(image,value);
               value=(unsigned char) ((((image->matte != MagickFalse) && 
-                (GetPixelAlpha(p) < midpoint)) ? 80 : 0) | ((unsigned char)
-                ScaleQuantumToAny(GetPixelRed(p),range) << 2) |
+                ((double) GetPixelOpacity(p) < midpoint)) ? 0x80 : 0) |
+                ((unsigned char) ScaleQuantumToAny(GetPixelRed(p),range) << 2) |
                 ((green & 0x18) >> 3));
               (void) WriteBlobByte(image,value);
           }
@@ -777,7 +794,11 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
         */
         tga_info.image_type=compression == RLECompression ? TGARLERGB : TGARGB;
         if (image_info->depth == 5)
-          tga_info.bits_per_pixel=16;
+          {
+            tga_info.bits_per_pixel=16;
+            if (image->matte != MagickFalse)
+              tga_info.attributes=1;  /* # of alpha bits */
+          }
         else
           {
             tga_info.bits_per_pixel=24;
@@ -802,6 +823,19 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
         else
           tga_info.colormap_size=24;
       }
+  value=GetImageArtifact(image,"tga:image-origin");
+  if (value != (const char *) NULL)
+    {
+      OrientationType
+        origin;
+
+      origin=(OrientationType) ParseCommandOption(MagickOrientationOptions,
+        MagickFalse,value);
+      if (origin == BottomRightOrientation || origin == TopRightOrientation)
+        tga_info.attributes|=(1UL << 4);
+      if (origin == TopLeftOrientation || origin == TopRightOrientation)
+        tga_info.attributes|=(1UL << 5);
+    }
   /*
     Write TGA header.
   */
@@ -843,7 +877,7 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
             *q++=((unsigned char) ScaleQuantumToAny(image->colormap[i].blue,
               range)) | ((green & 0x07) << 5);
             *q++=(((image->matte != MagickFalse) && (
-              (double) image->colormap[i].opacity > midpoint)) ? 80 : 0) |
+              (double) image->colormap[i].opacity < midpoint)) ? 0x80 : 0) |
               ((unsigned char) ScaleQuantumToAny(image->colormap[i].red,
               range) << 2) | ((green & 0x18) >> 3);
           }

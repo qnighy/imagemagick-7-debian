@@ -1208,7 +1208,41 @@ WandExport ClipPathUnits DrawGetClipUnits(const DrawingWand *wand)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   return(CurrentContext->clip_units);
 }
-
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   D r a w G e t D e n s i t y                                               %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  DrawGetDensity() obtains the vertical and horizontal resolution. The value
+%  returned must be deallocated by the user when it is no longer needed.
+%
+%  The format of the DrawGetDensity method is:
+%
+%      char *DrawGetDensity(const DrawingWand *wand)
+%
+%  A description of each parameter follows:
+%
+%    o wand: the drawing wand.
+%
+*/
+WandExport char *DrawGetDensity(const DrawingWand *wand)
+{
+  assert(wand != (const DrawingWand *) NULL);
+  assert(wand->signature == MagickSignature);
+  if (wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  if (CurrentContext->density != (char *) NULL)
+    return((char *) AcquireString(CurrentContext->density));
+  return((char *) NULL);
+}
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2376,7 +2410,8 @@ WandExport char *DrawGetVectorGraphics(DrawingWand *wand)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   xml_info=NewXMLTreeTag("drawing-wand");
   if (xml_info == (XMLTreeInfo *) NULL)
-    return(char *) NULL;
+    return((char *) NULL);
+  (void) SetXMLTreeContent(xml_info," ");
   GetMagickPixelPacket(wand->image,&pixel);
   child=AddChildToXMLTree(xml_info,"clip-path",0);
   if (child != (XMLTreeInfo *) NULL)
@@ -2385,14 +2420,16 @@ WandExport char *DrawGetVectorGraphics(DrawingWand *wand)
   if (child != (XMLTreeInfo *) NULL)
     {
       (void) CopyMagickString(value,CommandOptionToMnemonic(
-        MagickClipPathOptions,(ssize_t) CurrentContext->clip_units),MaxTextExtent);
+        MagickClipPathOptions,(ssize_t) CurrentContext->clip_units),
+        MaxTextExtent);
       (void) SetXMLTreeContent(child,value);
     }
   child=AddChildToXMLTree(xml_info,"decorate",0);
   if (child != (XMLTreeInfo *) NULL)
     {
       (void) CopyMagickString(value,CommandOptionToMnemonic(
-        MagickDecorateOptions,(ssize_t) CurrentContext->decorate),MaxTextExtent);
+        MagickDecorateOptions,(ssize_t) CurrentContext->decorate),
+        MaxTextExtent);
       (void) SetXMLTreeContent(child,value);
     }
   child=AddChildToXMLTree(xml_info,"encoding",0);
@@ -2461,8 +2498,8 @@ WandExport char *DrawGetVectorGraphics(DrawingWand *wand)
   child=AddChildToXMLTree(xml_info,"gravity",0);
   if (child != (XMLTreeInfo *) NULL)
     {
-      (void) CopyMagickString(value,CommandOptionToMnemonic(MagickGravityOptions,
-        (ssize_t) CurrentContext->gravity),MaxTextExtent);
+      (void) CopyMagickString(value,CommandOptionToMnemonic(
+        MagickGravityOptions,(ssize_t) CurrentContext->gravity),MaxTextExtent);
       (void) SetXMLTreeContent(child,value);
     }
   child=AddChildToXMLTree(xml_info,"stroke",0);
@@ -2512,8 +2549,8 @@ WandExport char *DrawGetVectorGraphics(DrawingWand *wand)
   child=AddChildToXMLTree(xml_info,"stroke-linecap",0);
   if (child != (XMLTreeInfo *) NULL)
     {
-      (void) CopyMagickString(value,CommandOptionToMnemonic(MagickLineCapOptions,
-        (ssize_t) CurrentContext->linecap),MaxTextExtent);
+      (void) CopyMagickString(value,CommandOptionToMnemonic(
+        MagickLineCapOptions,(ssize_t) CurrentContext->linecap),MaxTextExtent);
       (void) SetXMLTreeContent(child,value);
     }
   child=AddChildToXMLTree(xml_info,"stroke-linejoin",0);
@@ -4607,7 +4644,50 @@ WandExport void DrawSetClipUnits(DrawingWand *wand,
         MagickClipPathOptions,(ssize_t) clip_units));
     }
 }
-
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   D r a w S e t D e n s i t y                                               %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  DrawSetDensity() sets the vertical and horizontal resolution.
+%
+%  The format of the DrawSetDensity method is:
+%
+%      MagickBooleanType DrawSetDensity(DrawingWand *wand,
+%        const char *density)
+%
+%  A description of each parameter follows:
+%
+%    o wand: the drawing wand.
+%
+%    o density: the vertical and horizontal resolution.
+%
+*/
+WandExport MagickBooleanType DrawSetDensity(DrawingWand *wand,
+  const char *density)
+{
+  if (wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",density);
+  assert(wand != (DrawingWand *) NULL);
+  assert(wand->signature == MagickSignature);
+  assert(density != (const char *) NULL);
+  if ((CurrentContext->density == (const char *) NULL) ||
+      (wand->filter_off != MagickFalse) ||
+      (LocaleCompare(CurrentContext->density,density) != 0))
+    {
+      (void) CloneString(&CurrentContext->density,density);
+      (void) MvgPrintf(wand,"density '%s'\n",density);
+    }
+  return(MagickTrue);
+}
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -6367,7 +6447,15 @@ WandExport MagickBooleanType DrawSetVectorGraphics(DrawingWand *wand,
     {
       value=GetXMLTreeContent(child);
       if (value != (const char *) NULL)
-        CurrentContext->stroke_width=StringToDouble(value,(char **) NULL);
+        {
+          ssize_t
+            weight;
+
+          weight=ParseCommandOption(MagickWeightOptions,MagickFalse,value);
+          if (weight == -1)
+            weight=StringToUnsignedLong(value);
+          CurrentContext->stroke_width=(size_t) weight;
+        }
     }
   child=GetXMLTreeChild(xml_info,"text-align");
   if (child != (XMLTreeInfo *) NULL)

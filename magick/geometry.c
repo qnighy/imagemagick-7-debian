@@ -926,7 +926,7 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
         break;
       }
       default:
-        return(flags);
+        return(NoValue);
     }
   }
   /*
@@ -938,7 +938,7 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
   q=p;
   value=StringToDouble(p,&q);
   if (LocaleNCompare(p,"0x",2) == 0)
-    value=(double) strtol(p,&q,10);
+    (void) strtol(p,&q,10);
   c=(int) ((unsigned char) *q);
   if ((c == 215) || (*q == 'x') || (*q == 'X') || (*q == ',') ||
       (*q == '/') || (*q == ':') || (*q =='\0'))
@@ -991,17 +991,17 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
       if ((*p == ',') || (*p == '/') || (*p == ':') )
         p++;
       while ((*p == '+') || (*p == '-'))
-        {
-          if (*p == '-')
-            flags^=XiNegative;  /* negate sign */
-          p++;
-        }
+      {
+        if (*p == '-')
+          flags^=XiNegative;  /* negate sign */
+        p++;
+      }
       q=p;
       value=StringToDouble(p,&p);
       if (p != q)
         {
           flags|=XiValue;
-          if ((flags&XiNegative) != 0)
+          if ((flags & XiNegative) != 0)
             value=(-value);
           geometry_info->xi=value;
         }
@@ -1026,7 +1026,7 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
           if (p != q)
             {
               flags|=PsiValue;
-              if ((flags&PsiNegative) != 0)
+              if ((flags & PsiNegative) != 0)
                 value=(-value);
               geometry_info->psi=value;
             }
@@ -1052,7 +1052,7 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
           if (p != q)
             {
               flags|=ChiValue;
-              if ((flags&ChiNegative) != 0)
+              if ((flags & ChiNegative) != 0)
                 value=(-value);
               geometry_info->chi=value;
             }
@@ -1375,8 +1375,8 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
       (void) ParseGeometry(geometry,&geometry_info);
       area=geometry_info.rho+sqrt(MagickEpsilon);
       distance=sqrt((double) former_width*former_height);
-      scale.x=former_width/(distance/sqrt(area));
-      scale.y=former_height/(distance/sqrt(area));
+      scale.x=(double) former_width/(distance/sqrt(area));
+      scale.y=(double) former_height/(distance/sqrt(area));
       if ((scale.x < (double) *width) || (scale.y < (double) *height))
         {
           *width=(unsigned long) (former_width/(distance/sqrt(area)));

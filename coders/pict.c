@@ -939,12 +939,6 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
-    status=SetImageExtent(image,image->columns,image->rows);
-    if (status == MagickFalse)
-      {
-        InheritException(exception,&image->exception);
-        return(DestroyImageList(image));
-      }
     if ((version == 1) || ((TellBlob(image) % 2) != 0))
       code=ReadBlobByte(image);
     if (version == 2)
@@ -982,6 +976,12 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
               break;
             image->columns=1UL*(frame.right-frame.left);
             image->rows=1UL*(frame.bottom-frame.top);
+            status=SetImageExtent(image,image->columns,image->rows);
+            if (status == MagickFalse)
+              {
+                InheritException(exception,&image->exception);
+                return(DestroyImageList(image));
+              }
             (void) SetImageBackgroundColor(image);
             break;
           }
@@ -1338,8 +1338,6 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             {
               case 0xe0:
               {
-                if (length == 0)
-                  break;
                 profile=BlobToStringInfo((const void *) NULL,length);
                 SetStringInfoDatum(profile,info);
                 status=SetImageProfile(image,"icc",profile);
@@ -1351,8 +1349,6 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
               }
               case 0x1f2:
               {
-                if (length == 0)
-                  break;
                 profile=BlobToStringInfo((const void *) NULL,length);
                 SetStringInfoDatum(profile,info);
                 status=SetImageProfile(image,"iptc",profile);
@@ -1373,8 +1369,6 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             /*
               Skip to next op code.
             */
-            if (code < 0)
-              break;
             if (codes[code].length == -1)
               (void) ReadBlobMSBShort(image);
             else
@@ -1654,6 +1648,7 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
   size_t
     bytes_per_line,
     count,
+    row_bytes,
     storage_class;
 
   ssize_t
@@ -1667,7 +1662,6 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
 
   unsigned short
     base_address,
-    row_bytes,
     transfer_mode;
 
   /*
@@ -1698,7 +1692,7 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
   source_rectangle=size_rectangle;
   destination_rectangle=size_rectangle;
   base_address=0xff;
-  row_bytes=(unsigned short) (image->columns | 0x8000);
+  row_bytes=image->columns;
   bounds.top=0;
   bounds.left=0;
   bounds.bottom=(short) image->rows;
@@ -1728,7 +1722,7 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
       pixmap.bits_per_pixel=32;
       pixmap.pack_type=0x04;
       transfer_mode=0x40;
-      row_bytes=(unsigned short) ((4*image->columns) | 0x8000);
+      row_bytes=4*image->columns;
     }
   /*
     Allocate memory.

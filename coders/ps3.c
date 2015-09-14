@@ -593,6 +593,7 @@ static MagickBooleanType WritePS3MaskImage(const ImageInfo *image_info,
       status=SerializeImageChannel(image_info,mask_image,&pixel_info,&length);
       if (status == MagickFalse)
         break;
+      pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
       status=ZLIBEncodeImage(image,length,pixels);
       pixel_info=RelinquishVirtualMemory(pixel_info);
       break;
@@ -1587,7 +1588,7 @@ static MagickBooleanType WritePS3Image(const ImageInfo *image_info,Image *image)
       "%%%%BeginData:%13ld %s Bytes\n",(long) length,
       compression == NoCompression ? "ASCII" : "BINARY");
     (void) WriteBlobString(image,buffer);
-    offset=SeekBlob(image,stop,SEEK_SET);
+    (void) SeekBlob(image,stop,SEEK_SET);
     (void) WriteBlobString(image,"%%EndData\n");
     /*
       End private dictionary if this an EPS.

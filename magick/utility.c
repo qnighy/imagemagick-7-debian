@@ -203,9 +203,8 @@ MagickExport MagickBooleanType AcquireUniqueSymbolicLink(const char *source,
       return(MagickFalse);
     }
   quantum=(size_t) MagickMaxBufferExtent;
-  if ((fstat(source_file,&attributes) == 0) && (attributes.st_size != 0))
-    quantum=(size_t) MagickMin((size_t) attributes.st_size,
-      MagickMaxBufferExtent);
+  if ((fstat(source_file,&attributes) == 0) && (attributes.st_size > 0))
+    quantum=(size_t) MagickMin(attributes.st_size,MagickMaxBufferExtent);
   buffer=(unsigned char *) AcquireQuantumMemory(quantum,sizeof(*buffer));
   if (buffer == (unsigned char *) NULL)
     {
@@ -346,7 +345,7 @@ MagickExport unsigned char *Base64Decode(const char *source,size_t *length)
   assert(source != (char *) NULL);
   assert(length != (size_t *) NULL);
   *length=0;
-  decode=(unsigned char *) AcquireQuantumMemory(strlen(source)/4+4,
+  decode=(unsigned char *) AcquireQuantumMemory((strlen(source)+3)/4,
     3*sizeof(*decode));
   if (decode == (unsigned char *) NULL)
     return((unsigned char *) NULL);
@@ -1834,9 +1833,8 @@ MagickPrivate MagickBooleanType ShredFile(const char *path)
     Shred the file.
   */
   quantum=(size_t) MagickMaxBufferExtent;
-  if ((fstat(file,&file_stats) == 0) && (file_stats.st_size != 0))
-    quantum=(size_t) MagickMin((MagickSizeType) file_stats.st_size,
-      MagickMaxBufferExtent);
+  if ((fstat(file,&file_stats) == 0) && (file_stats.st_size > 0))
+    quantum=(size_t) MagickMin(file_stats.st_size,MagickMaxBufferExtent);
   length=(MagickSizeType) file_stats.st_size;
   for (i=0; i < (ssize_t) StringToInteger(passes); i++)
   {

@@ -2098,20 +2098,15 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
           }
         if (LocaleCompare("font-weight",keyword) == 0)
           {
+            ssize_t
+              weight;
+
             GetMagickToken(q,&q,token);
-            graphic_context[n]->weight=StringToUnsignedLong(token);
-            if (LocaleCompare(token,"all") == 0)
-              graphic_context[n]->weight=0;
-            if (LocaleCompare(token,"bold") == 0)
-              graphic_context[n]->weight=700;
-            if (LocaleCompare(token,"bolder") == 0)
-              if (graphic_context[n]->weight <= 800)
-                graphic_context[n]->weight+=100;
-            if (LocaleCompare(token,"lighter") == 0)
-              if (graphic_context[n]->weight >= 100)
-                graphic_context[n]->weight-=100;
-            if (LocaleCompare(token,"normal") == 0)
-              graphic_context[n]->weight=400;
+            weight=ParseCommandOption(MagickWeightOptions,MagickFalse,
+              token);
+            if (weight == -1)
+              weight=StringToUnsignedLong(token);
+            graphic_context[n]->weight=(size_t) weight;
             break;
           }
         status=MagickFalse;
@@ -2374,6 +2369,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
                   graphic_context[n]->affine.ty;
                 (void) FormatLocaleString(key,MaxTextExtent,"%s",name);
                 (void) SetImageArtifact(image,key,token);
+                (void) FormatLocaleString(key,MaxTextExtent,"%s-type",name);
+                (void) SetImageArtifact(image,key,type);
                 (void) FormatLocaleString(key,MaxTextExtent,"%s-geometry",name);
                 (void) FormatLocaleString(geometry,MaxTextExtent,
                   "%gx%g%+.15g%+.15g",
@@ -2509,13 +2506,19 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
           }
         if (LocaleCompare("stop-color",keyword) == 0)
           {
+            GradientType
+              type;
+
             PixelPacket
               stop_color;
 
             GetMagickToken(q,&q,token);
             (void) QueryColorDatabase(token,&stop_color,&image->exception);
-            (void) GradientImage(image,LinearGradient,ReflectSpread,
-              &start_color,&stop_color);
+            type=LinearGradient;
+            if (draw_info->gradient.type == RadialGradient)
+              type=RadialGradient;
+            (void) GradientImage(image,type,PadSpread,&start_color,
+              &stop_color);
             start_color=stop_color;
             GetMagickToken(q,&q,token);
             break;
@@ -3433,11 +3436,12 @@ MagickExport MagickBooleanType DrawGradientImage(Image *image,
                 }
               else
                 {
-                  repeat=fmod(offset,gradient->radius);
+                  repeat=fmod(offset,(double) gradient->radius);
                   if (repeat < 0.0)
-                    repeat=gradient->radius-fmod(-repeat,gradient->radius);
+                    repeat=gradient->radius-fmod(-repeat,
+                      (double) gradient->radius);
                   else
-                    repeat=fmod(offset,gradient->radius);
+                    repeat=fmod(offset,(double) gradient->radius);
                   antialias=repeat+1.0 > gradient->radius ? MagickTrue :
                     MagickFalse;
                   offset=repeat/gradient->radius;
@@ -3521,7 +3525,8 @@ MagickExport MagickBooleanType DrawPatternPath(Image *image,
 
   const char
     *geometry,
-    *path;
+    *path,
+    *type;
 
   DrawInfo
     *clone_info;
@@ -3561,6 +3566,11 @@ MagickExport MagickBooleanType DrawPatternPath(Image *image,
   clone_info=CloneDrawInfo((ImageInfo *) NULL,draw_info);
   clone_info->fill_pattern=NewImageList();
   clone_info->stroke_pattern=NewImageList();
+  (void) FormatLocaleString(property,MaxTextExtent,"%s-type",name);
+  type=GetImageArtifact(image,property);
+  if (type != (const char *) NULL)
+    clone_info->gradient.type=(GradientType) ParseCommandOption(
+      MagickGradientOptions,MagickFalse,type);
   (void) CloneString(&clone_info->primitive,path);
   status=DrawImage(*pattern,clone_info);
   clone_info=DestroyDrawInfo(clone_info);
@@ -3845,8 +3855,8 @@ static MagickBooleanType DrawPolygonPrimitive(Image *image,
     bounds;
 
   ssize_t
-    start,
-    stop,
+    start_y,
+    stop_y,
     y;
 
   /*
@@ -3901,18 +3911,19 @@ RestoreMSCWarning
   status=MagickTrue;
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
-  if (primitive_info->coordinates == 1)
+  if ((primitive_info->coordinates == 1) ||
+      (polygon_info[0]->number_edges == 0))
     {
       /*
         Draw point.
       */
-      start=(ssize_t) ceil(bounds.y1-0.5);
-      stop=(ssize_t) floor(bounds.y2+0.5);
+      start_y=(ssize_t) ceil(bounds.y1-0.5);
+      stop_y=(ssize_t) floor(bounds.y2+0.5);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
         magick_threads(image,image,1,1)
 #endif
-      for (y=start; y <= stop; y++)
+      for (y=start_y; y <= stop_y; y++)
       {
         MagickBooleanType
           sync;
@@ -3924,26 +3935,26 @@ RestoreMSCWarning
           x;
 
         ssize_t
-          start,
-          stop;
+          start_x,
+          stop_x;
 
         if (status == MagickFalse)
           continue;
-        start=(ssize_t) ceil(bounds.x1-0.5);
-        stop=(ssize_t) floor(bounds.x2+0.5);
-        x=start;
-        q=GetCacheViewAuthenticPixels(image_view,x,y,(size_t) (stop-x+1),1,
+        start_x=(ssize_t) ceil(bounds.x1-0.5);
+        stop_x=(ssize_t) floor(bounds.x2+0.5);
+        x=start_x;
+        q=GetCacheViewAuthenticPixels(image_view,x,y,(size_t) (stop_x-x+1),1,
           exception);
         if (q == (PixelPacket *) NULL)
           {
             status=MagickFalse;
             continue;
           }
-        for ( ; x <= stop; x++)
+        for ( ; x <= stop_x; x++)
         {
           if ((x == (ssize_t) ceil(primitive_info->point.x-0.5)) &&
               (y == (ssize_t) ceil(primitive_info->point.y-0.5)))
-            (void) GetStrokeColor(draw_info,x,y,q);
+            (void) GetFillColor(draw_info,x-start_x,y-start_y,q);
           q++;
         }
         sync=SyncCacheViewAuthenticPixels(image_view,exception);
@@ -3962,13 +3973,13 @@ RestoreMSCWarning
   */
   if (image->matte == MagickFalse)
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
-  start=(ssize_t) ceil(bounds.y1-0.5);
-  stop=(ssize_t) floor(bounds.y2+0.5);
+  start_y=(ssize_t) ceil(bounds.y1-0.5);
+  stop_y=(ssize_t) floor(bounds.y2+0.5);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
     magick_threads(image,image,1,1)
 #endif
-  for (y=start; y <= stop; y++)
+  for (y=start_y; y <= stop_y; y++)
   {
     const int
       id = GetOpenMPThreadId();
@@ -3988,21 +3999,21 @@ RestoreMSCWarning
       x;
 
     ssize_t
-      start,
-      stop;
+      start_x,
+      stop_x;
 
     if (status == MagickFalse)
       continue;
-    start=(ssize_t) ceil(bounds.x1-0.5);
-    stop=(ssize_t) floor(bounds.x2+0.5);
-    q=GetCacheViewAuthenticPixels(image_view,start,y,(size_t) (stop-start+1),1,
+    start_x=(ssize_t) ceil(bounds.x1-0.5);
+    stop_x=(ssize_t) floor(bounds.x2+0.5);
+    q=GetCacheViewAuthenticPixels(image_view,start_x,y,(size_t) (stop_x-start_x+1),1,
       exception);
     if (q == (PixelPacket *) NULL)
       {
         status=MagickFalse;
         continue;
       }
-    for (x=start; x <= stop; x++)
+    for (x=start_x; x <= stop_x; x++)
     {
       /*
         Fill and/or stroke.
@@ -4014,12 +4025,12 @@ RestoreMSCWarning
           fill_opacity=fill_opacity > 0.25 ? 1.0 : 0.0;
           stroke_opacity=stroke_opacity > 0.25 ? 1.0 : 0.0;
         }
-      (void) GetFillColor(draw_info,x,y,&fill_color);
+      (void) GetFillColor(draw_info,x-start_x,y-start_y,&fill_color);
       fill_opacity=(double) (QuantumRange-fill_opacity*(QuantumRange-
         fill_color.opacity));
       MagickCompositeOver(&fill_color,(MagickRealType) fill_opacity,q,
         (MagickRealType) q->opacity,q);
-      (void) GetStrokeColor(draw_info,x,y,&stroke_color);
+      (void) GetStrokeColor(draw_info,x-start_x,y-start_y,&stroke_color);
       stroke_opacity=(double) (QuantumRange-stroke_opacity*(QuantumRange-
         stroke_color.opacity));
       MagickCompositeOver(&stroke_color,(MagickRealType) stroke_opacity,q,
@@ -4819,39 +4830,58 @@ MagickExport void GetDrawInfo(const ImageInfo *image_info,DrawInfo *draw_info)
     draw_info->server_name=AcquireString(clone_info->server_name);
   draw_info->render=MagickTrue;
   draw_info->debug=IsEventLogging();
-  option=GetImageOption(clone_info,"encoding");
-  if (option != (const char *) NULL)
-    (void) CloneString(&draw_info->encoding,option);
-  option=GetImageOption(clone_info,"kerning");
-  if (option != (const char *) NULL)
-    draw_info->kerning=StringToDouble(option,(char **) NULL);
-  option=GetImageOption(clone_info,"interline-spacing");
-  if (option != (const char *) NULL)
-    draw_info->interline_spacing=StringToDouble(option,(char **) NULL);
-  draw_info->direction=UndefinedDirection;
-  option=GetImageOption(clone_info,"interword-spacing");
-  if (option != (const char *) NULL)
-    draw_info->interword_spacing=StringToDouble(option,(char **) NULL);
   option=GetImageOption(clone_info,"direction");
   if (option != (const char *) NULL)
     draw_info->direction=(DirectionType) ParseCommandOption(
       MagickDirectionOptions,MagickFalse,option);
+  else
+    draw_info->direction=UndefinedDirection;
+  option=GetImageOption(clone_info,"encoding");
+  if (option != (const char *) NULL)
+    (void) CloneString(&draw_info->encoding,option);
+  option=GetImageOption(clone_info,"family");
+  if (option != (const char *) NULL)
+    (void) CloneString(&draw_info->family,option);
   option=GetImageOption(clone_info,"fill");
   if (option != (const char *) NULL)
     (void) QueryColorDatabase(option,&draw_info->fill,exception);
+  option=GetImageOption(clone_info,"gravity");
+  if (option != (const char *) NULL)
+    draw_info->gravity=(GravityType) ParseCommandOption(MagickGravityOptions,
+      MagickFalse,option);
+  option=GetImageOption(clone_info,"interline-spacing");
+  if (option != (const char *) NULL)
+    draw_info->interline_spacing=StringToDouble(option,(char **) NULL);
+  option=GetImageOption(clone_info,"interword-spacing");
+  if (option != (const char *) NULL)
+    draw_info->interword_spacing=StringToDouble(option,(char **) NULL);
+  option=GetImageOption(clone_info,"kerning");
+  if (option != (const char *) NULL)
+    draw_info->kerning=StringToDouble(option,(char **) NULL);
   option=GetImageOption(clone_info,"stroke");
   if (option != (const char *) NULL)
     (void) QueryColorDatabase(option,&draw_info->stroke,exception);
   option=GetImageOption(clone_info,"strokewidth");
   if (option != (const char *) NULL)
     draw_info->stroke_width=StringToDouble(option,(char **) NULL);
+  option=GetImageOption(clone_info,"style");
+  if (option != (const char *) NULL)
+    draw_info->style=(StyleType) ParseCommandOption(MagickStyleOptions,
+      MagickFalse,option);
   option=GetImageOption(clone_info,"undercolor");
   if (option != (const char *) NULL)
     (void) QueryColorDatabase(option,&draw_info->undercolor,exception);
-  option=GetImageOption(clone_info,"gravity");
+  option=GetImageOption(clone_info,"weight");
   if (option != (const char *) NULL)
-    draw_info->gravity=(GravityType) ParseCommandOption(MagickGravityOptions,
-      MagickFalse,option);
+    {
+      ssize_t
+        weight;
+
+      weight=ParseCommandOption(MagickWeightOptions,MagickFalse,option);
+      if (weight == -1)
+        weight=StringToUnsignedLong(option);
+      draw_info->weight=(size_t) weight;
+    }
   exception=DestroyExceptionInfo(exception);
   draw_info->signature=MagickSignature;
   clone_info=DestroyImageInfo(clone_info);

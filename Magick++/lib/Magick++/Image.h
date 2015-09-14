@@ -278,9 +278,22 @@ namespace Magick
     void font(const std::string &font_);
     std::string font(void) const;
 
+    // Font family
+    void fontFamily(const std::string &family_);
+    std::string fontFamily(void) const;
+
     // Font point size
     void fontPointsize(const double pointSize_);
     double fontPointsize(void) const;
+
+    // Font style
+    void fontStyle(const StyleType style_);
+    StyleType fontStyle(void) const;
+
+    // Font weight
+    void fontWeight(const size_t weight_);
+    size_t fontWeight(void) const;
+
 
     // Long image format description
     std::string format(void) const;
@@ -317,6 +330,10 @@ namespace Magick
     // IPTC profile (BLOB)
     void iptcProfile(const Blob &iptcProfile_);
     Blob iptcProfile(void) const;
+
+    // Returns true if none of the pixels in the image have an alpha value
+    // other than OpaqueAlpha (QuantumRange).
+    bool isOpaque(void) const;
 
     // Does object contain valid image?
     void isValid(const bool isValid_);
@@ -522,6 +539,10 @@ namespace Magick
     void textKerning(double kerning_);
     double textKerning(void) const;
 
+    // Text undercolor box
+    void textUnderColor(const Color &underColor_);
+    Color textUnderColor(void) const;
+
     // Tile name
     void tileName(const std::string &tileName_);
     std::string tileName(void) const;
@@ -694,6 +715,11 @@ namespace Magick
     void cannyEdge(const double radius_=0.0,const double sigma_=1.0,
       const double lowerPercent_=0.1,const double upperPercent_=0.3);
 
+    // Accepts a lightweight Color Correction Collection
+    // (CCC) file which solely contains one or more color corrections and
+    // applies the correction to the image.
+    void cdl(const std::string &cdl_);
+
     // Extract channel from image
     void channel(const ChannelType channel_);
 
@@ -727,11 +753,6 @@ namespace Magick
     // Chromaticity white point (e.g. x=0.3127, y=0.329)
     void chromaWhitePoint(const double x_,const double y_);
     void chromaWhitePoint(double *x_,double *y_) const;
-
-    // Accepts a lightweight Color Correction Collection
-    // (CCC) file which solely contains one or more color corrections and
-    // applies the correction to the image.
-    void cdl(const std::string &cdl_);
 
     // Set each pixel whose value is below zero to zero and any the
     // pixel whose value is above the quantum range to the quantum range (e.g.
@@ -813,6 +834,11 @@ namespace Magick
     //  order_ represents the number of columns and rows in the filter kernel.
     //  kernel_ is an array of doubles representing the convolution kernel.
     void convolve(const size_t order_,const double *kernel_);
+
+    // Copies pixels from the source image as defined by the geometry the
+    // destination image at the specified offset.
+    void copyPixels(const Image &source_,const Geometry &geometry_,
+      const Offset &offset_);
 
     // Crop image (subregion of original image)
     void crop(const Geometry &geometry_);
@@ -1197,9 +1223,16 @@ namespace Magick
     // Quantize image (reduce number of colors)
     void quantize(const bool measureError_=false);
 
+    // Apply a value with an arithmetic, relational, or logical operator.
     void quantumOperator(const ChannelType channel_,
        const MagickEvaluateOperator operator_,double rvalue_);
 
+    // Apply a value with an arithmetic, relational, or logical operator.
+    void quantumOperator(const ChannelType channel_,
+      const MagickFunction function_,const size_t number_parameters_,
+      const double *parameters_);
+
+    // Apply a value with an arithmetic, relational, or logical operator.
     void quantumOperator(const ::ssize_t x_,const ::ssize_t y_,
       const size_t columns_,const size_t rows_,const ChannelType channel_,
       const MagickEvaluateOperator operator_,const double rvalue_);
@@ -1372,6 +1405,9 @@ namespace Magick
 
     // Splice the background color into the image.
     void splice(const Geometry &geometry_);
+    void splice(const Geometry &geometry_,const Color &backgroundColor_);
+    void splice(const Geometry &geometry_,const Color &backgroundColor_,
+      const GravityType gravity_);
 
     // Spread pixels randomly within image by specified ammount
     void spread(const size_t amount_=3);

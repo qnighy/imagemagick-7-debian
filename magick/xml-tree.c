@@ -642,9 +642,8 @@ MagickPrivate char *FileToXML(const char *filename,const size_t extent)
       */
       offset=(MagickOffsetType) lseek(file,0,SEEK_SET);
       quantum=(size_t) MagickMaxBufferExtent;
-      if ((fstat(file,&file_stats) == 0) && (file_stats.st_size != 0))
-        quantum=(size_t) MagickMin((MagickSizeType) file_stats.st_size,
-          MagickMaxBufferExtent);
+      if ((fstat(file,&file_stats) == 0) && (file_stats.st_size > 0))
+        quantum=(size_t) MagickMin(file_stats.st_size,MagickMaxBufferExtent);
       xml=(char *) AcquireQuantumMemory(quantum,sizeof(*xml));
       for (i=0; xml != (char *) NULL; i+=count)
       {
@@ -677,7 +676,7 @@ MagickPrivate char *FileToXML(const char *filename,const size_t extent)
       xml[length]='\0';
       return(xml);
     }
-  length=(size_t) MagickMin((MagickSizeType) offset,extent);
+  length=(size_t) MagickMin(offset,extent);
   xml=(char *) NULL;
   if (~length >= (MaxTextExtent-1))
     xml=(char *) AcquireQuantumMemory(length+MaxTextExtent,sizeof(*xml));
@@ -697,8 +696,7 @@ MagickPrivate char *FileToXML(const char *filename,const size_t extent)
       (void) lseek(file,0,SEEK_SET);
       for (i=0; i < length; i+=count)
       {
-        count=read(file,xml+i,(size_t) MagickMin(length-i,(MagickSizeType)
-          SSIZE_MAX));
+        count=read(file,xml+i,(size_t) MagickMin(length-i,SSIZE_MAX));
         if (count <= 0)
           {
             count=0;
@@ -1664,12 +1662,12 @@ static void ParseProcessingInstructions(XMLTreeRoot *root,char *xml,
     j++;
   root->processing_instructions[i]=(char **) ResizeQuantumMemory(
     root->processing_instructions[i],(size_t) (j+3),
-    sizeof(*root->processing_instructions));
+    sizeof(**root->processing_instructions));
   if (root->processing_instructions[i] == (char **) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   root->processing_instructions[i][j+2]=(char *) ResizeQuantumMemory(
     root->processing_instructions[i][j+1],(size_t) (j+1),
-    sizeof(*root->processing_instructions));
+    sizeof(***root->processing_instructions));
   if (root->processing_instructions[i][j+2] == (char *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) CopyMagickString(root->processing_instructions[i][j+2]+j-1,
@@ -1851,7 +1849,7 @@ static MagickBooleanType ParseInternalDoctype(XMLTreeRoot *root,char *xml,
                     ThrowFatalException(ResourceLimitFatalError,
                       "MemoryAllocationFailed");
                   root->attributes[i]=(char **) AcquireQuantumMemory(2,
-                    sizeof(*root->attributes));
+                    sizeof(**root->attributes));
                   if (root->attributes[i] == (char **) NULL)
                     ThrowFatalException(ResourceLimitFatalError,
                       "MemoryAllocationFailed");
@@ -1861,7 +1859,7 @@ static MagickBooleanType ParseInternalDoctype(XMLTreeRoot *root,char *xml,
                 }
               for (j=1; root->attributes[i][j] != (char *) NULL; j+=3) ;
               root->attributes[i]=(char **) ResizeQuantumMemory(
-                root->attributes[i],(size_t) (j+4),sizeof(*root->attributes));
+                root->attributes[i],(size_t) (j+4),sizeof(**root->attributes));
               if (root->attributes[i] == (char **) NULL)
                 ThrowFatalException(ResourceLimitFatalError,
                   "MemoryAllocationFailed");

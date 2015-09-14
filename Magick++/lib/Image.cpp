@@ -734,13 +734,8 @@ off_t Magick::Image::fileSize(void) const
 
 void Magick::Image::fillColor(const Magick::Color &fillColor_)
 {
-  std::string
-    value;
-
   modifyImage();
   options()->fillColor(fillColor_);
-  value=fillColor_;
-  artifact("fill",value);
 }
 
 Magick::Color Magick::Image::fillColor(void) const
@@ -815,6 +810,18 @@ std::string Magick::Image::font(void) const
   return(constOptions()->font());
 }
 
+void Magick::Image::fontFamily(const std::string &family_)
+{
+  modifyImage();
+  options()->fontFamily(family_);
+}
+
+std::string Magick::Image::fontFamily(void) const
+{
+  return(constOptions()->fontFamily());
+}
+
+
 void Magick::Image::fontPointsize(const double pointSize_)
 {
   modifyImage();
@@ -841,6 +848,29 @@ std::string Magick::Image::format(void) const
   throwExceptionExplicit(CorruptImageWarning,"Unrecognized image magick type");
   return(std::string());
 }
+
+void Magick::Image::fontStyle(const StyleType pointSize_)
+{
+  modifyImage();
+  options()->fontStyle(pointSize_);
+}
+
+Magick::StyleType Magick::Image::fontStyle(void) const
+{
+  return(constOptions()->fontStyle());
+}
+
+void Magick::Image::fontWeight(const size_t weight_)
+{
+  modifyImage();
+  options()->fontWeight(weight_);
+}
+
+size_t Magick::Image::fontWeight(void) const
+{
+  return(constOptions()->fontWeight());
+}
+
 
 std::string Magick::Image::formatExpression(const std::string expression)
 {
@@ -963,6 +993,17 @@ Magick::Blob Magick::Image::iptcProfile(void) const
     return(Blob());
   return(Blob(GetStringInfoDatum(iptc_profile),GetStringInfoLength(
     iptc_profile)));
+}
+
+bool Magick::Image::isOpaque(void) const
+{
+  MagickBooleanType
+    result;
+
+  GetPPException;
+  result=IsOpaqueImage(constImage(),exceptionInfo);
+  ThrowImageException;
+  return(result != MagickFalse ? true : false);
 }
 
 void Magick::Image::isValid(const bool isValid_)
@@ -1590,6 +1631,17 @@ double Magick::Image::textKerning(void) const
   return(constOptions()->textKerning());
 }
 
+void Magick::Image::textUnderColor(const Color &underColor_)
+{
+  modifyImage();
+  options()->textUnderColor(underColor_);
+}
+
+Magick::Color Magick::Image::textUnderColor(void) const
+{
+  return(constOptions()->textUnderColor());
+}
+
 void Magick::Image::tileName(const std::string &tileName_)
 {
   modifyImage();
@@ -1971,7 +2023,6 @@ std::string Magick::Image::attribute(const std::string name_) const
 void Magick::Image::autoGamma(void)
 {
   modifyImage();
-  (void) SyncImageSettings(imageInfo(),image());
   (void) AutoGammaImage(image());
   throwImageException();
 }
@@ -1979,7 +2030,6 @@ void Magick::Image::autoGamma(void)
 void Magick::Image::autoGammaChannel(const ChannelType channel_)
 {
   modifyImage();
-  (void) SyncImageSettings(imageInfo(),image());
   (void) AutoGammaImageChannel(image(),channel_);
   throwImageException();
 }
@@ -1987,7 +2037,6 @@ void Magick::Image::autoGammaChannel(const ChannelType channel_)
 void Magick::Image::autoLevel(void)
 {
   modifyImage();
-  (void) SyncImageSettings(imageInfo(),image());
   (void) AutoLevelImage(image());
   throwImageException();
 }
@@ -1995,7 +2044,6 @@ void Magick::Image::autoLevel(void)
 void Magick::Image::autoLevelChannel(const ChannelType channel_)
 {
   modifyImage();
-  (void) SyncImageSettings(imageInfo(),image());
   (void) AutoLevelImageChannel(image(),channel_);
   throwImageException();
 }
@@ -2010,7 +2058,6 @@ void Magick::Image::autoOrient(void)
     return;
 
   GetPPException;
-  (void) SyncImageSettings(imageInfo(),image());
   newImage=AutoOrientImage(constImage(),image()->orientation,exceptionInfo);
   replaceImage(newImage);
   ThrowImageException;
@@ -2111,6 +2158,13 @@ void Magick::Image::cannyEdge(const double radius_,const double sigma_,
     upperPercent_,exceptionInfo);
   replaceImage(newImage);
   ThrowImageException;
+}
+
+void Magick::Image::cdl(const std::string &cdl_)
+{
+  modifyImage();
+  (void) ColorDecisionListImage(image(),cdl_.c_str());
+  throwImageException();
 }
 
 void Magick::Image::channel(const ChannelType channel_)
@@ -2214,13 +2268,6 @@ void Magick::Image::chromaWhitePoint(double *x_,double *y_) const
 {
   *x_=constImage()->chromaticity.white_point.x;
   *y_=constImage()->chromaticity.white_point.y;
-}
-
-void Magick::Image::cdl(const std::string &cdl_)
-{
-  modifyImage();
-  (void) ColorDecisionListImage(image(),cdl_.c_str());
-  throwImageException();
 }
 
 void Magick::Image::clamp(void)
@@ -2517,6 +2564,22 @@ void Magick::Image::convolve(const size_t order_,const double *kernel_)
   replaceImage(newImage);
   ThrowImageException;
 }
+
+void Magick::Image::copyPixels(const Image &source_,const Geometry &geometry_,
+  const Offset &offset_)
+{
+  const OffsetInfo
+    offset=offset_;
+
+  const RectangleInfo
+    geometry=geometry_;
+
+  GetPPException;
+  (void) CopyImagePixels(image(),source_.constImage(),&geometry,&offset,
+    exceptionInfo);
+  ThrowImageException;
+}
+
 
 void Magick::Image::crop(const Geometry &geometry_)
 {
@@ -3832,7 +3895,17 @@ void Magick::Image::quantumOperator(const ChannelType channel_,
   ThrowImageException;
 }
 
-void Magick::Image::quantumOperator (const ssize_t x_,const ssize_t y_,
+void Magick::Image::quantumOperator(const ChannelType channel_,
+  const MagickFunction function_,const size_t number_parameters_,
+  const double *parameters_)
+{
+  GetPPException;
+  FunctionImageChannel(image(),channel_,function_,number_parameters_,
+    parameters_,exceptionInfo);
+  ThrowImageException;
+}
+
+void Magick::Image::quantumOperator(const ssize_t x_,const ssize_t y_,
   const size_t columns_,const size_t rows_,const ChannelType channel_,
   const MagickEvaluateOperator operator_,const double rvalue_)
 {
@@ -4377,6 +4450,21 @@ void Magick::Image::splice(const Geometry &geometry_)
   newImage=SpliceImage(constImage(),&spliceInfo,exceptionInfo);
   replaceImage(newImage);
   ThrowImageException;
+}
+
+void Magick::Image::splice(const Geometry &geometry_,
+  const Color &backgroundColor_)
+{
+  backgroundColor(backgroundColor_);
+  splice(geometry_);
+}
+
+void Magick::Image::splice(const Geometry &geometry_,
+  const Color &backgroundColor_,const GravityType gravity_)
+{
+  backgroundColor(backgroundColor_);
+  image()->gravity=gravity_;
+  splice(geometry_);
 }
 
 void Magick::Image::spread(const size_t amount_)

@@ -184,7 +184,7 @@ Image *AutoResizeImage(const Image *image,const char *option,
       p++;
 
     size=(size_t)strtol(p,&q,10);
-    if (p == q || size < 16 || size > 256)
+    if ((p == q) || (size < 16) || (size > 256))
         return((Image *) NULL);
 
     p=q;
@@ -359,6 +359,8 @@ static Image *ReadICONImage(const ImageInfo *image_info,
           Icon image encoded as a compressed PNG image.
         */
         length=icon_file.directory[i].size;
+        if (~length < 16)
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         png=(unsigned char *) AcquireQuantumMemory(length+16,sizeof(*png));
         if (png == (unsigned char *) NULL)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -768,7 +770,7 @@ ModuleExport size_t RegisterICONImage(void)
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Microsoft icon");
-  entry->module=ConstantString("CUR");
+  entry->module=ConstantString("ICON");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ICO");
   entry->decoder=(DecodeImageHandler *) ReadICONImage;

@@ -398,7 +398,7 @@ MagickExport MagickBooleanType SeparateImageChannel(Image *image,
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
   if (channel == GrayChannels)
-    image->matte=MagickTrue;
+    (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
   /*
     Separate image channels.
   */
@@ -527,8 +527,10 @@ MagickExport MagickBooleanType SeparateImageChannel(Image *image,
   }
   image_view=DestroyCacheView(image_view);
   if (channel != GrayChannels)
-    image->matte=MagickFalse;
-  (void) SetImageColorspace(image,GRAYColorspace);
+    {
+      image->matte=MagickFalse;
+      (void) SetImageColorspace(image,GRAYColorspace);
+    }
   return(status);
 }
 
@@ -698,12 +700,14 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
         for (x=0; x < (ssize_t) image->columns; x++)
         {
           double
-            alpha;
+            alpha,
+            gamma;
 
           alpha=QuantumScale*GetPixelAlpha(q);
-          SetPixelRed(q,ClampToQuantum(alpha*GetPixelRed(q)));
-          SetPixelGreen(q,ClampToQuantum(alpha*GetPixelGreen(q)));
-          SetPixelBlue(q,ClampToQuantum(alpha*GetPixelBlue(q)));
+          gamma=alpha;
+          SetPixelRed(q,ClampToQuantum(gamma*GetPixelRed(q)));
+          SetPixelGreen(q,ClampToQuantum(gamma*GetPixelGreen(q)));
+          SetPixelBlue(q,ClampToQuantum(gamma*GetPixelBlue(q)));
           q++;
         }
         if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
@@ -851,13 +855,14 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
         for (x=0; x < (ssize_t) image->columns; x++)
         {
           double
-            alpha;
+            alpha,
+            gamma;
 
           alpha=QuantumScale*GetPixelAlpha(q);
-          alpha=PerceptibleReciprocal(alpha);
-          SetPixelRed(q,ClampToQuantum(alpha*GetPixelRed(q)));
-          SetPixelGreen(q,ClampToQuantum(alpha*GetPixelGreen(q)));
-          SetPixelBlue(q,ClampToQuantum(alpha*GetPixelBlue(q)));
+          gamma=PerceptibleReciprocal(alpha);
+          SetPixelRed(q,ClampToQuantum(gamma*GetPixelRed(q)));
+          SetPixelGreen(q,ClampToQuantum(gamma*GetPixelGreen(q)));
+          SetPixelBlue(q,ClampToQuantum(gamma*GetPixelBlue(q)));
           q++;
         }
         if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)

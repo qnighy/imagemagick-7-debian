@@ -3634,7 +3634,6 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
             }
           if ((channel & OpacityChannel) != 0)
             {
-              gamma=0.0;
               j=0;
               for (v=0; v < (ssize_t) width; v++)
               {
@@ -3642,15 +3641,11 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
                 {
                   contrast=GetPixelIntensity(luminance_image,l+u+j)-intensity;
                   if (fabs(contrast) < threshold)
-                    {
-                      pixel.opacity+=(*k)*GetPixelOpacity(p+u+j);
-                      gamma+=(*k);
-                    }
+                    pixel.opacity+=(*k)*GetPixelOpacity(p+u+j);
                   k++;
                 }
                 j+=(ssize_t) (image->columns+width);
               }
-              gamma=PerceptibleReciprocal(gamma);
               SetPixelOpacity(q,ClampToQuantum(pixel.opacity));
             }
           if (((channel & IndexChannel) != 0) &&
@@ -3849,14 +3844,14 @@ MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
       Shade this row of pixels.
     */
     normal.z=2.0*(double) QuantumRange;  /* constant Z of surface normal */
-    s0=p+1;
-    s1=s0+image->columns+2;
-    s2=s1+image->columns+2;
     for (x=0; x < (ssize_t) linear_image->columns; x++)
     {
       /*
         Determine the surface normal and compute shading.
       */
+      s0=p+1;
+      s1=s0+image->columns+2;
+      s2=s1+image->columns+2;
       normal.x=(double) (GetPixelIntensity(linear_image,s0-1)+
         GetPixelIntensity(linear_image,s1-1)+
         GetPixelIntensity(linear_image,s2-1)-
@@ -3869,7 +3864,8 @@ MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
         GetPixelIntensity(linear_image,s0-1)-
         GetPixelIntensity(linear_image,s0)-
         GetPixelIntensity(linear_image,s0+1));
-      if ((normal.x == 0.0) && (normal.y == 0.0))
+      if ((fabs(normal.x) <= MagickEpsilon) &&
+          (fabs(normal.y) <= MagickEpsilon))
         shade=light.z;
       else
         {
@@ -3896,9 +3892,7 @@ MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
           SetPixelBlue(q,ClampToQuantum(QuantumScale*shade*GetPixelBlue(s1)));
         }
       q->opacity=s1->opacity;
-      s0++;
-      s1++;
-      s2++;
+      p++;
       q++;
     }
     if (SyncCacheViewAuthenticPixels(shade_view,exception) == MagickFalse)
@@ -4183,9 +4177,9 @@ MagickExport Image *SpreadImage(const Image *image,const double radius,
 
       point.x=GetPseudoRandomValue(random_info[id]);
       point.y=GetPseudoRandomValue(random_info[id]);
-      (void) InterpolateMagickPixelPacket(image,image_view,
-        UndefinedInterpolatePixel,(double) x+width*(point.x-0.5),(double)
-        y+width*(point.y-0.5),&pixel,exception);
+      (void) InterpolateMagickPixelPacket(image,image_view,image->interpolate,
+        (double) x+width*(point.x-0.5),(double) y+width*(point.y-0.5),&pixel,
+        exception);
       SetPixelPacket(spread_image,&pixel,q,indexes+x);
       q++;
     }

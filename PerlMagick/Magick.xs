@@ -260,7 +260,8 @@ static struct
     { "Shear", { {"geometry", StringReference}, {"x", RealReference},
       {"y", RealReference}, { "fill", StringReference},
       {"color", StringReference} } },
-    { "Spread", { {"radius", RealReference} } },
+    { "Spread", { {"radius", RealReference},
+      {"interpolate", MagickInterpolateOptions} } },
     { "Swirl", { {"degrees", RealReference},
       {"interpolate", MagickInterpolateOptions} } },
     { "Resize", { {"geometry", StringReference}, {"width", IntegerReference},
@@ -555,6 +556,11 @@ static struct
     { "Kuwahara", { {"geometry", StringReference}, {"radius", RealReference},
       {"sigma", RealReference}, {"channel", MagickChannelOptions} } },
     { "ConnectedComponents", { {"connectivity", IntegerReference} } },
+    { "CopyPixels", { {"image", ImageReference}, {"geometry", StringReference},
+      {"width", IntegerReference}, {"height", IntegerReference},
+      {"x", IntegerReference}, {"y", IntegerReference},
+      {"gravity", MagickGravityOptions}, {"offset", StringReference},
+      {"dx", IntegerReference}, {"dy", IntegerReference} } },
   };
 
 static SplayTreeInfo
@@ -7461,6 +7467,8 @@ Mogrify(ref,...)
     KuwaharaImage      = 288
     ConnectedComponent = 289
     ConnectedComponentImage = 290
+    CopyPixels         = 291
+    CopyPixelsImage    = 292
     MogrifyRegion      = 666
   PPCODE:
   {
@@ -7942,7 +7950,8 @@ Mogrify(ref,...)
           if ((attribute_flag[5] != 0) || (attribute_flag[6] != 0))
             image->matte_color=fill_color;
           if (attribute_flag[7] != 0)
-            image->compose=(CompositeOperator) argument_list[7].integer_reference;
+            image->compose=(CompositeOperator)
+              argument_list[7].integer_reference;
           image=FrameImage(image,&frame_info,exception);
           break;
         }
@@ -10975,6 +10984,48 @@ Mogrify(ref,...)
           if (attribute_flag[0] != 0)
             connectivity=argument_list[0].integer_reference;
           image=ConnectedComponentsImage(image,connectivity,exception);
+          break;
+        }
+        case 146:  /* Copy */
+        {
+          Image
+            *source_image;
+
+          OffsetInfo
+            offset;
+
+          RectangleInfo
+            offset_geometry;
+
+          source_image=image;
+          if (attribute_flag[0] != 0)
+            source_image=argument_list[0].image_reference;
+          SetGeometry(source_image,&geometry);
+          if (attribute_flag[1] != 0)
+            flags=ParseGravityGeometry(source_image,
+              argument_list[1].string_reference,&geometry,exception);
+          if (attribute_flag[2] != 0)
+            geometry.width=argument_list[2].integer_reference;
+          if (attribute_flag[3] != 0)
+            geometry.height=argument_list[3].integer_reference;
+          if (attribute_flag[4] != 0)
+            geometry.x=argument_list[4].integer_reference;
+          if (attribute_flag[5] != 0)
+            geometry.y=argument_list[5].integer_reference;
+          if (attribute_flag[6] != 0)
+            image->gravity=(GravityType) argument_list[6].integer_reference;
+          SetGeometry(image,&offset_geometry);
+          if (attribute_flag[7] != 0)
+            flags=ParseGravityGeometry(image,argument_list[7].string_reference,
+              &offset_geometry,exception);
+          offset.x=offset_geometry.x;
+          offset.y=offset_geometry.y;
+          if (attribute_flag[8] != 0)
+            offset.x=argument_list[8].integer_reference;
+          if (attribute_flag[9] != 0)
+            offset.y=argument_list[9].integer_reference;
+          (void) CopyImagePixels(image,source_image,&geometry,&offset,
+            exception);
           break;
         }
       }

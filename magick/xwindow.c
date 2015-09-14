@@ -65,7 +65,6 @@
 #include "magick/monitor.h"
 #include "magick/nt-base-private.h"
 #include "magick/option.h"
-#include "magick/PreRvIcccm.h"
 #include "magick/quantize.h"
 #include "magick/quantum.h"
 #include "magick/quantum-private.h"
@@ -1123,7 +1122,7 @@ MagickExport XVisualInfo *XBestVisualInfo(Display *display,
 #define XVisualColormapSize(visual_info) MagickMin((unsigned int) (\
   (visual_info->klass == TrueColor) || (visual_info->klass == DirectColor) ? \
    visual_info->red_mask | visual_info->green_mask | visual_info->blue_mask : \
-   (unsigned int) visual_info->colormap_size),1U << visual_info->depth)
+   (unsigned long) visual_info->colormap_size),1UL << visual_info->depth)
 
   char
     *map_type,

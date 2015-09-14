@@ -619,16 +619,12 @@ static inline void CompositeHardLight(const MagickPixelPacket *p,
 }
 
 static MagickRealType HardMix(const MagickRealType Sca,
-  const MagickRealType Sa,const MagickRealType Dca,const MagickRealType Da)
+  const MagickRealType Dca)
 {
-  MagickRealType
-    gamma;
-
-  if ((Sa+Da) < 1.0)
-    gamma=0.0;
+  if ((Sca+Dca) < QuantumRange)
+    return(0.0);
   else
-    gamma=1.0;
-  return((gamma*(1.0-Sca)*(1.0-Dca))+Sa*(1.0-Sca)*Dca+Da*(1.0-Dca)*Sca);
+    return(1.0);
 }
 
 static inline void CompositeHardMix(const MagickPixelPacket *p,
@@ -644,15 +640,11 @@ static inline void CompositeHardMix(const MagickPixelPacket *p,
   gamma=RoundToUnity(Sa+Da-Sa*Da); /* over blend, as per SVG doc */
   composite->opacity=(MagickRealType) QuantumRange*(1.0-gamma);
   gamma=QuantumRange/(fabs(gamma) < MagickEpsilon ? MagickEpsilon : gamma);
-  composite->red=gamma*HardMix(QuantumScale*p->red*Sa,Sa,QuantumScale*
-    q->red*Da,Da);
-  composite->green=gamma*HardMix(QuantumScale*p->green*Sa,Sa,QuantumScale*
-    q->green*Da,Da);
-  composite->blue=gamma*HardMix(QuantumScale*p->blue*Sa,Sa,QuantumScale*
-    q->blue*Da,Da);
+  composite->red=gamma*HardMix(p->red*Sa,q->red*Da);
+  composite->green=gamma*HardMix(p->green*Sa,q->green*Da);
+  composite->blue=gamma*HardMix(p->blue*Sa,q->blue*Da);
   if (q->colorspace == CMYKColorspace)
-    composite->index=gamma*HardMix(QuantumScale*p->index*Sa,Sa,QuantumScale*
-      q->index*Da,Da);
+    composite->index=gamma*HardMix(p->index*Sa,q->index*Da);
 }
 
 static void HCLComposite(const double hue,const double chroma,const double luma,
@@ -1103,7 +1095,7 @@ static inline MagickRealType Minus(const MagickRealType Sca,
   */
   magick_unreferenced(Da);
 
-  return(Sca + Dca - 2*Dca*Sa);
+  return(Sca+Dca-2*Dca*Sa);
 }
 
 static inline void CompositeMinus(const MagickPixelPacket *p,
@@ -1150,8 +1142,10 @@ static inline MagickRealType ModulusAdd(const MagickRealType p,
     pixel;
 
   pixel=p+q;
-  if (pixel > QuantumRange)
+  while (pixel > QuantumRange)
     pixel-=QuantumRange;
+  while (pixel < 0.0)
+    pixel+=QuantumRange;
   return(pixel*Sa*Da+p*Sa*(1.0-Da)+q*Da*(1.0-Sa));
 }
 
@@ -1200,7 +1194,9 @@ static inline MagickRealType ModulusSubtract(const MagickRealType p,
     pixel;
 
   pixel=p-q;
-  if (pixel < 0.0)
+  while (pixel > QuantumRange)
+    pixel-=QuantumRange;
+  while (pixel < 0.0)
     pixel+=QuantumRange;
   return(pixel*Sa*Da+p*Sa*(1.0-Da)+q*Da*(1.0-Sa));
 }
@@ -1647,6 +1643,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
     *source_image;
 
   MagickBooleanType
+    clamp,
     clip_to_self,
     status;
 
@@ -2262,6 +2259,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   value=GetImageArtifact(source_image,"compose:outside-overlay");
   if (value != (const char *) NULL)
     clip_to_self=IsMagickTrue(value) == MagickFalse ? MagickTrue : MagickFalse;
+  clamp=MagickTrue;
+  value=GetImageArtifact(source_image,"compose:clamp");
+  if (value != (const char *) NULL)
+    clamp=IsMagickTrue(value);
   /*
     Composite image.
   */
@@ -2424,13 +2425,19 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
               composite.blue=(MagickRealType) QuantumRange-composite.blue;
               composite.index=(MagickRealType) QuantumRange-composite.index;
             }
-          SetPixelRed(q,ClampPixel(composite.red));
-          SetPixelGreen(q,ClampPixel(composite.green));
-          SetPixelBlue(q,ClampPixel(composite.blue));
+          SetPixelRed(q,clamp != MagickFalse ?
+            ClampPixel(composite.red) : ClampToQuantum(composite.red));
+          SetPixelGreen(q,clamp != MagickFalse ?
+            ClampPixel(composite.green) : ClampToQuantum(composite.green));
+          SetPixelBlue(q,clamp != MagickFalse ?
+            ClampPixel(composite.blue) : ClampToQuantum(composite.blue));
           if (image->matte != MagickFalse)
-            SetPixelOpacity(q,ClampPixel(composite.opacity));
+            SetPixelOpacity(q,clamp != MagickFalse ?
+              ClampPixel(composite.opacity) :
+              ClampToQuantum(composite.opacity));
           if (image->colorspace == CMYKColorspace)
-            SetPixelIndex(indexes+x,ClampPixel(composite.index));
+            SetPixelIndex(indexes+x,clamp != MagickFalse ?
+              ClampPixel(composite.index) : ClampToQuantum(composite.index));
           q++;
           continue;
         }
@@ -2715,8 +2722,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
             &chroma,&luma);
           luma+=(0.01*percent_luma*offset)/midpoint;
           chroma*=0.01*percent_chroma;
-          HCLComposite(hue,chroma,luma,&composite.red,
-            &composite.green,&composite.blue);
+          HCLComposite(hue,chroma,luma,&composite.red,&composite.green,
+            &composite.blue);
           break;
         }
         case HueCompositeOp:
@@ -2845,12 +2852,17 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           composite.blue=(MagickRealType) QuantumRange-composite.blue;
           composite.index=(MagickRealType) QuantumRange-composite.index;
         }
-      SetPixelRed(q,ClampPixel(composite.red));
-      SetPixelGreen(q,ClampPixel(composite.green));
-      SetPixelBlue(q,ClampPixel(composite.blue));
-      SetPixelOpacity(q,ClampPixel(composite.opacity));
+      SetPixelRed(q,clamp != MagickFalse ?
+        ClampPixel(composite.red) : ClampToQuantum(composite.red));
+      SetPixelGreen(q,clamp != MagickFalse ?
+        ClampPixel(composite.green) : ClampToQuantum(composite.green));
+      SetPixelBlue(q,clamp != MagickFalse ?
+        ClampPixel(composite.blue) : ClampToQuantum(composite.blue));
+      SetPixelOpacity(q,clamp != MagickFalse ?
+        ClampPixel(composite.opacity) : ClampToQuantum(composite.opacity));
       if (image->colorspace == CMYKColorspace)
-        SetPixelIndex(indexes+x,ClampPixel(composite.index));
+        SetPixelIndex(indexes+x,clamp != MagickFalse ?
+          ClampPixel(composite.index) : ClampToQuantum(composite.index));
       p++;
       if (p >= (pixels+source_image->columns))
         p=pixels;

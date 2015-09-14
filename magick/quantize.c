@@ -854,7 +854,7 @@ static MagickBooleanType ClassifyImageColors(CubeInfo *cube_info,
           error.opacity=QuantumScale*(pixel.opacity-mid.opacity);
         distance=(double) (error.red*error.red+error.green*error.green+
           error.blue*error.blue+error.opacity*error.opacity);
-        if (IsNaN(distance) != MagickFalse)
+        if (IsNaN(distance))
           distance=0.0;
         node_info->quantize_error+=count*sqrt(distance);
         cube_info->root->quantize_error+=node_info->quantize_error;
@@ -952,7 +952,7 @@ static MagickBooleanType ClassifyImageColors(CubeInfo *cube_info,
           error.opacity=QuantumScale*(pixel.opacity-mid.opacity);
         distance=(double) (error.red*error.red+error.green*error.green+
           error.blue*error.blue+error.opacity*error.opacity);
-        if (IsNaN(distance) != MagickFalse)
+        if (IsNaN(distance))
           distance=0.0;
         node_info->quantize_error+=count*sqrt(distance);
         cube_info->root->quantize_error+=node_info->quantize_error;
@@ -1971,8 +1971,8 @@ static CubeInfo *GetCubeInfo(const QuantizeInfo *quantize_info,
   /*
     Initialize color cache.
   */
-  for (i=0; i < (ssize_t) length; i++)
-    cube_info->cache[i]=(-1);
+  (void) ResetMagickMemory(cube_info->cache,(-1),sizeof(*cube_info->cache)*
+    length);
   /*
     Distribute weights along a curve of exponential decay.
   */
@@ -2726,9 +2726,13 @@ MagickExport MagickBooleanType QuantizeImage(const QuantizeInfo *quantize_info,
   if (status != MagickFalse)
     {
       /*
-        Reduce the number of colors in the image.
+        Reduce the number of colors in the image if it contains more than the
+        maximum, otherwise we can disable dithering to improve the performance.
       */
-      ReduceImageColors(image,cube_info);
+      if (cube_info->colors > cube_info->maximum_colors)
+        ReduceImageColors(image,cube_info);
+      else
+        cube_info->quantize_info->dither_method=NoDitherMethod;
       status=AssignImageColors(image,cube_info);
     }
   DestroyCubeInfo(cube_info);
@@ -3326,7 +3330,7 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
   assert(image->signature == MagickSignature);
   if (image->type != GrayscaleType)
     (void) TransformImageColorspace(image,GRAYColorspace);
-  colormap_index=(ssize_t *) AcquireQuantumMemory(MaxMap+1,
+  colormap_index=(ssize_t *) AcquireQuantumMemory(MaxColormapSize,
     sizeof(*colormap_index));
   if (colormap_index == (ssize_t *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
@@ -3336,9 +3340,9 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
       ExceptionInfo
         *exception;
 
-      for (i=0; i <= (ssize_t) MaxMap; i++)
-        colormap_index[i]=(-1);
-      if (AcquireImageColormap(image,MaxMap+1) == MagickFalse)
+      (void) ResetMagickMemory(colormap_index,(-1),MaxColormapSize*
+        sizeof(*colormap_index));
+      if (AcquireImageColormap(image,MaxColormapSize) == MagickFalse)
         ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename);
       image->colors=0;

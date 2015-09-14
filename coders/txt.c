@@ -488,14 +488,13 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
           {
             if (image->matte != MagickFalse)
               {
-                count=(ssize_t) sscanf(text,"%ld,%ld: (%lf%*[%,]%lf%*[%,]",
-                  &x_offset,&y_offset,&red,&opacity);
+                (void) sscanf(text,"%ld,%ld: (%lf%*[%,]%lf%*[%,]",&x_offset,
+                  &y_offset,&red,&opacity);
                 green=red;
                 blue=red;
                 break;
               }
-            count=(ssize_t) sscanf(text,"%ld,%ld: (%lf%*[%,]",&x_offset,
-              &y_offset,&red);
+            (void) sscanf(text,"%ld,%ld: (%lf%*[%,]",&x_offset,&y_offset,&red);
             green=red;
             blue=red;
             break;
@@ -504,12 +503,12 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
           {
             if (image->matte != MagickFalse)
               {
-                count=(ssize_t) sscanf(text,
+                (void) sscanf(text,
                   "%ld,%ld: (%lf%*[%,]%lf%*[%,]%lf%*[%,]%lf%*[%,]%lf%*[%,]",
                   &x_offset,&y_offset,&red,&green,&blue,&index,&opacity);
                 break;
               }
-            count=(ssize_t) sscanf(text,
+            (void) sscanf(text,
               "%ld,%ld: (%lf%*[%,]%lf%*[%,]%lf%*[%,]%lf%*[%,]",&x_offset,
               &y_offset,&red,&green,&blue,&index);
             break;
@@ -518,14 +517,13 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
           {
             if (image->matte != MagickFalse)
               {
-                count=(ssize_t) sscanf(text,
+                (void) sscanf(text,
                   "%ld,%ld: (%lf%*[%,]%lf%*[%,]%lf%*[%,]%lf%*[%,]",
                   &x_offset,&y_offset,&red,&green,&blue,&opacity);
                 break;
               }
-            count=(ssize_t) sscanf(text,
-              "%ld,%ld: (%lf%*[%,]%lf%*[%,]%lf%*[%,]",&x_offset,&y_offset,
-               &red,&green,&blue);
+            (void) sscanf(text,"%ld,%ld: (%lf%*[%,]%lf%*[%,]%lf%*[%,]",
+              &x_offset,&y_offset,&red,&green,&blue);
             break;
           }
         }
@@ -735,6 +733,9 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
     ComplianceType
       compliance;
 
+    const char
+      *value;
+
     (void) CopyMagickString(colorspace,CommandOptionToMnemonic(
       MagickColorspaceOptions,(ssize_t) image->colorspace),MaxTextExtent);
     LocaleLower(colorspace);
@@ -742,6 +743,10 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
     if (image->matte != MagickFalse)
       (void) ConcatenateMagickString(colorspace,"a",MaxTextExtent);
     compliance=NoCompliance;
+    value=GetImageOption(image_info,"txt:compliance");
+    if (value != (char *) NULL)
+      compliance=(ComplianceType) ParseCommandOption(MagickComplianceOptions,
+        MagickFalse,value);
     if (LocaleCompare(image_info->magick,"SPARSE-COLOR") != 0)
       {
         (void) FormatLocaleString(buffer,MaxTextExtent,
@@ -749,7 +754,6 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
           image->columns,(double) image->rows,(double) ((MagickOffsetType)
           GetQuantumRange(image->depth)),colorspace);
         (void) WriteBlobString(image,buffer);
-        compliance=SVGCompliance;
       }
     GetMagickPixelPacket(image,&pixel);
     for (y=0; y < (ssize_t) image->rows; y++)

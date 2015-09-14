@@ -657,8 +657,6 @@ static int UnpackWPG2Raster(Image *image,int bpp)
           break;
         default:
           RunCount=bbuf & 0x7F;
-          if (RunCount < 0)
-            break;
 
           if(bbuf & 0x80)     /* REP */
             {
@@ -697,13 +695,13 @@ unsigned Flags;
  (*CTM)[2][2]=1;
 
  Flags=ReadBlobLSBShort(image);
- if(Flags & LCK) x=ReadBlobLSBLong(image);  /*Edit lock*/
+ if(Flags & LCK) (void) ReadBlobLSBLong(image);  /*Edit lock*/
  if(Flags & OID)
   {
   if(Precision==0)
-    {x=ReadBlobLSBShort(image);}  /*ObjectID*/
+    {(void) ReadBlobLSBShort(image);}  /*ObjectID*/
   else
-    {x=ReadBlobLSBLong(image);}  /*ObjectID (Double precision)*/
+    {(void) ReadBlobLSBLong(image);}  /*ObjectID (Double precision)*/
   }
  if(Flags & ROT)
   {

@@ -793,7 +793,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   ssize_t
     y;
 
-  size_t
+  unsigned int
     channels;
 
   /*
@@ -813,7 +813,8 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   */
   opj_set_default_encoder_parameters(&parameters);
   for (i=1; i < 6; i++)
-    if (((1U << (i+2)) > image->columns) && ((1U << (i+2)) > image->rows))
+    if (((1 << (i+2)) > (ssize_t) image->columns) &&
+        ((1 << (i+2)) > (ssize_t) image->rows))
       break;
   parameters.numresolution=i;
   option=GetImageOption(image_info,"jp2:number-resolutions");
@@ -822,9 +823,9 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   parameters.tcp_numlayers=1;
   parameters.tcp_rates[0]=0;  /* lossless */
   parameters.cp_disto_alloc=1;
-  if (image->quality != 0)
+  if ((image_info->quality != 0) && (image_info->quality != 100))
     {
-      parameters.tcp_distoratio[0]=(double) image->quality;
+      parameters.tcp_distoratio[0]=(double) image_info->quality;
       parameters.cp_fixed_quality=OPJ_TRUE;
     }
   if (image_info->extract != (char *) NULL)

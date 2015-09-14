@@ -217,21 +217,30 @@ MagickExport const char *GetMagickDelegates(void)
 */
 MagickExport const char *GetMagickFeatures(void)
 {
-  return "DPC"
-#if defined(MAGICKCORE_HDRI_SUPPORT)
-  " HDRI"
-#endif
-#if defined(MAGICKCORE_BUILD_MODULES) || defined(_DLL)
-  " Modules"
-#endif
-#if defined(MAGICKCORE_OPENCL_SUPPORT)
-  " OpenCL"
-#endif
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  " OpenMP"
+  return ""
+#if defined(MAGICKCORE_CIPHER_SUPPORT)
+  "Cipher "
 #endif
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && defined(_DEBUG)
-  " Debug"
+  "Debug "
+#endif
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(MAGICKCORE_HAVE_SOCKET) && defined(MAGICKCORE_THREAD_SUPPORT)
+  "DPC "
+#endif
+#if defined(MAGICKCORE_HDRI_SUPPORT)
+  "HDRI "
+#endif
+#if defined(MAGICKCORE_BUILD_MODULES) || defined(_DLL)
+  "Modules "
+#endif
+#if defined(MAGICKCORE_OPENCL_SUPPORT)
+  "OpenCL "
+#endif
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  "OpenMP "
+#endif
+#if defined(ZERO_CONFIGURATION_SUPPORT)
+  "Zero-configuration "
 #endif
   ;
 }
@@ -577,7 +586,10 @@ MagickExport void ListMagickVersion(FILE *file)
     GetMagickVersion((size_t *) NULL));
   (void) FormatLocaleFile(file,"Copyright: %s\n",GetMagickCopyright());
   (void) FormatLocaleFile(file,"License: %s\n",GetMagickLicense());
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && defined(_MSC_FULL_VER)
+  (void) FormatLocaleFile(file,"Visual C++: %d\n",_MSC_FULL_VER);
+#endif
   (void) FormatLocaleFile(file,"Features: %s\n",GetMagickFeatures());
-  (void) FormatLocaleFile(file,"Delegates (built-in): %s\n\n",
+  (void) FormatLocaleFile(file,"Delegates (built-in): %s\n",
     GetMagickDelegates());
 }

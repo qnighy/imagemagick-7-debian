@@ -66,6 +66,10 @@ extern "C" {
     1310 Visual c++ .NET 2003
     1400 Visual C++ 2005
     1500 Visual C++ 2008
+    1600 Visual C++ 2010
+    1700 Visual C++ 2012
+    1800 Visual C++ 2013
+    1900 Visual C++ 2015
 */
 
 #if !defined(chsize)
@@ -98,13 +102,15 @@ extern "C" {
 #endif
 #if !defined(fseek) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
-  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
+  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
+  !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #  define fseek  _fseeki64
 #endif
 #endif
 #if !defined(fstat) && !defined(__BORLANDC__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
-  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
+  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
+  !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #  define fstat  _fstati64
 #else
 #  define fstat  _fstat
@@ -115,7 +121,8 @@ extern "C" {
 #endif
 #if !defined(ftell) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
-  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
+  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
+  !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #  define ftell  _ftelli64
 #endif
 #endif
@@ -141,7 +148,8 @@ extern "C" {
 #define locale_t _locale_t
 #endif
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
-  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
+  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
+  !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #if !defined(lseek)
 #  define lseek  _lseeki64
 #endif
@@ -221,7 +229,8 @@ extern "C" {
 #endif
 #if !defined(stat) && !defined(__BORLANDC__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
-  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
+  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
+  !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #  define stat  _stati64
 #else
 #  define stat  _stat
@@ -237,7 +246,8 @@ extern "C" {
 #  define sysconf(name)  NTSystemConfiguration(name)
 #endif
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
-  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
+  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
+  !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #  define tell  _telli64
 #else
 #  define tell  _tell
@@ -270,7 +280,8 @@ extern "C" {
 #endif
 #if !defined(wstat) && !defined(__BORLANDC__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
-  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && (__MSVCRT_VERSION__ < 0x800)
+  !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
+  !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
 #  define wstat  _wstati64
 #else
 #  define wstat  _wstat

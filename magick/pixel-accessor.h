@@ -41,8 +41,7 @@ extern "C" {
 #define GetPixelCyan(pixel) ((pixel)->red)
 #define GetPixelGray(pixel) ((pixel)->red)
 #define GetPixelGreen(pixel) ((pixel)->green)
-#define GetPixelIndex(indexes) \
-  ((indexes == (const IndexPacket *) NULL) ? 0 : (*(indexes)))
+#define GetPixelIndex(indexes)  (*(indexes))
 #define GetPixelL(pixel) ((pixel)->red)
 #define GetPixelMagenta(pixel) ((pixel)->green)
 #define GetPixelNext(pixel)  ((pixel)+1)
@@ -75,15 +74,10 @@ extern "C" {
 #define SetPixelGray(pixel,value) \
   ((pixel)->red=(pixel)->green=(pixel)->blue=(Quantum) (value))
 #define SetPixelGreen(pixel,value) ((pixel)->green=(Quantum) (value))
-#define SetPixelIndex(indexes,value) \
-{ \
-  if (indexes != (IndexPacket *) NULL) \
-    (*(indexes)=(IndexPacket) (value)); \
-}
+#define SetPixelIndex(indexes,value) (*(indexes)=(IndexPacket) (value))
 #define SetPixelL(pixel,value) ((pixel)->red=(Quantum) (value))
 #define SetPixelMagenta(pixel,value) ((pixel)->green=(Quantum) (value))
-#define SetPixelOpacity(pixel,value) \
-  ((pixel)->opacity=(Quantum) (value))
+#define SetPixelOpacity(pixel,value) ((pixel)->opacity=(Quantum) (value))
 #define SetPixelRed(pixel,value) ((pixel)->red=(Quantum) (value))
 #define SetPixelRgb(pixel,packet) \
 { \
@@ -126,30 +120,47 @@ static inline Quantum ClampPixel(const MagickRealType value)
 #endif
 }
 
+static inline double PerceptibleReciprocal(const double x)
+{ 
+  double
+    sign;
+      
+  /*
+    Return 1/x where x is perceptible (not unlimited or infinitesimal).
+  */
+  sign=x < 0.0 ? -1.0 : 1.0;
+  if ((sign*x) >= MagickEpsilon)
+    return(1.0/x);
+  return(sign/MagickEpsilon);
+}   
+
 static inline MagickRealType GetPixelLuma(const Image *restrict image,
   const PixelPacket *restrict pixel)
 {
-  if (image->colorspace == GRAYColorspace)
-    return((MagickRealType) pixel->red);
-  return(0.212656f*pixel->red+0.715158f*pixel->green+0.072186f*pixel->blue);
+  MagickRealType
+    intensity;
+
+  intensity=(MagickRealType) (0.212656f*pixel->red+0.715158f*pixel->green+
+    0.072186f*pixel->blue);
+  return(intensity);
 }
 
 static inline MagickRealType GetPixelLuminance(const Image *restrict image,
   const PixelPacket *restrict pixel)
 {
   MagickRealType
-    blue,
-    green,
-    red;
+    intensity;
 
-  if (image->colorspace == GRAYColorspace)
-    return((MagickRealType) pixel->red);
   if (image->colorspace != sRGBColorspace)
-    return(0.212656f*pixel->red+0.715158f*pixel->green+0.072186f*pixel->blue);
-  red=DecodePixelGamma((MagickRealType) pixel->red);
-  green=DecodePixelGamma((MagickRealType) pixel->green);
-  blue=DecodePixelGamma((MagickRealType) pixel->blue);
-  return(0.212656f*red+0.715158f*green+0.072186f*blue);
+    {
+      intensity=(MagickRealType) (0.212656f*pixel->red+0.715158f*pixel->green+
+        0.072186f*pixel->blue);
+      return(intensity);
+    }
+  intensity=(MagickRealType) (0.212656f*DecodePixelGamma((MagickRealType)
+    pixel->red)+0.715158f*DecodePixelGamma((MagickRealType) pixel->green)+
+    0.072186f*DecodePixelGamma((MagickRealType) pixel->blue));
+  return(intensity);
 }
 
 static inline MagickBooleanType IsPixelAtDepth(const Quantum pixel,
@@ -171,15 +182,13 @@ static inline MagickBooleanType IsPixelAtDepth(const Quantum pixel,
 static inline MagickBooleanType IsPixelGray(const PixelPacket *pixel)
 {
   MagickRealType
-    blue,
-    green,
-    red;
+    green_blue,
+    red_green;
 
-  red=(MagickRealType) pixel->red;
-  green=(MagickRealType) pixel->green;
-  blue=(MagickRealType) pixel->blue;
-  if ((AbsolutePixelValue(red-green) < MagickEpsilon) &&
-      (AbsolutePixelValue(green-blue) < MagickEpsilon))
+  red_green=(MagickRealType) pixel->red-pixel->green;
+  green_blue=(MagickRealType) pixel->green-pixel->blue;
+  if (((QuantumScale*AbsolutePixelValue(red_green)) < MagickEpsilon) &&
+      ((QuantumScale*AbsolutePixelValue(green_blue)) < MagickEpsilon))
     return(MagickTrue);
   return(MagickFalse);
 }

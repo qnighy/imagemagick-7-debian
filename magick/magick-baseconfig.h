@@ -377,12 +377,6 @@
 /* Define if you have the <lcms2/lcms2.h> header file. */
 /* #undef HAVE_LCMS2_LCMS2_H */
 
-/* Define if you have the <lcms.h> header file. */
-/* #undef HAVE_LCMS_H */
-
-/* Define if you have the <lcms/lcms.h> header file. */
-/* #undef HAVE_LCMS_LCMS_H */
-
 /* Define to 1 if you have the `gcov' library (-lgcov). */
 /* #undef HAVE_LIBGCOV */
 
@@ -402,6 +396,11 @@
 /* Define to 1 if you have the <locale.h> header file. */
 #ifndef MAGICKCORE_HAVE_LOCALE_H
 #define MAGICKCORE_HAVE_LOCALE_H 1
+#endif
+
+/* Define to 1 if the system has the type `locale_t'. */
+#ifndef MAGICKCORE_HAVE_LOCALE_T
+#define MAGICKCORE_HAVE_LOCALE_T 1
 #endif
 
 /* Define to 1 if you have the `localtime_r' function. */
@@ -611,6 +610,11 @@
 /* Define to 1 if you have the `select' function. */
 #ifndef MAGICKCORE_HAVE_SELECT
 #define MAGICKCORE_HAVE_SELECT 1
+#endif
+
+/* Define to 1 if you have the `sendfile' function. */
+#ifndef MAGICKCORE_HAVE_SENDFILE
+#define MAGICKCORE_HAVE_SENDFILE 1
 #endif
 
 /* Define to 1 if you have the `setlocale' function. */
@@ -831,6 +835,11 @@
 /* Define to 1 if you have the <sys/select.h> header file. */
 #ifndef MAGICKCORE_HAVE_SYS_SELECT_H
 #define MAGICKCORE_HAVE_SYS_SELECT_H 1
+#endif
+
+/* Define to 1 if you have the <sys/sendfile.h> header file. */
+#ifndef MAGICKCORE_HAVE_SYS_SENDFILE_H
+#define MAGICKCORE_HAVE_SYS_SENDFILE_H 1
 #endif
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
@@ -1108,7 +1117,7 @@
 /* Define if you have JPEG library */
 /* #undef JPEG_DELEGATE */
 
-/* Define if you have LCMS (v1.11 or later) library */
+/* Define if you have LCMS library */
 /* #undef LCMS_DELEGATE */
 
 /* Define if you have OPENJP2 library */
@@ -1116,13 +1125,13 @@
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/usr/lib64/ImageMagick-6.9.1/"
+#define MAGICKCORE_LIBRARY_PATH "/usr/lib64/ImageMagick-6.9.2/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
    installed */
 #ifndef MAGICKCORE_LIBRARY_RELATIVE_PATH
-#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.9.1"
+#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.9.2"
 #endif
 
 /* Binaries in libraries path base name (will be during install linked to bin)
@@ -1202,7 +1211,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.1-2"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.2-1"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1217,7 +1226,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.1-2"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.2-1"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1429,7 +1438,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.9.1-2"
+#define MAGICKCORE_VERSION "6.9.2-1"
 #endif
 
 /* Define if you have WEBP library */
@@ -1443,11 +1452,10 @@
 /* Define if using the dmalloc debugging malloc package */
 /* #undef WITH_DMALLOC */
 
-/* Define if you have wmflite library */
-/* #undef WMFLITE_DELEGATE */
-
-/* Define if you have wmf library */
-/* #undef WMF_DELEGATE */
+/* Define if you have WMF library */
+#ifndef MAGICKCORE_WMF_DELEGATE
+#define MAGICKCORE_WMF_DELEGATE 1
+#endif
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
@@ -1482,7 +1490,7 @@
 /* Build self-contained, embeddable, zero-configuration ImageMagick */
 /* #undef ZERO_CONFIGURATION_SUPPORT */
 
-/* Define if you have zlib compression library */
+/* Define if you have ZLIB library */
 #ifndef MAGICKCORE_ZLIB_DELEGATE
 #define MAGICKCORE_ZLIB_DELEGATE 1
 #endif

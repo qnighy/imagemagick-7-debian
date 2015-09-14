@@ -829,7 +829,7 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
           if (profile != (StringInfo *) NULL)
             {
               p=GetStringInfoDatum(profile);
-              count=ReadBlob(image,GetStringInfoLength(profile),p);
+              (void) ReadBlob(image,GetStringInfoLength(profile),p);
             }
           name=(const char *) GetNextValueInLinkedList(profiles);
         }
@@ -1001,7 +1001,7 @@ ModuleExport size_t RegisterMPCImage(void)
 
   entry=SetMagickInfo("CACHE");
   entry->description=ConstantString("Magick Persistent Cache image format");
-  entry->module=ConstantString("CACHE");
+  entry->module=ConstantString("MPC");
   entry->stealth=MagickTrue;
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("MPC");
@@ -1184,7 +1184,7 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
             (long) image->page.x,(long) image->page.y);
           (void) WriteBlobString(image,buffer);
         }
-    if ((image->page.x != 0) || (image->page.y != 0))
+    if ((image->tile_offset.x != 0) || (image->tile_offset.y != 0))
       {
         (void) FormatLocaleString(buffer,MaxTextExtent,"tile-offset=%+ld%+ld\n",
           (long) image->tile_offset.x,(long) image->tile_offset.y);

@@ -1257,11 +1257,7 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
         if (LocaleCompare("monitor",option+1) == 0)
           break;
         if (LocaleCompare("monochrome",option+1) == 0)
-          {
-            if (*option == '+')
-              break;
-            break;
-          }
+          break;
         ThrowMontageException(OptionError,"UnrecognizedOption",option)
       }
       case 'n':
@@ -1818,6 +1814,7 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
             *text;
 
           text=InterpretImageProperties(image_info,montage_image,format);
+          InheritException(exception,&montage_image->exception);
           if (text == (char *) NULL)
             ThrowMontageException(ResourceLimitError,"MemoryAllocationFailed",
               GetExceptionMessage(errno));

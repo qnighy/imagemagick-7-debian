@@ -1,4 +1,4 @@
-#
+
 # Package name and versioning information for ImageMagick.
 #
 # This file is sourced by a Bourne shell (/bin/sh) script so it must
@@ -8,20 +8,21 @@
 PACKAGE_NAME='ImageMagick'
 
 #
-# Package version.  This is is the numeric version suffix applied to
-# PACKAGE_NAME (e.g. "1.0.0").
-PACKAGE_VERSION='6.9.1'
-PACKAGE_PERL_VERSION='6.91'
-PACKAGE_LIB_VERSION="0x691"
-PACKAGE_RELEASE="2"
-PACKAGE_LIB_VERSION_NUMBER="6,9,1,${PACKAGE_RELEASE}"
-PACKAGE_RELEASE_DATE=`date +%F`
-PACKAGE_STRING="$PACKAGE_NAME $PACKAGE_VERSION"
-
-#
 # Date of last ChangeLog update
 #
 PACKAGE_CHANGE_DATE=`awk '/^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/ { print substr($1,1,4) substr($1,6,2) substr($1,9,2); exit; }' ${srcdir}/ChangeLog`
+
+#
+# Package version.  This is is the numeric version suffix applied to
+# PACKAGE_NAME (e.g. "1.0.0").
+PACKAGE_VERSION='6.9.2'
+PACKAGE_PERL_VERSION='6.92'
+PACKAGE_LIB_VERSION="0x692"
+PACKAGE_RELEASE="1"
+PACKAGE_LIB_VERSION_NUMBER="6,9,2,${PACKAGE_RELEASE}"
+PACKAGE_RELEASE_DATE_RAW=`date +%F`
+PACKAGE_RELEASE_DATE_REPRODUCIBLE="${PACKAGE_CHANGE_DATE}"
+PACKAGE_STRING="$PACKAGE_NAME $PACKAGE_VERSION"
 
 #
 # Package version addendum.  This is an arbitrary suffix (if any) appended

@@ -188,7 +188,7 @@ static MagickBooleanType IsBoundsCleared(const Image *image1,
     for (x=0; x < (ssize_t) bounds->width; x++)
     {
       if ((GetPixelOpacity(p) <= (Quantum) (QuantumRange/2)) &&
-          (q->opacity > (Quantum) (QuantumRange/2)))
+          (GetPixelOpacity(q) > (Quantum) (QuantumRange/2)))
         break;
       p++;
       q++;
@@ -272,6 +272,7 @@ MagickExport Image *CoalesceImages(const Image *image,ExceptionInfo *exception)
     exception);
   if (coalesce_image == (Image *) NULL)
     return((Image *) NULL);
+  coalesce_image->background_color.opacity=(Quantum) TransparentOpacity;
   (void) SetImageBackgroundColor(coalesce_image);
   coalesce_image->matte=next->matte;
   coalesce_image->page=bounds;
@@ -2029,22 +2030,17 @@ MagickExport Image *MergeImageLayers(Image *image,
         height=page.height;
       for (next=image; next != (Image *) NULL; next=GetNextImageInList(next))
       {
-        if (method == MosaicLayer)
-          {
-            page.x=next->page.x;
-            page.y=next->page.y;
-            if ((ssize_t) width < (next->page.x+(ssize_t) next->columns))
-              width=(size_t) next->page.x+next->columns;
-            if ((ssize_t) height < (next->page.y+(ssize_t) next->rows))
-              height=(size_t) next->page.y+next->rows;
-          }
+        if ((ssize_t) width < (next->page.x+(ssize_t) next->columns))
+          width=(size_t) next->page.x+next->columns;
+        if ((ssize_t) height < (next->page.y+(ssize_t) next->rows))
+          height=(size_t) next->page.y+next->rows;
       }
       page.width=width;
       page.height=height;
       page.x=0;
       page.y=0;
+      break;
     }
-    break;
   }
   /*
     Set virtual canvas size if not defined.
