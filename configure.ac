@@ -31,7 +31,8 @@ m4_define([magick_patchlevel_version], [0])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_git_revision], esyscmd([sh -c "(gitversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
-m4_define([magick_tar_name],[ImageMagick])
+m4_define([magick_tar_name],[ImageMagick.magick_major_version])
+
 
 # ==============================================================================
 # Initalize Automake
@@ -220,7 +221,7 @@ eval "eval LIBEXEC_DIR=$libexecdir"
 AC_SUBST(LIBEXEC_DIR)
 eval "eval DATA_DIR=$datadir"
 AC_SUBST(DATA_DIR)
-eval "eval DOC_DIR=$datadir/doc"
+eval "eval DOC_DIR=$docdir"
 AC_SUBST(DOC_DIR)
 eval "eval SYSCONF_DIR=$sysconfdir"
 AC_SUBST(SYSCONF_DIR)
@@ -2961,9 +2962,8 @@ AC_SUBST(FILTER_PATH)
 
 #
 # Path to ImageMagick documentation files
-DOCUMENTATION_RELATIVE_PATH="${PACKAGE_NAME}-${MAGICK_MAJOR_VERSION}"
-DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}"
-DEFINE_DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}/"
+DOCUMENTATION_PATH="${DOC_DIR}"
+DEFINE_DOCUMENTATION_PATH="${DOC_DIR}"
 case "${build_os}" in
   mingw* )
     DEFINE_DOCUMENTATION_PATH=`$WinPathScript "$DEFINE_DOCUMENTATION_PATH" 1`
