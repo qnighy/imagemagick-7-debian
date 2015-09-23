@@ -3,33 +3,33 @@
 <head>
   
     <title>ImageMagick: Command-line Processing</title>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="application-name" content="ImageMagick">
-  <meta name="description" content="ImageMagick® is a software suite to create, edit, compose, or convert bitmap images. It can read and write images in a variety of formats (over 200) including PNG, JPEG, JPEG-2000, GIF, WebP, Postscript, PDF, and SVG. Use ImageMagick to resize, flip, mirror, rotate, distort, shear and transform images, adjust image colors, apply various special effects, or draw text, lines, polygons, ellipses and Bézier curves.">
-  <meta name="application-url" content="http://www.imagemagick.org">
-  <meta name="generator" content="PHP">
-  <meta name="keywords" content="command-line, processing, ImageMagick, PerlMagick, image processing, image, photo, software, Magick++, OpenMP, convert">
-  <meta name="rating" content="GENERAL">
-  <meta name="robots" content="INDEX, FOLLOW">
-  <meta name="generator" content="ImageMagick Studio LLC">
-  <meta name="author" content="ImageMagick Studio LLC">
-  <meta name="revisit-after" content="2 DAYS">
-  <meta name="resource-type" content="document">
-  <meta name="copyright" content="Copyright (c) 1999-2015 ImageMagick Studio LLC">
-  <meta name="distribution" content="Global">
-  <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1">
-  <link rel="icon" href="../images/wand.png">
-  <link rel="shortcut icon" href="../images/wand.ico">
-  <link rel="stylesheet" href="css/magick.css">
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="application-name" content="ImageMagick" />
+  <meta name="description" content="ImageMagick® is a software suite to create, edit, compose, or convert bitmap images. It can read and write images in a variety of formats (over 200) including PNG, JPEG, JPEG-2000, GIF, WebP, Postscript, PDF, and SVG. Use ImageMagick to resize, flip, mirror, rotate, distort, shear and transform images, adjust image colors, apply various special effects, or draw text, lines, polygons, ellipses and Bézier curves." />
+  <meta name="application-url" content="http://www.imagemagick.org" />
+  <meta name="generator" content="PHP" />
+  <meta name="keywords" content="command-line, processing, ImageMagick, PerlMagick, image processing, image, photo, software, Magick++, OpenMP, convert" />
+  <meta name="rating" content="GENERAL" />
+  <meta name="robots" content="INDEX, FOLLOW" />
+  <meta name="generator" content="ImageMagick Studio LLC" />
+  <meta name="author" content="ImageMagick Studio LLC" />
+  <meta name="revisit-after" content="2 DAYS" />
+  <meta name="resource-type" content="document" />
+  <meta name="copyright" content="Copyright (c) 1999-2015 ImageMagick Studio LLC" />
+  <meta name="distribution" content="Global" />
+  <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1" />
+  <link rel="icon" href="../images/wand.png" />
+  <link rel="shortcut icon" href="../images/wand.ico" />
+  <link rel="stylesheet" href="css/magick.css" />
 </head>
 <body>
 <div class="main">
 <div class="magick-masthead">
   <div class="container">
-    <script async src="http://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-3129977114552745" data-ad-slot="6345125851" data-ad-format="auto"></ins>
+    <script async="async" src="http://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-3129977114552745" data-ad-slot="6345125851" data-ad-format="auto"></ins>
     <script>
     (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
@@ -67,10 +67,10 @@ convert label.gif +matte \
 <p>Without knowing much about the ImageMagick command line, you can probably figure out that the first command above converts an image in the JPEG format to one in the PNG format.  However, very few may realize the second, more complex command, gives a flat two-dimensional label a three-dimensional look with rich textures and simulated depth:</p>
 
 <ul>
-  <a href="../images/label.gif"><img src="../images/label.gif" width="78" height="53" alt="label"></a>
-<img style="margin-top:16px; margin-bottom:17px;" src="../images/right.gif" width="20" height="20" alt="==&gt;">
+  <a href="../images/label.gif"><img src="../images/label.gif" width="78" height="53" alt="label" /></a>
+<img style="margin-top:16px; margin-bottom:17px;" src="../images/right.gif" width="20" height="20" alt="==&gt;" />
   <a href="../images/button.gif">
-  <img src="../images/button.gif" width="78" height="53" alt="button"></a>
+  <img src="../images/button.gif" width="78" height="53" alt="button" /></a>
 </ul>
 
 <p class="warn">[ <var>A quick word about our formatting of commands:</var> The second example above is long enough that the command must be written across several lines, so we formatted it for clarity by inserting backslashes (<code>\</code>). The backslash is the Unix <var>line continuation</var> character. In the Windows shell, use a carat character (<code>^</code>) for line continuation. We use the Unix style on these web pages, as above. Sometimes, however, the lines are wrapped by your browser if the browser window is small enough, but the command lines, shown in white, are still intended to be typed as one line. Line continuation characters need not be entered. The <var>parentheses</var> that are <var>escaped</var> above using the backslash are not escaped in Windows. There are some other differences between Windows and Unix (involving quotation marks, for instance), but we'll discuss some of those issues later, as they arise. </p>
@@ -78,7 +78,7 @@ convert label.gif +matte \
 <p>Here we show percent completion of a task as a shaded cylinder:</p>
 
 <ul>
-  <img src="../images/cylinder_shaded.png" width="320" height="200" alt="Shaded Cylinder">
+  <img src="../images/cylinder_shaded.png" width="320" height="200" alt="Shaded Cylinder" />
 </ul>
 
 <p>Given the complexity of the rendering, you might be surprised it is accomplished by a single command-line:</p>
@@ -415,7 +415,7 @@ setting for more specifics.</p>
 
 <div class="table-responsive">
 <table class="table table-condensed table-striped">
-  <col width="20%"> <col width="80%">
+  <col width="20%" /> <col width="80%" />
   <thead>
   <tr>
     <th style="text-align:center"><var>size</var></th>
