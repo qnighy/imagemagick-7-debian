@@ -1,10 +1,20 @@
-imagemagick (8:6.9.2.1-1) experimental; urgency=medium
+imagemagick (8:6.9.2.3-1) experimental; urgency=medium
 
-  * New upstream version:
+  * New upstream version.
+  * Security bug fixes (Closes: #799524, #799891)
   - Fix a Null dereference in coders/png.c (LP: #1492881).
   - Fix a double free in coders/tga.c (LP: #1490362).
-  - Fix density of JPEG working arround TeX bug
+  - Avoid a null pointer dereference in JNG decoder.
+  - Avoid a DOS for RLE file..
+  - Avoid a bufer overflow by using field limit in sprintf.
+  - Avoid a stack overflow in fx handling.
+  - Fixed size of memory allocation in RLE coder
+    to avoid segfault (LP: #1496649).
+  - Added extra checks to avoid out of bounds error
+    when parsing the 8bim profile. (LP: #1496645).
+  * Fix density of JPEG working arround TeX bug
     (Closes: #763799).
+  * Recompile with g++-5 (Closes: #798597).
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 14 Sep 2015 23:43:48 +0200
 
