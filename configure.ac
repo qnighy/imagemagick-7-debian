@@ -27,15 +27,16 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [9])
 m4_define([magick_micro_version], [2])
-m4_define([magick_patchlevel_version], [1])
+m4_define([magick_patchlevel_version], [3])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
-m4_define([magick_git_revision], esyscmd([sh -c "(svnversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
+m4_define([magick_git_revision], esyscmd([sh -c "(gitversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
+m4_define([magick_tar_name],[ImageMagick])
 
 # ==============================================================================
 # Initalize Automake
 # ==============================================================================
-AC_INIT([ImageMagick],[magick_version],[http://www.imagemagick.org],[ImageMagick])
+AC_INIT([ImageMagick],[magick_version],[http://www.imagemagick.org],[magick_tar_name])
 AC_CONFIG_SRCDIR([magick/MagickCore.h])
 AC_CONFIG_AUX_DIR([config])
 AC_REQUIRE_AUX_FILE([tap-driver.sh])

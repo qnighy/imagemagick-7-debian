@@ -78,7 +78,7 @@
 
 typedef struct _DicomInfo
 {
-  unsigned short
+  const unsigned short
     group,
     element;
 

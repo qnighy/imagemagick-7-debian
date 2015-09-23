@@ -567,6 +567,9 @@ static void TIFFGetProfiles(TIFF *tiff,Image *image,MagickBooleanType ping)
   unsigned char
     *profile;
 
+  unsigned long
+    *tietz;
+
   length=0;
   if (ping == MagickFalse)
     {
@@ -601,6 +604,9 @@ static void TIFFGetProfiles(TIFF *tiff,Image *image,MagickBooleanType ping)
   if ((TIFFGetField(tiff,37724,&length,&profile) == 1) &&
       (profile != (unsigned char *) NULL))
     (void) ReadProfile(image,"tiff:37724",profile,(ssize_t) length);
+  image->tietz_offset=0;
+  if (TIFFGetField(tiff,37706,&length,&tietz) == 1)
+    image->tietz_offset=tietz[0];
 }
 
 static void TIFFGetProperties(TIFF *tiff,Image *image)
@@ -2973,7 +2979,7 @@ static void TIFFSetProperties(TIFF *tiff,const ImageInfo *image_info,
         pages;
       
       page=(uint16) image->scene;
-      pages=GetImageListLength(image);
+      pages=(uint16) GetImageListLength(image);
       if ((image_info->adjoin != MagickFalse) && (pages > 1))
         (void) TIFFSetField(tiff,TIFFTAG_SUBFILETYPE,FILETYPE_PAGE);
       (void) TIFFSetField(tiff,TIFFTAG_PAGENUMBER,page,pages);
