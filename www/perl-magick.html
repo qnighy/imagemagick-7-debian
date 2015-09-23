@@ -188,13 +188,13 @@ $ENV{PATH}' . "='/../bin:/usr/bin:/usr/local/bin';
 
 <pre>
 #!/usr/local/bin/perl
-use Image::Magick;<br>
-my($image, $x);<br>
+use Image::Magick;<br />
+my($image, $x);<br />
 $image = Image::Magick-&gt;new;
 $x = $image-&gt;Read('girl.png', 'logo.png', 'rose.png');
-warn "$x" if "$x";<br>
+warn "$x" if "$x";<br />
 $x = $image-&gt;Crop(geometry=&gt;'100x100+100+100');
-warn "$x" if "$x";<br>
+warn "$x" if "$x";<br />
 $x = $image-&gt;Write('x.png');
 warn "$x" if "$x";
 </pre>
@@ -202,8 +202,8 @@ warn "$x" if "$x";
 <p>The script reads three images, crops them, and writes a single image as a GIF animation sequence. In many cases you may want to access individual images of a sequence. The next example illustrates how this done:</p>
 
 <pre class="pre-scrollable">#!/usr/local/bin/perl
-use Image::Magick;<br>
-my($image, $p, $q);<br>
+use Image::Magick;<br />
+my($image, $p, $q);<br />
 $image = new Image::Magick;
 $image-&gt;Read('x1.png');
 $image-&gt;Read('j*.jpg');
@@ -444,7 +444,7 @@ $image-&gt;[$x]-&gt;Frame("100x200");
 
   <tr>
     <td>AutoOrient</td>
-    <td><br></td>
+    <td><br /></td>
     <td>adjusts an image so that its orientation is suitable for viewing (i.e. top-left orientation)</td>
   </tr>
 
@@ -516,7 +516,7 @@ $image-&gt;[$x]-&gt;Frame("100x200");
 
   <tr>
     <td>Coalesce</td>
-    <td><br></td>
+    <td><br /></td>
     <td>merge a sequence of images</td>
   </tr>
 
@@ -620,7 +620,7 @@ ay connectivity.</td>
 
   <tr>
     <td>Deconstruct</td>
-    <td><br></td>
+    <td><br /></td>
     <td>break down an image sequence into constituent parts</td>
   </tr>
 
@@ -674,13 +674,13 @@ ay connectivity.</td>
 
   <tr>
     <td>Enhance</td>
-    <td><br></td>
+    <td><br /></td>
     <td>apply a digital filter to enhance a noisy image</td>
   </tr>
 
   <tr>
     <td>Equalize</td>
-    <td>channel=&gt;{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Opacity, Red, RGB, Yellow}<br></td>
+    <td>channel=&gt;{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Opacity, Red, RGB, Yellow}<br /></td>
     <td>perform histogram equalization to the image</td>
   </tr>
 
@@ -704,13 +704,13 @@ ay connectivity.</td>
 
   <tr>
     <td>Flip</td>
-    <td><br></td>
+    <td><br /></td>
     <td>reflect the image scanlines in the vertical direction</td>
   </tr>
 
   <tr>
     <td>Flop</td>
-    <td><br></td>
+    <td><br /></td>
     <td>reflect the image scanlines in the horizontal direction</td>
   </tr>
 
@@ -842,7 +842,7 @@ ay connectivity.</td>
 
   <tr>
     <td>Magnify</td>
-    <td><br></td>
+    <td><br /></td>
     <td>double the size of the image with pixel art scaling</td>
   </tr>
 
@@ -872,7 +872,7 @@ ay connectivity.</td>
 
   <tr>
     <td>Minify</td>
-    <td><br></td>
+    <td><br /></td>
     <td>half the size of an image</td>
   </tr>
 
@@ -908,7 +908,7 @@ ay connectivity.</td>
 
   <tr>
     <td>Normalize</td>
-    <td>channel=&gt;{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Opacity, Red, RGB, Yellow}<br></td>
+    <td>channel=&gt;{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Opacity, Red, RGB, Yellow}<br /></td>
     <td>transform image to span the full range of color values</td>
   </tr>
 
@@ -1082,7 +1082,7 @@ fill=&gt;<i><a href="color.html">color name</a></i>, channel=&gt;{All, Default, 
 
   <tr>
     <td>Signature</td>
-    <td><br></td>
+    <td><br /></td>
     <td>generate an SHA-256 message digest for the image pixel stream</td>
   </tr>
 
@@ -1135,7 +1135,7 @@ fill=&gt;<i><a href="color.html">color name</a></i>, channel=&gt;{All, Default, 
 
   <tr>
     <td>Strip</td>
-    <td><br></td>
+    <td><br /></td>
     <td>strip an image of all profiles and comments.</td>
   </tr>
 
@@ -1177,19 +1177,19 @@ fill=&gt;<i><a href="color.html">color name</a></i>, channel=&gt;{All, Default, 
 
   <tr>
     <td>Transpose</td>
-    <td><br></td>
+    <td><br /></td>
     <td>flip image in the vertical direction and rotate 90 degrees</td>
   </tr>
 
   <tr>
     <td>Transverse</td>
-    <td><br></td>
+    <td><br /></td>
     <td>flop image in the horizontal direction and rotate 270 degrees</td>
   </tr>
 
   <tr>
     <td>Trim</td>
-    <td><br></td>
+    <td><br /></td>
     <td>remove edges that are the background color from the image</td>
   </tr>
 

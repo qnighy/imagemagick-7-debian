@@ -100,7 +100,7 @@
 <p>The pixel cache is associated with an image when it is created and it is initialized when you try to get or put pixels.  Here are three common methods to associate a pixel cache with an image:</p>
 
 <dl>
-<dt>Create an image canvas initialized to the background color:</dt><br>
+<dt>Create an image canvas initialized to the background color:</dt><br />
 <dd><pre>image=AllocateImage(image_info);
 if (SetImageExtent(image,640,480) == MagickFalse)
   { /* an exception was thrown */ }
@@ -108,13 +108,13 @@ if (SetImageExtent(image,640,480) == MagickFalse)
 SetImageBackgroundColor(image);
 </pre></dd>
 
-<dt>Create an image from a JPEG image on disk:</dt><br>
+<dt>Create an image from a JPEG image on disk:</dt><br />
 <dd><pre>(void) strcpy(image_info-&gt;filename,"image.jpg"):
 image=ReadImage(image_info,exception);
 if (image == (Image *) NULL)
   { /* an exception was thrown */ }
 </pre></dd>
-<dt>Create an image from a memory based image:</dt><br>
+<dt>Create an image from a memory based image:</dt><br />
 <dd><pre>image=BlobToImage(blob_info,blob,extent,exception);
 if (image == (Image *) NULL)
   { /* an exception was thrown */ }
@@ -478,7 +478,7 @@ convert logo: -resize 250000x250000 logo.miff
 <p>For large images, ImageMagick will likely create a pixel cache on disk.  Make sure you have plenty of temporary disk space.  If your default temporary disk partition is too small, tell ImageMagick to use another partition with plenty of free space.  For example:</p>
 
 <pre>
-convert -define registry:temporary-path=/data/tmp logo:  \ <br>     -resize 250000x250000 logo.miff
+convert -define registry:temporary-path=/data/tmp logo:  \ <br />     -resize 250000x250000 logo.miff
 </pre>
 
 <p>To ensure large images do not consume all the memory on your system, force the image pixels to memory-mapped disk with resource limits:</p>

@@ -292,7 +292,7 @@ convert photo.jpg -fx \'iso=32; rone=rand(); rtwo=rand(); \
 <dt> <code>trunc(</code><var>x</var><code>)</code></dt><dd> round to integer, towards zero</dd>
 <dt> <code>while(</code><var>condition</var>,<var>expression</var><code>)</code></dt><dd> interate while the condition is not equal to 0</dd>
 </dl>
-<br>
+<br />
 <p>The expression semantics include these rules:</p>
 
 <ul>
@@ -304,7 +304,7 @@ convert photo.jpg -fx \'iso=32; rone=rand(); rtwo=rand(); \
 <li>Unary operators have a lower priority than binary operators, that is, the unary minus (negation) has lower precedence than exponentiation, so -3^2 is interpreted as -(3^2) = -9.  Use parentheses to clarify your intent (e.g. (-3)^2 = 9).</li>
 <li>Similarly, care must be exercised when using the slash ('/') symbol. The string of characters <var>1/2x</var> is interpreted as (1/2)x. The contrary interpretation should be written explicitly as 1/(2x). Again, the use of parentheses helps clarify the meaning and should be used whenever there is any chance of misinterpretation.</li>
 </ul>
-<br>
+<br />
 
 
 <h3>Source Images</h3>
@@ -332,7 +332,7 @@ convert -channel red logo: -flop logo: -resize "20%" -fx "(u+v)/2" image.jpg
   <a href="../images/logo-sm-fx.png"><img src="../images/logo-sm-fx.png" width="128" height="96" alt="logo-sm-fx.png" /></a>
 </ul>
 
-<br>
+<br />
 <h3>Accessing Pixels</h3>
 
 <p>All color values are normalized to the range of 0.0 to 1.0.  The alpha channel ranges from 0.0 (fully transparent) to 1.0 (fully opaque).</p>

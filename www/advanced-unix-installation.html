@@ -185,11 +185,11 @@ configure CC=c99 CFLAGS=-O2 LDFLAGS='-L/usr/local/lib -R/usr/local/lib' LIBS=-lp
   <tr>
     <td>--enable-shared</td>
     <td>build the  shared libraries and support for loading coder and process modules. Shared libraries are preferred because they allow programs to share common code, making the individual programs much smaller. In addition shared libraries are required in order for PerlMagick to be dynamically loaded by an installed PERL (otherwise an additional PERL (PerlMagick) must be installed.
-  <br><br>
+  <br /><br />
   ImageMagick built with delegates (see MAGICK PLUG-INS below) can pose additional challenges. If ImageMagick is built using static libraries (the default without <code>--enable-shared</code>) then delegate libraries may be built as either static libraries or shared libraries. However, if ImageMagick is built using shared libraries, then all delegate libraries must also be built as shared libraries.  Static libraries usually have the extension <code>.a</code>, while shared libraries typically have extensions like <code>.so</code>, <code>.sa</code>, or <code>.dll</code>. Code in shared libraries normally must compiled using a special compiler option to produce Position Independent Code (PIC). The only time this not necessary is if the platform compiles code as PIC by default.
-  <br><br>
+  <br /><br />
   PIC compilation flags differ from vendor to vendor (gcc's is <code>-fPIC</code>). However, you must compile all shared library source with the same flag (for gcc use <code>-fPIC</code> rather than <code>-fpic</code>). While static libraries are normally created using an archive tool like <code>ar</code>, shared libraries are built using special linker or compiler options (e.g. <code>-shared</code> for gcc).
-  <br><br>
+  <br /><br />
   If <code>--enable-shared</code> is not specified, a new PERL interpreter (PerlMagick) is built which is statically linked against the PerlMagick extension. This new interpreter is installed into the same directory as the ImageMagick utilities. If <code>--enable-shared</code> is specified, the PerlMagick extension is built as a dynamically loadable object which is loaded into your current PERL interpreter at run-time. Use of dynamically-loaded extensions is preferable over statically linked extensions so use <code>--enable-shared</code> if possible (note that all libraries used with ImageMagick must be shared libraries!).</td>
   </tr>
   <tr>
@@ -199,7 +199,7 @@ configure CC=c99 CFLAGS=-O2 LDFLAGS='-L/usr/local/lib -R/usr/local/lib' LIBS=-lp
   <tr>
     <td>--disable-installed</td>
     <td>disable building an installed ImageMagick (default enabled).
-  <br><br>
+  <br /><br />
   By default the ImageMagick build is configured to formally install into a directory tree.  This the most secure and reliable way to install ImageMagick.  Use this option to configure ImageMagick so that it doesn't use hard-coded paths and locates support files by computing an offset path from the executable (or from the location specified by the MAGICK_HOME environment variable. The uninstalled configuration is ideal for binary distributions which are expected to extract and run in any location.</td>
   </tr>
   <tr>
@@ -221,13 +221,13 @@ configure CC=c99 CFLAGS=-O2 LDFLAGS='-L/usr/local/lib -R/usr/local/lib' LIBS=-lp
   <tr>
     <td>--disable-openmp</td>
     <td>disable OpenMP (default enabled).
-  <br><br>
+  <br /><br />
   Certain ImageMagick algorithms, for example convolution, can achieve a significant speed-up with the assistance of the OpenMP API when running on modern dual and quad-core processors.</td>
   </tr>
   <tr>
     <td>--disable-largefile</td>
     <td>disable support for large (64 bit) file offsets.
-  <br><br>
+  <br /><br />
   By default, ImageMagick is compiled with support for large files (&gt; 2GB on a 32-bit CPU) if the operating system supports large files.  Some applications which use the ImageMagick library may also require support for large files. By disabling support for large files via <code>--disable-largefile</code>, dependent applications do not require special compilation options for large files in order to use the library.</td>
   </tr>
 </table></div>
@@ -239,22 +239,22 @@ configure CC=c99 CFLAGS=-O2 LDFLAGS='-L/usr/local/lib -R/usr/local/lib' LIBS=-lp
   <tr>
     <td>--with-quantum-depth</td>
     <td>number of bits in a pixel quantum (default 16).
-  <br><br>
+  <br /><br />
   Use this option to specify the number of bits to use per pixel quantum (the size of the red, green, blue, and alpha pixel components). For example, <code>--with-quantum-depth=8</code> builds ImageMagick using 8-bit quantums.  Most computer display adapters use 8-bit quantums. Currently supported arguments are 8, 16, or 32. We recommend the default of 16 because some image formats support 16 bits-per-pixel. However, this option is important in determining the overall run-time performance of ImageMagick.
-  <br><br>
+  <br /><br />
   The number of bits in a quantum determines how many values it may contain. Each quantum level supports 256 times as many values as the previous level. The following table shows the range available for various quantum sizes.
-  <br><br>
+  <br /><br />
 <pre>
 Quantum Depth     Valid Range (Decimal)   Valid Range (Hex)
     8             0-255                   00-FF
    16             0-65535                 0000-FFFF
    32             0-4294967295            00000000-FFFFFFFF
 </pre>
-  <br><br>
+  <br /><br />
   Larger pixel quantums can cause ImageMagick to run more slowly and to require more memory. For example, using sixteen-bit pixel quantums can cause ImageMagick to run 15% to 50% slower (and take twice as much memory) than when it is built to support eight-bit pixel quantums.
-  <br><br>
+  <br /><br />
   The amount of virtual memory consumed by an image can be computed by the equation <var>(5 * Quantum Depth * Rows * Columns) / 8</var>. This an important consideration when resources are limited, particularly since processing an image may require several images to be in memory at one time. The following table shows memory consumption values for a 1024x768 image:
-  <br><br>
+  <br /><br />
 <pre>
 Quantum Depth   Virtual Memory
      8               3MB
@@ -275,37 +275,37 @@ Quantum Depth   Virtual Memory
   <tr>
       <td>--without-modules</td>
     <td>disable support for dynamically loadable modules.
-  <br><br>
+  <br /><br />
   Image coders and process modules are built as loadable modules which are installed under the directory <var>[prefix]/lib/ImageMagick-X.X.X/modules-QN</var> (where 'N' equals 8, 16, or 32 depending on the quantum depth) in the subdirectories <code>coders</code> and <code>filters</code> respectively. The modules build option is only available in conjunction with <code>--enable-shared</code>. If <code>--enable-shared</code> is not also specified, support for building modules is disabled.  Note that if <code>--enable-shared</code> and <code>--disable-modules</code> are specified, the module loader is active (allowing extending an installed ImageMagick by simply copying a module into place) but ImageMagick itself is not built using modules.</td>
   </tr>
   <tr>
     <td>--with-cache</td>
     <td>set pixel cache threshold (defaults to available memory).
-  <br><br>
+  <br /><br />
   Specify a different image pixel cache threshold with this option. This sets the maximum amount of heap memory that ImageMagick is allowed to consume before switching to using memory-mapped temporary files to store raw pixel data.</td>
   </tr>
   <tr>
     <td>--without-threads</td>
     <td>disable threads support.
-  <br><br>
+  <br /><br />
   By default, the ImageMagick library is compiled with multi-thread support.  If this undesirable, specify <code>--without-threads</code>.</td>
   </tr>
   <tr>
     <td>--with-frozenpaths</td>
     <td>enable frozen delegate paths.
-  <br><br>
+  <br /><br />
   Normally, external program names are substituted into the <code>delegates.xml</code> configuration file without full paths. Specify this option to enable saving full paths to programs using locations determined by configure. This useful for environments where programs are stored under multiple paths, and users may use different PATH settings than the person who builds ImageMagick.</td>
   </tr>
   <tr>
     <td>--without-magick-plus-plus</td>
     <td>disable build/install of Magick++.
-  <br><br>
+  <br /><br />
   Disable building Magick++, the C++ application programming interface to ImageMagick. A suitable C++ compiler is required in order to build Magick++. Specify the CXX configure variable to select the C++ compiler to use (default <code>g++</code>), and CXXFLAGS to select the desired compiler optimization and debug flags (default <code>-g -O2</code>). Antique C++ compilers will normally be rejected by configure tests so specifying this option should only be necessary if Magick++ fails to compile.</td>
   </tr>
   <tr>
     <td>--without-perl</td>
     <td>disable build/install of PerlMagick, or
-  <br><br>
+  <br /><br />
   By default, PerlMagick is conveniently compiled and installed as part of ImageMagick's normal <code>configure</code>, <code>make</code>, <code>sudo make install</code> process. When <code>--without-perl</code> is specified, you must first install ImageMagick, change to the PerlMagick subdirectory, build, and finally install PerlMagick. Note, PerlMagick is configured even if <code>--without-perl</code> is specified. If the argument <var>--with-perl=/path/to/perl</var> is supplied, <var>/../path/to/perl</var> is be taken as the PERL interpreter to use. This important in case the <code>perl</code> executable in your PATH is not PERL5, or is not the PERL you want to use.</td>
   </tr>
   <tr>
@@ -315,7 +315,7 @@ Quantum Depth   Virtual Memory
   <tr>
     <td>--with-perl-options=OPTIONS</td>
     <td>options to pass on command-line when generating PerlMagick's Makefile from Makefile.PL.
-  <br><br>
+  <br /><br />
   The PerlMagick module is normally installed using the Perl interpreter's installation PREFIX, rather than ImageMagick's. If ImageMagick's installation prefix is not the same as PERL's PREFIX, then you may find that PerlMagick's <code>sudo make install</code> step tries to install into a directory tree that you don't have write permissions to. This common when PERL is delivered with the operating system or on Internet Service Provider (ISP) web servers. If you want PerlMagick to install elsewhere, then provide a PREFIX option to PERL's configuration step via "--with-perl-options=PREFIX=/some/place". Other options accepted by MakeMaker are 'LIB', 'LIBPERL_A', 'LINKTYPE', and 'OPTIMIZE'. See the ExtUtils::MakeMaker(3) manual page for more information on configuring PERL extensions.</td>
   </tr>
   <tr>
@@ -377,13 +377,13 @@ Quantum Depth   Virtual Memory
   <tr>
     <td>--with-gs-font-dir</td>
     <td>directory containing Ghostscript fonts.
-  <br><br>
+  <br /><br />
   Specify the directory containing the Ghostscript Postscript Type 1 font files (e.g. <code>n022003l.pfb</code>) so that they can be rendered using the FreeType library. If the font files are installed using the default Ghostscript installation paths (<var>${prefix}/share/ghostwww/fonts</var>), they should be discovered automagically by configure and specifying this option is not necessary. Specify this option if the Ghostscript fonts fail to be located automagically, or the location needs to be overridden.</td>
   </tr>
   <tr>
     <td>--with-windows-font-dir</td>
     <td>directory containing MS-Windows fonts.
-  <br><br>
+  <br /><br />
   Specify the directory containing MS-Windows-compatible fonts. This not necessary when ImageMagick is running under MS-Windows.</td>
   </tr>
   <tr>
@@ -397,7 +397,7 @@ Quantum Depth   Virtual Memory
   <tr>
     <td>--without-x</td>
     <td>don't use the X Window System.
-  <br><br>
+  <br /><br />
   By default, ImageMagick uses the X11 delegate libraries if they are available. When --without-x is specified, use of X11 is disabled.  The display, animate, and import sub-commands are not included. The remaining sub-commands have reduced functionality such as no access to X11 fonts (consider using Postscript or TrueType fonts instead).</td>
   </tr>
   <tr>
@@ -557,7 +557,7 @@ display -display :0
 
 <p>Although you can download and install delegate libraries yourself, many are already available in the <a href="http://gnuwin32.sourceforge.net/">GnuWin32</a> distribution.  Download and install whichever delegate libraries you require such as JPEG, PNG, TIFF, etc.  Make sure you specify the development headers when you install a package.  Next type,</p>
 
-<pre><span class="crtprompt"> </span><span class="crtin">tar jxvf ImageMagick-6.9.2-?.tar.bz2</span><span class="crtout"><br></span><span class="crtprompt"> </span><span class="crtin">cd ImageMagick-6.9.2-1</span><span class="crtout"><br></span><span class="crtprompt"> </span><span class="crtin">export CPPFLAGS="-Ic:/Progra~1/GnuWin32/include"</span><span class="crtout"><br></span><span class="crtprompt"> </span><span class="crtin">export LDFLAGS="-Lc:/Progra~1/GnuWin32/lib"</span><span class="crtout"><br></span><span class="crtprompt"> </span><span class="crtin">./configure --without-perl</span><span class="crtout"><br></span><span class="crtprompt"> </span><span class="crtin">make</span><span class="crtout"><br></span><span class="crtprompt"> </span><span class="crtin">sudo make install</span></pre>
+<pre><span class="crtprompt"> </span><span class="crtin">tar jxvf ImageMagick-6.9.2-?.tar.bz2</span><span class="crtout"><br /></span><span class="crtprompt"> </span><span class="crtin">cd ImageMagick-6.9.2-1</span><span class="crtout"><br /></span><span class="crtprompt"> </span><span class="crtin">export CPPFLAGS="-Ic:/Progra~1/GnuWin32/include"</span><span class="crtout"><br /></span><span class="crtprompt"> </span><span class="crtin">export LDFLAGS="-Lc:/Progra~1/GnuWin32/lib"</span><span class="crtout"><br /></span><span class="crtprompt"> </span><span class="crtin">./configure --without-perl</span><span class="crtout"><br /></span><span class="crtprompt"> </span><span class="crtin">make</span><span class="crtout"><br /></span><span class="crtprompt"> </span><span class="crtin">sudo make install</span></pre>
 <h2 class="magick-header"><a id="problems"></a>Dealing with Unexpected Problems</h2>
 
 <p>Chances are the download, configure, build, and install of ImageMagick went flawlessly as it is intended, however, certain systems and environments may cause one or more steps to fail.  We discuss a few problems we've run across and how to take corrective action to ensure you have a working release of ImageMagick</p>
