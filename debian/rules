@@ -311,6 +311,14 @@ override_dh_auto_install-indep:
              -type f -and -name '*.html' -and -not -empty -print0 \
              | xargs -r -0 -n 1 debian/scripts/removeprivacybreach
 
+	# remove boostrap copy
+	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/js/*
+	ln -s /usr/share/javascript/bootstrap/js/bootstrap.min.js \
+	     $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/js/magick.js
+	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/css/*
+	ln -s /usr/share/javascript/bootstrap/css/bootstrap.min.css \
+	     $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/css/magick.css
+
 
 # install quantum package
 quantum_override_dh_install-arch_%:

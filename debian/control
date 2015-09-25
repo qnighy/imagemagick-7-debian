@@ -59,10 +59,11 @@ Package: imagemagick-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc
-Depends: ${misc:Depends}, ${doxygen:Depends}
+Depends: ${misc:Depends}, ${doxygen:Depends},
 Pre-Depends: dpkg (>= 1.17.5)
 Recommends: www-browser,
 	    libjs-jquery,
+	    libjs-bootstrap (>=3.3.5+dfsg-1),
 	    libjs-jquery-mousewheel,
 	    libjs-jquery-fancybox,
 Suggests: imagemagick
