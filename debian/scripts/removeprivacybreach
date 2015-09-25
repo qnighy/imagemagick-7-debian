@@ -10,7 +10,7 @@ trap '[ "$temporary_dir" ] && rm -rf "$temporary_dir"' EXIT
 
 save_mask=$(umask)
 umask 077
-temporary_dir=$(mktemp -d "$TMPDIR/XXXXXXXXXXXXXXXXXXXXXXXXXXXXX") || { echo "ERROR creating a temporary file" >&2; exit 1; }
+temporary_dir=$(mktemp -d "$TMPDIR/xslt-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX") || { echo "ERROR creating a temporary file" >&2; exit 1; }
 umask "$save_mask"
 temporary_file=$temporary_dir/htmlprivacy
 
