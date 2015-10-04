@@ -14,5 +14,5 @@ temporary_dir=$(mktemp -d "$TMPDIR/xslt-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX") || { ech
 umask "$save_mask"
 temporary_file=$temporary_dir/htmlprivacy
 
-xsltproc --novalid --nonet debian/scripts/removeprivacybreach.xslt $1 > $temporary_file
-mv $temporary_file $1
+xsltproc --novalid --nonet "$1" "$2" > $temporary_file
+mv $temporary_file "$2"

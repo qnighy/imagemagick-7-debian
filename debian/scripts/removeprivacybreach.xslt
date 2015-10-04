@@ -19,7 +19,7 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="html">
+  <xsl:template match="*[local-name(.)='html']">
     <xsl:text>&#10;</xsl:text>
     <xsl:comment>Regenerated with privacy breach removal script</xsl:comment>
     <xsl:text>&#10;</xsl:text>
@@ -29,31 +29,33 @@
   </xsl:template>
     
   <!-- remove various privacy breach -->
-  <xsl:template match="script[contains(@src,'googlesyndication')]" />
-  <xsl:template match="script[contains(text(),'google_ad')]" />
-  <xsl:template match="script[contains(comment(),'google_ad')]" />
-  <xsl:template match="script[contains(text(),'apis.google.com/js/plusone.js')]" />
-  <xsl:template match="script[contains(text(),'GoogleAnalyticsObject')]" />
-  <xsl:template match="div[@class='g-plusone']" />
-  <xsl:template match="meta[@name='google-site-verification']" />
-  <xsl:template match="script[contains(@src,'pagead/show_ads.js')]" />
-  <xsl:template match="script[contains(text(),'document.getElementById(&quot;gplusone&quot;)')]" />
-  <xsl:template match="adsense" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'googlesyndication')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(text(),'google_ad')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(comment(),'google_ad')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(text(),'apis.google.com/js/plusone.js')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(text(),'GoogleAnalyticsObject')]" />
+  <xsl:template match="*[local-name(.) = 'div'][@class='g-plusone']" />
+  <xsl:template match="*[local-name(.) = 'meta'][@name='google-site-verification']" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'pagead/show_ads.js')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(text(),'document.getElementById(&quot;gplusone&quot;)')]" />
+  <xsl:template match="*[local-name(.) = 'adsense']" />
   <xsl:template match="CustomSearchEngine" />
-  <xsl:template match="script[contains(@src,'google.com/jsapi')]" />
-  <xsl:template match="script[contains(text(),'google.search.CustomSearchControl')]" />
-  <xsl:template match="script[contains(@src,'adsbygoogle')]" />
-  <xsl:template match="script[contains(text(),'window.adsbygoogle')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'google.com/jsapi')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(text(),'google.search.CustomSearchControl')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'adsbygoogle')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(text(),'window.adsbygoogle')]" />
+  <xsl:template match="ins[@class='adsbygoogle']" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(text(),'google-analytics.com/analytics.js')]" />
 
   <!-- flattr -->
-  <xsl:template match="script[contains(text(),'http://api.flattr.com/js/0.6/load.js?mode=auto')]" />
-  <xsl:template match="img[contains(@src,'api.flattr.com/button/flattr-badge-large.png')]" />
-  <xsl:template match="iframe[contains(@src,'tools.flattr.net/widgets/thing.html')]" />
-  <xsl:template match="div[child::a[@class='FlattrButton']]" />
-  <xsl:template match="noscript[child::a[@href='http://flattr.com/thing/947300/Convert-Edit-And-Compose-Images']]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(text(),'http://api.flattr.com/js/0.6/load.js?mode=auto')]" />
+  <xsl:template match="*[local-name(.) = 'img'][contains(@src,'api.flattr.com/button/flattr-badge-large.png')]" />
+  <xsl:template match="*[local-name(.) = 'iframe'][contains(@src,'tools.flattr.net/widgets/thing.html')]" />
+  <xsl:template match="*[local-name(.) = 'div'][child::a[@class='FlattrButton']]" />
+  <xsl:template match="*[local-name(.) = 'noscript'][child::a[@href='http://flattr.com/thing/947300/Convert-Edit-And-Compose-Images']]" />
 
   <!-- replace online jquery with local one -->
-  <xsl:template match="script[contains(@src,'jquery.min.js')]">
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'jquery.min.js')]">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="src">
@@ -62,7 +64,7 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="script[contains(@src,'jquery.mousewheel')]">
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'jquery.mousewheel')]">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="src">
@@ -71,7 +73,7 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="script[contains(@src,'jquery.fancybox.pack.js')]">
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'jquery.fancybox.pack.js')]">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="src">
@@ -80,7 +82,7 @@
     </xsl:copy>
   </xsl:template>
   
-  <xsl:template match="link[contains(@href,'jquery.fancybox.css')]">
+  <xsl:template match="*[local-name(.) = 'link'][contains(@href,'jquery.fancybox.css')]">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
       <xsl:attribute name="href">

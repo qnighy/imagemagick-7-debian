@@ -166,7 +166,6 @@ quantum_override_dh_auto_test-arch_%:
 override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_Q16
 override_dh_auto_test-indep:
 
-
 # dh_auto_install in build directory
 quantum_override_dh_auto_install-arch_%:
 	dh_auto_install --builddirectory="debian/build-quantum-$*" \
@@ -277,6 +276,16 @@ override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH) -type d -empty | xargs -r rmdir -p
 
+
+xslt-rule:
+    	# now apply privacy cleanning rules
+	cd "$(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc" && \
+	find  . \
+	     -path './www/api/MagickCore' -prune -o \
+             -path './www/api/MagickWand' -prune -o \
+             -type f -and -name '*.html' -and -not -empty -print0 \
+             | xargs -r -0 -n 1 "$(CURDIR)/debian/scripts/removeprivacybreach" "$(CURDIR)/debian/scripts/removeprivacybreach.xslt"
+
 override_dh_auto_install-indep:
 	if test "BUG#703261" = "SOLVED"; then \
 	dh_auto_install --builddirectory="$(CURDIR)/debian/build-quantum-indep" \
@@ -304,12 +313,6 @@ override_dh_auto_install-indep:
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
 
-	# now apply privacy cleanning rules
-	find $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc \
-	     -path www/api/MagickCore -prune -o \
-             -path www/api/MagickWand -prune -o \
-             -type f -and -name '*.html' -and -not -empty -print0 \
-             | xargs -r -0 -n 1 debian/scripts/removeprivacybreach
 
 	# remove boostrap copy
 	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/js/*
@@ -318,6 +321,14 @@ override_dh_auto_install-indep:
 	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/css/*
 	ln -s /usr/share/javascript/bootstrap/css/bootstrap.min.css \
 	     $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/css/magick.css
+
+	# now apply privacy cleanning rules
+	cd "$(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc" && \
+	find  . \
+	     -path './www/api/MagickCore' -prune -o \
+             -path './www/api/MagickWand' -prune -o \
+             -type f -and -name '*.html' -and -not -empty -print0 \
+             | xargs -r -0 -n 1 "$(CURDIR)/debian/scripts/removeprivacybreach" "$(CURDIR)/debian/scripts/removeprivacybreach.xslt"
 
 
 # install quantum package
