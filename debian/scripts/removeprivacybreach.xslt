@@ -39,12 +39,13 @@
   <xsl:template match="*[local-name(.) = 'script'][contains(@src,'pagead/show_ads.js')]" />
   <xsl:template match="*[local-name(.) = 'script'][contains(text(),'document.getElementById(&quot;gplusone&quot;)')]" />
   <xsl:template match="*[local-name(.) = 'adsense']" />
-  <xsl:template match="CustomSearchEngine" />
+  <xsl:template match="*[local-name(.) = 'CustomSearchEngine']" />
+  <xsl:template match="*[local-name(.) = 'customsearchengine']" />
   <xsl:template match="*[local-name(.) = 'script'][contains(@src,'google.com/jsapi')]" />
   <xsl:template match="*[local-name(.) = 'script'][contains(text(),'google.search.CustomSearchControl')]" />
   <xsl:template match="*[local-name(.) = 'script'][contains(@src,'adsbygoogle')]" />
   <xsl:template match="*[local-name(.) = 'script'][contains(text(),'window.adsbygoogle')]" />
-  <xsl:template match="ins[@class='adsbygoogle']" />
+  <xsl:template match="*[local-name(.) = 'ins'][@class='adsbygoogle']" />
   <xsl:template match="*[local-name(.) = 'script'][contains(text(),'google-analytics.com/analytics.js')]" />
 
   <!-- flattr -->
@@ -52,7 +53,9 @@
   <xsl:template match="*[local-name(.) = 'img'][contains(@src,'api.flattr.com/button/flattr-badge-large.png')]" />
   <xsl:template match="*[local-name(.) = 'iframe'][contains(@src,'tools.flattr.net/widgets/thing.html')]" />
   <xsl:template match="*[local-name(.) = 'div'][child::a[@class='FlattrButton']]" />
-  <xsl:template match="*[local-name(.) = 'noscript'][child::a[@href='http://flattr.com/thing/947300/Convert-Edit-And-Compose-Images']]" />
+  <xsl:template match="*[local-name(.) = 'noscript'][child::*[local-name(.) = 'a'][contains(@href,'flattr.com/thing/')]]" />
+  <xsl:template match="*[local-name(.) = 'a'][@class='FlattrButton']" />
+
 
   <!-- replace online jquery with local one -->
   <xsl:template match="*[local-name(.) = 'script'][contains(@src,'jquery.min.js')]">
@@ -92,13 +95,13 @@
   </xsl:template>
 
   <!-- temporary remove optionnal package -->
-  <xsl:template match="link[@type='text/css' and contains(@href,'jquery.fancybox-buttons.css')]" />
-  <xsl:template match="script[contains(@src,'jquery.fancybox-buttons.js')]" />
-  <xsl:template match="script[contains(@src,'jquery.fancybox-media.js')]" />
-  <xsl:template match="link[@type='text/css' and contains(@href,'jquery.fancybox-thumbs.css')]" />
-  <xsl:template match="script[contains(@src,'jquery.fancybox-thumbs.js')]" />
+  <xsl:template match="*[local-name(.) = 'link'][@type='text/css' and contains(@href,'jquery.fancybox-buttons.css')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'jquery.fancybox-buttons.js')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'jquery.fancybox-media.js')]" />
+  <xsl:template match="*[local-name(.) = 'link'][@type='text/css' and contains(@href,'jquery.fancybox-thumbs.css')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(@src,'jquery.fancybox-thumbs.js')]" />
 
   <!-- remove rss meta data -->
-  <xsl:template match="link[@href='http://imagemagick.org/ici.rdf']" />
+  <xsl:template match="*[local-name(.)= 'link'][@href='http://imagemagick.org/ici.rdf']" />
 
 </xsl:stylesheet>
