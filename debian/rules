@@ -6,6 +6,7 @@
 export DH_VERBOSE=1
 
 
+# quantum depth is channel depth
 export QUANTUMDEPTH ?= Q16
 export CORESOVERSION ?= 2
 export WANDSOVERSION ?= 2
