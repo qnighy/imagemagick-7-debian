@@ -25,7 +25,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::backgroundColorImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
  (c++)"Magick::backgroundTextureImage::backgroundTextureImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::backgroundTextureImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
- (c++)"Magick::Blob::base64()@Base" 8:6.9.1.2
+ (c++)"Magick::Blob::base64[abi:cxx11]()@Base" 8:6.9.1.2
  (c++)"Magick::Blob::base64(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.1.2
  (c++)"Magick::Blob::~Blob()@Base" 8:6.9.1.2
  (c++)"Magick::Blob::Blob()@Base" 8:6.9.1.2
@@ -82,12 +82,12 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::CoderInfo::CoderInfo(Magick::CoderInfo const&)@Base" 8:6.9.1.2
  (c++)"Magick::CoderInfo::CoderInfo(MagickCore::_MagickInfo const*)@Base" 8:6.9.1.2
  (c++)"Magick::CoderInfo::CoderInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
- (c++)"Magick::CoderInfo::description() const@Base" 8:6.9.1.2
+ (c++)"Magick::CoderInfo::description[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::CoderInfo::isMultiFrame() const@Base" 8:6.9.1.2
  (c++)"Magick::CoderInfo::isReadable() const@Base" 8:6.9.1.2
  (c++)"Magick::CoderInfo::isWritable() const@Base" 8:6.9.1.2
- (c++)"Magick::CoderInfo::mimeType() const@Base" 8:6.9.1.2
- (c++)"Magick::CoderInfo::name() const@Base" 8:6.9.1.2
+ (c++)"Magick::CoderInfo::mimeType[abi:cxx11]() const@Base" 8:6.9.1.2
+ (c++)"Magick::CoderInfo::name[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::CoderInfo::operator=(Magick::CoderInfo const&)@Base" 8:6.9.1.2
  (c++)"Magick::CoderInfo::unregister() const@Base" 8:6.9.1.2
  (c++)"Magick::Color::~Color()@Base" 8:6.9.1.2
@@ -139,7 +139,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Color::operator=(Magick::Color const&)@Base" 8:6.9.1.2
  (c++)"Magick::Color::operator=(MagickCore::_PixelPacket const&)@Base" 8:6.9.1.2
  (c++)"Magick::Color::operator=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
- (c++|optional=templinst)"Magick::Color::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >() const@Base" 8:6.9.1.2
+ (c++|optional=templinst)"Magick::Color::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Color::pixel(MagickCore::_PixelPacket*, Magick::Color::PixelType)@Base" 8:6.9.1.2
  (c++)"Magick::ColorRGB::~ColorRGB()@Base" 8:6.9.1.2
  (c++)"Magick::ColorRGB::ColorRGB()@Base" 8:6.9.1.2
@@ -220,11 +220,11 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, Magick::Image const&)@Base" 8:6.9.1.2
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(Magick::DrawableCompositeImage const&)@Base" 8:6.9.1.2
- (c++)"Magick::DrawableCompositeImage::filename() const@Base" 8:6.9.1.2
+ (c++)"Magick::DrawableCompositeImage::filename[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::DrawableCompositeImage::filename(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::DrawableCompositeImage::image() const@Base" 8:6.9.1.2
  (c++)"Magick::DrawableCompositeImage::image(Magick::Image const&)@Base" 8:6.9.1.2
- (c++)"Magick::DrawableCompositeImage::magick()@Base" 8:6.9.1.2
+ (c++)"Magick::DrawableCompositeImage::magick[abi:cxx11]()@Base" 8:6.9.1.2
  (c++)"Magick::DrawableCompositeImage::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.1.2
  (c++)"Magick::DrawableCompositeImage::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.1.2
  (c++)"Magick::DrawableCompositeImage::operator=(Magick::DrawableCompositeImage const&)@Base" 8:6.9.1.2
@@ -244,6 +244,10 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Drawable::Drawable()@Base" 8:6.9.1.2
  (c++)"Magick::Drawable::Drawable(Magick::DrawableBase const&)@Base" 8:6.9.1.2
  (c++)"Magick::Drawable::Drawable(Magick::Drawable const&)@Base" 8:6.9.1.2
+ (c++)"Magick::DrawableDensity::DrawableDensity(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.2.3
+ (c++)"Magick::DrawableDensity::copy() const@Base" 8:6.9.2.3
+ (c++)"Magick::DrawableDensity::~DrawableDensity()@Base" 8:6.9.2.3
+ (c++)"Magick::DrawableDensity::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.2.3
  (c++)"Magick::DrawableEllipse::copy() const@Base" 8:6.9.1.2
  (c++)"Magick::DrawableEllipse::~DrawableEllipse()@Base" 8:6.9.1.2
  (c++)"Magick::DrawableEllipse::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.1.2
@@ -520,7 +524,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::fontImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
  (c++|subst)"Magick::fontPointsizeImage::fontPointsizeImage({c++:size_t})@Base" 8:6.9.1.2
  (c++)"Magick::fontPointsizeImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
- (c++)"Magick::formatExceptionMessage(MagickCore::_ExceptionInfo const*)@Base" 8:6.9.1.2
+ (c++)"Magick::formatExceptionMessage[abi:cxx11](MagickCore::_ExceptionInfo const*)@Base" 8:6.9.1.2
  (c++)"Magick::frameGeometryDefault@Base" 8:6.9.1.2
  (c++|subst)"Magick::frameImage::frameImage({c++:size_t}, {c++:size_t}, {c++:ssize_t}, {c++:ssize_t})@Base" 8:6.9.1.2
  (c++)"Magick::frameImage::frameImage(Magick::Geometry const&)@Base" 8:6.9.1.2
@@ -542,7 +546,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Geometry::operator MagickCore::_RectangleInfo() const@Base" 8:6.9.1.2
  (c++)"Magick::Geometry::operator=(Magick::Geometry const&)@Base" 8:6.9.1.2
  (c++)"Magick::Geometry::operator=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
- (c++|optional=templinst)"Magick::Geometry::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >() const@Base" 8:6.9.1.2
+ (c++|optional=templinst)"Magick::Geometry::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++|subst)"Magick::gifDisposeMethodImage::gifDisposeMethodImage({c++:size_t})@Base" 8:6.9.1.2
  (c++)"Magick::gifDisposeMethodImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
  (c++)"Magick::haldClutImage::haldClutImage(Magick::Image const&)@Base" 8:6.9.1.2
@@ -580,10 +584,10 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::autoOrient()@Base" 8:6.9.1.2
  (c++)"Magick::Image::backgroundColor() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::backgroundColor(Magick::Color const&)@Base" 8:6.9.1.2
- (c++)"Magick::Image::backgroundTexture() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::backgroundTexture[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::backgroundTexture(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::baseColumns() const@Base" 8:6.9.1.2
- (c++)"Magick::Image::baseFilename() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::baseFilename[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::baseRows() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::blackPointCompensation(bool)@Base" 8:6.9.1.2
  (c++)"Magick::Image::blackPointCompensation() const@Base" 8:6.9.1.2
@@ -638,7 +642,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::colorSpace(MagickCore::ColorspaceType)@Base" 8:6.9.1.2
  (c++)"Magick::Image::colorspaceType() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::colorspaceType(MagickCore::ColorspaceType)@Base" 8:6.9.1.2
- (c++)"Magick::Image::comment() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::comment[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::comment(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::compareChannel(MagickCore::ChannelType, Magick::Image const&, MagickCore::MetricType)@Base" 8:6.9.1.2
  (c++)"Magick::Image::compareChannel(MagickCore::ChannelType, Magick::Image const&, MagickCore::MetricType, double*)@Base" 8:6.9.1.2
@@ -661,6 +665,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::contrastStretchChannel(MagickCore::ChannelType, double, double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::contrastStretch(double, double)@Base" 8:6.9.1.2
  (c++|subst)"Magick::Image::convolve({c++:size_t}, double const*)@Base" 8:6.9.1.2
+ (c++)"Magick::Image::copyPixels(Magick::Image const&, Magick::Geometry const&, Magick::Offset const&)@Base" 8:6.9.2.3
  (c++)"Magick::Image::crop(Magick::Geometry const&)@Base" 8:6.9.1.2
  (c++|subst)"Magick::Image::cycleColormap({c++:ssize_t})@Base" 8:6.9.1.2
  (c++)"Magick::Image::debug(bool)@Base" 8:6.9.1.2
@@ -677,7 +682,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::deskew(double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::despeckle()@Base" 8:6.9.1.2
  (c++)"Magick::Image::determineType() const@Base" 8:6.9.1.2
- (c++)"Magick::Image::directory() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::directory[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::display()@Base" 8:6.9.1.2
  (c++|subst)"Magick::Image::distort(MagickCore::DistortImageMethod, {c++:size_t}, double const*, bool)@Base" 8:6.9.1.2
  (c++)"Magick::Image::draw(Magick::Drawable const&)@Base" 8:6.9.1.2
@@ -696,7 +701,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::extent(Magick::Geometry const&, Magick::Color const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::extent(Magick::Geometry const&, Magick::Color const&, MagickCore::GravityType)@Base" 8:6.9.1.2
  (c++)"Magick::Image::extent(Magick::Geometry const&, MagickCore::GravityType)@Base" 8:6.9.1.2
- (c++)"Magick::Image::fileName() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::fileName[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::fileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::fileSize() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::fillColor() const@Base" 8:6.9.1.2
@@ -729,13 +734,19 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::floodFillTexture(Magick::Geometry const&, Magick::Image const&, Magick::Color const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::floodFillTexture(Magick::Geometry const&, Magick::Image const&, Magick::Color const&, bool)@Base" 8:6.9.1.2
  (c++)"Magick::Image::flop()@Base" 8:6.9.1.2
- (c++)"Magick::Image::font() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::font[abi:cxx11]() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::fontFamily[abi:cxx11]() const@Base" 8:6.9.2.3
+ (c++)"Magick::Image::fontFamily(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.2.3
  (c++)"Magick::Image::fontPointsize() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::fontPointsize(double)@Base" 8:6.9.1.2
+ (c++)"Magick::Image::fontStyle() const@Base" 8:6.9.2.3
+ (c++)"Magick::Image::fontStyle(MagickCore::StyleType)@Base" 8:6.9.2.3
+ (c++)"Magick::Image::fontWeight() const@Base" 8:6.9.2.3
+ (c++|subst)"Magick::Image::fontWeight({c++:size_t})@Base" 8:6.9.2.3
  (c++)"Magick::Image::font(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::fontTypeMetricsMultiline(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::TypeMetric*)@Base" 8:6.9.1.2
  (c++)"Magick::Image::fontTypeMetrics(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::TypeMetric*)@Base" 8:6.9.1.2
- (c++)"Magick::Image::format() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::format[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::formatExpression(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.1.2
  (c++|subst)"Magick::Image::frame({c++:size_t}, {c++:size_t}, {c++:ssize_t}, {c++:ssize_t})@Base" 8:6.9.1.2
  (c++)"Magick::Image::frame(Magick::Geometry const&)@Base" 8:6.9.1.2
@@ -772,6 +783,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::Image(MagickCore::_Image*)@Base" 8:6.9.1.2
  (c++)"Magick::Image::Image(Magick::Geometry const&, Magick::Color const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::Image(Magick::Image const&)@Base" 8:6.9.1.2
+ (c++)"Magick::Image::Image(Magick::Image const&, Magick::Geometry const&)@Base" 8:6.9.2.3
  (c++)"Magick::Image::Image(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::implode(double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::interlaceType() const@Base" 8:6.9.1.2
@@ -782,11 +794,12 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::inverseFourierTransform(Magick::Image const&, bool)@Base" 8:6.9.1.2
  (c++)"Magick::Image::iptcProfile() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::iptcProfile(Magick::Blob const&)@Base" 8:6.9.1.2
+ (c++)"Magick::Image::isOpaque() const@Base" 8:6.9.2.3
  (c++)"Magick::Image::isValid(bool)@Base" 8:6.9.1.2
  (c++)"Magick::Image::isValid() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::kuwaharaChannel(MagickCore::ChannelType, double, double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::kuwahara(double, double)@Base" 8:6.9.1.2
- (c++)"Magick::Image::label() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::label[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::label(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::levelChannel(MagickCore::ChannelType, double, double, double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::levelColorsChannel(MagickCore::ChannelType, Magick::Color const&, Magick::Color const&, bool)@Base" 8:6.9.1.2
@@ -795,7 +808,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::linearStretch(double, double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::liquidRescale(Magick::Geometry const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::lowlightColor(Magick::Color)@Base" 8:6.9.1.2
- (c++)"Magick::Image::magick() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::magick[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::magnify()@Base" 8:6.9.1.2
  (c++)"Magick::Image::map(Magick::Image const&, bool)@Base" 8:6.9.1.2
@@ -876,6 +889,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++|subst)"Magick::Image::quantizeTreeDepth({c++:size_t})@Base" 8:6.9.1.2
  (c++|subst)"Magick::Image::quantumOperator({c++:ssize_t}, {c++:ssize_t}, {c++:size_t}, {c++:size_t}, MagickCore::ChannelType, MagickCore::MagickEvaluateOperator, double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::quantumOperator(MagickCore::ChannelType, MagickCore::MagickEvaluateOperator, double)@Base" 8:6.9.1.2
+ (c++|subst)"Magick::Image::quantumOperator(MagickCore::ChannelType, MagickCore::MagickFunction, {c++:size_t}, double const*)@Base" 8:6.9.2.3
  (c++)"Magick::Image::quiet() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::quiet(bool)@Base" 8:6.9.1.2
  (c++)"Magick::Image::raise(Magick::Geometry const&, bool)@Base" 8:6.9.1.2
@@ -928,13 +942,15 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::shave(Magick::Geometry const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::shear(double, double)@Base" 8:6.9.1.2
  (c++|subst)"Magick::Image::sigmoidalContrast({c++:size_t}, double, double)@Base" 8:6.9.1.2
- (c++)"Magick::Image::signature(bool) const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::signature[abi:cxx11](bool) const@Base" 8:6.9.1.2
  (c++)"Magick::Image::size() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::size(Magick::Geometry const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::sketch(double, double, double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::solarize(double)@Base" 8:6.9.1.2
  (c++|subst)"Magick::Image::sparseColor(MagickCore::ChannelType, MagickCore::SparseColorMethod, {c++:size_t}, double const*)@Base" 8:6.9.1.2
  (c++)"Magick::Image::splice(Magick::Geometry const&)@Base" 8:6.9.1.2
+ (c++)"Magick::Image::splice(Magick::Geometry const&, Magick::Color const&)@Base" 8:6.9.2.3
+ (c++)"Magick::Image::splice(Magick::Geometry const&, Magick::Color const&, MagickCore::GravityType)@Base" 8:6.9.2.3
  (c++|subst)"Magick::Image::spread({c++:size_t})@Base" 8:6.9.1.2
  (c++)"Magick::Image::statistics(Magick::Image::_ImageStatistics*) const@Base" 8:6.9.1.2
  (c++)"Magick::Image::stegano(Magick::Image const&)@Base" 8:6.9.1.2
@@ -967,7 +983,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::syncPixels()@Base" 8:6.9.1.2
  (c++)"Magick::Image::textDirection() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::textDirection(MagickCore::DirectionType)@Base" 8:6.9.1.2
- (c++)"Magick::Image::textEncoding() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::textEncoding[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::textEncoding(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::textGravity() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::textGravity(MagickCore::GravityType)@Base" 8:6.9.1.2
@@ -977,11 +993,13 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::textInterwordSpacing(double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::textKerning() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::textKerning(double)@Base" 8:6.9.1.2
+ (c++)"Magick::Image::textUnderColor() const@Base" 8:6.9.2.3
+ (c++)"Magick::Image::textUnderColor(Magick::Color const&)@Base" 8:6.9.2.3
  (c++)"Magick::Image::texture(Magick::Image const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::threshold(double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::throwImageException() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::thumbnail(Magick::Geometry const&)@Base" 8:6.9.1.2
- (c++)"Magick::Image::tileName() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::tileName[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::tileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::tint(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.1.2
  (c++)"Magick::Image::totalColors() const@Base" 8:6.9.1.2
@@ -1005,7 +1023,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::unsharpmask(double, double, double, double)@Base" 8:6.9.1.2
  (c++)"Magick::Image::verbose(bool)@Base" 8:6.9.1.2
  (c++)"Magick::Image::verbose() const@Base" 8:6.9.1.2
- (c++)"Magick::Image::view() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::view[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::view(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++|subst)"Magick::Image::vignette(double, double, {c++:ssize_t}, {c++:ssize_t})@Base" 8:6.9.1.2
  (c++)"Magick::Image::virtualPixelMethod() const@Base" 8:6.9.1.2
@@ -1019,7 +1037,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++|subst)"Magick::Image::write(Magick::Blob*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, {c++:size_t})@Base" 8:6.9.1.2
  (c++)"Magick::Image::writePixels(MagickCore::QuantumType, unsigned char*)@Base" 8:6.9.1.2
  (c++)"Magick::Image::write(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
- (c++)"Magick::Image::x11Display() const@Base" 8:6.9.1.2
+ (c++)"Magick::Image::x11Display[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::x11Display(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Image::xResolution() const@Base" 8:6.9.1.2
  (c++)"Magick::Image::yResolution() const@Base" 8:6.9.1.2
@@ -1079,6 +1097,18 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::negateImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
  (c++)"Magick::normalizeImage::normalizeImage()@Base" 8:6.9.1.2
  (c++)"Magick::normalizeImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
+ (c++)"Magick::Offset::~Offset()@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::Offset()@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::Offset(char const*)@Base" 8:6.9.2.3
+ (c++|subst)"Magick::Offset::Offset({c++:ssize_t}, {c++:ssize_t})@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::Offset(Magick::Offset const&)@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::Offset(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::operator=(char const*)@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::operator MagickCore::_OffsetInfo() const@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::operator=(Magick::Offset const&)@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::operator=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::x() const@Base" 8:6.9.2.3
+ (c++)"Magick::Offset::y() const@Base" 8:6.9.2.3
  (c++)"Magick::oilPaintImage::oilPaintImage(double)@Base" 8:6.9.1.2
  (c++)"Magick::oilPaintImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
  (c++)"Magick::opacityImage::opacityImage(unsigned int)@Base" 8:6.9.1.2
@@ -1115,6 +1145,8 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::operator>=(Magick::Image const&, Magick::Image const&)@Base" 8:6.9.1.2
  (c++)"Magick::operator>(Magick::Image const&, Magick::Image const&)@Base" 8:6.9.1.2
  (c++)"Magick::operator!=(Magick::Image const&, Magick::Image const&)@Base" 8:6.9.1.2
+ (c++)"Magick::operator==(Magick::Offset const&, Magick::Offset const&)@Base" 8:6.9.2.3
+ (c++)"Magick::operator!=(Magick::Offset const&, Magick::Offset const&)@Base" 8:6.9.2.3
  (c++)"Magick::operator<=(Magick::PathArcArgs const&, Magick::PathArcArgs const&)@Base" 8:6.9.1.2
  (c++)"Magick::operator<(Magick::PathArcArgs const&, Magick::PathArcArgs const&)@Base" 8:6.9.1.2
  (c++)"Magick::operator==(Magick::PathArcArgs const&, Magick::PathArcArgs const&)@Base" 8:6.9.1.2
@@ -1145,7 +1177,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Options::antiAlias() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::backgroundColor() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::backgroundColor(Magick::Color const&)@Base" 8:6.9.1.2
- (c++)"Magick::Options::backgroundTexture() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::backgroundTexture[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::backgroundTexture(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Options::borderColor() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::borderColor(Magick::Color const&)@Base" 8:6.9.1.2
@@ -1168,7 +1200,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Options::endian(MagickCore::EndianType)@Base" 8:6.9.1.2
  (c++)"Magick::Options::file() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::file(_IO_FILE*)@Base" 8:6.9.1.2
- (c++)"Magick::Options::fileName() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::fileName[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::fileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Options::fillColor() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::fillColor(Magick::Color const&)@Base" 8:6.9.1.2
@@ -1176,15 +1208,21 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Options::fillPattern(MagickCore::_Image const*)@Base" 8:6.9.1.2
  (c++)"Magick::Options::fillRule() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::fillRule(MagickCore::FillRule const&)@Base" 8:6.9.1.2
- (c++)"Magick::Options::font() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::font[abi:cxx11]() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::fontFamily[abi:cxx11]() const@Base" 8:6.9.2.3
+ (c++)"Magick::Options::fontFamily(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.2.3
  (c++)"Magick::Options::fontPointsize() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::fontPointsize(double)@Base" 8:6.9.1.2
+ (c++)"Magick::Options::fontStyle() const@Base" 8:6.9.2.3
+ (c++)"Magick::Options::fontStyle(MagickCore::StyleType)@Base" 8:6.9.2.3
+ (c++)"Magick::Options::fontWeight() const@Base" 8:6.9.2.3-1
+ (c++)"Magick::Options::fontWeight(unsigned long)@Base" 8:6.9.2.3-1
  (c++)"Magick::Options::font(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
- (c++)"Magick::Options::format() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::format[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::imageInfo()@Base" 8:6.9.1.2
  (c++)"Magick::Options::interlaceType() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::interlaceType(MagickCore::InterlaceType)@Base" 8:6.9.1.2
- (c++)"Magick::Options::magick() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::magick[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Options::matteColor() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::matteColor(Magick::Color const&)@Base" 8:6.9.1.2
@@ -1213,8 +1251,10 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Options::quiet(bool)@Base" 8:6.9.1.2
  (c++)"Magick::Options::resolutionUnits() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::resolutionUnits(MagickCore::ResolutionType)@Base" 8:6.9.1.2
- (c++)"Magick::Options::samplingFactor() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::samplingFactor[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::samplingFactor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
+ (c++)"Magick::Options::setOption(char const*, double)@Base" 8:6.9.2.3
+ (c++)"Magick::Options::setOption(char const*, Magick::Color const&)@Base" 8:6.9.2.3
  (c++)"Magick::Options::size() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::size(Magick::Geometry const&)@Base" 8:6.9.1.2
  (c++)"Magick::Options::strokeAntiAlias(bool)@Base" 8:6.9.1.2
@@ -1241,7 +1281,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++|subst)"Magick::Options::subRange({c++:size_t})@Base" 8:6.9.1.2
  (c++)"Magick::Options::textDirection() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::textDirection(MagickCore::DirectionType)@Base" 8:6.9.1.2
- (c++)"Magick::Options::textEncoding() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::textEncoding[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::textEncoding(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Options::textGravity() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::textGravity(MagickCore::GravityType)@Base" 8:6.9.1.2
@@ -1251,7 +1291,9 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Options::textInterwordSpacing(double)@Base" 8:6.9.1.2
  (c++)"Magick::Options::textKerning() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::textKerning(double)@Base" 8:6.9.1.2
- (c++)"Magick::Options::tileName() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::textUnderColor() const@Base" 8:6.9.2.3
+ (c++)"Magick::Options::textUnderColor(Magick::Color const&)@Base" 8:6.9.2.3
+ (c++)"Magick::Options::tileName[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::tileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Options::transformOrigin(double, double)@Base" 8:6.9.1.2
  (c++)"Magick::Options::transformReset()@Base" 8:6.9.1.2
@@ -1263,11 +1305,11 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Options::type(MagickCore::ImageType)@Base" 8:6.9.1.2
  (c++)"Magick::Options::verbose(bool)@Base" 8:6.9.1.2
  (c++)"Magick::Options::verbose() const@Base" 8:6.9.1.2
- (c++)"Magick::Options::view() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::view[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::view(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::Options::virtualPixelMethod() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::virtualPixelMethod(MagickCore::VirtualPixelMethod)@Base" 8:6.9.1.2
- (c++)"Magick::Options::x11Display() const@Base" 8:6.9.1.2
+ (c++)"Magick::Options::x11Display[abi:cxx11]() const@Base" 8:6.9.1.2
  (c++)"Magick::Options::x11Display(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.1.2
  (c++)"Magick::pageImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
  (c++)"Magick::pageImage::pageImage(Magick::Geometry const&)@Base" 8:6.9.1.2
@@ -1455,6 +1497,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::rollImage::rollImage(Magick::Geometry const&)@Base" 8:6.9.1.2
  (c++)"Magick::rotateImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
  (c++)"Magick::rotateImage::rotateImage(double)@Base" 8:6.9.1.2
+ (c++)"Magick::SetRandomSeed(unsigned long)@Base" 8:6.9.2.3
  (c++)"Magick::sampleImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
  (c++)"Magick::sampleImage::sampleImage(Magick::Geometry const&)@Base" 8:6.9.1.2
  (c++)"Magick::scaleImage::operator()(Magick::Image&) const@Base" 8:6.9.1.2
@@ -1620,6 +1663,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"typeinfo for Magick::DrawableCompositeImage@Base" 8:6.9.1.2
  (c++)"typeinfo for Magick::DrawableDashArray@Base" 8:6.9.1.2
  (c++)"typeinfo for Magick::DrawableDashOffset@Base" 8:6.9.1.2
+ (c++)"typeinfo for Magick::DrawableDensity@Base" 8:6.9.2.3
  (c++)"typeinfo for Magick::DrawableEllipse@Base" 8:6.9.1.2
  (c++)"typeinfo for Magick::DrawableFillColor@Base" 8:6.9.1.2
  (c++)"typeinfo for Magick::DrawableFillOpacity@Base" 8:6.9.1.2
@@ -1748,6 +1792,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"typeinfo name for Magick::DrawableCompositeImage@Base" 8:6.9.1.2
  (c++)"typeinfo name for Magick::DrawableDashArray@Base" 8:6.9.1.2
  (c++)"typeinfo name for Magick::DrawableDashOffset@Base" 8:6.9.1.2
+ (c++)"typeinfo name for Magick::DrawableDensity@Base" 8:6.9.2.3
  (c++)"typeinfo name for Magick::DrawableEllipse@Base" 8:6.9.1.2
  (c++)"typeinfo name for Magick::DrawableFillColor@Base" 8:6.9.1.2
  (c++)"typeinfo name for Magick::DrawableFillOpacity@Base" 8:6.9.1.2
@@ -1876,6 +1921,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"vtable for Magick::DrawableCompositeImage@Base" 8:6.9.1.2
  (c++)"vtable for Magick::DrawableDashArray@Base" 8:6.9.1.2
  (c++)"vtable for Magick::DrawableDashOffset@Base" 8:6.9.1.2
+ (c++)"vtable for Magick::DrawableDensity@Base" 8:6.9.2.3
  (c++)"vtable for Magick::DrawableEllipse@Base" 8:6.9.1.2
  (c++)"vtable for Magick::DrawableFillColor@Base" 8:6.9.1.2
  (c++)"vtable for Magick::DrawableFillOpacity@Base" 8:6.9.1.2
