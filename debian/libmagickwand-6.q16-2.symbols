@@ -42,6 +42,7 @@ libMagickWand-6.Q16.so.2 libmagickwand-6.q16-2 #MINVER#
  DrawGetClipPath@Base 8:6.8.8.2
  DrawGetClipRule@Base 8:6.8.8.2
  DrawGetClipUnits@Base 8:6.8.8.2
+ DrawGetDensity@Base 8:6.9.2.3
  DrawGetException@Base 8:6.8.8.2
  DrawGetExceptionType@Base 8:6.8.8.2
  DrawGetFillAlpha@Base 8:6.8.8.2
@@ -122,6 +123,7 @@ libMagickWand-6.Q16.so.2 libmagickwand-6.q16-2 #MINVER#
  DrawSetClipPath@Base 8:6.8.8.2
  DrawSetClipRule@Base 8:6.8.8.2
  DrawSetClipUnits@Base 8:6.8.8.2
+ DrawSetDensity@Base 8:6.9.2.3
  DrawSetFillAlpha@Base 8:6.8.8.2
  DrawSetFillColor@Base 8:6.8.8.2
  DrawSetFillOpacity@Base 8:6.8.8.2
@@ -236,6 +238,7 @@ libMagickWand-6.Q16.so.2 libmagickwand-6.q16-2 #MINVER#
  MagickCompareImages@Base 8:6.8.8.2
  MagickCompositeImage@Base 8:6.8.8.2
  MagickCompositeImageChannel@Base 8:6.8.8.2
+ MagickCompositeImageGravity@Base 8:6.9.2.3
  MagickCompositeLayers@Base 8:6.8.8.2
  MagickConstituteImage@Base 8:6.8.8.2
  MagickContrastImage@Base 8:6.8.8.2

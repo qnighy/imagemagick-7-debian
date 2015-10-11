@@ -234,6 +234,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ConvertRGBToLCHuv@Base 8:6.8.8.2
  ConvolveImage@Base 8:6.8.8.2
  ConvolveImageChannel@Base 8:6.8.8.2
+ CopyImagePixels@Base 8:6.9.2.3
  CopyMagickMemory@Base 8:6.8.8.2
  CopyMagickString@Base 8:6.8.8.2
  CropImage@Base 8:6.8.8.2
