@@ -1368,7 +1368,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ZLIBEncodeImage@Base 8:6.8.8.2
  ZeroKernelNans@Base 8:6.8.8.2
  ZoomImage@Base 8:6.8.8.2
- initAccelerateTimer@Base 8:6.8.8.9
+ (optional=InternalABInoAPI)initAccelerateTimer@Base 8:6.8.8.9
  openclCachedFilesDirectory@Base 8:6.8.8.2
  openclCachedFilesDirectoryLock@Base 8:6.8.8.2
  (optional=InternalABInoAPI)readAccelerateTimer@Base 8:6.8.8.9
