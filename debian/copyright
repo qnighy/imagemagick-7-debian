@@ -1,6 +1,8 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: ImageMagick
 Source: http://www.imagemagick.org/script/download.php
+Files-Excluded: images/donate.* images/networkredux.*
+Comment: Remove non free image
 
 Files: *
 Copyright: 1987-1999, E. I. du Pont de Nemours and Company
