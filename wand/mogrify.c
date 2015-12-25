@@ -17,7 +17,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1058,7 +1058,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               *mask_image;
 
             register PixelPacket
-              *restrict q;
+              *magick_restrict q;
 
             register ssize_t
               x;
@@ -1382,19 +1382,20 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             (void) SyncImageSettings(mogrify_info,*image);
             method=(DistortImageMethod) ParseCommandOption(MagickDistortOptions,
               MagickFalse,argv[i+1]);
-            if ( method == ResizeDistortion )
+            if (method == ResizeDistortion)
               {
-                 /* Special Case - Argument is actually a resize geometry!
-                 ** Convert that to an appropriate distortion argument array.
+                double
+                  resize_args[2];
+
+                 /*
+                   Resize distortion.
                  */
-                 double
-                   resize_args[2];
                  (void) ParseRegionGeometry(*image,argv[i+2],&geometry,
-                      exception);
-                 resize_args[0]=(double)geometry.width;
-                 resize_args[1]=(double)geometry.height;
-                 mogrify_image=DistortImage(*image,method,(size_t)2,
-                      resize_args,MagickTrue,exception);
+                   exception);
+                 resize_args[0]=(double) geometry.width;
+                 resize_args[1]=(double) geometry.height;
+                 mogrify_image=DistortImage(*image,method,(size_t) 2,
+                   resize_args,MagickTrue,exception);
                  break;
               }
             args=InterpretImageProperties(mogrify_info,*image,argv[i+2]);
@@ -2066,6 +2067,24 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
               geometry.y=0;
             mogrify_image=LiquidRescaleImage(*image,geometry.width,
               geometry.height,1.0*geometry.x,1.0*geometry.y,exception);
+            break;
+          }
+        if (LocaleCompare("local-contrast",option+1) == 0)
+          {
+            MagickStatusType
+              flags;
+
+            (void) SyncImageSettings(mogrify_info,*image);
+            flags=ParseGeometry(argv[i+1],&geometry_info);
+            if ((flags & RhoValue) == 0)
+              geometry_info.rho=10;
+            if ((flags & SigmaValue) == 0)
+              geometry_info.sigma=12.5;
+            if (((flags & RhoValue) == 0) || ((flags & PercentValue) != 0))
+              geometry_info.rho*=MagickMax((*image)->columns,(*image)->rows)/
+                100.0;
+            mogrify_image=LocalContrastImage(*image,geometry_info.rho,
+              geometry_info.sigma,exception);
             break;
           }
         if (LocaleCompare("lowlight-color",option+1) == 0)
@@ -3466,6 +3485,8 @@ static MagickBooleanType MogrifyUsage(void)
       "                     improve contrast by `stretching with saturation'",
       "-liquid-rescale geometry",
       "                     rescale image with seam-carving",
+      "-local-contrast geometry",
+      "                     enhance local contrast",
       "-magnify             double the size of the image with pixel art scaling",
       "-mean-shift geometry delineate arbitrarily shaped clusters in the image",
       "-median geometry     apply a median filter to the image",
@@ -5252,6 +5273,15 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
             status=MogrifyImageInfo(image_info,(int) (i-j+1),(const char **)
               argv+j,exception);
             return(status == 0 ? MagickTrue : MagickFalse);
+          }
+        if (LocaleCompare("local-contrast",option+1) == 0)
+          {
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowMogrifyException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowMogrifyInvalidArgumentException(option,argv[i]);
+            break;
           }
         if (LocaleCompare("log",option+1) == 0)
           {

@@ -17,7 +17,7 @@
 %                            September 1994                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -331,6 +331,7 @@ WandExport MagickBooleanType IdentifyImageCommand(ImageInfo *image_info,
           continue;
         AppendImageStack(images);
         FinalizeImageSettings(image_info,image,MagickFalse);
+        count=0;
         for ( ; image != (Image *) NULL; image=GetNextImageInList(image))
         {
           if (image->scene == 0)

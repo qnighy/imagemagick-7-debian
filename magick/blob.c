@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1047,7 +1047,8 @@ MagickExport unsigned char *FileToBlob(const char *filename,const size_t extent,
       blob[*length]='\0';
       return(blob);
     }
-  *length=(size_t) MagickMin(offset,extent);
+  *length=(size_t) MagickMin(offset,(MagickOffsetType) 
+    MagickMin(extent,SSIZE_MAX));
   blob=(unsigned char *) NULL;
   if (~(*length) >= (MaxTextExtent-1))
     blob=(unsigned char *) AcquireQuantumMemory(*length+MaxTextExtent,
@@ -2587,7 +2588,9 @@ MagickExport MagickBooleanType OpenBlob(const ImageInfo *image_info,
             (void) ResetMagickMemory(magick,0,sizeof(magick));
             count=fread(magick,1,sizeof(magick),image->blob->file_info.file);
             (void) fseek(image->blob->file_info.file,-((off_t) count),SEEK_CUR);
+#if defined(MAGICKCORE_POSIX_SUPPORT)
             (void) fflush(image->blob->file_info.file);
+#endif
             (void) LogMagickEvent(BlobEvent,GetMagickModule(),
                "  read %.20g magic header bytes",(double) count);
 #if defined(MAGICKCORE_ZLIB_DELEGATE)

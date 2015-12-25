@@ -83,9 +83,7 @@
 #endif
 
 /* Define if you have FlashPIX library */
-#ifndef MAGICKCORE_FPX_DELEGATE
-#define MAGICKCORE_FPX_DELEGATE 1
-#endif
+/* #undef FPX_DELEGATE */
 
 /* Define if you have FREETYPE library */
 #ifndef MAGICKCORE_FREETYPE_DELEGATE
@@ -372,7 +370,9 @@
 #endif
 
 /* Define if you have the <lcms2.h> header file. */
-/* #undef HAVE_LCMS2_H */
+#ifndef MAGICKCORE_HAVE_LCMS2_H
+#define MAGICKCORE_HAVE_LCMS2_H 1
+#endif
 
 /* Define if you have the <lcms2/lcms2.h> header file. */
 /* #undef HAVE_LCMS2_LCMS2_H */
@@ -1054,9 +1054,7 @@
 /* #undef HAVE__ALIGNED_MALLOC */
 
 /* Define to 1 if the system has the type `_Bool'. */
-#ifndef MAGICKCORE_HAVE__BOOL
-#define MAGICKCORE_HAVE__BOOL 1
-#endif
+/* #undef HAVE__BOOL */
 
 /* Define to 1 if you have the `_exit' function. */
 #ifndef MAGICKCORE_HAVE__EXIT
@@ -1115,10 +1113,14 @@
 #endif
 
 /* Define if you have JPEG library */
-/* #undef JPEG_DELEGATE */
+#ifndef MAGICKCORE_JPEG_DELEGATE
+#define MAGICKCORE_JPEG_DELEGATE 1
+#endif
 
 /* Define if you have LCMS library */
-/* #undef LCMS_DELEGATE */
+#ifndef MAGICKCORE_LCMS_DELEGATE
+#define MAGICKCORE_LCMS_DELEGATE 1
+#endif
 
 /* Define if you have OPENJP2 library */
 /* #undef LIBOPENJP2_DELEGATE */
@@ -1146,8 +1148,7 @@
 /* Define if using libltdl to support dynamically loadable modules */
 /* #undef LTDL_DELEGATE */
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #ifndef MAGICKCORE_LT_OBJDIR
 #define MAGICKCORE_LT_OBJDIR ".libs/"
 #endif
@@ -1211,7 +1212,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.2-3"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.2-10"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1226,7 +1227,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.2-3"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.2-10"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1438,7 +1439,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.9.2-3"
+#define MAGICKCORE_VERSION "6.9.2-10"
 #endif
 
 /* Define if you have WEBP library */

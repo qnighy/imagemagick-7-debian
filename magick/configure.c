@@ -17,7 +17,7 @@
 %                                 July 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -73,7 +73,7 @@
 #endif
 #ifdef MAGICKCORE_ZERO_CONFIGURATION_SUPPORT
 #define MAGICKCORE_FEATURE_ZERO_CONFIGURATION_STR "Zero-Configuration "
-#else 
+#else
 #define MAGICKCORE_FEATURE_ZERO_CONFIGURATION_STR ""
 #endif
 #ifdef HDRI_SUPPORT
@@ -882,9 +882,24 @@ MagickExport LinkedListInfo *GetConfigurePaths(const char *filename,
     char
       *home;
 
-    home=GetEnvironmentValue("HOME");
+    home=GetEnvironmentValue("XDG_CONFIG_HOME");
+    if (home == (char *) NULL)
+      home=GetEnvironmentValue("LOCALAPPDATA");
+    if (home == (char *) NULL)
+      home=GetEnvironmentValue("APPDATA");
     if (home == (char *) NULL)
       home=GetEnvironmentValue("USERPROFILE");
+    if (home != (char *) NULL)
+      {
+        /*
+          Search $XDG_CONFIG_HOME/ImageMagick.
+        */
+        (void) FormatLocaleString(path,MaxTextExtent,"%s%sImageMagick%s",
+          home,DirectorySeparator,DirectorySeparator);
+        (void) AppendValueToLinkedList(paths,ConstantString(path));
+        home=DestroyString(home);
+      }
+    home=GetEnvironmentValue("HOME");
     if (home != (char *) NULL)
       {
         /*

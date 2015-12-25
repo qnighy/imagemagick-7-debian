@@ -18,7 +18,7 @@
 %                               November 1997                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -4547,12 +4547,6 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
 
        o destroy the secondary image.
   */
-
-  if (color_image == (Image *) NULL)
-    {
-      assert(alpha_image == (Image *) NULL);
-      return((Image *) NULL);
-    }
 
   if (color_image_info == (ImageInfo *) NULL)
     {
@@ -9344,6 +9338,15 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   /* Allow benign errors */
   png_set_benign_errors(ping, 1);
 #endif
+
+#ifdef PNG_SET_USER_LIMITS_SUPPORTED
+  /* Reject images with too many rows or columns */
+  png_set_user_limits(ping,
+    (png_uint_32) MagickMin(0x7fffffffL,
+        GetMagickResourceLimit(WidthResource)),
+    (png_uint_32) MagickMin(0x7fffffffL,
+        GetMagickResourceLimit(HeightResource)));
+#endif /* PNG_SET_USER_LIMITS_SUPPORTED */
 
   /*
     Prepare PNG for writing.

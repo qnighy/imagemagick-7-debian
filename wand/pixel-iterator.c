@@ -23,7 +23,7 @@
 %                                March 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -964,13 +964,13 @@ WandExport MagickBooleanType PixelSyncIterator(PixelIterator *iterator)
     *exception;
 
   register IndexPacket
-    *restrict indexes;
+    *magick_restrict indexes;
 
   register ssize_t
     x;
 
   register PixelPacket
-    *restrict pixels;
+    *magick_restrict pixels;
 
   assert(iterator != (const PixelIterator *) NULL);
   assert(iterator->signature == WandSignature);

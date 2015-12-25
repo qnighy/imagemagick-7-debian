@@ -17,7 +17,7 @@
 %                              January 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -840,12 +840,12 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
   (void) CopyMagickString(pedantic_geometry,geometry,MaxTextExtent);
   for (p=pedantic_geometry; *p != '\0'; )
   {
-    if (isspace((int) ((unsigned char) *p)) != 0)
+    c=(int) ((unsigned char) *p);
+    if (isspace(c) != 0)
       {
         (void) CopyMagickString(p,p+1,MaxTextExtent);
         continue;
       }
-    c=(int) ((unsigned char) *p);
     switch (c)
     {
       case '%':

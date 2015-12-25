@@ -17,7 +17,7 @@
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -89,6 +89,8 @@
 #include "magick/statistic.h"
 #include "magick/string_.h"
 #include "magick/threshold.h"
+#include "magick/thread_.h"
+#include "magick/thread-private.h"
 #include "magick/transform.h"
 #include "magick/utility.h"
 
@@ -1261,13 +1263,13 @@ MagickExport MagickBooleanType ColorFloodfillImage(Image *image,
   while (s > segment_stack)
   {
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     /*
       Pop segment off stack.
@@ -1381,13 +1383,13 @@ MagickExport MagickBooleanType ColorFloodfillImage(Image *image,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     /*
       Tile fill color onto floodplane.
@@ -4613,13 +4615,13 @@ MagickExport MagickBooleanType MatteFloodfillImage(Image *image,
   while (s > segment_stack)
   {
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     /*
       Pop segment off stack.
@@ -4733,13 +4735,13 @@ MagickExport MagickBooleanType MatteFloodfillImage(Image *image,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     /*
       Tile fill color onto floodplane.
@@ -5017,7 +5019,7 @@ MagickExport MagickBooleanType OpaqueImage(Image *image,
           x;
 
         register PixelPacket
-          *restrict q;
+          *magick_restrict q;
 
         q=GetAuthenticPixels(image,0,y,image->columns,1,&image->exception);
         if (q == (PixelPacket *) NULL)
@@ -5055,7 +5057,7 @@ MagickExport MagickBooleanType OpaqueImage(Image *image,
               x;
 
             register PixelPacket
-              *restrict q;
+              *magick_restrict q;
 
             q=GetAuthenticPixels(image,0,y,image->columns,1,&image->exception);
             if (q == (PixelPacket *) NULL)
@@ -5960,10 +5962,10 @@ MagickExport unsigned int RandomChannelThresholdImage(Image *image,
 
     register IndexPacket
       index,
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     q=GetAuthenticPixels(image,0,y,image->columns,1,exception);
     if (q == (PixelPacket *) NULL)
@@ -6412,13 +6414,13 @@ MagickExport void SetImage(Image *image,const Quantum opacity)
       for (y=0; y < (ssize_t) image->rows; y++)
       {
         register IndexPacket
-          *restrict indexes;
+          *magick_restrict indexes;
 
         register ssize_t
           x;
 
         register PixelPacket
-          *restrict q;
+          *magick_restrict q;
 
         q=QueueAuthenticPixels(image,0,y,image->columns,1,&image->exception);
         if (q == (PixelPacket *) NULL)
@@ -6445,7 +6447,7 @@ MagickExport void SetImage(Image *image,const Quantum opacity)
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     q=QueueAuthenticPixels(image,0,y,image->columns,1,&image->exception);
     if (q == (PixelPacket *) NULL)
@@ -7149,13 +7151,13 @@ MagickExport unsigned int ThresholdImage(Image *image,const double threshold)
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     q=GetAuthenticPixels(image,0,y,image->columns,1,&image->exception);
     if (q == (PixelPacket *) NULL)
@@ -7264,13 +7266,13 @@ MagickExport unsigned int ThresholdImageChannel(Image *image,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     q=GetAuthenticPixels(image,0,y,image->columns,1,&image->exception);
     if (q == (PixelPacket *) NULL)
@@ -7521,7 +7523,7 @@ MagickExport MagickBooleanType TransparentImage(Image *image,
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     q=GetAuthenticPixels(image,0,y,image->columns,1,&image->exception);
     if (q == (PixelPacket *) NULL)

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -229,23 +229,23 @@ static inline const unsigned char *PushCharPixel(const unsigned char *pixels,
 static inline const unsigned char *PushLongPixel(const EndianType endian,
   const unsigned char *pixels,unsigned int *pixel)
 {
-  register unsigned long
+  register unsigned int
     quantum;
 
   if (endian == LSBEndian)
     {
-      quantum=((unsigned long) *pixels++);
-      quantum|=((unsigned long) *pixels++ << 8);
-      quantum|=((unsigned long) *pixels++ << 16);
-      quantum|=((unsigned long) *pixels++ << 24);
-      *pixel=(unsigned int) (quantum & 0xffffffff);
+      quantum=((unsigned int) *pixels++);
+      quantum|=((unsigned int) *pixels++ << 8);
+      quantum|=((unsigned int) *pixels++ << 16);
+      quantum|=((unsigned int) *pixels++ << 24);
+      *pixel=quantum;
       return(pixels);
     }
-  quantum=((unsigned long) *pixels++ << 24);
-  quantum|=((unsigned long) *pixels++ << 16);
-  quantum|=((unsigned long) *pixels++ << 8);
-  quantum|=((unsigned long) *pixels++);
-  *pixel=(unsigned int) (quantum & 0xffffffff);
+  quantum=((unsigned int) *pixels++ << 24);
+  quantum|=((unsigned int) *pixels++ << 16);
+  quantum|=((unsigned int) *pixels++ << 8);
+  quantum|=((unsigned int) *pixels++);
+  *pixel=quantum;
   return(pixels);
 }
 

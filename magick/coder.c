@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -152,6 +152,7 @@ static const CoderMapInfo
     { "IPTCTEXT", "META" },
     { "IPTCWTEXT", "META" },
     { "ISOBRL", "BRAILLE" },
+    { "ISOBRL6", "BRAILLE" },
     { "JBG", "JBIG" },
     { "JNG", "PNG" },
     { "JPC", "JP2" },
@@ -236,6 +237,7 @@ static const CoderMapInfo
     { "TIF", "TIFF" },
     { "TTC", "TTF" },
     { "UBRL", "BRAILLE" },
+    { "UBRL6", "BRAILLE" },
     { "VDA", "TGA" },
     { "VST", "TGA" },
     { "WIZARD", "MAGICK" },

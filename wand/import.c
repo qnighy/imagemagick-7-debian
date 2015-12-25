@@ -17,7 +17,7 @@
 %                              July 1992                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -454,7 +454,7 @@ WandExport MagickBooleanType ImportImageCommand(ImageInfo *image_info,
             MaxTextExtent);
         for (scene=0; scene < (size_t) MagickMax(snapshots,1); scene++)
         {
-          (void) sleep(resource_info.pause);
+          MagickDelay(1000*resource_info.pause);
           images=XImportImage(image_info,&ximage_info);
           status&=(images != (Image *) NULL) &&
             (exception->severity < ErrorException);

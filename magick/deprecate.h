@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -373,8 +373,8 @@ static inline double MagickEpsilonReciprocal(const double x)
   return(sign/MagickEpsilon);
 }
 
-static inline Quantum PixelIntensityToQuantum(const Image *restrict image,
-  const PixelPacket *restrict pixel)
+static inline Quantum PixelIntensityToQuantum(
+  const Image *magick_restrict image,const PixelPacket *magick_restrict pixel)
 {
   return(ClampToQuantum(GetPixelIntensity(image,pixel)));
 }

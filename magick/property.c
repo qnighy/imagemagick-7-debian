@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -81,8 +81,8 @@
 #include "magick/version.h"
 #include "magick/xml-tree.h"
 #if defined(MAGICKCORE_LCMS_DELEGATE)
-#if defined(MAGICKCORE_HAVE_LCMS_LCMS2_H)
-#include <lcms/lcms2.h>
+#if defined(MAGICKCORE_HAVE_LCMS2_LCMS2_H)
+#include <lcms2/lcms2.h>
 #elif defined(MAGICKCORE_HAVE_LCMS2_H)
 #include "lcms2.h"
 #elif defined(MAGICKCORE_HAVE_LCMS_LCMS_H)
@@ -3073,7 +3073,7 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
       if (LocaleCompare("type",property) == 0)
         {
           string=CommandOptionToMnemonic(MagickTypeOptions,(ssize_t)
-            GetImageType(image,&image->exception));
+            IdentifyImageType(image,&image->exception));
           break;
         }
        break;
@@ -3300,13 +3300,13 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
     *interpret_text;
 
   register char
-    *q;     /* current position in interpret_text */
+    *q;  /* current position in interpret_text */
 
   register const char
-    *p;     /* position in embed_text string being expanded */
+    *p;  /* position in embed_text string being expanded */
 
   size_t
-    extent; /* allocated length of interpret_text */
+    extent;  /* allocated length of interpret_text */
 
   MagickBooleanType
     number;
@@ -3317,22 +3317,19 @@ MagickExport char *InterpretImageProperties(const ImageInfo *image_info,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
 
   if (embed_text == (const char *) NULL)
-    return((char *) NULL);
+    return(ConstantString(""));
   p=embed_text;
 
   if (*p == '\0')
     return(ConstantString(""));
 
-  /* handle a '@' replace string from file */
-  if (*p == '@') {
-     p++;
-     if (*p != '-' && (IsPathAccessible(p) == MagickFalse) ) {
-       (void) ThrowMagickException(&image->exception,GetMagickModule(),
-           OptionError,"UnableToAccessPath","%s",p);
-       return((char *) NULL);
-     }
-     return(FileToString(p,~0UL,&image->exception));
-  }
+  if ((*p == '@') && (IsPathAccessible(p+1) != MagickFalse))
+    { 
+      /* handle a '@' replace string from file */
+      interpret_text=FileToString(p+1,~0UL,&image->exception);
+      if (interpret_text != (char *) NULL)
+        return(interpret_text);
+    }
 
   /*
     Translate any embedded format characters.

@@ -16,7 +16,7 @@
 %                              December 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -117,7 +117,7 @@ MagickExport SignatureInfo *AcquireSignatureInfo(void)
   SignatureInfo
     *signature_info;
 
-  unsigned int
+  unsigned long
     lsb_first;
 
   signature_info=(SignatureInfo *) AcquireMagickMemory(sizeof(*signature_info));

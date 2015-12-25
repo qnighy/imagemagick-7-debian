@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -388,7 +388,7 @@ MagickExport MagickBooleanType AnnotateImage(Image *image,
           geometry.height/2.0+i*annotate_info->affine.sy*height-
           annotate_info->affine.rx*(metrics.width+metrics.bounds.x1)/2.0+
           annotate_info->affine.sy*(metrics.ascent+metrics.descent-
-          (number_lines-1.0)*height)/2.0+metrics.descent/2.0;
+          (number_lines-1.0)*height)/2.0;
         break;
       }
       case EastGravity:
@@ -1409,7 +1409,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
             fill_color;
 
           register PixelPacket
-            *restrict q;
+            *magick_restrict q;
 
           register ssize_t
             x;
@@ -1827,7 +1827,7 @@ static MagickBooleanType RenderPostscript(Image *image,
           x;
 
         register PixelPacket
-          *restrict q;
+          *magick_restrict q;
 
         q=GetCacheViewAuthenticPixels(annotate_view,0,y,annotate_image->columns,
           1,exception);

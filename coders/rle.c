@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -176,6 +176,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     map_length,
     number_colormaps,
     number_planes,
+    number_planes_filled,
     one,
     offset,
     pixel_info_length;
@@ -314,9 +315,12 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if (image->matte != MagickFalse)
       number_planes++;
     number_pixels=(MagickSizeType) image->columns*image->rows;
-    if ((number_pixels*number_planes) != (size_t) (number_pixels*number_planes))
+    number_planes_filled=(number_planes % 2 == 0) ? number_planes :
+      number_planes+1;
+    if ((number_pixels*number_planes_filled) != (size_t) (number_pixels*
+         number_planes_filled))
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-    pixel_info_length=image->columns*image->rows*number_planes;
+    pixel_info_length=image->columns*image->rows*number_planes_filled;
     pixel_info=AcquireVirtualMemory(pixel_info_length,sizeof(*pixels));
     if (pixel_info == (MemoryInfo *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");

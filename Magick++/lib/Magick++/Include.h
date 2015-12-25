@@ -942,6 +942,7 @@ namespace Magick
   using MagickCore::ShepardsColorInterpolate;
   using MagickCore::VoronoiColorInterpolate;
   using MagickCore::InverseColorInterpolate;
+  using MagickCore::ManhattanColorInterpolate;
 
   // Statistic type
   using MagickCore::MedianStatistic;
@@ -1303,10 +1304,13 @@ namespace Magick
   using MagickCore::LevelImage;
   using MagickCore::LevelImageChannel;
   using MagickCore::LevelColorsImageChannel;
+  using MagickCore::LevelizeImage;
+  using MagickCore::LevelizeImageChannel;
   using MagickCore::LinearStretchImage;
   using MagickCore::LinkedListInfo;
   using MagickCore::LiquidRescaleImage;
   using MagickCore::LocaleCompare;
+  using MagickCore::LocalContrastImage;
   using MagickCore::LockSemaphoreInfo;
   using MagickCore::LogMagickEvent;
   using MagickCore::MagickCoreTerminus;

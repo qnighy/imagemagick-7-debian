@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -285,17 +285,17 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
   for (y=0; y < (ssize_t) blur_image->rows; y++)
   {
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict p,
-      *restrict r;
+      *magick_restrict p,
+      *magick_restrict r;
 
     register IndexPacket
-      *restrict blur_indexes;
+      *magick_restrict blur_indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -321,7 +321,7 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
         pixel;
 
       register const double
-        *restrict k;
+        *magick_restrict k;
 
       register ssize_t
         i,
@@ -607,17 +607,17 @@ MagickExport Image *AdaptiveSharpenImageChannel(const Image *image,
   for (y=0; y < (ssize_t) sharp_image->rows; y++)
   {
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict p,
-      *restrict r;
+      *magick_restrict p,
+      *magick_restrict r;
 
     register IndexPacket
-      *restrict sharp_indexes;
+      *magick_restrict sharp_indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -643,7 +643,7 @@ MagickExport Image *AdaptiveSharpenImageChannel(const Image *image,
         pixel;
 
       register const double
-        *restrict k;
+        *magick_restrict k;
 
       register ssize_t
         i,
@@ -944,7 +944,7 @@ MagickExport Image *ConvolveImageChannel(const Image *image,
 
 static void Hull(const Image *image,const ssize_t x_offset,
   const ssize_t y_offset,const size_t columns,const size_t rows,
-  const int polarity,Quantum *restrict f,Quantum *restrict g)
+  const int polarity,Quantum *magick_restrict f,Quantum *magick_restrict g)
 {
   register Quantum
     *p,
@@ -1057,8 +1057,8 @@ MagickExport Image *DespeckleImage(const Image *image,ExceptionInfo *exception)
     i;
 
   Quantum
-    *restrict buffer,
-    *restrict pixels;
+    *magick_restrict buffer,
+    *magick_restrict pixels;
 
   size_t
     length,
@@ -1134,10 +1134,10 @@ MagickExport Image *DespeckleImage(const Image *image,ExceptionInfo *exception)
     for (y=0; y < (ssize_t) image->rows; y++)
     {
       register const IndexPacket
-        *restrict indexes;
+        *magick_restrict indexes;
 
       register const PixelPacket
-        *restrict p;
+        *magick_restrict p;
 
       p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
       if (p == (const PixelPacket *) NULL)
@@ -1175,10 +1175,10 @@ MagickExport Image *DespeckleImage(const Image *image,ExceptionInfo *exception)
         sync;
 
       register IndexPacket
-        *restrict indexes;
+        *magick_restrict indexes;
 
       register PixelPacket
-        *restrict q;
+        *magick_restrict q;
 
       q=GetCacheViewAuthenticPixels(despeckle_view,0,y,despeckle_image->columns,
         1,exception);
@@ -1587,16 +1587,16 @@ MagickExport Image *FilterImageChannel(const Image *image,
       sync;
 
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register IndexPacket
-      *restrict filter_indexes;
+      *magick_restrict filter_indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -1621,10 +1621,10 @@ MagickExport Image *FilterImageChannel(const Image *image,
         pixel;
 
       register const MagickRealType
-        *restrict k;
+        *magick_restrict k;
 
       register const PixelPacket
-        *restrict kernel_pixels;
+        *magick_restrict kernel_pixels;
 
       register ssize_t
         u;
@@ -1677,7 +1677,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
               (image->colorspace == CMYKColorspace))
             {
               register const IndexPacket
-                *restrict kernel_indexes;
+                *magick_restrict kernel_indexes;
 
               k=filter_kernel;
               kernel_indexes=indexes;
@@ -1740,7 +1740,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
               (image->colorspace == CMYKColorspace))
             {
               register const IndexPacket
-                *restrict kernel_indexes;
+                *magick_restrict kernel_indexes;
 
               k=filter_kernel;
               kernel_pixels=p;
@@ -2058,10 +2058,10 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register IndexPacket
-      *restrict blur_indexes;
+      *magick_restrict blur_indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -2085,10 +2085,10 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
         pixel;
 
       register const IndexPacket
-        *restrict indexes;
+        *magick_restrict indexes;
 
       register double
-        *restrict k;
+        *magick_restrict k;
 
       register ssize_t
         i;
@@ -2301,10 +2301,10 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
   for (y=0; y < (ssize_t) kuwahara_image->rows; y++)
   {
     register IndexPacket
-      *restrict kuwahara_indexes;
+      *magick_restrict kuwahara_indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -2341,7 +2341,7 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
       for (i=0; i < 4; i++)
       {
         const PixelPacket
-          *restrict p;
+          *magick_restrict p;
 
         double
           variance;
@@ -2350,7 +2350,7 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
           mean;
 
         register const PixelPacket
-          *restrict k;
+          *magick_restrict k;
 
         register ssize_t
           n;
@@ -2444,7 +2444,279 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
     kuwahara_image=DestroyImage(kuwahara_image);
   return(kuwahara_image);
 }
-
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%     L o c a l C o n t r a s t I m a g e                                     %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  LocalContrastImage() attempts to increase the appearance of large-scale
+%  light-dark transitions. Local contrast enhancement works similarly to
+%  sharpening with an unsharp mask, however the mask is instead created using
+%  an image with a greater blur distance.
+%
+%  The format of the LocalContrastImage method is:
+%
+%      Image *LocalContrastImage(const Image *image, const double radius,
+%        const double strength, ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o radius: the radius of the Gaussian, in pixels, not counting
+%      the center pixel.
+%
+%    o strength: the strength of the blur mask in percentage.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+MagickExport Image *LocalContrastImage(const Image *image,const double radius,
+  const double strength,ExceptionInfo *exception)
+{
+#define LocalContrastImageTag  "LocalContrast/Image"
+
+  CacheView
+    *image_view,
+    *contrast_view;
+
+  float
+    *interImage,
+    *scanLinePixels,
+    totalWeight;
+
+  Image
+    *contrast_image;
+
+  MemoryInfo
+    *scanLinePixels_info,
+    *interImage_info;
+
+  ssize_t
+    scanLineSize,
+    thread_count,
+    width;
+
+  /*
+    Initialize contrast image attributes.
+  */
+  assert(image != (const Image *) NULL);
+  assert(image->signature == MagickSignature);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickSignature);
+  contrast_image=AccelerateLocalContrastImage(image,radius,strength,exception);
+  if (contrast_image != (Image *) NULL)
+    return(contrast_image);
+  contrast_image=CloneImage(image,0,0,MagickTrue,exception);
+  if (contrast_image == (Image *) NULL)
+    return((Image *) NULL);
+  if (SetImageStorageClass(contrast_image,DirectClass) == MagickFalse)
+    {
+      InheritException(exception,&contrast_image->exception);
+      contrast_image=DestroyImage(contrast_image);
+      return((Image *) NULL);
+    }
+  image_view=AcquireVirtualCacheView(image,exception);
+  contrast_view=AcquireAuthenticCacheView(contrast_image,exception);
+  thread_count=1;
+  width=(ssize_t) fabs(radius);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  #pragma omp parallel magick_threads(image,image,image->rows,1)
+  {
+    #pragma omp single
+    {
+      thread_count=omp_get_num_threads();
+    }
+  }
+#endif
+  scanLineSize=(ssize_t) MagickMax(image->columns,image->rows);
+  scanLineSize+=(2*width);
+  scanLinePixels_info=AcquireVirtualMemory(thread_count*scanLineSize,
+    sizeof(*scanLinePixels));
+  if (scanLinePixels_info == (MemoryInfo *) NULL)
+    {
+      contrast_view=DestroyCacheView(contrast_view);
+      image_view=DestroyCacheView(image_view);
+      contrast_image=DestroyImage(contrast_image);
+      ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
+    }
+  scanLinePixels=(float *) GetVirtualMemoryBlob(scanLinePixels_info);
+  /* Create intermediate buffer */
+  interImage_info=AcquireVirtualMemory((image->rows+(2*width))*image->columns,
+    sizeof(*interImage));
+  if (interImage_info == (MemoryInfo *) NULL)
+    {
+      scanLinePixels_info=RelinquishVirtualMemory(scanLinePixels_info);
+      contrast_view=DestroyCacheView(contrast_view);
+      image_view=DestroyCacheView(image_view);
+      contrast_image=DestroyImage(contrast_image);
+      ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
+    }
+  interImage=(float *) GetVirtualMemoryBlob(interImage_info);
+  totalWeight=(width+1)*(width+1);
+
+  /* Vertical Pass */
+  {
+    ssize_t
+      x;
+
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+#pragma omp parallel for schedule(static,4) \
+    magick_threads(image,image,image->columns,1)
+#endif
+    for (x=0; x < (ssize_t) image->columns; x++)
+    {
+      const PixelPacket
+        *magick_restrict p;
+
+      float
+        *out,
+        *pix,
+        *pixels;
+
+      register ssize_t
+        y;
+
+      ssize_t
+        i;
+
+      pixels=scanLinePixels;
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+      pixels+=scanLineSize*omp_get_thread_num();
+#endif
+      pix=pixels;
+      p=GetCacheViewVirtualPixels(image_view,x,-width,1,image->rows+(2*width),
+        exception);
+
+      for (y=0; y < (ssize_t) image->rows+(2*width); y++)
+      {
+        *pix++=(float)GetPixelLuma(image,p);
+        p++;
+      }
+
+      out=interImage+x+width;
+
+      for (y = 0; y < (ssize_t) image->rows; y++)
+      {
+        float
+          sum,
+          weight;
+
+        weight=1.0f;
+        sum=0;
+        pix=pixels+y;
+        for (i=0; i < width; i++)
+        {
+          sum+=weight*(*pix++);
+          weight+=1.0f;
+        }
+        for (i=width+1; i < (2*width); i++)
+        {
+          sum+=weight*(*pix++);
+          weight-=1.0f;
+        }
+        /* write to output */
+        *out=sum/totalWeight;
+        /* mirror into padding */
+        if (x <= width && x != 0)
+          *(out-(x*2))=*out;
+        if ((x > (ssize_t) image->columns-width-2) &&
+            (x != (ssize_t) image->columns-1))
+          *(out+((image->columns-x-1)*2))=*out;
+
+        out+=image->columns+(width*2);
+      }
+    }
+  }
+  /* Horizontal Pass */
+  {
+    ssize_t
+      y;
+
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+#pragma omp parallel for schedule(static,4) \
+    magick_threads(image,image,image->rows,1)
+#endif
+    for (y=0; y < (ssize_t) image->rows; y++)
+    {
+      const PixelPacket
+        *magick_restrict p;
+
+      float
+        *pix,
+        *pixels;
+
+      register PixelPacket
+        *magick_restrict q;
+
+      register ssize_t
+        x;
+
+      ssize_t
+        i;
+
+      pixels=scanLinePixels;
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+      pixels+=scanLineSize*omp_get_thread_num();
+#endif
+      p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,
+        exception);
+      q=GetCacheViewAuthenticPixels(contrast_view,0,y,image->columns,1,
+        exception);
+
+      memcpy(pixels,interImage+(y*(image->columns+(2*width))),(image->columns+
+        (2*width))*sizeof(float));
+
+      for (x=0; x < (ssize_t) image->columns; x++)
+      {
+        float
+          mult,
+          srcVal,
+          sum,
+          weight;
+
+        weight=1.0f;
+        sum=0;
+        pix=pixels+x;
+        for (i=0; i < width; i++)
+        {
+          sum+=weight*(*pix++);
+          weight+=1.0f;
+        }
+        for (i=width+1; i < (2*width); i++)
+        {
+          sum+=weight*(*pix++);
+          weight-=1.0f;
+        }
+
+        /* Apply and write */
+        srcVal=(float) GetPixelLuma(image,p);
+        mult=(srcVal-(sum/totalWeight))*(strength/100.0f);
+        mult=(srcVal+mult)/srcVal;
+        SetPixelRed(q,ClampToQuantum(GetPixelRed(p)*mult));
+        SetPixelGreen(q,ClampToQuantum(GetPixelGreen(p)*mult));
+        SetPixelBlue(q,ClampToQuantum(GetPixelBlue(p)*mult));
+        p++;
+        q++;
+      }
+    }
+  }
+  scanLinePixels_info=RelinquishVirtualMemory(scanLinePixels_info);
+  interImage_info=RelinquishVirtualMemory(interImage_info);
+  contrast_view=DestroyCacheView(contrast_view);
+  image_view=DestroyCacheView(image_view);
+  return(contrast_image);
+}
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -3110,13 +3382,13 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
   for (y=0; y < (ssize_t) blur_image->rows; y++)
   {
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register IndexPacket
-      *restrict blur_indexes;
+      *magick_restrict blur_indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -3466,17 +3738,17 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
       sync;
 
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict l,
-      *restrict p;
+      *magick_restrict l,
+      *magick_restrict p;
 
     register IndexPacket
-      *restrict blur_indexes;
+      *magick_restrict blur_indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -3509,7 +3781,7 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
         intensity;
 
       register const double
-        *restrict k;
+        *magick_restrict k;
 
       register ssize_t
         u;
@@ -3818,13 +4090,13 @@ MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
       normal;
 
     register const PixelPacket
-      *restrict p,
-      *restrict s0,
-      *restrict s1,
-      *restrict s2;
+      *magick_restrict p,
+      *magick_restrict s0,
+      *magick_restrict s1,
+      *magick_restrict s2;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -4095,7 +4367,7 @@ MagickExport Image *SpreadImage(const Image *image,const double radius,
     bias;
 
   RandomInfo
-    **restrict random_info;
+    **magick_restrict random_info;
 
   size_t
     width;
@@ -4151,10 +4423,10 @@ MagickExport Image *SpreadImage(const Image *image,const double radius,
       pixel;
 
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -4325,16 +4597,16 @@ MagickExport Image *UnsharpMaskImageChannel(const Image *image,
       pixel;
 
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register IndexPacket
-      *restrict unsharp_indexes;
+      *magick_restrict unsharp_indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;

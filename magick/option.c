@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -537,6 +537,8 @@ static const OptionInfo
     { "-liquid-rescale", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+list", 0L, GlobalOptionFlag, MagickFalse },
     { "-list", 1L, GlobalOptionFlag, MagickFalse },
+    { "+local-contrast", 0L, DeprecateOptionFlag, MagickTrue },
+    { "-local-contrast", 1L, SimpleOperatorOptionFlag, MagickFalse },
     { "+log", 0L, GlobalOptionFlag, MagickFalse },
     { "-log", 1L, GlobalOptionFlag, MagickFalse },
     { "+loop", 0L, ImageInfoOptionFlag, MagickFalse },
@@ -1589,6 +1591,7 @@ static const OptionInfo
     { "Inverse", InverseColorInterpolate, UndefinedOptionFlag, MagickFalse },
     { "Shepards", ShepardsColorInterpolate, UndefinedOptionFlag, MagickFalse },
     { "Voronoi", VoronoiColorInterpolate, UndefinedOptionFlag, MagickFalse },
+    { "Manhattan", ManhattanColorInterpolate, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedResource, UndefinedOptionFlag, MagickFalse }
   },
   StatisticOptions[] =

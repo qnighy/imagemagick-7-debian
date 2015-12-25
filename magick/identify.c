@@ -17,7 +17,7 @@
 %                            September 1994                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -172,10 +172,10 @@ static ChannelStatistics *GetLocationStatistics(const Image *image,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
@@ -457,11 +457,13 @@ static ssize_t PrintChannelStatistics(FILE *file,const ChannelType channel,
 
   if (channel == AlphaChannel)
     {
-      n=FormatLocaleFile(file,StatisticsFormat,name,ClampToQuantum(scale*
-        (QuantumRange-channel_statistics[channel].maxima)),
-        (QuantumRange-channel_statistics[channel].maxima)/(double) QuantumRange,
-        ClampToQuantum(scale*(QuantumRange-channel_statistics[channel].minima)),
-        (QuantumRange-channel_statistics[channel].minima)/(double) QuantumRange,
+      n=FormatLocaleFile(file,StatisticsFormat,name,ClampToQuantum(
+        (MagickRealType) (scale*(QuantumRange-
+        channel_statistics[channel].maxima))),(QuantumRange-
+        channel_statistics[channel].maxima)/(double) QuantumRange,
+        ClampToQuantum((MagickRealType) (scale*(QuantumRange-
+        channel_statistics[channel].minima))),(QuantumRange-
+        channel_statistics[channel].minima)/(double) QuantumRange,
         scale*(QuantumRange-channel_statistics[channel].mean),(QuantumRange-
         channel_statistics[channel].mean)/(double) QuantumRange,scale*
         channel_statistics[channel].standard_deviation,
@@ -471,13 +473,13 @@ static ssize_t PrintChannelStatistics(FILE *file,const ChannelType channel,
         channel_statistics[channel].entropy);
       return(n);
     }
-  n=FormatLocaleFile(file,StatisticsFormat,name,ClampToQuantum(scale*
-    channel_statistics[channel].minima),channel_statistics[channel].minima/
-    (double) QuantumRange,ClampToQuantum(scale*
-    channel_statistics[channel].maxima),channel_statistics[channel].maxima/
-    (double) QuantumRange,scale*channel_statistics[channel].mean,
-    channel_statistics[channel].mean/(double) QuantumRange,scale*
-    channel_statistics[channel].standard_deviation,
+  n=FormatLocaleFile(file,StatisticsFormat,name,ClampToQuantum((MagickRealType)
+    (scale*channel_statistics[channel].minima)),
+    channel_statistics[channel].minima/(double) QuantumRange,ClampToQuantum(
+    (MagickRealType) (scale*channel_statistics[channel].maxima)),
+    channel_statistics[channel].maxima/(double) QuantumRange,scale*
+    channel_statistics[channel].mean,channel_statistics[channel].mean/(double)
+    QuantumRange,scale*channel_statistics[channel].standard_deviation,
     channel_statistics[channel].standard_deviation/(double) QuantumRange,
     channel_statistics[channel].kurtosis,channel_statistics[channel].skewness,
     channel_statistics[channel].entropy);
@@ -551,7 +553,12 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (file == (FILE *) NULL)
     file=stdout;
+  colorspace=image->colorspace;
   exception=AcquireExceptionInfo();
+  type=IdentifyImageType(image,exception);
+  if ((type == BilevelType) || (type == GrayscaleType) ||
+      (type == GrayscaleMatteType))
+    colorspace=GRAYColorspace;
   locate=GetImageArtifact(image,"identify:locate");
   if (locate != (const char *) NULL)
     {
@@ -698,7 +705,6 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
   exception=DestroyExceptionInfo(exception);
   ping=pixels == (const PixelPacket *) NULL ? MagickTrue : MagickFalse;
   exception=(&image->exception);
-  type=GetImageType(image,exception);
   (void) SignatureImage(image);
   (void) FormatLocaleFile(file,"Image: %s\n",image->filename);
   if (*image->magick_filename != '\0')
@@ -1057,7 +1063,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
             pixel;
 
           register PixelPacket
-            *restrict p;
+            *magick_restrict p;
 
           GetMagickPixelPacket(image,&pixel);
           p=image->colormap;

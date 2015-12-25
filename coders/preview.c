@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -188,6 +188,7 @@ static MagickBooleanType WritePreviewImage(const ImageInfo *image_info,
   (void) CopyMagickString(preview_image->filename,image_info->filename,
     MaxTextExtent);
   write_info=CloneImageInfo(image_info);
+  *write_info->magick='\0';
   (void) SetImageInfo(write_info,1,&image->exception);
   if (LocaleCompare(write_info->magick,"PREVIEW") == 0)
     (void) FormatLocaleString(preview_image->filename,MaxTextExtent,

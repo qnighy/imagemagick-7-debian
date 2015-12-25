@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -238,7 +238,10 @@ static MagickBooleanType InvokePostscriptDelegate(
   code=0;
   argv=StringToArgv(command,&argc);
   if (argv == (char **) NULL)
-    return(MagickFalse);
+    {
+      (ghost_info->delete_instance)(interpreter);
+      return(MagickFalse);
+    }
   (void) (ghost_info->set_stdio)(interpreter,(int(MagickDLLCall *)(void *,
     char *,int)) NULL,PostscriptDelegateMessage,PostscriptDelegateMessage);
   status=(ghost_info->init_with_args)(interpreter,argc-1,argv+1);

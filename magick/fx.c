@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -294,7 +294,7 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
     progress;
 
   RandomInfo
-    **restrict random_info;
+    **magick_restrict random_info;
 
   ssize_t
     y;
@@ -351,19 +351,19 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
       sync;
 
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register IndexPacket
-      *restrict noise_indexes;
+      *magick_restrict noise_indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -523,13 +523,13 @@ MagickExport Image *BlueShiftImage(const Image *image,const double factor,
       quantum;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -772,13 +772,13 @@ MagickExport Image *ColorizeImage(const Image *image,const char *opacity,
       sync;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -969,19 +969,19 @@ MagickExport Image *ColorMatrixImage(const Image *image,
       pixel;
 
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
 
     register IndexPacket
-      *restrict color_indexes;
+      *magick_restrict color_indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -1190,8 +1190,6 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
         minima;
 
       (void) GetImageChannelRange(image,channel,&minima,&maxima,exception);
-      if (LocaleCompare(channel_symbol,"a") == 0)
-        maxima=QuantumRange-maxima;
       (void) FormatLocaleString(statistic,MaxTextExtent,"%g",maxima);
     }
   if (LocaleNCompare(symbol,"mean",4) == 0)
@@ -1202,8 +1200,6 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
 
       (void) GetImageChannelMean(image,channel,&mean,&standard_deviation,
         exception);
-      if (LocaleCompare(channel_symbol,"a") == 0)
-        mean=QuantumRange-mean;
       (void) FormatLocaleString(statistic,MaxTextExtent,"%g",mean);
     }
   if (LocaleNCompare(symbol,"minima",6) == 0)
@@ -1213,8 +1209,6 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
         minima;
 
       (void) GetImageChannelRange(image,channel,&minima,&maxima,exception);
-      if (LocaleCompare(channel_symbol,"a") == 0)
-        minima=QuantumRange-minima;
       (void) FormatLocaleString(statistic,MaxTextExtent,"%g",minima);
     }
   if (LocaleNCompare(symbol,"skewness",8) == 0)
@@ -3108,7 +3102,7 @@ MagickExport Image *FxImageChannel(const Image *image,const ChannelType channel,
     *fx_view;
 
   FxInfo
-    **restrict fx_info;
+    **magick_restrict fx_info;
 
   Image
     *fx_image;
@@ -3161,13 +3155,13 @@ MagickExport Image *FxImageChannel(const Image *image,const ChannelType channel,
       alpha;
 
     register IndexPacket
-      *restrict fx_indexes;
+      *magick_restrict fx_indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -3367,13 +3361,13 @@ MagickExport Image *ImplodeImage(const Image *image,const double amount,
       delta;
 
     register IndexPacket
-      *restrict implode_indexes;
+      *magick_restrict implode_indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -3586,13 +3580,13 @@ MagickExport Image *MorphImages(const Image *image,
           sync;
 
         register const PixelPacket
-          *restrict p;
+          *magick_restrict p;
 
         register ssize_t
           x;
 
         register PixelPacket
-          *restrict q;
+          *magick_restrict q;
 
         if (status == MagickFalse)
           continue;
@@ -3786,7 +3780,7 @@ MagickExport MagickBooleanType PlasmaImageProxy(Image *image,
       (fabs(segment->x2-x_mid) > MagickEpsilon))
     {
       register PixelPacket
-        *restrict q;
+        *magick_restrict q;
 
       /*
         Left pixel.
@@ -3835,7 +3829,7 @@ MagickExport MagickBooleanType PlasmaImageProxy(Image *image,
           (fabs(segment->y2-y_mid) > MagickEpsilon))
         {
           register PixelPacket
-            *restrict q;
+            *magick_restrict q;
 
           /*
             Bottom pixel.
@@ -3859,7 +3853,7 @@ MagickExport MagickBooleanType PlasmaImageProxy(Image *image,
       if (fabs(segment->y1-segment->y2) > MagickEpsilon)
         {
           register PixelPacket
-            *restrict q;
+            *magick_restrict q;
 
           /*
             Top pixel.
@@ -3885,7 +3879,7 @@ MagickExport MagickBooleanType PlasmaImageProxy(Image *image,
       (fabs(segment->y1-segment->y2) > MagickEpsilon))
     {
       register PixelPacket
-        *restrict q;
+        *magick_restrict q;
 
       /*
         Middle pixel.
@@ -4214,13 +4208,13 @@ MagickExport Image *SepiaToneImage(const Image *image,const double threshold,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -4378,7 +4372,7 @@ MagickExport Image *ShadowImage(const Image *image,const double opacity,
   for (y=0; y < (ssize_t) border_image->rows; y++)
   {
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -4492,7 +4486,7 @@ MagickExport Image *SketchImage(const Image *image,const double radius,
     zero;
 
   RandomInfo
-    **restrict random_info;
+    **magick_restrict random_info;
 
   ssize_t
     y;
@@ -4511,8 +4505,7 @@ MagickExport Image *SketchImage(const Image *image,const double radius,
     return((Image *) NULL);
   random_view=AcquireAuthenticCacheView(random_image,exception);
 
-  if (AccelerateRandomImage(random_image,exception)
-      ==MagickFalse)
+  if (AccelerateRandomImage(random_image,exception) == MagickFalse)
   {
     status=MagickTrue;
     GetMagickPixelPacket(random_image,&zero);
@@ -4532,13 +4525,13 @@ MagickExport Image *SketchImage(const Image *image,const double radius,
         pixel;
 
       register IndexPacket
-        *restrict indexes;
+        *magick_restrict indexes;
 
       register ssize_t
         x;
 
       register PixelPacket
-        *restrict q;
+        *magick_restrict q;
 
       if (status == MagickFalse)
         continue;
@@ -4711,7 +4704,7 @@ MagickExport MagickBooleanType SolarizeImageChannel(Image *image,
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -5021,14 +5014,14 @@ MagickExport Image *StereoAnaglyphImage(const Image *left_image,
   for (y=0; y < (ssize_t) stereo_image->rows; y++)
   {
     register const PixelPacket
-      *restrict p,
-      *restrict q;
+      *magick_restrict p,
+      *magick_restrict q;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict r;
+      *magick_restrict r;
 
     p=GetVirtualPixels(left_image,-x_offset,y-y_offset,image->columns,1,
       exception);
@@ -5183,13 +5176,13 @@ MagickExport Image *SwirlImage(const Image *image,double degrees,
       delta;
 
     register IndexPacket
-      *restrict swirl_indexes;
+      *magick_restrict swirl_indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -5372,10 +5365,10 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -5648,10 +5641,10 @@ MagickExport Image *WaveImage(const Image *image,const double amplitude,
       pixel;
 
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;

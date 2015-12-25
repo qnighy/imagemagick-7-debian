@@ -18,7 +18,7 @@
 %                                 June 2007                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1575,6 +1575,13 @@ MagickExport Image *DistortResizeImage(const Image *image,
   tmp_image=resize_image;
   resize_image=CropImage(tmp_image,&crop_area,exception);
   tmp_image=DestroyImage(tmp_image);
+  if (resize_image != (Image *) NULL)
+    {
+      resize_image->matte=image->matte;
+      resize_image->compose=image->compose;
+      resize_image->page.width=0;
+      resize_image->page.height=0;
+    }
   return(resize_image);
 }
 
@@ -1696,17 +1703,17 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
   /*
     Handle Special Compound Distortions
   */
-  if ( method == ResizeDistortion )
+  if (method == ResizeDistortion)
     {
-      if ( number_arguments != 2 )
+      if (number_arguments != 2)
         {
           (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-                    "InvalidArgument","%s : '%s'","Resize",
-                    "Invalid number of args: 2 only");
+            "InvalidArgument","%s : '%s'","Resize",
+            "Invalid number of args: 2 only");
           return((Image *) NULL);
         }
-      distort_image=DistortResizeImage(image,(size_t)arguments[0],
-         (size_t)arguments[1], exception);
+      distort_image=DistortResizeImage(image,(size_t) arguments[0],
+        (size_t) arguments[1],exception);
       return(distort_image);
     }
 
@@ -1717,9 +1724,9 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
     Note that some distortions are mapped to other distortions,
     and as such do not require specific code after this point.
   */
-  coeff = GenerateCoefficients(image, &method, number_arguments,
-      arguments, 0, exception);
-  if ( coeff == (double *) NULL )
+  coeff=GenerateCoefficients(image,&method,number_arguments,arguments,0,
+    exception);
+  if (coeff == (double *) NULL)
     return((Image *) NULL);
 
   /*
@@ -2304,7 +2311,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
       zero;
 
     ResampleFilter
-      **restrict resample_filter;
+      **magick_restrict resample_filter;
 
     ssize_t
       j;
@@ -2339,13 +2346,13 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
         s;  /* transform destination image x,y  to source image x,y */
 
       register IndexPacket
-        *restrict indexes;
+        *magick_restrict indexes;
 
       register ssize_t
         i;
 
       register PixelPacket
-        *restrict q;
+        *magick_restrict q;
 
       q=QueueCacheViewAuthenticPixels(distort_view,0,j,distort_image->columns,1,
         exception);
@@ -3051,13 +3058,13 @@ MagickExport Image *SparseColorImage(const Image *image,
         pixel;    /* pixel to assign to distorted image */
 
       register IndexPacket
-        *restrict indexes;
+        *magick_restrict indexes;
 
       register ssize_t
         i;
 
       register PixelPacket
-        *restrict q;
+        *magick_restrict q;
 
       q=GetCacheViewAuthenticPixels(sparse_view,0,j,sparse_image->columns,
         1,exception);
@@ -3151,6 +3158,33 @@ MagickExport Image *SparseColorImage(const Image *image,
             if ( channel & BlueChannel    ) pixel.blue    /= denominator;
             if ( channel & IndexChannel   ) pixel.index   /= denominator;
             if ( channel & OpacityChannel ) pixel.opacity /= denominator;
+            break;
+          }
+          case ManhattanColorInterpolate:
+          {
+            size_t
+              k;
+
+            double
+              minimum = MagickMaximumValue;
+
+            /*
+              Just use the closest control point you can find!
+            */
+            for(k=0; k<number_arguments; k+=2+number_colors) {
+              double distance =
+                  fabs((double)i-arguments[ k ])
+                + fabs((double)j-arguments[k+1]);
+              if ( distance < minimum ) {
+                register ssize_t x=(ssize_t) k+2;
+                if ( channel & RedChannel     ) pixel.red     = arguments[x++];
+                if ( channel & GreenChannel   ) pixel.green   = arguments[x++];
+                if ( channel & BlueChannel    ) pixel.blue    = arguments[x++];
+                if ( channel & IndexChannel   ) pixel.index   = arguments[x++];
+                if ( channel & OpacityChannel ) pixel.opacity = arguments[x++];
+                minimum = distance;
+              }
+            }
             break;
           }
           case VoronoiColorInterpolate:

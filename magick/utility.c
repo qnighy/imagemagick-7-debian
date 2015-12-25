@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -855,7 +855,12 @@ MagickExport MagickBooleanType ExpandFilenames(int *number_arguments,
     vector=(char **) ResizeQuantumMemory(vector,(size_t) *number_arguments+
       count+number_files+1,sizeof(*vector));
     if (vector == (char **) NULL)
-      return(MagickFalse);
+      {
+        for (j=0; j < (ssize_t) number_files; j++)
+          filelist[j]=DestroyString(filelist[j]);
+        filelist=(char **) RelinquishMagickMemory(filelist);
+        return(MagickFalse);
+      }
     for (j=0; j < (ssize_t) number_files; j++)
     {
       option=filelist[j];
@@ -1433,6 +1438,8 @@ MagickExport MagickBooleanType IsPathAccessible(const char *path)
 
   if ((path == (const char *) NULL) || (*path == '\0'))
     return(MagickFalse);
+  if (strcmp(path,"-") == 0)
+    return(MagickTrue);
   status=GetPathAttributes(path,&attributes);
   if (status == MagickFalse)
     return(status);

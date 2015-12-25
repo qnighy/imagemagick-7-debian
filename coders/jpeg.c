@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1322,13 +1322,13 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (jpeg_read_scanlines(&jpeg_info,scanline,1) != 1)
       {
@@ -1720,7 +1720,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (description == (XMLTreeInfo *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "XmlMissingElement", "<description>, slot \"%s\"",slot);
+        "XmlMissingElement","<description>, slot \"%s\"",slot);
       quantization_tables=DestroyXMLTree(quantization_tables);
       xml=DestroyString(xml);
       return(table);
@@ -1729,7 +1729,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (levels == (XMLTreeInfo *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "XmlMissingElement", "<levels>, slot \"%s\"", slot);
+        "XmlMissingElement","<levels>, slot \"%s\"",slot);
       quantization_tables=DestroyXMLTree(quantization_tables);
       xml=DestroyString(xml);
       return(table);
@@ -1751,7 +1751,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (attribute == (char *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "XmlMissingAttribute", "<levels width>, slot \"%s\"",slot);
+        "XmlMissingAttribute","<levels width>, slot \"%s\"",slot);
       quantization_tables=DestroyXMLTree(quantization_tables);
       table=DestroyQuantizationTable(table);
       xml=DestroyString(xml);
@@ -1761,7 +1761,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (table->width == 0)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-       "XmlInvalidAttribute", "<levels width>, table \"%s\"",slot);
+       "XmlInvalidAttribute","<levels width>, table \"%s\"",slot);
       quantization_tables=DestroyXMLTree(quantization_tables);
       table=DestroyQuantizationTable(table);
       xml=DestroyString(xml);
@@ -1771,7 +1771,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (attribute == (char *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "XmlMissingAttribute", "<levels height>, table \"%s\"",slot);
+        "XmlMissingAttribute","<levels height>, table \"%s\"",slot);
       quantization_tables=DestroyXMLTree(quantization_tables);
       table=DestroyQuantizationTable(table);
       xml=DestroyString(xml);
@@ -1781,7 +1781,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (table->height == 0)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "XmlInvalidAttribute", "<levels height>, table \"%s\"",slot);
+        "XmlInvalidAttribute","<levels height>, table \"%s\"",slot);
       quantization_tables=DestroyXMLTree(quantization_tables);
       table=DestroyQuantizationTable(table);
       xml=DestroyString(xml);
@@ -1791,7 +1791,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (attribute == (char *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "XmlMissingAttribute", "<levels divisor>, table \"%s\"",slot);
+        "XmlMissingAttribute","<levels divisor>, table \"%s\"",slot);
       quantization_tables=DestroyXMLTree(quantization_tables);
       table=DestroyQuantizationTable(table);
       xml=DestroyString(xml);
@@ -1801,7 +1801,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (table->divisor == 0.0)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "XmlInvalidAttribute", "<levels divisor>, table \"%s\"",slot);
+        "XmlInvalidAttribute","<levels divisor>, table \"%s\"",slot);
       quantization_tables=DestroyXMLTree(quantization_tables);
       table=DestroyQuantizationTable(table);
       xml=DestroyString(xml);
@@ -1811,7 +1811,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (content == (char *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "XmlMissingContent", "<levels>, table \"%s\"",slot);
+        "XmlMissingContent","<levels>, table \"%s\"",slot);
       quantization_tables=DestroyXMLTree(quantization_tables);
       table=DestroyQuantizationTable(table);
       xml=DestroyString(xml);
@@ -1840,7 +1840,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   if (p != content)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-        "XmlInvalidContent", "<level> too many values, table \"%s\"",slot);
+        "XmlInvalidContent","<level> too many values, table \"%s\"",slot);
      quantization_tables=DestroyXMLTree(quantization_tables);
      table=DestroyQuantizationTable(table);
      xml=DestroyString(xml);
@@ -2209,16 +2209,15 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     jpeg_info.data_precision=BITS_IN_JSAMPLE;
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
-      "Image resolution: %.20g,%.20g",floor(image->x_resolution+0.5),
-      floor(image->y_resolution+0.5));
+      "Image resolution: %.20g,%.20g",image->x_resolution,image->y_resolution);
   if ((image->x_resolution != 0.0) && (image->y_resolution != 0.0))
     {
       /*
         Set image resolution.
       */
       jpeg_info.write_JFIF_header=TRUE;
-      jpeg_info.X_density=(UINT16) floor(image->x_resolution+0.5);
-      jpeg_info.Y_density=(UINT16) floor(image->y_resolution+0.5);
+      jpeg_info.X_density=(UINT16) image->x_resolution;
+      jpeg_info.Y_density=(UINT16) image->y_resolution;
       /*
         Set image resolution units.
       */
@@ -2366,9 +2365,9 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
           extent=(MagickSizeType) SiPrefixToDoubleInterval(option,100.0);
           (void) DeleteImageOption(jpeg_info,"jpeg:extent");
           (void) DeleteImageArtifact(jpeg_image,"jpeg:extent");
-          maximum=image->quality;
+          maximum=image_info->quality;
           if (maximum < 2)
-            maximum=2;
+            maximum=101;
           for (minimum=2; minimum < maximum; )
           {
             (void) AcquireUniqueFilename(jpeg_image->filename);

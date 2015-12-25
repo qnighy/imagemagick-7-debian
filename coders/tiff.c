@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -199,6 +199,10 @@ static MagickThreadKey
 
 static SemaphoreInfo
   *tiff_semaphore = (SemaphoreInfo *) NULL;
+
+static TIFFErrorHandler
+  error_handler,
+  warning_handler;
 
 static volatile MagickBooleanType
   instantiate_key = MagickFalse;
@@ -465,7 +469,7 @@ static MagickBooleanType DecodeLabImage(Image *image,ExceptionInfo *exception)
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -548,7 +552,7 @@ static void TIFFErrors(const char *module,const char *format,va_list error)
   (void) vsprintf(message,format,error);
 #endif
   (void) ConcatenateMagickString(message,".",MaxTextExtent);
-  exception=(ExceptionInfo *) MagickGetThreadValue(tiff_exception);
+  exception=(ExceptionInfo *) GetMagickThreadValue(tiff_exception);
   if (exception != (ExceptionInfo *) NULL)
     (void) ThrowMagickException(exception,GetMagickModule(),CoderError,message,
       "`%s'",module);
@@ -566,9 +570,6 @@ static void TIFFGetProfiles(TIFF *tiff,Image *image,MagickBooleanType ping)
 
   unsigned char
     *profile;
-
-  unsigned long
-    *tietz;
 
   length=0;
   if (ping == MagickFalse)
@@ -604,9 +605,6 @@ static void TIFFGetProfiles(TIFF *tiff,Image *image,MagickBooleanType ping)
   if ((TIFFGetField(tiff,37724,&length,&profile) == 1) &&
       (profile != (unsigned char *) NULL))
     (void) ReadProfile(image,"tiff:37724",profile,(ssize_t) length);
-  image->tietz_offset=0;
-  if (TIFFGetField(tiff,37706,&length,&tietz) == 1)
-    image->tietz_offset=tietz[0];
 }
 
 static void TIFFGetProperties(TIFF *tiff,Image *image)
@@ -617,7 +615,11 @@ static void TIFFGetProperties(TIFF *tiff,Image *image)
 
   uint32
     count,
+    length,
     type;
+
+  unsigned long
+    *tietz;
 
   if (TIFFGetField(tiff,TIFFTAG_ARTIST,&text) == 1)
     (void) SetImageProperty(image,"tiff:artist",text);
@@ -680,6 +682,11 @@ static void TIFFGetProperties(TIFF *tiff,Image *image)
       }
       default:
         break;
+    }
+  if (TIFFGetField(tiff,37706,&length,&tietz) == 1)
+    {
+      (void) FormatLocaleString(message,MaxTextExtent,"%lu",tietz[0]);
+      (void) SetImageProperty(image,"tiff:tietz_offset",message);
     }
 }
 
@@ -879,7 +886,7 @@ static void TIFFWarnings(const char *module,const char *format,va_list warning)
   (void) vsprintf(message,format,warning);
 #endif
   (void) ConcatenateMagickString(message,".",MaxTextExtent);
-  exception=(ExceptionInfo *) MagickGetThreadValue(tiff_exception);
+  exception=(ExceptionInfo *) GetMagickThreadValue(tiff_exception);
   if (exception != (ExceptionInfo *) NULL)
     (void) ThrowMagickException(exception,GetMagickModule(),CoderWarning,
       message,"`%s'",module);
@@ -991,6 +998,8 @@ static void TIFFReadPhotoshopLayers(Image* image,const ImageInfo *image_info,
 
   if (GetImageListLength(image) != 1)
     return;
+  if ((image_info->number_scenes == 1) && (image_info->scene == 0))
+    return;
   option=GetImageOption(image_info,"tiff:ignore-layers");
   if (option != (const char * ) NULL)
     return;
@@ -1017,7 +1026,7 @@ static void TIFFReadPhotoshopLayers(Image* image,const ImageInfo *image_info,
   if (i >= (ssize_t) (layer_info->length-8))
     return;
   layers=CloneImage(image,image->columns,image->rows,MagickTrue,exception);
-  RemoveImageProfile(layers,"tiff:37724");
+  (void) DeleteImageProfile(layers,"tiff:37724");
   AttachBlob(layers->blob,layer_info->datum,layer_info->length);
   SeekBlob(layers,(MagickOffsetType) i,SEEK_SET);
   info.version=1;
@@ -1037,7 +1046,8 @@ static void TIFFReadPhotoshopLayers(Image* image,const ImageInfo *image_info,
         else
           info.channels=(image->matte != MagickFalse ? 5UL : 4UL);
       }
-  ReadPSDLayers(layers,image_info,&info,MagickFalse,exception);
+  (void) ReadPSDLayers(layers,image_info,&info,MagickFalse,exception);
+  InheritException(exception,&layers->exception);
   DeleteImageFromList(&layers);
   if (layers != (Image *) NULL)
     {
@@ -1076,7 +1086,6 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
     tiff_status;
 
   MagickBooleanType
-    debug,
     status;
 
   MagickSizeType
@@ -1099,10 +1108,6 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
 
   TIFF
     *tiff;
-
-  TIFFErrorHandler
-    error_handler,
-    warning_handler;
 
   TIFFMethodType
     method;
@@ -1149,44 +1154,43 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  (void) MagickSetThreadValue(tiff_exception,exception);
-  error_handler=TIFFSetErrorHandler(TIFFErrors);
-  warning_handler=TIFFSetWarningHandler(TIFFWarnings);
+  (void) SetMagickThreadValue(tiff_exception,exception);
   tiff=TIFFClientOpen(image->filename,"rb",(thandle_t) image,TIFFReadBlob,
     TIFFWriteBlob,TIFFSeekBlob,TIFFCloseBlob,TIFFGetBlobSize,TIFFMapBlob,
     TIFFUnmapBlob);
   if (tiff == (TIFF *) NULL)
     {
-      (void) TIFFSetWarningHandler(warning_handler);
-      (void) TIFFSetErrorHandler(error_handler);
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  debug=IsEventLogging();
-  (void) debug;
   if (image_info->number_scenes != 0)
     {
       /*
-        Generate blank images for subimage specification (e.g. image.tif[4].
+      Generate blank images for subimage specification (e.g. image.tif[4].
+      We need to check the number of directores because it is possible that
+      the subimage(s) are stored in the photoshop profile.
       */
-      for (i=0; i < (ssize_t) image_info->scene; i++)
-      {
-        status=TIFFReadDirectory(tiff) != 0 ? MagickTrue : MagickFalse;
-        if (status == MagickFalse)
+      if (image_info->scene < (size_t)TIFFNumberOfDirectories(tiff))
+        {
+          for (i=0; i < (ssize_t) image_info->scene; i++)
           {
-            TIFFClose(tiff);
-            image=DestroyImageList(image);
-            return((Image *) NULL);
+            status=TIFFReadDirectory(tiff) != 0 ? MagickTrue : MagickFalse;
+            if (status == MagickFalse)
+              {
+                TIFFClose(tiff);
+                image=DestroyImageList(image);
+                return((Image *) NULL);
+              }
+            AcquireNextImage(image_info,image);
+            if (GetNextImageInList(image) == (Image *) NULL)
+              {
+                TIFFClose(tiff);
+                image=DestroyImageList(image);
+                return((Image *) NULL);
+              }
+            image=SyncNextImageInList(image);
           }
-        AcquireNextImage(image_info,image);
-        if (GetNextImageInList(image) == (Image *) NULL)
-          {
-            TIFFClose(tiff);
-            image=DestroyImageList(image);
-            return((Image *) NULL);
-          }
-        image=SyncNextImageInList(image);
-      }
+        }
     }
   do
   {
@@ -1630,7 +1634,7 @@ RestoreMSCWarning
             status;
 
           register PixelPacket
-            *restrict q;
+            *magick_restrict q;
 
           status=TIFFReadPixels(tiff,bits_per_sample,0,y,(char *) pixels);
           if (status == -1)
@@ -1687,7 +1691,7 @@ RestoreMSCWarning
             status;
 
           register PixelPacket
-            *restrict q;
+            *magick_restrict q;
 
           status=TIFFReadPixels(tiff,bits_per_sample,0,y,(char *) pixels);
           if (status == -1)
@@ -1719,7 +1723,7 @@ RestoreMSCWarning
           for (y=0; y < (ssize_t) image->rows; y++)
           {
             register PixelPacket
-              *restrict q;
+              *magick_restrict q;
 
             int
               status;
@@ -1777,7 +1781,7 @@ RestoreMSCWarning
             *indexes;
 
           register PixelPacket
-            *restrict q;
+            *magick_restrict q;
 
           register ssize_t
             x;
@@ -1834,7 +1838,7 @@ RestoreMSCWarning
             x;
 
           register PixelPacket
-            *restrict q;
+            *magick_restrict q;
 
           q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
           if (q == (PixelPacket *) NULL)
@@ -1914,7 +1918,7 @@ RestoreMSCWarning
             x;
 
           register PixelPacket
-            *restrict q;
+            *magick_restrict q;
 
           size_t
             columns_remaining,
@@ -2027,7 +2031,7 @@ RestoreMSCWarning
             x;
 
           register PixelPacket
-            *restrict q;
+            *magick_restrict q;
 
           q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
           if (q == (PixelPacket *) NULL)
@@ -2095,10 +2099,17 @@ RestoreMSCWarning
           break;
       }
   } while (status != MagickFalse);
-  (void) TIFFSetWarningHandler(warning_handler);
-  (void) TIFFSetErrorHandler(error_handler);
   TIFFClose(tiff);
   TIFFReadPhotoshopLayers(image,image_info,exception);
+  if (image_info->number_scenes != 0)
+  {
+    if (image_info->scene >= GetImageListLength(image))
+    {
+      /* Subimage was not found in the Photoshop layer */
+      image = DestroyImageList(image);
+      return((Image *)NULL);
+    }
+  }
   return(GetFirstImageInList(image));
 }
 #endif
@@ -2233,8 +2244,10 @@ ModuleExport size_t RegisterTIFFImage(void)
   LockSemaphoreInfo(tiff_semaphore);
   if (instantiate_key == MagickFalse)
     {
-      if (MagickCreateThreadKey(&tiff_exception) == MagickFalse)
+      if (CreateMagickThreadKey(&tiff_exception,NULL) == MagickFalse)
         ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+      error_handler=TIFFSetErrorHandler(TIFFErrors);
+      warning_handler=TIFFSetWarningHandler(TIFFWarnings);
 #if defined(MAGICKCORE_HAVE_TIFFMERGEFIELDINFO) && defined(MAGICKCORE_HAVE_TIFFSETTAGEXTENDER)
       if (tag_extender == (TIFFExtendProc) NULL)
         tag_extender=TIFFSetTagExtender(TIFFTagExtender);
@@ -2361,12 +2374,14 @@ ModuleExport void UnregisterTIFFImage(void)
   LockSemaphoreInfo(tiff_semaphore);
   if (instantiate_key != MagickFalse)
     {
-      if (MagickDeleteThreadKey(tiff_exception) == MagickFalse)
+      if (DeleteMagickThreadKey(tiff_exception) == MagickFalse)
         ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
 #if defined(MAGICKCORE_HAVE_TIFFMERGEFIELDINFO) && defined(MAGICKCORE_HAVE_TIFFSETTAGEXTENDER)
       if (tag_extender == (TIFFExtendProc) NULL)
         (void) TIFFSetTagExtender(tag_extender);
 #endif
+      (void) TIFFSetWarningHandler(warning_handler);
+      (void) TIFFSetErrorHandler(error_handler);
       instantiate_key=MagickFalse;
     }
   UnlockSemaphoreInfo(tiff_semaphore);
@@ -2703,7 +2718,7 @@ static MagickBooleanType EncodeLabImage(Image *image,ExceptionInfo *exception)
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -3093,10 +3108,6 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
   TIFF
     *tiff;
 
-  TIFFErrorHandler
-    error_handler,
-    warning_handler;
-
   TIFFInfo
     tiff_info;
 
@@ -3124,9 +3135,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  (void) MagickSetThreadValue(tiff_exception,&image->exception);
-  error_handler=TIFFSetErrorHandler((TIFFErrorHandler) TIFFErrors);
-  warning_handler=TIFFSetWarningHandler((TIFFErrorHandler) TIFFWarnings);
+  (void) SetMagickThreadValue(tiff_exception,&image->exception);
   endian_type=UndefinedEndian;
   option=GetImageOption(image_info,"tiff:endian");
   if (option != (const char *) NULL)
@@ -3155,11 +3164,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
     TIFFWriteBlob,TIFFSeekBlob,TIFFCloseBlob,TIFFGetBlobSize,TIFFMapBlob,
     TIFFUnmapBlob);
   if (tiff == (TIFF *) NULL)
-    {
-      (void) TIFFSetWarningHandler(warning_handler);
-      (void) TIFFSetErrorHandler(error_handler);
-      return(MagickFalse);
-    }
+    return(MagickFalse);
   scene=0;
   debug=IsEventLogging();
   (void) debug;
@@ -3687,7 +3692,7 @@ RestoreMSCWarning
             for (y=0; y < (ssize_t) image->rows; y++)
             {
               register const PixelPacket
-                *restrict p;
+                *magick_restrict p;
 
               p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
               if (p == (const PixelPacket *) NULL)
@@ -3715,7 +3720,7 @@ RestoreMSCWarning
             for (y=0; y < (ssize_t) image->rows; y++)
             {
               register const PixelPacket
-                *restrict p;
+                *magick_restrict p;
 
               p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
               if (p == (const PixelPacket *) NULL)
@@ -3734,7 +3739,7 @@ RestoreMSCWarning
             for (y=0; y < (ssize_t) image->rows; y++)
             {
               register const PixelPacket
-                *restrict p;
+                *magick_restrict p;
 
               p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
               if (p == (const PixelPacket *) NULL)
@@ -3753,7 +3758,7 @@ RestoreMSCWarning
             for (y=0; y < (ssize_t) image->rows; y++)
             {
               register const PixelPacket
-                *restrict p;
+                *magick_restrict p;
 
               p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
               if (p == (const PixelPacket *) NULL)
@@ -3773,7 +3778,7 @@ RestoreMSCWarning
               for (y=0; y < (ssize_t) image->rows; y++)
               {
                 register const PixelPacket
-                  *restrict p;
+                  *magick_restrict p;
 
                 p=GetVirtualPixels(image,0,y,image->columns,1,
                   &image->exception);
@@ -3808,7 +3813,7 @@ RestoreMSCWarning
         for (y=0; y < (ssize_t) image->rows; y++)
         {
           register const PixelPacket
-            *restrict p;
+            *magick_restrict p;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
           if (p == (const PixelPacket *) NULL)
@@ -3879,7 +3884,7 @@ RestoreMSCWarning
         for (y=0; y < (ssize_t) image->rows; y++)
         {
           register const PixelPacket
-            *restrict p;
+            *magick_restrict p;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
           if (p == (const PixelPacket *) NULL)
@@ -3916,8 +3921,6 @@ RestoreMSCWarning
     if (status == MagickFalse)
       break;
   } while (image_info->adjoin != MagickFalse);
-  (void) TIFFSetWarningHandler(warning_handler);
-  (void) TIFFSetErrorHandler(error_handler);
   TIFFClose(tiff);
   return(MagickTrue);
 }

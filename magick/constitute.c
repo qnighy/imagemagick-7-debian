@@ -17,7 +17,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -428,7 +428,7 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
         if ((image_info->endian == UndefinedEndian) &&
             (GetMagickRawSupport(magick_info) != MagickFalse))
           {
-            size_t
+            unsigned long
               lsb_first;
 
             lsb_first=1;
@@ -1040,7 +1040,7 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
         if ((image_info->endian == UndefinedEndian) &&
             (GetMagickRawSupport(magick_info) != MagickFalse))
           {
-            size_t
+            unsigned long
               lsb_first;
 
             lsb_first=1;
@@ -1297,7 +1297,14 @@ MagickExport MagickBooleanType WriteImages(const ImageInfo *image_info,
     (void) CopyMagickString(write_info->magick,images->magick,MaxTextExtent);
   p=images;
   for ( ; GetNextImageInList(p) != (Image *) NULL; p=GetNextImageInList(p))
-    if (p->scene >= GetNextImageInList(p)->scene)
+  {
+    register Image
+      *next;
+
+    next=GetNextImageInList(p);
+    if (next == (Image *) NULL)
+      break;
+    if (p->scene >= next->scene)
       {
         register ssize_t
           i;
@@ -1310,6 +1317,7 @@ MagickExport MagickBooleanType WriteImages(const ImageInfo *image_info,
           p->scene=(size_t) i++;
         break;
       }
+  }
   /*
     Write images.
   */

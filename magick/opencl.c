@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -36,9 +36,9 @@
 %
 %
 */
- 
+
 /*
-Include declarations.
+  Include declarations.
 */
 #include "magick/studio.h"
 #include "magick/artifact.h"
@@ -93,11 +93,167 @@ Include declarations.
 #define MAGICKCORE_OPENCL_MACOSX  1
 #endif
 
+#define NUM_CL_RAND_GENERATORS 1024  /* number of random number generators running in parallel */
+#define PROFILE_OCL_KERNELS 0
 
-#define NUM_CL_RAND_GENERATORS 1024  /* number of random number generators running in parallel */ 
+typedef struct
+{
+  cl_ulong min;
+  cl_ulong max;
+  cl_ulong total;
+  cl_ulong count;
+} KernelProfileRecord;
+
+static const char *kernelNames[] = {
+  "AddNoise",
+  "BlurRow",
+  "BlurColumn",
+  "Composite",
+  "ComputeFunction",
+  "Contrast",
+  "ContrastStretch",
+  "Convolve",
+  "Equalize",
+  "GrayScale",
+  "Histogram",
+  "HullPass1",
+  "HullPass2",
+  "LocalContrastBlurRow",
+  "LocalContrastBlurApplyColumn",
+  "Modulate",
+  "MotionBlur",
+  "RadialBlur",
+  "RandomNumberGenerator",
+  "ResizeHorizontal",
+  "ResizeVertical",
+  "UnsharpMaskBlurColumn",
+  "UnsharpMask",
+  "NONE" };
+
+KernelProfileRecord
+  profileRecords[KERNEL_COUNT];
+
+typedef struct _AccelerateTimer {
+  long long _freq;
+  long long _clocks;
+  long long _start;
+} AccelerateTimer;
+
+void startAccelerateTimer(AccelerateTimer* timer) {
+#ifdef _WIN32
+      QueryPerformanceCounter((LARGE_INTEGER*)&timer->_start);	
+
+
+#else
+      struct timeval s;
+      gettimeofday(&s, 0);
+      timer->_start = (long long)s.tv_sec * (long long)1.0E3 + (long long)s.tv_usec / (long long)1.0E3;
+#endif
+}
+
+void stopAccelerateTimer(AccelerateTimer* timer) {
+      long long n=0;
+#ifdef _WIN32
+      QueryPerformanceCounter((LARGE_INTEGER*)&(n));	
+#else
+      struct timeval s;
+      gettimeofday(&s, 0);
+      n = (long long)s.tv_sec * (long long)1.0E3+ (long long)s.tv_usec / (long long)1.0E3;
+#endif
+      n -= timer->_start;
+      timer->_start = 0;
+      timer->_clocks += n;
+}
+
+void resetAccelerateTimer(AccelerateTimer* timer) {
+   timer->_clocks = 0;
+   timer->_start = 0;
+}
+
+void initAccelerateTimer(AccelerateTimer* timer) {
+#ifdef _WIN32
+    QueryPerformanceFrequency((LARGE_INTEGER*)&timer->_freq);
+#else
+    timer->_freq = (long long)1.0E3;
+#endif
+   resetAccelerateTimer(timer);
+}
+
+double readAccelerateTimer(AccelerateTimer* timer) {
+  return (double)timer->_clocks/(double)timer->_freq;
+};
+
+MagickPrivate void RecordProfileData(MagickCLEnv clEnv, ProfiledKernels kernel, cl_event event)
+{
+#if PROFILE_OCL_KERNELS
+  cl_int status;
+  cl_ulong start = 0;
+  cl_ulong end = 0;
+  cl_ulong elapsed = 0;
+  clEnv->library->clWaitForEvents(1, &event);
+  status = clEnv->library->clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
+  status &= clEnv->library->clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
+  if (status == CL_SUCCESS) {
+    start /= 1000;	// usecs
+    end /= 1000;	// usecs
+    elapsed = end - start;
+    /* we can use the commandQueuesLock to make the code below thread safe */
+    LockSemaphoreInfo(clEnv->commandQueuesLock);
+    if ((elapsed < profileRecords[kernel].min) || (profileRecords[kernel].count == 0))
+      profileRecords[kernel].min = elapsed;
+    if (elapsed > profileRecords[kernel].max)
+      profileRecords[kernel].max = elapsed;
+    profileRecords[kernel].total += elapsed;
+    profileRecords[kernel].count += 1;
+    UnlockSemaphoreInfo(clEnv->commandQueuesLock);
+  }
+#endif
+}
+
+void DumpProfileData()
+{
+#if PROFILE_OCL_KERNELS
+  int i;
+
+  OpenCLLog("====================================================");
+
+  // Write out the device info to the profile
+  if (0 == 1)
+  {
+    MagickCLEnv clEnv;
+    char buff[2048];
+    cl_int status;
+
+    clEnv = GetDefaultOpenCLEnv();
+
+    status = clEnv->library->clGetDeviceInfo(clEnv->device, CL_DEVICE_VENDOR, 2048, buff, NULL);
+    OpenCLLog(buff);
+
+    status = clEnv->library->clGetDeviceInfo(clEnv->device, CL_DEVICE_NAME, 2048, buff, NULL);
+    OpenCLLog(buff);
+
+    status = clEnv->library->clGetDeviceInfo(clEnv->device, CL_DRIVER_VERSION, 2048, buff, NULL);
+    OpenCLLog(buff);
+  }
+
+  OpenCLLog("====================================================");
+  OpenCLLog("                        ave\tcalls   \tmin -> max");
+  OpenCLLog("                        ---\t-----   \t----------");
+  for (i = 0; i < KERNEL_COUNT; ++i) {
+    char buf[4096];
+    char indent[160];
+    strcpy(indent, "                              ");
+    strncpy(indent, kernelNames[i], min(strlen(kernelNames[i]), strlen(indent) - 1));
+    sprintf(buf, "%s%d\t(%d calls)   \t%d -> %d", indent, profileRecords[i].count > 0 ? (profileRecords[i].total / profileRecords[i].count) : 0, profileRecords[i].count, profileRecords[i].min, profileRecords[i].max);
+    //printf("%s%d\t(%d calls)   \t%d -> %d\n", indent, profileRecords[i].count > 0 ? (profileRecords[i].total / profileRecords[i].count) : 0, profileRecords[i].count, profileRecords[i].min, profileRecords[i].max);
+    OpenCLLog(buf);
+  }
+  OpenCLLog("====================================================");
+#endif
+}
 
 /*
- * 
+ *
  * Dynamic library loading functions
  *
  */
@@ -111,7 +267,7 @@ void *OsLibraryLoad(const char *libraryName)
 {
 #ifdef MAGICKCORE_WINDOWS_SUPPORT
     return (void *)LoadLibraryA(libraryName);
-#else 
+#else
     return (void *)dlopen(libraryName, RTLD_NOW);
 #endif
 }
@@ -156,7 +312,7 @@ void OsLibraryUnload(void *library)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% AcquireMagickOpenCLEnv() allocates the MagickCLEnv structure 
+% AcquireMagickOpenCLEnv() allocates the MagickCLEnv structure.
 %
 */
 
@@ -167,7 +323,9 @@ MagickExport MagickCLEnv AcquireMagickOpenCLEnv()
   if (clEnv != NULL)
   {
     memset(clEnv, 0, sizeof(struct _MagickCLEnv));
+    clEnv->commandQueuesPos=-1;
     ActivateSemaphoreInfo(&clEnv->lock);
+    ActivateSemaphoreInfo(&clEnv->commandQueuesLock);
   }
   return clEnv;
 }
@@ -200,7 +358,13 @@ MagickExport MagickBooleanType RelinquishMagickOpenCLEnv(MagickCLEnv clEnv)
 {
   if (clEnv != (MagickCLEnv) NULL)
   {
+    while (clEnv->commandQueuesPos >= 0)
+    {
+      clEnv->library->clReleaseCommandQueue(
+        clEnv->commandQueues[clEnv->commandQueuesPos--]);
+    }
     DestroySemaphoreInfo(&clEnv->lock);
+    DestroySemaphoreInfo(&clEnv->commandQueuesLock);
     RelinquishMagickMemory(clEnv);
     return MagickTrue;
   }
@@ -263,11 +427,15 @@ static MagickBooleanType bindOpenCLFunctions(void* library)
   BIND(clCreateCommandQueue);
   BIND(clReleaseCommandQueue);
 
+  BIND(clGetEventProfilingInfo);
+  BIND(clWaitForEvents);
+  BIND(clReleaseEvent);
+
   return MagickTrue;
 }
 
 MagickLibrary * GetOpenCLLib()
-{ 
+{
   if (OpenCLLib == NULL)
   {
     if (OpenCLLibLock == NULL)
@@ -287,7 +455,7 @@ MagickLibrary * GetOpenCLLib()
 #ifdef MAGICKCORE_OPENCL_MACOSX
       status = bindOpenCLFunctions(library);
 #else
-      
+
       memset(OpenCLLib, 0, sizeof(MagickLibrary));
 #ifdef MAGICKCORE_WINDOWS_SUPPORT
       library = OsLibraryLoad("OpenCL.dll");
@@ -304,11 +472,11 @@ MagickLibrary * GetOpenCLLib()
 #endif
     }
 
-    UnlockSemaphoreInfo(OpenCLLibLock); 
+    UnlockSemaphoreInfo(OpenCLLibLock);
   }
-  
 
-  return OpenCLLib; 
+
+  return OpenCLLib;
 }
 
 
@@ -336,7 +504,7 @@ MagickLibrary * GetOpenCLLib()
 */
 
 MagickExport MagickCLEnv GetDefaultOpenCLEnv()
-{ 
+{
   if (defaultCLEnv == NULL)
   {
     if (defaultCLEnvLock == NULL)
@@ -344,10 +512,11 @@ MagickExport MagickCLEnv GetDefaultOpenCLEnv()
       ActivateSemaphoreInfo(&defaultCLEnvLock);
     }
     LockSemaphoreInfo(defaultCLEnvLock);
-    defaultCLEnv = AcquireMagickOpenCLEnv();
-    UnlockSemaphoreInfo(defaultCLEnvLock); 
+    if (defaultCLEnv == NULL)
+      defaultCLEnv = AcquireMagickOpenCLEnv();
+    UnlockSemaphoreInfo(defaultCLEnvLock);
   }
-  return defaultCLEnv; 
+  return defaultCLEnv;
 }
 
 static void LockDefaultOpenCLEnv() {
@@ -379,9 +548,9 @@ static void UnlockDefaultOpenCLEnv() {
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  SetDefaultOpenCLEnv() sets the new OpenCL environment as default 
+%  SetDefaultOpenCLEnv() sets the new OpenCL environment as default
 %  and returns the old OpenCL environment
-%  
+%
 %  The format of the SetDefaultOpenCLEnv() method is:
 %
 %      MagickCLEnv SetDefaultOpenCLEnv(MagickCLEnv clEnv)
@@ -391,7 +560,7 @@ static void UnlockDefaultOpenCLEnv() {
 %    o clEnv: the new default OpenCL environment.
 %
 */
-MagickExport MagickCLEnv SetDefaultOpenCLEnv(MagickCLEnv clEnv)     
+MagickExport MagickCLEnv SetDefaultOpenCLEnv(MagickCLEnv clEnv)
 {
   MagickCLEnv oldEnv;
   LockDefaultOpenCLEnv();
@@ -399,10 +568,8 @@ MagickExport MagickCLEnv SetDefaultOpenCLEnv(MagickCLEnv clEnv)
   defaultCLEnv = clEnv;
   UnlockDefaultOpenCLEnv();
   return oldEnv;
-} 
-
-
-
+}
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -414,18 +581,18 @@ MagickExport MagickCLEnv SetDefaultOpenCLEnv(MagickCLEnv clEnv)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  SetMagickOpenCLEnvParam() sets the parameters in the OpenCL environment  
-%  
+%  SetMagickOpenCLEnvParam() sets the parameters in the OpenCL environment
+%
 %  The format of the SetMagickOpenCLEnvParam() method is:
 %
-%      MagickBooleanType SetMagickOpenCLEnvParam(MagickCLEnv clEnv, 
-%        MagickOpenCLEnvParam param, size_t dataSize, void* data, 
+%      MagickBooleanType SetMagickOpenCLEnvParam(MagickCLEnv clEnv,
+%        MagickOpenCLEnvParam param, size_t dataSize, void* data,
 %        ExceptionInfo* exception)
 %
 %  A description of each parameter follows:
 %
 %    o clEnv: the OpenCL environment.
-%    
+%
 %    o param: the parameter to be set.
 %
 %    o dataSize: the data size of the parameter value.
@@ -514,23 +681,23 @@ MagickExport
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  GetMagickOpenCLEnvParam() gets the parameters in the OpenCL environment  
-%  
+%  GetMagickOpenCLEnvParam() gets the parameters in the OpenCL environment
+%
 %  The format of the GetMagickOpenCLEnvParam() method is:
 %
-%      MagickBooleanType GetMagickOpenCLEnvParam(MagickCLEnv clEnv, 
-%        MagickOpenCLEnvParam param, size_t dataSize, void* data, 
+%      MagickBooleanType GetMagickOpenCLEnvParam(MagickCLEnv clEnv,
+%        MagickOpenCLEnvParam param, size_t dataSize, void* data,
 %        ExceptionInfo* exception)
 %
 %  A description of each parameter follows:
 %
 %    o clEnv: the OpenCL environment.
-%    
+%
 %    o param: the parameter to be returned.
 %
 %    o dataSize: the data size of the parameter value.
 %
-%    o data:  the location where the returned parameter value will be stored 
+%    o data:  the location where the returned parameter value will be stored
 %
 %    o exception: return any errors or warnings
 %
@@ -540,7 +707,7 @@ MagickExport
   MagickBooleanType GetMagickOpenCLEnvParam(MagickCLEnv clEnv, MagickOpenCLEnvParam param
                                           , size_t dataSize, void* data, ExceptionInfo* exception)
 {
-  MagickBooleanType 
+  MagickBooleanType
    status;
 
   magick_unreferenced(exception);
@@ -608,11 +775,11 @@ cleanup:
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  GetOpenCLContext() returns the OpenCL context  
-%  
+%  GetOpenCLContext() returns the OpenCL context
+%
 %  The format of the GetOpenCLContext() method is:
 %
-%      cl_context GetOpenCLContext(MagickCLEnv clEnv) 
+%      cl_context GetOpenCLContext(MagickCLEnv clEnv)
 %
 %  A description of each parameter follows:
 %
@@ -640,7 +807,7 @@ static char* getBinaryCLProgramName(MagickCLEnv clEnv, MagickOpenCLProgram prog,
   /* strip out illegal characters for file names */
   while (*ptr != '\0')
   {
-    if ( *ptr == ' ' || *ptr == '\\' || *ptr == '/' || *ptr == ':' || *ptr == '*' 
+    if ( *ptr == ' ' || *ptr == '\\' || *ptr == '/' || *ptr == ':' || *ptr == '*'
         || *ptr == '?' || *ptr == '"' || *ptr == '<' || *ptr == '>' || *ptr == '|')
     {
       *ptr = '_';
@@ -827,7 +994,7 @@ static unsigned int stringSignature(const char* string)
 /* OpenCL kernels for accelerate.c */
 extern const char *accelerateKernels, *accelerateKernels2;
 
-static MagickBooleanType CompileOpenCLKernels(MagickCLEnv clEnv, ExceptionInfo* exception) 
+static MagickBooleanType CompileOpenCLKernels(MagickCLEnv clEnv, ExceptionInfo* exception)
 {
   MagickBooleanType status = MagickFalse;
   cl_int clStatus;
@@ -835,7 +1002,7 @@ static MagickBooleanType CompileOpenCLKernels(MagickCLEnv clEnv, ExceptionInfo* 
   char* accelerateKernelsBuffer = NULL;
 
   /* The index of the program strings in this array has to match the value of the enum MagickOpenCLProgram */
-  const char* MagickOpenCLProgramStrings[MAGICK_OPENCL_NUM_PROGRAMS]; 
+  const char* MagickOpenCLProgramStrings[MAGICK_OPENCL_NUM_PROGRAMS];
 
   char options[MaxTextExtent];
   unsigned int optionsSignature;
@@ -868,7 +1035,7 @@ static MagickBooleanType CompileOpenCLKernels(MagickCLEnv clEnv, ExceptionInfo* 
   sprintf(accelerateKernelsBuffer,"%s%s",accelerateKernels,accelerateKernels2);
   MagickOpenCLProgramStrings[MAGICK_OPENCL_ACCELERATE] = accelerateKernelsBuffer;
 
-  for (i = 0; i < MAGICK_OPENCL_NUM_PROGRAMS; i++) 
+  for (i = 0; i < MAGICK_OPENCL_NUM_PROGRAMS; i++)
   {
     MagickBooleanType loadSuccessful = MagickFalse;
     unsigned int programSignature = stringSignature(MagickOpenCLProgramStrings[i]) ^ optionsSignature;
@@ -1024,7 +1191,7 @@ static MagickBooleanType InitOpenCLPlatformDevice(MagickCLEnv clEnv, ExceptionIn
     status = clEnv->library->clGetPlatformIDs(0, NULL, &numPlatforms);
     if (status != CL_SUCCESS)
     {
-      (void) ThrowMagickException(exception, GetMagickModule(), DelegateWarning, 
+      (void) ThrowMagickException(exception, GetMagickModule(), DelegateWarning,
         "clGetplatformIDs failed.", "(%d)", status);
       goto cleanup;
     }
@@ -1053,7 +1220,7 @@ static MagickBooleanType InitOpenCLPlatformDevice(MagickCLEnv clEnv, ExceptionIn
 
   /* Device selection */
   clEnv->device = NULL;
-  for (j = 0; j < 2; j++) 
+  for (j = 0; j < 2; j++)
   {
 
     cl_device_type deviceType;
@@ -1181,7 +1348,7 @@ MagickBooleanType InitOpenCLEnvInternal(MagickCLEnv clEnv, ExceptionInfo* except
     SetMagickOpenCLEnvParamInternal(clEnv, MAGICK_OPENCL_ENV_PARAM_OPENCL_DISABLED
         , sizeof(MagickBooleanType), &flag, exception);
   }
-  
+
   if (clEnv->OpenCLDisabled != MagickFalse)
     goto cleanup;
 
@@ -1273,15 +1440,32 @@ MagickBooleanType InitOpenCLEnv(MagickCLEnv clEnv, ExceptionInfo* exception) {
 %
 */
 
-MagickPrivate
-cl_command_queue AcquireOpenCLCommandQueue(MagickCLEnv clEnv)
+MagickPrivate cl_command_queue AcquireOpenCLCommandQueue(MagickCLEnv clEnv)
 {
-  if (clEnv != NULL)
-    return clEnv->library->clCreateCommandQueue(clEnv->context, clEnv->device, 0, NULL);
-  else
-    return NULL;
-}
+  cl_command_queue
+    queue;
 
+  cl_command_queue_properties
+    properties;
+
+  if (clEnv == (MagickCLEnv) NULL)
+    return (cl_command_queue) NULL;
+  LockSemaphoreInfo(clEnv->commandQueuesLock);
+  if (clEnv->commandQueuesPos >= 0) {
+    queue=clEnv->commandQueues[clEnv->commandQueuesPos--];
+    UnlockSemaphoreInfo(clEnv->commandQueuesLock);
+  }
+  else {
+    UnlockSemaphoreInfo(clEnv->commandQueuesLock);
+    properties=0;
+#if PROFILE_OCL_KERNELS
+    properties=CL_QUEUE_PROFILING_ENABLE;
+#endif
+    queue=clEnv->library->clCreateCommandQueue(clEnv->context,clEnv->device,
+      properties,NULL);
+  }
+  return(queue);
+}
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1309,18 +1493,31 @@ cl_command_queue AcquireOpenCLCommandQueue(MagickCLEnv clEnv)
 %
 %
 */
-MagickPrivate
-MagickBooleanType RelinquishOpenCLCommandQueue(MagickCLEnv clEnv, cl_command_queue queue)
+
+MagickPrivate MagickBooleanType RelinquishOpenCLCommandQueue(MagickCLEnv clEnv,
+  cl_command_queue queue)
 {
-  if (clEnv != NULL)
-  {
-    return ((clEnv->library->clReleaseCommandQueue(queue) == CL_SUCCESS) ? MagickTrue:MagickFalse);
-  }
+  MagickBooleanType
+    status;
+
+  if (clEnv == NULL)
+    return(MagickFalse);
+
+  LockSemaphoreInfo(clEnv->commandQueuesLock);
+
+  if (clEnv->commandQueuesPos >= MAX_COMMAND_QUEUES)
+    status=(clEnv->library->clReleaseCommandQueue(queue) == CL_SUCCESS) ?
+      MagickTrue : MagickFalse;
   else
-    return MagickFalse;
+    {
+      clEnv->commandQueues[++clEnv->commandQueuesPos]=queue;
+      status=MagickTrue;
+    }
+
+  UnlockSemaphoreInfo(clEnv->commandQueuesLock);
+
+  return(status);
 }
-
-
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1337,7 +1534,7 @@ MagickBooleanType RelinquishOpenCLCommandQueue(MagickCLEnv clEnv, cl_command_que
 %
 %  The format of the AcquireOpenCLKernel method is:
 %
-%      cl_kernel AcquireOpenCLKernel(MagickCLEnv clEnv, 
+%      cl_kernel AcquireOpenCLKernel(MagickCLEnv clEnv,
 %        MagickOpenCLProgram program, const char* kernelName)
 %
 %  A description of each parameter follows:
@@ -1464,7 +1661,7 @@ typedef enum {
 /* device type */
 typedef enum {
   DS_DEVICE_NATIVE_CPU = 0
- ,DS_DEVICE_OPENCL_DEVICE 
+ ,DS_DEVICE_OPENCL_DEVICE
 } ds_device_type;
 
 
@@ -1532,7 +1729,7 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
   profile = (ds_profile*)malloc(sizeof(ds_profile));
   if (profile == NULL)
     return DS_MEMORY_ERROR;
-  
+
   memset(profile, 0, sizeof(ds_profile));
 
   OpenCLLib->clGetPlatformIDs(0, NULL, &numPlatforms);
@@ -1552,11 +1749,11 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
 
   profile->numDevices = numDevices+1;     /* +1 to numDevices to include the native CPU */
 
-  profile->devices = (ds_device*)malloc(profile->numDevices*sizeof(ds_device));    
+  profile->devices = (ds_device*)malloc(profile->numDevices*sizeof(ds_device));
   if (profile->devices == NULL) {
     profile->numDevices = 0;
     status = DS_MEMORY_ERROR;
-    goto cleanup;    
+    goto cleanup;
   }
   memset(profile->devices, 0, profile->numDevices*sizeof(ds_device));
 
@@ -1570,7 +1767,7 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
       cl_uint num;
 
       int d;
-      for (d = 0; d < 2; d++) { 
+      for (d = 0; d < 2; d++) {
         unsigned int j;
         cl_device_type deviceType;
         switch(d) {
@@ -1636,8 +1833,8 @@ cleanup:
   return status;
 }
 
-/* Pointer to a function that calculates the score of a device (ex: device->score) 
- update the data size of score. The encoding and the format of the score data 
+/* Pointer to a function that calculates the score of a device (ex: device->score)
+ update the data size of score. The encoding and the format of the score data
  is implementation defined. The function should return DS_SUCCESS if there's no error to be reported.
  */
 typedef ds_status (*ds_perf_evaluator)(ds_device* device, void* data);
@@ -1662,7 +1859,7 @@ static ds_status profileDevices(ds_profile* profile, const ds_evaluation_type ty
 
   for (i = 0; i < profile->numDevices; i++) {
     ds_status evaluatorStatus;
-    
+
     switch (type) {
     case DS_EVALUATE_NEW_ONLY:
       if (profile->devices[i].score != NULL)
@@ -1742,7 +1939,7 @@ static ds_status writeProfileToFile(ds_profile* profile, ds_score_serializer ser
 
       switch(profile->devices[i].type) {
       case DS_DEVICE_NATIVE_CPU:
-        { 
+        {
           /* There's no need to emit a device name for the native CPU device. */
           /*
           fwrite(DS_TAG_DEVICE_NAME, sizeof(char), strlen(DS_TAG_DEVICE_NAME), profileFile);
@@ -1751,7 +1948,7 @@ static ds_status writeProfileToFile(ds_profile* profile, ds_score_serializer ser
           */
         }
         break;
-      case DS_DEVICE_OPENCL_DEVICE: 
+      case DS_DEVICE_OPENCL_DEVICE:
         {
           char tmp[16];
 
@@ -1810,7 +2007,7 @@ static ds_status readProFile(const char* fileName, char** content, size_t* conte
     return DS_FILE_ERROR;
   }
 
-  fseek(input, 0L, SEEK_END); 
+  fseek(input, 0L, SEEK_END);
   size = ftell(input);
   rewind(input);
   binary = (char*)malloc(size);
@@ -1860,7 +2057,7 @@ static const char* findString(const char* contentStart, const char* contentEnd, 
 }
 
 
-typedef ds_status (*ds_score_deserializer)(ds_device* device, const unsigned char* serializedScore, unsigned int serializedScoreSize); 
+typedef ds_status (*ds_score_deserializer)(ds_device* device, const unsigned char* serializedScore, unsigned int serializedScoreSize);
 static ds_status readProfileFromFile(ds_profile* profile, ds_score_deserializer deserializer, const char* file) {
 
   ds_status status = DS_SUCCESS;
@@ -1897,7 +2094,7 @@ static ds_status readProfileFromFile(ds_profile* profile, ds_score_deserializer 
     }
 
     versionStringLength = strlen(profile->version);
-    if (versionStringLength!=(size_t)(dataEnd-dataStart)   
+    if (versionStringLength!=(size_t)(dataEnd-dataStart)
         || strncmp(profile->version, dataStart, versionStringLength)!=(int)0) {
       /* version mismatch */
       status = DS_PROFILE_FILE_ERROR;
@@ -1947,7 +2144,7 @@ RestoreMSCWarning
       deviceTypeStart = findString(dataStart, contentEnd, DS_TAG_DEVICE_TYPE);
       if (deviceTypeStart==NULL) {
         status = DS_PROFILE_FILE_ERROR;
-        goto cleanup;       
+        goto cleanup;
       }
       deviceTypeStart+=strlen(DS_TAG_DEVICE_TYPE);
       deviceTypeEnd = findString(deviceTypeStart, contentEnd, DS_TAG_DEVICE_TYPE_END);
@@ -1964,39 +2161,39 @@ RestoreMSCWarning
         deviceNameStart = findString(dataStart, contentEnd, DS_TAG_DEVICE_NAME);
         if (deviceNameStart==NULL) {
           status = DS_PROFILE_FILE_ERROR;
-          goto cleanup;       
+          goto cleanup;
         }
         deviceNameStart+=strlen(DS_TAG_DEVICE_NAME);
         deviceNameEnd = findString(deviceNameStart, contentEnd, DS_TAG_DEVICE_NAME_END);
         if (deviceNameEnd==NULL) {
           status = DS_PROFILE_FILE_ERROR;
-          goto cleanup;       
+          goto cleanup;
         }
 
 
         deviceDriverStart = findString(dataStart, contentEnd, DS_TAG_DEVICE_DRIVER_VERSION);
         if (deviceDriverStart==NULL) {
           status = DS_PROFILE_FILE_ERROR;
-          goto cleanup;       
+          goto cleanup;
         }
         deviceDriverStart+=strlen(DS_TAG_DEVICE_DRIVER_VERSION);
         deviceDriverEnd = findString(deviceDriverStart, contentEnd, DS_TAG_DEVICE_DRIVER_VERSION_END);
         if (deviceDriverEnd ==NULL) {
           status = DS_PROFILE_FILE_ERROR;
-          goto cleanup;       
+          goto cleanup;
         }
 
 
         tmpStart = findString(dataStart, contentEnd, DS_TAG_DEVICE_MAX_COMPUTE_UNITS);
         if (tmpStart==NULL) {
           status = DS_PROFILE_FILE_ERROR;
-          goto cleanup;       
+          goto cleanup;
         }
         tmpStart+=strlen(DS_TAG_DEVICE_MAX_COMPUTE_UNITS);
         tmpEnd = findString(tmpStart, contentEnd, DS_TAG_DEVICE_MAX_COMPUTE_UNITS_END);
         if (tmpEnd ==NULL) {
           status = DS_PROFILE_FILE_ERROR;
-          goto cleanup;       
+          goto cleanup;
         }
         memcpy(tmp,tmpStart,tmpEnd-tmpStart);
         tmp[tmpEnd-tmpStart] = '\0';
@@ -2006,13 +2203,13 @@ RestoreMSCWarning
         tmpStart = findString(dataStart, contentEnd, DS_TAG_DEVICE_MAX_CLOCK_FREQ);
         if (tmpStart==NULL) {
           status = DS_PROFILE_FILE_ERROR;
-          goto cleanup;       
+          goto cleanup;
         }
         tmpStart+=strlen(DS_TAG_DEVICE_MAX_CLOCK_FREQ);
         tmpEnd = findString(tmpStart, contentEnd, DS_TAG_DEVICE_MAX_CLOCK_FREQ_END);
         if (tmpEnd ==NULL) {
           status = DS_PROFILE_FILE_ERROR;
-          goto cleanup;       
+          goto cleanup;
         }
         memcpy(tmp,tmpStart,tmpEnd-tmpStart);
         tmp[tmpEnd-tmpStart] = '\0';
@@ -2024,7 +2221,7 @@ RestoreMSCWarning
           if (profile->devices[i].type == DS_DEVICE_OPENCL_DEVICE) {
             size_t actualDeviceNameLength;
             size_t driverVersionLength;
-            
+
             actualDeviceNameLength = strlen(profile->devices[i].oclDeviceName);
             driverVersionLength = strlen(profile->devices[i].oclDriverVersion);
             if (actualDeviceNameLength == (size_t)(deviceNameEnd - deviceNameStart)
@@ -2037,7 +2234,7 @@ RestoreMSCWarning
               deviceScoreStart = findString(dataStart, contentEnd, DS_TAG_SCORE);
               if (deviceNameStart==NULL) {
                 status = DS_PROFILE_FILE_ERROR;
-                goto cleanup;       
+                goto cleanup;
               }
               deviceScoreStart+=strlen(DS_TAG_SCORE);
               deviceScoreEnd = findString(deviceScoreStart, contentEnd, DS_TAG_SCORE_END);
@@ -2056,7 +2253,7 @@ RestoreMSCWarning
             deviceScoreStart = findString(dataStart, contentEnd, DS_TAG_SCORE);
             if (deviceScoreStart==NULL) {
               status = DS_PROFILE_FILE_ERROR;
-              goto cleanup;       
+              goto cleanup;
             }
             deviceScoreStart+=strlen(DS_TAG_SCORE);
             deviceScoreEnd = findString(deviceScoreStart, contentEnd, DS_TAG_SCORE_END);
@@ -2211,7 +2408,7 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
     DestroyImage(inputImage);
   }
   /* end of microbenchmark */
-  
+
   if (device->score == NULL)
     device->score=malloc(sizeof(AccelerateScoreType));
   *(AccelerateScoreType*)device->score=readAccelerateTimer(&timer);
@@ -2401,12 +2598,12 @@ cleanup:
 %
 %  InitImageMagickOpenCL() provides a simplified interface to initialize
 %  the OpenCL environtment in ImageMagick
-%  
+%
 %  The format of the InitImageMagickOpenCL() method is:
 %
-%      MagickBooleanType InitImageMagickOpenCL(ImageMagickOpenCLMode mode, 
-%                                        void* userSelectedDevice, 
-%                                        void* selectedDevice) 
+%      MagickBooleanType InitImageMagickOpenCL(ImageMagickOpenCLMode mode,
+%                                        void* userSelectedDevice,
+%                                        void* selectedDevice)
 %
 %  A description of each parameter follows:
 %
@@ -2545,7 +2742,7 @@ MagickBooleanType OpenCLThrowMagickException(ExceptionInfo *exception,
 }
 
 MagickPrivate cl_mem GetAndLockRandSeedBuffer(MagickCLEnv clEnv)
-{ 
+{
   LockSemaphoreInfo(clEnv->lock);
   if (clEnv->seedsLock == NULL)
   {
@@ -2571,7 +2768,7 @@ MagickPrivate cl_mem GetAndLockRandSeedBuffer(MagickCLEnv clEnv)
       unsigned int *seeds;
 
       queue = AcquireOpenCLCommandQueue(clEnv);
-      seeds = (unsigned int*) clEnv->library->clEnqueueMapBuffer(queue, clEnv->seeds, CL_TRUE, 
+      seeds = (unsigned int*) clEnv->library->clEnqueueMapBuffer(queue, clEnv->seeds, CL_TRUE,
                                                   CL_MAP_WRITE, 0,
                                                   clEnv->numGenerators*4
                                                   *sizeof(unsigned int),
@@ -2595,16 +2792,16 @@ MagickPrivate cl_mem GetAndLockRandSeedBuffer(MagickCLEnv clEnv)
 
         randomInfo = DestroyRandomInfo(randomInfo);
       }
-      clStatus = clEnv->library->clEnqueueUnmapMemObject(queue, clEnv->seeds, seeds, 0, 
+      clStatus = clEnv->library->clEnqueueUnmapMemObject(queue, clEnv->seeds, seeds, 0,
                                           NULL, NULL);
       clEnv->library->clFinish(queue);
 cleanup:
-      if (queue != NULL) 
+      if (queue != NULL)
         RelinquishOpenCLCommandQueue(clEnv, queue);
     }
   }
   UnlockSemaphoreInfo(clEnv->lock);
-  return clEnv->seeds; 
+  return clEnv->seeds;
 }
 
 MagickPrivate void UnlockRandSeedBuffer(MagickCLEnv clEnv) {
@@ -2648,12 +2845,9 @@ MagickExport MagickBooleanType RelinquishMagickOpenCLEnv(
 
 /*
 * Return the OpenCL environment
-*/ 
-MagickExport MagickCLEnv GetDefaultOpenCLEnv(
-  ExceptionInfo *magick_unused(exception))
+*/
+MagickExport MagickCLEnv GetDefaultOpenCLEnv()
 {
-  magick_unreferenced(exception);
-
   return (MagickCLEnv) NULL;
 }
 
@@ -2663,7 +2857,7 @@ MagickExport MagickCLEnv SetDefaultOpenCLEnv(
   magick_unreferenced(clEnv);
 
   return (MagickCLEnv) NULL;
-} 
+}
 
 MagickExport MagickBooleanType SetMagickOpenCLEnvParam(
   MagickCLEnv magick_unused(clEnv),MagickOpenCLEnvParam magick_unused(param),
@@ -2763,7 +2957,7 @@ MagickExport MagickBooleanType InitImageMagickOpenCL(
 MagickPrivate
 MagickBooleanType OpenCLThrowMagickException(ExceptionInfo *exception,
   const char *module,const char *function,const size_t line,
-  const ExceptionType severity,const char *tag,const char *format,...) 
+  const ExceptionType severity,const char *tag,const char *format,...)
 {
   magick_unreferenced(exception);
   magick_unreferenced(module);
@@ -2819,51 +3013,45 @@ const char* GetOpenCLCachedFilesDirectory() {
       char *temp = NULL;
       struct stat attributes;
       MagickBooleanType status;
+      int mkdirStatus = 0;
 
 
 
       home=GetEnvironmentValue("MAGICK_OPENCL_CACHE_DIR");
       if (home == (char *) NULL)
       {
-#ifdef MAGICKCORE_WINDOWS_SUPPORT
-        home=GetEnvironmentValue("LOCALAPPDATA");
+        home=GetEnvironmentValue("XDG_CACHE_HOME");
+        if (home == (char *) NULL)
+          home=GetEnvironmentValue("LOCALAPPDATA");
         if (home == (char *) NULL)
           home=GetEnvironmentValue("APPDATA");
         if (home == (char *) NULL)
           home=GetEnvironmentValue("USERPROFILE");
-#else
-        home=GetEnvironmentValue("HOME");
-#endif
       }
-      
+
       if (home != (char *) NULL)
       {
-        int mkdirStatus = 0;
-        /*
-        */
-
-        /* first check if $HOME/.config exists */
-        (void) FormatLocaleString(path,MaxTextExtent,"%s%s.config",
-          home,DirectorySeparator);
+        /* first check if $HOME exists */
+        (void) FormatLocaleString(path,MaxTextExtent,"%s",home);
         status=GetPathAttributes(path,&attributes);
-        if (status == MagickFalse) 
+        if (status == MagickFalse)
         {
-          
+
 #ifdef MAGICKCORE_WINDOWS_SUPPORT
           mkdirStatus = mkdir(path);
 #else
           mkdirStatus = mkdir(path, 0777);
 #endif
         }
-        
-        /* first check if $HOME/.config/ImageMagick exists */
-        if (mkdirStatus==0) 
+
+        /* first check if $HOME/ImageMagick exists */
+        if (mkdirStatus==0)
         {
-            (void) FormatLocaleString(path,MaxTextExtent,"%s%s.config%sImageMagick",
-              home,DirectorySeparator,DirectorySeparator);
-                    
+            (void) FormatLocaleString(path,MaxTextExtent,
+              "%s%sImageMagick",home,DirectorySeparator);
+
             status=GetPathAttributes(path,&attributes);
-            if (status == MagickFalse) 
+            if (status == MagickFalse)
             {
 #ifdef MAGICKCORE_WINDOWS_SUPPORT
               mkdirStatus = mkdir(path);
@@ -2879,59 +3067,59 @@ const char* GetOpenCLCachedFilesDirectory() {
           CopyMagickString(temp,path,strlen(path)+1);
         }
         home=DestroyString(home);
+      } else {
+        home=GetEnvironmentValue("HOME");
+        if (home != (char *) NULL)
+        {
+          /*
+          */
+
+          /* first check if $HOME/.cache exists */
+          (void) FormatLocaleString(path,MaxTextExtent,"%s%s.cache",
+            home,DirectorySeparator);
+          status=GetPathAttributes(path,&attributes);
+          if (status == MagickFalse)
+          {
+
+#ifdef   MAGICKCORE_WINDOWS_SUPPORT
+            mkdirStatus = mkdir(path);
+#else
+            mkdirStatus = mkdir(path, 0777);
+#endif
+          }
+
+          /* first check if $HOME/.cache/ImageMagick exists */
+          if (mkdirStatus==0)
+          {
+              (void) FormatLocaleString(path,MaxTextExtent,
+                "%s%s.cache%sImageMagick",home,DirectorySeparator,
+                DirectorySeparator);
+
+              status=GetPathAttributes(path,&attributes);
+              if (status == MagickFalse)
+              {
+#ifdef   MAGICKCORE_WINDOWS_SUPPORT
+                mkdirStatus = mkdir(path);
+#else
+                mkdirStatus = mkdir(path, 0777);
+#endif
+              }
+          }
+
+          if (mkdirStatus==0)
+          {
+            temp = (char*)AcquireMagickMemory(strlen(path)+1);
+            CopyMagickString(temp,path,strlen(path)+1);
+          }
+          home=DestroyString(home);
+        }
       }
       openclCachedFilesDirectory = temp;
     }
-    UnlockSemaphoreInfo(openclCachedFilesDirectoryLock); 
+    UnlockSemaphoreInfo(openclCachedFilesDirectoryLock);
   }
   return openclCachedFilesDirectory;
 }
-
-void startAccelerateTimer(AccelerateTimer* timer) {
-#ifdef _WIN32
-      QueryPerformanceCounter((LARGE_INTEGER*)&timer->_start);	
-
-
-#else
-      struct timeval s;
-      gettimeofday(&s, 0);
-      timer->_start = (long long)s.tv_sec * (long long)1.0E3 + (long long)s.tv_usec / (long long)1.0E3;
-#endif  
-}
-
-void stopAccelerateTimer(AccelerateTimer* timer) {
-      long long n=0;
-#ifdef _WIN32
-      QueryPerformanceCounter((LARGE_INTEGER*)&(n));	
-#else
-      struct timeval s;
-      gettimeofday(&s, 0);
-      n = (long long)s.tv_sec * (long long)1.0E3+ (long long)s.tv_usec / (long long)1.0E3;
-#endif
-      n -= timer->_start;
-      timer->_start = 0;
-      timer->_clocks += n;
-}
-
-void resetAccelerateTimer(AccelerateTimer* timer) {
-   timer->_clocks = 0; 
-   timer->_start = 0;
-}
-
-
-void initAccelerateTimer(AccelerateTimer* timer) {
-#ifdef _WIN32
-    QueryPerformanceFrequency((LARGE_INTEGER*)&timer->_freq);
-#else
-    timer->_freq = (long long)1.0E3;
-#endif
-   resetAccelerateTimer(timer);
-}
-
-double readAccelerateTimer(AccelerateTimer* timer) { 
-  return (double)timer->_clocks/(double)timer->_freq; 
-};
-
 
 /* create a function for OpenCL log */
 MagickPrivate
@@ -2975,4 +3163,24 @@ void OpenCLLog(const char* message) {
 #endif
 }
 
-
+MagickPrivate void OpenCLTerminus()
+{
+#if MAGICKCORE_OPENCL_SUPPORT
+  DumpProfileData();
+  if (openclCachedFilesDirectory != (char *) NULL)
+    openclCachedFilesDirectory=DestroyString(openclCachedFilesDirectory);
+  if (openclCachedFilesDirectoryLock != (SemaphoreInfo*)NULL)
+    DestroySemaphoreInfo(&openclCachedFilesDirectoryLock);
+  if (defaultCLEnv != (MagickCLEnv) NULL)
+    {
+       (void) RelinquishMagickOpenCLEnv(defaultCLEnv);
+       defaultCLEnv=(MagickCLEnv)NULL;
+    }
+  if (defaultCLEnvLock != (SemaphoreInfo*) NULL)
+    DestroySemaphoreInfo(&defaultCLEnvLock);
+  if (OpenCLLib != (MagickLibrary *)NULL)
+    OpenCLLib=(MagickLibrary *)RelinquishMagickMemory(OpenCLLib);
+  if (OpenCLLibLock != (SemaphoreInfo*)NULL)
+    DestroySemaphoreInfo(&OpenCLLibLock);
+#endif
+}

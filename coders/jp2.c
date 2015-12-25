@@ -17,7 +17,7 @@
 %                                 June 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -366,16 +366,16 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
           ThrowReaderException(DelegateError,"UnableToDecodeImageFile");
         }
     }
-  if (image_info->number_scenes != 0)
+  if ((image_info->number_scenes != 0) && (image_info->scene != 0))
     jp2_status=opj_get_decoded_tile(jp2_codec,jp2_stream,jp2_image,
-      (unsigned int) image_info->scene);
+      (unsigned int) image_info->scene-1);
   else
-   if (image->ping == MagickFalse)
-     {
-       jp2_status=opj_decode(jp2_codec,jp2_stream,jp2_image);
-       if (jp2_status != 0)
-         jp2_status=opj_end_decompress(jp2_codec,jp2_stream);
-     }
+    if (image->ping == MagickFalse)
+      {
+        jp2_status=opj_decode(jp2_codec,jp2_stream,jp2_image);
+        if (jp2_status != 0)
+          jp2_status=opj_end_decompress(jp2_codec,jp2_stream);
+      }
   if (jp2_status == 0)
     {
       opj_stream_destroy(jp2_stream);
@@ -437,7 +437,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;

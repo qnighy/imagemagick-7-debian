@@ -17,7 +17,7 @@
 %                                  July 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -556,7 +556,7 @@ MagickExport MagickBooleanType XAnnotateImage(Display *display,
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     q=GetCacheViewAuthenticPixels(annotate_view,0,(ssize_t) y,
       annotate_image->columns,1,exception);
@@ -2422,7 +2422,7 @@ MagickExport MagickBooleanType XDrawImage(Display *display,
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     q=QueueCacheViewAuthenticPixels(draw_view,0,(ssize_t) y,draw_image->columns,
       1,exception);
@@ -2544,7 +2544,7 @@ MagickExport MagickBooleanType XDrawImage(Display *display,
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     q=GetCacheViewAuthenticPixels(draw_view,0,(ssize_t) y,draw_image->columns,1,
       exception);
@@ -4115,7 +4115,7 @@ static Image *XGetWindowImage(Display *display,const Window window,
         x;
 
       register PixelPacket
-        *restrict q;
+        *magick_restrict q;
 
       register size_t
         pixel;
@@ -7658,7 +7658,7 @@ MagickExport void XMakeStandardColormap(Display *display,
               *affinity_image;
 
             register PixelPacket
-              *restrict q;
+              *magick_restrict q;
 
             /*
               Improve image appearance with error diffusion.
@@ -7871,7 +7871,7 @@ MagickExport void XMakeStandardColormap(Display *display,
               x;
 
             register const PixelPacket
-              *restrict p;
+              *magick_restrict p;
 
             p=GetCacheViewAuthenticPixels(image_view,0,(ssize_t) y,
               image->columns,1,exception);

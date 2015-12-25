@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -28,6 +28,25 @@
 extern "C" {
 #endif
 
+extern MagickExport Image
+  *AccelerateAddNoiseImage(const Image*,const ChannelType,const NoiseType,
+    ExceptionInfo *),
+  *AccelerateBlurImage(const Image *,const ChannelType,const double,
+    const double,ExceptionInfo *),
+  *AccelerateConvolveImageChannel(const Image *,const ChannelType,
+    const KernelInfo *,ExceptionInfo *),
+  *AccelerateDespeckleImage(const Image *,ExceptionInfo *),
+  *AccelerateLocalContrastImage(const Image *,const double,const double,
+    ExceptionInfo *),
+  *AccelerateMotionBlurImage(const Image*, const ChannelType,
+    const double*,const size_t,const OffsetInfo*,ExceptionInfo*),
+  *AccelerateRadialBlurImage(const Image *,const ChannelType,const double,
+    ExceptionInfo *),
+  *AccelerateResizeImage(const Image *,const size_t,const size_t,
+    const ResizeFilter *,ExceptionInfo *),
+  *AccelerateUnsharpMaskImage(const Image *,const ChannelType,const double,
+    const double,const double,const double,ExceptionInfo *);
+
 extern MagickExport MagickBooleanType
   AccelerateCompositeImage(Image *,const ChannelType,const CompositeOperator,
     const Image *,const ssize_t,const ssize_t,const float,const float,ExceptionInfo *),
@@ -42,23 +61,6 @@ extern MagickExport MagickBooleanType
   AccelerateModulateImage(Image*, double, double, double, 
     ColorspaceType, ExceptionInfo*),
   AccelerateRandomImage(Image*, ExceptionInfo*);
-
-extern MagickExport Image
-  *AccelerateAddNoiseImage(const Image*,const ChannelType,const NoiseType,
-    ExceptionInfo *),
-  *AccelerateBlurImage(const Image *,const ChannelType,const double,
-    const double,ExceptionInfo *),
-  *AccelerateConvolveImageChannel(const Image *,const ChannelType,
-    const KernelInfo *,ExceptionInfo *),
-  *AccelerateDespeckleImage(const Image *,ExceptionInfo *),
-  *AccelerateMotionBlurImage(const Image*, const ChannelType,
-    const double*,const size_t,const OffsetInfo*,ExceptionInfo*),
-  *AccelerateRadialBlurImage(const Image *,const ChannelType,const double,
-    ExceptionInfo *),
-  *AccelerateResizeImage(const Image *,const size_t,const size_t,
-    const ResizeFilter *,ExceptionInfo *),
-  *AccelerateUnsharpMaskImage(const Image *,const ChannelType,const double,
-    const double,const double,const double,ExceptionInfo *);
 
 /* legacy, do not use */
 extern MagickExport MagickBooleanType

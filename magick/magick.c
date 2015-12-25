@@ -18,7 +18,7 @@
 %                             November 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -64,6 +64,7 @@
 #include "magick/module.h"
 #include "magick/nt-base-private.h"
 #include "magick/nt-feature.h"
+#include "magick/opencl-private.h"
 #include "magick/random_.h"
 #include "magick/registry.h"
 #include "magick/resource_.h"
@@ -1378,6 +1379,7 @@ MagickExport void MagickCoreTerminus(void)
   AnnotateComponentTerminus();
   MimeComponentTerminus();
   TypeComponentTerminus();
+  OpenCLTerminus();
   ColorComponentTerminus();
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
   NTWindowsTerminus();

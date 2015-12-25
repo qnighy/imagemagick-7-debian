@@ -17,7 +17,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -40,6 +40,7 @@
  Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/artifact.h"
 #include "magick/cache.h"
 #include "magick/channel.h"
 #include "magick/color-private.h"
@@ -53,10 +54,12 @@
 #include "magick/gem.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/option.h"
 #include "magick/paint.h"
 #include "magick/pixel-private.h"
 #include "magick/resource_.h"
 #include "magick/string_.h"
+#include "magick/string-private.h"
 #include "magick/thread-private.h"
 
 /*
@@ -216,16 +219,16 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
   while (s > segment_stack)
   {
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     /*
       Pop segment off stack.
@@ -327,16 +330,16 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     /*
       Tile fill color onto floodplane.
@@ -424,6 +427,9 @@ MagickExport MagickBooleanType GradientImage(Image *image,
   const GradientType type,const SpreadMethod method,
   const PixelPacket *start_color,const PixelPacket *stop_color)
 {
+  const char
+    *artifact;
+
   DrawInfo
     *draw_info;
 
@@ -435,7 +441,7 @@ MagickExport MagickBooleanType GradientImage(Image *image,
 
   register ssize_t
     i;
-
+    
   /*
     Set gradient start-stop end points.
   */
@@ -450,13 +456,167 @@ MagickExport MagickBooleanType GradientImage(Image *image,
   gradient->type=type;
   gradient->bounding_box.width=image->columns;
   gradient->bounding_box.height=image->rows;
+  artifact=GetImageArtifact(image,"gradient:bounding-box");
+  if (artifact != (const char *) NULL)
+    (void) ParseAbsoluteGeometry(artifact,&gradient->bounding_box);
   gradient->gradient_vector.x2=(double) image->columns-1.0;
   gradient->gradient_vector.y2=(double) image->rows-1.0;
-  if ((type == LinearGradient) && (gradient->gradient_vector.y2 != 0.0))
-    gradient->gradient_vector.x2=0.0;
+  artifact=GetImageArtifact(image,"gradient:direction");
+  if (artifact != (const char *) NULL)
+    {
+      GravityType
+        direction;
+
+      direction=(GravityType) ParseCommandOption(MagickGravityOptions,
+        MagickFalse,artifact);
+      switch (direction)
+      {
+        case NorthWestGravity:
+        {
+          gradient->gradient_vector.x1=(double) image->columns-1.0;
+          gradient->gradient_vector.y1=(double) image->rows-1.0;
+          gradient->gradient_vector.x2=0.0;
+          gradient->gradient_vector.y2=0.0;
+          break;
+        }
+        case NorthGravity:
+        {
+          gradient->gradient_vector.x1=0.0;
+          gradient->gradient_vector.y1=(double) image->rows-1.0;
+          gradient->gradient_vector.x2=0.0;
+          gradient->gradient_vector.y2=0.0;
+          break;
+        }
+        case NorthEastGravity:
+        {
+          gradient->gradient_vector.x1=0.0;
+          gradient->gradient_vector.y1=(double) image->rows-1.0;
+          gradient->gradient_vector.x2=(double) image->columns-1.0;
+          gradient->gradient_vector.y2=0.0;
+          break;
+        }
+        case WestGravity:
+        {
+          gradient->gradient_vector.x1=(double) image->columns-1.0;
+          gradient->gradient_vector.y1=0.0;
+          gradient->gradient_vector.x2=0.0;
+          gradient->gradient_vector.y2=0.0;
+          break;
+        }
+        case EastGravity:
+        {
+          gradient->gradient_vector.x1=0.0;
+          gradient->gradient_vector.y1=0.0;
+          gradient->gradient_vector.x2=(double) image->columns-1.0;
+          gradient->gradient_vector.y2=0.0;
+          break;
+        }
+        case SouthWestGravity:
+        {
+          gradient->gradient_vector.x1=(double) image->columns-1.0;
+          gradient->gradient_vector.y1=0.0;
+          gradient->gradient_vector.x2=0.0;
+          gradient->gradient_vector.y2=(double) image->rows-1.0;
+          break;
+        }
+        case SouthGravity:
+        {
+          gradient->gradient_vector.x1=0.0;
+          gradient->gradient_vector.y1=0.0;
+          gradient->gradient_vector.x2=0.0;
+          gradient->gradient_vector.y2=(double) image->columns-1.0;
+          break;
+        }
+        case SouthEastGravity:
+        {
+          gradient->gradient_vector.x1=0.0;
+          gradient->gradient_vector.y1=0.0;
+          gradient->gradient_vector.x2=(double) image->columns-1.0;
+          gradient->gradient_vector.y2=(double) image->rows-1.0;
+          break;
+        }
+        default:
+          break;
+      }
+    }
+  artifact=GetImageArtifact(image,"gradient:angle");
+  if (artifact != (const char *) NULL)
+    gradient->angle=(MagickRealType) StringToDouble(artifact,(char **) NULL);
+  artifact=GetImageArtifact(image,"gradient:vector");
+  if (artifact != (const char *) NULL)
+    (void) sscanf(artifact,"%lf%*[ ,]%lf%*[ ,]%lf%*[ ,]%lf",
+      &gradient->gradient_vector.x1,&gradient->gradient_vector.y1,
+      &gradient->gradient_vector.x2,&gradient->gradient_vector.y2);
+  if ((GetImageArtifact(image,"gradient:angle") == (const char *) NULL) &&
+      (GetImageArtifact(image,"gradient:direction") == (const char *) NULL) &&
+      (GetImageArtifact(image,"gradient:extent") == (const char *) NULL) &&
+      (GetImageArtifact(image,"gradient:vector") == (const char *) NULL))
+    if ((type == LinearGradient) && (gradient->gradient_vector.y2 != 0.0))
+      gradient->gradient_vector.x2=0.0;
   gradient->center.x=(double) gradient->gradient_vector.x2/2.0;
   gradient->center.y=(double) gradient->gradient_vector.y2/2.0;
-  gradient->radius=MagickMax(gradient->center.x,gradient->center.y);
+  artifact=GetImageArtifact(image,"gradient:center");
+  if (artifact != (const char *) NULL)
+    (void) sscanf(artifact,"%lf%*[ ,]%lf",&gradient->center.x,
+      &gradient->center.y);
+  artifact=GetImageArtifact(image,"gradient:angle");
+  if ((type == LinearGradient) && (artifact != (const char *) NULL))
+    {
+      double
+        sine,
+        cosine,
+        distance;
+
+      /*
+        Reference https://drafts.csswg.org/css-images-3/#linear-gradients.
+      */
+      sine=sin((double) DegreesToRadians(gradient->angle-90.0));
+      cosine=cos((double) DegreesToRadians(gradient->angle-90.0));
+      distance=fabs((double) image->columns*cosine)+
+        fabs((double) image->rows*sine);
+      gradient->gradient_vector.x1=0.5*(image->columns-distance*cosine);
+      gradient->gradient_vector.y1=0.5*(image->rows-distance*sine);
+      gradient->gradient_vector.x2=0.5*(image->columns+distance*cosine);
+      gradient->gradient_vector.y2=0.5*(image->rows+distance*sine);
+    }
+  gradient->radii.x=(double) MagickMax(image->columns,image->rows)/2.0;
+  gradient->radii.y=gradient->radii.x;
+  artifact=GetImageArtifact(image,"gradient:extent");
+  if (artifact != (const char *) NULL)
+    {
+      if (LocaleCompare(artifact,"Circle") == 0)
+        {
+          gradient->radii.x=(double) (MagickMax(image->columns,image->rows))/
+            2.0;
+          gradient->radii.y=gradient->radii.x;
+        }
+      if (LocaleCompare(artifact,"Diagonal") == 0)
+        {
+          gradient->radii.x=(double) (sqrt((double) image->columns*
+            image->columns+image->rows*image->rows))/2.0;
+          gradient->radii.y=gradient->radii.x;
+        }
+      if (LocaleCompare(artifact,"Ellipse") == 0)
+        {
+          gradient->radii.x=(double) image->columns/2.0;
+          gradient->radii.y=(double) image->rows/2.0;
+        }
+      if (LocaleCompare(artifact,"Maximum") == 0)
+        {
+          gradient->radii.x=(double) MagickMax(image->columns,image->rows)/2.0;
+          gradient->radii.y=gradient->radii.x;
+        }
+      if (LocaleCompare(artifact,"Minimum") == 0)
+        {
+          gradient->radii.x=(double) MagickMin(image->columns,image->rows)/2.0;
+          gradient->radii.y=gradient->radii.x;
+        }
+    }
+  artifact=GetImageArtifact(image,"gradient:radii");
+  if (artifact != (const char *) NULL)
+    (void) sscanf(artifact,"%lf%*[ ,]%lf",&gradient->radii.x,
+      &gradient->radii.y);
+  gradient->radius=MagickMax(gradient->radii.x,gradient->radii.y);
   gradient->spread=method;
   /*
     Define the gradient to fill between the stops.
@@ -574,7 +734,7 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
     progress;
 
   size_t
-    **restrict histograms,
+    **magick_restrict histograms,
     width;
 
   ssize_t
@@ -628,19 +788,19 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
   for (y=0; y < (ssize_t) linear_image->rows; y++)
   {
     register const IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register IndexPacket
-      *restrict paint_indexes;
+      *magick_restrict paint_indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register size_t
       *histogram;
@@ -829,13 +989,13 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
       pixel;
 
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -974,13 +1134,13 @@ MagickExport MagickBooleanType TransparentPaintImage(Image *image,
       pixel;
 
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -1110,13 +1270,13 @@ MagickExport MagickBooleanType TransparentPaintImageChroma(Image *image,
       pixel;
 
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     if (status == MagickFalse)
       continue;
@@ -1133,8 +1293,7 @@ MagickExport MagickBooleanType TransparentPaintImageChroma(Image *image,
       SetMagickPixelPacket(image,q,indexes+x,&pixel);
       match=((pixel.red >= low->red) && (pixel.red <= high->red) &&
         (pixel.green >= low->green) && (pixel.green <= high->green) &&
-        (pixel.blue  >= low->blue) && (pixel.blue <= high->blue)) ?
-        MagickTrue : MagickFalse;
+        (pixel.blue  >= low->blue) && (pixel.blue <= high->blue)) ? MagickTrue :        MagickFalse;
       if (match != invert)
         q->opacity=opacity;
       q++;

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -112,7 +112,7 @@ MagickExport MagickBooleanType AcquireImageColormap(Image *image,
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  image->colors=MagickMax(colors,2);
+  image->colors=MagickMax(colors,1);
   if (image->colormap == (PixelPacket *) NULL)
     image->colormap=(PixelPacket *) AcquireQuantumMemory(image->colors,
       sizeof(*image->colormap));
@@ -131,7 +131,7 @@ MagickExport MagickBooleanType AcquireImageColormap(Image *image,
     size_t
       pixel;
 
-    pixel=(size_t) (i*(QuantumRange/(image->colors-1)));
+    pixel=(size_t) (i*(QuantumRange/MagickMax(colors-1,1)));
     image->colormap[i].red=(Quantum) pixel;
     image->colormap[i].green=(Quantum) pixel;
     image->colormap[i].blue=(Quantum) pixel;
@@ -197,13 +197,13 @@ MagickExport MagickBooleanType CycleColormapImage(Image *image,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register ssize_t
       x;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     ssize_t
       index;
@@ -349,10 +349,10 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image)
       x;
 
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     q=GetCacheViewAuthenticPixels(image_view,0,y,image->columns,1,exception);
     if (q == (PixelPacket *) NULL)

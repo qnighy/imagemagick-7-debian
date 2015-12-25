@@ -23,7 +23,7 @@
 %                                 August 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2486,7 +2486,7 @@ WandExport MagickBooleanType MagickCycleColormapImage(MagickWand *wand,
 %  example, to create a 640x480 image from unsigned red-green-blue character
 %  data, use
 %
-%      MagickConstituteImage(wand,640,640,"RGB",CharPixel,pixels);
+%      MagickConstituteImage(wand,640,480,"RGB",CharPixel,pixels);
 %
 %  The format of the MagickConstituteImage method is:
 %
@@ -6993,7 +6993,56 @@ WandExport MagickBooleanType MagickLiquidRescaleImage(MagickWand *wand,
   ReplaceImageInList(&wand->images,rescale_image);
   return(MagickTrue);
 }
-
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%     M a g i c k L o c a l C o n t r a s t I m a g e                         %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  MagickLocalContrastImage() attempts to increase the appearance of
+%  large-scale light-dark transitions. Local contrast enhancement works
+%  similarly to sharpening with an unsharp mask, however the mask is instead
+%  created using an image with a greater blur distance.
+%
+%      MagickBooleanType MagickLocalContrastImage(MagickWand *wand,
+%        const double radius,const double strength)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o radius: the radius of the Gaussian, in pixels, not counting
+%      the center pixel.
+%
+%    o strength: the strength of the blur mask in percentage.
+%
+*/
+WandExport MagickBooleanType MagickLocalContrastImage(MagickWand *wand,
+  const double radius,const double strength)
+{
+  Image
+    *contrast_image;
+
+  assert(wand != (MagickWand *) NULL);
+  assert(wand->signature == WandSignature);
+  if (wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  if (wand->images == (Image *) NULL)
+    ThrowWandException(WandError,"ContainsNoImages",wand->name);
+  contrast_image=LocalContrastImage(wand->images,radius,strength,
+    wand->exception);
+  if (contrast_image == (Image *) NULL)
+    return(MagickFalse);
+  ReplaceImageInList(&wand->images,contrast_image);
+  return(MagickTrue);
+}
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %

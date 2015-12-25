@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -159,10 +159,10 @@ MagickExport Image *CombineImages(const Image *image,const ChannelType channel,
       *pixels;
 
     register const PixelPacket
-      *restrict p;
+      *magick_restrict p;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -413,10 +413,10 @@ MagickExport MagickBooleanType SeparateImageChannel(Image *image,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     register IndexPacket
-      *restrict indexes;
+      *magick_restrict indexes;
 
     register PixelPacket
-      *restrict q;
+      *magick_restrict q;
 
     register ssize_t
       x;
@@ -683,7 +683,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       for (y=0; y < (ssize_t) image->rows; y++)
       {
         register PixelPacket
-          *restrict q;
+          *magick_restrict q;
 
         register ssize_t
           x;
@@ -700,11 +700,9 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
         for (x=0; x < (ssize_t) image->columns; x++)
         {
           double
-            alpha,
             gamma;
 
-          alpha=QuantumScale*GetPixelAlpha(q);
-          gamma=alpha;
+          gamma=QuantumScale*GetPixelAlpha(q);
           SetPixelRed(q,ClampToQuantum(gamma*GetPixelRed(q)));
           SetPixelGreen(q,ClampToQuantum(gamma*GetPixelGreen(q)));
           SetPixelBlue(q,ClampToQuantum(gamma*GetPixelBlue(q)));
@@ -756,10 +754,10 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       for (y=0; y < (ssize_t) image->rows; y++)
       {
         register IndexPacket
-          *restrict indexes;
+          *magick_restrict indexes;
 
         register PixelPacket
-          *restrict q;
+          *magick_restrict q;
 
         register ssize_t
           x;
@@ -838,7 +836,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       for (y=0; y < (ssize_t) image->rows; y++)
       {
         register PixelPacket
-          *restrict q;
+          *magick_restrict q;
 
         register ssize_t
           x;
@@ -913,10 +911,10 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       for (y=0; y < (ssize_t) image->rows; y++)
       {
         register IndexPacket
-          *restrict indexes;
+          *magick_restrict indexes;
 
         register PixelPacket
-          *restrict q;
+          *magick_restrict q;
 
         register ssize_t
           x;
