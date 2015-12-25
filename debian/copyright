@@ -522,7 +522,7 @@ Copyright:  2000-2006 Free Software Foundation, Inc.
 icense: GPL3+-with-Autoconf-Macros-exception-GNU
 
 Files: m4/ax_c___attribute__.m4
-Copyright 2008, Stepan Kasal <skasal@redhat.com>
+Copyright:2008, Stepan Kasal <skasal@redhat.com>
           2008, Christian Haggstrom
           2008, Ryan McCabe <ryan@numb.org>
 License: GPL2+-with-Autoconf-Macros-exception
