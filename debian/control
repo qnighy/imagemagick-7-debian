@@ -144,7 +144,7 @@ Section: perl
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends},
 	 libimage-magick-q16-perl
 Provides: perlmagick
-# remove breaks/replaces after jessie +2
+# remove breaks/replaces after jessie +1
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
 Breaks: perlmagick (<< 8:6.8.3.10-1~)
 Suggests: imagemagick-doc
@@ -155,6 +155,8 @@ Description: Perl interface to the ImageMagick graphics routines
  .
  This is the compatibility (wrapper) perlmagick package that
  use the default channel depth (16 bits integer).
+ .
+ This package provides the perl Image::Magick class.
 
 # quantum independent
 Package: libmagickcore-6-arch-config
@@ -350,6 +352,8 @@ Description: Perl interface to the ImageMagick graphics routines -- Q16 version
  within a Perl script. This makes it very suitable for Web CGI scripts.
  .
  This version of libimage-magick is compiled for a channel depth of 16 bits.
+ .
+ This package provides the perl Image::Magick::Q16 class.
 
 # compatibility package (remove after jessie)
 Package: perlmagick

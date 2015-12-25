@@ -1218,8 +1218,8 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Options::fontPointsize(double)@Base" 8:6.9.2.3
  (c++)"Magick::Options::fontStyle() const@Base" 8:6.9.2.3
  (c++)"Magick::Options::fontStyle(MagickCore::StyleType)@Base" 8:6.9.2.3
- (c++)"Magick::Options::fontWeight() const@Base" 8:6.9.2.3-1
- (c++)"Magick::Options::fontWeight(unsigned long)@Base" 8:6.9.2.3-1
+ (c++)"Magick::Options::fontWeight() const@Base" 8:6.9.2.3
+ (c++)"Magick::Options::fontWeight(unsigned long)@Base" 8:6.9.2.3
  (c++)"Magick::Options::font(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.2.3
  (c++)"Magick::Options::format[abi:cxx11]() const@Base" 8:6.9.2.3
  (c++)"Magick::Options::imageInfo()@Base" 8:6.9.2.3

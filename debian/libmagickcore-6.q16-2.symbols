@@ -714,10 +714,10 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  HuffmanDecodeImage@Base 8:6.8.8.2
  HuffmanEncodeImage@Base 8:6.8.8.2
  IdentifyImage@Base 8:6.8.8.2
- IdentifyImageGray@Base 8:6.9.2.10-1
- IdentifyImageMonochrome@Base 8:6.9.2.10-1
- IdentifyImageType@Base 8:6.9.2.10-1
- IdentifyPaletteImage@Base 8:6.9.2.10-1
+ IdentifyImageGray@Base 8:6.9.2.10
+ IdentifyImageMonochrome@Base 8:6.9.2.10
+ IdentifyImageType@Base 8:6.9.2.10
+ IdentifyPaletteImage@Base 8:6.9.2.10
  IdentityAffine@Base 8:6.8.8.2
  ImageListToArray@Base 8:6.8.8.2
  ImageToBlob@Base 8:6.8.8.2
