@@ -8,9 +8,8 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Bastien Roucariès <roucaries.bastien+debian@gmail.com>,
  Vincent Fourmond <fourmond@debian.org>
 Standards-Version: 3.9.6
-Build-Depends:
- # for dbgsym
- debhelper (>= 9.20151219),
+# for dbg-sym
+Build-Depends: debhelper (>= 9.20151219),
 # for linking compiling ...
  pkg-config, libltdl-dev,
 # for libtool does not link to depends lib
