@@ -405,6 +405,7 @@ libMagickWand-6.Q16.so.2 libmagickwand-6.q16-2 #MINVER#
  MagickLevelImageChannel@Base 8:6.8.8.2
  MagickLinearStretchImage@Base 8:6.8.8.2
  MagickLiquidRescaleImage@Base 8:6.8.8.2
+ MagickLocalContrastImage@Base 8:6.9.2.10
  MagickMagnifyImage@Base 8:6.8.8.2
  MagickMapImage@Base 8:6.8.8.2
  MagickMatteFloodfillImage@Base 8:6.8.8.2

@@ -805,8 +805,11 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::levelColorsChannel(MagickCore::ChannelType, Magick::Color const&, Magick::Color const&, bool)@Base" 8:6.9.2.3
  (c++)"Magick::Image::levelColors(Magick::Color const&, Magick::Color const&, bool)@Base" 8:6.9.2.3
  (c++)"Magick::Image::level(double, double, double)@Base" 8:6.9.2.3
+ (c++)"Magick::Image::levelizeChannel(MagickCore::ChannelType, double, double, double)@Base" 8:6.9.2.10
+ (c++)"Magick::Image::levelize(double, double, double)@Base" 8:6.9.2.10
  (c++)"Magick::Image::linearStretch(double, double)@Base" 8:6.9.2.3
  (c++)"Magick::Image::liquidRescale(Magick::Geometry const&)@Base" 8:6.9.2.3
+ (c++)"Magick::Image::localContrast(double, double)@Base" 8:6.9.2.10
  (c++)"Magick::Image::lowlightColor(Magick::Color)@Base" 8:6.9.2.3
  (c++)"Magick::Image::magick[abi:cxx11]() const@Base" 8:6.9.2.3
  (c++)"Magick::Image::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.2.3

@@ -12,6 +12,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  AccelerateEqualizeImage@Base 8:6.8.8.2
  AccelerateFunctionImage@Base 8:6.8.8.2
  AccelerateGrayscaleImage@Base 8:6.8.8.9
+ AccelerateLocalContrastImage@Base 8:6.9.2.10
  AccelerateModulateImage@Base 8:6.8.8.2
  AccelerateMotionBlurImage@Base 8:6.8.8.9
  AccelerateNegateImageChannel@Base 8:6.8.8.9
@@ -237,6 +238,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  CopyImagePixels@Base 8:6.9.2.3
  CopyMagickMemory@Base 8:6.8.8.2
  CopyMagickString@Base 8:6.8.8.2
+ CreateMagickThreadKey@Base 8:6.9.2.10
  CropImage@Base 8:6.8.8.2
  CropImageToTiles@Base 8:6.8.8.2
  CycleColormapImage@Base 8:6.8.8.2
@@ -263,6 +265,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  DeleteImageRegistry@Base 8:6.8.8.2
  DeleteImages@Base 8:6.8.8.2
  DeleteMagickRegistry@Base 8:6.8.8.2
+ DeleteMagickThreadKey@Base 8:6.9.2.10
  DeleteNodeByValueFromSplayTree@Base 8:6.8.8.2
  DeleteNodeFromSplayTree@Base 8:6.8.8.2
  DescribeImage@Base 8:6.8.8.2
@@ -575,6 +578,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  GetMagickSeekableStream@Base 8:6.8.8.2
  GetMagickSignature@Base 8:6.8.8.2
  GetMagickThreadSupport@Base 8:6.8.8.2
+ GetMagickThreadValue@Base 8:6.9.2.10
  GetMagickToken@Base 8:6.8.8.2
  GetMagickVersion@Base 8:6.8.8.2
  GetMatrixColumns@Base 8:6.8.8.9
@@ -710,6 +714,10 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  HuffmanDecodeImage@Base 8:6.8.8.2
  HuffmanEncodeImage@Base 8:6.8.8.2
  IdentifyImage@Base 8:6.8.8.2
+ IdentifyImageGray@Base 8:6.9.2.10-1
+ IdentifyImageMonochrome@Base 8:6.9.2.10-1
+ IdentifyImageType@Base 8:6.9.2.10-1
+ IdentifyPaletteImage@Base 8:6.9.2.10-1
  IdentityAffine@Base 8:6.8.8.2
  ImageListToArray@Base 8:6.8.8.2
  ImageToBlob@Base 8:6.8.8.2
@@ -815,6 +823,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  LoadImageTag@Base 8:6.8.8.2
  LoadImagesTag@Base 8:6.8.8.2
  (optional=InternalABInoAPI)LoadMimeLists@Base 8:6.8.8.2
+ LocalContrastImage@Base 8:6.9.2.10
  LocaleCompare@Base 8:6.8.8.2
  LocaleComponentGenesis@Base 8:6.8.8.2
  LocaleComponentTerminus@Base 8:6.8.8.2
@@ -1135,6 +1144,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  SetMagickPrecision@Base 8:6.8.8.2
  SetMagickRegistry@Base 8:6.8.8.2
  SetMagickResourceLimit@Base 8:6.8.8.2
+ SetMagickThreadValue@Base 8:6.9.2.10
  SetMatrixElement@Base 8:6.8.8.9
  SetMonitorHandler@Base 8:6.8.8.2
  SetPixelCacheMethods@Base 8:6.8.8.2
@@ -1361,8 +1371,8 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  initAccelerateTimer@Base 8:6.8.8.9
  openclCachedFilesDirectory@Base 8:6.8.8.2
  openclCachedFilesDirectoryLock@Base 8:6.8.8.2
- readAccelerateTimer@Base 8:6.8.8.9
- resetAccelerateTimer@Base 8:6.8.8.9
+ (optional=InternalABInoAPI)readAccelerateTimer@Base 8:6.8.8.9
+ (optional=InternalABInoAPI)resetAccelerateTimer@Base 8:6.8.8.9
  sRGBCompandor@Base 8:6.8.8.2
- startAccelerateTimer@Base 8:6.8.8.9
- stopAccelerateTimer@Base 8:6.8.8.9
+ (optional=InternalABInoAPI)startAccelerateTimer@Base 8:6.8.8.9
+ (optional=InternalABInoAPI)stopAccelerateTimer@Base 8:6.8.8.9
