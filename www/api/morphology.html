@@ -95,10 +95,6 @@ KernelInfo *AcquireKernelInfo(const char *kernel_string)
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
-
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>kernel_string</dt>
 <dd>the Morphology/Convolution kernel wanted. </dd>
@@ -120,10 +116,7 @@ KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
 
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>type</dt>
 <dd>the pre-defined type of kernel wanted </dd>
@@ -290,10 +283,7 @@ KernelInfo *CloneKernelInfo(const KernelInfo *kernel)
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
 
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>kernel</dt>
 <dd>the Morphology/Convolution kernel to be cloned </dd>
@@ -312,10 +302,6 @@ KernelInfo *DestroyKernelInfo(KernelInfo *kernel)
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
-
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>kernel</dt>
 <dd>the Morphology/Convolution kernel to be destroyed </dd>
@@ -343,10 +329,7 @@ Image *MorphologyApply(const Image *image,MorphologyMethod method,
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
 
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>image</dt>
 <dd>the source image </dd>
@@ -404,10 +387,7 @@ Image *MorphologyImage(const Image *image,MorphologyMethod method,
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
 
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>image</dt>
 <dd>the image. </dd>
@@ -449,10 +429,7 @@ void ScaleGeometryKernelInfo(KernelInfo *kernel,
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
 
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>kernel</dt>
 <dd>the Morphology/Convolution kernel to modify </dd>
@@ -463,7 +440,6 @@ void ScaleGeometryKernelInfo(KernelInfo *kernel,
        "-set option:convolve:scale {geometry}" setting.
 </pre>
 
-<p></dd>
 </dl>
 <h2><a href="http://www.imagemagick.org/api/MagickCore/morphology_8c.html" id="ScaleKernelInfo">ScaleKernelInfo</a></h2>
 
@@ -496,10 +472,6 @@ void ScaleKernelInfo(KernelInfo *kernel, const double scaling_factor,
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
-
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>kernel</dt>
 <dd>the Morphology/Convolution kernel </dd>
@@ -510,14 +482,12 @@ void ScaleKernelInfo(KernelInfo *kernel, const double scaling_factor,
        zero.  If the kernel is normalized regardless of any flags.
 </pre>
 
-<p>o normalize_flags: </dd>
+<dd>o normalize_flags: </dd>
 
 <pre class="text">
        specifically: NormalizeValue, CorrelateNormalizeValue,
                      and/or PercentValue
 </pre>
-
-<p></dd>
 </dl>
 <h2><a href="http://www.imagemagick.org/api/MagickCore/morphology_8c.html" id="ShowKernelInfo">ShowKernelInfo</a></h2>
 
@@ -531,10 +501,7 @@ void ShowKernelInfo(const KernelInfo *kernel)
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
 
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>kernel</dt>
 <dd>the Morphology/Convolution kernel </dd>
@@ -555,10 +522,7 @@ void UnityAdditionKernelInfo(KernelInfo *kernel, const double scale )
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
 
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>kernel</dt>
 <dd>the Morphology/Convolution kernel </dd>
@@ -569,7 +533,6 @@ void UnityAdditionKernelInfo(KernelInfo *kernel, const double scale )
        the given kernel.
 </pre>
 
-<p></dd>
 </dl>
 <h2><a href="http://www.imagemagick.org/api/MagickCore/morphology_8c.html" id="ZeroKernelNans">ZeroKernelNans</a></h2>
 
@@ -583,10 +546,6 @@ void ZeroKernelNans (KernelInfo *kernel)
 
 <p>A description of each parameter follows:</p>
 
-<dd>
-</dd>
-
-<dd> </dd>
 <dl class="dl-horizontal">
 <dt>kernel</dt>
 <dd>the Morphology/Convolution kernel </dd>
