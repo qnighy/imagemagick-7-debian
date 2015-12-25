@@ -279,7 +279,7 @@ override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 
 
 xslt-rule:
-    	# now apply privacy cleanning rules
+	# now apply privacy cleanning rules
 	cd "$(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc" && \
 	find  . \
 	     -path './www/api/MagickCore' -prune -o \
@@ -381,8 +381,9 @@ override_dh_makeshlibs:
 	# avoid plugins' dir
 	dh_makeshlibs -v -Xcoders/ -Xfilters/
 
+# remove after jessie+2
 override_dh_strip:
-	dh_strip --dbg-package=imagemagick-dbg
+	dh_strip --ddeb-migration='imagemagick-dbg (<< 8:6.9.2.10-1~)'
 
 override_dh_bugfiles:
 	dh_bugfiles --all

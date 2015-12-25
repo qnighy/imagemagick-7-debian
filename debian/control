@@ -8,7 +8,9 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Bastien Roucariès <roucaries.bastien+debian@gmail.com>,
  Vincent Fourmond <fourmond@debian.org>
 Standards-Version: 3.9.6
-Build-Depends: debhelper (>= 9~),
+Build-Depends:
+ # for dbgsym
+ debhelper (>= 9.20151219),
 # for linking compiling ...
  pkg-config, libltdl-dev,
 # for libtool does not link to depends lib
@@ -333,23 +335,6 @@ Description: object-oriented C++ interface to ImageMagick - development files
  .
  This version of libmagick++-dev is compiled for a channel depth of 16 bits.
 
-# debug package
-Package: imagemagick-dbg
-Architecture: any
-Section: debug
-Priority: extra
-Multi-Arch: same
-Depends: ${misc:Depends},
- imagemagick-6.q16 (= ${binary:Version}),
- libmagickcore-6.q16-2-extra (= ${binary:Version}),
- libmagick++-6.q16-6 (= ${binary:Version}),
- libmagickwand-6.q16-2 (= ${binary:Version}),
- libimage-magick-q16-perl (= ${binary:Version})
-Suggests: libjpeg8-dbg, libwmf-bin, librsvg2-dbg, librsvg2-bin, inkscape
-Description: debugging symbols for ImageMagick
- This package contains the debugging symbols for ImageMagick, a software suite
- to create, edit, and compose bitmap images.
-
 Package: libimage-magick-q16-perl
 Architecture: any
 Multi-Arch: allowed
@@ -367,8 +352,22 @@ Description: Perl interface to the ImageMagick graphics routines -- Q16 version
  .
  This version of libimage-magick is compiled for a channel depth of 16 bits.
 
+# compatibility package (remove after jessie + 1)
+# debug package
+Package: imagemagick-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Multi-Arch: same
+Description: debugging symbols for ImageMagick
+ This package contains the debugging symbols for ImageMagick, a software suite
+ to create, edit, and compose bitmap images.
+ .
+ This is a transition package superseded by dbgsym infrastructure.
+ .
+ This package can safely be removed.
 
-# compatibility package (remove after jessie +2)
+# compatibility package (remove after jessie)
 Package: perlmagick
 Architecture: all
 Multi-Arch: foreign
@@ -428,3 +427,4 @@ Description: object-oriented C++ interface to ImageMagick
  development files.
  .
  This package can safely be removed.
+
