@@ -1,6 +1,7 @@
-imagemagick (8:6.9.2.10-1) experimental; urgency=medium
+imagemagick (8:6.9.2.10+dfsg-1) experimental; urgency=medium
 
   * New upstream version.
+  * Repack in order to avoid non free test images from upstream.
   * Security bug fixes (Closes: #799524, #799891)
   - Fix a Null dereference in coders/png.c (LP: #1492881).
   - Fix a double free in coders/tga.c (LP: #1490362).
@@ -12,7 +13,7 @@ imagemagick (8:6.9.2.10-1) experimental; urgency=medium
     to avoid segfault (LP: #1496649).
   - Added extra checks to avoid out of bounds error
     when parsing the 8bim profile. (LP: #1496645).
-  * Fix density of JPEG working arround TeX bug
+  * Fix density of JPEG working around TeX bug
     (Closes: #763799).
   * Recompile with g++-5 (Closes: #798597).
   * Replace quantum depth by channel depth (Closes: #762004).
