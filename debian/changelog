@@ -1,4 +1,4 @@
-imagemagick (8:6.9.2.3-1) experimental; urgency=medium
+imagemagick (8:6.9.2.10-1) experimental; urgency=medium
 
   * New upstream version.
   * Security bug fixes (Closes: #799524, #799891)
