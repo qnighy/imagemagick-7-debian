@@ -171,7 +171,7 @@ override_dh_auto_test-indep:
 quantum_override_dh_auto_install-arch_%:
 	dh_auto_install --builddirectory="debian/build-quantum-$*" \
 	                --destdir="debian/tmp-$*" \
-		        -- install pkgdocdir=/usr/share/doc/imagemagick-common V=1
+		        -- install pkgdocdir=/usr/share/doc/imagemagick-6-common V=1
 
 	# empties dependency_libs from .la files
 	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
@@ -391,7 +391,7 @@ override_dh_bugfiles:
 override_dh_installdocs:
 	#not yet due to lack of support in debhelper #659044
 	if test "BUG#659044" = "SOLVED" ; then \
-	dh_installdocs --link-doc=imagemagick-common; \
+	dh_installdocs --link-doc=imagemagick-6-common; \
 	else \
 	dh_installdocs ;\
 	fi;

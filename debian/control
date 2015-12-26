@@ -43,12 +43,16 @@ Vcs-Git: git://anonscm.debian.org/collab-maint/imagemagick.git
 Homepage: http://www.imagemagick.org/
 
 # arch all package
-Package: imagemagick-common
+Package: imagemagick-6-common
 Architecture: all
 Multi-Arch: foreign
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}
-Breaks: libmagickcore-6.q16-2 (<< ${source:Version})
+Breaks: libmagickcore-6.q16-2 (<< ${source:Version}),
+Provides: imagemagick-common
+# remove breaks/replaces after jessie +1
+Replaces: imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
+Breaks: imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Description: image manipulation programs -- infrastructure
  imagemagick-common contains the filesystem infrastructure required for
  further installation of imagemagick in any configuration; it does not provide
@@ -165,7 +169,7 @@ Multi-Arch: same
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
-	 imagemagick-common (= ${source:Version})
+	 imagemagick-6-common (= ${source:Version})
 Description: low-level image manipulation library - architecture header files
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -209,7 +213,7 @@ Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
- imagemagick-common (= ${source:Version})
+ imagemagick-6-common (= ${source:Version})
 Recommends: ghostscript, gsfonts
 Suggests: libmagickcore-6.q16-2-extra
 Description: low-level image manipulation library -- quantum depth Q16
@@ -271,7 +275,7 @@ Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
-	 imagemagick-common(= ${source:Version})
+	 imagemagick-6-common(= ${source:Version})
 Description: image manipulation library
  The MagickWand API is the recommended interface between the C programming
  language and the ImageMagick image processing libraries. Unlike the
@@ -355,13 +359,29 @@ Description: Perl interface to the ImageMagick graphics routines -- Q16 version
  .
  This package provides the perl Image::Magick::Q16 class.
 
+
+# compatibility package (remove after jessie + 1)
+Package: imagemagick-common
+Architecture: all
+Multi-Arch: foreign
+Section: oldlibs
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends},  imagemagick-6-common
+Description: image manipulation programs -- infrastructure
+ .
+ This is a transition package that depends on imagemagick-6-common
+ package.
+ .
+ This package can safely be removed.
+
+
 # compatibility package (remove after jessie)
 Package: perlmagick
 Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
-Depends: ${misc:Depends}, libimage-magick-perl
+Depends: ${misc:Depends}, libimage-magick-perl, imagemagick-6-common
 Description: Perl interface to ImageMagick -- transition package
  PerlMagick is an objected-oriented Perl interface to ImageMagick.
  Use the module to read, manipulate, or write an image or image sequence from
@@ -376,7 +396,7 @@ Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
-Depends: ${misc:Depends}, libmagickcore-6.q16-dev
+Depends: ${misc:Depends}, libmagickcore-6.q16-dev, imagemagick-6-common
 Description: low-level image manipulation library -- transition package
  This package included header files and static libraries needed to compile
  programs using MagickCore.
@@ -391,7 +411,7 @@ Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
-Depends: ${misc:Depends}, libmagickwand-6.q16-dev
+Depends: ${misc:Depends}, libmagickwand-6.q16-dev, imagemagick-6-common
 Description: image manipulation library - transition for development files
  This package included the static libraries needed to compile
  programs using MagickWand.
@@ -406,7 +426,7 @@ Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
-Depends: ${misc:Depends}, libmagick++-6.q16-dev
+Depends: ${misc:Depends}, libmagick++-6.q16-dev, imagemagick-6-common
 Description: object-oriented C++ interface to ImageMagick
  The Magick++ library was a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
