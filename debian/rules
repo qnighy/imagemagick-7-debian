@@ -371,7 +371,9 @@ override_dh_install-arch: quantum_override_dh_install-arch_Q16
 	dh_install --package=imagemagick --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 
 override_dh_install-indep:
-	dh_install --indep --sourcedir=debian/tmp-indep --autodest
+	# special source imagemagick-6-common
+	dh_install --package=imagemagick-6-common
+	dh_install --indep --sourcedir=debian/tmp-indep --autodest  --remaining-packages
 	./debian/scripts/dh_doxygen --indep --package=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc
 
 override_dh_compress:

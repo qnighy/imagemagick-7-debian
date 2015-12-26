@@ -1,1 +1,2 @@
-etc/
+debian/tmp-indep/etc/ /etc
+debian/prebuilt/imagemagick-6-common/ ..
