@@ -48,10 +48,10 @@ Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}
 Breaks: libmagickcore-6.q16-2 (<< ${source:Version}),
+        imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Provides: imagemagick-common
 # remove breaks/replaces after strech + 2
 Replaces: imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
-Breaks: imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Description: image manipulation programs -- infrastructure
  imagemagick-common contains the filesystem infrastructure required for
  further installation of imagemagick in any configuration; it does not provide
@@ -381,9 +381,9 @@ Package: imagemagick-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc
-Depends: ${misc:Depends}
+Depends: ${misc:Depends},
+	 imagemagick-6-doc, imagemagick-6-common
 Pre-Depends: dpkg (>= 1.17.5)
-Depends: imagemagick-6-doc, imagemagick-6-common
 Conflicts: imagemagick (<= 7:6.4.0)
 Description: document files of ImageMagick
  .
