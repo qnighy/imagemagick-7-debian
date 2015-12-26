@@ -372,8 +372,7 @@ Multi-Arch: foreign
 Section: oldlibs
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},  imagemagick-6-common
-Description: image manipulation programs -- infrastructure
- .
+Description: image manipulation programs -- infrastructure (transition)
  This is a transition package that depends on imagemagick-6-common
  package.
  .
@@ -390,13 +389,11 @@ Depends: ${misc:Depends},
 	 imagemagick-6-doc, imagemagick-6-common
 Pre-Depends: dpkg (>= 1.17.5)
 Conflicts: imagemagick (<= 7:6.4.0)
-Description: document files of ImageMagick
- .
+Description: document files of ImageMagick (transition)
  This is a transition package that depends on imagemagick-6-doc
  package.
  .
  This package can safely be removed.
-
 
 # compatibility package (remove after jessie+2)
 Package: perlmagick
@@ -457,7 +454,7 @@ Section: oldlibs
 Priority: extra
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}, libmagick++-6.q16-dev, imagemagick-6-common
-Description: object-oriented C++ interface to ImageMagick
+Description: object-oriented C++ interface to ImageMagick (transition)
  The Magick++ library was a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
  .
