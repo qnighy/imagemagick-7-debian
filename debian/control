@@ -62,14 +62,16 @@ Package: imagemagick-6-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}, ${doxygen:Depends},
+         imagemagick-6-common
 Recommends: www-browser,
 	    libjs-jquery,
 	    libjs-bootstrap (>=3.3.5+dfsg-1),
 	    libjs-jquery-mousewheel,
 	    libjs-jquery-fancybox,
 Suggests: imagemagick
-Provides: imagemagick-common
+Provides: imagemagick-doc
 # remove breaks/replaces after strech + 2
 Replaces: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
 Breaks: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
@@ -99,6 +101,7 @@ Package: libmagickwand-6-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: libmagickcore-6-headers (= ${source:Version}),
  ${misc:Depends}
 Description: image manipulation library - headers files
@@ -114,6 +117,7 @@ Package: libmagick++-6-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: libmagickwand-6-headers (= ${source:Version}),
  libmagickcore-6-headers (= ${source:Version}),
  ${misc:Depends}
@@ -145,6 +149,7 @@ Package: libimage-magick-perl
 Architecture: all
 Multi-Arch: allowed
 Section: perl
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends},
 	 libimage-magick-q16-perl
 Provides: perlmagick
@@ -399,6 +404,7 @@ Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}, libimage-magick-perl, imagemagick-6-common
 Description: Perl interface to ImageMagick -- transition package
  PerlMagick is an objected-oriented Perl interface to ImageMagick.
@@ -415,6 +421,7 @@ Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}, libmagickcore-6.q16-dev, imagemagick-6-common
 Description: low-level image manipulation library -- transition package
  This package included header files and static libraries needed to compile
@@ -431,6 +438,7 @@ Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}, libmagickwand-6.q16-dev, imagemagick-6-common
 Description: image manipulation library - transition for development files
  This package included the static libraries needed to compile
@@ -447,6 +455,7 @@ Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}, libmagick++-6.q16-dev, imagemagick-6-common
 Description: object-oriented C++ interface to ImageMagick
  The Magick++ library was a set of C++ wrapper classes that provides access

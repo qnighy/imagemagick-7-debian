@@ -19,4 +19,8 @@ for f in coder.xml colors.xml delegates.xml log.xml magic.xml \
       /etc/ImageMagick/$f /etc/ImageMagick-6/$f 8:6.8.4.2-1~ -- "$@"
 done
 
+# remove after strech+2
+dpkg-maintscript-helper dir_to_symlink \
+	    /usr/share/doc/imagemagick-common /usr/share/doc/imagemagick-6-common 8:6.9.2.10+dfsg-1~ -- "$@"
+
 #DEBHELPER#

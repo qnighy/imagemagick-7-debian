@@ -63,6 +63,8 @@ export CONFIGURE_OPTIONS_CACHE ?= $(STATIC_CONFIGURE_OPTIONS_CACHE)
 export STATIC_CONFIGURE_ARCH_FLAGS := --without-gcc-arch
 export CONFIGURE_ARCH_FLAGS ?= $(STATIC_CONFIGURE_ARCH_FLAGS)
 
+export DOC_PKG_PATH := /usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common/
+
 # check if FPU
 HAVE_FPU_CMD:= case $(DEB_HOST_MULTIARCH) in \
 		mips*-*) \
@@ -84,7 +86,7 @@ export STATIC_CONFIGURE_OPTIONS := \
         --enable-reproducible-build \
 	--prefix=/usr \
         --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
-        --docdir=/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/ \
+        --docdir=$(DOC_PKG_PATH) \
         --with-extra-doc-dir=' (on debian system you may install the imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR) package)' \
 	--sysconfdir=/etc \
 	--with-includearch-dir=/usr/include/$(DEB_HOST_MULTIARCH)/ \
@@ -171,7 +173,7 @@ override_dh_auto_test-indep:
 quantum_override_dh_auto_install-arch_%:
 	dh_auto_install --builddirectory="debian/build-quantum-$*" \
 	                --destdir="debian/tmp-$*" \
-		        -- install pkgdocdir=/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common V=1
+		        -- install pkgdocdir=$(DOC_PKG_PATH) V=1
 
 	# empties dependency_libs from .la files
 	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
@@ -280,7 +282,7 @@ override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 
 xslt-rule:
 	# now apply privacy cleanning rules
-	cd "$(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc" && \
+	cd "$(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)" && \
 	find  . \
 	     -path './www/api/MagickCore' -prune -o \
              -path './www/api/MagickWand' -prune -o \
@@ -316,15 +318,15 @@ override_dh_auto_install-indep:
 
 
 	# remove boostrap copy
-	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www/js/*
+	rm -rf $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/js/*
 	ln -s /usr/share/javascript/bootstrap/js/bootstrap.min.js \
-	     $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www/js/magick.js
-	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www/css/*
+	     $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/js/magick.js
+	rm -rf $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/css/*
 	ln -s /usr/share/javascript/bootstrap/css/bootstrap.min.css \
-	     $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www/css/magick.css
+	     $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/css/magick.css
 
 	# now apply privacy cleanning rules
-	cd "$(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc" && \
+	cd "$(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)" && \
 	find  . \
 	     -path './www/api/MagickCore' -prune -o \
              -path './www/api/MagickWand' -prune -o \
@@ -388,13 +390,11 @@ override_dh_strip:
 override_dh_bugfiles:
 	dh_bugfiles --all
 
-override_dh_installdocs:
-	#not yet due to lack of support in debhelper #659044
-	if test "BUG#659044" = "SOLVED" ; then \
-	dh_installdocs --link-doc=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common; \
-	else \
-	dh_installdocs ;\
-	fi;
+override_dh_installdocs-indep:
+	dh_installdocs --indep --link-doc=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common
+
+override_dh_installdocs-arch:
+	dh_installdocs --arch
 
 # prep rules
 quantum_override_dh_prep_%:
