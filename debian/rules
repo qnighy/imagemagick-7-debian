@@ -63,7 +63,8 @@ export CONFIGURE_OPTIONS_CACHE ?= $(STATIC_CONFIGURE_OPTIONS_CACHE)
 export STATIC_CONFIGURE_ARCH_FLAGS := --without-gcc-arch
 export CONFIGURE_ARCH_FLAGS ?= $(STATIC_CONFIGURE_ARCH_FLAGS)
 
-export DOC_PKG_PATH := /usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common/
+# where to put documentation (relative)
+export DOC_PKG_PATH := usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common/html
 
 # check if FPU
 HAVE_FPU_CMD:= case $(DEB_HOST_MULTIARCH) in \
@@ -86,7 +87,7 @@ export STATIC_CONFIGURE_OPTIONS := \
         --enable-reproducible-build \
 	--prefix=/usr \
         --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
-        --docdir=$(DOC_PKG_PATH) \
+        --docdir=/$(DOC_PKG_PATH) \
         --with-extra-doc-dir=' (on debian system you may install the imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR) package)' \
 	--sysconfdir=/etc \
 	--with-includearch-dir=/usr/include/$(DEB_HOST_MULTIARCH)/ \
@@ -173,7 +174,7 @@ override_dh_auto_test-indep:
 quantum_override_dh_auto_install-arch_%:
 	dh_auto_install --builddirectory="debian/build-quantum-$*" \
 	                --destdir="debian/tmp-$*" \
-		        -- install pkgdocdir=$(DOC_PKG_PATH) V=1
+		        -- install pkgdocdir=/$(DOC_PKG_PATH) V=1
 
 	# empties dependency_libs from .la files
 	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
@@ -366,8 +367,6 @@ quantum_override_dh_install-arch_%:
 override_dh_install-arch: quantum_override_dh_install-arch_Q16
 	# take arch include in default quantum
 	dh_install --package=libmagickcore-$(DEB_UPSTREAM_VERSION_MAJOR)-arch-config --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
-	# TODO: better granularity
-	dh_install --package=imagemagick-dbg --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 	# install here imagemagick
 	dh_install --package=imagemagick --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 
@@ -377,7 +376,7 @@ override_dh_install-indep:
 
 override_dh_compress:
 	# fix #611125
-	dh_compress -Xusr/share/doc/imagemagick/www -Xusr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www
+	dh_compress -X$(DOC_PKG_PATH)
 
 override_dh_makeshlibs:
 	# avoid plugins' dir
