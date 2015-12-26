@@ -366,14 +366,14 @@ quantum_override_dh_install-arch_%:
 # install arch package
 override_dh_install-arch: quantum_override_dh_install-arch_Q16
 	# take arch include in default quantum
-	dh_install --package=libmagickcore-$(DEB_UPSTREAM_VERSION_MAJOR)-arch-config --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
-	# install here imagemagick
-	dh_install --package=imagemagick --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
+	dh_install --arch --remaining-packages --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 
 override_dh_install-indep:
-	# special source imagemagick-6-common
-	dh_install --package=imagemagick-6-common
-	dh_install --indep --sourcedir=debian/tmp-indep --autodest  --remaining-packages
+	# special source imagemagick-*-common
+	dh_install --package=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common
+	# remaining package
+	dh_install --indep --remaining-packages --sourcedir=debian/tmp-indep --autodest
+	# fix doxygen problem
 	./debian/scripts/dh_doxygen --indep --package=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc
 
 override_dh_compress:
