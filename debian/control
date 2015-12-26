@@ -46,11 +46,10 @@ Homepage: http://www.imagemagick.org/
 Package: imagemagick-6-common
 Architecture: all
 Multi-Arch: foreign
-Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}
 Breaks: libmagickcore-6.q16-2 (<< ${source:Version}),
 Provides: imagemagick-common
-# remove breaks/replaces after jessie +1
+# remove breaks/replaces after strech + 2
 Replaces: imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Breaks: imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Description: image manipulation programs -- infrastructure
@@ -59,20 +58,21 @@ Description: image manipulation programs -- infrastructure
  a full installation of binaries, libraries, and utilities
  required to run imagemagick.
 
-# predepend on dpkg (>= 1.17.5) for dir to symlink after jeesie +2
-Package: imagemagick-doc
+Package: imagemagick-6-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc
 Depends: ${misc:Depends}, ${doxygen:Depends},
-Pre-Depends: dpkg (>= 1.17.5)
 Recommends: www-browser,
 	    libjs-jquery,
 	    libjs-bootstrap (>=3.3.5+dfsg-1),
 	    libjs-jquery-mousewheel,
 	    libjs-jquery-fancybox,
 Suggests: imagemagick
-Conflicts: imagemagick (<= 7:6.4.0)
+Provides: imagemagick-common
+# remove breaks/replaces after strech + 2
+Replaces: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
+Breaks: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
 Built-using: ${doxygen:Built-Using}
 Description: document files of ImageMagick
  This package contains the document files shipped with ImageMagick, a software
@@ -148,7 +148,7 @@ Section: perl
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends},
 	 libimage-magick-q16-perl
 Provides: perlmagick
-# remove breaks/replaces after jessie +1
+# remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
 Breaks: perlmagick (<< 8:6.8.3.10-1~)
 Suggests: imagemagick-doc
@@ -347,7 +347,7 @@ Section: perl
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: imagemagick-doc
 Provides: libimage-magick-defaultquantum-perl
-# remove breaks/replaces after jessie +1
+# remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
 Breaks: perlmagick (<< 8:6.8.3.10-1~)
 Description: Perl interface to the ImageMagick graphics routines -- Q16 version
@@ -360,7 +360,7 @@ Description: Perl interface to the ImageMagick graphics routines -- Q16 version
  This package provides the perl Image::Magick::Q16 class.
 
 
-# compatibility package (remove after jessie + 1)
+# compatibility package (remove after stretch + 2)
 Package: imagemagick-common
 Architecture: all
 Multi-Arch: foreign
@@ -375,7 +375,25 @@ Description: image manipulation programs -- infrastructure
  This package can safely be removed.
 
 
-# compatibility package (remove after jessie)
+# predepend on dpkg (>= 1.17.5) for dir to symlink after jeesie +2
+# remove after strech+2
+Package: imagemagick-doc
+Architecture: all
+Multi-Arch: foreign
+Section: doc
+Depends: ${misc:Depends}
+Pre-Depends: dpkg (>= 1.17.5)
+Depends: imagemagick-6-doc, imagemagick-6-common
+Conflicts: imagemagick (<= 7:6.4.0)
+Description: document files of ImageMagick
+ .
+ This is a transition package that depends on imagemagick-6-doc
+ package.
+ .
+ This package can safely be removed.
+
+
+# compatibility package (remove after jessie+2)
 Package: perlmagick
 Architecture: all
 Multi-Arch: foreign
@@ -391,6 +409,7 @@ Description: Perl interface to ImageMagick -- transition package
  .
  This package can safely be removed.
 
+# compatibility package (remove after jessie+2)
 Package: libmagickcore-dev
 Architecture: all
 Multi-Arch: foreign
@@ -406,6 +425,7 @@ Description: low-level image manipulation library -- transition package
  .
  This package can safely be removed.
 
+# compatibility package (remove after jessie+2)
 Package: libmagickwand-dev
 Architecture: all
 Multi-Arch: foreign
@@ -420,7 +440,8 @@ Description: image manipulation library - transition for development files
  development files.
  .
  This package can safely be removed.
-
+ 
+# compatibility package (remove after jessie+2)
 Package: libmagick++-dev
 Architecture: all
 Multi-Arch: foreign

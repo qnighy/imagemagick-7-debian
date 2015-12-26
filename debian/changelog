@@ -18,7 +18,8 @@ imagemagick (8:6.9.2.10+dfsg-1) experimental; urgency=medium
   * Recompile with g++-5 (Closes: #798597).
   * Replace quantum depth by channel depth (Closes: #762004).
   * Prepare imagemagick 7 by renaming imagemagick-common package
-    to imagemagick-6-common.
+    to imagemagick-6-common and imagemagick-doc to
+    imagemagick-6-doc.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 14 Sep 2015 23:43:48 +0200
 

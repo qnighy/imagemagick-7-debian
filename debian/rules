@@ -84,8 +84,8 @@ export STATIC_CONFIGURE_OPTIONS := \
         --enable-reproducible-build \
 	--prefix=/usr \
         --libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
-        --docdir=/usr/share/doc/imagemagick-doc/ \
-        --with-extra-doc-dir=' (on debian system you may install the imagemagick-doc package)' \
+        --docdir=/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/ \
+        --with-extra-doc-dir=' (on debian system you may install the imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR) package)' \
 	--sysconfdir=/etc \
 	--with-includearch-dir=/usr/include/$(DEB_HOST_MULTIARCH)/ \
 	--mandir=/usr/share/man \
@@ -171,7 +171,7 @@ override_dh_auto_test-indep:
 quantum_override_dh_auto_install-arch_%:
 	dh_auto_install --builddirectory="debian/build-quantum-$*" \
 	                --destdir="debian/tmp-$*" \
-		        -- install pkgdocdir=/usr/share/doc/imagemagick-6-common V=1
+		        -- install pkgdocdir=/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common V=1
 
 	# empties dependency_libs from .la files
 	# http://lists.debian.org/debian-devel/2009/08/msg00783.html
@@ -280,7 +280,7 @@ override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
 
 xslt-rule:
 	# now apply privacy cleanning rules
-	cd "$(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc" && \
+	cd "$(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc" && \
 	find  . \
 	     -path './www/api/MagickCore' -prune -o \
              -path './www/api/MagickWand' -prune -o \
@@ -316,15 +316,15 @@ override_dh_auto_install-indep:
 
 
 	# remove boostrap copy
-	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/js/*
+	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www/js/*
 	ln -s /usr/share/javascript/bootstrap/js/bootstrap.min.js \
-	     $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/js/magick.js
-	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/css/*
+	     $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www/js/magick.js
+	rm -rf $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www/css/*
 	ln -s /usr/share/javascript/bootstrap/css/bootstrap.min.css \
-	     $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc/www/css/magick.css
+	     $(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www/css/magick.css
 
 	# now apply privacy cleanning rules
-	cd "$(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-doc" && \
+	cd "$(CURDIR)/debian/tmp-indep/usr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc" && \
 	find  . \
 	     -path './www/api/MagickCore' -prune -o \
              -path './www/api/MagickWand' -prune -o \
@@ -363,7 +363,7 @@ quantum_override_dh_install-arch_%:
 # install arch package
 override_dh_install-arch: quantum_override_dh_install-arch_Q16
 	# take arch include in default quantum
-	dh_install --package=libmagickcore-6-arch-config --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
+	dh_install --package=libmagickcore-$(DEB_UPSTREAM_VERSION_MAJOR)-arch-config --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 	# TODO: better granularity
 	dh_install --package=imagemagick-dbg --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 	# install here imagemagick
@@ -371,11 +371,11 @@ override_dh_install-arch: quantum_override_dh_install-arch_Q16
 
 override_dh_install-indep:
 	dh_install --indep --sourcedir=debian/tmp-indep --autodest
-	./debian/scripts/dh_doxygen --indep --package=imagemagick-doc
+	./debian/scripts/dh_doxygen --indep --package=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc
 
 override_dh_compress:
 	# fix #611125
-	dh_compress -Xusr/share/doc/imagemagick/www -Xusr/share/doc/imagemagick-doc/www
+	dh_compress -Xusr/share/doc/imagemagick/www -Xusr/share/doc/imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc/www
 
 override_dh_makeshlibs:
 	# avoid plugins' dir
@@ -391,7 +391,7 @@ override_dh_bugfiles:
 override_dh_installdocs:
 	#not yet due to lack of support in debhelper #659044
 	if test "BUG#659044" = "SOLVED" ; then \
-	dh_installdocs --link-doc=imagemagick-6-common; \
+	dh_installdocs --link-doc=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common; \
 	else \
 	dh_installdocs ;\
 	fi;
