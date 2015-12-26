@@ -11,8 +11,12 @@ imagemagick (8:6.9.2.10+dfsg-1) experimental; urgency=medium
   - Avoid a stack overflow in fx handling.
   - Fixed size of memory allocation in RLE coder
     to avoid segfault (LP: #1496649).
-  - Added extra checks to avoid out of bounds error
+  - Add extra checks to avoid out of bounds error
     when parsing the 8bim profile. (LP: #1496645).
+  - Fixed memory leak when reading incorrect PSD files
+  - Fix PixelColor off by one on i386.
+  - Fix out of bounds error in -splice operator.
+  - Prevent null pointer access in magick/constitute.c
   * Fix density of JPEG working around TeX bug
     (Closes: #763799).
   * Recompile with g++-5 (Closes: #798597).
@@ -20,8 +24,9 @@ imagemagick (8:6.9.2.10+dfsg-1) experimental; urgency=medium
   * Prepare imagemagick 7 by renaming imagemagick-common package
     to imagemagick-6-common and imagemagick-doc to
     imagemagick-6-doc.
+  * Symlink doc dir of arch:all package to imagemagick-6-common.
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 14 Sep 2015 23:43:48 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 26 Dec 2015 15:00:31 +0100
 
 imagemagick (8:6.9.1.2-1) experimental; urgency=low
 
