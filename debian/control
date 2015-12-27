@@ -398,7 +398,7 @@ Description: Perl interface to the ImageMagick graphics routines -- Q16 version
  .
  This package provides the perl Image::Magick::Q16 class.
 
-
+# predepend on dpkg (>= 1.17.5) for dir to symlink remove after jeesie +2
 # compatibility package (remove after stretch + 2)
 Package: imagemagick-common
 Architecture: all
@@ -416,7 +416,7 @@ Description: image manipulation programs -- infrastructure dummy package
  This is a dummy package.  You can safely purge or remove it.
 
 
-# predepend on dpkg (>= 1.17.5) for dir to symlink after jeesie +2
+# predepend on dpkg (>= 1.17.5) for dir to symlink remove after jeesie +2
 # remove after strech+2
 Package: imagemagick-doc
 Architecture: all
