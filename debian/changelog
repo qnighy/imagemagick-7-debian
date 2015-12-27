@@ -26,7 +26,7 @@ imagemagick (8:6.9.2.10+dfsg-1) experimental; urgency=medium
     imagemagick-6-doc.
   * Symlink doc dir of arch:all package to imagemagick-6-common.
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 26 Dec 2015 15:00:31 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 27 Dec 2015 22:26:31 +0100
 
 imagemagick (8:6.9.1.2-1) experimental; urgency=low
 
