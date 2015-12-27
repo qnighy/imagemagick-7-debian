@@ -1,1 +1,1 @@
-../../www/js/bootstrap.js
+bootstrap.js

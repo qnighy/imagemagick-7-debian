@@ -1,3 +1,8 @@
+DFSG conformance:
+
+The package include some non free image. Thus we need to repack
+
+
 This package use gitpkg over quilt over git svn
 
 [quick install]
