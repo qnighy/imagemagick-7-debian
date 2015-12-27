@@ -323,7 +323,7 @@ Files: debian/display-im6.svg
 Copyright: 1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
-Files: magick/nt_base.c
+Files: magick/nt-base.c
 Copyright: 2000-2002, Ghostgum Software Pty Ltd.  All rights reserved.
 	   1987-1999, E. I. du Pont de Nemours and Company
 	   1999-2013, ImageMagick Studio LLC
@@ -348,16 +348,16 @@ Copyright: 1999, 2000, 2001, 2002, 2004, Bob Friesenhahn <bfriesen@simple.dallas
            2015, Dirk Lemstra
 License: Magick++	   
 
-Files: Magick++/lib/Blob*.h
+Files: Magick++/lib/Magick++/Blob*.h
 Copyright: 1999, 2000, 2001, 2002, Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2015, Dirk Lemstra
 License: Magick++	
 
-Files: Magick++/lib/ChannelMoments.*
+Files: Magick++/lib/ChannelMoments.cpp Magick++/lib/Magick++/ChannelMoments.h
 Copyright: 2014-2015, Dirk Lemstra
 License: Magick++
 
-Files: Magick++/lib/CoderInfo.*
+Files: Magick++/lib/CoderInfo.* Magick++/lib/Magick++/CoderInfo.h
 Copyright: 2001, 2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2013-2015, Dirk Lemstra
 License: Magick++
@@ -367,12 +367,12 @@ Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2013-2015, Dirk Lemstra
 License: Magick++
 
-Files: Magick++/lib/Drawable.h
+Files: Magick++/lib/Magick++/Drawable.h
 Copyright: 1999-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2014, Dirk Lemstra
 License: Magick++
 
-Files: Magick++/lib/Exception.*
+Files: Magick++/lib/Exception.cpp Magick++/lib/Magick++/Exception.h
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2013-2015, Dirk Lemstra
 License: Magick++
@@ -382,7 +382,7 @@ Copyright: 1999, 2002-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2014, Dirk Lemstra
 License: Magick++
 
-Files: Magick++/lib/Functions.h
+Files: Magick++/lib/Magick++/Functions.h
 Copyright: 1999, 2000, 2001, 2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2014, Dirk Lemstra
 License: Magick++
@@ -392,12 +392,12 @@ Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2014, Dirk Lemstra
 License: Magick++
 
-Files: Magick++/lib/Image.*
+Files: Magick++/lib/Image.cpp Magick++/lib/Magick++/Image.h
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2013-2015, Dirk Lemstra
 License: Magick++
 
-Files: Magick++/lib/ImageRef.*
+Files: Magick++/lib/ImageRef.cpp Magick++/lib/Magick++/ImageRef.h
 Copyright: 1999-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
            2015, Dirk Lemstra
 License: Magick++
@@ -715,7 +715,7 @@ Copyright: 1997, Bob Friesenhahn
 	   1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
-Files: script/txt2html
+Files: scripts/txt2html
 Copyright: 1994-2000 Seth Golub
 License: Perllikelicence
  Original txt2html script copyright (c) 1994-2000 Seth Golub
