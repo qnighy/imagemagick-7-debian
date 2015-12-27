@@ -17,6 +17,7 @@ imagemagick (8:6.9.2.10+dfsg-1) experimental; urgency=medium
   - Fix PixelColor off by one on i386.
   - Fix out of bounds error in -splice operator.
   - Prevent null pointer access in magick/constitute.c
+  - Fix another memory leak in string handling.
   * Fix density of JPEG working around TeX bug
     (Closes: #763799).
   * Recompile with g++-5 (Closes: #798597).
@@ -26,7 +27,7 @@ imagemagick (8:6.9.2.10+dfsg-1) experimental; urgency=medium
     imagemagick-6-doc.
   * Symlink doc dir of arch:all package to imagemagick-6-common.
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 27 Dec 2015 22:26:31 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 27 Dec 2015 22:36:38 +0100
 
 imagemagick (8:6.9.1.2-1) experimental; urgency=low
 
