@@ -176,10 +176,10 @@ License: ImageMagick
 
 Files: coders/psd.c
 Copyright: 1992, Leonard Rosenthol
-           2013, Dirk Lemstra
-  	   1999-2015, ImageMagick Studio LLC
+	   2013, Dirk Lemstra
+	   1999-2015, ImageMagick Studio LLC
 License: ImageMagick
-	   
+
 Files: coders/rgf.c
 Copyright: 2013, Brian Wheeler
 	   1999-2015, ImageMagick Studio LLC
@@ -192,12 +192,12 @@ License: ImageMagick
 
 Files: coders/screenshot.c
 Copyright: 2014, Dirk Lemstra
-           1999-2015, ImageMagick Studio LLC
+	   1999-2015, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/sixel.c
 Copyright: 2014, Hayaki Saito
-           1999-2015, ImageMagick Studio LLC
+	   1999-2015, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/svg.c
@@ -223,7 +223,7 @@ Comment: use libxml delegate under BSD-3
 
 Files: coders/vips.c
 Copyright: 2014, Dirk Lemstra
-           1999-2015, ImageMagick Studio LLC
+	   1999-2015, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/wbmp.c
@@ -345,13 +345,13 @@ License: Magick++
 
 Files: Magick++/lib/Blob*.cpp
 Copyright: 1999, 2000, 2001, 2002, 2004, Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2015, Dirk Lemstra
-License: Magick++	   
+	   2015, Dirk Lemstra
+License: Magick++
 
 Files: Magick++/lib/Magick++/Blob*.h
 Copyright: 1999, 2000, 2001, 2002, Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2015, Dirk Lemstra
-License: Magick++	
+	   2015, Dirk Lemstra
+License: Magick++
 
 Files: Magick++/lib/ChannelMoments.cpp Magick++/lib/Magick++/ChannelMoments.h
 Copyright: 2014-2015, Dirk Lemstra
@@ -359,67 +359,67 @@ License: Magick++
 
 Files: Magick++/lib/CoderInfo.* Magick++/lib/Magick++/CoderInfo.h
 Copyright: 2001, 2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2013-2015, Dirk Lemstra
+	   2013-2015, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Drawable.cpp
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2013-2015, Dirk Lemstra
+	   2013-2015, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Magick++/Drawable.h
 Copyright: 1999-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Exception.cpp Magick++/lib/Magick++/Exception.h
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2013-2015, Dirk Lemstra
+	   2013-2015, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Functions.cpp
 Copyright: 1999, 2002-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Magick++/Functions.h
 Copyright: 1999, 2000, 2001, 2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Geometry.cpp
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Image.cpp Magick++/lib/Magick++/Image.h
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2013-2015, Dirk Lemstra
+	   2013-2015, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/ImageRef.cpp Magick++/lib/Magick++/ImageRef.h
 Copyright: 1999-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2015, Dirk Lemstra
+	   2015, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Magick++.h
 Copyright: 1999, 2000 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Magick++/Include.h
 Copyright: 1999-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2013-2015, Dirk Lemstra
+	   2013-2015, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Magick++/Options.h
 Copyright: 1999-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014-2015, Dirk Lemstra
+	   2014-2015, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Magick++/Pixels.h
 Copyright: 1999-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Magick++/ResourceLimits.h
@@ -428,22 +428,22 @@ License: Magick++
 
 Files: Magick++/lib/Magick++/STL.h
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2013-2014, Dirk Lemstra
+	   2013-2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Magick++/TypeMetric.h
 Copyright: 2001-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Options.cpp
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014-2015, Dirk Lemstra
+	   2014-2015, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Pixels.cpp
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/ResourceLimits.cpp
@@ -452,17 +452,17 @@ License: Magick++
 
 Files: Magick++/lib/STL.cpp
 Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2013-2014, Dirk Lemstra
+	   2013-2014, Dirk Lemstra
 License: Magick++
 
-Files: Magick++/lib/STL.cpp
+Files: Magick++/lib/Magick++/STL.h
 Copyright: 2001 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/tests/readWriteImages.cpp
 Copyright: 1999, 2000, 2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-           2014, Dirk Lemstra
+	   2014, Dirk Lemstra
 License: Magick++
 
 Files: PerlMagick/*
@@ -525,23 +525,23 @@ license: GPL3+-with-Autoconf-Macros-exception-GNU
 
 Files: m4/ax_c___attribute__.m4
 Copyright:2008, Stepan Kasal <skasal@redhat.com>
-          2008, Christian Haggstrom
-          2008, Ryan McCabe <ryan@numb.org>
+	  2008, Christian Haggstrom
+	  2008, Ryan McCabe <ryan@numb.org>
 License: GPL2+-with-Autoconf-Macros-exception
 
 Files: m4/ax_append_flag.m4
 Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
-           2011, Maarten Bosmans <mkbosmans@gmail.com>
+	   2011, Maarten Bosmans <mkbosmans@gmail.com>
 License: GPL3+-with-Autoconf-Macros-exception
 
 Files: m4/ax_cflags_warn_all.m4
 Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
-           2010, Rhys Ulerich <rhys.ulerich@gmail.com>
+	   2010, Rhys Ulerich <rhys.ulerich@gmail.com>
 License: GPL3+-with-Autoconf-Macros-exception
 
 Files: m4/ax_check_compile_flag.m4
 Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
-           2011, Rhys Ulerich <rhys.ulerich@gmail.com>
+	   2011, Rhys Ulerich <rhys.ulerich@gmail.com>
 License: GPL3+-with-Autoconf-Macros-exception
 
 Files: m4/ax_compare_version.m4
@@ -550,32 +550,32 @@ License: GNU-All-Permissive-License
 
 Files: m4/ax_compiler_vendor.m4
 Copyright: 2008, Steven G. Johnson <stevenj@alum.mit.edu>
-           2008, Matteo Frigo
+	   2008, Matteo Frigo
 License: GPL3+-with-Autoconf-Macros-exception
 
 Files: m4/ax_cxx_bool.m4
 Copyright: 2008, Todd Veldhuizen
-           2008, Luc Maisonobe <luc@spaceroots.org>
+	   2008, Luc Maisonobe <luc@spaceroots.org>
 License: GNU-All-Permissive-License
 
 Files: m4/ax_cxx_namespaces.m4
 Copyright: 2008, Todd Veldhuizen
-           2008, Luc Maisonobe <luc@spaceroots.org>
+	   2008, Luc Maisonobe <luc@spaceroots.org>
 License: GNU-All-Permissive-License
 
 Files: m4/ax_cxx_namespace_std.m4
 Copyright: 2009, Todd Veldhuizen
-           2009, Luc Maisonobe <luc@spaceroots.org>
+	   2009, Luc Maisonobe <luc@spaceroots.org>
 License: GNU-All-Permissive-License
 
 Files: m4/ax_gcc_archflag.m4
 Copyright: 2008, Steven G. Johnson <stevenj@alum.mit.edu>
-           2008, Matteo Frigo
+	   2008, Matteo Frigo
 License: GPL3+-with-Autoconf-Macros-exception
 
 Files: m4/ax_gcc_x86_cpuid.m4
 Copyright: 2008, Steven G. Johnson <stevenj@alum.mit.edu>
-           2008, Matteo Frigo
+	   2008, Matteo Frigo
 License: GPL3+-with-Autoconf-Macros-exception
 
 Files: m4/ax_lang_compiler_ms.m4
@@ -588,9 +588,9 @@ License: GPL2+-with-Autoconf-Macros-exception
 
 Files: m4/ax_prefix_config_h.m4
 Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
-           2008, Marten Svantesson
-           2008, Gerald Point <Gerald.Point@labri.fr>
-           2014, Reuben Thomas <rrt@sc3d.org>
+	   2008, Marten Svantesson
+	   2008, Gerald Point <Gerald.Point@labri.fr>
+	   2014, Reuben Thomas <rrt@sc3d.org>
 License: GPL3+-with-Autoconf-Macros-exception
 
 Files: m4/ax_prog_perl_version.m4
@@ -599,7 +599,7 @@ License: GNU-All-Permissive-License
 
 Files: m4/ax_pthread.m4
 Copyright: 2008, Steven G. Johnson <stevenj@alum.mit.edu>
-           2011, Daniel Richard G. <skunk@iSKUNK.ORG>
+	   2011, Daniel Richard G. <skunk@iSKUNK.ORG>
 License: GPL3+-with-Autoconf-Macros-exception
 
 Files: m4/ax_require_defined.m4
@@ -608,14 +608,14 @@ License: GNU-All-Permissive-License
 
 Files: m4/cxx_have_std_libs.m4
 Copyright: 2004, Todd Veldhuizen
-           2004, Luc Maisonobe <luc@spaceroots.org>
+	   2004, Luc Maisonobe <luc@spaceroots.org>
 License: GNU-All-Permissive-License
 
 Files: m4/framework.m4
 Copyright: 2009, Jay Freeman
 License: LGPL-3+
 
-Files: m4/ld-version-script.m4 
+Files: m4/ld-version-script.m4
 Copyright: 2008-2012 Free Software Foundation, Inc.
 License: GNU-All-Permissive-License
 
@@ -625,8 +625,8 @@ License: GPL2+-with-Autoconf-Macros-exception
 
 Files: magick/accelerate*
 Copyright: 2010-2013, John Cristy
-           2013, SiuChi Chan
-           2013, Guansong Zhang
+	   2013, SiuChi Chan
+	   2013, Guansong Zhang
 License: ImageMagick
 
 Files: magick/distort.c
@@ -654,11 +654,6 @@ Files: magick/histogram.c
 Copyright: 2009, Anthony Thyssen
 	   2009, Fred Weinhaus
 	   2009-2013, ImageMagick Studio LLC
-License: ImageMagick
-
-Files: magick/magic.c
-Copyright: 2000, Bob Friesenhahn
-	   2000-2013, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/magic.c
