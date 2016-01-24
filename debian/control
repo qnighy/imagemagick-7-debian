@@ -140,7 +140,7 @@ Description: object-oriented C++ interface to ImageMagick - header files
  This package is independent of channel depth.
 
 Package: imagemagick
-Architecture: any
+Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}, imagemagick-6.q16 (= ${binary:Version})
 Description: image manipulation programs -- binaries

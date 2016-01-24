@@ -253,29 +253,8 @@ quantum_override_dh_auto_install-arch_%:
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
 
 override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
-	# add versionned manpages and symlink to binaries (should move to script the link to /usr/lib ?)
-	mkdir -p debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/bin/
-	for basename in $(MAGICK_PROGRAM); do \
-		mv "$(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/share/man/man1/$$basename.1" \
-		   "$(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/share/man/man1/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR).1" ;\
-		ln -s "/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename" \
-		      "debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/bin/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR)";\
-	done
-
-	# add desktop for default version
-	mkdir -p $(CURDIR)/debian/tmp-indep/usr/share/applications/
-	sed < $(CURDIR)/debian/display-im6.desktop.in \
-		-e s/\$$\(QUANTUMDEPTH\)/$(DEFAULTQUANTUMDEPTH)/g \
-		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
-		-e s/\$$\(LCQUANTUMDEPTH\)/${shell echo $* | sed -e 's/\(.*\)/\L\1/'}/g \
-		-e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
-		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
-		> $(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH)/usr/share/applications/display-im$(IMVERSION).desktop
-
-
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH) -type d -empty | xargs -r rmdir -p
-
 
 xslt-rule:
 	# now apply privacy cleanning rules
@@ -287,6 +266,7 @@ xslt-rule:
 	     | xargs -r -0 -n 1 "$(CURDIR)/debian/scripts/removeprivacybreach" "$(CURDIR)/debian/scripts/removeprivacybreach.xslt"
 
 override_dh_auto_install-indep:
+	# install headers
 	if test "BUG#703261" = "SOLVED"; then \
 	dh_auto_install --builddirectory="$(CURDIR)/debian/build-quantum-indep" \
 			--destdir="$(CURDIR)/debian/tmp-indep" \
@@ -314,7 +294,7 @@ override_dh_auto_install-indep:
 	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
 
 
-	# remove boostrap copy
+	# remove boostrap copy
 	rm -rf $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/js/*
 	ln -s /usr/share/javascript/bootstrap/js/bootstrap.min.js \
 	     $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/js/magick.js
@@ -329,6 +309,37 @@ override_dh_auto_install-indep:
 	     -path './www/api/MagickWand' -prune -o \
 	     -type f -and -name '*.html' -and -not -empty -print0 \
 	     | xargs -r -0 -n 1 "$(CURDIR)/debian/scripts/removeprivacybreach" "$(CURDIR)/debian/scripts/removeprivacybreach.xslt"
+
+	# add icons link
+	while read SIZE; do \
+		mkdir -p "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/$$SIZE/apps/" ;\
+		if test ! -L "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).png"; then \
+		    ln -s "/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$(DEFAULTQUANTUMDEPTH)}.png" \
+		          "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).png"; \
+		fi; \
+	done < $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
+	# make xpm
+	mkdir -p "$(CURDIR)/debian/tmp-indep/usr/share/pixmaps/"
+	if test ! -L "$(CURDIR)/debian/tmp-indep/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).xpm" ; then \
+		ln -s "/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$(DEFAULTQUANTUMDEPTH)}.xpm" \
+		      "$(CURDIR)/debian/tmp-indep/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).xpm" ;\
+	fi;
+	# do not forget svgz
+	mkdir -p "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/scalable/apps/"
+	if test ! -L "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svgz"; then \
+		ln -s "/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$(DEFAULTQUANTUMDEPTH)}.svgz" \
+	              "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svgz"; \
+	fi;
+
+	# add desktop for default version
+	mkdir -p $(CURDIR)/debian/tmp-indep/usr/share/applications/
+	sed < $(CURDIR)/debian/display-im6.desktop.in \
+		-e s/\$$\(QUANTUMDEPTH\)/$(DEFAULTQUANTUMDEPTH)/g \
+		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
+		-e s/\$$\(LCQUANTUMDEPTH\)/${shell echo $* | sed -e 's/\(.*\)/\L\1/'}/g \
+		-e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
+		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
+		> $(CURDIR)/debian/tmp-indep/usr/share/applications/display-im$(IMVERSION).desktop
 
 
 # install quantum package
