@@ -198,21 +198,16 @@ quantum_override_dh_auto_install-arch_%:
 
 	# move binaries to /usr/lib/bin
 	# TODO: proper patch upstream
-	if ! test -d "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/"; then \
-		mkdir -p "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/"; \
-	fi;
-
 	for basename in $(MAGICK_PROGRAM); do \
-		if ! test -f debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/$$basename ; then \
-			cp -f "debian/tmp-$*/usr/bin/$$basename" \
-			      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/"; \
-		else \
-			true; \
-		fi; \
+		mv "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename" \
+                   "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename-im$(DEB_UPSTREAM_VERSION_DROPREVISION).${call LC,$*}"; \
+		mv "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename.1" \
+		   "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$*}.1" ;\
 	done
 
 	# move config script to arch directory
 	# TODO: remove after jessie +1
+	mkdir -p "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$*/"; \
 	for SCRIPT in Magick-config MagickCore-config MagickWand-config Wand-config Magick++-config; do \
 		cp -f "debian/tmp-$*/usr/bin/$$SCRIPT" \
 		      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/"; \
