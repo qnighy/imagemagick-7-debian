@@ -7,7 +7,7 @@ export DH_VERBOSE=1
 
 
 # quantum depth is channel depth
-export QUANTUMDEPTH ?= Q16
+export QUANTUMDEPTH ?= q16
 export CORESOVERSION ?= 2
 export WANDSOVERSION ?= 2
 export PPSOVERSION ?= 6
@@ -139,7 +139,7 @@ quantum_override_dh_auto_configure-arch_%:
 		--disable-silent-rules \
 		--with-quantum-depth=${shell echo $* | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
 
-override_dh_auto_configure-arch: quantum_override_dh_auto_configure-arch_Q16
+override_dh_auto_configure-arch: quantum_override_dh_auto_configure-arch_q16
 
 override_dh_auto_configure-indep:
 	dh_auto_configure --builddirectory="debian/build-quantum-indep" -- \
@@ -153,7 +153,7 @@ override_dh_auto_configure-indep:
 quantum_override_dh_auto_build-arch_%:
 	dh_auto_build --builddirectory="debian/build-quantum-$*" -- all perl-build
 
-override_dh_auto_build-arch: quantum_override_dh_auto_build-arch_Q16
+override_dh_auto_build-arch: quantum_override_dh_auto_build-arch_q16
 override_dh_auto_build-indep:
 	# generate html doc
 	dh_auto_build --builddirectory="debian/build-quantum-indep" -- html
@@ -179,7 +179,7 @@ quantum_override_dh_auto_test-arch_%:
 		echo "*******************************************************************************" ;\
 	fi;
 
-override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_Q16
+override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_q16
 override_dh_auto_test-indep:
 
 # dh_auto_install in build directory
@@ -200,9 +200,9 @@ quantum_override_dh_auto_install-arch_%:
 	# TODO: proper patch upstream
 	for basename in $(MAGICK_PROGRAM); do \
 		mv "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename" \
-                   "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename-im$(DEB_UPSTREAM_VERSION_DROPREVISION).${call LC,$*}"; \
+                   "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename-im$(DEB_UPSTREAM_VERSION_DROPREVISION).$*"; \
 		mv "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename.1" \
-		   "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$*}.1" ;\
+		   "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR).$*.1" ;\
 	done
 
 	# move config script to arch directory
@@ -210,7 +210,7 @@ quantum_override_dh_auto_install-arch_%:
 	mkdir -p "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$*/"; \
 	for SCRIPT in Magick-config MagickCore-config MagickWand-config Wand-config Magick++-config; do \
 		cp -f "debian/tmp-$*/usr/bin/$$SCRIPT" \
-		      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(DEFAULTQUANTUMDEPTH)/"; \
+		      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$*/"; \
 	done;
 
 
@@ -223,7 +223,7 @@ quantum_override_dh_auto_install-arch_%:
 			   $(CONVERT_FLAGS) -resize $$SIZE \
 			   -gravity center -extent $$SIZE  \
 			   +set date:create +set date:modify -define png:exclude-chunk=time  \
-			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC, $*}.png; \
+			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).$*.png; \
 		echo "Done"; \
 	done < $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
 	# make xpm
@@ -232,27 +232,27 @@ quantum_override_dh_auto_install-arch_%:
 	echo "Make xpm size 32x32..." ; \
 	$(CONVERT) $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize 32x32 \
 		-gravity center -extent 32x32  \
-		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$*}.xpm ;\
+		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).$*.xpm ;\
 	echo "Done"
 	# do not forget svgz
 	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/
 	gzip -c -n -9 $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
-		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$*}.svgz
+		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).$*.svgz
 
 	# add desktop for default
 	mkdir -p debian/tmp-$*/usr/share/applications/
 	sed < $(CURDIR)/debian/display.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/$*/g \
-		-e s/\$$\(LCQUANTUMDEPTH\)/${call LC,$*}/g \
+		-e s/\$$\(LCQUANTUMDEPTH\)/$*/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
 		-e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
 		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
-		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).${call LC,$*}.desktop
+		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).$*.desktop
 
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
 
-override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_Q16
+override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_q16
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH) -type d -empty | xargs -r rmdir -p
 
@@ -314,20 +314,20 @@ override_dh_auto_install-indep:
 	while read SIZE; do \
 		mkdir -p "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/$$SIZE/apps/" ;\
 		if test ! -L "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).png"; then \
-		    ln -s "/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$(DEFAULTQUANTUMDEPTH)}.png" \
+		    ln -s "/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).$(DEFAULTQUANTUMDEPTH).png" \
 		          "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).png"; \
 		fi; \
 	done < $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
 	# make xpm
 	mkdir -p "$(CURDIR)/debian/tmp-indep/usr/share/pixmaps/"
 	if test ! -L "$(CURDIR)/debian/tmp-indep/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).xpm" ; then \
-		ln -s "/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$(DEFAULTQUANTUMDEPTH)}.xpm" \
+		ln -s "/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).$(DEFAULTQUANTUMDEPTH).xpm" \
 		      "$(CURDIR)/debian/tmp-indep/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).xpm" ;\
 	fi;
 	# do not forget svgz
 	mkdir -p "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/scalable/apps/"
 	if test ! -L "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svgz"; then \
-		ln -s "/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$(DEFAULTQUANTUMDEPTH)}.svgz" \
+		ln -s "/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).$(DEFAULTQUANTUMDEPTH).svgz" \
 	              "$(CURDIR)/debian/tmp-indep/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svgz"; \
 	fi;
 
@@ -336,7 +336,7 @@ override_dh_auto_install-indep:
 	sed < $(CURDIR)/debian/display-im6.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/$(DEFAULTQUANTUMDEPTH)/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
-		-e s/\$$\(LCQUANTUMDEPTH\)/${call LC,$*}/g \
+		-e s/\$$\(LCQUANTUMDEPTH\)/$(DEFAULTQUANTUMDEPTH)/g \
 		-e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
 		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
 		> $(CURDIR)/debian/tmp-indep/usr/share/applications/display-im$(IMVERSION).desktop
@@ -344,34 +344,34 @@ override_dh_auto_install-indep:
 
 # install quantum package
 quantum_override_dh_install-arch_%:
-	dh_install --package=imagemagick-$(IMVERSION).${call LC,$*} \
+	dh_install --package=imagemagick-$(IMVERSION).$* \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.${call LC,$*}-${CORESOVERSION} \
+	dh_install --package=libmagickcore-${IMVERSION}.$*-${CORESOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.${call LC,$*}-${CORESOVERSION}-extra \
+	dh_install --package=libmagickcore-${IMVERSION}.$*-${CORESOVERSION}-extra \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickwand-${IMVERSION}.${call LC,$*}-${WANDSOVERSION} \
+	dh_install --package=libmagickwand-${IMVERSION}.$*-${WANDSOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagick++-${IMVERSION}.${call LC,$*}-${PPSOVERSION} \
+	dh_install --package=libmagick++-${IMVERSION}.$*-${PPSOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
 	# dev package
-	dh_install --package=libmagick++-${IMVERSION}.${call LC,$*}-dev \
+	dh_install --package=libmagick++-${IMVERSION}.$*-dev \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.${call LC,$*}-dev \
+	dh_install --package=libmagickcore-${IMVERSION}.$*-dev \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickwand-${IMVERSION}.${call LC,$*}-dev \
+	dh_install --package=libmagickwand-${IMVERSION}.$*-dev \
 		--sourcedir=debian/tmp-$* --autodest
 	# perl
-	dh_install --package=libimage-magick-${call LC,$*}-perl \
+	dh_install --package=libimage-magick-$*-perl \
 		--sourcedir=debian/tmp-$* --autodest
 
 	# Remove extra coders from libmagickcore
 	while read FILE; do \
-		rm -f debian/libmagickcore-${IMVERSION}.${call LC,$*}-${CORESOVERSION}/$$FILE; \
-	done < debian/libmagickcore-${IMVERSION}.${call LC,$*}-${CORESOVERSION}-extra.install
+		rm -f debian/libmagickcore-${IMVERSION}.$*-${CORESOVERSION}/$$FILE; \
+	done < debian/libmagickcore-${IMVERSION}.$*-${CORESOVERSION}-extra.install
 
 # install arch package
-override_dh_install-arch: quantum_override_dh_install-arch_Q16
+override_dh_install-arch: quantum_override_dh_install-arch_q16
 	# take arch include in default quantum
 	dh_install --arch --remaining-packages --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
 
@@ -408,7 +408,7 @@ override_dh_installdocs-arch:
 quantum_override_dh_prep_%:
 	[ ! -d debian/tmp-$* ] || rm -rf debian/tmp-$*
 
-override_dh_prep: quantum_override_dh_prep_Q16 quantum_override_dh_prep_indep
+override_dh_prep: quantum_override_dh_prep_q16 quantum_override_dh_prep_indep
 	dh_prep
 
 
@@ -417,7 +417,7 @@ quantum_override_dh_clean_%:
 	[ ! -d debian/build-quantum-$* ] || rm -rf debian/build-quantum-$*
 	[ ! -d debian/tmp-$* ] || rm -rf debian/tmp-$*
 
-override_dh_clean: quantum_override_dh_clean_Q16 quantum_override_dh_clean_indep
+override_dh_clean: quantum_override_dh_clean_q16 quantum_override_dh_clean_indep
 	[ ! -f $(CONFIGURE_CACHEFILE) ] || rm -f $(CONFIGURE_CACHEFILE)
 	dh_clean
 
