@@ -1,3 +1,10 @@
+imagemagick (8:6.9.2.10+dfsg-2) experimental; urgency=medium
+
+  * Drop imagemagick binary package. Paving the way to multiple
+  channel depth binaries and HDRI.
+
+ --
+
 imagemagick (8:6.9.2.10+dfsg-1) experimental; urgency=medium
 
   * New upstream version.
