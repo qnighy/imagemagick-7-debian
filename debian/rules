@@ -223,7 +223,7 @@ quantum_override_dh_auto_install-arch_%:
 			   $(CONVERT_FLAGS) -resize $$SIZE \
 			   -gravity center -extent $$SIZE  \
 			   +set date:create +set date:modify -define png:exclude-chunk=time  \
-			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.png; \
+			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC, $*}.png; \
 		echo "Done"; \
 	done < $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
 	# make xpm
@@ -232,22 +232,22 @@ quantum_override_dh_auto_install-arch_%:
 	echo "Make xpm size 32x32..." ; \
 	$(CONVERT) $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize 32x32 \
 		-gravity center -extent 32x32  \
-		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.xpm ;\
+		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$*}.xpm ;\
 	echo "Done"
 	# do not forget svgz
 	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/
 	gzip -c -n -9 $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
-		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.svgz
+		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).${call LC,$*}.svgz
 
 	# add desktop for default
 	mkdir -p debian/tmp-$*/usr/share/applications/
 	sed < $(CURDIR)/debian/display.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/$*/g \
-		-e s/\$$\(LCQUANTUMDEPTH\)/${shell echo $* | sed -e 's/\(.*\)/\L\1/'}/g \
+		-e s/\$$\(LCQUANTUMDEPTH\)/${call LC,$*}/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
 		-e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
 		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
-		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'}.desktop
+		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).${call LC,$*}.desktop
 
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
@@ -336,7 +336,7 @@ override_dh_auto_install-indep:
 	sed < $(CURDIR)/debian/display-im6.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/$(DEFAULTQUANTUMDEPTH)/g \
 		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
-		-e s/\$$\(LCQUANTUMDEPTH\)/${shell echo $* | sed -e 's/\(.*\)/\L\1/'}/g \
+		-e s/\$$\(LCQUANTUMDEPTH\)/${call LC,$*}/g \
 		-e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
 		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
 		> $(CURDIR)/debian/tmp-indep/usr/share/applications/display-im$(IMVERSION).desktop
@@ -344,31 +344,31 @@ override_dh_auto_install-indep:
 
 # install quantum package
 quantum_override_dh_install-arch_%:
-	dh_install --package=imagemagick-$(IMVERSION).${shell echo $* | sed -e 's/\(.*\)/\L\1/'} \
+	dh_install --package=imagemagick-$(IMVERSION).${call LC,$*} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${CORESOVERSION} \
+	dh_install --package=libmagickcore-${IMVERSION}.${call LC,$*}-${CORESOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${CORESOVERSION}-extra \
+	dh_install --package=libmagickcore-${IMVERSION}.${call LC,$*}-${CORESOVERSION}-extra \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickwand-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${WANDSOVERSION} \
+	dh_install --package=libmagickwand-${IMVERSION}.${call LC,$*}-${WANDSOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagick++-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${PPSOVERSION} \
+	dh_install --package=libmagick++-${IMVERSION}.${call LC,$*}-${PPSOVERSION} \
 		--sourcedir=debian/tmp-$* --autodest
 	# dev package
-	dh_install --package=libmagick++-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-dev \
+	dh_install --package=libmagick++-${IMVERSION}.${call LC,$*}-dev \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-dev \
+	dh_install --package=libmagickcore-${IMVERSION}.${call LC,$*}-dev \
 		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickwand-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-dev \
+	dh_install --package=libmagickwand-${IMVERSION}.${call LC,$*}-dev \
 		--sourcedir=debian/tmp-$* --autodest
 	# perl
-	dh_install --package=libimage-magick-${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-perl \
+	dh_install --package=libimage-magick-${call LC,$*}-perl \
 		--sourcedir=debian/tmp-$* --autodest
 
 	# Remove extra coders from libmagickcore
 	while read FILE; do \
-		rm -f debian/libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${CORESOVERSION}/$$FILE; \
-	done < debian/libmagickcore-${IMVERSION}.${shell echo $* | sed -e 's/\(.*\)/\L\1/'}-${CORESOVERSION}-extra.install
+		rm -f debian/libmagickcore-${IMVERSION}.${call LC,$*}-${CORESOVERSION}/$$FILE; \
+	done < debian/libmagickcore-${IMVERSION}.${call LC,$*}-${CORESOVERSION}-extra.install
 
 # install arch package
 override_dh_install-arch: quantum_override_dh_install-arch_Q16
