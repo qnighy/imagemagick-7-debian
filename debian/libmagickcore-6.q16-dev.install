@@ -3,5 +3,5 @@ usr/lib/*/libMagickCore*.*.la
 usr/lib/*/libMagickCore*.*.so
 usr/lib/*/pkgconfig/ImageMagick.pc
 usr/lib/*/pkgconfig/MagickCore.pc
-usr/lib/*/ImageMagick-*/bin-Q16/Magick-config
-usr/lib/*/ImageMagick-*/bin-Q16/MagickCore-config
+usr/lib/*/ImageMagick-*/bin-*/Magick-config
+usr/lib/*/ImageMagick-*/bin-*/MagickCore-config
