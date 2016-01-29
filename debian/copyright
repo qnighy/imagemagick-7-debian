@@ -426,11 +426,6 @@ Files: Magick++/lib/Magick++/ResourceLimits.h
 Copyright: 2014, Dirk Lemstra
 License: Magick++
 
-Files: Magick++/lib/Magick++/STL.h
-Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-	   2013-2014, Dirk Lemstra
-License: Magick++
-
 Files: Magick++/lib/Magick++/TypeMetric.h
 Copyright: 2001-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
 	   2014, Dirk Lemstra
