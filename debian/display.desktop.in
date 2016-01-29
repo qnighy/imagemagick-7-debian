@@ -1,12 +1,12 @@
 [Desktop Entry]
 Version=1.0
-Name=ImageMagick (display $(QUANTUMDEPTH))
+Name=ImageMagick (color depth=$(QUANTUMDEPTH))
 Comment=Display and edit image files
 Comment[fr]=Affiche et édite des fichiers images
 Comment[pt]=Exiba e edite arquivos de imagem
-Exec=/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$(QUANTUMDEPTH)/display %f
+Exec=/usr/bin/$(PROGNAME) %f
 Terminal=false
-Icon=display-im$(IMVERSION).$(LCQUANTUMDEPTH)
+Icon=$(PROGNAME)
 Type=Application
 Categories=Graphics;
 Keywords=Image;Slideshow;View;Transform;Enhance;F/X;Special Effects

@@ -196,13 +196,12 @@ quantum_override_dh_auto_install-arch_%:
 	find $(CURDIR)/debian/tmp-$* -name '*.so*' -exec \
 		chrpath -d {} \;
 
-	# move binaries to /usr/lib/bin
-	# TODO: proper patch upstream
+	# move binaries to /usr/bin/*quantum
 	for basename in $(MAGICK_PROGRAM); do \
 		mv "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename" \
-                   "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename-im$(DEB_UPSTREAM_VERSION_DROPREVISION).$*"; \
+                   "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename-im$(IMVERSION).$*"; \
 		mv "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename.1" \
-		   "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename-im$(DEB_UPSTREAM_VERSION_MAJOR).$*.1" ;\
+		   "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename-im$(IMVERSION).$*.1" ;\
 	done
 
 	# move config script to arch directory
@@ -219,42 +218,38 @@ quantum_override_dh_auto_install-arch_%:
 		mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/ ;\
 		cd $(CURDIR)/debian/build-quantum-$*; \
 		echo "Make icons for size $$SIZE..."; \
-		$(CONVERT) $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
+		$(CONVERT) $(CURDIR)/debian/display-im$(IMVERSION).svg \
 			   $(CONVERT_FLAGS) -resize $$SIZE \
 			   -gravity center -extent $$SIZE  \
 			   +set date:create +set date:modify -define png:exclude-chunk=time  \
-			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).$*.png; \
+			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display-im$(IMVERSION).$*.png; \
 		echo "Done"; \
-	done < $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).iconssize
+	done < $(CURDIR)/debian/display-im$(IMVERSION).iconssize
 	# make xpm
 	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/pixmaps/
 	cd $(CURDIR)/debian/build-quantum-$*; \
 	echo "Make xpm size 32x32..." ; \
-	$(CONVERT) $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svg $(CONVERT_FLAGS) -resize 32x32 \
+	$(CONVERT) $(CURDIR)/debian/display-im$(IMVERSION).svg $(CONVERT_FLAGS) -resize 32x32 \
 		-gravity center -extent 32x32  \
-		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).$*.xpm ;\
+		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display-im$(IMVERSION).$*.xpm ;\
 	echo "Done"
 	# do not forget svgz
 	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/
-	gzip -c -n -9 $(CURDIR)/debian/display-im$(DEB_UPSTREAM_VERSION_MAJOR).svg \
-		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(DEB_UPSTREAM_VERSION_MAJOR).$*.svgz
+	gzip -c -n -9 $(CURDIR)/debian/display-im$(IMVERSION).svg \
+		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(IMVERSION).$*.svgz
 
 	# add desktop for default
 	mkdir -p debian/tmp-$*/usr/share/applications/
 	sed < $(CURDIR)/debian/display.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/$*/g \
-		-e s/\$$\(LCQUANTUMDEPTH\)/$*/g \
-		-e s/\$$\(IMVERSION\)/$(IMVERSION)/g \
-		-e s/\$$\(DEB_HOST_MULTIARCH\)/$(DEB_HOST_MULTIARCH)/g \
-		-e s/\$$\(DEB_UPSTREAM_VERSION_DROPREVISION\)/$(DEB_UPSTREAM_VERSION_DROPREVISION)/g \
+		-e s/\$$(PROGNAME)/display-im$(IMVERSION).$*/g \
 		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).$*.desktop
 
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
 
 override_dh_auto_install-arch: quantum_override_dh_auto_install-arch_q16
-	# Remove empty directories in debian/tmp
-	-find $(CURDIR)/debian/tmp-$(DEFAULTQUANTUMDEPTH) -type d -empty | xargs -r rmdir -p
+	true
 
 xslt-rule:
 	# now apply privacy cleanning rules
