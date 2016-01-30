@@ -242,7 +242,7 @@ quantum_override_dh_auto_install-arch_%:
 	mkdir -p debian/tmp-$*/usr/share/applications/
 	sed < $(CURDIR)/debian/display.desktop.in \
 		-e s/\$$\(QUANTUMDEPTH\)/$*/g \
-		-e s/\$$(PROGNAME)/display-im$(IMVERSION).$*/g \
+		-e s/\$$\(PROGNAME\)/display-im$(IMVERSION).$*/g \
 		> $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).$*.desktop
 
 	# Remove empty directories in debian/tmp
