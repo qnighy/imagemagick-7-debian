@@ -1,7 +1,8 @@
 imagemagick (8:6.9.2.10+dfsg-2) experimental; urgency=medium
 
   * Drop imagemagick binary package. Paving the way to multiple
-  channel depth binaries and HDRI.
+  channel depth binaries and HDRI. Fix also multi-arch problems
+  (Closes:  #761836, #810591).
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 29 Jan 2016 18:44:31 +0100
 
