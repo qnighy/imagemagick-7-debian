@@ -144,6 +144,7 @@ export STATIC_HAVE_FPU := $(shell $(HAVE_FPU_CMD))
 LC = ${shell echo $1 | sed -e 's/\(.*\)/\L\1/'}
 UC = ${shell echo $1 | sed -e 's/\(.*\)/\U\1/'}
 REPLACE_QUANTUM = ${shell echo '$1' |  sed -e 's/$$QUANTUM/$2/g'}
+MAGICK_ANY_Q_PACKAGES = ${shell echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 's/$$QUANTUM/$1/g'}
 
 
 %:
@@ -349,7 +350,7 @@ quantum_override_dh_install-arch_%:
 # install arch package
 override_dh_install-arch: quantum_override_dh_install-arch_q16
 	# take arch include in default quantum
-	for PKG in MAGICK_ANY_PACKAGES; do \
+	for PKG in $(MAGICK_ANY_PACKAGES); do \
 		dh_install --package=$$PKG \
 			--sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest; \
 	done;
@@ -376,15 +377,17 @@ override_dh_strip:
 
 # link bug file
 override_dh_bugfiles-arch_%:
-	for PKG in $(call REPLACE_QUANTUM, $(MAGICK_ANY_QUANTUM_PACKAGES),$*); do \
+	for PKG in ${call REPLACE_QUANTUM, $(MAGICK_ANY_QUANTUM_PACKAGES),$*}; do \
+		mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 		ln -s imagemagick-$(IMVERSION)-common \
-		      $(CURDIR/debian/$$PKG/usr/share/bug/$$PKG ; \
+		      $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \
 	done
 
 override_dh_bugfiles-arch: override_dh_bugfiles-arch_q16
 	for PKG in $(MAGICK_ANY_PACKAGES); do \
+                mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 		ln -s imagemagick-$(IMVERSION)-common \
-		      $(CURDIR/debian/$$PKG/usr/share/bug/$$PKG ; \
+		      $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \
 	done
 
 override_dh_bugfiles-indep:
@@ -392,15 +395,17 @@ override_dh_bugfiles-indep:
 	# link normal package
 	for PKG in $(MAGICK_ALL_PACKAGES); do \
 		if test "X$$PKG" != Ximagemagick-$(IMVERSION)-common; then \
+                        mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 			ln -s imagemagick-$(IMVERSION)-common \
-                              $(CURDIR/debian/$$PKG/usr/share/bug/$$PKG ; \
+                              $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \
 		fi; \
 	done
 
 	# link compat package
 	for PKG in $(MAGICK_ALL_COMPAT_PACKAGES); do \
+		mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 		ln -s imagemagick-$(IMVERSION)-common \
-                      $(CURDIR/debian/$$PKG/usr/share/bug/$$PKG ; \
+                      $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \
 	done
 
 override_dh_installdocs-indep:
