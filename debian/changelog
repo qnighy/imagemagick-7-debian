@@ -4,6 +4,8 @@ imagemagick (8:6.9.2.10+dfsg-2) experimental; urgency=medium
   channel depth binaries and HDRI. Fix also multi-arch problems
   (Closes:  #761836, #810591, #772603).
   * Fix desktop file (Closes: #812481).
+  * Simplify debian/rules
+  * Fix a mistake for installing config files.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 30 Jan 2016 18:50:09 +0100
 
