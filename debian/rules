@@ -336,26 +336,10 @@ override_dh_auto_install-indep:
 
 # install quantum package
 quantum_override_dh_install-arch_%:
-	dh_install --package=imagemagick-$(IMVERSION).$* \
-		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.$*-${CORESOVERSION} \
-		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.$*-${CORESOVERSION}-extra \
-		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickwand-${IMVERSION}.$*-${WANDSOVERSION} \
-		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagick++-${IMVERSION}.$*-${PPSOVERSION} \
-		--sourcedir=debian/tmp-$* --autodest
-	# dev package
-	dh_install --package=libmagick++-${IMVERSION}.$*-dev \
-		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickcore-${IMVERSION}.$*-dev \
-		--sourcedir=debian/tmp-$* --autodest
-	dh_install --package=libmagickwand-${IMVERSION}.$*-dev \
-		--sourcedir=debian/tmp-$* --autodest
-	# perl
-	dh_install --package=libimage-magick-$*-perl \
-		--sourcedir=debian/tmp-$* --autodest
+	for PKG in $(call REPLACE_QUANTUM, $(MAGICK_ANY_QUANTUM_PACKAGES),$*); do \
+		dh_install --package=$$PKG \
+			--sourcedir=debian/tmp-$* --autodest; \
+	done;
 
 	# Remove extra coders from libmagickcore
 	while read FILE; do \
@@ -365,7 +349,10 @@ quantum_override_dh_install-arch_%:
 # install arch package
 override_dh_install-arch: quantum_override_dh_install-arch_q16
 	# take arch include in default quantum
-	dh_install --arch --remaining-packages --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest
+	for PKG in MAGICK_ANY_PACKAGES; do \
+		dh_install --package=$$PKG \
+			--sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest; \
+	done;
 
 override_dh_install-indep:
 	# special source imagemagick-*-common
