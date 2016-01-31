@@ -1,2 +1,2 @@
-debian/tmp-indep/etc/ /etc
+debian/tmp-indep/etc/ /
 debian/prebuilt/usr/share/doc/imagemagick-*-common /usr/share/doc/
