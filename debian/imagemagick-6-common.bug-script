@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 # Pretty echo, underline the specified string:
 pecho() {
     echo "$@"
@@ -9,12 +11,13 @@ pecho() {
 # work even with graphicsmagick
 # will detect graphickmagick using as compat
 versioncheck() {
-    echo -n "$@: " 
-    "$@" -version 2> /dev/null | head -1 | sed s/Version://g
+    if test -x "/usr/bin/$@"; then
+	echo -n "$@: ";
+	"$@" -version 2> /dev/null | head -1 | sed s/Version://g;
+    fi
 }
 
 exec >&3
-
 
 pecho "ImageMagick program version"
 versioncheck animate

@@ -100,6 +100,33 @@ export CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS) \
 
 export MAGICK_PROGRAM := compare animate convert composite conjure import identify stream display montage mogrify
 
+export MAGICK_ANY_QUANTUM_PACKAGES := imagemagick-$(IMVERSION).$$QUANTUM \
+				     libmagickcore-${IMVERSION}.$$QUANTUM-${CORESOVERSION} \
+				     libmagickcore-${IMVERSION}.$$QUANTUM-${CORESOVERSION}-extra \
+				     libmagickwand-${IMVERSION}.$$QUANTUM-${WANDSOVERSION} \
+                                     libmagick++-${IMVERSION}.$$QUANTUM-${PPSOVERSION} \
+			             libmagick++-${IMVERSION}.$$QUANTUM-dev \
+                                     libmagickcore-${IMVERSION}.$$QUANTUM-dev \
+                                     libmagickwand-${IMVERSION}.$$QUANTUM-dev \
+                                     libimage-magick-$$QUANTUM-perl
+
+export MAGICK_ANY_PACKAGES :=  libmagickcore-$(IMVERSION)-arch-config
+
+export MAGICK_ALL_PACKAGES :=  imagemagick-$(IMVERSION)-common \
+                              imagemagick-$(IMVERSION)-doc \
+                              libmagickcore-$(IMVERSION)-headers \
+                              libmagickwand-$(IMVERSION)-headers \
+                              libmagick++-$(IMVERSION)-headers \
+                              libimage-magick-perl
+
+export MAGICK_ALL_COMPAT_PACKAGES := imagemagick-common \
+                                    imagemagick-doc \
+			            perlmagick \
+                                    libmagickcore-dev \
+                                    libmagickwand-dev \
+                                    libmagick++-dev \
+                                    imagemagick
+
 # check if FPU
 HAVE_FPU_CMD:= case $(DEB_HOST_MULTIARCH) in \
 		mips*-*) \
@@ -116,6 +143,8 @@ export STATIC_HAVE_FPU := $(shell $(HAVE_FPU_CMD))
 # upper/lower case function
 LC = ${shell echo $1 | sed -e 's/\(.*\)/\L\1/'}
 UC = ${shell echo $1 | sed -e 's/\(.*\)/\U\1/'}
+REPLACE_QUANTUM = ${shell echo '$1' |  sed -e 's/$$QUANTUM/$2/g'}
+
 
 %:
 	@echo "Build $(DEB_SOURCE_PACKAGE) version $(DEB_VERSION) for quantum $(QUANTUMDEPTH)"
@@ -358,8 +387,34 @@ override_dh_makeshlibs:
 override_dh_strip:
 	dh_strip --ddeb-migration='imagemagick-dbg (<< 8:6.9.2.10-1~)'
 
-override_dh_bugfiles:
-	dh_bugfiles --all
+# link bug file
+override_dh_bugfiles-arch_%:
+	for PKG in $(call REPLACE_QUANTUM, $(MAGICK_ANY_QUANTUM_PACKAGES),$*); do \
+		ln -s imagemagick-$(IMVERSION)-common \
+		      $(CURDIR/debian/$$PKG/usr/share/bug/$$PKG ; \
+	done
+
+override_dh_bugfiles-arch: override_dh_bugfiles-arch_q16
+	for PKG in $(MAGICK_ANY_PACKAGES); do \
+		ln -s imagemagick-$(IMVERSION)-common \
+		      $(CURDIR/debian/$$PKG/usr/share/bug/$$PKG ; \
+	done
+
+override_dh_bugfiles-indep:
+	dh_bugfiles --package=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common
+	# link normal package
+	for PKG in $(MAGICK_ALL_PACKAGES); do \
+		if test "X$$PKG" != Ximagemagick-$(IMVERSION)-common; then \
+			ln -s imagemagick-$(IMVERSION)-common \
+                              $(CURDIR/debian/$$PKG/usr/share/bug/$$PKG ; \
+		fi; \
+	done
+
+	# link compat package
+	for PKG in $(MAGICK_ALL_COMPAT_PACKAGES); do \
+		ln -s imagemagick-$(IMVERSION)-common \
+                      $(CURDIR/debian/$$PKG/usr/share/bug/$$PKG ; \
+	done
 
 override_dh_installdocs-indep:
 	dh_installdocs --indep --link-doc=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common

@@ -8,9 +8,7 @@ make your report against the graphicsmagick package.
 
 Otherwise, please provide a test-case that can reproduce the bug:
 
- 1. Install debugging packages. As root, run
-    "apt-get install --install-suggests imagemagick-dbg".
-
+ 1. Install debugging packages.
  2. Repeat the command line that led to the bug. To ensure you are using
     the imagemagick versions, replace convert, display, identify, or
     mogrify with convert-im6.q16, display-im6.q16, identify-im6.q16,
