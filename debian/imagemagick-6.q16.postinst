@@ -7,24 +7,25 @@ then
     # Setup alternatives for each program separately along with their
     # manual pages
     for prog in compare animate convert composite conjure \
-	import identify stream display montage mogrify; do
-	update-alternatives --install /usr/bin/$prog \
-	    $prog /usr/bin/$prog-im6.q16 100 \
-	    --slave /usr/share/man/man1/$prog.1.gz \
-	    $prog.1.gz /usr/share/man/man1/$prog-im6.q16.1.gz
-    done
-fi
+	                import identify stream display montage mogrify; do
 
-if [ "$1" = "configure" ]
-then
-    # Setup alternatives for each program separately along with their
-    # manual pages
-    for prog in compare animate convert composite conjure \
-	import identify stream display montage mogrify; do
+        # We first remove previous alternatives to -im6, that
+        # disappeared because the binaries disappeared
+
+        update-alternatives --remove $prog /usr/bin/$prog-im6
+
+	update-alternatives --install /usr/bin/$prog \
+	                    $prog /usr/bin/$prog-im6.q16 100 \
+	                    --slave /usr/share/man/man1/$prog.1.gz \
+	                    $prog.1.gz /usr/share/man/man1/$prog-im6.q16.1.gz
+
+
 	update-alternatives --install /usr/bin/$prog-im6 \
-	    $prog-im6 /usr/bin/$prog-im6.q16 100 \
-	    --slave /usr/share/man/man1/$prog-im6.1.gz \
-	    $prog-im6.1.gz /usr/share/man/man1/$prog-im6.q16.1.gz
+	                    $prog-im6 /usr/bin/$prog-im6.q16 100 \
+	                    --slave /usr/share/man/man1/$prog-im6.1.gz \
+	                    $prog-im6.1.gz /usr/share/man/man1/$prog-im6.q16.1.gz
+
+        # We also remove previous
     done
 fi
 

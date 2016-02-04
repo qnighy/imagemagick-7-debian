@@ -1,3 +1,10 @@
+imagemagick (8:6.9.2.10+dfsg-3) experimental; urgency=low
+
+  * Remove previous -im6 alternatives to aavoid unnecessary but harmless
+    messages at upgrade time (closes: #813426)
+
+ -- Vincent Fourmond <fourmond@debian.org>  Thu, 04 Feb 2016 22:16:14 +0100
+
 imagemagick (8:6.9.2.10+dfsg-2) experimental; urgency=medium
 
   * Drop imagemagick binary package. Paving the way to multiple
