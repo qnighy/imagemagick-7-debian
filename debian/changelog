@@ -4,6 +4,10 @@ imagemagick (8:6.9.2.10+dfsg-3) experimental; urgency=low
     messages at upgrade time (closes: #813426)
   * Build upon patch by Diederik de Haas <didi.debian@cknow.org> to
     clarify what you need to install the -extra package for (closes: #813566)
+  * Bug fix: "cannot upgrade: /usr/share/doc/imagemagick contains files
+    not owned by package imagemagick:all", thanks to Vincent Lefevre
+    (Closes: #814480, #813426). imagemagick is now a arch:any
+    package working arround a dpkg bug.
 
  -- Vincent Fourmond <fourmond@debian.org>  Thu, 04 Feb 2016 22:24:07 +0100
 

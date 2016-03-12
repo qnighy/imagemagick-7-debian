@@ -111,6 +111,7 @@ export MAGICK_ANY_QUANTUM_PACKAGES := imagemagick-$(IMVERSION).$$QUANTUM \
                                      libimage-magick-$$QUANTUM-perl
 
 export MAGICK_ANY_PACKAGES :=  libmagickcore-$(IMVERSION)-arch-config
+export MAGICK_ANY_COMPAT_PACKAGES := imagemagick
 
 export MAGICK_ALL_PACKAGES :=  imagemagick-$(IMVERSION)-common \
                               imagemagick-$(IMVERSION)-doc \
@@ -125,7 +126,7 @@ export MAGICK_ALL_COMPAT_PACKAGES := imagemagick-common \
                                     libmagickcore-dev \
                                     libmagickwand-dev \
                                     libmagick++-dev \
-                                    imagemagick
+
 
 # check if FPU
 HAVE_FPU_CMD:= case $(DEB_HOST_MULTIARCH) in \
@@ -385,6 +386,11 @@ override_dh_bugfiles-arch_%:
 
 override_dh_bugfiles-arch: override_dh_bugfiles-arch_q16
 	for PKG in $(MAGICK_ANY_PACKAGES); do \
+                mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
+		ln -s imagemagick-$(IMVERSION)-common \
+		      $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \
+	done
+	for PKG in $(MAGICK_ANY_COMPAT_PACKAGES); do \
                 mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 		ln -s imagemagick-$(IMVERSION)-common \
 		      $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \

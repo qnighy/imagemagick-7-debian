@@ -496,8 +496,9 @@ Description: object-oriented C++ interface to ImageMagick -- dummy package
  This is a dummy package.  You can safely purge or remove it.
 
 # compatibility package (remove after jessie+2)
+# due to bug #813455 arch:any
 Package: imagemagick
-Architecture: all
+Architecture: any
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
