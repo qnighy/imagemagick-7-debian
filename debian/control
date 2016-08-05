@@ -3,7 +3,6 @@ Section: graphics
 Priority: optional
 Maintainer: ImageMagick Packaging Team <pkg-gmagick-im-team@lists.alioth.debian.org>
 Uploaders: Luciano Bello <luciano@debian.org>,
- Daniel Kobras <kobras@debian.org>,
  Nelson A. de Oliveira <naoliv@debian.org>,
  Bastien Roucariès <roucaries.bastien+debian@gmail.com>,
  Vincent Fourmond <fourmond@debian.org>
