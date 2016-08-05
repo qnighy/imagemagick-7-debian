@@ -20,6 +20,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  AccelerateRandomImage@Base 8:6.8.8.9
  AccelerateResizeImage@Base 8:6.8.8.2
  AccelerateUnsharpMaskImage@Base 8:6.8.8.2
+ AccelerateWaveletDenoiseImage@Base 8:6.9.5.4
  AcquireAlignedMemory@Base 8:6.8.8.2
  AcquireAuthenticCacheView@Base 8:6.8.8.2
  AcquireCacheView@Base 8:6.8.8.2
@@ -605,6 +606,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  GetNextImageRegistry@Base 8:6.8.8.2
  GetNextKeyInHashmap@Base 8:6.8.8.2
  GetNextKeyInSplayTree@Base 8:6.8.8.2
+ GetNextToken@Base 8:6.9.5.4
  GetNextValueInHashmap@Base 8:6.8.8.2
  GetNextValueInLinkedList@Base 8:6.8.8.2
  GetNextValueInSplayTree@Base 8:6.8.8.2
@@ -710,6 +712,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  HashPointerType@Base 8:6.8.8.2
  HashStringInfoType@Base 8:6.8.8.2
  HashStringType@Base 8:6.8.8.2
+ HeapOverflowSanityCheck@Base 8:6.9.5.4
  HoughLineImage@Base 8:6.8.9.6
  HuffmanDecodeImage@Base 8:6.8.8.2
  HuffmanEncodeImage@Base 8:6.8.8.2
@@ -991,12 +994,18 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ReadBlobFloat@Base 8:6.8.8.2
  ReadBlobLSBLong@Base 8:6.8.8.2
  ReadBlobLSBShort@Base 8:6.8.8.2
+ ReadBlobLSBSignedLong@Base 8:6.9.5.4
+ ReadBlobLSBSignedShort@Base 8:6.9.5.4
  ReadBlobLong@Base 8:6.8.8.2
  ReadBlobLongLong@Base 8:6.8.8.2
  ReadBlobMSBLong@Base 8:6.8.8.2
  ReadBlobMSBLongLong@Base 8:6.8.8.2
  ReadBlobMSBShort@Base 8:6.8.8.2
+ ReadBlobMSBSignedLong@Base 8:6.9.5.4
+ ReadBlobMSBSignedShort@Base 8:6.9.5.4
  ReadBlobShort@Base 8:6.8.8.2
+ ReadBlobSignedLong@Base 8:6.9.5.4
+ ReadBlobSignedShort@Base 8:6.9.5.4
  ReadBlobStream@Base 8:6.9.1.2
  ReadBlobString@Base 8:6.8.8.2
  ReadImage@Base 8:6.8.8.2
@@ -1070,6 +1079,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  RotationalBlurImage@Base 8:6.8.8.9
  RotationalBlurImageChannel@Base 8:6.8.8.9
  SampleImage@Base 8:6.8.8.2
+ SanitizeString@Base 8:6.9.5.4
  SaveImageTag@Base 8:6.8.8.2
  SaveImagesTag@Base 8:6.8.8.2
  ScaleGeometryKernelInfo@Base 8:6.8.8.2
@@ -1277,6 +1287,7 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  ValidateColormapIndex@Base 8:6.8.8.2
  VignetteImage@Base 8:6.8.8.2
  WaveImage@Base 8:6.8.8.2
+ WaveletDenoiseImage@Base 8:6.9.5.4
  WhiteThresholdImage@Base 8:6.8.8.2
  WhiteThresholdImageChannel@Base 8:6.8.8.2
  WriteBlob@Base 8:6.8.8.2
@@ -1284,10 +1295,14 @@ libMagickCore-6.Q16.so.2 libmagickcore-6.q16-2 #MINVER#
  WriteBlobFloat@Base 8:6.8.8.2
  WriteBlobLSBLong@Base 8:6.8.8.2
  WriteBlobLSBShort@Base 8:6.8.8.2
+ WriteBlobLSBSignedLong@Base 8:6.9.5.4
+ WriteBlobLSBSignedShort@Base 8:6.9.5.4
  WriteBlobLong@Base 8:6.8.8.2
  WriteBlobMSBLong@Base 8:6.8.8.2
  WriteBlobMSBLongLong@Base 8:6.8.8.2
  WriteBlobMSBShort@Base 8:6.8.8.2
+ WriteBlobMSBSignedLong@Base 8:6.9.5.4
+ WriteBlobMSBSignedShort@Base 8:6.9.5.4
  WriteBlobShort@Base 8:6.8.8.2
  WriteBlobString@Base 8:6.8.8.2
  WriteImage@Base 8:6.8.8.2

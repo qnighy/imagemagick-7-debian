@@ -1,5 +1,5 @@
 libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
- MagickPlusPlusDestroyMagick@Base 8:6.9.2.3
+ (optional=InternalABInoAPI)MagickPlusPlusDestroyMagick@Base 8:6.9.2.3
  (c++)"Magick::adaptiveBlurImage::adaptiveBlurImage(double, double)@Base" 8:6.9.2.3
  (c++)"Magick::adaptiveBlurImage::operator()(Magick::Image&) const@Base" 8:6.9.2.3
  (c++|subst)"Magick::adaptiveThresholdImage::adaptiveThresholdImage({c++:size_t}, {c++:size_t}, {c++:ssize_t})@Base" 8:6.9.2.3
@@ -1044,6 +1044,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::Image::x11Display(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.2.3
  (c++)"Magick::Image::xResolution() const@Base" 8:6.9.2.3
  (c++)"Magick::Image::yResolution() const@Base" 8:6.9.2.3
+ (c++) "Magick::Image::waveletDenoise(double, double)@Base" 8:6.9.5.4
  (c++)"Magick::Image::zoom(Magick::Geometry const&)@Base" 8:6.9.2.3
  (c++)"Magick::implodeImage::implodeImage(double)@Base" 8:6.9.2.3
  (c++)"Magick::implodeImage::operator()(Magick::Image&) const@Base" 8:6.9.2.3
@@ -1062,8 +1063,8 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::levelImage::operator()(Magick::Image&) const@Base" 8:6.9.2.3
  (c++)"Magick::lineWidthImage::lineWidthImage(double)@Base" 8:6.9.2.3
  (c++)"Magick::lineWidthImage::operator()(Magick::Image&) const@Base" 8:6.9.2.3
- (c++)"Magick::MagickCleanUp::~MagickCleanUp()@Base" 8:6.9.2.3
- (c++)"Magick::MagickCleanUp::MagickCleanUp()@Base" 8:6.9.2.3
+ (c++|optional=InternalABInoAPI)"Magick::MagickCleanUp::~MagickCleanUp()@Base" 8:6.9.2.3
+ (c++|optional=InternalABInoAPI)"Magick::MagickCleanUp::MagickCleanUp()@Base" 8:6.9.2.3
  (c++)"Magick::magickImage::magickImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.2.3
  (c++)"Magick::magickImage::operator()(Magick::Image&) const@Base" 8:6.9.2.3
  (c++)"Magick::magnifyImage::magnifyImage()@Base" 8:6.9.2.3
@@ -1541,6 +1542,7 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++|subst)"Magick::subRangeImage::subRangeImage({c++:size_t})@Base" 8:6.9.2.3
  (c++)"Magick::swirlImage::operator()(Magick::Image&) const@Base" 8:6.9.2.3
  (c++)"Magick::swirlImage::swirlImage(double)@Base" 8:6.9.2.3
+ (c++)"Magick::TerminateMagick()@Base" 8:6.9.5.4
  (c++)"Magick::textureImage::operator()(Magick::Image&) const@Base" 8:6.9.2.3
  (c++)"Magick::textureImage::textureImage(Magick::Image const&)@Base" 8:6.9.2.3
  (c++)"Magick::thresholdImage::operator()(Magick::Image&) const@Base" 8:6.9.2.3
