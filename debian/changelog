@@ -73,6 +73,7 @@ imagemagick (8:6.9.5.4+dfsg-1) unstable; urgency=medium
     (Closes: #827643, LP: #1594060).
   * Remove Daniel Kobras for uploaders. Thanks Daniel.
     (Closes: #832378).
+  * Add JPEG support based on openjpeg. (Closes: #818203, #813343).
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 05 Aug 2016 15:51:43 +0200
 

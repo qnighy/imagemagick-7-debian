@@ -84,6 +84,7 @@ export STATIC_CONFIGURE_OPTIONS := \
 	--with-gs-font-dir=/usr/share/fonts/type1/gsfonts \
 	--with-magick-plus-plus \
 	--with-djvu \
+        --with-openjp2 \
 	--with-wmf \
 	--without-gvc \
 	--enable-shared \
