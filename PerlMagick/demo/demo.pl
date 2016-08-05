@@ -185,7 +185,7 @@ $example->Label('Equalize');
 $example->Equalize();
 push(@$images,$example);
 
-print "Implode...\n";
+print "Explode...\n";
 $example=$model->Clone();
 $example->Label('Explode');
 $example->Implode(-1);
@@ -244,6 +244,12 @@ print "Implode...\n";
 $example=$model->Clone();
 $example->Label('Implode');
 $example->Implode(0.5);
+push(@$images,$example);
+
+print "Kuwahara...\n";
+$example=$model->Clone();
+$example->Label('Kuwahara');
+$example->Kuwahara('0x1');
 push(@$images,$example);
 
 print "Level...\n";
@@ -450,6 +456,12 @@ $example->Label('Swirl');
 $example->Swirl(90);
 push(@$images,$example);
 
+print "Tint...\n";
+$example=$model->Clone();
+$example->Label('Tint');
+$example->Tint('wheat');
+push(@$images,$example);
+
 print "Unsharp Mask...\n";
 $example=$model->Clone();
 $example->Label('Unsharp Mask');
@@ -468,6 +480,13 @@ $example=$model->Clone();
 $example->Label('Wave');
 $example->Wave('25x150');
 push(@$images,$example);
+
+print "WaveletDenoise...\n";
+$example=$model->Clone();
+$example->Label('Wave');
+$example->WaveletDenoise('5%');
+push(@$images,$example);
+
 #
 # Create image montage.
 #

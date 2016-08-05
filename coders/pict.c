@@ -942,7 +942,7 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
     if ((version == 1) || ((TellBlob(image) % 2) != 0))
       code=ReadBlobByte(image);
     if (version == 2)
-      code=(int) ReadBlobMSBShort(image);
+      code=ReadBlobMSBSignedShort(image);
     if (code < 0)
       break;
     if (code > 0xa1)
@@ -2012,12 +2012,10 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
             *green++=ScaleQuantumToChar(GetPixelGreen(p));
             *blue++=ScaleQuantumToChar(GetPixelBlue(p));
             if (image->matte != MagickFalse)
-              *opacity++=ScaleQuantumToChar((Quantum)
-                (GetPixelAlpha(p)));
+              *opacity++=ScaleQuantumToChar((Quantum) (GetPixelAlpha(p)));
             p++;
           }
-          count+=EncodeImage(image,scanline,bytes_per_line & 0x7FFF,
-            packed_scanline);
+          count+=EncodeImage(image,scanline,bytes_per_line,packed_scanline);
           if (image->previous == (Image *) NULL)
             {
               status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) y,

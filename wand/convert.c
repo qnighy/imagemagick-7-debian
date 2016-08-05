@@ -102,6 +102,9 @@ static MagickBooleanType ConcatenateImages(int argc,char **argv,
   int
     c;
 
+  MagickBooleanType
+    status;
+
   register ssize_t
     i;
 
@@ -115,6 +118,7 @@ static MagickBooleanType ConcatenateImages(int argc,char **argv,
         argv[argc-1]);
       return(MagickFalse);
     }
+  status=MagickTrue;
   for (i=2; i < (ssize_t) (argc-1); i++)
   {
     input=fopen_utf8(argv[i],"rb");
@@ -124,12 +128,13 @@ static MagickBooleanType ConcatenateImages(int argc,char **argv,
         continue;
       }
     for (c=fgetc(input); c != EOF; c=fgetc(input))
-      (void) fputc((char) c,output);
+      if (fputc((char) c,output) != c)
+        status=MagickFalse;
     (void) fclose(input);
     (void) remove_utf8(argv[i]);
   }
   (void) fclose(output);
-  return(MagickTrue);
+  return(status);
 }
 
 static MagickBooleanType ConvertUsage(void)
@@ -314,6 +319,8 @@ static MagickBooleanType ConvertUsage(void)
       "-unsharp geometry    sharpen the image",
       "-vignette geometry   soften the edges of the image in vignette style",
       "-wave geometry       alter an image along a sine wave",
+      "-wavelet-denoise threshold",
+      "                     removes noise from the image using a wavelet transform",
       "-white-threshold value",
       "                     force all pixels above the threshold into white",
       (char *) NULL
@@ -2208,7 +2215,7 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
             i++;
             if (i == (ssize_t) argc)
               ThrowConvertException(OptionError,"MissingArgument",option);
-            GetMagickToken(argv[i],NULL,token);
+            GetNextToken(argv[i],(const char **) NULL,MaxTextExtent,token);
             op=ParseCommandOption(MagickMorphologyOptions,MagickFalse,token);
             if (op < 0)
               ThrowConvertException(OptionError,"UnrecognizedMorphologyMethod",
@@ -3174,6 +3181,15 @@ WandExport MagickBooleanType ConvertImageCommand(ImageInfo *image_info,
       case 'w':
       {
         if (LocaleCompare("wave",option+1) == 0)
+          {
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowConvertException(OptionError,"MissingArgument",option);
+            if (IsGeometry(argv[i]) == MagickFalse)
+              ThrowConvertInvalidArgumentException(option,argv[i]);
+            break;
+          }
+        if (LocaleCompare("wavelet-denoise",option+1) == 0)
           {
             i++;
             if (i == (ssize_t) argc)

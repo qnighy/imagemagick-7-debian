@@ -248,19 +248,17 @@ endif
 install-data-html:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdocdir)
 	$(INSTALL_DATA) $(srcdir)/index.html $(DESTDIR)$(pkgdocdir)
-	for dir in $(DOCDIRS) ; do \
+	@for dir in $(DOCDIRS) ; do \
 	  $(mkinstalldirs) $(DESTDIR)$(pkgdocdir)/$$dir && \
 	  if test -d $(builddir)/$$dir ; then \
   		docsrcdir=$(builddir)/$$dir; \
 	  else \
   		docsrcdir=$(srcdir)/$$dir; \
 	  fi; \
-	  if test -d $$docsrcdir; then \
-	    for file in $$docsrcdir/*.* ; do \
-		echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdocdir)/$$dir" ; \
-		$(INSTALL_DATA) "$$file" $(DESTDIR)$(pkgdocdir)/$$dir ; \
-	    done ; \
-	  fi; \
+	  for file in $$docsrcdir/*.* ; do \
+	    echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdocdir)/$$dir" ; \
+	    $(INSTALL_DATA) "$$file" $(DESTDIR)$(pkgdocdir)/$$dir ; \
+	  done ; \
 	done
 
 # Uninstall HTML files
@@ -293,7 +291,7 @@ libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck
 
 # Format C API documentation
-html:
+html-local:
 # copy static file
 	for dir in $(DOCDIRSMANUAL) ; do \
 		$(MKDIR_P) $(top_builddir)/$$dir ;\

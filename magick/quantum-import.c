@@ -1398,7 +1398,7 @@ static void ImportCbYCrYQuantum(const Image *image,QuantumInfo *quantum_info,
 
           n=0;
           quantum=0;
-          for (x=0; x < (ssize_t) number_pixels; x+=2)
+          for (x=0; x < (ssize_t) number_pixels; x+=4)
           {
             for (i=0; i < 4; i++)
             {
@@ -2006,6 +2006,7 @@ static void ImportGrayQuantum(const Image *image,QuantumInfo *quantum_info,
   unsigned int
     pixel;
 
+  pixel=0;
   switch (quantum_info->depth)
   {
     case 1:

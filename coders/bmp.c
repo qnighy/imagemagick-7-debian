@@ -636,8 +636,8 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
         */
         if (bmp_info.size < 40)
           ThrowReaderException(CorruptImageError,"NonOS2HeaderSizeError");
-        bmp_info.width=(ssize_t) ((int) ReadBlobLSBLong(image));
-        bmp_info.height=(ssize_t) ((int) ReadBlobLSBLong(image));
+        bmp_info.width=(ssize_t) ReadBlobLSBSignedLong(image);
+        bmp_info.height=(ssize_t) ReadBlobLSBSignedLong(image);
         bmp_info.planes=ReadBlobLSBShort(image);
         bmp_info.bits_per_pixel=ReadBlobLSBShort(image);
         bmp_info.compression=ReadBlobLSBLong(image);
@@ -716,7 +716,7 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
               Read color management information.
             */
             bmp_info.alpha_mask=ReadBlobLSBLong(image);
-            bmp_info.colorspace=(int) ReadBlobLSBLong(image);
+            bmp_info.colorspace=ReadBlobLSBSignedLong(image);
             /*
               Decode 2^30 fixed point formatted CIE primaries.
             */
@@ -839,8 +839,12 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
     switch (bmp_info.compression)
     {
       case BI_RGB:
+        image->compression=NoCompression;
+        break;
       case BI_RLE8:
       case BI_RLE4:
+        image->compression=RLECompression;
+        break;
       case BI_BITFIELDS:
         break;
       case BI_JPEG:
@@ -1106,21 +1110,17 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
           indexes=GetAuthenticIndexQueue(image);
           for (x=0; x < ((ssize_t) image->columns-1); x+=2)
           {
-            if (IsValidColormapIndex(image,(*p >> 4) & 0x0f,&index,exception)
-                == MagickFalse)
-              break;
+            (void) IsValidColormapIndex(image,(*p >> 4) & 0x0f,&index,
+              exception);
             SetPixelIndex(indexes+x,index);
-            if (IsValidColormapIndex(image,*p & 0x0f,&index,exception) ==
-                MagickFalse)
-              break;
+            (void) IsValidColormapIndex(image,*p & 0x0f,&index,exception);
             SetPixelIndex(indexes+x+1,index);
             p++;
           }
           if ((image->columns % 2) != 0)
             {
-              if (IsValidColormapIndex(image,(*p >> 4) & 0xf,&index,exception)
-                  == MagickFalse)
-                break;
+              (void) IsValidColormapIndex(image,(*p >> 4) & 0xf,&index,
+                exception);
               SetPixelIndex(indexes+(x++),index);
               p++;
             }
@@ -1156,8 +1156,7 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
           indexes=GetAuthenticIndexQueue(image);
           for (x=(ssize_t) image->columns; x != 0; --x)
           {
-            if (IsValidColormapIndex(image,*p,&index,exception) == MagickFalse)
-              break;
+            (void) IsValidColormapIndex(image,*p,&index,exception);
             SetPixelIndex(indexes,index);
             indexes++;
             p++;
@@ -2004,8 +2003,8 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image)
           Write 12-byte version 2 bitmap header.
         */
         (void) WriteBlobLSBLong(image,bmp_info.size);
-        (void) WriteBlobLSBShort(image,(unsigned short) bmp_info.width);
-        (void) WriteBlobLSBShort(image,(unsigned short) bmp_info.height);
+        (void) WriteBlobLSBSignedShort(image,(signed short) bmp_info.width);
+        (void) WriteBlobLSBSignedShort(image,(signed short) bmp_info.height);
         (void) WriteBlobLSBShort(image,bmp_info.planes);
         (void) WriteBlobLSBShort(image,bmp_info.bits_per_pixel);
       }
@@ -2015,8 +2014,8 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image)
           Write 40-byte version 3+ bitmap header.
         */
         (void) WriteBlobLSBLong(image,bmp_info.size);
-        (void) WriteBlobLSBLong(image,(unsigned int) bmp_info.width);
-        (void) WriteBlobLSBLong(image,(unsigned int) bmp_info.height);
+        (void) WriteBlobLSBSignedLong(image,(signed long) bmp_info.width);
+        (void) WriteBlobLSBSignedLong(image,(signed long) bmp_info.height);
         (void) WriteBlobLSBShort(image,bmp_info.planes);
         (void) WriteBlobLSBShort(image,bmp_info.bits_per_pixel);
         (void) WriteBlobLSBLong(image,bmp_info.compression);

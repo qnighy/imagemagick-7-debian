@@ -1,12 +1,12 @@
 /*
   Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-  
+
     http://www.imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +15,8 @@
 
   MagickCore Windows NT utility methods.
 */
-#ifndef _MAGICKCORE_NT_BASE_H
-#define _MAGICKCORE_NT_BASE_H
+#ifndef MAGICKCORE_NT_BASE_H
+#define MAGICKCORE_NT_BASE_H
 
 #include "magick/exception.h"
 #include "magick/geometry.h"
@@ -38,6 +38,7 @@ extern "C" {
 #include <process.h>
 #include <errno.h>
 #include <malloc.h>
+#include <sys/utime.h>
 #if defined(_DEBUG) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #include <crtdbg.h>
 #endif
@@ -264,12 +265,15 @@ extern "C" {
 #if !defined(unlink)
 #  define unlink  _unlink
 #endif
+#if !defined(utime)
+#  define utime  _utime
+#endif
 #if !defined(vfprintf_l)
 #define vfprintf_l  _vfprintf_l
 #endif
 #if !defined(vsnprintf)
 #if !defined(_MSC_VER) || (defined(_MSC_VER) && _MSC_VER < 1500)
-#define vsnprintf _vsnprintf 
+#define vsnprintf _vsnprintf
 #endif
 #endif
 #if !defined(vsnprintf_l)

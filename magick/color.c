@@ -825,12 +825,8 @@ static MagickBooleanType
 static LinkedListInfo *AcquireColorCache(const char *filename,
   ExceptionInfo *exception)
 {
-  const StringInfo
-    *option;
-
   LinkedListInfo
-    *color_cache,
-    *options;
+    *cache;
 
   MagickStatusType
     status;
@@ -841,19 +837,29 @@ static LinkedListInfo *AcquireColorCache(const char *filename,
   /*
     Load external color map.
   */
-  color_cache=NewLinkedList(0);
-  if (color_cache == (LinkedListInfo *) NULL)
+  cache=NewLinkedList(0);
+  if (cache == (LinkedListInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   status=MagickTrue;
-  options=GetConfigureOptions(filename,exception);
-  option=(const StringInfo *) GetNextValueInLinkedList(options);
-  while (option != (const StringInfo *) NULL)
+#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
   {
-    status&=LoadColorCache(color_cache,(const char *)
-      GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+    const StringInfo
+      *option;
+
+    LinkedListInfo
+      *options;
+
+    options=GetConfigureOptions(filename,exception);
     option=(const StringInfo *) GetNextValueInLinkedList(options);
+    while (option != (const StringInfo *) NULL)
+    {
+      status&=LoadColorCache(cache,(const char *) GetStringInfoDatum(option),
+        GetStringInfoPath(option),0,exception);
+      option=(const StringInfo *) GetNextValueInLinkedList(options);
+    }
+    options=DestroyConfigureOptions(options);
   }
-  options=DestroyConfigureOptions(options);
+#endif
   /*
     Load built-in color map.
   */
@@ -888,12 +894,12 @@ static LinkedListInfo *AcquireColorCache(const char *filename,
     color_info->compliance=(ComplianceType) p->compliance;
     color_info->exempt=MagickTrue;
     color_info->signature=MagickSignature;
-    status&=AppendValueToLinkedList(color_cache,color_info);
+    status&=AppendValueToLinkedList(cache,color_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",color_info->name);
   }
-  return(color_cache);
+  return(cache);
 }
 
 /*
@@ -1158,8 +1164,15 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
   }
   if (compliance == NoCompliance)
     {
+      if (pixel->colorspace == LabColorspace)
+        {
+          (void) FormatLocaleString(component,MaxTextExtent,"%.*g",
+            GetMagickPrecision(),(double) color);
+          (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
+          return;
+        }
       (void) FormatLocaleString(component,MaxTextExtent,"%.*g",
-        GetMagickPrecision(),color);
+        GetMagickPrecision(),(double) ClampToQuantum(color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
@@ -1187,7 +1200,7 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
   if (channel == OpacityChannel)
     {
       (void) FormatLocaleString(component,MaxTextExtent,"%.*g",
-        GetMagickPrecision(),(QuantumScale*color));
+        GetMagickPrecision(),QuantumScale*ClampToQuantum(color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
@@ -1201,17 +1214,26 @@ MagickExport void ConcatenateColorComponent(const MagickPixelPacket *pixel,
     {
       if (channel == RedChannel)
         (void) FormatLocaleString(component,MaxTextExtent,"%.*g",
-          GetMagickPrecision(),(360.0*QuantumScale*color));
+          GetMagickPrecision(),(double) ClampToQuantum(360.0*QuantumScale*
+            color));
       else
         (void) FormatLocaleString(component,MaxTextExtent,"%.*g%%",
-          GetMagickPrecision(),(100.0*QuantumScale*color));
+          GetMagickPrecision(),(double) ClampToQuantum(100.0*QuantumScale*
+            color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
-  if ((pixel->colorspace == LabColorspace) || (pixel->depth > 8))
+  if (pixel->colorspace == LabColorspace)
     {
       (void) FormatLocaleString(component,MaxTextExtent,"%.*g%%",
-        GetMagickPrecision(),(100.0*QuantumScale*color));
+        GetMagickPrecision(),100.0*QuantumScale*color);
+      (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
+      return;
+    }
+  if (pixel->depth > 8)
+    {
+      (void) FormatLocaleString(component,MaxTextExtent,"%.*g%%",
+        GetMagickPrecision(),(double) ClampToQuantum(100.0*QuantumScale*color));
       (void) ConcatenateMagickString(tuple,component,MaxTextExtent);
       return;
     }
@@ -2178,7 +2200,7 @@ MagickExport MagickBooleanType ListColorInfo(FILE *file,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   L o a d C o l o r L i s t                                                 %
++   L o a d C o l o r C a c h e                                               %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -2189,9 +2211,8 @@ MagickExport MagickBooleanType ListColorInfo(FILE *file,
 %
 %  The format of the LoadColorCache method is:
 %
-%      MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
-%        const char *xml,const char *filename,const size_t depth,
-%        ExceptionInfo *exception)
+%      MagickBooleanType LoadColorCache(LinkedListInfo *cache,const char *xml,
+%        const char *filename,const size_t depth,ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -2204,9 +2225,8 @@ MagickExport MagickBooleanType ListColorInfo(FILE *file,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
-  const char *xml,const char *filename,const size_t depth,
-  ExceptionInfo *exception)
+static MagickBooleanType LoadColorCache(LinkedListInfo *cache,const char *xml,
+  const char *filename,const size_t depth,ExceptionInfo *exception)
 {
   char
     keyword[MaxTextExtent],
@@ -2221,6 +2241,9 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
   MagickStatusType
     status;
 
+  size_t
+    extent;
+
   /*
     Load the color map file.
   */
@@ -2231,12 +2254,13 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
   status=MagickTrue;
   color_info=(ColorInfo *) NULL;
   token=AcquireString(xml);
+  extent=strlen(token)+MaxTextExtent;
   for (q=(char *) xml; *q != '\0'; )
   {
     /*
       Interpret XML.
     */
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
     if (*token == '\0')
       break;
     (void) CopyMagickString(keyword,token,MaxTextExtent);
@@ -2246,7 +2270,7 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
           Doctype element.
         */
         while ((LocaleNCompare(q,"]>",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleNCompare(keyword,"<!--",4) == 0)
@@ -2255,7 +2279,7 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
           Comment element.
         */
         while ((LocaleNCompare(q,"->",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleCompare(keyword,"<include") == 0)
@@ -2266,10 +2290,10 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
         while (((*token != '/') && (*(token+1) != '>')) && (*q != '\0'))
         {
           (void) CopyMagickString(keyword,token,MaxTextExtent);
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (*token != '=')
             continue;
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
               if (depth > 200)
@@ -2292,8 +2316,7 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
                   xml=FileToXML(path,~0UL);
                   if (xml != (char *) NULL)
                     {
-                      status&=LoadColorCache(color_cache,xml,path,depth+1,
-                        exception);
+                      status&=LoadColorCache(cache,xml,path,depth+1,exception);
                       xml=(char *) RelinquishMagickMemory(xml);
                     }
                 }
@@ -2319,7 +2342,7 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
       continue;
     if (LocaleCompare(keyword,"/>") == 0)
       {
-        status=AppendValueToLinkedList(color_cache,color_info);
+        status=AppendValueToLinkedList(cache,color_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
@@ -2327,11 +2350,11 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *color_cache,
         color_info=(ColorInfo *) NULL;
         continue;
       }
-    GetMagickToken(q,(const char **) NULL,token);
+    GetNextToken(q,(const char **) NULL,extent,token);
     if (*token != '=')
       continue;
-    GetMagickToken(q,&q,token);
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
+    GetNextToken(q,&q,extent,token);
     switch (*keyword)
     {
       case 'C':

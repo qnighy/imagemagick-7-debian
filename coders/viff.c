@@ -57,6 +57,7 @@
 #include "magick/list.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/pixel-accessor.h"
@@ -305,8 +306,8 @@ static Image *ReadVIFFImage(const ImageInfo *image_info,
     viff_info.rows=ReadBlobLong(image);
     viff_info.columns=ReadBlobLong(image);
     viff_info.subrows=ReadBlobLong(image);
-    viff_info.x_offset=(int) ReadBlobLong(image);
-    viff_info.y_offset=(int) ReadBlobLong(image);
+    viff_info.x_offset=ReadBlobSignedLong(image);
+    viff_info.y_offset=ReadBlobSignedLong(image);
     viff_info.x_bits_per_pixel=(float) ReadBlobLong(image);
     viff_info.y_bits_per_pixel=(float) ReadBlobLong(image);
     viff_info.location_type=ReadBlobLong(image);
@@ -409,6 +410,9 @@ static Image *ReadVIFFImage(const ImageInfo *image_info,
         image->colors=viff_info.map_columns;
         if (AcquireImageColormap(image,image->colors) == MagickFalse)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        if (viff_info.map_rows >
+            (viff_info.map_rows*bytes_per_pixel*sizeof(*viff_colormap)))
+          ThrowReaderException(CorruptImageError,"ImproperImageHeader");
         viff_colormap=(unsigned char *) AcquireQuantumMemory(image->colors,
           viff_info.map_rows*bytes_per_pixel*sizeof(*viff_colormap));
         if (viff_colormap == (unsigned char *) NULL)
@@ -500,11 +504,19 @@ static Image *ReadVIFFImage(const ImageInfo *image_info,
       default: bytes_per_pixel=1; break;
     }
     if (viff_info.data_storage_type == VFF_TYP_BIT)
-      max_packets=((image->columns+7UL) >> 3UL)*image->rows;
+      {
+        if (HeapOverflowSanityCheck((image->columns+7UL) >> 3UL,image->rows) != MagickFalse)
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        max_packets=((image->columns+7UL) >> 3UL)*image->rows;
+      }
     else
-      max_packets=(size_t) (number_pixels*viff_info.number_data_bands);
-    pixels=(unsigned char *) AcquireQuantumMemory(max_packets,
-      bytes_per_pixel*sizeof(*pixels));
+      {
+        if (HeapOverflowSanityCheck(number_pixels,viff_info.number_data_bands) != MagickFalse)
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        max_packets=(size_t) (number_pixels*viff_info.number_data_bands);
+      }
+    pixels=(unsigned char *) AcquireQuantumMemory(MagickMax(number_pixels,
+      max_packets),bytes_per_pixel*sizeof(*pixels));
     if (pixels == (unsigned char *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
     (void) ReadBlob(image,bytes_per_pixel*max_packets,pixels);

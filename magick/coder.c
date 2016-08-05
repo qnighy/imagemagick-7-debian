@@ -128,6 +128,7 @@ static const CoderMapInfo
     { "FTP", "URL" },
     { "FTS", "FITS" },
     { "G3", "FAX" },
+    { "G4", "FAX" },
     { "GIF87", "GIF" },
     { "G", "RAW" },
     { "GRANITE", "MAGICK" },
@@ -319,12 +320,6 @@ static void *DestroyCoderNode(void *coder_info)
 static SplayTreeInfo *AcquireCoderCache(const char *filename,
   ExceptionInfo *exception)
 {
-  const StringInfo
-    *option;
-
-  LinkedListInfo
-    *options;
-
   MagickStatusType
     status;
 
@@ -332,25 +327,35 @@ static SplayTreeInfo *AcquireCoderCache(const char *filename,
     i;
 
   SplayTreeInfo
-    *coder_cache;
+    *cache;
 
   /*
     Load external coder map.
   */
-  coder_cache=NewSplayTree(CompareSplayTreeString,RelinquishMagickMemory,
+  cache=NewSplayTree(CompareSplayTreeString,RelinquishMagickMemory,
     DestroyCoderNode);
-  if (coder_cache == (SplayTreeInfo *) NULL)
+  if (cache == (SplayTreeInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   status=MagickTrue;
-  options=GetConfigureOptions(filename,exception);
-  option=(const StringInfo *) GetNextValueInLinkedList(options);
-  while (option != (const StringInfo *) NULL)
+#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
   {
-    status&=LoadCoderCache(coder_cache,(const char *)
-      GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+    const StringInfo
+      *option;
+
+    LinkedListInfo
+      *options;
+
+    options=GetConfigureOptions(filename,exception);
     option=(const StringInfo *) GetNextValueInLinkedList(options);
+    while (option != (const StringInfo *) NULL)
+    {
+      status&=LoadCoderCache(cache,(const char *)
+        GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+      option=(const StringInfo *) GetNextValueInLinkedList(options);
+    }
+    options=DestroyConfigureOptions(options);
   }
-  options=DestroyConfigureOptions(options);
+#endif
   /*
     Load built-in coder map.
   */
@@ -376,13 +381,13 @@ static SplayTreeInfo *AcquireCoderCache(const char *filename,
     coder_info->name=(char *) p->name;
     coder_info->exempt=MagickTrue;
     coder_info->signature=MagickSignature;
-    status&=AddValueToSplayTree(coder_cache,ConstantString(coder_info->magick),
+    status&=AddValueToSplayTree(cache,ConstantString(coder_info->magick),
       coder_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",coder_info->name);
   }
-  return(coder_cache);
+  return(cache);
 }
 
 /*
@@ -774,7 +779,7 @@ MagickExport MagickBooleanType ListCoderInfo(FILE *file,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   L o a d C o d e r L i s t                                                 %
++   L o a d C o d e r C a c h e                                               %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -785,9 +790,8 @@ MagickExport MagickBooleanType ListCoderInfo(FILE *file,
 %
 %  The format of the LoadCoderCache coder is:
 %
-%      MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
-%        const char *xml,const char *filename,const size_t depth,
-%        ExceptionInfo *exception)
+%      MagickBooleanType LoadCoderCache(SplayTreeInfo *cache,const char *xml,
+%        const char *filename,const size_t depth,ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -800,9 +804,8 @@ MagickExport MagickBooleanType ListCoderInfo(FILE *file,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
-  const char *xml,const char *filename,const size_t depth,
-  ExceptionInfo *exception)
+static MagickBooleanType LoadCoderCache(SplayTreeInfo *cache,const char *xml,
+  const char *filename,const size_t depth,ExceptionInfo *exception)
 {
   char
     keyword[MaxTextExtent],
@@ -817,6 +820,9 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
   MagickStatusType
     status;
 
+  size_t
+    extent;
+
   /*
     Load the coder map file.
   */
@@ -827,12 +833,13 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
   status=MagickTrue;
   coder_info=(CoderInfo *) NULL;
   token=AcquireString(xml);
+  extent=strlen(token)+MaxTextExtent;
   for (q=(char *) xml; *q != '\0'; )
   {
     /*
       Interpret XML.
     */
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
     if (*token == '\0')
       break;
     (void) CopyMagickString(keyword,token,MaxTextExtent);
@@ -842,7 +849,7 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
           Doctype element.
         */
         while ((LocaleNCompare(q,"]>",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleNCompare(keyword,"<!--",4) == 0)
@@ -851,7 +858,7 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
           Comment element.
         */
         while ((LocaleNCompare(q,"->",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleCompare(keyword,"<include") == 0)
@@ -862,10 +869,10 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
         while (((*token != '/') && (*(token+1) != '>')) && (*q != '\0'))
         {
           (void) CopyMagickString(keyword,token,MaxTextExtent);
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (*token != '=')
             continue;
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
               if (depth > 200)
@@ -888,7 +895,7 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
                   xml=FileToXML(path,~0UL);
                   if (xml != (char *) NULL)
                     {
-                      status&=LoadCoderCache(coder_cache,xml,path,depth+1,
+                      status&=LoadCoderCache(cache,xml,path,depth+1,
                         exception);
                       xml=(char *) RelinquishMagickMemory(xml);
                     }
@@ -915,7 +922,7 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
       continue;
     if (LocaleCompare(keyword,"/>") == 0)
       {
-        status=AddValueToSplayTree(coder_cache,ConstantString(
+        status=AddValueToSplayTree(cache,ConstantString(
           coder_info->magick),coder_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
@@ -924,11 +931,11 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *coder_cache,
         coder_info=(CoderInfo *) NULL;
         continue;
       }
-    GetMagickToken(q,(const char **) NULL,token);
+    GetNextToken(q,(const char **) NULL,extent,token);
     if (*token != '=')
       continue;
-    GetMagickToken(q,&q,token);
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
+    GetNextToken(q,&q,extent,token);
     switch (*keyword)
     {
       case 'M':

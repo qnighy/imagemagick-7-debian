@@ -253,12 +253,8 @@ static MagickBooleanType
 static LinkedListInfo *AcquireLogCache(const char *filename,
   ExceptionInfo *exception)
 {
-  const StringInfo
-    *option;
-
   LinkedListInfo
-    *log_cache,
-    *options;
+    *cache;
 
   MagickStatusType
     status;
@@ -269,19 +265,29 @@ static LinkedListInfo *AcquireLogCache(const char *filename,
   /*
     Load external log map.
   */
-  log_cache=NewLinkedList(0);
-  if (log_cache == (LinkedListInfo *) NULL)
+  cache=NewLinkedList(0);
+  if (cache == (LinkedListInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   status=MagickTrue;
-  options=GetConfigureOptions(filename,exception);
-  option=(const StringInfo *) GetNextValueInLinkedList(options);
-  while (option != (const StringInfo *) NULL)
+#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
   {
-    status&=LoadLogCache(log_cache,(const char *) GetStringInfoDatum(option),
-      GetStringInfoPath(option),0,exception);
+    const StringInfo
+      *option;
+
+    LinkedListInfo
+      *options;
+
+    options=GetConfigureOptions(filename,exception);
     option=(const StringInfo *) GetNextValueInLinkedList(options);
+    while (option != (const StringInfo *) NULL)
+    {
+      status&=LoadLogCache(cache,(const char *) GetStringInfoDatum(option),
+        GetStringInfoPath(option),0,exception);
+      option=(const StringInfo *) GetNextValueInLinkedList(options);
+    }
+    options=DestroyConfigureOptions(options);
   }
-  options=DestroyConfigureOptions(options);
+#endif
   /*
     Load built-in log map.
   */
@@ -309,12 +315,12 @@ static LinkedListInfo *AcquireLogCache(const char *filename,
     log_info->filename=ConstantString(p->filename);
     log_info->format=ConstantString(p->format);
     log_info->signature=MagickSignature;
-    status&=AppendValueToLinkedList(log_cache,log_info);
+    status&=AppendValueToLinkedList(cache,log_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",log_info->name);
   }
-  return(log_cache);
+  return(cache);
 }
 
 /*
@@ -922,8 +928,8 @@ MagickExport void LogComponentTerminus(void)
 %
 */
 static char *TranslateEvent(const LogEventType magick_unused(type),
-  const char *module,const char *function,const size_t line,
-  const char *domain,const char *event)
+  const char *module,const char *function,const size_t line,const char *domain,
+  const char *event)
 {
   char
     *text;
@@ -1396,7 +1402,7 @@ MagickBooleanType LogMagickEvent(const LogEventType type,const char *module,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   L o a d L o g L i s t                                                     %
++   L o a d L o g C a c h e                                                   %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -1407,7 +1413,7 @@ MagickBooleanType LogMagickEvent(const LogEventType type,const char *module,
 %
 %  The format of the LoadLogCache method is:
 %
-%      MagickBooleanType LoadLogCache(LinkedListInfo *log_cache,const char *xml,
+%      MagickBooleanType LoadLogCache(LinkedListInfo *cache,const char *xml,
 %        const char *filename,const size_t depth,ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
@@ -1421,7 +1427,7 @@ MagickBooleanType LogMagickEvent(const LogEventType type,const char *module,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static MagickBooleanType LoadLogCache(LinkedListInfo *log_cache,const char *xml,
+static MagickBooleanType LoadLogCache(LinkedListInfo *cache,const char *xml,
   const char *filename,const size_t depth,ExceptionInfo *exception)
 {
   char
@@ -1437,19 +1443,23 @@ static MagickBooleanType LoadLogCache(LinkedListInfo *log_cache,const char *xml,
   MagickStatusType
     status;
 
+  size_t
+    extent;
+
   /*
     Load the log map file.
   */
   if (xml == (const char *) NULL)
     return(MagickFalse);
   status=MagickTrue;
-  token=AcquireString((const char *) xml);
+  token=AcquireString(xml);
+  extent=strlen(token)+MaxTextExtent;
   for (q=(const char *) xml; *q != '\0'; )
   {
     /*
       Interpret XML.
     */
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
     if (*token == '\0')
       break;
     (void) CopyMagickString(keyword,token,MaxTextExtent);
@@ -1459,7 +1469,7 @@ static MagickBooleanType LoadLogCache(LinkedListInfo *log_cache,const char *xml,
           Doctype element.
         */
         while ((LocaleNCompare(q,"]>",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleNCompare(keyword,"<!--",4) == 0)
@@ -1468,7 +1478,7 @@ static MagickBooleanType LoadLogCache(LinkedListInfo *log_cache,const char *xml,
           Comment element.
         */
         while ((LocaleNCompare(q,"->",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleCompare(keyword,"<include") == 0)
@@ -1479,10 +1489,10 @@ static MagickBooleanType LoadLogCache(LinkedListInfo *log_cache,const char *xml,
         while (((*token != '/') && (*(token+1) != '>')) && (*q != '\0'))
         {
           (void) CopyMagickString(keyword,token,MaxTextExtent);
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (*token != '=')
             continue;
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
               if (depth > 200)
@@ -1505,7 +1515,7 @@ static MagickBooleanType LoadLogCache(LinkedListInfo *log_cache,const char *xml,
                   xml=FileToXML(path,~0UL);
                   if (xml != (char *) NULL)
                     {
-                      status&=LoadLogCache(log_cache,xml,path,depth+1,
+                      status&=LoadLogCache(cache,xml,path,depth+1,
                         exception);
                       xml=DestroyString(xml);
                     }
@@ -1532,18 +1542,18 @@ static MagickBooleanType LoadLogCache(LinkedListInfo *log_cache,const char *xml,
       continue;
     if (LocaleCompare(keyword,"</logmap>") == 0)
       {
-        status=AppendValueToLinkedList(log_cache,log_info);
+        status=AppendValueToLinkedList(cache,log_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
             ResourceLimitError,"MemoryAllocationFailed","`%s'",filename);
         log_info=(LogInfo *) NULL;
         continue;
       }
-    GetMagickToken(q,(const char **) NULL,token);
+    GetNextToken(q,(const char **) NULL,extent,token);
     if (*token != '=')
       continue;
-    GetMagickToken(q,&q,token);
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
+    GetNextToken(q,&q,extent,token);
     switch (*keyword)
     {
       case 'E':
@@ -1624,7 +1634,7 @@ static MagickBooleanType LoadLogCache(LinkedListInfo *log_cache,const char *xml,
     }
   }
   token=DestroyString(token);
-  if (log_cache == (LinkedListInfo *) NULL)
+  if (cache == (LinkedListInfo *) NULL)
     return(MagickFalse);
   return(status != 0 ? MagickTrue : MagickFalse);
 }

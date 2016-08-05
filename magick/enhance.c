@@ -458,9 +458,9 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
           p=(const char *) content;
           for (i=0; (*p != '\0') && (i < 3); i++)
           {
-            GetMagickToken(p,&p,token);
+            GetNextToken(p,&p,MaxTextExtent,token);
             if (*token == ',')
-              GetMagickToken(p,&p,token);
+              GetNextToken(p,&p,MaxTextExtent,token);
             switch (i)
             {
               case 0:
@@ -490,9 +490,9 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
           p=(const char *) content;
           for (i=0; (*p != '\0') && (i < 3); i++)
           {
-            GetMagickToken(p,&p,token);
+            GetNextToken(p,&p,MaxTextExtent,token);
             if (*token == ',')
-              GetMagickToken(p,&p,token);
+              GetNextToken(p,&p,MaxTextExtent,token);
             switch (i)
             {
               case 0:
@@ -523,9 +523,9 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
           p=(const char *) content;
           for (i=0; (*p != '\0') && (i < 3); i++)
           {
-            GetMagickToken(p,&p,token);
+            GetNextToken(p,&p,MaxTextExtent,token);
             if (*token == ',')
-              GetMagickToken(p,&p,token);
+              GetNextToken(p,&p,MaxTextExtent,token);
             switch (i)
             {
               case 0:
@@ -560,7 +560,7 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
         {
           content=GetXMLTreeContent(saturation);
           p=(const char *) content;
-          GetMagickToken(p,&p,token);
+          GetNextToken(p,&p,MaxTextExtent,token);
           color_correction.saturation=StringToDouble(token,(char **) NULL);
         }
     }
@@ -2904,7 +2904,9 @@ static inline double LevelPixel(const double black_point,
     level_pixel,
     scale;
 
-  scale=(white_point != black_point) ? 1.0/(white_point-black_point) : 1.0;
+  if (fabs(white_point-black_point) < MagickEpsilon)
+    return(pixel);
+  scale=1.0/(white_point-black_point);
   level_pixel=QuantumRange*gamma_pow(scale*((double) pixel-black_point),1.0/
     gamma);
   return(level_pixel);

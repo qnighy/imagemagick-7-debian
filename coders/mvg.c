@@ -217,6 +217,8 @@ static Image *ReadMVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
           draw_info->primitive[GetBlobSize(image)]='\0';
         }
      }
+  if (draw_info->primitive == (char *) NULL)
+    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   (void) DrawImage(image,draw_info);
   draw_info=DestroyDrawInfo(draw_info);
   (void) CloseBlob(image);
@@ -257,6 +259,7 @@ ModuleExport size_t RegisterMVGImage(void)
   entry->magick=(IsImageFormatHandler *) IsMVG;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Magick Vector Graphics");
   entry->module=ConstantString("MVG");
   (void) RegisterMagickInfo(entry);

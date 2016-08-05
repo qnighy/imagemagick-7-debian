@@ -546,6 +546,8 @@ static MagickBooleanType GetMagickModulePath(const char *filename,
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",filename);
   assert(path != (char *) NULL);
   assert(exception != (ExceptionInfo *) NULL);
+  if (strchr(filename,'/') != (char *) NULL)
+    return(MagickFalse);
   (void) CopyMagickString(path,filename,MaxTextExtent);
   module_path=(char *) NULL;
   switch (module_type)

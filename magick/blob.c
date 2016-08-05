@@ -928,7 +928,7 @@ MagickExport int EOFBlob(const Image *image)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   F i l e T o B l o b                                                       %
+%   F i l e T o B l o b                                                       %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -2049,7 +2049,7 @@ MagickExport MagickBooleanType InjectImageBlob(const ImageInfo *image_info,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   I s B l o b E x e m p t                                                   %
+%   I s B l o b E x e m p t                                                   %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -2129,7 +2129,7 @@ MagickExport MagickBooleanType IsBlobSeekable(const Image *image)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   I s B l o b T e m p o r a r y                                             %
+%   I s B l o b T e m p o r a r y                                             %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -2374,7 +2374,6 @@ MagickExport void MSBOrderShort(unsigned char *p,const size_t length)
 %    o mode: the mode for opening the file.
 %
 */
-
 static inline MagickBooleanType SetStreamBuffering(const ImageInfo *image_info,
   Image *image)
 {
@@ -2491,11 +2490,12 @@ MagickExport MagickBooleanType OpenBlob(const ImageInfo *image_info,
       image->blob->exempt=MagickTrue;
       return(SetStreamBuffering(image_info,image));
     }
-#if defined(MAGICKCORE_HAVE_POPEN)
+#if defined(MAGICKCORE_HAVE_POPEN) && defined(MAGICKCORE_PIPES_SUPPORT)
   if (*filename == '|')
     {
       char
-        mode[MaxTextExtent];
+        fileMode[MaxTextExtent],
+        *sanitize_command;
 
       /*
         Pipe image to or from a system command.
@@ -2504,9 +2504,12 @@ MagickExport MagickBooleanType OpenBlob(const ImageInfo *image_info,
       if (*type == 'w')
         (void) signal(SIGPIPE,SIG_IGN);
 #endif
-      *mode=(*type);
-      mode[1]='\0';
-      image->blob->file_info.file=(FILE *) popen_utf8(filename+1,mode);
+      *fileMode=(*type);
+      fileMode[1]='\0';
+      sanitize_command=SanitizeString(filename+1);
+      image->blob->file_info.file=(FILE *) popen_utf8(sanitize_command,
+        fileMode);
+      sanitize_command=DestroyString(sanitize_command);
       if (image->blob->file_info.file == (FILE *) NULL)
         {
           ThrowFileException(exception,BlobError,"UnableToOpenBlob",filename);
@@ -2514,7 +2517,7 @@ MagickExport MagickBooleanType OpenBlob(const ImageInfo *image_info,
         }
       image->blob->type=PipeStream;
       image->blob->exempt=MagickTrue;
-			return(SetStreamBuffering(image_info,image));
+      return(SetStreamBuffering(image_info,image));
     }
 #endif
   status=GetPathAttributes(filename,&image->blob->properties);
@@ -3108,8 +3111,8 @@ MagickExport float ReadBlobFloat(Image *image)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  ReadBlobLong() reads a ssize_t value as a 32-bit quantity in the byte-order
-%  specified by the endian member of the image structure.
+%  ReadBlobLong() reads a unsigned int value as a 32-bit quantity in the
+%  byte-order specified by the endian member of the image structure.
 %
 %  The format of the ReadBlobLong method is:
 %
@@ -3143,16 +3146,16 @@ MagickExport unsigned int ReadBlobLong(Image *image)
   if (image->endian == LSBEndian)
     {
       value=(unsigned int) (*p++);
-      value|=((unsigned int) (*p++)) << 8;
-      value|=((unsigned int) (*p++)) << 16;
-      value|=((unsigned int) (*p++)) << 24;
-      return(value);
+      value|=(unsigned int) (*p++) << 8;
+      value|=(unsigned int) (*p++) << 16;
+      value|=(unsigned int) (*p++) << 24;
+      return(value & 0xffffffff);
     }
-  value=((unsigned int) (*p++)) << 24;
-  value|=((unsigned int) (*p++)) << 16;
-  value|=((unsigned int) (*p++)) << 8;
-  value|=((unsigned int) (*p++));
-  return(value);
+  value=(unsigned int) (*p++) << 24;
+  value|=(unsigned int) (*p++) << 16;
+  value|=(unsigned int) (*p++) << 8;
+  value|=(unsigned int) (*p++);
+  return(value & 0xffffffff);
 }
 
 /*
@@ -3201,23 +3204,23 @@ MagickExport MagickSizeType ReadBlobLongLong(Image *image)
   if (image->endian == LSBEndian)
     {
       value=(MagickSizeType) (*p++);
-      value|=((MagickSizeType) (*p++)) << 8;
-      value|=((MagickSizeType) (*p++)) << 16;
-      value|=((MagickSizeType) (*p++)) << 24;
-      value|=((MagickSizeType) (*p++)) << 32;
-      value|=((MagickSizeType) (*p++)) << 40;
-      value|=((MagickSizeType) (*p++)) << 48;
-      value|=((MagickSizeType) (*p++)) << 56;
+      value|=(MagickSizeType) (*p++) << 8;
+      value|=(MagickSizeType) (*p++) << 16;
+      value|=(MagickSizeType) (*p++) << 24;
+      value|=(MagickSizeType) (*p++) << 32;
+      value|=(MagickSizeType) (*p++) << 40;
+      value|=(MagickSizeType) (*p++) << 48;
+      value|=(MagickSizeType) (*p++) << 56;
       return(value & MagickULLConstant(0xffffffffffffffff));
     }
-  value=((MagickSizeType) (*p++)) << 56;
-  value|=((MagickSizeType) (*p++)) << 48;
-  value|=((MagickSizeType) (*p++)) << 40;
-  value|=((MagickSizeType) (*p++)) << 32;
-  value|=((MagickSizeType) (*p++)) << 24;
-  value|=((MagickSizeType) (*p++)) << 16;
-  value|=((MagickSizeType) (*p++)) << 8;
-  value|=((MagickSizeType) (*p++));
+  value=(MagickSizeType) (*p++) << 56;
+  value|=(MagickSizeType) (*p++) << 48;
+  value|=(MagickSizeType) (*p++) << 40;
+  value|=(MagickSizeType) (*p++) << 32;
+  value|=(MagickSizeType) (*p++) << 24;
+  value|=(MagickSizeType) (*p++) << 16;
+  value|=(MagickSizeType) (*p++) << 8;
+  value|=(MagickSizeType) (*p++);
   return(value & MagickULLConstant(0xffffffffffffffff));
 }
 
@@ -3249,7 +3252,7 @@ MagickExport unsigned short ReadBlobShort(Image *image)
   register const unsigned char
     *p;
 
-  register unsigned int
+  register unsigned short
     value;
 
   ssize_t
@@ -3266,13 +3269,13 @@ MagickExport unsigned short ReadBlobShort(Image *image)
     return((unsigned short) 0U);
   if (image->endian == LSBEndian)
     {
-      value=(unsigned int) (*p++);
-      value|=((unsigned int) (*p++)) << 8;
-      return((unsigned short) (value & 0xffff));
+      value=(unsigned short) (*p++);
+      value|=(unsigned short) (*p++) << 8;
+      return(value);
     }
-  value=(unsigned int) ((*p++) << 8);
-  value|=(unsigned int) (*p++);
-  return((unsigned short) (value & 0xffff));
+  value=(unsigned short) (*p++) << 8;
+  value|=(unsigned short) (*p++);
+  return(value);
 }
 
 /*
@@ -3286,7 +3289,7 @@ MagickExport unsigned short ReadBlobShort(Image *image)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  ReadBlobLSBLong() reads a ssize_t value as a 32-bit quantity in
+%  ReadBlobLSBLong() reads a unsigned int value as a 32-bit quantity in
 %  least-significant byte first order.
 %
 %  The format of the ReadBlobLSBLong method is:
@@ -3319,10 +3322,48 @@ MagickExport unsigned int ReadBlobLSBLong(Image *image)
   if (count != 4)
     return(0U);
   value=(unsigned int) (*p++);
-  value|=((unsigned int) (*p++)) << 8;
-  value|=((unsigned int) (*p++)) << 16;
-  value|=((unsigned int) (*p++)) << 24;
-  return(value);
+  value|=(unsigned int) (*p++) << 8;
+  value|=(unsigned int) (*p++) << 16;
+  value|=(unsigned int) (*p++) << 24;
+  return(value & 0xffffffff);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++  R e a d B l o b L S B S i g n e d L o n g                                  %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ReadBlobLSBSignedLong() reads a signed int value as a 32-bit quantity in
+%  least-significant byte first order.
+%
+%  The format of the ReadBlobLSBSignedLong method is:
+%
+%      signed int ReadBlobLSBSignedLong(Image *image)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+*/
+MagickExport signed int ReadBlobLSBSignedLong(Image *image)
+{
+  union
+  {
+    unsigned int
+      unsigned_value;
+
+    signed int
+      signed_value;
+  } quantum;
+
+  quantum.unsigned_value=ReadBlobLSBLong(image);
+  return(quantum.signed_value);
 }
 
 /*
@@ -3353,7 +3394,7 @@ MagickExport unsigned short ReadBlobLSBShort(Image *image)
   register const unsigned char
     *p;
 
-  register unsigned int
+  register unsigned short
     value;
 
   ssize_t
@@ -3368,9 +3409,47 @@ MagickExport unsigned short ReadBlobLSBShort(Image *image)
   p=(const unsigned char *) ReadBlobStream(image,2,buffer,&count);
   if (count != 2)
     return((unsigned short) 0U);
-  value=(unsigned int) (*p++);
-  value|=((unsigned int) ((*p++)) << 8);
-  return((unsigned short) (value & 0xffff));
+  value=(unsigned short) (*p++);
+  value|=(unsigned short) (*p++) << 8;
+  return(value & 0xffff);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++  R e a d B l o b L S B S i g n e d S h o r t                                %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ReadBlobLSBSignedShort() reads a signed short value as a 16-bit quantity in
+%  least-significant byte-order.
+%
+%  The format of the ReadBlobLSBSignedShort method is:
+%
+%      signed short ReadBlobLSBSignedShort(Image *image)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+*/
+MagickExport signed short ReadBlobLSBSignedShort(Image *image)
+{
+  union
+  {
+    unsigned short
+      unsigned_value;
+
+    signed short
+      signed_value;
+  } quantum;
+
+  quantum.unsigned_value=ReadBlobLSBShort(image);
+  return(quantum.signed_value);
 }
 
 /*
@@ -3384,7 +3463,7 @@ MagickExport unsigned short ReadBlobLSBShort(Image *image)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  ReadBlobMSBLong() reads a ssize_t value as a 32-bit quantity in
+%  ReadBlobMSBLong() reads a unsigned int value as a 32-bit quantity in
 %  most-significant byte first order.
 %
 %  The format of the ReadBlobMSBLong method is:
@@ -3416,9 +3495,9 @@ MagickExport unsigned int ReadBlobMSBLong(Image *image)
   p=(const unsigned char *) ReadBlobStream(image,4,buffer,&count);
   if (count != 4)
     return(0UL);
-  value=((unsigned int) (*p++) << 24);
-  value|=((unsigned int) (*p++) << 16);
-  value|=((unsigned int) (*p++) << 8);
+  value=(unsigned int) (*p++) << 24;
+  value|=(unsigned int) (*p++) << 16;
+  value|=(unsigned int) (*p++) << 8;
   value|=(unsigned int) (*p++);
   return(value);
 }
@@ -3434,8 +3513,8 @@ MagickExport unsigned int ReadBlobMSBLong(Image *image)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  ReadBlobMSBLongLong() reads a ssize_t value as a 64-bit quantity in
-%  most-significant byte first order.
+%  ReadBlobMSBLongLong() reads a unsigned long int value as a 64-bit quantity
+%  in most-significant byte first order.
 %
 %  The format of the ReadBlobMSBLongLong method is:
 %
@@ -3466,14 +3545,14 @@ MagickExport MagickSizeType ReadBlobMSBLongLong(Image *image)
   p=(const unsigned char *) ReadBlobStream(image,8,buffer,&count);
   if (count != 8)
     return(MagickULLConstant(0));
-  value=((MagickSizeType) (*p++)) << 56;
-  value|=((MagickSizeType) (*p++)) << 48;
-  value|=((MagickSizeType) (*p++)) << 40;
-  value|=((MagickSizeType) (*p++)) << 32;
-  value|=((MagickSizeType) (*p++)) << 24;
-  value|=((MagickSizeType) (*p++)) << 16;
-  value|=((MagickSizeType) (*p++)) << 8;
-  value|=((MagickSizeType) (*p++));
+  value=(MagickSizeType) (*p++) << 56;
+  value|=(MagickSizeType) (*p++) << 48;
+  value|=(MagickSizeType) (*p++) << 40;
+  value|=(MagickSizeType) (*p++) << 32;
+  value|=(MagickSizeType) (*p++) << 24;
+  value|=(MagickSizeType) (*p++) << 16;
+  value|=(MagickSizeType) (*p++) << 8;
+  value|=(MagickSizeType) (*p++);
   return(value & MagickULLConstant(0xffffffffffffffff));
 }
 
@@ -3505,7 +3584,7 @@ MagickExport unsigned short ReadBlobMSBShort(Image *image)
   register const unsigned char
     *p;
 
-  register unsigned int
+  register unsigned short
     value;
 
   ssize_t
@@ -3520,9 +3599,161 @@ MagickExport unsigned short ReadBlobMSBShort(Image *image)
   p=(const unsigned char *) ReadBlobStream(image,2,buffer,&count);
   if (count != 2)
     return((unsigned short) 0U);
-  value=(unsigned int) ((*p++) << 8);
-  value|=(unsigned int) (*p++);
-  return((unsigned short) (value & 0xffff));
+  value=(unsigned short) (*p++) << 8;
+  value|=(unsigned short) (*p++);
+  return(value & 0xffff);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++  R e a d B l o b M S B S i g n e d L o n g                                  %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ReadBlobMSBSignedLong() reads a signed int value as a 32-bit quantity in
+%  most-significant byte-order.
+%
+%  The format of the ReadBlobMSBSignedLong method is:
+%
+%      signed int ReadBlobMSBSignedLong(Image *image)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+*/
+MagickExport signed int ReadBlobMSBSignedLong(Image *image)
+{
+  union
+  {
+    unsigned int
+      unsigned_value;
+
+    signed int
+      signed_value;
+  } quantum;
+
+  quantum.unsigned_value=ReadBlobMSBLong(image);
+  return(quantum.signed_value);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++  R e a d B l o b M S B S i g n e d S h o r t                                %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ReadBlobMSBSignedShort() reads a signed short value as a 16-bit quantity in
+%  most-significant byte-order.
+%
+%  The format of the ReadBlobMSBSignedShort method is:
+%
+%      signed short ReadBlobMSBSignedShort(Image *image)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+*/
+MagickExport signed short ReadBlobMSBSignedShort(Image *image)
+{
+  union
+  {
+    unsigned short
+      unsigned_value;
+
+    signed short
+      signed_value;
+  } quantum;
+
+  quantum.unsigned_value=ReadBlobMSBShort(image);
+  return(quantum.signed_value);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++  R e a d B l o b S i g n e d L o n g                                        %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ReadBlobSignedLong() reads a signed int value as a 32-bit quantity in the
+%  byte-order specified by the endian member of the image structure.
+%
+%  The format of the ReadBlobSignedLong method is:
+%
+%      signed int ReadBlobSignedLong(Image *image)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+*/
+MagickExport signed int ReadBlobSignedLong(Image *image)
+{
+  union
+  {
+    unsigned int
+      unsigned_value;
+
+    signed int
+      signed_value;
+  } quantum;
+
+  quantum.unsigned_value=ReadBlobLong(image);
+  return(quantum.signed_value);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++  R e a d B l o b S i g n e d S h o r t                                      %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ReadBlobSignedShort() reads a signed short value as a 16-bit quantity in the
+%  byte-order specified by the endian member of the image structure.
+%
+%  The format of the ReadBlobSignedShort method is:
+%
+%      signed short ReadBlobSignedShort(Image *image)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+*/
+MagickExport signed short ReadBlobSignedShort(Image *image)
+{
+  union
+  {
+    unsigned short
+      unsigned_value;
+
+    signed short
+      signed_value;
+  } quantum;
+
+  quantum.unsigned_value=ReadBlobShort(image);
+  return(quantum.signed_value);
 }
 
 /*
@@ -3908,8 +4139,15 @@ MagickExport MagickBooleanType SetBlobExtent(Image *image,
         image->blob->file_info.file);
 #if defined(MAGICKCORE_HAVE_POSIX_FALLOCATE)
       if (image->blob->synchronize != MagickFalse)
-        (void) posix_fallocate(fileno(image->blob->file_info.file),offset,
-          extent-offset);
+        {
+          int
+            file;
+
+          file=fileno(image->blob->file_info.file);
+          if ((file == -1) || (offset < 0))
+            return(MagickFalse);
+          (void) posix_fallocate(file,offset,extent-offset);
+        }
 #endif
       offset=SeekBlob(image,offset,SEEK_SET);
       if (count != 1)
@@ -4432,8 +4670,8 @@ MagickExport ssize_t WriteBlobFloat(Image *image,const float value)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  WriteBlobLong() writes a ssize_t value as a 32-bit quantity in the byte-order
-%  specified by the endian member of the image structure.
+%  WriteBlobLong() writes a unsigned int value as a 32-bit quantity in the
+%  byte-order specified by the endian member of the image structure.
 %
 %  The format of the WriteBlobLong method is:
 %
@@ -4522,7 +4760,7 @@ MagickExport ssize_t WriteBlobShort(Image *image,const unsigned short value)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  WriteBlobLSBLong() writes a ssize_t value as a 32-bit quantity in
+%  WriteBlobLSBLong() writes a unsigned int value as a 32-bit quantity in
 %  least-significant byte first order.
 %
 %  The format of the WriteBlobLSBLong method is:
@@ -4561,7 +4799,7 @@ MagickExport ssize_t WriteBlobLSBLong(Image *image,const unsigned int value)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  WriteBlobLSBShort() writes a ssize_t value as a 16-bit quantity in
+%  WriteBlobLSBShort() writes a unsigned short value as a 16-bit quantity in
 %  least-significant byte first order.
 %
 %  The format of the WriteBlobLSBShort method is:
@@ -4592,13 +4830,110 @@ MagickExport ssize_t WriteBlobLSBShort(Image *image,const unsigned short value)
 %                                                                             %
 %                                                                             %
 %                                                                             %
++  W r i t e B l o b L S B S i g n e d L o n g                                %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  WriteBlobLSBSignedLong() writes a signed value as a 32-bit quantity in
+%  least-significant byte first order.
+%
+%  The format of the WriteBlobLSBSignedLong method is:
+%
+%      ssize_t WriteBlobLSBSignedLong(Image *image,const signed int value)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+%    o value: Specifies the value to write.
+%
+*/
+MagickExport ssize_t WriteBlobLSBSignedLong(Image *image,const signed int value)
+{
+  union
+  {
+    unsigned int
+      unsigned_value;
+
+    signed int
+      signed_value;
+  } quantum;
+
+  unsigned char
+    buffer[4];
+
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  quantum.signed_value=value;
+  buffer[0]=(unsigned char) quantum.unsigned_value;
+  buffer[1]=(unsigned char) (quantum.unsigned_value >> 8);
+  buffer[2]=(unsigned char) (quantum.unsigned_value >> 16);
+  buffer[3]=(unsigned char) (quantum.unsigned_value >> 24);
+  return(WriteBlobStream(image,4,buffer));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   W r i t e B l o b L S B S i g n e d S h o r t                             %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  WriteBlobLSBSignedShort() writes a signed short value as a 16-bit quantity
+%  in least-significant byte first order.
+%
+%  The format of the WriteBlobLSBSignedShort method is:
+%
+%      ssize_t WriteBlobLSBSignedShort(Image *image,const signed short value)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+%    o value:  Specifies the value to write.
+%
+*/
+MagickExport ssize_t WriteBlobLSBSignedShort(Image *image,
+  const signed short value)
+{
+  union
+  {
+    unsigned short
+      unsigned_value;
+
+    signed short
+      signed_value;
+  } quantum;
+
+  unsigned char
+    buffer[2];
+
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  quantum.signed_value=value;
+  buffer[0]=(unsigned char) quantum.unsigned_value;
+  buffer[1]=(unsigned char) (quantum.unsigned_value >> 8);
+  return(WriteBlobStream(image,2,buffer));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 +  W r i t e B l o b M S B L o n g                                            %
 %                                                                             %
 %                                                                             %
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  WriteBlobMSBLong() writes a ssize_t value as a 32-bit quantity in
+%  WriteBlobMSBLong() writes a unsigned int value as a 32-bit quantity in
 %  most-significant byte first order.
 %
 %  The format of the WriteBlobMSBLong method is:
@@ -4681,7 +5016,7 @@ MagickExport ssize_t WriteBlobMSBLongLong(Image *image,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  WriteBlobMSBShort() writes a ssize_t value as a 16-bit quantity in
+%  WriteBlobMSBShort() writes a unsigned short value as a 16-bit quantity in
 %  most-significant byte first order.
 %
 %  The format of the WriteBlobMSBShort method is:
@@ -4704,6 +5039,103 @@ MagickExport ssize_t WriteBlobMSBShort(Image *image,const unsigned short value)
   assert(image->signature == MagickSignature);
   buffer[0]=(unsigned char) (value >> 8);
   buffer[1]=(unsigned char) value;
+  return(WriteBlobStream(image,2,buffer));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++  W r i t e B l o b M S B S i g n e d L o n g                                %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  WriteBlobMSBSignedLong() writes a signed value as a 32-bit quantity in
+%  most-significant byte first order.
+%
+%  The format of the WriteBlobMSBSignedLong method is:
+%
+%      ssize_t WriteBlobMSBSignedLong(Image *image,const signed int value)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+%    o value: Specifies the value to write.
+%
+*/
+MagickExport ssize_t WriteBlobMSBSignedLong(Image *image,const signed int value)
+{
+  union
+  {
+    unsigned int
+      unsigned_value;
+
+    signed int
+      signed_value;
+  } quantum;
+
+  unsigned char
+    buffer[4];
+
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  quantum.signed_value=value;
+  buffer[0]=(unsigned char) (quantum.unsigned_value >> 24);
+  buffer[1]=(unsigned char) (quantum.unsigned_value >> 16);
+  buffer[2]=(unsigned char) (quantum.unsigned_value >> 8);
+  buffer[3]=(unsigned char) quantum.unsigned_value;
+  return(WriteBlobStream(image,4,buffer));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   W r i t e B l o b M S B S i g n e d S h o r t                             %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  WriteBlobMSBSignedShort() writes a signed short value as a 16-bit quantity
+%  in most-significant byte first order.
+%
+%  The format of the WriteBlobMSBSignedShort method is:
+%
+%      ssize_t WriteBlobMSBSignedShort(Image *image,const signed short value)
+%
+%  A description of each parameter follows.
+%
+%    o image: the image.
+%
+%    o value:  Specifies the value to write.
+%
+*/
+MagickExport ssize_t WriteBlobMSBSignedShort(Image *image,
+  const signed short value)
+{
+  union
+  {
+    unsigned short
+      unsigned_value;
+
+    signed short
+      signed_value;
+  } quantum;
+
+  unsigned char
+    buffer[2];
+
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickSignature);
+  quantum.signed_value=value;
+  buffer[0]=(unsigned char) (quantum.unsigned_value >> 8);
+  buffer[1]=(unsigned char) quantum.unsigned_value;
   return(WriteBlobStream(image,2,buffer));
 }
 

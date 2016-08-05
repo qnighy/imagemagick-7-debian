@@ -356,16 +356,16 @@ static Image *ReadPDBImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Read record header.
   */
-  img_offset=(ssize_t) ((int) ReadBlobMSBLong(image));
-  attributes=(unsigned char) ((int) ReadBlobByte(image));
+  img_offset=(ssize_t) ReadBlobMSBSignedLong(image);
+  attributes=(unsigned char) (ReadBlobByte(image));
   (void) attributes;
   count=ReadBlob(image,3,(unsigned char *) tag);
   if (count != 3  ||  memcmp(tag,"\x6f\x80\x00",3) != 0)
     ThrowReaderException(CorruptImageError,"CorruptImage");
   if (pdb_info.number_records > 1)
     {
-      comment_offset=(ssize_t) ((int) ReadBlobMSBLong(image));
-      attributes=(unsigned char) ((int) ReadBlobByte(image));
+      comment_offset=(ssize_t) ReadBlobMSBSignedLong(image);
+      attributes=(unsigned char) (ReadBlobByte(image));
       count=ReadBlob(image,3,(unsigned char *) tag);
       if (count != 3  ||  memcmp(tag,"\x6f\x80\x01",3) != 0)
         ThrowReaderException(CorruptImageError,"CorruptImage");
@@ -420,7 +420,7 @@ static Image *ReadPDBImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return(DestroyImageList(image));
     }
   packets=(bits_per_pixel*image->columns+7)/8;
-  pixels=(unsigned char *) AcquireQuantumMemory(packets+256UL,image->rows*
+  pixels=(unsigned char *) AcquireQuantumMemory(packets+257UL,image->rows*
     sizeof(*pixels));
   if (pixels == (unsigned char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -818,11 +818,11 @@ static MagickBooleanType WritePDBImage(const ImageInfo *image_info,Image *image)
     pdb_image.width=(short) (16*(image->columns/16+1));
   pdb_image.height=(short) image->rows;
   packets=((bits_per_pixel*image->columns+7)/8);
-  runlength=(unsigned char *) AcquireQuantumMemory(2UL*packets,
+  runlength=(unsigned char *) AcquireQuantumMemory(9UL*packets,
     image->rows*sizeof(*runlength));
   if (runlength == (unsigned char *) NULL)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
-  buffer=(unsigned char *) AcquireQuantumMemory(256UL,sizeof(*buffer));
+  buffer=(unsigned char *) AcquireQuantumMemory(512,sizeof(*buffer));
   if (buffer == (unsigned char *) NULL)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
   packet_size=(size_t) (image->depth > 8 ? 2: 1);

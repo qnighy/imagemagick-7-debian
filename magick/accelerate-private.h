@@ -16,8 +16,8 @@
   MagickCore private methods for accelerated functions.
 */
 
-#ifndef _MAGICKCORE_ACCELERATE_PRIVATE_H
-#define _MAGICKCORE_ACCELERATE_PRIVATE_H
+#ifndef MAGICKCORE_ACCELERATE_PRIVATE_H
+#define MAGICKCORE_ACCELERATE_PRIVATE_H
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -71,6 +71,8 @@ const char* accelerateKernels =
   OPENCL_DEFINE(SigmaPoisson, (attenuate*12.5f))
   OPENCL_DEFINE(SigmaRandom, (attenuate))
   OPENCL_DEFINE(TauGaussian, (attenuate*0.078125f))
+  OPENCL_DEFINE(MagickMax(x, y), (((x) > (y)) ? (x) : (y)))
+  OPENCL_DEFINE(MagickMin(x, y), (((x) < (y)) ? (x) : (y)))
 
 /*
   Typedef declarations.
@@ -407,13 +409,13 @@ STRINGIFY(
     }
     case BrightnessPixelIntensityMethod:
     {
-      intensity = max(max(red, green), blue);
+      intensity = MagickMax(MagickMax(red, green), blue);
       break;
     }
     case LightnessPixelIntensityMethod:
     {
-      intensity = (min(min(red, green), blue) +
-        max(max(red, green), blue)) / 2.0;
+      intensity = (MagickMin(MagickMin(red, green), blue) +
+        MagickMax(MagickMax(red, green), blue)) / 2.0;
       break;
     }
     case MSPixelIntensityMethod:
@@ -893,90 +895,6 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
 
     STRINGIFY(
       /*
-      Reduce image noise and reduce detail levels by row
-      im: input pixels filtered_in  filtered_im: output pixels
-      filter : convolve kernel  width: convolve kernel size
-      channel : define which channel is blured
-      is_RGBA_BGRA : define the input is RGBA or BGRA
-      */
-      __kernel void BlurRowSection(__global CLPixelType *im, __global float4 *filtered_im,
-                         const ChannelType channel, __constant float *filter,
-                         const unsigned int width, 
-                         const unsigned int imageColumns, const unsigned int imageRows,
-                         __local CLPixelType *temp, 
-                         const unsigned int offsetRows, const unsigned int section)
-      {
-        const int x = get_global_id(0);  
-        const int y = get_global_id(1);  
-
-        const int columns = imageColumns;  
-
-        const unsigned int radius = (width-1)/2;
-        const int wsize = get_local_size(0);  
-        const unsigned int loadSize = wsize+width;
-
-        //group coordinate
-        const int groupX=get_local_size(0)*get_group_id(0);
-        const int groupY=get_local_size(1)*get_group_id(1);
-
-        //offset the input data, assuming section is 0, 1 
-        im += imageColumns * (offsetRows - radius * section);
-
-        //parallel load and clamp
-        for (int i=get_local_id(0); i < loadSize; i=i+get_local_size(0))
-        {
-          //int cx = ClampToCanvas(groupX+i, columns);
-          temp[i] = im[y * columns + ClampToCanvas(i+groupX-radius, columns)];
-
-          /*if (0 && y==0 && get_group_id(1) == 0)
-          {
-            printf("(%d %d) temp %d load %d groupX %d\n", x, y, i, ClampToCanvas(groupX+i, columns), groupX);
-          }*/
-        }
-
-        // barrier        
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // only do the work if this is not a patched item
-        if (get_global_id(0) < columns) 
-        {
-          // compute
-          float4 result = (float4) 0;
-
-          int i = 0;
-          
-          \n #ifndef UFACTOR   \n 
-          \n #define UFACTOR 8 \n 
-          \n #endif                  \n 
-
-          for ( ; i+UFACTOR < width; ) 
-          {
-            \n #pragma unroll UFACTOR\n
-            for (int j=0; j < UFACTOR; j++, i++)
-            {
-              result+=filter[i]*convert_float4(temp[i+get_local_id(0)]);
-            }
-          }
-
-          for ( ; i < width; i++)
-          {
-            result+=filter[i]*convert_float4(temp[i+get_local_id(0)]);
-          }
-
-          result.x = ClampToQuantum(result.x);
-          result.y = ClampToQuantum(result.y);
-          result.z = ClampToQuantum(result.z);
-          result.w = ClampToQuantum(result.w);
-
-          // write back to global
-          filtered_im[y*columns+x] = result;
-        }
-
-      }
-    )
-
-    STRINGIFY(
-      /*
       Reduce image noise and reduce detail levels by line
       im: input pixels filtered_in  filtered_im: output pixels
       filter : convolve kernel  width: convolve kernel size
@@ -1046,93 +964,6 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
           result.y = ClampToQuantum(result.y);
           result.z = ClampToQuantum(result.z);
           result.w = ClampToQuantum(result.w);
-
-          // write back to global
-          filtered_im[y*columns+x] = (CLPixelType) (result.x,result.y,result.z,result.w);
-        }
-
-      }
-    )
-
-
-    STRINGIFY(
-      /*
-      Reduce image noise and reduce detail levels by line
-      im: input pixels filtered_in  filtered_im: output pixels
-      filter : convolve kernel  width: convolve kernel size
-      channel : define which channel is blured\
-      is_RGBA_BGRA : define the input is RGBA or BGRA
-      */
-      __kernel void BlurColumnSection(const __global float4 *blurRowData, __global CLPixelType *filtered_im,
-                                const ChannelType channel, __constant float *filter,
-                                const unsigned int width, 
-                                const unsigned int imageColumns, const unsigned int imageRows,
-                                __local float4 *temp, 
-                                const unsigned int offsetRows, const unsigned int section)
-      {
-        const int x = get_global_id(0);  
-        const int y = get_global_id(1);
-
-        //const int columns = get_global_size(0);
-        //const int rows = get_global_size(1);  
-        const int columns = imageColumns;  
-        const int rows = imageRows;  
-
-        unsigned int radius = (width-1)/2;
-        const int wsize = get_local_size(1);  
-        const unsigned int loadSize = wsize+width;
-
-        //group coordinate
-        const int groupX=get_local_size(0)*get_group_id(0);
-        const int groupY=get_local_size(1)*get_group_id(1);
-        //notice that get_local_size(0) is 1, so
-        //groupX=get_group_id(0);
-       
-        // offset the input data
-        blurRowData += imageColumns * radius * section;
-
-        //parallel load and clamp
-        for (int i = get_local_id(1); i < loadSize; i=i+get_local_size(1))
-        {
-          int pos = ClampToCanvasWithHalo(i+groupY-radius, rows, radius, section) * columns + groupX;
-          temp[i] = *(blurRowData+pos);
-        }
-        
-        // barrier        
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // only do the work if this is not a patched item
-        if (get_global_id(1) < rows)
-        {
-          // compute
-          float4 result = (float4) 0;
-
-          int i = 0;
-          
-          \n #ifndef UFACTOR   \n 
-          \n #define UFACTOR 8 \n 
-          \n #endif                  \n 
-          
-          for ( ; i+UFACTOR < width; ) 
-          {
-            \n #pragma unroll UFACTOR \n
-            for (int j=0; j < UFACTOR; j++, i++)
-            {
-              result+=filter[i]*temp[i+get_local_id(1)];
-            }
-          }
-          for ( ; i < width; i++)
-          {
-            result+=filter[i]*temp[i+get_local_id(1)];
-          }
-
-          result.x = ClampToQuantum(result.x);
-          result.y = ClampToQuantum(result.y);
-          result.z = ClampToQuantum(result.z);
-          result.w = ClampToQuantum(result.w);
-
-          // offset the output data
-          filtered_im += imageColumns * offsetRows;
 
           // write back to global
           filtered_im[y*columns+x] = (CLPixelType) (result.x,result.y,result.z,result.w);
@@ -1354,8 +1185,8 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
     float g=(float) getGreen(pixel);
     float b=(float) getBlue(pixel);
 
-    float tmin=min(min(r,g),b);
-    float tmax=max(max(r,g),b);
+    float tmin=MagickMin(MagickMin(r,g),b);
+    float tmax= MagickMax(MagickMax(r,g),b);
 
     if (tmax!=0.0f) {
       float delta=tmax-tmin;
@@ -2156,13 +1987,13 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
         }
       case BrightnessPixelIntensityMethod:
         {
-          intensity=max(max(red,green),blue);
+          intensity=MagickMax(MagickMax(red,green),blue);
           break;
         }
       case LightnessPixelIntensityMethod:
         {
-          intensity=(min(min(red,green),blue)+
-              max(max(red,green),blue))/2.0;
+          intensity=(MagickMin(MagickMin(red,green),blue)+
+              MagickMax(MagickMax(red,green),blue))/2.0;
           break;
         }
       case MSPixelIntensityMethod:
@@ -2392,8 +2223,8 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
   /*
      Convert RGB to HSL colorspace.
      */
-  tmax=max(QuantumScale*red,max(QuantumScale*green, QuantumScale*blue));
-  tmin=min(QuantumScale*red,min(QuantumScale*green, QuantumScale*blue));
+  tmax=MagickMax(QuantumScale*red,MagickMax(QuantumScale*green, QuantumScale*blue));
+  tmin=MagickMin(QuantumScale*red,MagickMin(QuantumScale*green, QuantumScale*blue));
 
   c=tmax-tmin;
 
@@ -2448,7 +2279,7 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
     h-=360.0*floor(h/360.0);
     h/=60.0;
     x=c*(1.0-fabs(h-2.0*floor(h/2.0)-1.0));
-    switch ((int) floor(h))
+    switch ((int) floor(h) % 6)
     {
       case 0:
         {
@@ -2755,79 +2586,6 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%     R a n d o m                                                             %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-*/
-
-STRINGIFY(
-
-  inline float GetPseudoRandomValue(uint4* seed, const float normalizeRand) {
-    uint4 s = *seed;
-    do {
-      unsigned int alpha = (unsigned int)(s.y ^ (s.y << 11));
-      s.y = s.z;
-      s.z = s.w;
-      s.w = s.x;
-      s.x = (s.x ^ (s.x >> 19)) ^ (alpha ^ (alpha >> 8));
-    } while (s.x == ~0UL);
-    *seed = s;
-    return (normalizeRand*s.x);
-  }
-
-  __kernel void RandomNumberGenerator(__global uint* seeds, const float normalizeRand
-    , __global float* randomNumbers, const uint init
-    , const uint numRandomNumbers) {
-
-    unsigned int id = get_global_id(0);
-    unsigned int seed[4];
-
-    if (init != 0) {
-      seed[0] = seeds[id * 4];
-      seed[1] = 0x50a7f451;
-      seed[2] = 0x5365417e;
-      seed[3] = 0xc3a4171a;
-    }
-    else {
-      seed[0] = seeds[id * 4];
-      seed[1] = seeds[id * 4 + 1];
-      seed[2] = seeds[id * 4 + 2];
-      seed[3] = seeds[id * 4 + 3];
-    }
-
-    unsigned int numRandomNumbersPerItem = (numRandomNumbers + get_global_size(0) - 1) / get_global_size(0);
-    for (unsigned int i = 0; i < numRandomNumbersPerItem; i++) {
-      do
-      {
-        unsigned int alpha = (unsigned int)(seed[1] ^ (seed[1] << 11));
-        seed[1] = seed[2];
-        seed[2] = seed[3];
-        seed[3] = seed[0];
-        seed[0] = (seed[0] ^ (seed[0] >> 19)) ^ (alpha ^ (alpha >> 8));
-      } while (seed[0] == ~0UL);
-      unsigned int pos = (get_group_id(0)*get_local_size(0)*numRandomNumbersPerItem)
-        + get_local_size(0) * i + get_local_id(0);
-
-      if (pos >= numRandomNumbers)
-        break;
-      randomNumbers[pos] = normalizeRand*seed[0];
-    }
-
-    /* save the seeds for the time*/
-    seeds[id * 4] = seed[0];
-    seeds[id * 4 + 1] = seed[1];
-    seeds[id * 4 + 2] = seed[2];
-    seeds[id * 4 + 3] = seed[3];
-  }
-  )
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%                                                                             %
 %     R e s i z e                                                             %
 %                                                                             %
 %                                                                             %
@@ -2961,7 +2719,7 @@ STRINGIFY(
     /* Call Sinc even for SincFast to get better precision on GPU 
        and to avoid thread divergence.  Sinc is pretty fast on GPU anyway...*/
     case SincWeightingFunction:
-    case SincFastWeightingFunction:  
+    case SincFastWeightingFunction:
       return Sinc(x);
     case CubicBCWeightingFunction:
       return CubicBC(x,filterCoefficients);
@@ -3039,16 +2797,16 @@ STRINGIFY(
 
     // calculate the range of resized image pixels computed by this workgroup
     const unsigned int startX = get_group_id(0)*pixelPerWorkgroup;
-    const unsigned int stopX = min(startX + pixelPerWorkgroup,filteredColumns);
+    const unsigned int stopX = MagickMin(startX + pixelPerWorkgroup,filteredColumns);
     const unsigned int actualNumPixelToCompute = stopX - startX;
 
     // calculate the range of input image pixels to cache
-    float scale = max(1.0f/xFactor+MagickEpsilon ,1.0f);
-    const float support = max(scale*resizeFilterSupport,0.5f);
+    float scale = MagickMax(1.0f/xFactor+MagickEpsilon ,1.0f);
+    const float support = MagickMax(scale*resizeFilterSupport,0.5f);
     scale = PerceptibleReciprocal(scale);
 
-    const int cacheRangeStartX = max((int)((startX+0.5f)/xFactor+MagickEpsilon-support+0.5f),(int)(0));
-    const int cacheRangeEndX = min((int)(cacheRangeStartX + numCachedPixels), (int)inputColumns);
+    const int cacheRangeStartX = MagickMax((int)((startX+0.5f)/xFactor+MagickEpsilon-support+0.5f),(int)(0));
+    const int cacheRangeEndX = MagickMin((int)(cacheRangeStartX + numCachedPixels), (int)inputColumns);
 
     // cache the input pixels into local memory
     const unsigned int y = get_global_id(1);
@@ -3060,7 +2818,7 @@ STRINGIFY(
     {
 
       const unsigned int chunkStartX = startX + chunk*pixelChunkSize;
-      const unsigned int chunkStopX = min(chunkStartX + pixelChunkSize, stopX);
+      const unsigned int chunkStopX = MagickMin(chunkStartX + pixelChunkSize, stopX);
       const unsigned int actualNumPixelInThisChunk = chunkStopX - chunkStartX;
 
       // determine which resized pixel computed by this workitem
@@ -3080,8 +2838,8 @@ STRINGIFY(
 
         // calculate how many steps required for this pixel
         const float bisect = (x+0.5)/xFactor+MagickEpsilon;
-        const unsigned int start = (unsigned int)max(bisect-support+0.5f,0.0f);
-        const unsigned int stop  = (unsigned int)min(bisect+support+0.5f,(float)inputColumns);
+        const unsigned int start = (unsigned int)MagickMax(bisect-support+0.5f,0.0f);
+        const unsigned int stop  = (unsigned int)MagickMin(bisect+support+0.5f,(float)inputColumns);
         const unsigned int n = stop - start;
 
         // calculate how many steps this workitem will contribute
@@ -3090,7 +2848,7 @@ STRINGIFY(
 
         const unsigned int startStep = (itemID%numItems)*numStepsPerWorkItem;
         if (startStep < n) {
-          const unsigned int stopStep = min(startStep+numStepsPerWorkItem, n);
+          const unsigned int stopStep = MagickMin(startStep+numStepsPerWorkItem, n);
 
           unsigned int cacheIndex = start+startStep-cacheRangeStartX;
           if (matte == 0) {
@@ -3127,9 +2885,9 @@ STRINGIFY(
               density+=weight;
               gamma+=alpha;
             }
-         }
+          }
+        }
       }
-    }
 
     // initialize the accumulators to zero
     if (itemID < actualNumPixelInThisChunk) {
@@ -3196,29 +2954,6 @@ STRINGIFY(
   )
 
 
-
-  STRINGIFY(
- __kernel __attribute__((reqd_work_group_size(256, 1, 1)))
- void ResizeHorizontalFilterSinc(const __global CLPixelType* inputImage, const unsigned int inputColumns, const unsigned int inputRows, const unsigned int matte
-  , const float xFactor, __global CLPixelType* filteredImage, const unsigned int filteredColumns, const unsigned int filteredRows
-  , const int resizeFilterType, const int resizeWindowType
-  , const __global float* resizeFilterCubicCoefficients
-  , const float resizeFilterScale, const float resizeFilterSupport, const float resizeFilterWindowSupport, const float resizeFilterBlur
-  , __local CLPixelType* inputImageCache, const int numCachedPixels, const unsigned int pixelPerWorkgroup, const unsigned int pixelChunkSize
-  , __local float4* outputPixelCache, __local float* densityCache, __local float* gammaCache) {
-    
-    ResizeHorizontalFilter(inputImage,inputColumns,inputRows,matte
-    ,xFactor, filteredImage, filteredColumns, filteredRows
-    ,SincWeightingFunction, SincWeightingFunction
-    ,resizeFilterCubicCoefficients
-    ,resizeFilterScale, resizeFilterSupport, resizeFilterWindowSupport, resizeFilterBlur
-    ,inputImageCache, numCachedPixels, pixelPerWorkgroup, pixelChunkSize
-    ,outputPixelCache, densityCache, gammaCache);
-
-  }
-  )
-
-
   STRINGIFY(
  __kernel __attribute__((reqd_work_group_size(1, 256, 1)))
  void ResizeVerticalFilter(const __global CLPixelType* inputImage, const unsigned int inputColumns, const unsigned int inputRows, const unsigned int matte
@@ -3232,16 +2967,16 @@ STRINGIFY(
 
     // calculate the range of resized image pixels computed by this workgroup
     const unsigned int startY = get_group_id(1)*pixelPerWorkgroup;
-    const unsigned int stopY = min(startY + pixelPerWorkgroup,filteredRows);
+    const unsigned int stopY = MagickMin(startY + pixelPerWorkgroup,filteredRows);
     const unsigned int actualNumPixelToCompute = stopY - startY;
 
     // calculate the range of input image pixels to cache
-    float scale = max(1.0f/yFactor+MagickEpsilon ,1.0f);
-    const float support = max(scale*resizeFilterSupport,0.5f);
+    float scale = MagickMax(1.0f/yFactor+MagickEpsilon ,1.0f);
+    const float support = MagickMax(scale*resizeFilterSupport,0.5f);
     scale = PerceptibleReciprocal(scale);
 
-    const int cacheRangeStartY = max((int)((startY+0.5f)/yFactor+MagickEpsilon-support+0.5f),(int)(0));
-    const int cacheRangeEndY = min((int)(cacheRangeStartY + numCachedPixels), (int)inputRows);
+    const int cacheRangeStartY = MagickMax((int)((startY+0.5f)/yFactor+MagickEpsilon-support+0.5f),(int)(0));
+    const int cacheRangeEndY = MagickMin((int)(cacheRangeStartY + numCachedPixels), (int)inputRows);
 
     // cache the input pixels into local memory
     const unsigned int x = get_global_id(0);
@@ -3253,7 +2988,7 @@ STRINGIFY(
     {
 
       const unsigned int chunkStartY = startY + chunk*pixelChunkSize;
-      const unsigned int chunkStopY = min(chunkStartY + pixelChunkSize, stopY);
+      const unsigned int chunkStopY = MagickMin(chunkStartY + pixelChunkSize, stopY);
       const unsigned int actualNumPixelInThisChunk = chunkStopY - chunkStartY;
 
       // determine which resized pixel computed by this workitem
@@ -3273,8 +3008,8 @@ STRINGIFY(
 
         // calculate how many steps required for this pixel
         const float bisect = (y+0.5)/yFactor+MagickEpsilon;
-        const unsigned int start = (unsigned int)max(bisect-support+0.5f,0.0f);
-        const unsigned int stop  = (unsigned int)min(bisect+support+0.5f,(float)inputRows);
+        const unsigned int start = (unsigned int)MagickMax(bisect-support+0.5f,0.0f);
+        const unsigned int stop  = (unsigned int)MagickMin(bisect+support+0.5f,(float)inputRows);
         const unsigned int n = stop - start;
 
         // calculate how many steps this workitem will contribute
@@ -3283,7 +3018,7 @@ STRINGIFY(
 
         const unsigned int startStep = (itemID%numItems)*numStepsPerWorkItem;
         if (startStep < n) {
-          const unsigned int stopStep = min(startStep+numStepsPerWorkItem, n);
+          const unsigned int stopStep = MagickMin(startStep+numStepsPerWorkItem, n);
 
           unsigned int cacheIndex = start+startStep-cacheRangeStartY;
           if (matte == 0) {
@@ -3388,27 +3123,6 @@ STRINGIFY(
   }
   )
 
-
-
-  STRINGIFY(
- __kernel __attribute__((reqd_work_group_size(1, 256, 1)))
- void ResizeVerticalFilterSinc(const __global CLPixelType* inputImage, const unsigned int inputColumns, const unsigned int inputRows, const unsigned int matte
-  , const float yFactor, __global CLPixelType* filteredImage, const unsigned int filteredColumns, const unsigned int filteredRows
-  , const int resizeFilterType, const int resizeWindowType
-  , const __global float* resizeFilterCubicCoefficients
-  , const float resizeFilterScale, const float resizeFilterSupport, const float resizeFilterWindowSupport, const float resizeFilterBlur
-  , __local CLPixelType* inputImageCache, const int numCachedPixels, const unsigned int pixelPerWorkgroup, const unsigned int pixelChunkSize
-  , __local float4* outputPixelCache, __local float* densityCache, __local float* gammaCache) {
-    ResizeVerticalFilter(inputImage,inputColumns,inputRows,matte
-      ,yFactor,filteredImage,filteredColumns,filteredRows
-      ,SincWeightingFunction, SincWeightingFunction
-      ,resizeFilterCubicCoefficients
-      ,resizeFilterScale,resizeFilterSupport,resizeFilterWindowSupport,resizeFilterBlur
-      ,inputImageCache,numCachedPixels,pixelPerWorkgroup,pixelChunkSize
-      ,outputPixelCache,densityCache,gammaCache);
-  }
-  )
-
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -3496,92 +3210,6 @@ STRINGIFY(
                                                             ,ClampToQuantum(outputPixel.z), ClampToQuantum(outputPixel.w));
 
       }
-    }
-
-    __kernel void UnsharpMaskBlurColumnSection(const __global CLPixelType* inputImage, 
-          const __global float4 *blurRowData, __global CLPixelType *filtered_im,
-          const unsigned int imageColumns, const unsigned int imageRows, 
-          __local float4* cachedData, __local float* cachedFilter,
-          const ChannelType channel, const __global float *filter, const unsigned int width, 
-          const float gain, const float threshold, 
-          const unsigned int offsetRows, const unsigned int section)
-    {
-      const unsigned int radius = (width-1)/2;
-
-      // cache the pixel shared by the workgroup
-      const int groupX = get_group_id(0);
-      const int groupStartY = get_group_id(1)*get_local_size(1) - radius;
-      const int groupStopY = (get_group_id(1)+1)*get_local_size(1) + radius;
-
-      // offset the input data
-      blurRowData += imageColumns * radius * section;
-
-      if (groupStartY >= 0
-          && groupStopY < imageRows) {
-        event_t e = async_work_group_strided_copy(cachedData
-                                                ,blurRowData+groupStartY*imageColumns+groupX
-                                                ,groupStopY-groupStartY,imageColumns,0);
-        wait_group_events(1,&e);
-      }
-      else {
-        for (int i = get_local_id(1); i < (groupStopY - groupStartY); i+=get_local_size(1)) {
-          int pos = ClampToCanvasWithHalo(groupStartY+i,imageRows, radius, section)*imageColumns+ groupX;
-          cachedData[i] = *(blurRowData + pos);
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);
-      }
-      // cache the filter as well
-      event_t e = async_work_group_copy(cachedFilter,filter,width,0);
-      wait_group_events(1,&e);
-
-      // only do the work if this is not a patched item
-      //const int cy = get_group_id(1)*get_local_size(1)+get_local_id(1);
-      const int cy = get_global_id(1);
-
-      if (cy < imageRows) {
-        float4 blurredPixel = (float4) 0.0f;
-
-        int i = 0;
-
-        \n #ifndef UFACTOR   \n 
-          \n #define UFACTOR 8 \n 
-          \n #endif                  \n 
-
-          for ( ; i+UFACTOR < width; ) 
-          {
-            \n #pragma unroll UFACTOR \n
-              for (int j=0; j < UFACTOR; j++, i++)
-              {
-                blurredPixel+=cachedFilter[i]*cachedData[i+get_local_id(1)];
-              }
-          }
-
-        for ( ; i < width; i++)
-        {
-          blurredPixel+=cachedFilter[i]*cachedData[i+get_local_id(1)];
-        }
-
-        blurredPixel = floor((float4)(ClampToQuantum(blurredPixel.x), ClampToQuantum(blurredPixel.y)
-                                      ,ClampToQuantum(blurredPixel.z), ClampToQuantum(blurredPixel.w)));
-
-        // offset the output data
-        inputImage += imageColumns * offsetRows; 
-        filtered_im += imageColumns * offsetRows;
-
-        float4 inputImagePixel = convert_float4(inputImage[cy*imageColumns+groupX]);
-        float4 outputPixel = inputImagePixel - blurredPixel;
-
-        float quantumThreshold = QuantumRange*threshold;
-
-        int4 mask = isless(fabs(2.0f*outputPixel), (float4)quantumThreshold);
-        outputPixel = select(inputImagePixel + outputPixel * gain, inputImagePixel, mask);
-
-        //write back
-        filtered_im[cy*imageColumns+groupX] = (CLPixelType) (ClampToQuantum(outputPixel.x), ClampToQuantum(outputPixel.y)
-                                                            ,ClampToQuantum(outputPixel.z), ClampToQuantum(outputPixel.w));
-
-      }
-     
     }
     )
 
@@ -3676,6 +3304,128 @@ STRINGIFY(
 		}	
 	)
 
+	STRINGIFY(
+		__kernel __attribute__((reqd_work_group_size(64, 4, 1))) void WaveletDenoise(__global CLPixelType *srcImage, __global CLPixelType *dstImage,
+					const float threshold,
+					const int passes,
+					const int imageWidth,
+					const int imageHeight)
+	{
+		const int pad = (1 << (passes - 1));;
+		const int tileSize = 64;
+		const int tileRowPixels = 64;
+		const float noise[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };
+
+		CLPixelType stage[16];
+
+		local float buffer[64 * 64];
+
+		int srcx = get_group_id(0) * (tileSize - 2 * pad) - pad + get_local_id(0);
+		int srcy = get_group_id(1) * (tileSize - 2 * pad) - pad;
+
+		for (int i = get_local_id(1); i < tileSize; i += get_local_size(1)) {
+			stage[i / 4] = srcImage[mirrorTop(mirrorBottom(srcx), imageWidth) + (mirrorTop(mirrorBottom(srcy + i) , imageHeight)) * imageWidth];
+		}
+
+
+		for (int channel = 0; channel < 3; ++channel) {
+			// Load LDS
+			switch (channel) {
+			case 0:
+				for (int i = get_local_id(1); i < tileSize; i += get_local_size(1))
+					buffer[get_local_id(0) + i * tileRowPixels] = convert_float(stage[i / 4].s0);
+				break;
+			case 1:
+				for (int i = get_local_id(1); i < tileSize; i += get_local_size(1))
+					buffer[get_local_id(0) + i * tileRowPixels] = convert_float(stage[i / 4].s1);
+				break;
+			case 2:
+				for (int i = get_local_id(1); i < tileSize; i += get_local_size(1))
+					buffer[get_local_id(0) + i * tileRowPixels] = convert_float(stage[i / 4].s2);
+				break;
+			}
+
+
+			// Process
+
+			float tmp[16];
+			float accum[16];
+			float pixel;
+
+			for (int pass = 0; pass < passes; ++pass) {
+				const int radius = 1 << pass;
+				const int x = get_local_id(0);
+				const float thresh = threshold * noise[pass];
+
+				if (pass == 0)
+					accum[0] = accum[1] = accum[2] = accum[3] = accum[4] = accum[5] = accum[6] = accum[6] = accum[7] = accum[8] = accum[9] = accum[10] = accum[11] = accum[12] = accum[13] = accum[14] = accum[15] = 0.0f;
+
+				// Snapshot input
+
+				// Apply horizontal hat
+				for (int i = get_local_id(1); i < tileSize; i += get_local_size(1)) {
+					const int offset = i * tileRowPixels;
+					if (pass == 0)
+						tmp[i / 4] = buffer[x + offset];		// snapshot input on first pass
+					pixel = 0.5f * tmp[i / 4] + 0.25 * (buffer[mirrorBottom(x - radius) + offset] + buffer[mirrorTop(x + radius, tileSize) + offset]);
+					barrier(CLK_LOCAL_MEM_FENCE);
+					buffer[x + offset] = pixel;
+				}
+				barrier(CLK_LOCAL_MEM_FENCE);
+				// Apply vertical hat
+				for (int i = get_local_id(1); i < tileSize; i += get_local_size(1)) {
+					pixel = 0.5f * buffer[x + i * tileRowPixels] + 0.25 * (buffer[x + mirrorBottom(i - radius) * tileRowPixels] + buffer[x + mirrorTop(i + radius, tileRowPixels) * tileRowPixels]);
+					float delta = tmp[i / 4] - pixel;
+					tmp[i / 4] = pixel;							// hold output in tmp until all workitems are done
+					if (delta < -thresh)
+						delta += thresh;
+					else if (delta > thresh)
+						delta -= thresh;
+					else
+						delta = 0;
+					accum[i / 4] += delta;
+
+				}
+				barrier(CLK_LOCAL_MEM_FENCE);
+				if (pass < passes - 1)
+					for (int i = get_local_id(1); i < tileSize; i += get_local_size(1))
+						buffer[x + i * tileRowPixels] = tmp[i / 4];		// store lowpass for next pass
+				else  // last pass
+					for (int i = get_local_id(1); i < tileSize; i += get_local_size(1))
+						accum[i / 4] += tmp[i / 4];							// add the lowpass signal back to output
+				barrier(CLK_LOCAL_MEM_FENCE);
+			}
+
+			switch (channel) {
+			case 0:
+				for (int i = get_local_id(1); i < tileSize; i += get_local_size(1))
+					stage[i / 4].s0 = ClampToQuantum(accum[i / 4]);
+				break;
+			case 1:
+				for (int i = get_local_id(1); i < tileSize; i += get_local_size(1))
+					stage[i / 4].s1 = ClampToQuantum(accum[i / 4]);
+				break;
+			case 2:
+				for (int i = get_local_id(1); i < tileSize; i += get_local_size(1))
+					stage[i / 4].s2 = ClampToQuantum(accum[i / 4]);
+				break;
+			}
+
+			barrier(CLK_LOCAL_MEM_FENCE);
+		}
+
+		// Write from stage to output
+
+		if ((get_local_id(0) >= pad) && (get_local_id(0) < tileSize - pad) && (srcx >= 0) && (srcx  < imageWidth)) {
+			//for (int i = pad + get_local_id(1); i < tileSize - pad; i += get_local_size(1)) {
+			for (int i = get_local_id(1); i < tileSize; i += get_local_size(1)) {
+				if ((i >= pad) && (i < tileSize - pad) && (srcy + i >= 0) && (srcy + i < imageHeight)) {
+					dstImage[srcx + (srcy + i) * imageWidth] = stage[i / 4];
+				}
+			}
+		}
+	}
+	)
   ;
 
 #endif // MAGICKCORE_OPENCL_SUPPORT
@@ -3684,4 +3434,4 @@ STRINGIFY(
 }
 #endif
 
-#endif // _MAGICKCORE_ACCELERATE_PRIVATE_H
+#endif // MAGICKCORE_ACCELERATE_PRIVATE_H

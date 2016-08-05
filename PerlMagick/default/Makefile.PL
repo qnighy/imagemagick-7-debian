@@ -163,7 +163,7 @@ foreach my $delegate (@tested_delegates) {
 # defaults for LIBS & INC & CCFLAGS params that we later pass to Writemakefile
 my $INC_magick = '-I../.. -I../..   -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16  -I"' . $Config{'usrinc'} . '/ImageMagick"';
 my $LIBS_magick = '-L../../magick/.libs -lMagickCore-6.Q16 -lperl -lm';
-my $CCFLAGS_magick = "$Config{'ccflags'} -I/usr/include/libxml2  -I/usr/include/libpng16   -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/pango-1.0 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/freetype2 -I/usr/include/libdrm -I/usr/include/libpng16  -pthread -I/usr/include/OpenEXR -I/usr/include/libdrm    -I/usr/include/freetype2 -I/usr/include/libpng16  -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/freetype2 -I/usr/include/libpng16  -pthread     -fopenmp -O3 -g -Wall -mtune=sandybridge -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16";
+my $CCFLAGS_magick = "$Config{'ccflags'} -I/usr/include/libxml2  -I/usr/include/libpng16   -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/pango-1.0 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/freetype2 -I/usr/include/libdrm -I/usr/include/libpng16  -pthread -I/usr/include/OpenEXR -I/usr/include/libdrm    -I/usr/include/freetype2 -I/usr/include/libpng16  -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/freetype2 -I/usr/include/libpng16  -pthread     -fopenmp -O3 -g -Wall -mtune=generic -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16";
 my $LDFLAGS_magick   = "-L../../magick/.libs -lMagickCore-6.Q16 $Config{'ldflags'} -Wl,-z,relro ";
 my $LDDLFLAGS_magick = "-L../../magick/.libs -lMagickCore-6.Q16 $Config{'lddlflags'} -Wl,-z,relro ";
 
@@ -194,7 +194,7 @@ WriteMakefile
    'AUTHOR' => 'ImageMagick Studio LLC',
 
    # Module version
-   'VERSION' => '6.92',
+   'VERSION' => '6.95',
 
    # Prerequisite version
    'PREREQ_PM' => {'parent' => '0'},
@@ -206,7 +206,7 @@ WriteMakefile
    'INC'	=> $INC_magick,
 
    # C compiler
-   #'CC' => 'g++',
+   #'CC' => 'gcc',
 
    # C pre-processor flags (e.g. -I & -D options)
    # 'CPPFLAGS' => "$Config{'cppflags'}   -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16 ",
@@ -215,7 +215,7 @@ WriteMakefile
    'CCFLAGS' => $CCFLAGS_magick,
 
    # Linker
-   #'LD' => $Config{'ld'} == $Config{'cc'} ? 'g++' : $Config{'ld'},
+   #'LD' => $Config{'ld'} == $Config{'cc'} ? 'gcc' : $Config{'ld'},
 
    # Linker flags for building an executable
    'LDFLAGS' =>  $LDFLAGS_magick,
@@ -236,9 +236,9 @@ WriteMakefile
    # 'OPTIMIZE'	=> '',
 
    # Use same compiler as ImageMagick
-   'PERLMAINCC'	=> 'g++ -fopenmp',
+   'PERLMAINCC'	=> ' -fopenmp',
    'AR' => 'ar',
-   'LD' => 'g++',
+   'LD' => '',
 
    # Set Perl installation prefix to ImageMagick installation prefix
 #   'PREFIX'	=> '/usr',

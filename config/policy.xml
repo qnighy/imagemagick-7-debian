@@ -35,6 +35,10 @@
   
     <policy domain="path" rights="read" pattern="/repository/*" />
 
+  Let's prevent possible exploits by removing the right to use indirect reads.
+
+    <policy domain="path" rights="none" pattern="@*" />
+
   Any large image is cached to disk rather than memory:
 
     <policy domain="resource" name="area" value="1GB"/>
@@ -57,5 +61,8 @@
   <!-- <policy domain="resource" name="throttle" value="0"/> -->
   <!-- <policy domain="resource" name="time" value="3600"/> -->
   <!-- <policy domain="system" name="precision" value="6"/> -->
-  <policy domain="cache" name="shared-secret" value="passphrase"/>
+  <!-- <policy domain="coder" rights="none" pattern="MVG" /> -->
+  <!-- <policy domain="delegate" rights="none" pattern="HTTPS" /> -->
+	<!-- <policy domain="path" rights="none" pattern="@*"/>  -->
+  <policy domain="cache" name="shared-secret" value="passphrase" stealth="true"/>
 </policymap>

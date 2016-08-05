@@ -340,6 +340,7 @@ MagickExport Image *CompareImageChannels(Image *image,
   reconstruct_view=DestroyCacheView(reconstruct_view);
   image_view=DestroyCacheView(image_view);
   (void) CompositeImage(difference_image,image->compose,highlight_image,0,0);
+  (void) SetImageAlphaChannel(difference_image,DeactivateAlphaChannel);
   highlight_image=DestroyImage(highlight_image);
   if (status == MagickFalse)
     difference_image=DestroyImage(difference_image);
@@ -1057,7 +1058,7 @@ static MagickBooleanType GetNormalizedCrossCorrelationDistortion(
     distortion[i]=0.0;
   rows=MagickMax(image->rows,reconstruct_image->rows);
   columns=MagickMax(image->columns,reconstruct_image->columns);
-  area=1.0/((MagickRealType) columns*rows-1);
+  area=1.0/((MagickRealType) columns*rows);
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
   for (y=0; y < (ssize_t) rows; y++)
@@ -1319,24 +1320,30 @@ static MagickBooleanType GetPeakSignalToNoiseRatio(const Image *image,
   status=GetMeanSquaredDistortion(image,reconstruct_image,channel,distortion,
     exception);
   if ((channel & RedChannel) != 0)
-    distortion[RedChannel]=20.0*MagickLog10((double) 1.0/sqrt(
-      distortion[RedChannel]));
+    if (fabs(distortion[RedChannel]) >= MagickEpsilon)
+      distortion[RedChannel]=20.0*MagickLog10((double) 1.0/sqrt(
+        distortion[RedChannel]));
   if ((channel & GreenChannel) != 0)
-    distortion[GreenChannel]=20.0*MagickLog10((double) 1.0/sqrt(
-      distortion[GreenChannel]));
+    if (fabs(distortion[GreenChannel]) >= MagickEpsilon)
+      distortion[GreenChannel]=20.0*MagickLog10((double) 1.0/sqrt(
+        distortion[GreenChannel]));
   if ((channel & BlueChannel) != 0)
-    distortion[BlueChannel]=20.0*MagickLog10((double) 1.0/sqrt(
-      distortion[BlueChannel]));
+    if (fabs(distortion[BlueChannel]) >= MagickEpsilon)
+      distortion[BlueChannel]=20.0*MagickLog10((double) 1.0/sqrt(
+        distortion[BlueChannel]));
   if (((channel & OpacityChannel) != 0) &&
       (image->matte != MagickFalse))
-    distortion[OpacityChannel]=20.0*MagickLog10((double) 1.0/sqrt(
-      distortion[OpacityChannel]));
+    if (fabs(distortion[OpacityChannel]) >= MagickEpsilon)
+      distortion[OpacityChannel]=20.0*MagickLog10((double) 1.0/sqrt(
+        distortion[OpacityChannel]));
   if (((channel & IndexChannel) != 0) &&
       (image->colorspace == CMYKColorspace))
-    distortion[BlackChannel]=20.0*MagickLog10((double) 1.0/sqrt(
-      distortion[BlackChannel]));
-  distortion[CompositeChannels]=20.0*MagickLog10((double) 1.0/sqrt(
-    distortion[CompositeChannels]));
+    if (fabs(distortion[BlackChannel]) >= MagickEpsilon)
+      distortion[BlackChannel]=20.0*MagickLog10((double) 1.0/sqrt(
+        distortion[BlackChannel]));
+  if (fabs(distortion[CompositeChannels]) >= MagickEpsilon)
+    distortion[CompositeChannels]=20.0*MagickLog10((double) 1.0/sqrt(
+      distortion[CompositeChannels]));
   return(status);
 }
 

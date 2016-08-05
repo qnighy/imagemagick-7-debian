@@ -178,11 +178,11 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     number_planes,
     number_planes_filled,
     one,
-    offset,
     pixel_info_length;
 
   ssize_t
     count,
+    offset,
     y;
 
   unsigned char
@@ -231,7 +231,8 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     one=1;
     map_length=one << map_length;
-    if ((number_planes == 0) || (number_planes == 2) || (bits_per_pixel != 8) ||
+    if ((number_planes == 0) || (number_planes == 2) ||
+        ((flags & 0x04) && (number_colormaps > 254)) || (bits_per_pixel != 8) ||
         (image->columns == 0))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     if (flags & 0x02)
@@ -320,10 +321,12 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((number_pixels*number_planes_filled) != (size_t) (number_pixels*
          number_planes_filled))
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-    pixel_info_length=image->columns*image->rows*number_planes_filled;
-    pixel_info=AcquireVirtualMemory(pixel_info_length,sizeof(*pixels));
+    pixel_info=AcquireVirtualMemory(image->columns,image->rows*
+      MagickMax(number_planes_filled,4)*sizeof(*pixels));
     if (pixel_info == (MemoryInfo *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    pixel_info_length=image->columns*image->rows*
+      MagickMax(number_planes_filled,4);
     pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
     if ((flags & 0x01) && !(flags & 0x02))
       {
@@ -362,7 +365,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
         {
           operand=ReadBlobByte(image);
           if (opcode & 0x40)
-            operand=(int) ReadBlobLSBShort(image);
+            operand=ReadBlobLSBSignedShort(image);
           x=0;
           y+=operand;
           break;
@@ -380,7 +383,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
         {
           operand=ReadBlobByte(image);
           if (opcode & 0x40)
-            operand=(int) ReadBlobLSBShort(image);
+            operand=ReadBlobLSBSignedShort(image);
           x+=operand;
           break;
         }
@@ -388,11 +391,12 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
         {
           operand=ReadBlobByte(image);
           if (opcode & 0x40)
-            operand=(int) ReadBlobLSBShort(image);
+            operand=ReadBlobLSBSignedShort(image);
           offset=((image->rows-y-1)*image->columns*number_planes)+x*
             number_planes+plane;
           operand++;
-          if (offset+((size_t) operand*number_planes) > pixel_info_length)
+          if ((offset < 0) ||
+              (offset+((size_t) operand*number_planes) > pixel_info_length))
             {
               if (number_colormaps != 0)
                 colormap=(unsigned char *) RelinquishMagickMemory(colormap);
@@ -417,20 +421,21 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
         {
           operand=ReadBlobByte(image);
           if (opcode & 0x40)
-            operand=(int) ReadBlobLSBShort(image);
+            operand=ReadBlobLSBSignedShort(image);
           pixel=(unsigned char) ReadBlobByte(image);
           (void) ReadBlobByte(image);
           operand++;
           offset=((image->rows-y-1)*image->columns*number_planes)+x*
             number_planes+plane;
-          p=pixels+offset;
-          if (offset+((size_t) operand*number_planes) > pixel_info_length)
+          if ((offset < 0) ||
+              (offset+((size_t) operand*number_planes) > pixel_info_length))
             {
               if (number_colormaps != 0)
                 colormap=(unsigned char *) RelinquishMagickMemory(colormap);
               pixel_info=RelinquishVirtualMemory(pixel_info);
               ThrowReaderException(CorruptImageError,"UnableToReadImageData");
             }
+          p=pixels+offset;
           for (i=0; i < (ssize_t) operand; i++)
           {
             if ((y < (ssize_t) image->rows) &&

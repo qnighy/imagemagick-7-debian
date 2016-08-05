@@ -1,3 +1,254 @@
+2016-07-30  6.9.5-4 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.5-4, GIT revision 10973:a00fa93:20160729.
+
+2016-07-35  6.9.5-4 Cristy  <quetzlzacatenango@image...>
+  * Prevent buffer overflow (bug report from Ibrahim el-sayed).
+
+2016-07-15  6.9.5-3 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.5-3, GIT revision 18627:2b5ddbd:20160721.
+
+2016-07-13  6.9.5-3 Cristy  <quetzlzacatenango@image...>
+  * Fix MVG stroke-opacity (reference
+    https://github.com/ImageMagick/ImageMagick/issues/229).
+  * Prevent possible buffer overflow when reading TIFF images (bug report from
+    Shi Pu of MS509 Team).
+
+2016-07-11  6.9.5-2 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.5-2, GIT revision 18591:50debe5:20160710.
+
+2016-07-10  6.9.5-2 Cristy  <quetzlzacatenango@image...>
+  * To comply with the SVG standard, use stroke-opacity for transparent strokes.
+
+2016-07-09  6.9.5-1 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.5-1, GIT revision 18572:28560fc:20160709.
+
+2016-07-04  6.9.5-1 Cristy  <quetzlzacatenango@image...>
+  * The histogram coder now returns the correct extent.
+  * Use CopyMagickString() rather than CopyMagickMemory() for strings.
+
+2016-06-26  6.9.5-0 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.5-0, GIT revision 18514:a7b5b46:20160626.
+
+2016-06-23  6.9.5-0 Cristy  <quetzlzacatenango@image...>
+  * Correct for numerical instability (reference
+    https://github.com/ImageMagick/ImageMagick/issues/218).
+
+2016-06-21  6.9.4-10 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-10, GIT revision 10907:a08de63:20160622.
+
+2016-06-17  6.9.4-10 Dirk Lemstra <dirk@lem.....org>
+  * Added support for GROUP4 compression to the FAX coder.
+
+2016-06-17  6.9.4-10 Cristy  <quetzlzacatenango@image...>
+  * Don't return a zero bounding box for QueryMultilineFontMetrics() (reference
+    https://github.com/ImageMagick/ImageMagick/issues/222).
+
+2016-06-12  6.9.4-9 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-9, GIT revision 10884:f0e15e8:20160612.
+
+2016-06-09  6.9.4-9 Cristy  <quetzlzacatenango@image...>
+  * Backoff finite precision epsilon (reference
+    https://github.com/ImageMagick/ImageMagick/issues/215).
+  * Fix drawing glitch for stroke widths greater than 2 (reference
+    https://github.com/ImageMagick/ImageMagick/issues/218).
+
+2016-06-05  6.9.4-8 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-8, GIT revision 18406:ba4ad2d:20160607.
+
+2016-06-04  6.9.4-8 Cristy  <quetzlzacatenango@image...>
+  * RLE check for pixel offset less than 0 (heap overflow report from Craig
+    Young).
+  * Properly initialze PES blocks (reference
+    https://github.com/ImageMagick/ImageMagick/issues/213).
+
+2016-06-03  6.9.4-7 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-7, GIT revision 10847:339f803:20160602.
+
+2016-06-02  6.9.4-7 Cristy  <quetzlzacatenango@image...>
+  * Fix small memory leak (patch provided by Андрей Черный).
+  * Coder path traversal is not authorized (bug report provided by
+    Masaaki Chida).
+  * Turn off alpha channel for the compare difference image (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29828).
+
+2016-05-31  6.9.4-6 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-6, GIT revision 18334:97775b5:20160531.
+
+2016-05-31  6.9.4-6 Cristy  <quetzlzacatenango@image...>
+  * Support configure script --enable-pipes option to enable pipes (|) in
+    filenames.
+  * Support configure script --enable-indirect-reads option to enable
+    indirect reads (@) in filenames.
+
+2016-05-30  6.9.4-5 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-5, GIT revision 18321:5511ef5:20160530.
+
+2016-05-28  6.9.4-5 Dirk Lemstra <dirk@lem.....org>
+  * Most OpenCL operations are now executed asynchronous.
+
+2016-05-25  6.9.4-5 Cristy  <quetzlzacatenango@image...>
+  * Security improvements to TEXT coder broke it (reference
+  * Prevent possible shell command injection vulnerability through the
+    authenticate parameter of the PDF, PCL and XPS coders (report from
+    Erez Turjeman).
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29754).
+  * Fix stroke offset problem for -annotate (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29626).
+  * Add additional checks to DCM reader to prevent data-driven faults (bug
+    report from Hanno Böck).
+
+2016-05-21  6.9.4-4 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-4, GIT revision 18241:d4f277c:20160521.
+
+2016-05-20  6.9.4-4 Cristy  <quetzlzacatenango@image...>
+  * Fixed proper placement of text annotation for east / west gravity.
+
+2016-05-15  6.9.4-4 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-4, GIT revision 10789:f7c2e89:20160518.
+
+2016-05-15  6.9.4-3 Cristy  <quetzlzacatenango@image...>
+  * Fix pixel cache on disk regression (reference
+    https://github.com/ImageMagick/ImageMagick/issues/202).
+
+2016-05-15  6.9.4-2 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-2, GIT revision 10778:52dae14:20160516.
+
+2016-05-10  6.9.4-2 Cristy  <quetzlzacatenango@image...>
+  * Quote passwords when passed to a delegate program.
+  * Can read geo-related EXIF metdata once-again (reference
+    https://github.com/ImageMagick/ImageMagick/issues/198).
+  * Sanitize all delegate emedded formatting characters.
+  * Don't sync pixel cache in AcquireAuthenticCacheView() (bug report from
+    Hanno Böck).
+
+2016-05-09  6.9.4-1 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-1, GIT revision 10755:d540dda:20160509.
+
+2016-05-07  6.9.4-1 Cristy  <quetzlzacatenango@image...>
+  * Remove https delegate.
+
+2016-05-05  6.9.4-0 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.4-0, GIT revision 10741:5746147:20160507.
+
+2016-05-04  6.9.4-0 Cristy  <quetzlzacatenango@image...>
+  * Check for buffer overflow in magick/draw.c/DrawStrokePolygon().
+  * Replace show delegate title with image filename rather than label.
+  * Fix GetNextToken() off by one error.
+  * Remove support for internal ephemeral coder.
+
+2016-05-03  6.9.3-10 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-10, GIT revision 10723:9fc8a0c:20160503.
+
+2016-05-03  6.9.3-10 Cristy  <quetzlzacatenango@image...>
+  * Sanitize input filename for http / https delegates (improved patch).
+  * Fix for possible security vulnerabilities (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=4&t=29588).
+
+2016-04-30  6.9.3-9 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-9, GIT revision 10716:b527bce:20160430.
+
+2016-04-12  6.9.3-9 Cristy  <quetzlzacatenango@image...>
+  * Sanitize input filename for http / https delegates.
+  * Indirect filename must be authorized by policy.
+  * The txt coder now properly reports Lab colors (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=2944).
+
+2016-04-11  6.9.3-8 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-8, GIT revision 10690:d058a53:20160411
+
+2016-03-22  6.9.3-8 Cristy  <quetzlzacatenango@image...>
+  * Respect gravity when rendering text (e.g. convert -gravity center my.txt)
+  * Return empty string for %d property and no directory (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29365)
+  * Return filename for the %i property (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=29364).
+  * Fixed lost pixels in frequency space (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29374).
+
+2016-03-06  6.9.3-7 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-7, GIT revision 10628:810a9fe:20160306
+
+2016-03-05  6.9.3-7 Dirk Lemstra <dirk@lem.....org>
+  * -size can now be used the specify the maximum width/height for the
+    following vector formats:
+      * SVG (when librsvg and cairo are being used).
+      * EMF (did not work on Windows).
+
+2016-02-29  6.9.3-7 Cristy  <quetzlzacatenango@image...>
+  * Fixed text alignment issue for label: / coder: (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29223).
+
+2016-02-27  6.9.3-6 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-6, GIT revision 10597:83584a1:20160228.
+
+2016-02-25  6.9.3-6 Cristy  <quetzlzacatenango@image...>
+  * Ensure TXT: image format survives round-trip (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29206).
+
+2016-02-21  6.9.2-6 Dirk Lemstra <dirk@lem.....org>
+  * Added wavelet denoise.
+
+2016-02-20  6.9.3-5 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-5, GIT revision 10572:cb24a69:20160219.
+
+2016-02-16  6.9.3-5 Cristy  <quetzlzacatenango@image...>
+  * Too many bytes when writing raw image formats (reference
+    https://github.com/ImageMagick/ImageMagick/issues/132).
+
+2016-02-12  6.9.3-4 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-4, GIT revision 10560:09f5f5d:20160212.
+
+2016-02-12  6.9.3-4 Dirk Lemstra <dirk@lem.....org>
+  * Fixed memory leak when reading an SVG without width/height (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=27&p=130197).
+
+2016-02-09  6.9.3-4 Cristy  <quetzlzacatenango@image...>
+  * Fix compiler error for complext text layout.
+
+2016-02-05  6.9.3-3 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-3, GIT revision 10540:6b4c918:20160206.
+
+2016-02-04  6.9.3-3 Cristy  <quetzlzacatenango@image...>
+  * Numerous bugs fixed from fuzzed images (reference
+    https://github.com/ImageMagick/ImageMagick/issues/123).
+  * The -bias option is no longer a noop (reference
+    https://github.com/ImageMagick/ImageMagick/issues/125).
+
+2016-01-25  6.9.3-3 Dirk Lemstra <dirk@lem.....org>
+  * Read XCF layer name (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&p=129638).
+
+2016-01-23  6.9.3-2 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-2, GIT revision 10496:315028c:20160122.
+
+2016-01-17  6.9.3-2 Cristy  <quetzlzacatenango@image...>
+  * Don't reuse lock after free (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=29031).
+
+2016-01-21  6.9.3-2 Dirk Lemstra <dirk@lem.....org>
+  * Fixed writing DocClass in CALS coder (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&p=129478).
+
+2016-01-17  6.9.3-1 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-1, GIT revision 10488:e4f046e:20160116.
+
+2016-01-06  6.9.3-1 Cristy  <quetzlzacatenango@image...>
+  * Pair AcquireMagickResource with calls to RelinquishMagickResource when
+    resource limits are hit (reference
+    https://github.com/ImageMagick/ImageMagick/pull/75).
+  * Return non-zero for the -format %b option (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=28969).
+
+2016-01-01  6.9.3-0 Cristy  <quetzlzacatenango@image...>
+  * New version 6.9.3-0, GIT revision 10445:620328b:20160101.
+
+2015-12-31  6.9.3-0 Cristy  <quetzlzacatenango@image...>
+  * Don't break on euro-style numbers (reference
+    http://www.imagemagick.org/discourse-server/viewtopic.php?f=1&t=28910).
+
+2015-12-22  6.9.3-0 Glenn Randers-Pehrson <glennrp@image...>
+  * 16-bit pnm images have a max value of 65535.
+
 2015-12-18  6.9.2-10 Cristy  <quetzlzacatenango@image...>
   * New version 6.9.2-10, GIT revision 10415:e31c09d:20151219.
 

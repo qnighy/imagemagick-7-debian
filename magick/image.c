@@ -59,6 +59,7 @@
 #include "magick/composite-private.h"
 #include "magick/compress.h"
 #include "magick/constitute.h"
+#include "magick/delegate.h"
 #include "magick/deprecate.h"
 #include "magick/display.h"
 #include "magick/draw.h"
@@ -447,6 +448,7 @@ MagickExport Image *AppendImages(const Image *images,
     *next;
 
   size_t
+    depth,
     height,
     number_images,
     width;
@@ -469,9 +471,12 @@ MagickExport Image *AppendImages(const Image *images,
   number_images=1;
   width=images->columns;
   height=images->rows;
+  depth=images->depth;
   next=GetNextImageInList(images);
   for ( ; next != (Image *) NULL; next=GetNextImageInList(next))
   {
+    if (next->depth > depth)
+      depth=next->depth;
     if (next->matte != MagickFalse)
       matte=MagickTrue;
     number_images++;
@@ -498,6 +503,7 @@ MagickExport Image *AppendImages(const Image *images,
       append_image=DestroyImage(append_image);
       return((Image *) NULL);
     }
+  append_image->depth=depth;
   append_image->matte=matte;
   (void) SetImageBackgroundColor(append_image);
   status=MagickTrue;
@@ -510,30 +516,21 @@ MagickExport Image *AppendImages(const Image *images,
     CacheView
       *image_view;
 
-    Image
-      *image;
-
     MagickBooleanType
       proceed;
 
-    image=CloneImage(next,0,0,MagickTrue,exception);
-    if (image == (Image *) NULL)
-      break;
-    status=TransformImageColorspace(image,append_image->colorspace);
-    if (status == MagickFalse)
-      break;
     SetGeometry(append_image,&geometry);
-    GravityAdjustGeometry(image->columns,image->rows,image->gravity,&geometry);
+    GravityAdjustGeometry(next->columns,next->rows,next->gravity,&geometry);
     if (stack != MagickFalse)
       x_offset-=geometry.x;
     else
       y_offset-=geometry.y;
-    image_view=AcquireVirtualCacheView(image,exception);
+    image_view=AcquireVirtualCacheView(next,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
     #pragma omp parallel for schedule(static,4) shared(status) \
-      magick_threads(image,image,image->rows,1)
+      magick_threads(next,next,next->rows,1)
 #endif
-    for (y=0; y < (ssize_t) image->rows; y++)
+    for (y=0; y < (ssize_t) next->rows; y++)
     {
       MagickBooleanType
         sync;
@@ -555,9 +552,9 @@ MagickExport Image *AppendImages(const Image *images,
 
       if (status == MagickFalse)
         continue;
-      p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
+      p=GetCacheViewVirtualPixels(image_view,0,y,next->columns,1,exception);
       q=QueueCacheViewAuthenticPixels(append_view,x_offset,y+y_offset,
-        image->columns,1,exception);
+        next->columns,1,exception);
       if ((p == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))
         {
           status=MagickFalse;
@@ -565,15 +562,15 @@ MagickExport Image *AppendImages(const Image *images,
         }
       indexes=GetCacheViewVirtualIndexQueue(image_view);
       append_indexes=GetCacheViewAuthenticIndexQueue(append_view);
-      for (x=0; x < (ssize_t) image->columns; x++)
+      for (x=0; x < (ssize_t) next->columns; x++)
       {
         SetPixelRed(q,GetPixelRed(p));
         SetPixelGreen(q,GetPixelGreen(p));
         SetPixelBlue(q,GetPixelBlue(p));
         SetPixelOpacity(q,OpaqueOpacity);
-        if (image->matte != MagickFalse)
+        if (next->matte != MagickFalse)
           SetPixelOpacity(q,GetPixelOpacity(p));
-        if ((image->colorspace == CMYKColorspace) &&
+        if ((next->colorspace == CMYKColorspace) &&
             (append_image->colorspace == CMYKColorspace))
           SetPixelIndex(append_indexes+x,GetPixelIndex(indexes+x));
         p++;
@@ -586,15 +583,14 @@ MagickExport Image *AppendImages(const Image *images,
     image_view=DestroyCacheView(image_view);
     if (stack == MagickFalse)
       {
-        x_offset+=(ssize_t) image->columns;
+        x_offset+=(ssize_t) next->columns;
         y_offset=0;
       }
     else
       {
         x_offset=0;
-        y_offset+=(ssize_t) image->rows;
+        y_offset+=(ssize_t) next->rows;
       }
-    image=DestroyImage(image);
     proceed=SetImageProgress(append_image,AppendImageTag,n,number_images);
     if (proceed == MagickFalse)
       break;
@@ -829,7 +825,10 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
       clone_image->colormap=(PixelPacket *) AcquireQuantumMemory(length,
         sizeof(*clone_image->colormap));
       if (clone_image->colormap == (PixelPacket *) NULL)
-        ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
+        {
+          clone_image=DestroyImage(clone_image);
+          ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
+        }
       (void) CopyMagickMemory(clone_image->colormap,image->colormap,length*
         sizeof(*clone_image->colormap));
     }
@@ -901,9 +900,12 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
   clone_image->page.height=(size_t) floor(scale*image->page.height+0.5);
   clone_image->page.y=(ssize_t) ceil(scale*image->page.y-0.5);
   clone_image->tile_offset.y=(ssize_t) ceil(scale*image->tile_offset.y-0.5);
-  clone_image->columns=columns;
-  clone_image->rows=rows;
   clone_image->cache=ClonePixelCache(image->cache);
+  if (SetImageExtent(clone_image,columns,rows) == MagickFalse)
+    {
+      InheritException(exception,&clone_image->exception);
+      clone_image=DestroyImage(clone_image);
+    }
   return(clone_image);
 }
 
@@ -2585,7 +2587,7 @@ MagickExport MagickBooleanType SetImageExtent(Image *image,const size_t columns,
   const size_t rows)
 {
   if ((columns == 0) || (rows == 0))
-    return(MagickFalse);
+    ThrowBinaryException(ImageError,"NegativeOrZeroImageSize",image->filename);
   image->columns=columns;
   image->rows=rows;
   if (image->depth > (8*sizeof(MagickSizeType)))
@@ -2761,7 +2763,6 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
           "BROWSE",
           "DCRAW",
           "EDIT",
-          "EPHEMERAL",
           "LAUNCH",
           "MPEG:DECODE",
           "MPEG:ENCODE",
@@ -2816,29 +2817,39 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
   *magic='\0';
   GetPathComponent(image_info->filename,MagickPath,magic);
   if (*magic == '\0')
-    (void) CopyMagickString(magic,image_info->magick,MaxTextExtent);
+    {
+      (void) CopyMagickString(magic,image_info->magick,MaxTextExtent);
+      magick_info=GetMagickInfo(magic,sans_exception);
+      GetPathComponent(image_info->filename,CanonicalPath,filename);
+      (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
+    }
   else
     {
+      const DelegateInfo
+        *delegate_info;
+
       /*
         User specified image format.
       */
       LocaleUpper(magic);
-      if (IsMagickConflict(magic) == MagickFalse)
+      magick_info=GetMagickInfo(magic,sans_exception);
+      delegate_info=GetDelegateInfo(magic,"*",sans_exception);
+      if (delegate_info == (const DelegateInfo *) NULL)
+        delegate_info=GetDelegateInfo("*",magic,sans_exception);
+      if (((magick_info != (const MagickInfo *) NULL) ||
+           (delegate_info != (const DelegateInfo *) NULL)) &&
+          (IsMagickConflict(magic) == MagickFalse))
         {
+          image_info->affirm=MagickTrue;
           (void) CopyMagickString(image_info->magick,magic,MaxTextExtent);
-          if (LocaleCompare(magic,"EPHEMERAL") != 0)
-            image_info->affirm=MagickTrue;
-          else
-            image_info->temporary=MagickTrue;
+          GetPathComponent(image_info->filename,CanonicalPath,filename);
+          (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
         }
     }
-  magick_info=GetMagickInfo(magic,sans_exception);
   sans_exception=DestroyExceptionInfo(sans_exception);
   if ((magick_info == (const MagickInfo *) NULL) ||
       (GetMagickEndianSupport(magick_info) == MagickFalse))
     image_info->endian=UndefinedEndian;
-  GetPathComponent(image_info->filename,CanonicalPath,filename);
-  (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
   if ((image_info->adjoin != MagickFalse) && (frames > 1))
     {
       /*
@@ -3511,7 +3522,7 @@ MagickExport MagickBooleanType StripImage(Image *image)
   (void) DeleteImageProperty(image,"date:create");
   (void) DeleteImageProperty(image,"date:modify");
   status=SetImageArtifact(image,"png:exclude-chunk",
-    "EXIF,iCCP,iTXt,sRGB,tEXt,zCCP,zTXt,date");
+    "bKGD,cHRM,EXIF,gAMA,iCCP,iTXt,sRGB,tEXt,zCCP,zTXt,date");
   return(status);
 }
 
@@ -3619,7 +3630,7 @@ MagickExport MagickBooleanType SyncImage(Image *image)
   image->taint=taint;
   if ((image->ping == MagickFalse) && (range_exception != MagickFalse))
     (void) ThrowMagickException(&image->exception,GetMagickModule(),
-      CorruptImageError,"InvalidColormapIndex","`%s'",image->filename);
+      CorruptImageWarning,"InvalidColormapIndex","`%s'",image->filename);
   return(status);
 }
 

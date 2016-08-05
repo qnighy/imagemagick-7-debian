@@ -320,6 +320,9 @@ MagickExport size_t GetQuantumExtent(const Image *image,
     case BGRAQuantum: packet_size=4; break;
     case CMYKQuantum: packet_size=4; break;
     case CMYKAQuantum: packet_size=5; break;
+    case CbYCrAQuantum: packet_size=4; break;
+    case CbYCrQuantum: packet_size=3; break;
+    case CbYCrYQuantum: packet_size=4; break;
     default: break;
   }
   if (quantum_info->pack == MagickFalse)
@@ -681,8 +684,9 @@ MagickExport MagickBooleanType SetQuantumDepth(const Image *image,
   if (quantum_info->pixels != (unsigned char **) NULL)
     DestroyQuantumPixels(quantum_info);
   quantum=(quantum_info->pad+6)*(quantum_info->depth+7)/8;
-  extent=image->columns*quantum;
-  if (quantum != (extent/image->columns))
+  extent=MagickMax(image->columns,image->rows)*quantum;
+  if ((MagickMax(image->columns,image->rows) != 0) &&
+      (quantum != (extent/MagickMax(image->columns,image->rows))))
     return(MagickFalse);
   return(AcquireQuantumPixels(quantum_info,extent));
 }
@@ -866,7 +870,6 @@ MagickExport void SetQuantumPack(QuantumInfo *quantum_info,
   assert(quantum_info->signature == MagickSignature);
   quantum_info->pack=pack;
 }
-
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -325,7 +325,7 @@ static void InsertRow(unsigned char *p,ssize_t y,Image *image, int bpp)
         if (q == (PixelPacket *) NULL)
           break;
         indexes=GetAuthenticIndexQueue(image);
-        for (x=0; x < ((ssize_t) image->columns-1); x+=2)
+        for (x=0; x < ((ssize_t) image->columns-3); x+=4)
         {
             index=ConstrainColormapIndex(image,(*p >> 6) & 0x3);
             SetPixelIndex(indexes+x,index);
@@ -342,8 +342,8 @@ static void InsertRow(unsigned char *p,ssize_t y,Image *image, int bpp)
             index=ConstrainColormapIndex(image,(*p) & 0x3);
             SetPixelIndex(indexes+x+1,index);
             SetPixelRGBO(q,image->colormap+(ssize_t) index);
-            p++;
             q++;
+            p++;
         }
        if ((image->columns % 4) != 0)
           {
@@ -351,15 +351,13 @@ static void InsertRow(unsigned char *p,ssize_t y,Image *image, int bpp)
             SetPixelIndex(indexes+x,index);
             SetPixelRGBO(q,image->colormap+(ssize_t) index);
             q++;
-            if ((image->columns % 4) >= 1)
-
+            if ((image->columns % 4) > 1)
               {
                 index=ConstrainColormapIndex(image,(*p >> 4) & 0x3);
                 SetPixelIndex(indexes+x,index);
                 SetPixelRGBO(q,image->colormap+(ssize_t) index);
                 q++;
-                if ((image->columns % 4) >= 2)
-
+                if ((image->columns % 4) > 2)
                   {
                     index=ConstrainColormapIndex(image,(*p >> 2) & 0x3);
                     SetPixelIndex(indexes+x,index);
@@ -535,6 +533,8 @@ static int UnpackWPGRaster(Image *image,int bpp)
             }
         }
       }
+      if (EOFBlob(image) != MagickFalse)
+        break;
     }
   BImgBuff=(unsigned char *) RelinquishMagickMemory(BImgBuff);
   return(y < (ssize_t) image->rows ? -5 : 0);
@@ -674,6 +674,8 @@ static int UnpackWPG2Raster(Image *image,int bpp)
               }
           }
         }
+      if (EOFBlob(image) != MagickFalse)
+        break;
     }
   BImgBuff=(unsigned char *) RelinquishMagickMemory(BImgBuff);
   return(0);
@@ -794,7 +796,7 @@ static Image *ExtractPostscript(Image *image,const ImageInfo *image_info,
   if(exception->severity != UndefinedException) goto FINISH_UNL;
   if(magic_info->name == (char *) NULL) goto FINISH_UNL;
 
-  (void) CopyMagickMemory(clone_info->magick,magic_info->name,MaxTextExtent);
+  (void) strncpy(clone_info->magick,magic_info->name,MaxTextExtent);
 
     /* Read nested image */
   /*FormatString(clone_info->filename,"%s:%s",magic_info->name,postscript_file);*/
@@ -808,9 +810,9 @@ static Image *ExtractPostscript(Image *image,const ImageInfo *image_info,
     Replace current image with new image while copying base image
     attributes.
   */
-  (void) CopyMagickMemory(image2->filename,image->filename,MaxTextExtent);
-  (void) CopyMagickMemory(image2->magick_filename,image->magick_filename,MaxTextExtent);
-  (void) CopyMagickMemory(image2->magick,image->magick,MaxTextExtent);
+  (void) CopyMagickString(image2->filename,image->filename,MaxTextExtent);
+  (void) CopyMagickString(image2->magick_filename,image->magick_filename,MaxTextExtent);
+  (void) CopyMagickString(image2->magick,image->magick,MaxTextExtent);
   image2->depth=image->depth;
   DestroyBlob(image2);
   image2->blob=ReferenceBlob(image->blob);
@@ -1120,6 +1122,9 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
               bpp=BitmapHeader2.Depth;
 
             UnpackRaster:
+              status=SetImageExtent(image,image->columns,image->rows);
+              if (status == MagickFalse)
+                break;
               if ((image->colors == 0) && (bpp != 24))
                 {
                   image->colors=one << bpp;
@@ -1196,8 +1201,7 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
                         AppendImageToList(&image,flip_image);
                       }
                     }
-
-      /* rotate command */
+                  /* rotate command */
                   if(BitmapHeader2.RotAngle & 0x0FFF)
                     {
                       Image
@@ -1219,7 +1223,7 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
               if (image->next == (Image *) NULL)
                 goto Finish;
               image=SyncNextImageInList(image);
-              image->columns=image->rows=0;
+              image->columns=image->rows=1;
               image->colors=0;
               break;
 
@@ -1314,7 +1318,9 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
                 }
               image->columns=Bitmap2Header1.Width;
               image->rows=Bitmap2Header1.Height;
-
+              status=SetImageExtent(image,image->columns,image->rows);
+              if (status == MagickFalse)
+                break;
               if ((image->colors == 0) && (bpp != 24))
                 {
                   size_t
@@ -1341,7 +1347,7 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
                   {
                     ldblk=(ssize_t) ((bpp*image->columns+7)/8);
                     BImgBuff=(unsigned char *) AcquireQuantumMemory((size_t)
-                      ldblk,sizeof(*BImgBuff));
+                      ldblk+1,sizeof(*BImgBuff));
                     if (BImgBuff == (unsigned char *) NULL)
                       goto NoMemory;
 
@@ -1352,7 +1358,7 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
                       }
 
                     if(BImgBuff)
-                      BImgBuff=(unsigned char *) RelinquishMagickMemory(BImgBuff);;
+                      BImgBuff=(unsigned char *) RelinquishMagickMemory(BImgBuff);
                     break;
                   }
                 case 1:    /*RLE for WPG2 */
@@ -1432,12 +1438,6 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
          ThrowReaderException(CoderError,"DataEncodingSchemeIsNotSupported");
       }
    }
-  status=SetImageExtent(image,image->columns,image->rows);
-  if (status == MagickFalse)
-    {
-      InheritException(exception,&image->exception);
-      return(DestroyImageList(image));
-    }
 
  Finish:
   (void) CloseBlob(image);

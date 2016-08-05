@@ -5,7 +5,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
     <title>ImageMagick: Resources</title>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -22,12 +21,14 @@
   <meta name="author" content="ImageMagick Studio LLC"/>
   <meta name="revisit-after" content="2 DAYS"/>
   <meta name="resource-type" content="document"/>
-  <meta name="copyright" content="Copyright (c) 1999-2015 ImageMagick Studio LLC"/>
+  <meta name="copyright" content="Copyright (c) 1999-2016 ImageMagick Studio LLC"/>
   <meta name="distribution" content="Global"/>
   <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1"/>
+  <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
   <link rel="icon" href="../images/wand.png"/>
   <link rel="shortcut icon" href="../images/wand.ico"/>
-  <link rel="stylesheet" href="css/magick.css"/>
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Roboto:900,400,400italic,700,700italic,300,300italic|Open+Sans:300italic,400italic,700italic,300,400,600,700"  >
+  <link rel="stylesheet" type="text/css" href="css/magick.css"/>
 </head>
 <body>
 <div class="main">
@@ -48,8 +49,8 @@
       <a class="magick-nav-item " href="command-line-processing.html">Command-line</a>
       <a class="magick-nav-item active" href="resources.html">Resources</a>
       <a class="magick-nav-item " href="api.html">Develop</a>
-      <a class="magick-nav-item " href="http://www.imagemagick.org/script/search.php">Search</a>
-      <a class="magick-nav-item pull-right" href="http://www.imagemagick.org/discourse-server/">Community</a>
+      <a class="magick-nav-item " href="http://legacy.imagemagick.org/script/search.php">Search</a>
+      <a class="magick-nav-item pull-right" href="https://www.imagemagick.org/discourse-server/">Community</a>
     </nav>
   </div>
 </div>
@@ -171,8 +172,8 @@ $MAGICK_CONFIGURE_PATH
 $PREFIX/etc/ImageMagick-6 
 $PREFIX/share/ImageMagick-6 
 $XDG_CACHE_HOME/ImageMagick
-$HOME/.config/ImageMagick/
-&lt;<var>client path</var>&gt;/etc/ImageMagick/
+$HOME/.config/ImageMagick
+&lt;<var>client path</var>&gt;/etc/ImageMagick
 </pre>
 
 <p>The environmental variable $PREFIX is the default install path (e.g. <code>/usr/local</code>). The <var>client path</var> is the execution path of your ImageMagick client (e.g. <code>/usr/local</code>) .</p>
@@ -181,12 +182,12 @@ $HOME/.config/ImageMagick/
 
 <pre>
 $MAGICK_CONFIGURE_PATH
-$MAGICK_HOME/etc/ImageMagick
-$MAGICK_HOME/share/ImageMagick-6.9.2 
-$PREFIX/share/ImageMagick-6.9.2 
+$MAGICK_HOME/etc/ImageMagick-6 
+$MAGICK_HOME/share/ImageMagick-6 
+$PREFIX/share/ImageMagick-6 
 $XDG_CACHE_HOME/ImageMagick
 $HOME/.config/ImageMagick/
-&lt;<var>client path</var>&gt;/etc/ImageMagick/
+&lt;<var>client path</var>&gt;/etc/ImageMagick
 &lt;<var>current directory</var>&gt;
 </pre>
 
@@ -196,18 +197,18 @@ $HOME/.config/ImageMagick/
 $MAGICK_CONFIGURE_PATH
 &lt;<var>windows registry</var>&gt;
 $PREFIX/config
-$USERPROFILE/.config/ImageMagick/
+$USERPROFILE/.config/ImageMagick
 &lt;<var>client path</var>&gt;
 </pre>
 
-<p>Above, $PREFIX is the default install path, typically <code>c:\\Program Files\\ImageMagick-6.9.2</code>.</p>
+<p>Above, $PREFIX is the default install path, typically <code>c:\\Program Files\\ImageMagick-6.9.4</code>.</p>
 
 <p>For an uninstalled Windows installation, the configuration load order is:</p>
 
 <pre>
 $MAGICK_CONFIGURE_PATH
 $MAGICK_HOME
-$USERPROFILE/.config/ImageMagick/
+$USERPROFILE/.config/ImageMagick
 <var>client path</var>
 &lt;<var>current directory</var>&gt;
 </pre>
@@ -220,25 +221,25 @@ $USERPROFILE/.config/ImageMagick/
 <p>An image coder (i.e. encoder / decoder) is responsible for registering, optionally classifying, optionally reading, optionally writing, and unregistering one image format (e.g. PNG, GIF, JPEG, etc.).  ImageMagick searches for coders in the following order and it uses the first match found:</p>
 
 <pre>
-$MAGICK_HOME/lib/ImageMagick-6.9.2/modules-Q16/coders/
-&lt;<var>client path</var>&gt;/../lib/ImageMagick-6.9.2/modules-Q16/coders/
-$MAGICK_HOME/lib/ImageMagick-6.9.2/modules-Q16/coders
-$MAGICK_HOME/share/ImageMagick-6.9.2/modules-Q16/coders
+$MAGICK_HOME/lib/ImageMagick-6.9.4/modules-Q16/coders
+&lt;<var>client path</var>&gt;/../lib/ImageMagick-6.9.4/modules-Q16/coders
+$MAGICK_HOME/lib/ImageMagick-6.9.4/modules-Q16/coders
+$MAGICK_HOME/share/ImageMagick-6.9.4/modules-Q16/coders
 $XDG_CACHE_HOME/ImageMagick
-$HOME/.config/ImageMagick/
-&lt;<var>client path</var>&gt;/lib/ImageMagick-6.9.2/modules-Q16/coders
+$HOME/.config/ImageMagick
+&lt;<var>client path</var>&gt;/lib/ImageMagick-6.9.4/modules-Q16/coders
 </pre>
 
 <h4>Filters</h4>
 <p>ImageMagick provides a convenient mechanism for adding your own custom image processing algorithms.  ImageMagick searches for filters in the following order and it uses the first match found:</p>
 <pre>
-$MAGICK_HOME/lib/ImageMagick-6.9.2/modules-Q16/filters/
-&lt;<var>client path</var>&gt;/../lib/ImageMagick-6.9.2/modules-Q16/filters/
-$MAGICK_HOME/lib/ImageMagick-6.9.2/modules-Q16/filters
-$MAGICK_HOME/share/ImageMagick-6.9.2/modules-Q16/filters
+$MAGICK_HOME/lib/ImageMagick-6.9.4/modules-Q16/filters
+&lt;<var>client path</var>&gt;/../lib/ImageMagick-6.9.4/modules-Q16/filters
+$MAGICK_HOME/lib/ImageMagick-6.9.4/modules-Q16/filters
+$MAGICK_HOME/share/ImageMagick-6.9.4/modules-Q16/filters
 $XDG_CACHE_HOME/ImageMagick
-$HOME/.config/ImageMagick/
-&lt;<var>client path</var>&gt;/lib/ImageMagick-6.9.2/modules-Q16/filters
+$HOME/.config/ImageMagick
+&lt;<var>client path</var>&gt;/lib/ImageMagick-6.9.4/modules-Q16/filters
 </pre>
 
 <h2 class="magick-header"><a id="fonts"></a>Fonts</h2>
@@ -247,11 +248,11 @@ $HOME/.config/ImageMagick/
 
 <pre>
 $MAGICK_CONFIGURE_PATH
-$MAGICK_HOME/etc/ImageMagick/
-$MAGICK_HOME/share/ImageMagick-6.9.2/
+$MAGICK_HOME/etc/ImageMagick/-6.9.4
+$MAGICK_HOME/share/ImageMagick-6.9.4
 $XDG_CACHE_HOME/ImageMagick
-$HOME/.config/ImageMagick/
-&lt;<var>client path</var>&gt;/etc/ImageMagick/
+$HOME/.config/ImageMagick
+&lt;<var>client path</var>&gt;/etc/ImageMagick
 $MAGICK_FONT_PATH
 </pre>
 
@@ -370,8 +371,8 @@ $MAGICK_FONT_PATH
 </p>
     <p><a href="resources.html#">Back to top</a> •
     <a href="http://pgp.mit.edu:11371/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
-    <a href="http://www.imagemagick.org/script/contact.php">Contact Us</a></p>
-        <p><small>©  1999-2015 ImageMagick Studio LLC</small></p>
+    <a href="http://legacy.imagemagick.org/script/contact.php">Contact Us</a></p>
+        <p><small>©  1999-2016 ImageMagick Studio LLC</small></p>
   </footer>
 </div><!-- /.container -->
 
@@ -380,4 +381,3 @@ $MAGICK_FONT_PATH
 </div>
 </body>
 </html>
-<!-- Magick Cache 9th December 2015 20:37 -->

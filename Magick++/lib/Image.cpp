@@ -1929,8 +1929,9 @@ void Magick::Image::annotate(const std::string &text_,
   modifyImage();
 
   drawInfo=options()->drawInfo();
+  drawInfo->text=DestroyString(drawInfo->text);
   drawInfo->text=const_cast<char *>(text_.c_str());
-  drawInfo->geometry=0;
+  drawInfo->geometry=DestroyString(drawInfo->geometry);
 
   if (boundingArea_.isValid())
     {
@@ -1981,8 +1982,8 @@ void Magick::Image::annotate(const std::string &text_,
 
   // Restore original values
   drawInfo->affine=oaffine;
-  drawInfo->text=0;
-  drawInfo->geometry=0;
+  drawInfo->text=(char *) NULL;
+  drawInfo->geometry=(char *) NULL;
 
   throwImageException();
 }
@@ -1996,13 +1997,14 @@ void Magick::Image::annotate(const std::string &text_,
   modifyImage();
 
   drawInfo=options()->drawInfo();
+  drawInfo->text=DestroyString(drawInfo->text);
   drawInfo->text=const_cast<char *>(text_.c_str());
   drawInfo->gravity=gravity_;
 
   AnnotateImage(image(),drawInfo);
 
   drawInfo->gravity=NorthWestGravity;
-  drawInfo->text=0;
+  drawInfo->text=(char *) NULL;
 
   throwImageException();
 }
@@ -2749,7 +2751,7 @@ void Magick::Image::draw(const Magick::Drawable &drawable_)
 
   modifyImage();
 
-  wand=DrawAllocateWand(options()->drawInfo(),image());
+  wand=AcquireDrawingWand(options()->drawInfo(),image());
 
   if(wand)
     {
@@ -2771,7 +2773,7 @@ void Magick::Image::draw(const std::list<Magick::Drawable> &drawable_)
 
   modifyImage();
 
-  wand=DrawAllocateWand(options()->drawInfo(),image());
+  wand=AcquireDrawingWand(options()->drawInfo(),image());
 
   if(wand)
     {
@@ -4869,6 +4871,19 @@ void Magick::Image::wave(const double amplitude_,const double wavelength_)
 
   GetPPException;
   newImage=WaveImage(constImage(),amplitude_,wavelength_,exceptionInfo);
+  replaceImage(newImage);
+  ThrowImageException;
+}
+
+void Magick::Image::waveletDenoise(const double threshold_,
+  const double softness_)
+{
+  MagickCore::Image
+    *newImage;
+
+  GetPPException;
+  newImage=WaveletDenoiseImage(constImage(),threshold_,softness_,
+    exceptionInfo);
   replaceImage(newImage);
   ThrowImageException;
 }

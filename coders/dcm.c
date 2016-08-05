@@ -2764,6 +2764,21 @@ static unsigned short ReadDCMShort(DCMStreamInfo *stream_info,Image *image)
   return(value);
 }
 
+static signed short ReadDCMSignedShort(DCMStreamInfo *stream_info,Image *image)
+{
+  union
+  {
+    unsigned short
+      unsigned_value;
+
+    signed short
+      signed_value;
+  } quantum;
+
+  quantum.unsigned_value=ReadDCMShort(stream_info,image);
+  return(quantum.signed_value);
+}
+
 static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   char
@@ -2976,17 +2991,17 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if (quantum == 4)
       {
         if (group == 0x0002)
-          datum=(int) ReadBlobLSBLong(image);
+          datum=ReadBlobLSBSignedLong(image);
         else
-          datum=(int) ReadBlobLong(image);
+          datum=ReadBlobSignedLong(image);
       }
     else
       if (quantum == 2)
         {
           if (group == 0x0002)
-            datum=(int) ReadBlobLSBShort(image);
+            datum=ReadBlobLSBSignedShort(image);
           else
-            datum=(int) ReadBlobShort(image);
+            datum=ReadBlobSignedShort(image);
         }
     quantum=0;
     length=1;
@@ -3045,22 +3060,22 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
     */
     data=(unsigned char *) NULL;
     if ((length == 1) && (quantum == 1))
-      datum=(int) ReadBlobByte(image);
+      datum=ReadBlobByte(image);
     else
       if ((length == 1) && (quantum == 2))
         {
           if (group == 0x0002)
-            datum=(int) ReadBlobLSBShort(image);
+            datum=ReadBlobLSBSignedShort(image);
           else
-            datum=(int) ReadBlobShort(image);
+            datum=ReadBlobSignedShort(image);
         }
       else
         if ((length == 1) && (quantum == 4))
           {
             if (group == 0x0002)
-              datum=(int) ReadBlobLSBLong(image);
+              datum=ReadBlobLSBSignedLong(image);
             else
-              datum=(int) ReadBlobLong(image);
+              datum=ReadBlobSignedLong(image);
           }
         else
           if ((quantum != 0) && (length != 0))
@@ -3204,6 +3219,8 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Photometric interpretation.
             */
+            if (data == (unsigned char *) NULL)
+              break;
             for (i=0; i < (ssize_t) MagickMin(length,MaxTextExtent-1); i++)
               photometric[i]=(char) data[i];
             photometric[i]='\0';
@@ -3225,6 +3242,8 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Number of frames.
             */
+            if (data == (unsigned char *) NULL)
+              break;
             number_scenes=StringToUnsignedLong((char *) data);
             break;
           }
@@ -3562,7 +3581,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           if (stream_info->offsets == (ssize_t *) NULL)
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           for (i=0; i < (ssize_t) stream_info->offset_count; i++)
-            stream_info->offsets[i]=(ssize_t) ((int) ReadBlobLSBLong(image));
+            stream_info->offsets[i]=(ssize_t) ReadBlobLSBSignedLong(image);
           offset=TellBlob(image);
           for (i=0; i < (ssize_t) stream_info->offset_count; i++)
             stream_info->offsets[i]+=offset;
@@ -3662,7 +3681,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (scale == (Quantum *) NULL)
         ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
       range=GetQuantumRange(depth);
-      for (i=0; i < (ssize_t) (GetQuantumRange(depth)+1); i++)
+      for (i=0; i <= (ssize_t) GetQuantumRange(depth); i++)
         scale[i]=ScaleAnyToQuantum((size_t) i,range);
     }
   if (image->compression == RLECompression)
@@ -3692,7 +3711,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           if (stream_info->offsets == (ssize_t *) NULL)
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           for (i=0; i < (ssize_t) stream_info->offset_count; i++)
-            stream_info->offsets[i]=(ssize_t) ((int) ReadBlobLSBLong(image));
+            stream_info->offsets[i]=(ssize_t) ReadBlobLSBSignedLong(image);
           offset=TellBlob(image);
           for (i=0; i < (ssize_t) stream_info->offset_count; i++)
             stream_info->offsets[i]+=offset;
@@ -3780,7 +3799,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             depth=8;
           }
         for (i=0; i < 15; i++)
-          stream_info->segments[i]=(ssize_t) ((int) ReadBlobLSBLong(image));
+          stream_info->segments[i]=(ssize_t) ReadBlobLSBSignedLong(image);
         stream_info->remaining-=64;
       }
     if ((samples_per_pixel > 1) && (image->interlace == PlaneInterlace))
@@ -3886,8 +3905,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                   if ((bits_allocated != 12) || (significant_bits != 12))
                     {
                       if (signed_data)
-                        pixel_value=(signed short) ReadDCMShort(stream_info,
-                          image);
+                        pixel_value=ReadDCMSignedShort(stream_info,image);
                       else
                         pixel_value=ReadDCMShort(stream_info,image);
                       if (polarity != MagickFalse)
@@ -3900,7 +3918,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                           byte;
                       else
                         {
-                          pixel_value=(int) ReadDCMShort(stream_info,image);
+                          pixel_value=ReadDCMSignedShort(stream_info,image);
                           byte=(int) (pixel_value & 0x0f);
                           pixel_value>>=4;
                         }
@@ -3957,9 +3975,12 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 pixel.blue&=mask;
                 if (scale != (Quantum *) NULL)
                   {
-                    pixel.red=scale[pixel.red];
-                    pixel.green=scale[pixel.green];
-                    pixel.blue=scale[pixel.blue];
+                    if (pixel.red <= GetQuantumRange(depth))
+                      pixel.red=scale[pixel.red];
+                    if (pixel.green <= GetQuantumRange(depth))
+                      pixel.green=scale[pixel.green];
+                    if (pixel.blue <= GetQuantumRange(depth))
+                      pixel.blue=scale[pixel.blue];
                   }
               }
             SetPixelRed(q,pixel.red);
@@ -4011,7 +4032,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
                             byte;
                         else
                           {
-                            pixel_value=(int) ReadDCMShort(stream_info,image);
+                            pixel_value=ReadDCMShort(stream_info,image);
                             byte=(int) (pixel_value & 0x0f);
                             pixel_value>>=4;
                           }

@@ -115,7 +115,6 @@ MagickExport CacheView *AcquireAuthenticCacheView(const Image *image,
     *magick_restrict cache_view;
 
   cache_view=AcquireVirtualCacheView(image,exception);
-  (void) SyncImagePixelCache(cache_view->image,exception);
   return(cache_view);
 }
 
@@ -157,11 +156,14 @@ MagickExport CacheView *AcquireVirtualCacheView(const Image *image,
   CacheView
     *magick_restrict cache_view;
 
+  magick_unreferenced(image);
   assert(image != (Image *) NULL);
   assert(image->signature == MagickSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  (void) exception;
+#if defined(MAGICKCORE_OPENCL_SUPPORT)
+  SyncAuthenticOpenCLBuffer(image);
+#endif
   cache_view=(CacheView *) MagickAssumeAligned(AcquireAlignedMemory(1,
     sizeof(*cache_view)));
   if (cache_view == (CacheView *) NULL)

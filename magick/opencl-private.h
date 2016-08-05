@@ -15,8 +15,8 @@ limitations under the License.
 
 MagickCore OpenCL private methods.
 */
-#ifndef _MAGICKCORE_OPENCL_PRIVATE_H
-#define _MAGICKCORE_OPENCL_PRIVATE_H
+#ifndef MAGICKCORE_OPENCL_PRIVATE_H
+#define MAGICKCORE_OPENCL_PRIVATE_H
 
 /*
 Include declarations.
@@ -36,10 +36,11 @@ extern "C" {
   typedef void* cl_kernel;
   typedef void* cl_mem;
   typedef void* cl_platform_id;
+  typedef void* cl_uint;
   typedef struct { unsigned char t[8]; } cl_device_type; /* 64-bit */
 #else
 
-#define MAX_COMMAND_QUEUES 8
+#define MAX_COMMAND_QUEUES 16
 
 /*
  *
@@ -163,8 +164,9 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *MAGICKpfn_clSetKernelArg)(
     size_t       arg_size,
     const void * arg_value) CL_API_SUFFIX__VERSION_1_0;
 
-/* Flush and Finish APIs */
-typedef CL_API_ENTRY cl_int (CL_API_CALL *MAGICKpfn_clFlush)(cl_command_queue command_queue) CL_API_SUFFIX__VERSION_1_0;
+typedef CL_API_ENTRY cl_int
+  (CL_API_CALL *MAGICKpfn_clFlush)(cl_command_queue command_queue)
+    CL_API_SUFFIX__VERSION_1_0;
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL *MAGICKpfn_clFinish)(cl_command_queue command_queue) CL_API_SUFFIX__VERSION_1_0;
 
@@ -236,6 +238,14 @@ typedef CL_API_ENTRY cl_int(CL_API_CALL *MAGICKpfn_clWaitForEvents)(
 typedef CL_API_ENTRY cl_int(CL_API_CALL *MAGICKpfn_clReleaseEvent)(
     cl_event event) CL_API_SUFFIX__VERSION_1_0;
 
+typedef CL_API_ENTRY cl_int(CL_API_CALL *MAGICKpfn_clRetainEvent)(
+    cl_event event) CL_API_SUFFIX__VERSION_1_0;
+
+typedef CL_API_ENTRY cl_int(CL_API_CALL *MAGICKpfn_clSetEventCallback)(
+    cl_event event,cl_int command_exec_callback_type,
+    void (CL_CALLBACK *MAGICKpfn_notify)(cl_event,cl_int,void *),
+    void *user_data) CL_API_SUFFIX__VERSION_1_1;
+
 /*
  *
  * vendor dispatch table structure
@@ -279,6 +289,8 @@ struct MagickLibraryRec
   MAGICKpfn_clGetEventProfilingInfo                  clGetEventProfilingInfo;
   MAGICKpfn_clWaitForEvents                          clWaitForEvents;
   MAGICKpfn_clReleaseEvent                           clReleaseEvent;
+  MAGICKpfn_clRetainEvent                            clRetainEvent;
+  MAGICKpfn_clSetEventCallback                       clSetEventCallback;
 };
 
 struct _MagickCLEnv {
@@ -297,12 +309,6 @@ struct _MagickCLEnv {
   cl_program programs[MAGICK_OPENCL_NUM_PROGRAMS]; /* one program object maps one kernel source file */
 
   MagickBooleanType regenerateProfile;   /* re-run the microbenchmark in auto device selection mode */ 
-
-  /* Random number generator seeds */
-  unsigned int numGenerators;
-  float randNormalize;
-  cl_mem seeds;
-  SemaphoreInfo* seedsLock;
 
   SemaphoreInfo* lock;
 
@@ -374,6 +380,7 @@ typedef enum {
   ResizeVerticalKernel,
   UnsharpMaskBlurColumnKernel,
   UnsharpMaskKernel,
+  WaveletDenoiseKernel,
   KERNEL_COUNT
 } ProfiledKernels;
 
@@ -390,6 +397,7 @@ extern MagickPrivate MagickBooleanType
   OpenCLThrowMagickException(ExceptionInfo *,
     const char *,const char *,const size_t,
     const ExceptionType,const char *,const char *,...),
+  RecordProfileData(MagickCLEnv,ProfiledKernels,cl_event),
   RelinquishOpenCLCommandQueue(MagickCLEnv, cl_command_queue),
   RelinquishOpenCLKernel(MagickCLEnv, cl_kernel);
 
@@ -401,21 +409,10 @@ extern MagickPrivate const char*
   GetOpenCLCachedFilesDirectory();
 
 extern MagickPrivate void
-  OpenCLLog(const char*),
-  UnlockRandSeedBuffer(MagickCLEnv);
-
-extern MagickPrivate cl_mem 
-  GetAndLockRandSeedBuffer(MagickCLEnv);
-
-extern MagickPrivate unsigned int 
-  GetNumRandGenerators(MagickCLEnv);
-
-extern MagickPrivate float 
-  GetRandNormalize(MagickCLEnv);
+  OpenCLLog(const char*);
 
 extern MagickPrivate void
-  OpenCLTerminus(),
-  RecordProfileData(MagickCLEnv,ProfiledKernels,cl_event);
+  OpenCLTerminus();
 
 /* #define OPENCLLOG_ENABLED 1 */
 static inline void OpenCLLogException(const char* function, 

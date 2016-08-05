@@ -62,6 +62,7 @@
 #include "magick/log.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/module.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
@@ -387,8 +388,10 @@ static Image *ReadGROUP4Image(const ImageInfo *image_info,
   length=fwrite("\000\000\000\000",1,4,file);
   length=WriteLSBLong(file,(size_t) (image->x_resolution+0.5));
   length=WriteLSBLong(file,1);
+  status=MagickTrue;
   for (length=0; (c=ReadBlobByte(image)) != EOF; length++)
-    (void) fputc(c,file);
+    if (fputc(c,file) != c)
+      status=MagickFalse;
   offset=(ssize_t) fseek(file,(ssize_t) offset,SEEK_SET);
   length=WriteLSBLong(file,(unsigned int) length);
   (void) fclose(file);
@@ -410,6 +413,8 @@ static Image *ReadGROUP4Image(const ImageInfo *image_info,
       (void) CopyMagickString(image->magick,"GROUP4",MaxTextExtent);
     }
   (void) RelinquishUniqueFileResource(filename);
+  if (status == MagickFalse)
+    image=DestroyImage(image);
   return(image);
 }
 #endif
@@ -1293,12 +1298,6 @@ RestoreMSCWarning
     image->columns=(size_t) width;
     image->rows=(size_t) height;
     image->depth=(size_t) bits_per_sample;
-    status=SetImageExtent(image,image->columns,image->rows);
-    if (status == MagickFalse)
-      {
-        InheritException(exception,&image->exception);
-        return(DestroyImageList(image));
-      }
     if (image->debug != MagickFalse)
       (void) LogMagickEvent(CoderEvent,GetMagickModule(),"Image depth: %.20g",
         (double) image->depth);
@@ -1555,6 +1554,12 @@ RestoreMSCWarning
             }
         goto next_tiff_frame;
       }
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     method=ReadGenericMethod;
     if (TIFFGetField(tiff,TIFFTAG_ROWSPERSTRIP,&rows_per_strip) == 1)
       {
@@ -1621,7 +1626,8 @@ RestoreMSCWarning
               quantum_type=GrayQuantum;
               pad=(size_t) MagickMax((size_t) samples_per_pixel-1,0);
             }
-        status=SetQuantumPad(image,quantum_info,pad*((bits_per_sample+7) >> 3));
+        status=SetQuantumPad(image,quantum_info,pad*pow(2,ceil(log(
+          bits_per_sample)/log(2))));
         if (status == MagickFalse)
           {
             TIFFClose(tiff);
@@ -1888,9 +1894,6 @@ RestoreMSCWarning
           columns,
           rows;
 
-        size_t
-          number_pixels;
-
         /*
           Convert tiled TIFF image to DirectClass MIFF image.
         */
@@ -1901,9 +1904,14 @@ RestoreMSCWarning
             ThrowReaderException(CoderError,"ImageIsNotTiled");
           }
         (void) SetImageStorageClass(image,DirectClass);
-        number_pixels=columns*rows;
-        tile_pixels=(uint32 *) AcquireQuantumMemory(number_pixels,
-          sizeof(*tile_pixels));
+        number_pixels=(MagickSizeType) columns*rows;
+        if (HeapOverflowSanityCheck(rows,sizeof(*tile_pixels)) != MagickFalse)
+          {
+            TIFFClose(tiff);
+            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          }
+        tile_pixels=(uint32 *) AcquireQuantumMemory(columns,
+          rows*sizeof(*tile_pixels));
         if (tile_pixels == (uint32 *) NULL)
           {
             TIFFClose(tiff);
@@ -2005,14 +2013,13 @@ RestoreMSCWarning
           Convert TIFF image to DirectClass MIFF image.
         */
         number_pixels=(MagickSizeType) image->columns*image->rows;
-        if ((number_pixels*sizeof(uint32)) != (MagickSizeType) ((size_t)
-            (number_pixels*sizeof(uint32))))
+        if (HeapOverflowSanityCheck(image->rows,sizeof(*pixels)) != MagickFalse)
           {
             TIFFClose(tiff);
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           }
         pixel_info=AcquireVirtualMemory(image->columns,image->rows*
-          sizeof(uint32));
+          sizeof(*pixels));
         if (pixel_info == (MemoryInfo *) NULL)
           {
             TIFFClose(tiff);
@@ -2485,6 +2492,8 @@ static MagickBooleanType WriteGROUP4Image(const ImageInfo *image_info,
   (void) SetImageType(huffman_image,BilevelType);
   write_info=CloneImageInfo((ImageInfo *) NULL);
   SetImageInfoFile(write_info,file);
+  (void) SetImageType(image,BilevelType);
+  (void) SetImageDepth(image,1);
   write_info->compression=Group4Compression;
   write_info->type=BilevelType;
   (void) SetImageOption(write_info,"quantum:polarity","min-is-white");
@@ -3187,6 +3196,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
       case Group4Compression:
       {
         (void) SetImageType(image,BilevelType);
+        (void) SetImageDepth(image,1);
         break;
       }
       case JPEGCompression:
@@ -3352,14 +3362,8 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
                   MagickFalse ? PHOTOMETRIC_MINISWHITE :
                   PHOTOMETRIC_MINISBLACK);
                 (void) TIFFSetField(tiff,TIFFTAG_SAMPLESPERPIXEL,1);
-                if ((image_info->depth == 0) && (image->matte == MagickFalse) &&
-                    (SetImageMonochrome(image,&image->exception) != MagickFalse))
-                  {
-                    status=SetQuantumDepth(image,quantum_info,1);
-                    if (status == MagickFalse)
-                      ThrowWriterException(ResourceLimitError,
-                        "MemoryAllocationFailed");
-                  }
+                if ((image->depth == 1) && (image->matte == MagickFalse))
+                  SetImageMonochrome(image,&image->exception);
               }
             else
               if (image->storage_class == PseudoClass)

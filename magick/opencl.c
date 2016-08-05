@@ -43,6 +43,7 @@
 #include "magick/studio.h"
 #include "magick/artifact.h"
 #include "magick/cache.h"
+#include "magick/cache-private.h"
 #include "magick/color.h"
 #include "magick/compare.h"
 #include "magick/constitute.h"
@@ -128,6 +129,7 @@ static const char *kernelNames[] = {
   "ResizeVertical",
   "UnsharpMaskBlurColumn",
   "UnsharpMask",
+  "WaveletDenoise",
   "NONE" };
 
 KernelProfileRecord
@@ -183,7 +185,7 @@ double readAccelerateTimer(AccelerateTimer* timer) {
   return (double)timer->_clocks/(double)timer->_freq;
 };
 
-MagickPrivate void RecordProfileData(MagickCLEnv clEnv, ProfiledKernels kernel, cl_event event)
+MagickPrivate MagickBooleanType RecordProfileData(MagickCLEnv clEnv, ProfiledKernels kernel, cl_event event)
 {
 #if PROFILE_OCL_KERNELS
   cl_int status;
@@ -207,6 +209,9 @@ MagickPrivate void RecordProfileData(MagickCLEnv clEnv, ProfiledKernels kernel, 
     profileRecords[kernel].count += 1;
     UnlockSemaphoreInfo(clEnv->commandQueuesLock);
   }
+  return(MagickTrue);
+#else
+  return(MagickFalse);
 #endif
 }
 
@@ -430,6 +435,8 @@ static MagickBooleanType bindOpenCLFunctions(void* library)
   BIND(clGetEventProfilingInfo);
   BIND(clWaitForEvents);
   BIND(clReleaseEvent);
+  BIND(clRetainEvent);
+  BIND(clSetEventCallback);
 
   return MagickTrue;
 }
@@ -710,6 +717,9 @@ MagickExport
   MagickBooleanType
    status;
 
+  size_t
+    length;
+
   magick_unreferenced(exception);
 
   status = MagickFalse;
@@ -755,6 +765,28 @@ MagickExport
     status = MagickTrue;
     break;
 
+  case MAGICK_OPENCL_ENV_PARAM_PLATFORM_VENDOR:
+    if (dataSize != sizeof(char *))
+      goto cleanup;
+    clEnv->library->clGetPlatformInfo(clEnv->platform,CL_PLATFORM_VENDOR,0,
+      NULL,&length);
+    *((char **) data)=(char *) AcquireQuantumMemory(length,sizeof(char));
+    clEnv->library->clGetPlatformInfo(clEnv->platform,CL_PLATFORM_VENDOR,
+      length,*((char **) data),NULL);
+    status = MagickTrue;
+    break;
+
+  case MAGICK_OPENCL_ENV_PARAM_DEVICE_NAME:
+    if (dataSize != sizeof(char *))
+      goto cleanup;
+    clEnv->library->clGetDeviceInfo(clEnv->device,CL_DEVICE_NAME,0,NULL,
+      &length);
+    *((char **) data)=(char *) AcquireQuantumMemory(length,sizeof(char));
+    clEnv->library->clGetDeviceInfo(clEnv->device,CL_DEVICE_NAME,length,
+      *((char **) data),NULL);
+    status = MagickTrue;
+    break;
+  
   default:
     goto cleanup;
   };
@@ -1318,6 +1350,18 @@ static MagickBooleanType autoSelectDevice(MagickCLEnv clEnv, ExceptionInfo* exce
 %
 */
 
+static void RelinquishCommandQueues(MagickCLEnv clEnv)
+{
+  if (clEnv == (MagickCLEnv) NULL)
+    return;
+
+  LockSemaphoreInfo(clEnv->commandQueuesLock);
+  while (clEnv->commandQueuesPos >= 0)
+    clEnv->library->clReleaseCommandQueue(
+      clEnv->commandQueues[clEnv->commandQueuesPos--]);
+  UnlockSemaphoreInfo(clEnv->commandQueuesLock);
+}
+
 MagickExport
 MagickBooleanType InitOpenCLEnvInternal(MagickCLEnv clEnv, ExceptionInfo* exception) {
   MagickBooleanType status = MagickTrue;
@@ -1373,12 +1417,13 @@ MagickBooleanType InitOpenCLEnvInternal(MagickCLEnv clEnv, ExceptionInfo* except
     goto cleanup;
   }
 
+  RelinquishCommandQueues(clEnv);
+
   status = CompileOpenCLKernels(clEnv, exception);
   if (status == MagickFalse) {
    (void) ThrowMagickException(exception, GetMagickModule(), DelegateWarning,
         "clCreateCommandQueue failed.", "(%d)", status);
 
-    status = MagickFalse;
     goto cleanup;
   }
 
@@ -1505,11 +1550,15 @@ MagickPrivate MagickBooleanType RelinquishOpenCLCommandQueue(MagickCLEnv clEnv,
 
   LockSemaphoreInfo(clEnv->commandQueuesLock);
 
-  if (clEnv->commandQueuesPos >= MAX_COMMAND_QUEUES)
-    status=(clEnv->library->clReleaseCommandQueue(queue) == CL_SUCCESS) ?
-      MagickTrue : MagickFalse;
+  if (clEnv->commandQueuesPos >= MAX_COMMAND_QUEUES-1)
+    {
+      clEnv->library->clFinish(queue);
+      status=(clEnv->library->clReleaseCommandQueue(queue) == CL_SUCCESS) ?
+       MagickTrue : MagickFalse;
+    }
   else
     {
+      clEnv->library->clFlush(queue);
       clEnv->commandQueues[++clEnv->commandQueuesPos]=queue;
       status=MagickTrue;
     }
@@ -2317,6 +2366,9 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
   ExceptionInfo
     *exception=NULL;
 
+  MagickBooleanType
+    status;
+
   MagickCLEnv
     clEnv=NULL,
     oldClEnv=NULL;
@@ -2349,11 +2401,12 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
   /* recompile the OpenCL kernels if it needs to */
   clEnv->disableProgramCache = defaultCLEnv->disableProgramCache;
 
-  InitOpenCLEnvInternal(clEnv,exception);
+  status=InitOpenCLEnvInternal(clEnv,exception);
   oldClEnv=defaultCLEnv;
   defaultCLEnv=clEnv;
 
   /* microbenchmark */
+  if (status != MagickFalse)
   {
     Image
       *inputImage;
@@ -2373,6 +2426,12 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
 
     for (i=0; i<=NUM_ITER; i++)
     {
+      cl_uint
+        event_count;
+
+      const cl_event
+        *events;
+
       Image
         *bluredImage,
         *resizedImage,
@@ -2390,6 +2449,17 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
         exception);
       resizedImage=ResizeImage(unsharpedImage,640,480,LanczosFilter,1.0,
         exception);
+
+      /* 
+        We need this to get a proper performance benchmark, the operations
+        are executed asynchronous.
+      */
+      if (device->type != DS_DEVICE_NATIVE_CPU)
+        {
+          events=GetOpenCLEvents(resizedImage,&event_count);
+          if (event_count > 0)
+            clEnv->library->clWaitForEvents(event_count,events);
+        }
 
 #ifdef MAGICKCORE_CLPERFMARKER
       clEndPerfMarkerAMD();
@@ -2411,7 +2481,11 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
 
   if (device->score == NULL)
     device->score=malloc(sizeof(AccelerateScoreType));
-  *(AccelerateScoreType*)device->score=readAccelerateTimer(&timer);
+
+  if (status != MagickFalse)
+    *(AccelerateScoreType*)device->score=readAccelerateTimer(&timer);
+  else
+    *(AccelerateScoreType*)device->score=42;
 
   ReturnStatus(DS_SUCCESS);
 }
@@ -2741,89 +2815,6 @@ MagickBooleanType OpenCLThrowMagickException(ExceptionInfo *exception,
   return(status);
 }
 
-MagickPrivate cl_mem GetAndLockRandSeedBuffer(MagickCLEnv clEnv)
-{
-  LockSemaphoreInfo(clEnv->lock);
-  if (clEnv->seedsLock == NULL)
-  {
-    ActivateSemaphoreInfo(&clEnv->seedsLock);
-  }
-  LockSemaphoreInfo(clEnv->seedsLock);
-
-  if (clEnv->seeds == NULL)
-  {
-    cl_int clStatus;
-    clEnv->numGenerators = NUM_CL_RAND_GENERATORS;
-    clEnv->seeds = clEnv->library->clCreateBuffer(clEnv->context, CL_MEM_READ_WRITE,
-                                  clEnv->numGenerators*4*sizeof(unsigned int),
-                                  NULL, &clStatus);
-    if (clStatus != CL_SUCCESS)
-    {
-      clEnv->seeds = NULL;
-    }
-    else
-    {
-      unsigned int i;
-      cl_command_queue queue = NULL;
-      unsigned int *seeds;
-
-      queue = AcquireOpenCLCommandQueue(clEnv);
-      seeds = (unsigned int*) clEnv->library->clEnqueueMapBuffer(queue, clEnv->seeds, CL_TRUE,
-                                                  CL_MAP_WRITE, 0,
-                                                  clEnv->numGenerators*4
-                                                  *sizeof(unsigned int),
-                                                  0, NULL, NULL, &clStatus);
-      if (clStatus!=CL_SUCCESS)
-      {
-        clEnv->library->clReleaseMemObject(clEnv->seeds);
-        goto cleanup;
-      }
-
-      for (i = 0; i < clEnv->numGenerators; i++) {
-        RandomInfo* randomInfo = AcquireRandomInfo();
-        const unsigned long* s = GetRandomInfoSeed(randomInfo);
-        if (i == 0)
-          clEnv->randNormalize = GetRandomInfoNormalize(randomInfo);
-
-        seeds[i*4]   = (unsigned int) s[0];
-        seeds[i*4+1] = (unsigned int) 0x50a7f451;
-        seeds[i*4+2] = (unsigned int) 0x5365417e;
-        seeds[i*4+3] = (unsigned int) 0xc3a4171a;
-
-        randomInfo = DestroyRandomInfo(randomInfo);
-      }
-      clStatus = clEnv->library->clEnqueueUnmapMemObject(queue, clEnv->seeds, seeds, 0,
-                                          NULL, NULL);
-      clEnv->library->clFinish(queue);
-cleanup:
-      if (queue != NULL)
-        RelinquishOpenCLCommandQueue(clEnv, queue);
-    }
-  }
-  UnlockSemaphoreInfo(clEnv->lock);
-  return clEnv->seeds;
-}
-
-MagickPrivate void UnlockRandSeedBuffer(MagickCLEnv clEnv) {
-  if (clEnv->seedsLock == NULL)
-  {
-    ActivateSemaphoreInfo(&clEnv->seedsLock);
-  }
-  else
-    UnlockSemaphoreInfo(clEnv->seedsLock);
-}
-
-MagickPrivate unsigned int GetNumRandGenerators(MagickCLEnv clEnv)
-{
-  return clEnv->numGenerators;
-}
-
-
-MagickPrivate float GetRandNormalize(MagickCLEnv clEnv)
-{
-  return clEnv->randNormalize;
-}
-
 #else
 
 struct _MagickCLEnv {
@@ -2967,31 +2958,6 @@ MagickBooleanType OpenCLThrowMagickException(ExceptionInfo *exception,
   magick_unreferenced(tag);
   magick_unreferenced(format);
   return(MagickFalse);
-}
-
-
-MagickPrivate cl_mem GetAndLockRandSeedBuffer(MagickCLEnv clEnv)
-{
-  magick_unreferenced(clEnv);
-  return NULL;
-}
-
-
-MagickPrivate void UnlockRandSeedBuffer(MagickCLEnv clEnv)
-{
-  magick_unreferenced(clEnv);
-}
-
-MagickPrivate unsigned int GetNumRandGenerators(MagickCLEnv clEnv)
-{
-  magick_unreferenced(clEnv);
-  return 0;
-}
-
-MagickPrivate float GetRandNormalize(MagickCLEnv clEnv)
-{
-  magick_unreferenced(clEnv);
-  return 0.0f;
 }
 
 #endif /* MAGICKCORE_OPENCL_SUPPORT */

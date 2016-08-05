@@ -561,6 +561,8 @@ static struct
       {"x", IntegerReference}, {"y", IntegerReference},
       {"gravity", MagickGravityOptions}, {"offset", StringReference},
       {"dx", IntegerReference}, {"dy", IntegerReference} } },
+    { "WaveletDenoise", {  {"geometry", StringReference},
+      {"threshold", RealReference}, {"softness", RealReference} } },
   };
 
 static SplayTreeInfo
@@ -5251,8 +5253,8 @@ Get(ref,...)
               j=info ? info->image_info->orientation : image ?
                 image->orientation : UndefinedOrientation;
               s=newSViv(j);
-              (void) sv_setpv(s,CommandOptionToMnemonic(MagickOrientationOptions,
-                j));
+              (void) sv_setpv(s,CommandOptionToMnemonic(
+                MagickOrientationOptions,j));
               SvIOK_on(s);
               PUSHs(s ? sv_2mortal(s) : &sv_undef);
               continue;
@@ -5641,6 +5643,21 @@ Get(ref,...)
         case 'X':
         case 'x':
         {
+          if (LocaleCompare(attribute,"xmp") == 0)
+            {
+              if (image != (Image *) NULL)
+                {
+                  const StringInfo
+                    *profile;
+
+                  profile=GetImageProfile(image,"xmp");
+                  if (profile != (StringInfo *) NULL)
+                    s=newSVpv((const char *) GetStringInfoDatum(profile),
+                      GetStringInfoLength(profile));
+                }
+              PUSHs(s ? sv_2mortal(s) : &sv_undef);
+              continue;
+            }
           if (LocaleCompare(attribute,"x-resolution") == 0)
             {
               if (image != (Image *) NULL)
@@ -7469,6 +7486,8 @@ Mogrify(ref,...)
     ConnectedComponentImage = 290
     CopyPixels         = 291
     CopyPixelsImage    = 292
+    WaveletDenoise     = 293
+    WaveletDenoiseImage= 294
     MogrifyRegion      = 666
   PPCODE:
   {
@@ -9131,8 +9150,8 @@ Mogrify(ref,...)
             geometry.height=argument_list[2].integer_reference;
           if (attribute_flag[3] == 0)
             argument_list[3].integer_reference=1;
-          (void) RaiseImage(image,&geometry,argument_list[3].integer_reference !=
-            0 ? MagickTrue : MagickFalse);
+          (void) RaiseImage(image,&geometry,argument_list[3].integer_reference
+            != 0 ? MagickTrue : MagickFalse);
           break;
         }
         case 50:  /* Segment */
@@ -11025,6 +11044,28 @@ Mogrify(ref,...)
           if (attribute_flag[9] != 0)
             offset.y=argument_list[9].integer_reference;
           (void) CopyImagePixels(image,source_image,&geometry,&offset,
+            exception);
+          break;
+        }
+        case 147:  /* WaveletDenoise */
+        {
+          if (attribute_flag[0] != 0)
+            {
+              flags=ParseGeometry(argument_list[0].string_reference,
+                &geometry_info);
+              if ((flags & PercentValue) != 0)
+                {
+                  geometry_info.rho=QuantumRange*geometry_info.rho/100.0;
+                  geometry_info.sigma=QuantumRange*geometry_info.sigma/100.0;
+                }
+              if ((flags & SigmaValue) == 0)
+                geometry_info.sigma=0.0;
+            }
+          if (attribute_flag[1] != 0)
+            geometry_info.rho=argument_list[1].real_reference;
+          if (attribute_flag[2] != 0)
+            geometry_info.sigma=argument_list[2].real_reference;
+          image=WaveletDenoiseImage(image,geometry_info.rho,geometry_info.sigma,
             exception);
           break;
         }

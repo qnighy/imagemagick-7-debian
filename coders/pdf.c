@@ -498,6 +498,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if ((flags & SigmaValue) == 0)
         image->y_resolution=image->x_resolution;
     }
+  (void) ResetMagickMemory(&page,0,sizeof(page));
   (void) ParseAbsoluteGeometry(PSPageGeometry,&page);
   if (image_info->page != (char *) NULL)
     (void) ParseAbsoluteGeometry(image_info->page,&page);
@@ -653,29 +654,30 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   fitPage=MagickFalse;
   option=GetImageOption(image_info,"pdf:fit-page");
   if (option != (char *) NULL)
-  {
-    char
-      *geometry;
+    {
+      char
+        *geometry;
 
-    MagickStatusType
-      flags;
+      MagickStatusType
+        flags;
 
-    geometry=GetPageGeometry(option);
-    flags=ParseMetaGeometry(geometry,&page.x,&page.y,&page.width,&page.height);
-    if (flags == NoValue)
-      {
-        (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-          "InvalidGeometry","`%s'",option);
-        image=DestroyImage(image);
-        return((Image *) NULL);
-      }
-    page.width=(size_t) ceil((double) (page.width*image->x_resolution/delta.x)
-      -0.5);
-    page.height=(size_t) ceil((double) (page.height*image->y_resolution/
-      delta.y) -0.5);
-    geometry=DestroyString(geometry);
-    fitPage=MagickTrue;
-  }
+      geometry=GetPageGeometry(option);
+      flags=ParseMetaGeometry(geometry,&page.x,&page.y,&page.width,
+        &page.height);
+      if (flags == NoValue)
+        {
+          (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+            "InvalidGeometry","`%s'",option);
+          image=DestroyImage(image);
+          return((Image *) NULL);
+        }
+      page.width=(size_t) ceil((double) (page.width*image->x_resolution/delta.x)
+        -0.5);
+      page.height=(size_t) ceil((double) (page.height*image->y_resolution/
+        delta.y) -0.5);
+      geometry=DestroyString(geometry);
+      fitPage=MagickTrue;
+    }
   (void) CloseBlob(image);
   if ((fabs(angle) == 90.0) || (fabs(angle) == 270.0))
     {
@@ -704,8 +706,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Render Postscript with the Ghostscript delegate.
   */
-  if ((image_info->ping != MagickFalse) ||
-      (image_info->monochrome != MagickFalse))
+  if (image_info->monochrome != MagickFalse)
     delegate_info=GetDelegateInfo("ps:mono",(char *) NULL,exception);
   else
      if (cmyk != MagickFalse)
@@ -750,9 +751,6 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (read_info->scenes != (char *) NULL)
         *read_info->scenes='\0';
     }
-  if (read_info->authenticate != (char *) NULL)
-    (void) FormatLocaleString(options+strlen(options),MaxTextExtent,
-      " -sPDFPassword=%s",read_info->authenticate);
   (void) CopyMagickString(filename,read_info->filename,MaxTextExtent);
   (void) AcquireUniqueFilename(filename);
   (void) RelinquishUniqueFileResource(filename);
@@ -977,33 +975,48 @@ ModuleExport void UnregisterPDFImage(void)
 %
 */
 
-static char *EscapeParenthesis(const char *text)
+static char *EscapeParenthesis(const char *source)
 {
+  char
+    *destination;
+
   register char
+    *q;
+
+  register const char
     *p;
 
-  register ssize_t
-    i;
-
   size_t
-    escapes;
+    length;
 
-  static char
-    buffer[MaxTextExtent];
-
-  escapes=0;
-  p=buffer;
-  for (i=0; i < (ssize_t) MagickMin(strlen(text),(MaxTextExtent-escapes-1)); i++)
+  assert(source != (const char *) NULL);
+  length=0;
+  for (p=source; *p != '\0'; p++)
   {
-    if ((text[i] == '(') || (text[i] == ')'))
+    if ((*p == '\\') || (*p == '(') || (*p == ')'))
       {
-        *p++='\\';
-        escapes++;
+        if (~length < 1)
+          ThrowFatalException(ResourceLimitFatalError,"UnableToEscapeString");
+        length++;
       }
-    *p++=text[i];
+    length++;
   }
-  *p='\0';
-  return(buffer);
+  destination=(char *) NULL;
+  if (~length >= (MaxTextExtent-1))
+    destination=(char *) AcquireQuantumMemory(length+MaxTextExtent,
+      sizeof(*destination));
+  if (destination == (char *) NULL)
+    ThrowFatalException(ResourceLimitFatalError,"UnableToEscapeString");
+  *destination='\0';
+  q=destination;
+  for (p=source; *p != '\0'; p++)
+  {
+    if ((*p == '\\') || (*p == '(') || (*p == ')'))
+      *q++='\\';
+    *q++=(*p);
+  }
+  *q='\0';
+  return(destination);
 }
 
 static size_t UTF8ToUTF16(const unsigned char *utf8,wchar_t *utf16)
@@ -1215,6 +1228,7 @@ RestoreMSCWarning
     compression;
 
   const char
+    *option,
     *value;
 
   double
@@ -1353,7 +1367,12 @@ RestoreMSCWarning
         (double) object+2);
     }
   (void) WriteBlobString(image,buffer);
-  (void) WriteBlobString(image,"/Type /Catalog\n");
+  (void) WriteBlobString(image,"/Type /Catalog");
+  option=GetImageOption(image_info,"pdf:page-direction");
+  if ((option != (const char *) NULL) &&
+      (LocaleCompare(option,"right-to-left") != MagickFalse))
+    (void) WriteBlobString(image,"/ViewerPreferences<</PageDirection/R2L>>\n");
+  (void) WriteBlobString(image,"\n");
   (void) WriteBlobString(image,">>\n");
   (void) WriteBlobString(image,"endobj\n");
   GetPathComponent(image->filename,BasePath,basename);

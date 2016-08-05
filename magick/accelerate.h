@@ -15,8 +15,8 @@
 
   MagickCore acceleration methods.
 */
-#ifndef _MAGICKCORE_ACCELERATE_H
-#define _MAGICKCORE_ACCELERATE_H
+#ifndef MAGICKCORE_ACCELERATE_H
+#define MAGICKCORE_ACCELERATE_H
 
 #include "magick/fx.h"
 #include "magick/morphology.h"
@@ -45,7 +45,8 @@ extern MagickExport Image
   *AccelerateResizeImage(const Image *,const size_t,const size_t,
     const ResizeFilter *,ExceptionInfo *),
   *AccelerateUnsharpMaskImage(const Image *,const ChannelType,const double,
-    const double,const double,const double,ExceptionInfo *);
+    const double,const double,const double,ExceptionInfo *),
+  *AccelerateWaveletDenoiseImage(const Image *,const double,ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
   AccelerateCompositeImage(Image *,const ChannelType,const CompositeOperator,
@@ -59,8 +60,7 @@ extern MagickExport MagickBooleanType
   AccelerateGrayscaleImage(Image*, const PixelIntensityMethod,
     ExceptionInfo *),
   AccelerateModulateImage(Image*, double, double, double, 
-    ColorspaceType, ExceptionInfo*),
-  AccelerateRandomImage(Image*, ExceptionInfo*);
+    ColorspaceType, ExceptionInfo*);
 
 /* legacy, do not use */
 extern MagickExport MagickBooleanType

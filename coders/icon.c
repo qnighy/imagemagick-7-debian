@@ -313,12 +313,10 @@ static Image *ReadICONImage(const ImageInfo *image_info,
     icon_file.directory[i].size=ReadBlobLSBLong(image);
     icon_file.directory[i].offset=ReadBlobLSBLong(image);
     if (EOFBlob(image) != MagickFalse)
-      {
-        ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
-          image->filename);
-        break;
-      }
+      break;
   }
+  if (EOFBlob(image) != MagickFalse)
+    ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
   one=1;
   for (i=0; i < icon_file.count; i++)
   {
@@ -330,8 +328,8 @@ static Image *ReadICONImage(const ImageInfo *image_info,
     if (offset < 0)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     icon_info.size=ReadBlobLSBLong(image);
-    icon_info.width=(unsigned char) ((int) ReadBlobLSBLong(image));
-    icon_info.height=(unsigned char) ((int) ReadBlobLSBLong(image)/2);
+    icon_info.width=(unsigned char) ReadBlobLSBSignedLong(image);
+    icon_info.height=(unsigned char) (ReadBlobLSBSignedLong(image)/2);
     icon_info.planes=ReadBlobLSBShort(image);
     icon_info.bits_per_pixel=ReadBlobLSBShort(image);
     if (EOFBlob(image) != MagickFalse)
@@ -359,7 +357,7 @@ static Image *ReadICONImage(const ImageInfo *image_info,
           Icon image encoded as a compressed PNG image.
         */
         length=icon_file.directory[i].size;
-        if (~length < 16)
+        if ((length < 16) || (~length < 16))
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         png=(unsigned char *) AcquireQuantumMemory(length+16,sizeof(*png));
         if (png == (unsigned char *) NULL)
@@ -667,7 +665,8 @@ static Image *ReadICONImage(const ImageInfo *image_info,
           default:
             ThrowReaderException(CorruptImageError,"ImproperImageHeader");
         }
-        if (image_info->ping == MagickFalse)
+        if ((image_info->ping == MagickFalse) &&
+            (icon_info.bits_per_pixel <= 16))
           (void) SyncImage(image);
         if (icon_info.bits_per_pixel != 32)
           {

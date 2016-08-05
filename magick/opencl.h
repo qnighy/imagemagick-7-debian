@@ -15,8 +15,8 @@
 
   MagickCore OpenCL public methods.
 */
-#ifndef _MAGICKCORE_OPENCL_H
-#define _MAGICKCORE_OPENCL_H
+#ifndef MAGICKCORE_OPENCL_H
+#define MAGICKCORE_OPENCL_H
 
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -45,6 +45,8 @@ typedef enum {
                                                    /* if true, disable the kernel binary cache */
   , MAGICK_OPENCL_ENV_PARAM_REGENERATE_PROFILE     /* MagickBooleanType */
                                                    /* if true, rerun microbenchmark in auto device selection */
+  , MAGICK_OPENCL_ENV_PARAM_PLATFORM_VENDOR        /* char* */
+  , MAGICK_OPENCL_ENV_PARAM_DEVICE_NAME            /* char* */
 } MagickOpenCLEnvParam;
 
 typedef struct _MagickCLEnv* MagickCLEnv;

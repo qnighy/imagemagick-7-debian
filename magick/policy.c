@@ -160,12 +160,8 @@ static MagickBooleanType
 static LinkedListInfo *AcquirePolicyCache(const char *filename,
   ExceptionInfo *exception)
 {
-  const StringInfo
-    *option;
-
   LinkedListInfo
-    *options,
-    *policy_cache;
+    *cache;
 
   MagickStatusType
     status;
@@ -176,19 +172,29 @@ static LinkedListInfo *AcquirePolicyCache(const char *filename,
   /*
     Load external policy map.
   */
-  policy_cache=NewLinkedList(0);
-  if (policy_cache == (LinkedListInfo *) NULL)
+  cache=NewLinkedList(0);
+  if (cache == (LinkedListInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   status=MagickTrue;
-  options=GetConfigureOptions(filename,exception);
-  option=(const StringInfo *) GetNextValueInLinkedList(options);
-  while (option != (const StringInfo *) NULL)
+#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
   {
-    status&=LoadPolicyCache(policy_cache,(const char *)
-      GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+    const StringInfo
+      *option;
+
+    LinkedListInfo
+      *options;
+
+    options=GetConfigureOptions(filename,exception);
     option=(const StringInfo *) GetNextValueInLinkedList(options);
+    while (option != (const StringInfo *) NULL)
+    {
+      status&=LoadPolicyCache(cache,(const char *)
+        GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+      option=(const StringInfo *) GetNextValueInLinkedList(options);
+    }
+    options=DestroyConfigureOptions(options);
   }
-  options=DestroyConfigureOptions(options);
+#endif
   /*
     Load built-in policy map.
   */
@@ -217,12 +223,12 @@ static LinkedListInfo *AcquirePolicyCache(const char *filename,
     policy_info->value=(char *) p->value;
     policy_info->exempt=MagickTrue;
     policy_info->signature=MagickSignature;
-    status&=AppendValueToLinkedList(policy_cache,policy_info);
+    status&=AppendValueToLinkedList(cache,policy_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",policy_info->name);
   }
-  return(policy_cache);
+  return(cache);
 }
 
 /*
@@ -666,7 +672,8 @@ MagickExport MagickBooleanType ListPolicyInfo(FILE *file,
     domain=CommandOptionToMnemonic(MagickPolicyDomainOptions,
       policy_info[i]->domain);
     (void) FormatLocaleFile(file,"  Policy: %s\n",domain);
-    if ((policy_info[i]->domain == ResourcePolicyDomain) ||
+    if ((policy_info[i]->domain == CachePolicyDomain) ||
+        (policy_info[i]->domain == ResourcePolicyDomain) ||
         (policy_info[i]->domain == SystemPolicyDomain))
       {
         if (policy_info[i]->name != (char *) NULL)
@@ -702,7 +709,7 @@ MagickExport MagickBooleanType ListPolicyInfo(FILE *file,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   L o a d P o l i c y L i s t                                               %
++   L o a d P o l i c y C a c h e                                             %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -713,9 +720,8 @@ MagickExport MagickBooleanType ListPolicyInfo(FILE *file,
 %
 %  The format of the LoadPolicyCache method is:
 %
-%      MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
-%        const char *xml,const char *filename,const size_t depth,
-%        ExceptionInfo *exception)
+%      MagickBooleanType LoadPolicyCache(LinkedListInfo *cache,const char *xml,
+%        const char *filename,const size_t depth,ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -728,9 +734,8 @@ MagickExport MagickBooleanType ListPolicyInfo(FILE *file,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
-  const char *xml,const char *filename,const size_t depth,
-  ExceptionInfo *exception)
+static MagickBooleanType LoadPolicyCache(LinkedListInfo *cache,const char *xml,
+  const char *filename,const size_t depth,ExceptionInfo *exception)
 {
   char
     keyword[MaxTextExtent],
@@ -745,6 +750,9 @@ static MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
   PolicyInfo
     *policy_info;
 
+  size_t
+    extent;
+
   /*
     Load the policy map file.
   */
@@ -755,12 +763,13 @@ static MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
   status=MagickTrue;
   policy_info=(PolicyInfo *) NULL;
   token=AcquireString(xml);
+  extent=strlen(token)+MaxTextExtent;
   for (q=(const char *) xml; *q != '\0'; )
   {
     /*
       Interpret XML.
     */
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
     if (*token == '\0')
       break;
     (void) CopyMagickString(keyword,token,MaxTextExtent);
@@ -770,7 +779,7 @@ static MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
           Docdomain element.
         */
         while ((LocaleNCompare(q,"]>",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleNCompare(keyword,"<!--",4) == 0)
@@ -779,7 +788,7 @@ static MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
           Comment element.
         */
         while ((LocaleNCompare(q,"->",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleCompare(keyword,"<include") == 0)
@@ -790,10 +799,10 @@ static MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
         while (((*token != '/') && (*(token+1) != '>')) && (*q != '\0'))
         {
           (void) CopyMagickString(keyword,token,MaxTextExtent);
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (*token != '=')
             continue;
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
               if (depth > 200)
@@ -816,7 +825,7 @@ static MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
                   xml=FileToXML(path,~0UL);
                   if (xml != (char *) NULL)
                     {
-                      status&=LoadPolicyCache(policy_cache,xml,path,depth+1,
+                      status&=LoadPolicyCache(cache,xml,path,depth+1,
                         exception);
                       xml=(char *) RelinquishMagickMemory(xml);
                     }
@@ -843,7 +852,7 @@ static MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
       continue;
     if (LocaleCompare(keyword,"/>") == 0)
       {
-        status=AppendValueToLinkedList(policy_cache,policy_info);
+        status=AppendValueToLinkedList(cache,policy_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
@@ -851,11 +860,11 @@ static MagickBooleanType LoadPolicyCache(LinkedListInfo *policy_cache,
         policy_info=(PolicyInfo *) NULL;
         continue;
       }
-    GetMagickToken(q,(const char **) NULL,token);
+    GetNextToken(q,(const char **) NULL,extent,token);
     if (*token != '=')
       continue;
-    GetMagickToken(q,&q,token);
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
+    GetNextToken(q,&q,extent,token);
     switch (*keyword)
     {
       case 'D':

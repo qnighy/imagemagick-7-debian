@@ -91,6 +91,7 @@
 #include "magick/threshold.h"
 #include "magick/thread_.h"
 #include "magick/thread-private.h"
+#include "magick/token.h"
 #include "magick/transform.h"
 #include "magick/utility.h"
 
@@ -2877,6 +2878,41 @@ MagickExport void *GetMagickRegistry(const ssize_t id,RegistryType *type,
   if (blob != (void *) NULL)
     return(blob);
   return((void *) GetImageRegistry(UndefinedRegistryType,key,exception));
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   G e t M a g i c k T o k e n                                               %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetMagickToken() gets a token from the token stream.  A token is defined as
+%  a sequence of characters delimited by whitespace (e.g. clip-path), a
+%  sequence delimited with quotes (.e.g "Quote me"), or a sequence enclosed in
+%  parenthesis (e.g. rgb(0,0,0)).  GetMagickToken() also recognizes these
+%  separator characters: ':', '=', ',', and ';'.
+%
+%  The format of the GetMagickToken method is:
+%
+%      void GetMagickToken(const char *start,const char **end,char *token)
+%
+%  A description of each parameter follows:
+%
+%    o start: the start of the token sequence.
+%
+%    o end: point to the end of the token sequence.
+%
+%    o token: copy the token to this buffer.
+%
+*/
+MagickExport void GetMagickToken(const char *start,const char **end,char *token)
+{
+  GetNextToken(start,end,~0UL,token);
 }
 
 /*

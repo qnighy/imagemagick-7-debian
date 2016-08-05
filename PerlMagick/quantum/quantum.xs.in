@@ -561,6 +561,8 @@ static struct
       {"x", IntegerReference}, {"y", IntegerReference},
       {"gravity", MagickGravityOptions}, {"offset", StringReference}, 
       {"dx", IntegerReference}, {"dy", IntegerReference} } },
+    { "WaveletDenoise", {  {"geometry", StringReference},
+      {"threshold", RealReference}, {"softness", RealReference} } },
   };
 
 static SplayTreeInfo
@@ -5641,6 +5643,21 @@ Get(ref,...)
         case 'X':
         case 'x':
         {
+          if (LocaleCompare(attribute,"xmp") == 0)
+            {
+              if (image != (Image *) NULL)
+                {
+                  const StringInfo
+                    *profile;
+
+                  profile=GetImageProfile(image,"xmp");
+                  if (profile != (StringInfo *) NULL)
+                    s=newSVpv((const char *) GetStringInfoDatum(profile),
+                      GetStringInfoLength(profile));
+                }
+              PUSHs(s ? sv_2mortal(s) : &sv_undef);
+              continue;
+            }
           if (LocaleCompare(attribute,"x-resolution") == 0)
             {
               if (image != (Image *) NULL)
@@ -7469,6 +7486,8 @@ Mogrify(ref,...)
     ConnectedComponentsImage = 290
     CopyPixels         = 291
     CopyImagePixels    = 292
+    WaveletDenoise     = 293
+    WaveletDenoiseImage= 294
     MogrifyRegion      = 666
   PPCODE:
   {
@@ -10976,12 +10995,21 @@ Mogrify(ref,...)
         }
         case 145:  /* ConnectedComponent */
         {
+          MagickBooleanType
+            verbose;
+
           size_t
             connectivity;
 
           connectivity=4;
+          verbose=MagickFalse;
           if (attribute_flag[0] != 0)
             connectivity=argument_list[0].integer_reference;
+          if (attribute_flag[1] != 0)
+            verbose=argument_list[4].integer_reference != 0 ?
+              MagickTrue : MagickFalse;
+          if (verbose != MagickFalse)
+            SetImageArtifact(image,"connected-components","true");
           image=ConnectedComponentsImage(image,connectivity,exception);
           break;
         }
@@ -11025,6 +11053,27 @@ Mogrify(ref,...)
             offset.y=argument_list[9].integer_reference;
           (void) CopyImagePixels(image,source_image,&geometry,&offset,
             exception);
+          break;
+        }
+        case 147:  /* WaveletDenoise */
+        {
+          if (attribute_flag[0] != 0)
+            {
+              flags=ParseGeometry(argument_list[0].string_reference,
+                &geometry_info);
+              if ((flags & PercentValue) != 0)
+                {
+                  geometry_info.rho=QuantumRange*geometry_info.rho/100.0;
+                  geometry_info.sigma=QuantumRange*geometry_info.sigma/100.0;
+                }
+              if ((flags & SigmaValue) == 0)
+                geometry_info.sigma=0.0;
+            }
+          if (attribute_flag[1] != 0)
+            geometry_info.rho=argument_list[1].real_reference;
+          if (attribute_flag[2] != 0)
+            geometry_info.sigma=argument_list[2].real_reference;
+          image=WaveletDenoiseImage(image,geometry_info.rho,geometry_info.sigma,            exception);
           break;
         }
       }

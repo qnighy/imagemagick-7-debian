@@ -15,8 +15,8 @@
 
   MagickCore Binary Large OBjects private methods.
 */
-#ifndef _MAGICKCORE_BLOB_PRIVATE_H
-#define _MAGICKCORE_BLOB_PRIVATE_H
+#ifndef MAGICKCORE_BLOB_PRIVATE_H
+#define MAGICKCORE_BLOB_PRIVATE_H
 
 #include "magick/image.h"
 #include "magick/stream.h"
@@ -81,7 +81,7 @@ extern MagickExport int
   EOFBlob(const Image *),
   ReadBlobByte(Image *);
 
-extern MagickExport  MagickBooleanType
+extern MagickExport MagickBooleanType
   CloseBlob(Image *),
   DiscardBlobBytes(Image *,const MagickSizeType),
   OpenBlob(const ImageInfo *,Image *,const BlobMode,ExceptionInfo *),
@@ -96,6 +96,16 @@ extern MagickExport MagickSizeType
   ReadBlobLongLong(Image *),
   ReadBlobMSBLongLong(Image *);
 
+extern MagickExport signed int
+  ReadBlobLSBSignedLong(Image *),
+  ReadBlobMSBSignedLong(Image *),
+  ReadBlobSignedLong(Image *);
+
+extern MagickExport signed short
+  ReadBlobLSBSignedShort(Image *),
+  ReadBlobMSBSignedShort(Image *),
+  ReadBlobSignedShort(Image *);
+
 extern MagickExport ssize_t
   ReadBlob(Image *,const size_t,unsigned char *),
   WriteBlob(Image *,const size_t,const unsigned char *),
@@ -105,9 +115,13 @@ extern MagickExport ssize_t
   WriteBlobShort(Image *,const unsigned short),
   WriteBlobLSBLong(Image *,const unsigned int),
   WriteBlobLSBShort(Image *,const unsigned short),
+  WriteBlobLSBSignedLong(Image *,const signed int),
+  WriteBlobLSBSignedShort(Image *,const signed short),
   WriteBlobMSBLong(Image *,const unsigned int),
   WriteBlobMSBLongLong(Image *,const MagickSizeType),
   WriteBlobMSBShort(Image *,const unsigned short),
+  WriteBlobMSBSignedLong(Image *,const signed int),
+  WriteBlobMSBSignedShort(Image *,const signed short),
   WriteBlobString(Image *,const char *);
 
 extern MagickExport unsigned char

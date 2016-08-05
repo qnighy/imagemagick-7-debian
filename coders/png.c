@@ -2901,6 +2901,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   image->compression=ZipCompression;
   image->columns=ping_width;
   image->rows=ping_height;
+
   if (((int) ping_color_type == PNG_COLOR_TYPE_PALETTE) ||
       ((int) ping_bit_depth < 16 &&
       (int) ping_color_type == PNG_COLOR_TYPE_GRAY))
@@ -3045,6 +3046,10 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
       /* This happens later in non-ping decodes */
       if (png_get_valid(ping,ping_info,PNG_INFO_tRNS))
         image->storage_class=DirectClass;
+      image->matte=(((int) ping_color_type == PNG_COLOR_TYPE_RGB_ALPHA) ||
+        ((int) ping_color_type == PNG_COLOR_TYPE_GRAY_ALPHA) ||
+         (png_get_valid(ping,ping_info,PNG_INFO_tRNS))) ?
+        MagickTrue : MagickFalse;
 
       if (logging != MagickFalse)
         (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -3061,6 +3066,13 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
           "  exit ReadOnePNGImage().");
 
       return(image);
+    }
+
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
     }
 
   if (logging != MagickFalse)
@@ -4588,6 +4600,13 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
   image->columns=jng_width;
   image->rows=jng_height;
   length=image->columns*sizeof(PixelPacket);
+
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
 
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -10808,7 +10827,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   if (quantum_info == (QuantumInfo *) NULL)
     png_error(ping,"Memory allocation for quantum_info failed");
   quantum_info->format=UndefinedQuantumFormat;
-  quantum_info->depth=image_depth;
+  SetQuantumDepth(image,quantum_info,image_depth);
   (void) SetQuantumEndian(image,quantum_info,MSBEndian);
   num_passes=png_set_interlace_handling(ping);
 
@@ -10824,7 +10843,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
       register const PixelPacket
         *p;
 
-      quantum_info->depth=8;
+      SetQuantumDepth(image,quantum_info,8);
       for (pass=0; pass < num_passes; pass++)
       {
         /*
@@ -10873,7 +10892,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
           png_write_row(ping,ping_pixels);
 
-          status=SetImageProgress(image,LoadImageTag,
+          status=SetImageProgress(image,SaveImageTag,
               (MagickOffsetType) (pass * image->rows + y),
               num_passes * image->rows);
           if (status == MagickFalse)
@@ -10934,7 +10953,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
             png_write_row(ping,ping_pixels);
 
-            status=SetImageProgress(image,LoadImageTag,
+            status=SetImageProgress(image,SaveImageTag,
               (MagickOffsetType) (pass * image->rows + y),
               num_passes * image->rows);
             if (status == MagickFalse)
@@ -11001,7 +11020,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
                 png_write_row(ping,ping_pixels);
 
-                status=SetImageProgress(image,LoadImageTag,
+                status=SetImageProgress(image,SaveImageTag,
                   (MagickOffsetType) (pass * image->rows + y),
                   num_passes * image->rows);
                 if (status == MagickFalse)
@@ -11023,7 +11042,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
                     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
                       "  pass %d, Image Is not GRAY or GRAY_ALPHA",pass);
 
-                  quantum_info->depth=8;
+                  SetQuantumDepth(image,quantum_info,8);
                   image_depth=8;
                 }
 
@@ -11041,7 +11060,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
 
                 if (ping_color_type == PNG_COLOR_TYPE_GRAY)
                   {
-                    quantum_info->depth=image->depth;
+                    SetQuantumDepth(image,quantum_info,image->depth);
 
                     (void) ExportQuantumPixels(image,(const CacheView *) NULL,
                        quantum_info,GrayQuantum,ping_pixels,&image->exception);
@@ -11075,7 +11094,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
                   }
                 png_write_row(ping,ping_pixels);
 
-                status=SetImageProgress(image,LoadImageTag,
+                status=SetImageProgress(image,SaveImageTag,
                   (MagickOffsetType) (pass * image->rows + y),
                   num_passes * image->rows);
                 if (status == MagickFalse)
@@ -12565,7 +12584,10 @@ static MagickBooleanType WriteOneJNGImage(MngInfo *mng_info,
           p=blob+8;
           for (i=8; i<(ssize_t) length; i+=len+12)
           {
-            len=(size_t) (*p<<24)|((*(p+1))<<16)|((*(p+2))<<8)|(*(p+3));
+            len=(size_t) (*p) << 24;
+            len|=(size_t) (*(p+1)) << 16;
+            len|=(size_t) (*(p+2)) << 8;
+            len|=(size_t) (*(p+3));
             p+=4;
 
             if (*(p)==73 && *(p+1)==68 && *(p+2)==65 && *(p+3)==84) /* IDAT */
@@ -12743,6 +12765,8 @@ static MagickBooleanType WriteJNGImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
+  if ((image->columns > 65535UL) || (image->rows > 65535UL))
+    ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
 
   /*
     Allocate a MngInfo structure.

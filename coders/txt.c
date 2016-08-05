@@ -157,18 +157,20 @@ static MagickBooleanType IsTXT(const unsigned char *magick,const size_t length)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static Image *ReadTEXTImage(const ImageInfo *image_info,Image *image,
-  char *text,ExceptionInfo *exception)
+static Image *ReadTEXTImage(const ImageInfo *image_info,
+  ExceptionInfo *exception)
 {
   char
     filename[MaxTextExtent],
     geometry[MaxTextExtent],
-    *p;
+    *p,
+    text[MaxTextExtent];
 
   DrawInfo
     *draw_info;
 
   Image
+    *image,
     *texture;
 
   MagickBooleanType
@@ -196,6 +198,15 @@ static Image *ReadTEXTImage(const ImageInfo *image_info,Image *image,
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
+  image=AcquireImage(image_info);
+  status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
+  if (status == MagickFalse)
+    {
+      image=DestroyImageList(image);
+      return((Image *) NULL);
+    }
+  (void) ResetMagickMemory(text,0,sizeof(text));
+  (void) ReadBlobString(image,text);
   /*
     Set the page geometry.
   */
@@ -255,15 +266,15 @@ static Image *ReadTEXTImage(const ImageInfo *image_info,Image *image,
   (void) SetImageBackgroundColor(image);
   draw_info=CloneDrawInfo(image_info,(DrawInfo *) NULL);
   (void) CloneString(&draw_info->text,image_info->filename);
-  (void) FormatLocaleString(geometry,MaxTextExtent,"0x0%+ld%+ld",(long) page.x,
-    (long) page.y);
+  (void) FormatLocaleString(geometry,MaxTextExtent,"%gx%g%+g%+g",(double)
+    image->columns,(double) image->rows,(double) page.x,(double) page.y);
   (void) CloneString(&draw_info->geometry,geometry);
   status=GetTypeMetrics(image,draw_info,&metrics);
   if (status == MagickFalse)
     ThrowReaderException(TypeError,"UnableToGetTypeMetrics");
   page.y=(ssize_t) ceil((double) page.y+metrics.ascent-0.5);
-  (void) FormatLocaleString(geometry,MaxTextExtent,"0x0%+ld%+ld",(long) page.x,
-    (long) page.y);
+  (void) FormatLocaleString(geometry,MaxTextExtent,"%gx%g%+g%+g",(double)
+    image->columns,(double) image->rows,(double) page.x,(double) page.y);
   (void) CloneString(&draw_info->geometry,geometry);
   (void) CopyMagickString(filename,image_info->filename,MaxTextExtent);
   if (*draw_info->text != '\0')
@@ -279,7 +290,8 @@ static Image *ReadTEXTImage(const ImageInfo *image_info,Image *image,
     offset+=(ssize_t) (metrics.ascent-metrics.descent);
     if (image->previous == (Image *) NULL)
       {
-        status=SetImageProgress(image,LoadImageTag,offset,image->rows);
+        status=SetImageProgress(image,LoadImageTag,(MagickOffsetType) offset,
+          image->rows);
         if (status == MagickFalse)
           break;
       }
@@ -378,9 +390,7 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     *indexes;
 
   long
-    type,
     x_offset,
-    y,
     y_offset;
 
   MagickBooleanType
@@ -400,7 +410,9 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     *q;
 
   ssize_t
-    count;
+    count,
+    type,
+    y;
 
   unsigned long
     depth,
@@ -428,7 +440,7 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   (void) ResetMagickMemory(text,0,sizeof(text));
   (void) ReadBlobString(image,text);
   if (LocaleNCompare((char *) text,MagickID,strlen(MagickID)) != 0)
-    return(ReadTEXTImage(image_info,image,text,exception));
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   do
   {
     width=0;
@@ -540,12 +552,18 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
             green+=(range+1)/2.0;
             blue+=(range+1)/2.0;
           }
-        pixel.red=ScaleAnyToQuantum((QuantumAny) (red+0.5),range);
-        pixel.green=ScaleAnyToQuantum((QuantumAny) (green+0.5),range);
-        pixel.blue=ScaleAnyToQuantum((QuantumAny) (blue+0.5),range);
-        pixel.index=ScaleAnyToQuantum((QuantumAny) (index+0.5),range);
-        pixel.opacity=ScaleAnyToQuantum((QuantumAny) (opacity+0.5),range);
-        q=GetAuthenticPixels(image,x_offset,y_offset,1,1,exception);
+        pixel.red=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (red+0.5),
+          range);
+        pixel.green=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (green+0.5),
+          range);
+        pixel.blue=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (blue+0.5),
+          range);
+        pixel.index=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (index+0.5),
+          range);
+        pixel.opacity=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (opacity+
+          0.5),range);
+        q=GetAuthenticPixels(image,(ssize_t) x_offset,(ssize_t) y_offset,1,1,
+          exception);
         if (q == (PixelPacket *) NULL)
           continue;
         SetPixelRed(q,pixel.red);
@@ -621,10 +639,11 @@ ModuleExport size_t RegisterTXTImage(void)
   entry->module=ConstantString("TXT");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("TEXT");
-  entry->decoder=(DecodeImageHandler *) ReadTXTImage;
+  entry->decoder=(DecodeImageHandler *) ReadTEXTImage;
   entry->encoder=(EncodeImageHandler *) WriteTXTImage;
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
+  entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Text");
   entry->module=ConstantString("TXT");
   (void) RegisterMagickInfo(entry);
@@ -749,10 +768,15 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
         MagickFalse,value);
     if (LocaleCompare(image_info->magick,"SPARSE-COLOR") != 0)
       {
+        size_t
+          depth;
+
+        depth=compliance == SVGCompliance ? image->depth :
+          MAGICKCORE_QUANTUM_DEPTH;
         (void) FormatLocaleString(buffer,MaxTextExtent,
           "# ImageMagick pixel enumeration: %.20g,%.20g,%.20g,%s\n",(double)
           image->columns,(double) image->rows,(double) ((MagickOffsetType)
-          GetQuantumRange(image->depth)),colorspace);
+          GetQuantumRange(depth)),colorspace);
         (void) WriteBlobString(image,buffer);
       }
     GetMagickPixelPacket(image,&pixel);

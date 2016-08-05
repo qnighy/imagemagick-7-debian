@@ -148,12 +148,8 @@ static MagickBooleanType
 static LinkedListInfo *AcquireConfigureCache(const char *filename,
   ExceptionInfo *exception)
 {
-  const StringInfo
-    *option;
-
   LinkedListInfo
-    *configure_cache,
-    *options;
+    *cache;
 
   MagickStatusType
     status;
@@ -164,19 +160,29 @@ static LinkedListInfo *AcquireConfigureCache(const char *filename,
   /*
     Load external configure map.
   */
-  configure_cache=NewLinkedList(0);
-  if (configure_cache == (LinkedListInfo *) NULL)
+  cache=NewLinkedList(0);
+  if (cache == (LinkedListInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   status=MagickTrue;
-  options=GetConfigureOptions(filename,exception);
-  option=(const StringInfo *) GetNextValueInLinkedList(options);
-  while (option != (const StringInfo *) NULL)
+#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
   {
-    status&=LoadConfigureCache(configure_cache,(const char *)
-      GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+    const StringInfo
+      *option;
+
+    LinkedListInfo
+      *options;
+
+    options=GetConfigureOptions(filename,exception);
     option=(const StringInfo *) GetNextValueInLinkedList(options);
+    while (option != (const StringInfo *) NULL)
+    {
+      status&=LoadConfigureCache(cache,(const char *) GetStringInfoDatum(option),
+        GetStringInfoPath(option),0,exception);
+      option=(const StringInfo *) GetNextValueInLinkedList(options);
+    }
+    options=DestroyConfigureOptions(options);
   }
-  options=DestroyConfigureOptions(options);
+#endif
   /*
     Load built-in configure map.
   */
@@ -203,13 +209,13 @@ static LinkedListInfo *AcquireConfigureCache(const char *filename,
     configure_info->value=(char *) p->value;
     configure_info->exempt=MagickTrue;
     configure_info->signature=MagickSignature;
-    status&=AppendValueToLinkedList(configure_cache,configure_info);
+    status&=AppendValueToLinkedList(cache,configure_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",
         configure_info->name);
   }
-  return(configure_cache);
+  return(cache);
 }
 
 /*
@@ -1125,7 +1131,7 @@ MagickExport MagickBooleanType ListConfigureInfo(FILE *file,
 %
 %  The format of the LoadConfigureCache method is:
 %
-%      MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
+%      MagickBooleanType LoadConfigureCache(LinkedListInfo *cache,
 %        const char *xml,const char *filename,const size_t depth,
 %        ExceptionInfo *exception)
 %
@@ -1140,7 +1146,7 @@ MagickExport MagickBooleanType ListConfigureInfo(FILE *file,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
+static MagickBooleanType LoadConfigureCache(LinkedListInfo *cache,
   const char *xml,const char *filename,const size_t depth,
   ExceptionInfo *exception)
 {
@@ -1157,6 +1163,9 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
   MagickStatusType
     status;
 
+  size_t
+    extent;
+
   /*
     Load the configure map file.
   */
@@ -1164,13 +1173,14 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
     "Loading configure file \"%s\" ...",filename);
   status=MagickTrue;
   configure_info=(ConfigureInfo *) NULL;
-  token=AcquireString((char *) xml);
+  token=AcquireString(xml);
+  extent=strlen(token)+MaxTextExtent;
   for (q=(char *) xml; *q != '\0'; )
   {
     /*
       Interpret XML.
     */
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
     if (*token == '\0')
       break;
     (void) CopyMagickString(keyword,token,MaxTextExtent);
@@ -1180,7 +1190,7 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
           Doctype element.
         */
         while ((LocaleNCompare(q,"]>",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleNCompare(keyword,"<!--",4) == 0)
@@ -1189,7 +1199,7 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
           Comment element.
         */
         while ((LocaleNCompare(q,"->",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleCompare(keyword,"<include") == 0)
@@ -1200,10 +1210,10 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
         while (((*token != '/') && (*(token+1) != '>')) && (*q != '\0'))
         {
           (void) CopyMagickString(keyword,token,MaxTextExtent);
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (*token != '=')
             continue;
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
               if (depth > 200)
@@ -1226,7 +1236,7 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
                   xml=FileToXML(path,~0UL);
                   if (xml != (char *) NULL)
                     {
-                      status&=LoadConfigureCache(configure_cache,xml,path,
+                      status&=LoadConfigureCache(cache,xml,path,
                         depth+1,exception);
                       xml=(char *) RelinquishMagickMemory(xml);
                     }
@@ -1254,7 +1264,7 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
       continue;
     if (LocaleCompare(keyword,"/>") == 0)
       {
-        status=AppendValueToLinkedList(configure_cache,configure_info);
+        status=AppendValueToLinkedList(cache,configure_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
@@ -1265,11 +1275,11 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *configure_cache,
     /*
       Parse configure element.
     */
-    GetMagickToken(q,(const char **) NULL,token);
+    GetNextToken(q,(const char **) NULL,extent,token);
     if (*token != '=')
       continue;
-    GetMagickToken(q,&q,token);
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
+    GetNextToken(q,&q,extent,token);
     switch (*keyword)
     {
       case 'N':

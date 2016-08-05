@@ -60,6 +60,7 @@
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
+#include "magick/option.h"
 #include "magick/pixel.h"
 #include "magick/pixel-accessor.h"
 #include "magick/property.h"
@@ -112,6 +113,9 @@ static MagickBooleanType
 */
 static Image *ReadFPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
+  const char
+    *option;
+
   FPXColorspace
     colorspace;
 
@@ -240,7 +244,10 @@ static Image *ReadFPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       FPX_ClearSystem();
       ThrowReaderException(CorruptImageError,"ImageTypeNotSupported");
     }
-  if (image_info->view == (char *) NULL)
+  option=image_info->view;
+  if (option == (const char *) NULL)
+    option=GetImageOption(image_info,"fpx:view");
+  if (option == (const char *) NULL)
     {
       float
         aspect_ratio;
@@ -406,9 +413,9 @@ static Image *ReadFPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((y % tile_height) == 0)
       {
         /*
-          Read FPX image tile (with or without viewing affine)..
+          Read FPX image tile (with or without viewing affine).
         */
-        if (image_info->view != (char *) NULL)
+        if (option != (const char *) NULL)
           fpx_status=FPX_ReadImageRectangle(flashpix,0,y,image->columns,y+
             tile_height-1,scene,&fpx_info);
         else
@@ -763,7 +770,8 @@ static MagickBooleanType WriteFPXImage(const ImageInfo *image_info,Image *image)
 
   const char
     *comment,
-    *label;
+    *label,
+    *option;
 
   FPXCompressionOption
     compression;
@@ -981,7 +989,10 @@ static MagickBooleanType WriteFPXImage(const ImageInfo *image_info,Image *image)
       break;
   }
   quantum_info=DestroyQuantumInfo(quantum_info);
-  if (image_info->view != (char *) NULL)
+  option=image_info->view;
+  if (option == (const char *) NULL)
+    option=GetImageOption(image_info,"fpx:view");
+  if (option != (const char *) NULL)
     {
       FPXAffineMatrix
         affine;

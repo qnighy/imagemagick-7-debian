@@ -5,7 +5,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
     <title>ImageMagick: Command-line Options</title>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -22,12 +21,14 @@
   <meta name="author" content="ImageMagick Studio LLC"/>
   <meta name="revisit-after" content="2 DAYS"/>
   <meta name="resource-type" content="document"/>
-  <meta name="copyright" content="Copyright (c) 1999-2015 ImageMagick Studio LLC"/>
+  <meta name="copyright" content="Copyright (c) 1999-2016 ImageMagick Studio LLC"/>
   <meta name="distribution" content="Global"/>
   <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1"/>
+  <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
   <link rel="icon" href="../images/wand.png"/>
   <link rel="shortcut icon" href="../images/wand.ico"/>
-  <link rel="stylesheet" href="css/magick.css"/>
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Roboto:900,400,400italic,700,700italic,300,300italic|Open+Sans:300italic,400italic,700italic,300,400,600,700"  >
+  <link rel="stylesheet" type="text/css" href="css/magick.css"/>
 </head>
 <body>
 <div class="main">
@@ -48,14 +49,14 @@
       <a class="magick-nav-item " href="command-line-processing.html">Command-line</a>
       <a class="magick-nav-item " href="resources.html">Resources</a>
       <a class="magick-nav-item " href="api.html">Develop</a>
-      <a class="magick-nav-item " href="http://www.imagemagick.org/script/search.php">Search</a>
-      <a class="magick-nav-item pull-right" href="http://www.imagemagick.org/discourse-server/">Community</a>
+      <a class="magick-nav-item " href="http://legacy.imagemagick.org/script/search.php">Search</a>
+      <a class="magick-nav-item pull-right" href="https://www.imagemagick.org/discourse-server/">Community</a>
     </nav>
   </div>
 </div>
 <div class="container">
 <div class="magick-header">
-<p class="text-center"><a href="command-line-options.html#adaptive-blur">&#x2011;adaptive&#x2011;blur</a>  • <a href="command-line-options.html#adaptive-resize">&#x2011;adaptive&#x2011;resize</a>  • <a href="command-line-options.html#adaptive-sharpen">&#x2011;adaptive&#x2011;sharpen</a>  • <a href="command-line-options.html#adjoin">&#x2011;adjoin</a>  • <a href="command-line-options.html#affine">&#x2011;affine</a>  • <a href="command-line-options.html#alpha">&#x2011;alpha</a>  • <a href="command-line-options.html#annotate">&#x2011;annotate</a>  • <a href="command-line-options.html#antialias">&#x2011;antialias</a>  • <a href="command-line-options.html#append">&#x2011;append</a>  • <a href="command-line-options.html#attenuate">&#x2011;attenuate</a>  • <a href="command-line-options.html#authenticate">&#x2011;authenticate</a>  • <a href="command-line-options.html#auto-gamma">&#x2011;auto&#x2011;gamma</a>  • <a href="command-line-options.html#auto-level">&#x2011;auto&#x2011;level</a>  • <a href="command-line-options.html#auto-orient">&#x2011;auto&#x2011;orient</a>  • <a href="command-line-options.html#backdrop">&#x2011;backdrop</a>  • <a href="command-line-options.html#background">&#x2011;background</a>  • <a href="command-line-options.html#bench">&#x2011;bench</a>  • <a href="command-line-options.html#bias">&#x2011;bias</a>  • <a href="command-line-options.html#black-point-compensation">&#x2011;black&#x2011;point&#x2011;compensation</a>  • <a href="command-line-options.html#black-threshold">&#x2011;black&#x2011;threshold</a>  • <a href="command-line-options.html#blend">&#x2011;blend</a>  • <a href="command-line-options.html#blue-primary">&#x2011;blue&#x2011;primary</a>  • <a href="command-line-options.html#blue-shift">&#x2011;blue&#x2011;shift</a>  • <a href="command-line-options.html#blur">&#x2011;blur</a>  • <a href="command-line-options.html#border">&#x2011;border</a>  • <a href="command-line-options.html#bordercolor">&#x2011;bordercolor</a>  • <a href="command-line-options.html#borderwidth">&#x2011;borderwidth</a>  • <a href="command-line-options.html#brightness-contrast">&#x2011;brightness&#x2011;contrast</a>  • <a href="command-line-options.html#cache">&#x2011;cache</a>  • <a href="command-line-options.html#canny">&#x2011;canny</a>  • <a href="command-line-options.html#caption">&#x2011;caption</a>  • <a href="command-line-options.html#cdl">&#x2011;cdl</a>  • <a href="command-line-options.html#channel">&#x2011;channel</a>  • <a href="command-line-options.html#charcoal">&#x2011;charcoal</a>  • <a href="command-line-options.html#chop">&#x2011;chop</a>  • <a href="command-line-options.html#clamp">&#x2011;clamp</a>  • <a href="command-line-options.html#clip">&#x2011;clip</a>  • <a href="command-line-options.html#clip-mask">&#x2011;clip&#x2011;mask</a>  • <a href="command-line-options.html#clip-path">&#x2011;clip&#x2011;path</a>  • <a href="command-line-options.html#clone">&#x2011;clone</a>  • <a href="command-line-options.html#clut">&#x2011;clut</a>  • <a href="command-line-options.html#coalesce">&#x2011;coalesce</a>  • <a href="command-line-options.html#colorize">&#x2011;colorize</a>  • <a href="command-line-options.html#colormap">&#x2011;colormap</a>  • <a href="command-line-options.html#color-matrix">&#x2011;color&#x2011;matrix</a>  • <a href="command-line-options.html#colors">&#x2011;colors</a>  • <a href="command-line-options.html#colorspace">&#x2011;colorspace</a>  • <a href="command-line-options.html#combine">&#x2011;combine</a>  • <a href="command-line-options.html#comment">&#x2011;comment</a>  • <a href="command-line-options.html#compare">&#x2011;compare</a>  • <a href="command-line-options.html#complex">&#x2011;complex</a>  • <a href="command-line-options.html#compose">&#x2011;compose</a>  • <a href="command-line-options.html#composite">&#x2011;composite</a>  • <a href="command-line-options.html#compress">&#x2011;compress</a>  • <a href="command-line-options.html#connected-components">&#x2011;connected&#x2011;components</a>  • <a href="command-line-options.html#contrast">&#x2011;contrast</a>  • <a href="command-line-options.html#contrast-stretch">&#x2011;contrast&#x2011;stretch</a>  • <a href="command-line-options.html#convolve">&#x2011;convolve</a>  • <a href="command-line-options.html#copy">&#x2011;copy</a>  • <a href="command-line-options.html#crop">&#x2011;crop</a>  • <a href="command-line-options.html#cycle">&#x2011;cycle</a>  • <a href="command-line-options.html#debug">&#x2011;debug</a>  • <a href="command-line-options.html#decipher">&#x2011;decipher</a>  • <a href="command-line-options.html#deconstruct">&#x2011;deconstruct</a>  • <a href="command-line-options.html#define">&#x2011;define</a>  • <a href="command-line-options.html#delay">&#x2011;delay</a>  • <a href="command-line-options.html#delete">&#x2011;delete</a>  • <a href="command-line-options.html#density">&#x2011;density</a>  • <a href="command-line-options.html#depth">&#x2011;depth</a>  • <a href="command-line-options.html#descend">&#x2011;descend</a>  • <a href="command-line-options.html#deskew">&#x2011;deskew</a>  • <a href="command-line-options.html#despeckle">&#x2011;despeckle</a>  • <a href="command-line-options.html#direction">&#x2011;direction</a>  • <a href="command-line-options.html#displace">&#x2011;displace</a>  • <a href="command-line-options.html#display">&#x2011;display</a>  • <a href="command-line-options.html#dispose">&#x2011;dispose</a>  • <a href="command-line-options.html#dissimilarity-threshold">&#x2011;dissimilarity&#x2011;threshold</a>  • <a href="command-line-options.html#dissolve">&#x2011;dissolve</a>  • <a href="command-line-options.html#distort">&#x2011;distort</a>  • <a href="command-line-options.html#distribute-cache">&#x2011;distribute&#x2011;cache</a>  • <a href="command-line-options.html#dither">&#x2011;dither</a>  • <a href="command-line-options.html#draw">&#x2011;draw</a>  • <a href="command-line-options.html#duplicate">&#x2011;duplicate</a>  • <a href="command-line-options.html#edge">&#x2011;edge</a>  • <a href="command-line-options.html#emboss">&#x2011;emboss</a>  • <a href="command-line-options.html#encipher">&#x2011;encipher</a>  • <a href="command-line-options.html#encoding">&#x2011;encoding</a>  • <a href="command-line-options.html#endian">&#x2011;endian</a>  • <a href="command-line-options.html#enhance">&#x2011;enhance</a>  • <a href="command-line-options.html#equalize">&#x2011;equalize</a>  • <a href="command-line-options.html#evaluate">&#x2011;evaluate</a>  • <a href="command-line-options.html#evaluate-sequence">&#x2011;evaluate&#x2011;sequence</a>  • <a href="command-line-options.html#extent">&#x2011;extent</a>  • <a href="command-line-options.html#extract">&#x2011;extract</a>  • <a href="command-line-options.html#family">&#x2011;family</a>  • <a href="command-line-options.html#features">&#x2011;features</a>  • <a href="command-line-options.html#fft">&#x2011;fft</a>  • <a href="command-line-options.html#fill">&#x2011;fill</a>  • <a href="command-line-options.html#filter">&#x2011;filter</a>  • <a href="command-line-options.html#flatten">&#x2011;flatten</a>  • <a href="command-line-options.html#flip">&#x2011;flip</a>  • <a href="command-line-options.html#floodfill">&#x2011;floodfill</a>  • <a href="command-line-options.html#flop">&#x2011;flop</a>  • <a href="command-line-options.html#font">&#x2011;font</a>  • <a href="command-line-options.html#foreground">&#x2011;foreground</a>  • <a href="command-line-options.html#format">&#x2011;format</a>  • <a href="command-line-options.html#format_identify_">&#x2011;format[identify]</a>  • <a href="command-line-options.html#frame">&#x2011;frame</a>  • <a href="command-line-options.html#frame_import_">&#x2011;frame[import]</a>  • <a href="command-line-options.html#function">&#x2011;function</a>  • <a href="command-line-options.html#fuzz">&#x2011;fuzz</a>  • <a href="command-line-options.html#fx">&#x2011;fx</a>  • <a href="command-line-options.html#gamma">&#x2011;gamma</a>  • <a href="command-line-options.html#gaussian-blur">&#x2011;gaussian&#x2011;blur</a>  • <a href="command-line-options.html#geometry">&#x2011;geometry</a>  • <a href="command-line-options.html#gravity">&#x2011;gravity</a>  • <a href="command-line-options.html#grayscale">&#x2011;grayscale</a>  • <a href="command-line-options.html#green-primary">&#x2011;green&#x2011;primary</a>  • <a href="command-line-options.html#hald-clut">&#x2011;hald&#x2011;clut</a>  • <a href="command-line-options.html#help">&#x2011;help</a>  • <a href="command-line-options.html#highlight-color">&#x2011;highlight&#x2011;color</a>  • <a href="command-line-options.html#hough-lines">&#x2011;hough&#x2011;lines</a>  • <a href="command-line-options.html#iconGeometry">&#x2011;iconGeometry</a>  • <a href="command-line-options.html#iconic">&#x2011;iconic</a>  • <a href="command-line-options.html#identify">&#x2011;identify</a>  • <a href="command-line-options.html#ift">&#x2011;ift</a>  • <a href="command-line-options.html#immutable">&#x2011;immutable</a>  • <a href="command-line-options.html#implode">&#x2011;implode</a>  • <a href="command-line-options.html#insert">&#x2011;insert</a>  • <a href="command-line-options.html#intensity">&#x2011;intensity</a>  • <a href="command-line-options.html#intent">&#x2011;intent</a>  • <a href="command-line-options.html#interlace">&#x2011;interlace</a>  • <a href="command-line-options.html#interpolate">&#x2011;interpolate</a>  • <a href="command-line-options.html#interline-spacing">&#x2011;interline&#x2011;spacing</a>  • <a href="command-line-options.html#interword-spacing">&#x2011;interword&#x2011;spacing</a>  • <a href="command-line-options.html#kerning">&#x2011;kerning</a>  • <a href="command-line-options.html#kuwahara">&#x2011;kuwahara</a>  • <a href="command-line-options.html#label">&#x2011;label</a>  • <a href="command-line-options.html#lat">&#x2011;lat</a>  • <a href="command-line-options.html#layers">&#x2011;layers</a>  • <a href="command-line-options.html#level">&#x2011;level</a>  • <a href="command-line-options.html#level-colors">&#x2011;level&#x2011;colors</a>  • <a href="command-line-options.html#limit">&#x2011;limit</a>  • <a href="command-line-options.html#linear-stretch">&#x2011;linear&#x2011;stretch</a>  • <a href="command-line-options.html#linewidth">&#x2011;linewidth</a>  • <a href="command-line-options.html#liquid-rescale">&#x2011;liquid&#x2011;rescale</a>  • <a href="command-line-options.html#list">&#x2011;list</a>  • <a href="command-line-options.html#log">&#x2011;log</a>  • <a href="command-line-options.html#loop">&#x2011;loop</a>  • <a href="command-line-options.html#lowlight-color">&#x2011;lowlight&#x2011;color</a>  • <a href="command-line-options.html#magnify">&#x2011;magnify</a>  • <a href="command-line-options.html#map">&#x2011;map</a>  • <a href="command-line-options.html#map_stream_">&#x2011;map[stream]</a>  • <a href="command-line-options.html#mask">&#x2011;mask</a>  • <a href="command-line-options.html#mattecolor">&#x2011;mattecolor</a>  • <a href="command-line-options.html#median">&#x2011;median</a>  • <a href="command-line-options.html#mean-shift">&#x2011;mean&#x2011;shift</a>  • <a href="command-line-options.html#metric">&#x2011;metric</a>  • <a href="command-line-options.html#mode">&#x2011;mode</a>  • <a href="command-line-options.html#modulate">&#x2011;modulate</a>  • <a href="command-line-options.html#moments">&#x2011;moments</a>  • <a href="command-line-options.html#monitor">&#x2011;monitor</a>  • <a href="command-line-options.html#monochrome">&#x2011;monochrome</a>  • <a href="command-line-options.html#morph">&#x2011;morph</a>  • <a href="command-line-options.html#morphology">&#x2011;morphology</a>  • <a href="command-line-options.html#mosaic">&#x2011;mosaic</a>  • <a href="command-line-options.html#motion-blur">&#x2011;motion&#x2011;blur</a>  • <a href="command-line-options.html#name">&#x2011;name</a>  • <a href="command-line-options.html#negate">&#x2011;negate</a>  • <a href="command-line-options.html#noise">&#x2011;noise</a>  • <a href="command-line-options.html#normalize">&#x2011;normalize</a>  • <a href="command-line-options.html#opaque">&#x2011;opaque</a>  • <a href="command-line-options.html#ordered-dither">&#x2011;ordered&#x2011;dither</a>  • <a href="command-line-options.html#orient">&#x2011;orient</a>  • <a href="command-line-options.html#page">&#x2011;page</a>  • <a href="command-line-options.html#paint">&#x2011;paint</a>  • <a href="command-line-options.html#path">&#x2011;path</a>  • <a href="command-line-options.html#pause_animate_">&#x2011;pause[animate]</a>  • <a href="command-line-options.html#pause_import_">&#x2011;pause[import]</a>  • <a href="command-line-options.html#perceptible">&#x2011;perceptible</a>  • <a href="command-line-options.html#ping">&#x2011;ping</a>  • <a href="command-line-options.html#pointsize">&#x2011;pointsize</a>  • <a href="command-line-options.html#polaroid">&#x2011;polaroid</a>  • <a href="command-line-options.html#poly">&#x2011;poly</a>  • <a href="command-line-options.html#posterize">&#x2011;posterize</a>  • <a href="command-line-options.html#precision">&#x2011;precision</a>  • <a href="command-line-options.html#preview">&#x2011;preview</a>  • <a href="command-line-options.html#print">&#x2011;print</a>  • <a href="command-line-options.html#process">&#x2011;process</a>  • <a href="command-line-options.html#profile">&#x2011;profile</a>  • <a href="command-line-options.html#quality">&#x2011;quality</a>  • <a href="command-line-options.html#quantize">&#x2011;quantize</a>  • <a href="command-line-options.html#quiet">&#x2011;quiet</a>  • <a href="command-line-options.html#radial-blur">&#x2011;radial&#x2011;blur</a>  • <a href="command-line-options.html#raise">&#x2011;raise</a>  • <a href="command-line-options.html#random-threshold">&#x2011;random&#x2011;threshold</a>  • <a href="command-line-options.html#red-primary">&#x2011;red&#x2011;primary</a>  • <a href="command-line-options.html#regard-warnings">&#x2011;regard&#x2011;warnings</a>  • <a href="command-line-options.html#region">&#x2011;region</a>  • <a href="command-line-options.html#remap">&#x2011;remap</a>  • <a href="command-line-options.html#remote">&#x2011;remote</a>  • <a href="command-line-options.html#render">&#x2011;render</a>  • <a href="command-line-options.html#repage">&#x2011;repage</a>  • <a href="command-line-options.html#resample">&#x2011;resample</a>  • <a href="command-line-options.html#resize">&#x2011;resize</a>  • <a href="command-line-options.html#respect-parentheses">&#x2011;respect&#x2011;parentheses</a>  • <a href="command-line-options.html#reverse">&#x2011;reverse</a>  • <a href="command-line-options.html#roll">&#x2011;roll</a>  • <a href="command-line-options.html#rotate">&#x2011;rotate</a>  • <a href="command-line-options.html#sample">&#x2011;sample</a>  • <a href="command-line-options.html#sampling-factor">&#x2011;sampling&#x2011;factor</a>  • <a href="command-line-options.html#scale">&#x2011;scale</a>  • <a href="command-line-options.html#scene">&#x2011;scene</a>  • <a href="command-line-options.html#screen">&#x2011;screen</a>  • <a href="command-line-options.html#seed">&#x2011;seed</a>  • <a href="command-line-options.html#segment">&#x2011;segment</a>  • <a href="command-line-options.html#selective-blur">&#x2011;selective&#x2011;blur</a>  • <a href="command-line-options.html#separate">&#x2011;separate</a>  • <a href="command-line-options.html#sepia-tone">&#x2011;sepia&#x2011;tone</a>  • <a href="command-line-options.html#set">&#x2011;set</a>  • <a href="command-line-options.html#shade">&#x2011;shade</a>  • <a href="command-line-options.html#shadow">&#x2011;shadow</a>  • <a href="command-line-options.html#shared-memory">&#x2011;shared&#x2011;memory</a>  • <a href="command-line-options.html#sharpen">&#x2011;sharpen</a>  • <a href="command-line-options.html#shave">&#x2011;shave</a>  • <a href="command-line-options.html#shear">&#x2011;shear</a>  • <a href="command-line-options.html#sigmoidal-contrast">&#x2011;sigmoidal&#x2011;contrast</a>  • <a href="command-line-options.html#silent">&#x2011;silent</a>  • <a href="command-line-options.html#similarity-threshold">&#x2011;similarity&#x2011;threshold</a>  • <a href="command-line-options.html#size">&#x2011;size</a>  • <a href="command-line-options.html#sketch">&#x2011;sketch</a>  • <a href="command-line-options.html#smush">&#x2011;smush</a>  • <a href="command-line-options.html#snaps">&#x2011;snaps</a>  • <a href="command-line-options.html#solarize">&#x2011;solarize</a>  • <a href="command-line-options.html#sparse-color">&#x2011;sparse&#x2011;color</a>  • <a href="command-line-options.html#splice">&#x2011;splice</a>  • <a href="command-line-options.html#spread">&#x2011;spread</a>  • <a href="command-line-options.html#statistic">&#x2011;statistic</a>  • <a href="command-line-options.html#stegano">&#x2011;stegano</a>  • <a href="command-line-options.html#stereo">&#x2011;stereo</a>  • <a href="command-line-options.html#storage-type">&#x2011;storage&#x2011;type</a>  • <a href="command-line-options.html#stretch">&#x2011;stretch</a>  • <a href="command-line-options.html#strip">&#x2011;strip</a>  • <a href="command-line-options.html#stroke">&#x2011;stroke</a>  • <a href="command-line-options.html#strokewidth">&#x2011;strokewidth</a>  • <a href="command-line-options.html#style">&#x2011;style</a>  • <a href="command-line-options.html#subimage-search">&#x2011;subimage&#x2011;search</a>  • <a href="command-line-options.html#swap">&#x2011;swap</a>  • <a href="command-line-options.html#swirl">&#x2011;swirl</a>  • <a href="command-line-options.html#synchronize">&#x2011;synchronize</a>  • <a href="command-line-options.html#taint">&#x2011;taint</a>  • <a href="command-line-options.html#text-font">&#x2011;text&#x2011;font</a>  • <a href="command-line-options.html#texture">&#x2011;texture</a>  • <a href="command-line-options.html#threshold">&#x2011;threshold</a>  • <a href="command-line-options.html#thumbnail">&#x2011;thumbnail</a>  • <a href="command-line-options.html#tile">&#x2011;tile</a>  • <a href="command-line-options.html#tile-offset">&#x2011;tile&#x2011;offset</a>  • <a href="command-line-options.html#tint">&#x2011;tint</a>  • <a href="command-line-options.html#title">&#x2011;title</a>  • <a href="command-line-options.html#transform">&#x2011;transform</a>  • <a href="command-line-options.html#transparent">&#x2011;transparent</a>  • <a href="command-line-options.html#transparent-color">&#x2011;transparent&#x2011;color</a>  • <a href="command-line-options.html#transpose">&#x2011;transpose</a>  • <a href="command-line-options.html#transverse">&#x2011;transverse</a>  • <a href="command-line-options.html#treedepth">&#x2011;treedepth</a>  • <a href="command-line-options.html#trim">&#x2011;trim</a>  • <a href="command-line-options.html#type">&#x2011;type</a>  • <a href="command-line-options.html#undercolor">&#x2011;undercolor</a>  • <a href="command-line-options.html#unique-colors">&#x2011;unique&#x2011;colors</a>  • <a href="command-line-options.html#units">&#x2011;units</a>  • <a href="command-line-options.html#unsharp">&#x2011;unsharp</a>  • <a href="command-line-options.html#update">&#x2011;update</a>  • <a href="command-line-options.html#verbose">&#x2011;verbose</a>  • <a href="command-line-options.html#version">&#x2011;version</a>  • <a href="command-line-options.html#view">&#x2011;view</a>  • <a href="command-line-options.html#vignette">&#x2011;vignette</a>  • <a href="command-line-options.html#virtual-pixel">&#x2011;virtual&#x2011;pixel</a>  • <a href="command-line-options.html#visual">&#x2011;visual</a>  • <a href="command-line-options.html#watermark">&#x2011;watermark</a>  • <a href="command-line-options.html#wave">&#x2011;wave</a>  • <a href="command-line-options.html#weight">&#x2011;weight</a>  • <a href="command-line-options.html#white-point">&#x2011;white&#x2011;point</a>  • <a href="command-line-options.html#white-threshold">&#x2011;white&#x2011;threshold</a>  • <a href="command-line-options.html#window">&#x2011;window</a>  • <a href="command-line-options.html#window-group">&#x2011;window&#x2011;group</a>  • <a href="command-line-options.html#write">&#x2011;write</a>  </p>
+<p class="text-center"><a class="text-nowrap" href="command-line-options.html#adaptive-blur">-adaptive-blur</a>  • <a class="text-nowrap" href="command-line-options.html#adaptive-resize">-adaptive-resize</a>  • <a class="text-nowrap" href="command-line-options.html#adaptive-sharpen">-adaptive-sharpen</a>  • <a class="text-nowrap" href="command-line-options.html#adjoin">-adjoin</a>  • <a class="text-nowrap" href="command-line-options.html#affine">-affine</a>  • <a class="text-nowrap" href="command-line-options.html#alpha">-alpha</a>  • <a class="text-nowrap" href="command-line-options.html#alpha-color">-alpha-color</a>  • <a class="text-nowrap" href="command-line-options.html#annotate">-annotate</a>  • <a class="text-nowrap" href="command-line-options.html#antialias">-antialias</a>  • <a class="text-nowrap" href="command-line-options.html#append">-append</a>  • <a class="text-nowrap" href="command-line-options.html#attenuate">-attenuate</a>  • <a class="text-nowrap" href="command-line-options.html#authenticate">-authenticate</a>  • <a class="text-nowrap" href="command-line-options.html#auto-gamma">-auto-gamma</a>  • <a class="text-nowrap" href="command-line-options.html#auto-level">-auto-level</a>  • <a class="text-nowrap" href="command-line-options.html#auto-orient">-auto-orient</a>  • <a class="text-nowrap" href="command-line-options.html#backdrop">-backdrop</a>  • <a class="text-nowrap" href="command-line-options.html#background">-background</a>  • <a class="text-nowrap" href="command-line-options.html#bench">-bench</a>  • <a class="text-nowrap" href="command-line-options.html#bias">-bias</a>  • <a class="text-nowrap" href="command-line-options.html#black-point-compensation">-black-point-compensation</a>  • <a class="text-nowrap" href="command-line-options.html#black-threshold">-black-threshold</a>  • <a class="text-nowrap" href="command-line-options.html#blend">-blend</a>  • <a class="text-nowrap" href="command-line-options.html#blue-primary">-blue-primary</a>  • <a class="text-nowrap" href="command-line-options.html#blue-shift">-blue-shift</a>  • <a class="text-nowrap" href="command-line-options.html#blur">-blur</a>  • <a class="text-nowrap" href="command-line-options.html#border">-border</a>  • <a class="text-nowrap" href="command-line-options.html#bordercolor">-bordercolor</a>  • <a class="text-nowrap" href="command-line-options.html#borderwidth">-borderwidth</a>  • <a class="text-nowrap" href="command-line-options.html#brightness-contrast">-brightness-contrast</a>  • <a class="text-nowrap" href="command-line-options.html#cache">-cache</a>  • <a class="text-nowrap" href="command-line-options.html#canny">-canny</a>  • <a class="text-nowrap" href="command-line-options.html#caption">-caption</a>  • <a class="text-nowrap" href="command-line-options.html#cdl">-cdl</a>  • <a class="text-nowrap" href="command-line-options.html#channel">-channel</a>  • <a class="text-nowrap" href="command-line-options.html#charcoal">-charcoal</a>  • <a class="text-nowrap" href="command-line-options.html#chop">-chop</a>  • <a class="text-nowrap" href="command-line-options.html#clamp">-clamp</a>  • <a class="text-nowrap" href="command-line-options.html#clip">-clip</a>  • <a class="text-nowrap" href="command-line-options.html#clip-mask">-clip-mask</a>  • <a class="text-nowrap" href="command-line-options.html#clip-path">-clip-path</a>  • <a class="text-nowrap" href="command-line-options.html#clone">-clone</a>  • <a class="text-nowrap" href="command-line-options.html#clut">-clut</a>  • <a class="text-nowrap" href="command-line-options.html#coalesce">-coalesce</a>  • <a class="text-nowrap" href="command-line-options.html#colorize">-colorize</a>  • <a class="text-nowrap" href="command-line-options.html#colormap">-colormap</a>  • <a class="text-nowrap" href="command-line-options.html#color-matrix">-color-matrix</a>  • <a class="text-nowrap" href="command-line-options.html#colors">-colors</a>  • <a class="text-nowrap" href="command-line-options.html#colorspace">-colorspace</a>  • <a class="text-nowrap" href="command-line-options.html#combine">-combine</a>  • <a class="text-nowrap" href="command-line-options.html#comment">-comment</a>  • <a class="text-nowrap" href="command-line-options.html#compare">-compare</a>  • <a class="text-nowrap" href="command-line-options.html#complex">-complex</a>  • <a class="text-nowrap" href="command-line-options.html#compose">-compose</a>  • <a class="text-nowrap" href="command-line-options.html#composite">-composite</a>  • <a class="text-nowrap" href="command-line-options.html#compress">-compress</a>  • <a class="text-nowrap" href="command-line-options.html#connected-components">-connected-components</a>  • <a class="text-nowrap" href="command-line-options.html#contrast">-contrast</a>  • <a class="text-nowrap" href="command-line-options.html#contrast-stretch">-contrast-stretch</a>  • <a class="text-nowrap" href="command-line-options.html#convolve">-convolve</a>  • <a class="text-nowrap" href="command-line-options.html#copy">-copy</a>  • <a class="text-nowrap" href="command-line-options.html#crop">-crop</a>  • <a class="text-nowrap" href="command-line-options.html#cycle">-cycle</a>  • <a class="text-nowrap" href="command-line-options.html#debug">-debug</a>  • <a class="text-nowrap" href="command-line-options.html#decipher">-decipher</a>  • <a class="text-nowrap" href="command-line-options.html#deconstruct">-deconstruct</a>  • <a class="text-nowrap" href="command-line-options.html#define">-define</a>  • <a class="text-nowrap" href="command-line-options.html#delay">-delay</a>  • <a class="text-nowrap" href="command-line-options.html#delete">-delete</a>  • <a class="text-nowrap" href="command-line-options.html#density">-density</a>  • <a class="text-nowrap" href="command-line-options.html#depth">-depth</a>  • <a class="text-nowrap" href="command-line-options.html#descend">-descend</a>  • <a class="text-nowrap" href="command-line-options.html#deskew">-deskew</a>  • <a class="text-nowrap" href="command-line-options.html#despeckle">-despeckle</a>  • <a class="text-nowrap" href="command-line-options.html#direction">-direction</a>  • <a class="text-nowrap" href="command-line-options.html#displace">-displace</a>  • <a class="text-nowrap" href="command-line-options.html#display">-display</a>  • <a class="text-nowrap" href="command-line-options.html#dispose">-dispose</a>  • <a class="text-nowrap" href="command-line-options.html#dissimilarity-threshold">-dissimilarity-threshold</a>  • <a class="text-nowrap" href="command-line-options.html#dissolve">-dissolve</a>  • <a class="text-nowrap" href="command-line-options.html#distort">-distort</a>  • <a class="text-nowrap" href="command-line-options.html#distribute-cache">-distribute-cache</a>  • <a class="text-nowrap" href="command-line-options.html#dither">-dither</a>  • <a class="text-nowrap" href="command-line-options.html#draw">-draw</a>  • <a class="text-nowrap" href="command-line-options.html#duplicate">-duplicate</a>  • <a class="text-nowrap" href="command-line-options.html#edge">-edge</a>  • <a class="text-nowrap" href="command-line-options.html#emboss">-emboss</a>  • <a class="text-nowrap" href="command-line-options.html#encipher">-encipher</a>  • <a class="text-nowrap" href="command-line-options.html#encoding">-encoding</a>  • <a class="text-nowrap" href="command-line-options.html#endian">-endian</a>  • <a class="text-nowrap" href="command-line-options.html#enhance">-enhance</a>  • <a class="text-nowrap" href="command-line-options.html#equalize">-equalize</a>  • <a class="text-nowrap" href="command-line-options.html#evaluate">-evaluate</a>  • <a class="text-nowrap" href="command-line-options.html#evaluate-sequence">-evaluate-sequence</a>  • <a class="text-nowrap" href="command-line-options.html#extent">-extent</a>  • <a class="text-nowrap" href="command-line-options.html#extract">-extract</a>  • <a class="text-nowrap" href="command-line-options.html#family">-family</a>  • <a class="text-nowrap" href="command-line-options.html#features">-features</a>  • <a class="text-nowrap" href="command-line-options.html#fft">-fft</a>  • <a class="text-nowrap" href="command-line-options.html#fill">-fill</a>  • <a class="text-nowrap" href="command-line-options.html#filter">-filter</a>  • <a class="text-nowrap" href="command-line-options.html#flatten">-flatten</a>  • <a class="text-nowrap" href="command-line-options.html#flip">-flip</a>  • <a class="text-nowrap" href="command-line-options.html#floodfill">-floodfill</a>  • <a class="text-nowrap" href="command-line-options.html#flop">-flop</a>  • <a class="text-nowrap" href="command-line-options.html#font">-font</a>  • <a class="text-nowrap" href="command-line-options.html#foreground">-foreground</a>  • <a class="text-nowrap" href="command-line-options.html#format">-format</a>  • <a class="text-nowrap" href="command-line-options.html#format_identify_">-format[identify]</a>  • <a class="text-nowrap" href="command-line-options.html#frame">-frame</a>  • <a class="text-nowrap" href="command-line-options.html#frame_import_">-frame[import]</a>  • <a class="text-nowrap" href="command-line-options.html#function">-function</a>  • <a class="text-nowrap" href="command-line-options.html#fuzz">-fuzz</a>  • <a class="text-nowrap" href="command-line-options.html#fx">-fx</a>  • <a class="text-nowrap" href="command-line-options.html#gamma">-gamma</a>  • <a class="text-nowrap" href="command-line-options.html#gaussian-blur">-gaussian-blur</a>  • <a class="text-nowrap" href="command-line-options.html#geometry">-geometry</a>  • <a class="text-nowrap" href="command-line-options.html#gravity">-gravity</a>  • <a class="text-nowrap" href="command-line-options.html#grayscale">-grayscale</a>  • <a class="text-nowrap" href="command-line-options.html#green-primary">-green-primary</a>  • <a class="text-nowrap" href="command-line-options.html#hald-clut">-hald-clut</a>  • <a class="text-nowrap" href="command-line-options.html#help">-help</a>  • <a class="text-nowrap" href="command-line-options.html#highlight-color">-highlight-color</a>  • <a class="text-nowrap" href="command-line-options.html#hough-lines">-hough-lines</a>  • <a class="text-nowrap" href="command-line-options.html#iconGeometry">-iconGeometry</a>  • <a class="text-nowrap" href="command-line-options.html#iconic">-iconic</a>  • <a class="text-nowrap" href="command-line-options.html#identify">-identify</a>  • <a class="text-nowrap" href="command-line-options.html#ift">-ift</a>  • <a class="text-nowrap" href="command-line-options.html#immutable">-immutable</a>  • <a class="text-nowrap" href="command-line-options.html#implode">-implode</a>  • <a class="text-nowrap" href="command-line-options.html#insert">-insert</a>  • <a class="text-nowrap" href="command-line-options.html#intensity">-intensity</a>  • <a class="text-nowrap" href="command-line-options.html#intent">-intent</a>  • <a class="text-nowrap" href="command-line-options.html#interlace">-interlace</a>  • <a class="text-nowrap" href="command-line-options.html#interpolate">-interpolate</a>  • <a class="text-nowrap" href="command-line-options.html#interline-spacing">-interline-spacing</a>  • <a class="text-nowrap" href="command-line-options.html#interword-spacing">-interword-spacing</a>  • <a class="text-nowrap" href="command-line-options.html#kerning">-kerning</a>  • <a class="text-nowrap" href="command-line-options.html#kuwahara">-kuwahara</a>  • <a class="text-nowrap" href="command-line-options.html#label">-label</a>  • <a class="text-nowrap" href="command-line-options.html#lat">-lat</a>  • <a class="text-nowrap" href="command-line-options.html#layers">-layers</a>  • <a class="text-nowrap" href="command-line-options.html#level">-level</a>  • <a class="text-nowrap" href="command-line-options.html#level-colors">-level-colors</a>  • <a class="text-nowrap" href="command-line-options.html#limit">-limit</a>  • <a class="text-nowrap" href="command-line-options.html#linear-stretch">-linear-stretch</a>  • <a class="text-nowrap" href="command-line-options.html#linewidth">-linewidth</a>  • <a class="text-nowrap" href="command-line-options.html#liquid-rescale">-liquid-rescale</a>  • <a class="text-nowrap" href="command-line-options.html#list">-list</a>  • <a class="text-nowrap" href="command-line-options.html#log">-log</a>  • <a class="text-nowrap" href="command-line-options.html#loop">-loop</a>  • <a class="text-nowrap" href="command-line-options.html#lowlight-color">-lowlight-color</a>  • <a class="text-nowrap" href="command-line-options.html#magnify">-magnify</a>  • <a class="text-nowrap" href="command-line-options.html#map">-map</a>  • <a class="text-nowrap" href="command-line-options.html#map_stream_">-map[stream]</a>  • <a class="text-nowrap" href="command-line-options.html#mask">-mask</a>  • <a class="text-nowrap" href="command-line-options.html#mattecolor">-mattecolor</a>  • <a class="text-nowrap" href="command-line-options.html#median">-median</a>  • <a class="text-nowrap" href="command-line-options.html#mean-shift">-mean-shift</a>  • <a class="text-nowrap" href="command-line-options.html#metric">-metric</a>  • <a class="text-nowrap" href="command-line-options.html#mode">-mode</a>  • <a class="text-nowrap" href="command-line-options.html#modulate">-modulate</a>  • <a class="text-nowrap" href="command-line-options.html#moments">-moments</a>  • <a class="text-nowrap" href="command-line-options.html#monitor">-monitor</a>  • <a class="text-nowrap" href="command-line-options.html#monochrome">-monochrome</a>  • <a class="text-nowrap" href="command-line-options.html#morph">-morph</a>  • <a class="text-nowrap" href="command-line-options.html#morphology">-morphology</a>  • <a class="text-nowrap" href="command-line-options.html#mosaic">-mosaic</a>  • <a class="text-nowrap" href="command-line-options.html#motion-blur">-motion-blur</a>  • <a class="text-nowrap" href="command-line-options.html#name">-name</a>  • <a class="text-nowrap" href="command-line-options.html#negate">-negate</a>  • <a class="text-nowrap" href="command-line-options.html#noise">-noise</a>  • <a class="text-nowrap" href="command-line-options.html#normalize">-normalize</a>  • <a class="text-nowrap" href="command-line-options.html#opaque">-opaque</a>  • <a class="text-nowrap" href="command-line-options.html#ordered-dither">-ordered-dither</a>  • <a class="text-nowrap" href="command-line-options.html#orient">-orient</a>  • <a class="text-nowrap" href="command-line-options.html#page">-page</a>  • <a class="text-nowrap" href="command-line-options.html#paint">-paint</a>  • <a class="text-nowrap" href="command-line-options.html#path">-path</a>  • <a class="text-nowrap" href="command-line-options.html#pause_animate_">-pause[animate]</a>  • <a class="text-nowrap" href="command-line-options.html#pause_import_">-pause[import]</a>  • <a class="text-nowrap" href="command-line-options.html#perceptible">-perceptible</a>  • <a class="text-nowrap" href="command-line-options.html#ping">-ping</a>  • <a class="text-nowrap" href="command-line-options.html#pointsize">-pointsize</a>  • <a class="text-nowrap" href="command-line-options.html#polaroid">-polaroid</a>  • <a class="text-nowrap" href="command-line-options.html#poly">-poly</a>  • <a class="text-nowrap" href="command-line-options.html#posterize">-posterize</a>  • <a class="text-nowrap" href="command-line-options.html#precision">-precision</a>  • <a class="text-nowrap" href="command-line-options.html#preview">-preview</a>  • <a class="text-nowrap" href="command-line-options.html#print">-print</a>  • <a class="text-nowrap" href="command-line-options.html#process">-process</a>  • <a class="text-nowrap" href="command-line-options.html#profile">-profile</a>  • <a class="text-nowrap" href="command-line-options.html#quality">-quality</a>  • <a class="text-nowrap" href="command-line-options.html#quantize">-quantize</a>  • <a class="text-nowrap" href="command-line-options.html#quiet">-quiet</a>  • <a class="text-nowrap" href="command-line-options.html#radial-blur">-radial-blur</a>  • <a class="text-nowrap" href="command-line-options.html#raise">-raise</a>  • <a class="text-nowrap" href="command-line-options.html#random-threshold">-random-threshold</a>  • <a class="text-nowrap" href="command-line-options.html#red-primary">-red-primary</a>  • <a class="text-nowrap" href="command-line-options.html#regard-warnings">-regard-warnings</a>  • <a class="text-nowrap" href="command-line-options.html#region">-region</a>  • <a class="text-nowrap" href="command-line-options.html#remap">-remap</a>  • <a class="text-nowrap" href="command-line-options.html#remote">-remote</a>  • <a class="text-nowrap" href="command-line-options.html#render">-render</a>  • <a class="text-nowrap" href="command-line-options.html#repage">-repage</a>  • <a class="text-nowrap" href="command-line-options.html#resample">-resample</a>  • <a class="text-nowrap" href="command-line-options.html#resize">-resize</a>  • <a class="text-nowrap" href="command-line-options.html#respect-parentheses">-respect-parentheses</a>  • <a class="text-nowrap" href="command-line-options.html#reverse">-reverse</a>  • <a class="text-nowrap" href="command-line-options.html#roll">-roll</a>  • <a class="text-nowrap" href="command-line-options.html#rotate">-rotate</a>  • <a class="text-nowrap" href="command-line-options.html#sample">-sample</a>  • <a class="text-nowrap" href="command-line-options.html#sampling-factor">-sampling-factor</a>  • <a class="text-nowrap" href="command-line-options.html#scale">-scale</a>  • <a class="text-nowrap" href="command-line-options.html#scene">-scene</a>  • <a class="text-nowrap" href="command-line-options.html#screen">-screen</a>  • <a class="text-nowrap" href="command-line-options.html#seed">-seed</a>  • <a class="text-nowrap" href="command-line-options.html#segment">-segment</a>  • <a class="text-nowrap" href="command-line-options.html#selective-blur">-selective-blur</a>  • <a class="text-nowrap" href="command-line-options.html#separate">-separate</a>  • <a class="text-nowrap" href="command-line-options.html#sepia-tone">-sepia-tone</a>  • <a class="text-nowrap" href="command-line-options.html#set">-set</a>  • <a class="text-nowrap" href="command-line-options.html#shade">-shade</a>  • <a class="text-nowrap" href="command-line-options.html#shadow">-shadow</a>  • <a class="text-nowrap" href="command-line-options.html#shared-memory">-shared-memory</a>  • <a class="text-nowrap" href="command-line-options.html#sharpen">-sharpen</a>  • <a class="text-nowrap" href="command-line-options.html#shave">-shave</a>  • <a class="text-nowrap" href="command-line-options.html#shear">-shear</a>  • <a class="text-nowrap" href="command-line-options.html#sigmoidal-contrast">-sigmoidal-contrast</a>  • <a class="text-nowrap" href="command-line-options.html#silent">-silent</a>  • <a class="text-nowrap" href="command-line-options.html#similarity-threshold">-similarity-threshold</a>  • <a class="text-nowrap" href="command-line-options.html#size">-size</a>  • <a class="text-nowrap" href="command-line-options.html#sketch">-sketch</a>  • <a class="text-nowrap" href="command-line-options.html#smush">-smush</a>  • <a class="text-nowrap" href="command-line-options.html#snaps">-snaps</a>  • <a class="text-nowrap" href="command-line-options.html#solarize">-solarize</a>  • <a class="text-nowrap" href="command-line-options.html#sparse-color">-sparse-color</a>  • <a class="text-nowrap" href="command-line-options.html#splice">-splice</a>  • <a class="text-nowrap" href="command-line-options.html#spread">-spread</a>  • <a class="text-nowrap" href="command-line-options.html#statistic">-statistic</a>  • <a class="text-nowrap" href="command-line-options.html#stegano">-stegano</a>  • <a class="text-nowrap" href="command-line-options.html#stereo">-stereo</a>  • <a class="text-nowrap" href="command-line-options.html#storage-type">-storage-type</a>  • <a class="text-nowrap" href="command-line-options.html#stretch">-stretch</a>  • <a class="text-nowrap" href="command-line-options.html#strip">-strip</a>  • <a class="text-nowrap" href="command-line-options.html#stroke">-stroke</a>  • <a class="text-nowrap" href="command-line-options.html#strokewidth">-strokewidth</a>  • <a class="text-nowrap" href="command-line-options.html#style">-style</a>  • <a class="text-nowrap" href="command-line-options.html#subimage-search">-subimage-search</a>  • <a class="text-nowrap" href="command-line-options.html#swap">-swap</a>  • <a class="text-nowrap" href="command-line-options.html#swirl">-swirl</a>  • <a class="text-nowrap" href="command-line-options.html#synchronize">-synchronize</a>  • <a class="text-nowrap" href="command-line-options.html#taint">-taint</a>  • <a class="text-nowrap" href="command-line-options.html#text-font">-text-font</a>  • <a class="text-nowrap" href="command-line-options.html#texture">-texture</a>  • <a class="text-nowrap" href="command-line-options.html#threshold">-threshold</a>  • <a class="text-nowrap" href="command-line-options.html#thumbnail">-thumbnail</a>  • <a class="text-nowrap" href="command-line-options.html#tile">-tile</a>  • <a class="text-nowrap" href="command-line-options.html#tile-offset">-tile-offset</a>  • <a class="text-nowrap" href="command-line-options.html#tint">-tint</a>  • <a class="text-nowrap" href="command-line-options.html#title">-title</a>  • <a class="text-nowrap" href="command-line-options.html#transform">-transform</a>  • <a class="text-nowrap" href="command-line-options.html#transparent">-transparent</a>  • <a class="text-nowrap" href="command-line-options.html#transparent-color">-transparent-color</a>  • <a class="text-nowrap" href="command-line-options.html#transpose">-transpose</a>  • <a class="text-nowrap" href="command-line-options.html#transverse">-transverse</a>  • <a class="text-nowrap" href="command-line-options.html#treedepth">-treedepth</a>  • <a class="text-nowrap" href="command-line-options.html#trim">-trim</a>  • <a class="text-nowrap" href="command-line-options.html#type">-type</a>  • <a class="text-nowrap" href="command-line-options.html#undercolor">-undercolor</a>  • <a class="text-nowrap" href="command-line-options.html#unique-colors">-unique-colors</a>  • <a class="text-nowrap" href="command-line-options.html#units">-units</a>  • <a class="text-nowrap" href="command-line-options.html#unsharp">-unsharp</a>  • <a class="text-nowrap" href="command-line-options.html#update">-update</a>  • <a class="text-nowrap" href="command-line-options.html#verbose">-verbose</a>  • <a class="text-nowrap" href="command-line-options.html#version">-version</a>  • <a class="text-nowrap" href="command-line-options.html#view">-view</a>  • <a class="text-nowrap" href="command-line-options.html#vignette">-vignette</a>  • <a class="text-nowrap" href="command-line-options.html#virtual-pixel">-virtual-pixel</a>  • <a class="text-nowrap" href="command-line-options.html#visual">-visual</a>  • <a class="text-nowrap" href="command-line-options.html#watermark">-watermark</a>  • <a class="text-nowrap" href="command-line-options.html#wave">-wave</a>  • <a class="text-nowrap" href="command-line-options.html#wavelet-denoise">-wavelet-denoise</a>  • <a class="text-nowrap" href="command-line-options.html#weight">-weight</a>  • <a class="text-nowrap" href="command-line-options.html#white-point">-white-point</a>  • <a class="text-nowrap" href="command-line-options.html#white-threshold">-white-threshold</a>  • <a class="text-nowrap" href="command-line-options.html#window">-window</a>  • <a class="text-nowrap" href="command-line-options.html#window-group">-window-group</a>  • <a class="text-nowrap" href="command-line-options.html#write">-write</a>  </p>
 
 <p class="lead magick-description">Below is list of command-line options recognized by the ImageMagick <a href="command-line-tools.html">command-line tools</a>. If you want a description of a particular option, click on the option name in the navigation bar above and you will go right to it. Unless otherwise noted, each option is recognized by the commands: <a href="convert.html">convert</a> and <a href="mogrify.html">mogrify</a>.</p>
 
@@ -255,15 +256,15 @@ channel data, to create an alpha channel, or to perform other operations on the 
     <dd>
        Copies the alpha channel values into all the color channels and turns
        'Off' the the image's transparency, so as to generate
-       a gray-scale mask of the image's shape. The alpha channel data is left
+       a grayscale mask of the image's shape. The alpha channel data is left
        intact just deactivated.  This is the inverse of 'Copy'.
        </dd>
 
     <dt>Copy</dt>
     <dd>
        Turns 'On' the alpha/matte channel, then copies the
-       gray-scale intensity of the image, into the alpha channel, converting
-       a gray-scale mask into a transparent shaped mask ready to be colored
+       grayscale intensity of the image, into the alpha channel, converting
+       a grayscale mask into a transparent shaped mask ready to be colored
        appropriately. The color channels are not modified.  </dd>
 
     <dt>Shape</dt>
@@ -291,6 +292,19 @@ channel data, to create an alpha channel, or to perform other operations on the 
 same as "<code><a href="command-line-options.html#alpha" >-alpha</a> Off</code>", the <code>
 >-matte</code> operation was the same as "<code><a href="command-line-options.html#alpha" >-alpha</a>
 Set</code>" and not "<code><a href="command-line-options.html#alpha" >-alpha</a> On</code>".  </p>
+
+<div style="margin: auto;">
+  <h3 class="magick-header"><a id="alpha-color"></a>-alpha-color <var>color</var></h3>
+</div>
+
+<p class="magick-description">Specify the color to be used with the <a href="command-line-options.html#frame">-frame</a> option.</p>
+
+<p>The color is specified using the format described under the <a href="command-line-options.html#fill">-fill</a> option.</p>
+
+<p>The default matte color is <code>#BDBDBD</code>, <span
+style="background-color: #bdbdbd;">this shade of gray</span>.</p>
+
+<p>This is an IMv7 option, use <a href="command-line-options.html#mattecolor">mattecolor</a> with IMv6.</p>
 
 
 <div style="margin: auto;">
@@ -497,13 +511,17 @@ consider the following command and its output.  Modify the benchmark with the
 to run the benchmark in parallel (requires the OpenMP feature).</p>
 
 <pre>
--> convert logo: -resize 1000% -bench 5 logo.png
+-> convert logo: -resize 200% -bench 5 logo.png
+Performance[1]: 5i 1.344ips 1.000e 3.710u 0:03.720
+Performance[2]: 5i 1.634ips 0.549e 3.890u 0:03.060
+Performance[3]: 5i 2.174ips 0.618e 3.190u 0:02.300
+Performance[4]: 5i 1.678ips 0.555e 3.810u 0:02.980
 Performance[4]: 5i 0.875657ips 6.880u 0:05.710
 </pre>
 
-<p>In this example, 5 iterations were completed at 0.875657 iterations per
-second, using 4 threads and 6.88 seconds of the user's allotted time, for
-a total elapsed time of 5.71 seconds.</p>
+<p>In this example, 5 iterations were completed at 2.174 iterations per
+second, using 3 threads and 3.190 seconds of the user allotted time, for
+a total elapsed time of 2.300 seconds.</p>
 
 <div style="margin: auto;">
   <h3 class="magick-header"><a id="bias"></a>-bias <var>value</var>{<var>%</var>}</h3>
@@ -511,7 +529,7 @@ a total elapsed time of 5.71 seconds.</p>
 
 <p class="magick-description">Add bias when convolving an image.</p>
 
-<p>This option shifts the output of <a href="command-line-options.html#convolve">&#x2011;convolve</a>  so that
+<p>This option shifts the output of <a class="text-nowrap" href="command-line-options.html#convolve">-convolve</a>  so that
 positive and negative results are relative to the specified bias value. </p>
 
 <p>This is important for non-HDRI compilations of ImageMagick when dealing
@@ -520,7 +538,7 @@ especially the case with convolutions involving high pass filters or edge
 detection. Without an output bias, the negative values are clipped at
 zero.</p>
 
-<p>When using an ImageMagick with the HDRI compile-time setting, <a href="command-line-options.html#bias">&#x2011;bias</a> is not needed, as ImageMagick is able to store/handle any
+<p>When using an ImageMagick with the HDRI compile-time setting, <a class="text-nowrap" href="command-line-options.html#bias">-bias</a> is not needed, as ImageMagick is able to store/handle any
 negative results without clipping to the color value range
 (0..QuantumRange).</p>
 
@@ -546,7 +564,7 @@ entry.  </p>
 
 <p> The threshold value can be given as a percentage or as an absolute integer
 value within [0, <var>QuantumRange</var>] corresponding to the
-desired <a href="command-line-options.html#channel">&#x2011;channel</a> value. See <a href="command-line-options.html#threshold">&#x2011;threshold</a>for more details on thresholds and resulting values.  </p>
+desired <a class="text-nowrap" href="command-line-options.html#channel">-channel</a> value. See <a class="text-nowrap" href="command-line-options.html#threshold">-threshold</a>for more details on thresholds and resulting values.  </p>
 
 
 <div style="margin: auto;">
@@ -702,7 +720,7 @@ functionality.</p>
 <p class="magick-description">Set the border width.</p>
 
 <div style="margin: auto;">
-  <h3 class="magick-header"><a id="brightness-contrast"></a>-brightness-contrast <var>brightness</var><br />-brightness-contrast <var>brightness</var>{x<var>contrast</var>}{<var>%</var>}}</h3>
+  <h3 class="magick-header"><a id="brightness-contrast"></a>-brightness-contrast <var>brightness</var><br />-brightness-contrast <var>brightness</var>{x<var>contrast</var>}{<var>%</var>}</h3>
 </div>
 
 <p class="magick-description">Adjust the brightness and/or contrast of the image.</p>
@@ -919,7 +937,7 @@ href="command-line-options.html#channel" >-channel</a> setting (including the eq
 default). These operators have yet to be made to understand the newer 'Sync'
 flag. </p>
 
-<p>For example <a href="command-line-options.html#threshold">-threshold</a> will by default gray-scale
+<p>For example <a href="command-line-options.html#threshold">-threshold</a> will by default grayscale
 the image before thresholding, if no <a href="command-line-options.html#channel" >-channel</a> setting
 has been defined. This is not 'Sync flag controlled, yet. </p>
 
@@ -1085,9 +1103,9 @@ alpha/matte values of the original image. </p>
 <p>If either the image being modified, or the lookup image, contains no
 transparency (i.e. <a href="command-line-options.html#alpha" >-alpha</a> is turned 'off') but the <a
 href="command-line-options.html#channel">-channel</a> setting includes alpha replacement, then it is
-assumed that image represents a gray-scale gradient which is used for the
-replacement alpha values.  That is you can use a gray-scale CLUT image to
-adjust a existing images alpha channel, or you can color a gray-scale image
+assumed that image represents a grayscale gradient which is used for the
+replacement alpha values.  That is you can use a grayscale CLUT image to
+adjust a existing images alpha channel, or you can color a grayscale image
 using colors form CLUT containing the desired colors, including transparency.
 </p>
 
@@ -1439,7 +1457,7 @@ of the 'source' or 'overlay' image is controlled according to <a
 href="command-line-options.html#gravity" >-gravity</a>, and <a href="command-line-options.html#geometry" >-geometry</a>
 settings. </p>
 
-<p>If a third image is given this is treated as a gray-scale blending 'mask' image
+<p>If a third image is given this is treated as a grayscale blending 'mask' image
 relative to the first 'destination' image. This mask is blended with the
 source image.  However for the '<code>displace</code>' compose method, the
 mask is used to provide a separate Y-displacement image instead. </p>
@@ -1525,7 +1543,7 @@ convert rose: -contrast -contrast rose_c2.png
 </pre>
 
 <div style="margin: auto;">
-  <h3 class="magick-header"><a id="contrast-stretch"></a>-contrast-stretch <var>black-point</var><br />-contrast-stretch <var>black-point</var>{x<var>white-point</var>}{<var>%</var>}}</h3>
+  <h3 class="magick-header"><a id="contrast-stretch"></a>-contrast-stretch <var>black-point</var><br />-contrast-stretch <var>black-point</var>{x<var>white-point</var>}{<var>%</var>}</h3>
 </div>
 
 <p class="magick-description">Increase the contrast in an image by <var>stretching</var> the range of intensity values.</p>
@@ -1547,7 +1565,7 @@ prior to ImageMagick 6.4.7-0, <code>-contrast-stretch 2%x99%</code>).</p>
 bin to modify the image. As such some colors may be merged together when they
 originally fell into the same 'bin'. </p>
 
-<p>All the channels are normalized in concert by the came amount so as to
+<p>All the channels are normalized in concert by the same amount so as to
 preserve color integrity, when the default <a href="command-line-options.html#channel" >+channel</a>
 setting is in use.  Specifying any other <a href="command-line-options.html#channel" >-channel</a>
 setting will normalize the RGB channels independently.</p>
@@ -1570,7 +1588,7 @@ starting with the top row. Presently, only odd-dimensioned kernels are
 supported, and therefore the number of entries in the specified <var>kernel</var> must be 3<sup>2</sup>=9, 5<sup>2</sup>=25,
 7<sup>2</sup>=49, etc. </p>
 
-<p>Note that the <a href="command-line-options.html#convolve">&#x2011;convolve</a> operator supports the <a href="command-line-options.html#bias">&#x2011;bias</a> setting. This option shifts the convolution so that
+<p>Note that the <a class="text-nowrap" href="command-line-options.html#convolve">-convolve</a> operator supports the <a class="text-nowrap" href="command-line-options.html#bias">-bias</a> setting. This option shifts the convolution so that
 positive and negative results are relative to a user-specified bias value.
 This is important for non-HDRI compilations of ImageMagick when dealing with
 convolutions that contain negative as well as positive values. This is
@@ -1578,7 +1596,7 @@ especially the case with convolutions involving high pass filters or edge
 detection. Without an output bias, the negative values is clipped at zero.
 </p>
 
-<p>When using an ImageMagick with the HDRI compile-time setting, <a href="command-line-options.html#bias">&#x2011;bias</a> is not needed, as ImageMagick is able to store/handle any
+<p>When using an ImageMagick with the HDRI compile-time setting, <a class="text-nowrap" href="command-line-options.html#bias">-bias</a> is not needed, as ImageMagick is able to store/handle any
 negative results without clipping to the color value range (0..QuantumRange).
 See the discussion on HDRI implementations of ImageMagick on the page <a
 href="high-dynamic-range.html">High
@@ -1704,7 +1722,7 @@ option.</p>
 <p>Get the passphrase from the file specified by <var>filename</var>.</p>
 
 <p>For more information, see the webpage, <a
-href="../www/cipher.html">ImageMagick: Encipher or
+href="http://www.imagemagick.org/www/cipher.html">ImageMagick: Encipher or
 Decipher an Image</a>.</p>
 
 
@@ -1784,13 +1802,38 @@ available:</p>
   <tr>
     <td>compose:args=<var>arguments</var></td>
      <td>Sets certain compose argument values when using convert ... -compose ...
-    -composite. See <a href="compose.html"
+    -composite. See <a href="http://www.imagemagick.org/www/compose.html"
     >Image Composition</a></td>
   </tr>
 
   <tr>
     <td>compose:clamp=<var>on|off</var></td>
     <td>set each pixel whose value is below zero to zero and any the pixel whose value is above the quantum range to the quantum range (e.g. 65535) otherwise the pixel value remains unchanged.  Define supported in ImageMagick 6.9.1-3 and above.</td>
+  </tr>
+
+  <tr>
+    <td>connected-components:area-threshold=<var>value</var></td>
+    <td>Merges any region with area smaller than <var>value</var> into its surrounding region or largest neighbor.</td>
+  </tr>
+
+  <tr>
+    <td>connected-components:keep=<var>list-of-ids</var></td>
+    <td>Command and/or hyphenated list of id values to keep in the output. Supported in Imagemagick 6.9.3-0.</td>
+  </tr>
+
+  <tr>
+    <td>connected-components:mean-color=<var>true</var></td>
+    <td>Changes the output image from id values to mean color values. Supported in Imagemagick 6.9.2-8.</td>
+  </tr>
+
+  <tr>
+    <td>connected-components:remove=<var>list-of-ids</var></td>
+    <td>Command and/or hyphenated list of id values to remove from the output. Supported in Imagemagick 6.9.2-9.</td>
+  </tr>
+
+  <tr>
+    <td>connected-components:verbose=<var>true</var></td>
+    <td>Lists id, bounding box, centroid, area, mean color for each region.</td>
   </tr>
 
   <tr>
@@ -1879,10 +1922,9 @@ available:</p>
     <td>h:format=<var>value</var></td>
      <td>Set the image encoding format use when writing a C-style header.
          <var>format</var> can be any output format supported by ImageMagick
-         except for <var>h</var> and <var>magick</var>.  If this
+         except for <var>h</var> and <var>magick</var></td>.  If this
          option is omitted, the default is <var>GIF</var> for PseudoClass
          images and <var>PNM</var> for DirectClass images.
-     </td>
   </tr>
 
   <tr>
@@ -1932,7 +1974,7 @@ available:</p>
 
   <tr>
     <td>jpeg:block-smoothing=<var>on|off</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
@@ -1960,22 +2002,22 @@ available:</p>
 
   <tr>
     <td>jpeg:fancy-upsampling=<var>on|off</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
     <td>jpeg:optimize-coding=<var>on|off</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
     <td>jpeg:q-table=<var>table</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
     <td>jpeg:sampling-factor=<var>sampling-factor-string</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
@@ -1993,12 +2035,12 @@ available:</p>
 
   <tr>
     <td>json:limit</td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
     <td>json:locate</td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
@@ -2009,7 +2051,7 @@ available:</p>
   <tr>
     <td>magick:format=<var>value</var></td>
      <td>Set the image encoding format use when writing a C-style header.
-         This is the same as "h:format=format" described above.</td> 
+         This is the same as "h:format=format" described above.</td>. 
   </tr>
 
   <tr>
@@ -2033,7 +2075,7 @@ available:</p>
 
   <tr>
     <td>pcl:fit-to-page=<var>true</var></td>
-  </tr>
+
   <tr>
     <td>pdf:fit-page=<var>geometry</var></td>
      <td> geometry specifies the scaling dimensions for resizing when the PDF is
@@ -2043,22 +2085,22 @@ available:</p>
 
   <tr>
     <td>pdf:fit-to-page=<var>true</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
     <td>pdf:use-cropbox=<var>true</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
     <td>pdf:use-trimbox=<var>true</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
     <td>png:bit-depth=<var>value</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
   <tr>
     <td>png:color-type=<var>value</var></td>
@@ -2127,7 +2169,7 @@ available:</p>
 
   <tr>
     <td>png:exclude-chunk=<var>value</var></td>
-  </tr>
+
   <tr>
     <td>png:include-chunk=<var>value</var></td>
      <td>ancillary chunks to be excluded from or included in PNG output.
@@ -2255,6 +2297,11 @@ available:</p>
   </tr>
 
   <tr>
+    <td>preserve-timestamp=<var>{True, False}</var></td>
+     <td>Preserve file timestamp (<code>mogrify</code> only).</td>
+  </tr>
+
+  <tr>
     <td>quantum:format=<var>type</var></td>
      <td>Set the type to <code>floating-point</code> to specify a floating-point
     format for raw files (e.g. GRAY:) or for MIFF and TIFF images in HDRI mode
@@ -2295,7 +2342,7 @@ available:</p>
 
   <tr>
     <td>tiff:endian=<var>msb|lsb</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
@@ -2305,7 +2352,7 @@ available:</p>
 
   <tr>
     <td>tiff:fill-order=<var>msb|lsb</var></td>
-    <td> </td>
+    <td>&nbsp</td>
   </tr>
 
   <tr>
@@ -2327,6 +2374,16 @@ available:</p>
     <td>tiff:tile-geometry=<var>WxH</var></td>
     <td>Sets the tile size for pyramid tiffs. Requires the suffix
         PTIF: before the outputname</td>
+  </tr>
+
+  <tr>
+    <td>type:features=<var>string</var></td>
+    <td>&nbsp</td>
+  </tr>
+
+  <tr>
+    <td>type:hinting=<var>off</var></td>
+    <td>&nbsp</td>
   </tr>
 </table>
 
@@ -2376,7 +2433,7 @@ a file redirection.</p>
 0.  Negative indexes are relative to the end of the sequence, for example, -1
 represents the last image of the sequence.  Specify a range of images with
 a dash (e.g. 0-4).  Separate indexes with a comma (e.g. 0,2).  Use
-<code>+delete</code> to delete the last image in the current image sequence.</p>
+<code>+delete</code> to delete the last image in the current image sequence.   Use <code>-delete 0--1</code> to delete the entire image sequence.</p>
 
 
 <div style="margin: auto;">
@@ -2430,7 +2487,7 @@ or CMYK, or to change the depth of any image after it has been read.</p>
 <p class="magick-description">obtain image by descending window hierarchy.</p>
 
 <div style="margin: auto;">
-  <h3 class="magick-header"><a id="deskew"></a>-deskew <var>threshold</var></h3>
+  <h3 class="magick-header"><a id="deskew"></a>-deskew <var>threshold{%}</var></h3>
 </div>
 
 <p class="magick-description">straighten an image.  A threshold of 40% works for most images.</p>
@@ -2452,7 +2509,7 @@ width of the image background (e.g 40).</p>
 <p class="magick-description">render text right-to-left or left-to-right.</p>
 
 <div style="margin: auto;">
-  <h3 class="magick-header"><a id="displace"></a>-displace <var>horizontal-scale</var><br />-displace <var>horizontal-scale</var>x<var>vertical-scale</var></h3>
+  <h3 class="magick-header"><a id="displace"></a>-displace <var>horizontal-scale</var>{%}{!}<br />-displace <var>horizontal-scale</var>x<var>vertical-scale</var>{%}{!}</h3>
 </div>
 
 <p class="magick-description">shift image pixels as defined by a displacement map.</p>
@@ -2679,7 +2736,7 @@ and meaning of the floating point values depends on the distortion <var>method</
        in each case.  <br/>
 
        Note that 'BilinearForward' can generate invalid pixels
-       which will be colored using the <a href="command-line-options.html#mattecolor" >-mattecolor</a>
+       which will be colored using the <a href="command-line-options.html#alpha-color" >-alpha-color</a>
        color setting.  Also if the quadrilateral becomes 'flipped' the image
        may disappear. <br/>
 
@@ -2703,7 +2760,7 @@ and meaning of the floating point values depends on the distortion <var>method</
        Perspective Distorted images ensures that straight lines remain
        straight, but the scale of the distorted image will vary. The horizon
        is anti-aliased, and the 'sky' color may be set using the
-       <a href="command-line-options.html#mattecolor" >-mattecolor</a> setting. </td>
+       <a href="command-line-options.html#alpha-color" >-alpha-color</a> setting. </td>
   </tr>
 
   <tr>
@@ -2724,7 +2781,7 @@ and meaning of the floating point values depends on the distortion <var>method</
        Arc the image (variation of polar mapping) over the angle given around
        a circle.
 
-       <dl class="dl-horizontal">
+       <p><dl class="dl-horizontal">
        <dt>arc_angle</dt>
            <dd>The angle over which to arc the image side-to-side</dd>
        <dt>rotate_angle</dt>
@@ -2733,7 +2790,7 @@ and meaning of the floating point values depends on the distortion <var>method</
            <dd>Set top edge of source image at this radius</dd>
        <dt>bottom_radius </dt>
            <dd>Set bottom edge to this radius (radial scaling)</dd>
-       </dl>
+       </dl></p>
 
        The resulting image is always resized to best fit the resulting image,
        (as if using <a href="command-line-options.html#distort" >+distort</a>) while attempting to
@@ -2927,7 +2984,7 @@ resampling, by specifying the special <a href="command-line-options.html#filter"
 
 <p>If an image generates <i>invalid pixels</i>, such as the 'sky' in the last
 example, <a href="command-line-options.html#distort" >-distort</a> will use the current <a
-href="command-line-options.html#mattecolor" >-mattecolor</a> setting for these pixels. If you do not
+href="command-line-options.html#alpha-color" >-alpha-color</a> setting for these pixels. If you do not
 what these pixels to be visible, set the color to match the rest of the
 ground. </p>
 
@@ -2951,7 +3008,7 @@ specify the size and the offset of the generated 'viewport' image of the
 distorted image space.</p>
 
 <p>Setting a "<code><a href="command-line-options.html#define" >-define</a>
-distort:scale={scale_factor}</code>" will scale the output image (viewport or
+distort:scale=<var>scale_factor</var></code>" will scale the output image (viewport or
 otherwise) by that factor without changing the viewed contents of the
 distorted image. This can be used either for 'super-sampling' the image for
 a higher quality result, or for panning and zooming around the image (with
@@ -3275,7 +3332,7 @@ image sequence.</p>
 <p>Get the passphrase from the file specified by <var>filename</var>.</p>
 
 <p>For more information, see the webpage, <a
-href="../www/cipher.html">ImageMagick: Encipher or
+href="http://www.imagemagick.org/www/cipher.html">ImageMagick: Encipher or
 Decipher an Image</a>.</p>
 
 
@@ -3797,7 +3854,6 @@ href="command-line-options.html#set" >-set</a>):-</p>
 
   <tr>
     <td>-define filter:b=<var>b-spline_factor</var></td>
-  </tr>
   <tr>
     <td>-define filter:c=<var>keys_alpha_factor</var></td>
     <td>Redefine the values used for cubic filters such as <code>Cubic</code>,
@@ -4022,8 +4078,8 @@ option.</p>
 
 <p class="magick-description">Surround the image with a border or beveled frame.</p>
 
-<p>The color of the border is specified with the <a href="command-line-options.html#mattecolor"
->-mattecolor</a> command line option. </p>
+<p>The color of the border is specified with the <a href="command-line-options.html#alpha-color"
+>-alpha-color</a> command line option. </p>
 
 <p>See <a href="command-line-processing.html#geometry">Image Geometry</a> for complete details about the <em class="arg">geometry</em> argument. The <var>size</var> portion of the <var>geometry</var> argument indicates the amount of extra width and
 height that is added to the dimensions of the image. If no offsets are given
@@ -4039,7 +4095,7 @@ href="command-line-options.html#compose">-compose</a> setting and assumes that t
 '<code>Over</code>' composition method.  It generates an image of the appropriate
 size with the current <a href="command-line-options.html#bordercolor">-bordercolor</a> setting, and then
 draws the frame of four distinct colors close to the current <a
-href="command-line-options.html#mattecolor">-mattecolor</a>.  The original image is then overlaid onto
+href="command-line-options.html#alpha-color">-alpha-color</a>.  The original image is then overlaid onto
 center of this image.  This means that with the default compose method of
 '<code>Over</code>' any transparent parts may be replaced by the current <a
 href="command-line-options.html#bordercolor">-bordercolor</a> setting.</p>
@@ -4219,6 +4275,7 @@ All these values can be adjusted via the arguments.</p>
 <var>range</var>/π * atan( <var>slope</var>*π * ( <b><var>u</var></b> - <var>center</var> ) ) + <var>bias</var>
 </pre>
   </dd>
+  </tr>
 </dl>
 
 
@@ -4354,7 +4411,7 @@ installation.</p>
 
 <p>The direction you choose specifies where to position text or subimages. For
 example, a gravity of <code>Center</code> forces the text to be centered within
-the image. By default, the image gravity is <code>NorthWest</code>. See <a
+the image. By default, the image gravity is <code>undefined</code>. See <a
 href="command-line-options.html#draw">-draw</a> for more details about graphic primitives.  Only the
 text primitive of <a href="command-line-options.html#draw">-draw</a> is affected by the <a
 href="command-line-options.html#gravity">-gravity</a> option.</p>
@@ -4468,8 +4525,8 @@ href="command-line-options.html#channel" >-channel</a> setting effected, nor can
 images transparency or alpha/matte channel.</p>
 
 <p>See also <a href="command-line-options.html#clut" >-clut</a> which provides color value replacement
-of the individual color channels, usually involving a simpler gray-scale
-image. E.g:  gray-scale to color replacement, or modification by a histogram
+of the individual color channels, usually involving a simpler grayscale
+image. E.g:  grayscale to color replacement, or modification by a histogram
 mapping. </p>
 
 
@@ -5198,7 +5255,7 @@ adjusted separately using the channel values of the colors specified. </p>
 <p>On the other hand the plus form of the operator (<code>+level-colors</code>)
 will map the image color 'black' and 'white' to the given colors
 respectively, resulting in a gradient (de-contrasting) tint of the image to
-those colors. This can also be used to convert a plain gray-scale image into a
+those colors. This can also be used to convert a plain grayscale image into a
 one using the gradient of colors specified. </p>
 
 <p>By supplying a single color with a comma separator either before or after
@@ -5215,8 +5272,7 @@ color (+ form). </p>
 
 <p class="magick-description">Set the pixel cache resource limit.</p>
 
-<p>Choose from: <code>area</code>, <code>disk</code>, <code>file</code>,
-<code>map</code>, <code>memory</code>, <code>thread</code>, or <code>time</code>.</p>
+<p>Choose from: <code>width</code>, <code>height</code>, <code>area</code>, <code>memory</code>, <code>map</code>, <code>disk</code>, <code>file</code>, <code>thread</code>,  <code>throttle</code>, or <code>time</code>.</p>
 
 <p>The value for <code>file</code> is in number of files. The other limits are
 in bytes. Define arguments for the memory, map, area, and disk resource limits
@@ -5252,7 +5308,7 @@ Resource limits:
 
 <p>Requests for pixel storage to keep intermediate images are satisfied by one
 of three resource categories: in-memory pool, memory-mapped files pool, and
-disk pool (in that order) depending on the <a href="command-line-options.html#limit">&#x2011;limit</a> settings
+disk pool (in that order) depending on the <a class="text-nowrap" href="command-line-options.html#limit">-limit</a> settings
 and whether the system honors a resource request. If the total size of
 allocated pixel storage in the given pool reaches the corresponding limit, the
 request is passed to the next pool. Additionally, requests that exceed the
@@ -5319,7 +5375,7 @@ Storage and Resource Requirements</b> on the <a href="architecture.html#cache
 ">Architecture</a> page.  </p>
 
 <div style="margin: auto;">
-  <h3 class="magick-header"><a id="linear-stretch"></a>-linear-stretch <var>black-point</var><br />-linear-stretch <var>black-point</var>{x<var>white-point</var>}{<var>%</var>}}</h3>
+  <h3 class="magick-header"><a id="linear-stretch"></a>-linear-stretch <var>black-point</var><br />-linear-stretch <var>black-point</var>{x<var>white-point</var>}{<var>%</var>}</h3>
 </div>
 
 <p class="magick-description">Linear with saturation stretch.</p>
@@ -5578,6 +5634,8 @@ but with strict boolean masking. </p>
 <p>The default matte color is <code>#BDBDBD</code>, <span
 style="background-color: #bdbdbd;">this shade of gray</span>.</p>
 
+<p>This is an IMv6 option, use <a href="command-line-options.html#alpha-color">-alpha-color</a> with IMv7.</p>
+
 <div style="margin: auto;">
   <h3 class="magick-header"><a id="maximum"></a>-maximum</h3>
 </div>
@@ -5601,7 +5659,7 @@ name. </p>
 name. </p>
 
 <div style="margin: auto;">
-  <h3 class="magick-header"><a id="mean-shift"></a>-mean-shift <var>width</var>x<var>height</var>{<var>+distance</var>{%}}</h3>
+  <h3 class="magick-header"><a id="mean-shift"></a>-mean-shift <var>width</var>x<var>height</var>{<var>+distance</var>{%}</h3>
 </div>
 
 <p class="magick-description">image noise removal and color reduction/segmentation (e.g. -mean-shift 7x7+10%).</p>
@@ -5860,7 +5918,7 @@ is equivalent to <a href="command-line-options.html#contrast-stretch" >-contrast
 (Before this version, it was equivalent to <a href="command-line-options.html#contrast-stretch"
 >-contrast-stretch 2%x99%</a>).</p>
 
-<p>All the channels are normalized in concert by the came amount so as to
+<p>All the channels are normalized in concert by the same amount so as to
 preserve color integrity, when the default <a href="command-line-options.html#channel" >+channel</a>
 setting is in use.  Specifying any other <a href="command-line-options.html#channel" >-channel</a>
 setting will normalize the RGB channels independently.</p>
@@ -6723,7 +6781,7 @@ contrast. The threshold may be expressed as a fraction of <var>QuantumRange</var
 <p class="magick-description">separate an image channel into a grayscale image.  Specify the channel with <a href="command-line-options.html#channel">-channel</a>.</p>
 
 <div style="margin: auto;">
-  <h3 class="magick-header"><a id="sepia-tone"></a>-sepia-tone <var>threshold</var></h3>
+  <h3 class="magick-header"><a id="sepia-tone"></a>-sepia-tone <var>percent-threshold</var></h3>
 </div>
 
 <p class="magick-description">simulate a sepia-toned photo.</p>
@@ -6972,9 +7030,12 @@ effects) of a true threshold, but with tapered gray-levels around the threshold
 
 <div style="margin: auto;">
   <h3 class="magick-header"><a id="silent"></a>-silent</h3>
+
+
 </div>
 
-<p class="magick-description">operate silently.</p>
+<p class="magick-description">operate silently. This option is only used
+by the <a href="import.html">import</a> tool.</p>
 
 <div style="margin: auto;">
   <h3 class="magick-header"><a id="similarity-threshold"></a>-similarity-threshold <var>value</var></h3>
@@ -7032,7 +7093,7 @@ direction people would consider the object is coming from.  </p>
 <p>Use this option to grab more than one image from the X server screen, to create an animation sequence.</p>
 
 <div style="margin: auto;">
-  <h3 class="magick-header"><a id="solarize"></a>-solarize <var>threshold</var></h3>
+  <h3 class="magick-header"><a id="solarize"></a>-solarize <var>percent-threshold</var></h3>
 </div>
 
 <p class="magick-description">negate all pixels above the threshold level.</p>
@@ -7219,7 +7280,7 @@ href="command-line-options.html#style">-style</a>, and <a href="command-line-opt
   <h3 class="magick-header"><a id="strip"></a>-strip</h3>
 </div>
 
-<p class="magick-description">strip the image of any profiles or comments.</p>
+<p class="magick-description">strip the image of any profiles, comments or these PNG chunks: bKGD,cHRM,EXIF,gAMA,iCCP,iTXt,sRGB,tEXt,zCCP,zTXt,date.</p>
 
 <div style="margin: auto;">
   <h3 class="magick-header"><a id="stroke"></a>-stroke <var>color</var></h3>
@@ -7351,7 +7412,7 @@ and any partially transparent pixel becomes fully transparent.</p>
 
 <p class="magick-description">Apply simultaneous black/white threshold to the image.</p>
 
-<p>Any pixel values (more specifically, those channels set using <a href="command-line-options.html#channel">&#x2011;channel</a>) that exceed the specified threshold are reassigned the
+<p>Any pixel values (more specifically, those channels set using <a class="text-nowrap" href="command-line-options.html#channel">-channel</a>) that exceed the specified threshold are reassigned the
 maximum channel value, while all other values are assigned the minimum.</p>
 
 <p> The threshold value can be given as a percentage or as an absolute integer
@@ -7385,7 +7446,7 @@ convert in.png -threshold -1 white.png
 <p>Note that the values of the transparency channel is treated as 'matte'
 values (0 is opaque) and not as 'alpha' values (0 is transparent).</p>
 
-<p> See also <a href="command-line-options.html#black-threshold">&#x2011;black&#x2011;threshold</a> and <a href="command-line-options.html#white-threshold">&#x2011;white&#x2011;threshold</a>.
+<p> See also <a class="text-nowrap" href="command-line-options.html#black-threshold">-black-threshold</a> and <a class="text-nowrap" href="command-line-options.html#white-threshold">-white-threshold</a>.
 </p>
 
 <div style="margin: auto;">
@@ -7792,8 +7853,11 @@ percentage, which defaults to 100 percent (no color change). </p>
 
 <p class="magick-description">Shear the columns of an image into a sine wave.</p>
 
-<p>Specify <var>amplitude</var> and <var>wavelength</var>
-of the wave.</p>
+<div style="margin: auto;">
+  <h3 class="magick-header"><a id="wavelet-denoise"></a>-wavelet-denoise <var>threshold</var><br />-wavelet-denoise <var>threshold</var>x<var>softness</var></h3>
+</div>
+
+<p class="magick-description">removes noise from the image using a wavelet transform.  The threshold is the value below which everything is considered noise and ranges from 0.0 (none) to QuantumRange or use percent (e.g. 5%). Softness attenuates the threshold and typically ranges from 0.0 (none) to 1.0.  The higher the value the more noise that remains in the image.</p>
 
 <div style="margin: auto;">
   <h3 class="magick-header"><a id="weight"></a>-weight <var>fontWeight</var></h3>
@@ -7847,7 +7911,7 @@ href="command-line-options.html#stretch">-stretch</a>, and <a href="command-line
 
 <p> The threshold value can be given as a percentage or as an absolute integer
 value within [0, <var>QuantumRange</var>] corresponding to the
-desired <a href="command-line-options.html#channel">&#x2011;channel</a> value. See <a href="command-line-options.html#threshold">&#x2011;threshold</a>for more details on thresholds and resulting values.  </p>
+desired <a class="text-nowrap" href="command-line-options.html#channel">-channel</a> value. See <a class="text-nowrap" href="command-line-options.html#threshold">-threshold</a>for more details on thresholds and resulting values.  </p>
 
 <div style="margin: auto;">
   <h3 class="magick-header"><a id="window"></a>-window <var>id</var></h3>
@@ -7895,8 +7959,8 @@ href="command-line-options.html#colors">-colors</a> to reduce the number of colo
 </p>
     <p><a href="command-line-options.html#">Back to top</a> •
     <a href="http://pgp.mit.edu:11371/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
-    <a href="http://www.imagemagick.org/script/contact.php">Contact Us</a></p>
-        <p><small>©  1999-2015 ImageMagick Studio LLC</small></p>
+    <a href="http://legacy.imagemagick.org/script/contact.php">Contact Us</a></p>
+        <p><small>©  1999-2016 ImageMagick Studio LLC</small></p>
   </footer>
 </div><!-- /.container -->
 
@@ -7905,4 +7969,3 @@ href="command-line-options.html#colors">-colors</a> to reduce the number of colo
 </div>
 </body>
 </html>
-<!-- Magick Cache 9th December 2015 20:01 -->

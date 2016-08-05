@@ -15,14 +15,14 @@
 
   MagickCore private methods for internal threading.
 */
-#ifndef _MAGICKCORE_THREAD_H
-#define _MAGICKCORE_THREAD_H
+#ifndef MAGICKCORE_THREAD_H
+#define MAGICKCORE_THREAD_H
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
 #include <intsafe.h>
 #endif
 

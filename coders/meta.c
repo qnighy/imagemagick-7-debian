@@ -193,49 +193,48 @@ static int stringnicmp(const char *p,const char *q,size_t n)
   return(toupper((int) *p)-toupper((int) *q));
 }
 
-static int convertHTMLcodes(char *s, int len)
+static size_t convertHTMLcodes(char *s, const size_t len)
 {
-  if (len <=0 || s==(char*) NULL || *s=='\0')
-    return 0;
+  int
+    value;
 
-  if (s[1] == '#')
+  if ((len == 0) || (s == (char*) NULL) || (*s=='\0'))
+    return(0);
+  if ((len > 3) && (s[1] == '#') && (strchr(s,';') != (char *) NULL) &&
+      (sscanf(s,"&#%d;",&value) == 1))
     {
-      int val, o;
-
-      if (sscanf(s,"&#%d;",&val) == 1)
+      size_t o = 3;
+      while (s[o] != ';')
       {
-        o = 3;
-        while (s[o] != ';')
-        {
-          o++;
-          if (o > 5)
-            break;
-        }
-        if (o < 6)
-          (void) memmove(s+1,s+1+o,strlen(s+1+o)+1);
-        *s = val;
-        return o;
+        o++;
+        if (o > 5)
+          break;
       }
+      if (o < 6)
+        (void) memmove(s+1,s+1+o,strlen(s+1+o)+1);
+      *s=value;
+      return(o);
     }
   else
     {
       int
         i,
-        codes = (int) (sizeof(html_codes) / sizeof(html_code));
+        codes;
 
+      codes=sizeof(html_codes)/sizeof(html_code);
       for (i=0; i < codes; i++)
       {
-        if (html_codes[i].len <= len)
-          if (stringnicmp(s,html_codes[i].code,(size_t) html_codes[i].len) == 0)
+        if (html_codes[i].len <= (ssize_t) len)
+          if (stringnicmp(s, html_codes[i].code,(size_t) (html_codes[i].len)) == 0)
             {
               (void) memmove(s+1,s+html_codes[i].len,
                 strlen(s+html_codes[i].len)+1);
-              *s = html_codes[i].val;
-              return html_codes[i].len-1;
+              *s=html_codes[i].val;
+              return(html_codes[i].len-1);
             }
       }
     }
-  return 0;
+  return(0);
 }
 
 static char *super_fgets(char **b, int *blen, Image *file)
@@ -403,7 +402,7 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
                   char
                     *s = &token[next-1];
 
-                  len -= (ssize_t) convertHTMLcodes(s,(int) strlen(s));
+                  len -= (ssize_t) convertHTMLcodes(s,strlen(s));
                 }
             }
 
@@ -460,7 +459,7 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
 
                     next=0;
                     outputlen += len;
-                    while (len--)
+                    while (len-- > 0)
                       (void) WriteBlobByte(ofile,(unsigned char) token[next++]);
 
                     if (outputlen & 1)
@@ -491,7 +490,7 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
                     outputlen += 5;
                     next=0;
                     outputlen += len;
-                    while (len--)
+                    while (len-- > 0)
                       (void) WriteBlobByte(ofile,(unsigned char) token[next++]);
                   }
               }
@@ -549,7 +548,7 @@ static char *super_fgets_w(char **b, int *blen, Image *file)
   p=(unsigned char *) (*b);
   for (q=p; ; q++)
   {
-    c=(int) ReadBlobLSBShort(file);
+    c=ReadBlobLSBSignedShort(file);
     if ((c == -1) || (c == '\n'))
       break;
    if (EOFBlob(file))
@@ -699,7 +698,7 @@ static ssize_t parse8BIMW(Image *ifile, Image *ofile)
                   char
                     *s = &token[next-1];
 
-                  len -= (ssize_t) convertHTMLcodes(s,(int) strlen(s));
+                  len -= (ssize_t) convertHTMLcodes(s,strlen(s));
                 }
             }
 
@@ -2143,7 +2142,7 @@ static int format8BIM(Image *ifile, Image *ofile)
     /*
       We found the OSType (8BIM) and now grab the ID, PString, and Size fields.
     */
-    ID=(int) ReadBlobMSBShort(ifile);
+    ID=ReadBlobMSBSignedShort(ifile);
     if (ID < 0)
       return(-1);
     {
@@ -2175,7 +2174,7 @@ static int format8BIM(Image *ifile, Image *ofile)
           return(-1);
       }
     }
-    count = (int) ReadBlobMSBLong(ifile);
+    count=ReadBlobMSBSignedLong(ifile);
     if (count < 0) return -1;
     /* make a buffer to hold the datand snag it from the input stream */
     str=(unsigned char *) AcquireQuantumMemory((size_t) count,sizeof(*str));

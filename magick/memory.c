@@ -44,7 +44,7 @@
 %  written by Yoo C. Chung.
 %
 %  By default, ANSI memory methods are called (e.g. malloc).  Use the
-%  custom memory allocator by defining MAGICKCORE_ZERO_CONFIGURATION_SUPPORT
+%  custom memory allocator by defining MAGICKCORE_ANONYMOUS_MEMORY_SUPPORT
 %  to allocate memory with private anonymous mapping rather than from the
 %  heap.
 %
@@ -192,7 +192,7 @@ static MagickMemoryMethods
 #endif
   };
 
-#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#if defined(MAGICKCORE_ANONYMOUS_MEMORY_SUPPORT)
 static MemoryPool
   memory_pool;
 
@@ -247,14 +247,11 @@ MagickExport void *AcquireAlignedMemory(const size_t count,const size_t quantum)
   void
     *memory;
 
-  size=count*quantum;
-  if ((count == 0) || (quantum != (size/count)))
-    {
-      errno=ENOMEM;
-      return((void *) NULL);
-    }
+  if (HeapOverflowSanityCheck(count,quantum) != MagickFalse)
+    return((void *) NULL);
   memory=NULL;
   alignment=CACHE_LINE_SIZE;
+  size=count*quantum;
   extent=AlignedExtent(size,alignment);
   if ((size == 0) || (alignment < sizeof(void *)) || (extent < size))
     return((void *) NULL);
@@ -283,7 +280,7 @@ MagickExport void *AcquireAlignedMemory(const size_t count,const size_t quantum)
   return(memory);
 }
 
-#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#if defined(MAGICKCORE_ANONYMOUS_MEMORY_SUPPORT)
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -460,7 +457,7 @@ MagickExport void *AcquireMagickMemory(const size_t size)
   register void
     *memory;
 
-#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#if !defined(MAGICKCORE_ANONYMOUS_MEMORY_SUPPORT)
   memory=memory_methods.acquire_memory_handler(size == 0 ? 1UL : size);
 #else
   if (memory_semaphore == (SemaphoreInfo *) NULL)
@@ -529,15 +526,12 @@ MagickExport void *AcquireMagickMemory(const size_t size)
 MagickExport void *AcquireQuantumMemory(const size_t count,const size_t quantum)
 {
   size_t
-    size;
+    extent;
 
-  size=count*quantum;
-  if ((count == 0) || (quantum != (size/count)))
-    {
-      errno=ENOMEM;
-      return((void *) NULL);
-    }
-  return(AcquireMagickMemory(size));
+  if (HeapOverflowSanityCheck(count,quantum) != MagickFalse)
+    return((void *) NULL);
+  extent=count*quantum;
+  return(AcquireMagickMemory(extent));
 }
 
 /*
@@ -572,79 +566,81 @@ MagickExport MemoryInfo *AcquireVirtualMemory(const size_t count,
     *memory_info;
 
   size_t
-    length;
+    extent;
 
-  length=count*quantum;
-  if ((count == 0) || (quantum != (length/count)))
-    {
-      errno=ENOMEM;
-      return((MemoryInfo *) NULL);
-    }
+  if (HeapOverflowSanityCheck(count,quantum) != MagickFalse)
+    return((MemoryInfo *) NULL);
   memory_info=(MemoryInfo *) MagickAssumeAligned(AcquireAlignedMemory(1,
     sizeof(*memory_info)));
   if (memory_info == (MemoryInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) ResetMagickMemory(memory_info,0,sizeof(*memory_info));
-  memory_info->length=length;
+  extent=count*quantum;
+  memory_info->length=extent;
   memory_info->signature=MagickSignature;
-  if (AcquireMagickResource(MemoryResource,length) != MagickFalse)
+  if (AcquireMagickResource(MemoryResource,extent) != MagickFalse)
     {
-      memory_info->blob=AcquireAlignedMemory(1,length);
+      memory_info->blob=AcquireAlignedMemory(1,extent);
       if (memory_info->blob != NULL)
-        memory_info->type=AlignedVirtualMemory;
-      else
-        RelinquishMagickResource(MemoryResource,length);
+        {
+          memory_info->type=AlignedVirtualMemory;
+          return(memory_info);
+        }
     }
-  if ((memory_info->blob == NULL) &&
-      (AcquireMagickResource(MapResource,length) != MagickFalse))
+  RelinquishMagickResource(MemoryResource,extent);
+  if (AcquireMagickResource(MapResource,extent) != MagickFalse)
     {
       /*
         Heap memory failed, try anonymous memory mapping.
       */
-      memory_info->blob=MapBlob(-1,IOMode,0,length);
+      memory_info->blob=MapBlob(-1,IOMode,0,extent);
       if (memory_info->blob != NULL)
-        memory_info->type=MapVirtualMemory;
-      else
-        RelinquishMagickResource(MapResource,length);
-    }
-  if ((memory_info->blob == NULL) &&
-      (AcquireMagickResource(DiskResource,length) != MagickFalse))
-    {
-      int
-        file;
-
-      /*
-        Anonymous memory mapping failed, try file-backed memory mapping.
-      */
-      file=AcquireUniqueFileResource(memory_info->filename);
-      if (file == -1)
-        RelinquishMagickResource(DiskResource,length);
-      else
         {
-          if ((lseek(file,length-1,SEEK_SET) < 0) || (write(file,"",1) != 1))
-            RelinquishMagickResource(DiskResource,length);
-          else
+          memory_info->type=MapVirtualMemory;
+          return(memory_info);
+        }
+      if (AcquireMagickResource(DiskResource,extent) != MagickFalse)
+        {
+          int
+            file;
+
+          /*
+            Anonymous memory mapping failed, try file-backed memory mapping.
+            If the MapResource request failed, there is no point in trying
+            file-backed memory mapping.
+          */
+          file=AcquireUniqueFileResource(memory_info->filename);
+          if (file != -1)
             {
-              if (AcquireMagickResource(MapResource,length) == MagickFalse)
-                RelinquishMagickResource(DiskResource,length);
-              else
+              MagickOffsetType
+                offset;
+
+              offset=(MagickOffsetType) lseek(file,extent-1,SEEK_SET);
+              if ((offset == (MagickOffsetType) (extent-1)) &&
+                  (write(file,"",1) == 1))
                 {
-                  memory_info->blob=MapBlob(file,IOMode,0,length);
+                  memory_info->blob=MapBlob(file,IOMode,0,extent);
                   if (memory_info->blob != NULL)
-                    memory_info->type=MapVirtualMemory;
-                  else
                     {
-                      RelinquishMagickResource(MapResource,length);
-                      RelinquishMagickResource(DiskResource,length);
+                      (void) close(file);
+                      memory_info->type=MapVirtualMemory;
+                      return(memory_info);
                     }
                 }
+              /*
+                File-backed memory mapping failed, delete the temporary file.
+              */
+              (void) close(file);
+              (void) RelinquishUniqueFileResource(memory_info->filename);
+              *memory_info->filename='\0';
             }
-          (void) close(file);
         }
+      RelinquishMagickResource(DiskResource,extent);
     }
+  RelinquishMagickResource(MapResource,extent);
   if (memory_info->blob == NULL)
     {
-      memory_info->blob=AcquireMagickMemory(length);
+      memory_info->blob=AcquireMagickMemory(extent);
       if (memory_info->blob != NULL)
         memory_info->type=UnalignedVirtualMemory;
     }
@@ -732,7 +728,7 @@ MagickExport void *CopyMagickMemory(void *destination,const void *source,
 */
 MagickExport void DestroyMagickMemory(void)
 {
-#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#if defined(MAGICKCORE_ANONYMOUS_MEMORY_SUPPORT)
   register ssize_t
     i;
 
@@ -753,7 +749,7 @@ MagickExport void DestroyMagickMemory(void)
 #endif
 }
 
-#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#if defined(MAGICKCORE_ANONYMOUS_MEMORY_SUPPORT)
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -905,6 +901,45 @@ MagickExport void *GetVirtualMemoryBlob(const MemoryInfo *memory_info)
 %                                                                             %
 %                                                                             %
 %                                                                             %
++   H e a p O v e r f l o w S a n i t y C h e c k                             %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  HeapOverflowSanityCheck() returns MagickTrue if the heap allocation request
+%  does not exceed the maximum limits of a size_t otherwise MagickFalse.
+%
+%  The format of the HeapOverflowSanityCheck method is:
+%
+%      MagickBooleanType HeapOverflowSanityCheck(const size_t count,
+%        const size_t quantum)
+%
+%  A description of each parameter follows:
+%
+%    o size: the size of the memory in bytes we require.
+%
+*/
+MagickExport MagickBooleanType HeapOverflowSanityCheck(const size_t count,
+  const size_t quantum)
+{
+  size_t
+    size;
+
+  size=count*quantum;
+  if ((count == 0) || (quantum != (size/count)))
+    {
+      errno=ENOMEM;
+      return(MagickTrue);
+    }
+  return(MagickFalse);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   R e l i n q u i s h A l i g n e d M e m o r y                             %
 %                                                                             %
 %                                                                             %
@@ -964,7 +999,7 @@ MagickExport void *RelinquishMagickMemory(void *memory)
 {
   if (memory == (void *) NULL)
     return((void *) NULL);
-#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#if !defined(MAGICKCORE_ANONYMOUS_MEMORY_SUPPORT)
   memory_methods.destroy_memory_handler(memory);
 #else
   LockSemaphoreInfo(memory_semaphore);
@@ -1124,7 +1159,7 @@ MagickExport void *ResetMagickMemory(void *memory,int byte,const size_t size)
 %
 */
 
-#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#if defined(MAGICKCORE_ANONYMOUS_MEMORY_SUPPORT)
 static inline void *ResizeBlock(void *block,size_t size)
 {
   register void
@@ -1151,7 +1186,7 @@ MagickExport void *ResizeMagickMemory(void *memory,const size_t size)
 
   if (memory == (void *) NULL)
     return(AcquireMagickMemory(size));
-#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#if !defined(MAGICKCORE_ANONYMOUS_MEMORY_SUPPORT)
   block=memory_methods.resize_memory_handler(memory,size == 0 ? 1UL : size);
   if (block == (void *) NULL)
     memory=RelinquishMagickMemory(memory);
@@ -1208,16 +1243,15 @@ MagickExport void *ResizeQuantumMemory(void *memory,const size_t count,
   const size_t quantum)
 {
   size_t
-    size;
+    extent;
 
-  size=count*quantum;
-  if ((count == 0) || (quantum != (size/count)))
+  if (HeapOverflowSanityCheck(count,quantum) != MagickFalse)
     {
       memory=RelinquishMagickMemory(memory);
-      errno=ENOMEM;
       return((void *) NULL);
     }
-  return(ResizeMagickMemory(memory,size));
+  extent=count*quantum;
+  return(ResizeMagickMemory(memory,extent));
 }
 
 /*

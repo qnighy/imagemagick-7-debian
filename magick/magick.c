@@ -36,8 +36,7 @@
 %
 %
 */
-
-
+
 /*
   Include declarations.
 */
@@ -853,12 +852,6 @@ static MagickBooleanType IsMagickTreeInstantiated(ExceptionInfo *exception)
           if (magick_list == (SplayTreeInfo *) NULL)
             ThrowFatalException(ResourceLimitFatalError,
               "MemoryAllocationFailed");
-          magick_info=SetMagickInfo("ephemeral");
-          magick_info->stealth=MagickTrue;
-          status=AddValueToSplayTree(magick_list,magick_info->name,magick_info);
-          if (status == MagickFalse)
-            ThrowFatalException(ResourceLimitFatalError,
-              "MemoryAllocationFailed");
           magick_info=SetMagickInfo("clipmask");
           magick_info->stealth=MagickTrue;
           status=AddValueToSplayTree(magick_list,magick_info->name,magick_info);
@@ -1196,15 +1189,15 @@ static void MagickSignalHandler(int signal_number)
 #else
 #if defined(SIGHUP)
   if (signal_number == SIGHUP)
-    exit(signal_number);
+    _exit(signal_number);
 #endif
 #if defined(SIGINT)
   if (signal_number == SIGINT)
-    exit(signal_number);
+    _exit(signal_number);
 #endif
 #if defined(SIGTERM)
   if (signal_number == SIGTERM)
-    exit(signal_number);
+    _exit(signal_number);
 #endif
 #if defined(MAGICKCORE_HAVE_RAISE)
   if (signal_handlers[signal_number] != MagickSignalHandler)
@@ -1401,10 +1394,9 @@ MagickExport void MagickCoreTerminus(void)
   RandomComponentTerminus();
   LocaleComponentTerminus();
   LogComponentTerminus();
-  SemaphoreComponentTerminus();
   instantiate_magickcore=MagickFalse;
   UnlockMagickMutex();
-  DestroyMagickMutex();
+  SemaphoreComponentTerminus();
 }
 
 /*
@@ -1549,7 +1541,7 @@ MagickExport int SetMagickPrecision(const int precision)
       /*
         Precision reset, or it has not been set yet.
       */
-      magick_precision = MagickPrecision;
+      magick_precision=MagickPrecision;
       limit=GetEnvironmentValue("MAGICK_PRECISION");
       if (limit == (char *) NULL)
         limit=GetPolicyValue("precision");

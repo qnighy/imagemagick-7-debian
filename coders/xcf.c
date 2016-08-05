@@ -54,6 +54,7 @@
 #include "magick/memory_.h"
 #include "magick/pixel.h"
 #include "magick/pixel-accessor.h"
+#include "magick/property.h"
 #include "magick/quantize.h"
 #include "magick/quantum-private.h"
 #include "magick/static.h"
@@ -340,6 +341,9 @@ static MagickBooleanType load_tile(Image *image,Image *tile_image,
   register PixelPacket
     *q;
 
+  size_t
+    extent;
+
   ssize_t
     count;
 
@@ -350,7 +354,17 @@ static MagickBooleanType load_tile(Image *image,Image *tile_image,
     *xcfdata,
     *xcfodata;
 
-  xcfdata=(XCFPixelPacket *) AcquireQuantumMemory(data_length,sizeof(*xcfdata));
+  extent=0;
+  if (inDocInfo->image_type == GIMP_GRAY)
+    extent=tile_image->columns*tile_image->rows*sizeof(*graydata);
+  else
+    if (inDocInfo->image_type == GIMP_RGB)
+      extent=tile_image->columns*tile_image->rows*sizeof(*xcfdata);
+  if (extent > data_length)
+    ThrowBinaryException(CorruptImageError,"NotEnoughPixelData",
+      image->filename);
+  xcfdata=(XCFPixelPacket *) AcquireQuantumMemory(MagickMax(data_length,
+    tile_image->columns*tile_image->rows),sizeof(*xcfdata));
   if (xcfdata == (XCFPixelPacket *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
@@ -766,6 +780,15 @@ static MagickBooleanType load_hierarchy(Image *image,XCFDocInfo *inDocInfo,
   return(MagickTrue);
 }
 
+static void InitXCFImage(XCFLayerInfo *outLayer)
+{
+  outLayer->image->page.x=outLayer->offset_x;
+  outLayer->image->page.y=outLayer->offset_y;
+  outLayer->image->page.width=outLayer->width;
+  outLayer->image->page.height=outLayer->height;
+  (void) SetImageProperty(outLayer->image,"label",(char *)outLayer->name);
+}
+
 static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
   XCFDocInfo* inDocInfo,XCFLayerInfo *outLayer,const ssize_t layer)
 {
@@ -825,8 +848,8 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
       outLayer->show_mask = ReadBlobMSBLong(image);
       break;
     case PROP_OFFSETS:
-      outLayer->offset_x = (int) ReadBlobMSBLong(image);
-      outLayer->offset_y = (int) ReadBlobMSBLong(image);
+      outLayer->offset_x = ReadBlobMSBSignedLong(image);
+      outLayer->offset_y = ReadBlobMSBSignedLong(image);
       break;
     case PROP_MODE:
       outLayer->mode = ReadBlobMSBLong(image);
@@ -891,10 +914,7 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
           outLayer->image=CloneImage(image,0,0,MagickTrue,&image->exception);
           if (outLayer->image == (Image *) NULL)
             return(MagickFalse);
-          outLayer->image->page.x=outLayer->offset_x;
-          outLayer->image->page.y=outLayer->offset_y;
-          outLayer->image->page.width=outLayer->width;
-          outLayer->image->page.height=outLayer->height;
+          InitXCFImage(outLayer);
           return(MagickTrue);
         }
     }
@@ -908,10 +928,8 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
     ScaleCharToQuantum((unsigned char) (255-outLayer->alpha));
   (void) SetImageBackgroundColor(outLayer->image);
 
-  outLayer->image->page.x=outLayer->offset_x;
-  outLayer->image->page.y=outLayer->offset_y;
-  outLayer->image->page.width=outLayer->width;
-  outLayer->image->page.height=outLayer->height;
+  InitXCFImage(outLayer);
+
   /* set the compositing mode */
   outLayer->image->compose = GIMPBlendModeToCompositeOperator( outLayer->mode );
   if ( outLayer->visible == MagickFalse )
@@ -1061,6 +1079,12 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   doc_info.file_size=GetBlobSize(image);
   image->compression=NoCompression;
   image->depth=8;
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   if (image_type == GIMP_RGB)
     ;
   else
@@ -1268,18 +1292,12 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       XCFLayerInfo
         *layer_info;
 
-      status=SetImageExtent(image,image->columns,image->rows);
-      if (status == MagickFalse)
-        {
-          InheritException(exception,&image->exception);
-          return(DestroyImageList(image));
-        }
       /*
         The read pointer.
       */
       do
       {
-        ssize_t offset = (int) ReadBlobMSBLong(image);
+        ssize_t offset = ReadBlobMSBSignedLong(image);
         if (offset == 0)
           foundAllLayers=MagickTrue;
         else
@@ -1342,17 +1360,6 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       offset=SeekBlob(image, saved_pos, SEEK_SET);
       current_layer++;
     }
-    if (number_layers == 1)
-      {
-        /*
-          Composite the layer data onto the main image, dispose the layer.
-        */
-        (void) CompositeImage(image,CopyCompositeOp,layer_info[0].image,
-          layer_info[0].offset_x,layer_info[0].offset_y);
-        layer_info[0].image =DestroyImage( layer_info[0].image);
-      }
-    else
-      {
 #if 0
         {
         /* NOTE: XCF layers are REVERSED from composite order! */
@@ -1380,22 +1387,13 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /* NOTE: XCF layers are REVERSED from composite order! */
         ssize_t  j;
 
-        /* first we copy the last layer on top of the main image */
-        (void) CompositeImage(image,CopyCompositeOp,
-          layer_info[number_layers-1].image,
-          layer_info[number_layers-1].offset_x,
-          layer_info[number_layers-1].offset_y);
-        layer_info[number_layers-1].image=DestroyImage(
-          layer_info[number_layers-1].image);
-
         /* now reverse the order of the layers as they are put
            into subimages
         */
-        for (j=(long) number_layers-2; j >= 0; j--)
+        for (j=(long) number_layers-1; j >= 0; j--)
           AppendImageToList(&image,layer_info[j].image);
       }
 #endif
-    }
 
     layer_info=(XCFLayerInfo *) RelinquishMagickMemory(layer_info);
 
@@ -1439,6 +1437,7 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   }
 
   (void) CloseBlob(image);
+  DestroyImage(RemoveFirstImageFromList(&image));
   if (image_type == GIMP_GRAY)
     image->type=GrayscaleType;
   return(GetFirstImageInList(image));

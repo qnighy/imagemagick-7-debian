@@ -5,7 +5,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
     <title>ImageMagick: PerlMagick, Perl API for ImageMagick</title>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -22,12 +21,14 @@
   <meta name="author" content="ImageMagick Studio LLC"/>
   <meta name="revisit-after" content="2 DAYS"/>
   <meta name="resource-type" content="document"/>
-  <meta name="copyright" content="Copyright (c) 1999-2015 ImageMagick Studio LLC"/>
+  <meta name="copyright" content="Copyright (c) 1999-2016 ImageMagick Studio LLC"/>
   <meta name="distribution" content="Global"/>
   <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1"/>
+  <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
   <link rel="icon" href="../images/wand.png"/>
   <link rel="shortcut icon" href="../images/wand.ico"/>
-  <link rel="stylesheet" href="css/magick.css"/>
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Roboto:900,400,400italic,700,700italic,300,300italic|Open+Sans:300italic,400italic,700italic,300,400,600,700"  >
+  <link rel="stylesheet" type="text/css" href="css/magick.css"/>
 </head>
 <body>
 <div class="main">
@@ -48,8 +49,8 @@
       <a class="magick-nav-item " href="command-line-processing.html">Command-line</a>
       <a class="magick-nav-item " href="resources.html">Resources</a>
       <a class="magick-nav-item " href="api.html">Develop</a>
-      <a class="magick-nav-item " href="http://www.imagemagick.org/script/search.php">Search</a>
-      <a class="magick-nav-item pull-right" href="http://www.imagemagick.org/discourse-server/">Community</a>
+      <a class="magick-nav-item " href="http://legacy.imagemagick.org/script/search.php">Search</a>
+      <a class="magick-nav-item pull-right" href="https://www.imagemagick.org/discourse-server/">Community</a>
     </nav>
   </div>
 </div>
@@ -84,7 +85,7 @@ tar xvzf ImageMagick.tar.gz
 
 <p>Next configure and compile ImageMagick:</p>
 
-<pre><span class="crtprompt"> </span><span class='crtin'>cd ImageMagick-6.9.2</span><span class='crtout'></span><span class="crtprompt"> </span><span class='crtin'>./configure -with-perl</span><span class='crtout'></span><span class="crtprompt"> </span><span class='crtin'>make</span></pre>
+<pre><span class="crtprompt"> </span><span class='crtin'>cd ImageMagick-6.9.4</span><span class='crtout'></span><span class="crtprompt"> </span><span class='crtin'>./configure -with-perl</span><span class='crtout'></span><span class="crtprompt"> </span><span class='crtin'>make</span></pre>
 <p>If ImageMagick / PerlMagick configured and compiled without complaint, you are ready to install it on your system.  Administrator privileges are required to install.  To install, type</p>
 
 <pre>
@@ -283,10 +284,10 @@ $p-&gt;Convolve([1, 2, 1, 2, 4, 2, 1, 2, 1]);   # 3x3 Gaussian kernel
 <table class="table table-condensed table-striped">
 <caption>Read or Write Methods</caption>
 <colgroup>
-  <col width="20%" />
-  <col width="20%" />
-  <col width="20%" />
-  <col width="40%" />
+  <col width="20%"></col>
+  <col width="20%"></col>
+  <col width="20%"></col>
+  <col width="40%"></col>
 </colgroup>
 <tbody>
 
@@ -458,7 +459,7 @@ $image-&gt;[$x]-&gt;Frame("100x200");
 
   <tr>
     <td>BlackThreshold</td>
-    <td>threshold=&gt;<i>string</i>, , channel=&gt;{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Opacity, Red, RGB, Yellow}</td>
+    <td>threshold=&gt;<i>string</i>, channel=&gt;{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Opacity, Red, RGB, Yellow}</td>
     <td>force all pixels below the threshold intensity into black</td>
   </tr>
 
@@ -652,7 +653,7 @@ ay connectivity.</td>
 
   <tr>
     <td>Distort</td>
-    <td>points=&gt;<i>array of float values</i>, method=&gt;{Affine, AffineProjection, Bilinear, Perspective, Resize, ScaleRotateTranslate}, 'virtual-pixel'=&gt;{Background Black Constant Dither Edge Gray Mirror Random Tile Transparent White}, 'best-fit'=&gt;{True, False}</td>
+    <td>points=&gt;<i>array of float values</i>, method=&gt;{Affine, AffineProjection, ScaleRotateTranslate, SRT, Perspective, PerspectiveProjection, BilinearForward, BilinearReverse, Polynomial, Arc, Polar, DePolar, Barrel, BarrelInverse, Shepards, Resize}, 'virtual-pixel'=&gt;{Background Black Constant Dither Edge Gray Mirror Random Tile Transparent White}, 'best-fit'=&gt;{True, False}</td>
     <td>distort image</td>
   </tr>
 
@@ -1217,6 +1218,12 @@ fill=&gt;<i><a href="color.html">color name</a></i>, channel=&gt;{All, Default, 
     <td>Wave</td>
     <td>geometry=&gt;<i>geometry</i>, amplitude=&gt;<i>double</i>, wavelength=&gt;<i>double</i>, interpolate=&gt;{undefined, average, bicubic, bilinear, mesh, nearest-neighbor, spline}</td>
     <td>alter an image along a sine wave</td>
+  </tr>
+
+  <tr>
+    <td>WaveDenoise</td>
+    <td>geometry=&gt;<i>geometry</i>, threshold=&gt;<i>double</i>, threshold=&gt;<i>double</i></td>
+    <td>removes noise from the image using a wavelet transform</td>
   </tr>
 
   <tr>
@@ -1839,9 +1846,27 @@ $width = $image-&gt;[3]-&gt;Get('columns');
   </tr>
 
   <tr>
+    <td>icc</td>
+    <td><i>string</i></td>
+    <td>ICC profile</td>
+  </tr>
+
+  <tr>
+    <td>icc</td>
+    <td><i>string</i></td>
+    <td>ICM profile</td>
+  </tr>
+
+  <tr>
     <td>id</td>
     <td><i>integer</i></td>
     <td>ImageMagick registry id</td>
+  </tr>
+
+  <tr>
+    <td>IPTC</td>
+    <td><i>string</i></td>
+    <td>IPTC profile</td>
   </tr>
 
   <tr>
@@ -1944,6 +1969,12 @@ $width = $image-&gt;[3]-&gt;Get('columns');
     <td>width</td>
     <td><i>integer</i></td>
     <td>the number of columns or width of an image</td>
+  </tr>
+
+  <tr>
+    <td>XMP</td>
+    <td><i>string</i></td>
+    <td>XMP profile</td>
   </tr>
 
   <tr>
@@ -2562,8 +2593,8 @@ Image::Magick-&gt;QuantumDepth
 </p>
     <p><a href="perl-magick.html#">Back to top</a> •
     <a href="http://pgp.mit.edu:11371/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
-    <a href="http://www.imagemagick.org/script/contact.php">Contact Us</a></p>
-        <p><small>©  1999-2015 ImageMagick Studio LLC</small></p>
+    <a href="http://legacy.imagemagick.org/script/contact.php">Contact Us</a></p>
+        <p><small>©  1999-2016 ImageMagick Studio LLC</small></p>
   </footer>
 </div><!-- /.container -->
 
@@ -2572,4 +2603,3 @@ Image::Magick-&gt;QuantumDepth
 </div>
 </body>
 </html>
-<!-- Magick Cache 9th December 2015 20:29 -->

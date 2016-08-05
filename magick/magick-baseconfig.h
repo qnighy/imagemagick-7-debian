@@ -77,6 +77,9 @@
 #define MAGICKCORE_FILTER_DIRNAME "filters"
 #endif
 
+/* Define if you have FLIF library */
+/* #undef FLIF_DELEGATE */
+
 /* Define if you have FONTCONFIG library */
 #ifndef MAGICKCORE_FONTCONFIG_DELEGATE
 #define MAGICKCORE_FONTCONFIG_DELEGATE 1
@@ -236,6 +239,11 @@
 /* Define to 1 if the system has the type `double_t'. */
 #ifndef MAGICKCORE_HAVE_DOUBLE_T
 #define MAGICKCORE_HAVE_DOUBLE_T 1
+#endif
+
+/* Define to 1 if you have the `erf' function. */
+#ifndef MAGICKCORE_HAVE_ERF
+#define MAGICKCORE_HAVE_ERF 1
 #endif
 
 /* Define to 1 if you have the <errno.h> header file. */
@@ -988,6 +996,11 @@
 #define MAGICKCORE_HAVE_UTIME 1
 #endif
 
+/* Define to 1 if you have the <utime.h> header file. */
+#ifndef MAGICKCORE_HAVE_UTIME_H
+#define MAGICKCORE_HAVE_UTIME_H 1
+#endif
+
 /* Define to 1 if you have the `vfork' function. */
 #ifndef MAGICKCORE_HAVE_VFORK
 #define MAGICKCORE_HAVE_VFORK 1
@@ -1054,7 +1067,9 @@
 /* #undef HAVE__ALIGNED_MALLOC */
 
 /* Define to 1 if the system has the type `_Bool'. */
-/* #undef HAVE__BOOL */
+#ifndef MAGICKCORE_HAVE__BOOL
+#define MAGICKCORE_HAVE__BOOL 1
+#endif
 
 /* Define to 1 if you have the `_exit' function. */
 #ifndef MAGICKCORE_HAVE__EXIT
@@ -1127,13 +1142,13 @@
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/usr/lib64/ImageMagick-6.9.2/"
+#define MAGICKCORE_LIBRARY_PATH "/usr/lib64/ImageMagick-6.9.5/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
-   installed */
+   installed. */
 #ifndef MAGICKCORE_LIBRARY_RELATIVE_PATH
-#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.9.2"
+#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.9.5"
 #endif
 
 /* Binaries in libraries path base name (will be during install linked to bin)
@@ -1202,7 +1217,7 @@
 
 /* Define to the address where bug reports for this package should be sent. */
 #ifndef MAGICKCORE_PACKAGE_BUGREPORT
-#define MAGICKCORE_PACKAGE_BUGREPORT "http://www.imagemagick.org"
+#define MAGICKCORE_PACKAGE_BUGREPORT "https://github.com/ImageMagick/ImageMagick/issues"
 #endif
 
 /* Define to the full name of this package. */
@@ -1212,7 +1227,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.2-10"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.5-4"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1222,12 +1237,12 @@
 
 /* Define to the home page for this package. */
 #ifndef MAGICKCORE_PACKAGE_URL
-#define MAGICKCORE_PACKAGE_URL ""
+#define MAGICKCORE_PACKAGE_URL "http://www.imagemagick.org"
 #endif
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.2-10"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.5-4"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1239,6 +1254,9 @@
 #ifndef MAGICKCORE_PANGO_DELEGATE
 #define MAGICKCORE_PANGO_DELEGATE 1
 #endif
+
+/* enable pipes (|) in filenames */
+/* #undef PIPES_SUPPORT */
 
 /* Define if you have PNG library */
 #ifndef MAGICKCORE_PNG_DELEGATE
@@ -1256,6 +1274,9 @@
 #ifndef MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H
 #define MAGICKCORE_QUANTUM_DEPTH_OBSOLETE_IN_H 16
 #endif
+
+/* Define if you have RAQM library */
+/* #undef RAQM_DELEGATE */
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #ifndef MAGICKCORE_RETSIGTYPE
@@ -1439,7 +1460,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.9.2-10"
+#define MAGICKCORE_VERSION "6.9.5-4"
 #endif
 
 /* Define if you have WEBP library */

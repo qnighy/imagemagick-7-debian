@@ -243,7 +243,7 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
     if (kernel[i] == (double *) NULL)
       break;
     normalize=0.0;
-    j=(ssize_t) (width-i)/2;
+    j=(ssize_t) (width-i-1)/2;
     k=0;
     for (v=(-j); v <= j; v++)
     {
@@ -814,8 +814,8 @@ MagickExport Image *BlurImageChannel(const Image *image,
   kernel_info=AcquireKernelInfo(geometry);
   if (kernel_info == (KernelInfo *) NULL)
     ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
-  blur_image=MorphologyApply(image,channel,ConvolveMorphology,1,kernel_info,
-    UndefinedCompositeOp,0.0,exception);
+  blur_image=MorphologyImageChannel(image,channel,ConvolveMorphology,1,
+    kernel_info,exception);
   kernel_info=DestroyKernelInfo(kernel_info);
   return(blur_image);
 }
@@ -906,8 +906,8 @@ MagickExport Image *ConvolveImageChannel(const Image *image,
   convolve_image=AccelerateConvolveImageChannel(image,channel,kernel_info,
     exception);
   if (convolve_image == (Image *) NULL)
-    convolve_image=MorphologyApply(image,channel,ConvolveMorphology,1,
-      kernel_info,UndefinedCompositeOp,0.0,exception);
+    convolve_image=MorphologyImageChannel(image,channel,ConvolveMorphology,1,
+      kernel_info,exception);
   kernel_info=DestroyKernelInfo(kernel_info);
   return(convolve_image);
 }
@@ -1302,8 +1302,8 @@ MagickExport Image *EdgeImage(const Image *image,const double radius,
   edge_image=AccelerateConvolveImageChannel(image,DefaultChannels,kernel_info,
     exception);
   if (edge_image == (Image *) NULL)
-    edge_image=MorphologyApply(image,DefaultChannels,ConvolveMorphology,1,
-      kernel_info,UndefinedCompositeOp,0.0,exception);
+    edge_image=MorphologyImageChannel(image,DefaultChannels,ConvolveMorphology,
+      1,kernel_info,exception);
   kernel_info=DestroyKernelInfo(kernel_info);
   return(edge_image);
 }
@@ -1411,8 +1411,8 @@ MagickExport Image *EmbossImage(const Image *image,const double radius,
     kernel_info->values[i]*=gamma;
   emboss_image=AccelerateConvolveImageChannel(image,DefaultChannels,kernel_info,    exception);
   if (emboss_image == (Image *) NULL)
-    emboss_image=MorphologyApply(image,DefaultChannels,ConvolveMorphology,1,
-      kernel_info,UndefinedCompositeOp,0.0,exception);
+    emboss_image=MorphologyImageChannel(image,DefaultChannels,
+      ConvolveMorphology,1,kernel_info,exception);
   kernel_info=DestroyKernelInfo(kernel_info);
   if (emboss_image != (Image *) NULL)
     (void) EqualizeImageChannel(emboss_image,(ChannelType)
@@ -1714,7 +1714,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
             }
             kernel_pixels+=image->columns+kernel->width;
           }
-          gamma=PerceptibleReciprocal(gamma); 
+          gamma=PerceptibleReciprocal(gamma);
           if ((channel & RedChannel) != 0)
             SetPixelRed(q,ClampToQuantum(gamma*pixel.red));
           if ((channel & GreenChannel) != 0)
@@ -1869,8 +1869,8 @@ MagickExport Image *GaussianBlurImageChannel(const Image *image,
   blur_image=AccelerateConvolveImageChannel(image,channel,kernel_info,
     exception);
   if (blur_image == (Image *) NULL)
-    blur_image=MorphologyApply(image,channel,ConvolveMorphology,1,kernel_info,
-      UndefinedCompositeOp,0.0,exception);
+    blur_image=MorphologyImageChannel(image,channel,ConvolveMorphology,1,
+      kernel_info,exception);
   kernel_info=DestroyKernelInfo(kernel_info);
   return(blur_image);
 }
@@ -2470,8 +2470,8 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
 %
 %    o image: the image.
 %
-%    o radius: the radius of the Gaussian, in pixels, not counting
-%      the center pixel.
+%    o radius: the radius of the Gaussian blur, in percentage with 100%
+%      resulting in a blur radius of 20% of largest dimension.
 %
 %    o strength: the strength of the blur mask in percentage.
 %
@@ -2495,13 +2495,15 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
   Image
     *contrast_image;
 
+  MagickBooleanType
+    status;
+
   MemoryInfo
     *scanLinePixels_info,
     *interImage_info;
 
   ssize_t
     scanLineSize,
-    thread_count,
     width;
 
   /*
@@ -2527,21 +2529,11 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
     }
   image_view=AcquireVirtualCacheView(image,exception);
   contrast_view=AcquireAuthenticCacheView(contrast_image,exception);
-  thread_count=1;
-  width=(ssize_t) fabs(radius);
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel magick_threads(image,image,image->rows,1)
-  {
-    #pragma omp single
-    {
-      thread_count=omp_get_num_threads();
-    }
-  }
-#endif
   scanLineSize=(ssize_t) MagickMax(image->columns,image->rows);
+  width=(ssize_t) scanLineSize*0.002f*fabs(radius);
   scanLineSize+=(2*width);
-  scanLinePixels_info=AcquireVirtualMemory(thread_count*scanLineSize,
-    sizeof(*scanLinePixels));
+  scanLinePixels_info=AcquireVirtualMemory(GetOpenMPMaximumThreads()*
+    scanLineSize,sizeof(*scanLinePixels));
   if (scanLinePixels_info == (MemoryInfo *) NULL)
     {
       contrast_view=DestroyCacheView(contrast_view);
@@ -2550,8 +2542,10 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
       ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
     }
   scanLinePixels=(float *) GetVirtualMemoryBlob(scanLinePixels_info);
-  /* Create intermediate buffer */
-  interImage_info=AcquireVirtualMemory((image->rows+(2*width))*image->columns,
+  /*
+    Create intermediate buffer.
+  */
+  interImage_info=AcquireVirtualMemory(image->rows*(image->columns+(2*width)),
     sizeof(*interImage));
   if (interImage_info == (MemoryInfo *) NULL)
     {
@@ -2563,18 +2557,23 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
     }
   interImage=(float *) GetVirtualMemoryBlob(interImage_info);
   totalWeight=(width+1)*(width+1);
-
-  /* Vertical Pass */
+  /*
+    Vertical pass.
+  */
+  status=MagickTrue;
   {
     ssize_t
       x;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-#pragma omp parallel for schedule(static,4) \
-    magick_threads(image,image,image->columns,1)
+    #pragma omp parallel for schedule(static,4) \
+      magick_threads(image,image,image->columns,1)
 #endif
     for (x=0; x < (ssize_t) image->columns; x++)
     {
+      const int
+        id = GetOpenMPThreadId();
+
       const PixelPacket
         *magick_restrict p;
 
@@ -2589,23 +2588,25 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
       ssize_t
         i;
 
+      if (status == MagickFalse)
+        continue;
       pixels=scanLinePixels;
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-      pixels+=scanLineSize*omp_get_thread_num();
-#endif
+      pixels+=id*scanLineSize;
       pix=pixels;
       p=GetCacheViewVirtualPixels(image_view,x,-width,1,image->rows+(2*width),
         exception);
-
+      if (p == (const PixelPacket *) NULL)
+        {
+          status=MagickFalse;
+          continue;
+        }
       for (y=0; y < (ssize_t) image->rows+(2*width); y++)
       {
         *pix++=(float)GetPixelLuma(image,p);
         p++;
       }
-
       out=interImage+x+width;
-
-      for (y = 0; y < (ssize_t) image->rows; y++)
+      for (y=0; y < (ssize_t) image->rows; y++)
       {
         float
           sum,
@@ -2632,12 +2633,13 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
         if ((x > (ssize_t) image->columns-width-2) &&
             (x != (ssize_t) image->columns-1))
           *(out+((image->columns-x-1)*2))=*out;
-
         out+=image->columns+(width*2);
       }
     }
   }
-  /* Horizontal Pass */
+  /*
+    Horizontal pass.
+  */
   {
     ssize_t
       y;
@@ -2648,6 +2650,9 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
 #endif
     for (y=0; y < (ssize_t) image->rows; y++)
     {
+      const int
+        id = GetOpenMPThreadId();
+
       const PixelPacket
         *magick_restrict p;
 
@@ -2664,18 +2669,21 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
       ssize_t
         i;
 
+      if (status == MagickFalse)
+        continue;
       pixels=scanLinePixels;
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-      pixels+=scanLineSize*omp_get_thread_num();
-#endif
+      pixels+=id*scanLineSize;
       p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,
         exception);
       q=GetCacheViewAuthenticPixels(contrast_view,0,y,image->columns,1,
         exception);
-
+      if ((p == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))
+        {
+          status=MagickFalse;
+          continue;
+        }
       memcpy(pixels,interImage+(y*(image->columns+(2*width))),(image->columns+
         (2*width))*sizeof(float));
-
       for (x=0; x < (ssize_t) image->columns; x++)
       {
         float
@@ -2697,7 +2705,6 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
           sum+=weight*(*pix++);
           weight-=1.0f;
         }
-
         /* Apply and write */
         srcVal=(float) GetPixelLuma(image,p);
         mult=(srcVal-(sum/totalWeight))*(strength/100.0f);
@@ -2708,15 +2715,19 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
         p++;
         q++;
       }
+      if (SyncCacheViewAuthenticPixels(contrast_view,exception) == MagickFalse)
+        status=MagickFalse;
     }
   }
   scanLinePixels_info=RelinquishVirtualMemory(scanLinePixels_info);
   interImage_info=RelinquishVirtualMemory(interImage_info);
   contrast_view=DestroyCacheView(contrast_view);
   image_view=DestroyCacheView(image_view);
+  if (status == MagickFalse)
+    contrast_image=DestroyImage(contrast_image);
   return(contrast_image);
 }
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -4311,8 +4322,8 @@ MagickExport Image *SharpenImageChannel(const Image *image,
   gamma=PerceptibleReciprocal(normalize);
   for (i=0; i < (ssize_t) (kernel_info->width*kernel_info->height); i++)
     kernel_info->values[i]*=gamma;
-  sharp_image=MorphologyApply(image,channel,ConvolveMorphology,1,kernel_info,
-    UndefinedCompositeOp,0.0,exception);
+  sharp_image=MorphologyImageChannel(image,channel,ConvolveMorphology,1,
+    kernel_info,exception);
   kernel_info=DestroyKernelInfo(kernel_info);
   return(sharp_image);
 }

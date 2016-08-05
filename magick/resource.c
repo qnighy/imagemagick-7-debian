@@ -41,6 +41,7 @@
 */
 #include "magick/studio.h"
 #include "magick/cache.h"
+#include "magick/cache-private.h"
 #include "magick/configure.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
@@ -1110,7 +1111,7 @@ MagickExport MagickBooleanType ResourceComponentGenesis(void)
         100.0));
       limit=DestroyString(limit);
     }
-  (void) SetMagickResourceLimit(HeightResource,resource_info.width_limit);
+  (void) SetMagickResourceLimit(HeightResource,resource_info.height_limit);
   limit=GetEnvironmentValue("MAGICK_HEIGHT_LIMIT");
   if (limit != (char *) NULL)
     {
@@ -1370,6 +1371,7 @@ MagickExport MagickBooleanType SetMagickResourceLimit(const ResourceType type,
       value=GetPolicyValue("time");
       if (value != (char *) NULL)
         resource_info.time_limit=MagickMin(limit,StringToSizeType(value,100.0));
+      ResetPixelCacheEpoch();
       break;
     }
     default:

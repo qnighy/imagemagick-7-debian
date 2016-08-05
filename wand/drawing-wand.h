@@ -15,8 +15,8 @@
 
   MagickWand drawing wand methods.
 */
-#ifndef _MAGICKWAND_DRAWING_WAND_H
-#define _MAGICKWAND_DRAWING_WAND_H
+#ifndef MAGICKWAND_DRAWING_WAND_H
+#define MAGICKWAND_DRAWING_WAND_H
 
 #include "wand/pixel-wand.h"
 
@@ -64,9 +64,9 @@ extern WandExport DrawInfo
   *PeekDrawingWand(const DrawingWand *);
 
 extern WandExport DrawingWand
+  *AcquireDrawingWand(const DrawInfo *,Image *),
   *CloneDrawingWand(const DrawingWand *),
   *DestroyDrawingWand(DrawingWand *),
-  *DrawAllocateWand(const DrawInfo *,Image *),
   *NewDrawingWand(void);
 
 extern WandExport ExceptionType

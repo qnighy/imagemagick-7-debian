@@ -866,7 +866,7 @@ static MagickBooleanType IsGIF(const unsigned char *magick,const size_t length)
 %
 %  The format of the ReadBlobBlock method is:
 %
-%      size_t ReadBlobBlock(Image *image,unsigned char *data)
+%      ssize_t ReadBlobBlock(Image *image,unsigned char *data)
 %
 %  A description of each parameter follows:
 %
@@ -1095,7 +1095,7 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
             comments=AcquireString((char *) NULL);
             for (length=0; ; length+=count)
             {
-              count=(ssize_t) ReadBlobBlock(image,header);
+              count=ReadBlobBlock(image,header);
               if (count == 0)
                 break;
               header[count]='\0';
@@ -1494,9 +1494,6 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
   ImageInfo
     *write_info;
 
-  InterlaceType
-    interlace;
-
   MagickBooleanType
     status;
 
@@ -1576,10 +1573,9 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
   /*
     Write images to file.
   */
-  interlace=write_info->interlace;
   if ((write_info->adjoin != MagickFalse) &&
       (GetNextImageInList(image) != (Image *) NULL))
-    interlace=NoInterlace;
+    write_info->interlace=NoInterlace;
   scene=0;
   one=1;
   do
@@ -1880,7 +1876,7 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
     (void) WriteBlobLSBShort(image,(unsigned short) image->columns);
     (void) WriteBlobLSBShort(image,(unsigned short) image->rows);
     c=0x00;
-    if (interlace != NoInterlace)
+    if (write_info->interlace != NoInterlace)
       c|=0x40;  /* pixel data is interlaced */
     for (j=0; j < (ssize_t) (3*image->colors); j++)
       if (colormap[j] != global_colormap[j])

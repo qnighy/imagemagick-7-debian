@@ -118,6 +118,7 @@ static const MagicMapInfo
     { "FIG", 0, MagicPattern("#FIG") },
     { "FITS", 0, MagicPattern("IT0") },
     { "FITS", 0, MagicPattern("SIMPLE") },
+    { "FLIF", 0, MagicPattern("FLIF") },
     { "GIF", 0, MagicPattern("GIF8") },
     { "GPLT", 0, MagicPattern("#!/usr/local/bin/gnuplot") },
     { "HDF", 1, MagicPattern("HDF") },
@@ -142,7 +143,6 @@ static const MagicMapInfo
     { "MPC", 0, MagicPattern("id=MagickCache") },
     { "MPEG", 0, MagicPattern("\000\000\001\263") },
     { "MRW", 0, MagicPattern("\x00MRM") },
-    { "MVG", 0, MagicPattern("push graphic-context") },
     { "ORF", 0, MagicPattern("IIRO\x08\x00\x00\x00") },
     { "PCD", 2048, MagicPattern("PCD_") },
     { "PCL", 0, MagicPattern("\033E\033") },
@@ -258,15 +258,8 @@ static int CompareMagickInfoSize(const void *a,const void *b)
 static LinkedListInfo *AcquireMagicCache(const char *filename,
   ExceptionInfo *exception)
 {
-  char
-    path[MaxTextExtent];
-
-  const StringInfo
-    *option;
-
   LinkedListInfo
-    *magic_cache,
-    *options;
+    *cache;
 
   MagickStatusType
     status;
@@ -274,23 +267,37 @@ static LinkedListInfo *AcquireMagicCache(const char *filename,
   register ssize_t
     i;
 
-  magic_cache=NewLinkedList(0);
-  if (magic_cache == (LinkedListInfo *) NULL)
+  cache=NewLinkedList(0);
+  if (cache == (LinkedListInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   /*
     Load external magic map.
   */
   status=MagickTrue;
-  *path='\0';
-  options=GetConfigureOptions(filename,exception);
-  option=(const StringInfo *) GetNextValueInLinkedList(options);
-  while (option != (const StringInfo *) NULL)
+#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
   {
-    (void) CopyMagickString(path,GetStringInfoPath(option),MaxTextExtent);
-    status&=LoadMagicCache(magic_cache,(const char *)
-      GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+    char
+      path[MaxTextExtent];
+
+    const StringInfo
+      *option;
+
+    LinkedListInfo
+      *options;
+
+    *path='\0';
+    options=GetConfigureOptions(filename,exception);
     option=(const StringInfo *) GetNextValueInLinkedList(options);
+    while (option != (const StringInfo *) NULL)
+    {
+      (void) CopyMagickString(path,GetStringInfoPath(option),MaxTextExtent);
+      status&=LoadMagicCache(cache,(const char *)
+        GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+      option=(const StringInfo *) GetNextValueInLinkedList(options);
+    }
+    options=DestroyConfigureOptions(options);
   }
+#endif
   /*
     Load built-in magic map.
   */
@@ -319,14 +326,13 @@ static LinkedListInfo *AcquireMagicCache(const char *filename,
     magic_info->length=p->length;
     magic_info->exempt=MagickTrue;
     magic_info->signature=MagickSignature;
-    status&=InsertValueInSortedLinkedList(magic_cache,CompareMagickInfoSize,
+    status&=InsertValueInSortedLinkedList(cache,CompareMagickInfoSize,
       NULL,magic_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
         ResourceLimitError,"MemoryAllocationFailed","`%s'",magic_info->name);
   }
-  options=DestroyConfigureOptions(options);
-  return(magic_cache);
+  return(cache);
 }
 
 /*
@@ -740,7 +746,7 @@ MagickExport MagickBooleanType ListMagicInfo(FILE *file,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   L o a d M a g i c L i s t                                                 %
++   L o a d M a g i c C a c h e                                               %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -751,9 +757,8 @@ MagickExport MagickBooleanType ListMagicInfo(FILE *file,
 %
 %  The format of the LoadMagicCache method is:
 %
-%      MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
-%        const char *xml,const char *filename,const size_t depth,
-%        ExceptionInfo *exception)
+%      MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
+%        const char *filename,const size_t depth,ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -766,9 +771,8 @@ MagickExport MagickBooleanType ListMagicInfo(FILE *file,
 %    o exception: return any errors or warnings in this structure.
 %
 */
-static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
-  const char *xml,const char *filename,const size_t depth,
-  ExceptionInfo *exception)
+static MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
+  const char *filename,const size_t depth,ExceptionInfo *exception)
 {
   char
     keyword[MaxTextExtent],
@@ -783,6 +787,9 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
   MagickStatusType
     status;
 
+  size_t
+    extent;
+
   /*
     Load the magic map file.
   */
@@ -793,12 +800,13 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
   status=MagickTrue;
   magic_info=(MagicInfo *) NULL;
   token=AcquireString(xml);
+  extent=strlen(token)+MaxTextExtent;
   for (q=(char *) xml; *q != '\0'; )
   {
     /*
       Interpret XML.
     */
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
     if (*token == '\0')
       break;
     (void) CopyMagickString(keyword,token,MaxTextExtent);
@@ -808,7 +816,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
           Doctype element.
         */
         while ((LocaleNCompare(q,"]>",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleNCompare(keyword,"<!--",4) == 0)
@@ -817,7 +825,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
           Comment element.
         */
         while ((LocaleNCompare(q,"->",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleCompare(keyword,"<include") == 0)
@@ -828,10 +836,10 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
         while (((*token != '/') && (*(token+1) != '>')) && (*q != '\0'))
         {
           (void) CopyMagickString(keyword,token,MaxTextExtent);
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (*token != '=')
             continue;
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
               if (depth > 200)
@@ -854,7 +862,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
                   xml=FileToXML(path,~0UL);
                   if (xml != (char *) NULL)
                     {
-                      status&=LoadMagicCache(magic_cache,xml,path,depth+1,
+                      status&=LoadMagicCache(cache,xml,path,depth+1,
                         exception);
                       xml=(char *) RelinquishMagickMemory(xml);
                     }
@@ -881,7 +889,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
       continue;
     if (LocaleCompare(keyword,"/>") == 0)
       {
-        status=AppendValueToLinkedList(magic_cache,magic_info);
+        status=AppendValueToLinkedList(cache,magic_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
             ResourceLimitError,"MemoryAllocationFailed","`%s'",
@@ -889,11 +897,11 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *magic_cache,
         magic_info=(MagicInfo *) NULL;
         continue;
       }
-    GetMagickToken(q,(const char **) NULL,token);
+    GetNextToken(q,(const char **) NULL,extent,token);
     if (*token != '=')
       continue;
-    GetMagickToken(q,&q,token);
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
+    GetNextToken(q,&q,extent,token);
     switch (*keyword)
     {
       case 'N':

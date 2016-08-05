@@ -191,11 +191,11 @@ static SplayTreeInfo *AcquireTypeCache(const char *filename,
     status;
 
   SplayTreeInfo
-    *type_cache;
+    *cache;
 
-  type_cache=NewSplayTree(CompareSplayTreeString,(void *(*)(void *)) NULL,
+  cache=NewSplayTree(CompareSplayTreeString,(void *(*)(void *)) NULL,
     DestroyTypeNode);
-  if (type_cache == (SplayTreeInfo *) NULL)
+  if (cache == (SplayTreeInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   status=MagickTrue;
 #if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
@@ -216,8 +216,8 @@ static SplayTreeInfo *AcquireTypeCache(const char *filename,
     while (option != (const StringInfo *) NULL)
     {
       (void) CopyMagickString(path,GetStringInfoPath(option),MaxTextExtent);
-      status&=LoadTypeCache(type_cache,(const char *)
-        GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
+      status&=LoadTypeCache(cache,(const char *) GetStringInfoDatum(option),
+        GetStringInfoPath(option),0,exception);
       option=(const StringInfo *) GetNextValueInLinkedList(options);
     }
     options=DestroyConfigureOptions(options);
@@ -235,16 +235,16 @@ static SplayTreeInfo *AcquireTypeCache(const char *filename,
         option=FileToString(path,~0UL,exception);
         if (option != (void *) NULL)
           {
-            status&=LoadTypeCache(type_cache,option,path,0,exception);
+            status&=LoadTypeCache(cache,option,path,0,exception);
             option=DestroyString(option);
           }
         font_path=DestroyString(font_path);
       }
   }
 #endif
-  if (GetNumberOfNodesInSplayTree(type_cache) == 0)
-    status&=LoadTypeCache(type_cache,TypeMap,"built-in",0,exception);
-  return(type_cache);
+  if (GetNumberOfNodesInSplayTree(cache) == 0)
+    status&=LoadTypeCache(cache,TypeMap,"built-in",0,exception);
+  return(cache);
 }
 
 /*
@@ -1001,7 +1001,7 @@ MagickExport MagickBooleanType ListTypeInfo(FILE *file,ExceptionInfo *exception)
 %                                                                             %
 %                                                                             %
 %                                                                             %
-+   L o a d T y p e L i s t                                                   %
++   L o a d T y p e C a c h e                                                 %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -1012,9 +1012,8 @@ MagickExport MagickBooleanType ListTypeInfo(FILE *file,ExceptionInfo *exception)
 %
 %  The format of the LoadTypeCache method is:
 %
-%      MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
-%        const char *xml,const char *filename,const size_t depth,
-%        ExceptionInfo *exception)
+%      MagickBooleanType LoadTypeCache(SplayTreeInfo *cache,const char *xml,
+%        const char *filename,const size_t depth,ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -1064,9 +1063,8 @@ static inline MagickBooleanType SetTypeNodePath(const char *filename,
   return(MagickTrue);
 }
 
-static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
-  const char *xml,const char *filename,const size_t depth,
-  ExceptionInfo *exception)
+static MagickBooleanType LoadTypeCache(SplayTreeInfo *cache,const char *xml,
+  const char *filename,const size_t depth,ExceptionInfo *exception)
 {
   char
     font_path[MaxTextExtent],
@@ -1078,6 +1076,9 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
 
   MagickStatusType
     status;
+
+  size_t
+    extent;
 
   TypeInfo
     *type_info;
@@ -1092,6 +1093,7 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
   status=MagickTrue;
   type_info=(TypeInfo *) NULL;
   token=AcquireString(xml);
+  extent=strlen(token)+MaxTextExtent;
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
   /*
     Determine the Ghostscript font path.
@@ -1105,7 +1107,7 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
     /*
       Interpret XML.
     */
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
     if (*token == '\0')
       break;
     (void) CopyMagickString(keyword,token,MaxTextExtent);
@@ -1115,7 +1117,7 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
           Doctype element.
         */
         while ((LocaleNCompare(q,"]>",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleNCompare(keyword,"<!--",4) == 0)
@@ -1124,7 +1126,7 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
           Comment element.
         */
         while ((LocaleNCompare(q,"->",2) != 0) && (*q != '\0'))
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleCompare(keyword,"<include") == 0)
@@ -1135,10 +1137,10 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
         while (((*token != '/') && (*(token+1) != '>')) && (*q != '\0'))
         {
           (void) CopyMagickString(keyword,token,MaxTextExtent);
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (*token != '=')
             continue;
-          GetMagickToken(q,&q,token);
+          GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
               if (depth > 200)
@@ -1167,7 +1169,7 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
                   sans_exception=DestroyExceptionInfo(sans_exception);
                   if (xml != (char *) NULL)
                     {
-                      status&=LoadTypeCache(type_cache,xml,path,depth+1,
+                      status&=LoadTypeCache(cache,xml,path,depth+1,
                         exception);
                       xml=(char *) RelinquishMagickMemory(xml);
                     }
@@ -1193,18 +1195,18 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *type_cache,
       continue;
     if (LocaleCompare(keyword,"/>") == 0)
       {
-        status=AddValueToSplayTree(type_cache,type_info->name,type_info);
+        status=AddValueToSplayTree(cache,type_info->name,type_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),
             ResourceLimitError,"MemoryAllocationFailed","`%s'",type_info->name);
         type_info=(TypeInfo *) NULL;
         continue;
       }
-    GetMagickToken(q,(const char **) NULL,token);
+    GetNextToken(q,(const char **) NULL,extent,token);
     if (*token != '=')
       continue;
-    GetMagickToken(q,&q,token);
-    GetMagickToken(q,&q,token);
+    GetNextToken(q,&q,extent,token);
+    GetNextToken(q,&q,extent,token);
     switch (*keyword)
     {
       case 'E':
