@@ -118,7 +118,7 @@ int main(int argc,char **argv)
     // Write the image to a file 
     image.write( "x.gif" ); 
   } 
-  catch( Exception &error_ ) 
+  catch( Exception &amp;error_ ) 
     { 
       cout &lt;&lt; "Caught exception: " &lt;&lt; error_.what() &lt;&lt; endl; 
       return 1; 
@@ -142,8 +142,8 @@ following:
   <li> Write the third image to a file.</li>
 </ol>
 <pre class="code">
-#include <Magick++.h> 
-#include <iostream> 
+#include &gt;Magick++.h> 
+#include &gt;iostream> 
 using namespace std; 
 using namespace Magick; 
 int main(int argc,char **argv) 
@@ -166,7 +166,7 @@ and the image data is never copied.
 a 100 by 100 pixel white image with a red pixel in the center and
 writes it to a file: </p>
 <pre class="code">
-#include <Magick++.h> 
+#include &gt;Magick++.h> 
 using namespace std; 
 using namespace Magick; 
 int main(int argc,char **argv) 
@@ -209,7 +209,7 @@ a <a href="Image++.html#constructor_blob">constructor</a> or <a href="Image++.ht
 <p>An example of using Image to write to a Blob follows: <br />
   </p>
 <pre class="code">
-#include <Magick++.h> 
+#include &gt;Magick++.h> 
 using namespace std; 
 using namespace Magick; 
 int main(int argc,char **argv) 
@@ -221,7 +221,7 @@ int main(int argc,char **argv)
   // Write to BLOB in JPEG format 
   Blob blob; 
   image.magick( "JPEG" ) // Set JPEG output format 
-  image.write( &blob );
+  image.write( &amp;blob );
 
   [ Use BLOB data (in JPEG format) here ]
 
