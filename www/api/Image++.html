@@ -185,7 +185,6 @@ image.quantizeColorSpace( GRAYColorspace );
 image.quantizeColors( 256 ); 
 image.quantize( );
 </pre>
-</p>
 <p>or, more simply: </p>
 <pre class="code">
  image.type( GrayscaleType );
@@ -261,7 +260,7 @@ in-memory <a href="http://www.imagemagick.org/Magick++/Blob.html"> BLOB</a> . Th
 constructors are shown in the following table: <br />
   <br />
  
-<ul><table bgcolor="#ffffff" border="1" width="100%">
+<table bgcolor="#ffffff" border="1" width="100%">
   <caption><b>Image Constructors</b></caption> <tbody>
     <tr>
       <td>
@@ -334,7 +333,7 @@ are [0..MaxRGB].  For example, to create a 640x480 image from
 unsigned red-green-blue character data, use</font>
       <p><font size="-1">   Image image( 640, 480, "RGB",
 0, pixels );</font> </p>
-      <p><font size="-1">The parameters are as follows:</font> <br />
+      <p><font size="-1">The parameters are as follows:</font> <br /></p>
  
       <table border="0" width="100%">
         <tbody>
@@ -368,11 +367,10 @@ values and type_ parameters.</font></td>
           </tr>
         </tbody>
       </table>
-      </p>
       </td>
     </tr>
   </tbody>
-</table></ul>
+</table>
 </div>
 <h2> <a name="Image Manipulation Methods"></a> Image Manipulation Methods</h2>
 <div class="doc-section">
@@ -390,9 +388,9 @@ image.addNoise(GaussianNoise);
 image.write("myImage.tiff");
 </pre>
 adds gaussian noise to the image file "myImage.tiff".
-<p>The operations supported by Image are shown in the following table: <br />
+<p>The operations supported by Image are shown in the following table: <br /></p>
  
-<ul><table nosave="" border="1">
+<table nosave="" border="1">
   <caption><b>Image Image Manipulation Methods</b></caption> <tbody>
     <tr align="center">
       <td><b>Method</b></td>
@@ -755,7 +753,7 @@ background color.</font></td>
     </tr>
     <tr>
       <td style="text-align: center;" rowspan="4">
-      <center><a name="extent"></a> <font size="-1">extent</font></td>
+      <center><a name="extent"></a> <font size="-1">extent</font></center></td>
       <td><font size="-1">const <a href="http://www.imagemagick.org/Magick++/Geometry.html"> Geometry</a> &amp;geometry_</font></td>
       <td rowspan="2"><font size="-1">extends the image as defined by the geometry, gravity, and image background color.</font></td>
     </tr>
@@ -1248,7 +1246,7 @@ require the pixels to be normalized [0..1]. The other types are
 unsigned red-green-blue character data, use</font>
       <p><font size="-1">  image.read( 640, 480, "RGB", CharPixel,
 pixels );</font> </p>
-      <p><font size="-1">The parameters are as follows:</font> <br />
+      <p><font size="-1">The parameters are as follows:</font> <br /></p>
  
       <table border="0" width="100%">
         <tbody>
@@ -1281,7 +1279,6 @@ values and type_ parameters.</font></td>
           </tr>
         </tbody>
       </table>
-      </p>
       </td>
     </tr>
     <tr>
@@ -1640,7 +1637,7 @@ want to extract scanline 1 of a 640x480 image as character data in
 red-green-blue order:</font>
       <p><font size="-1">  image.write(0,0,640,1,"RGB",0,pixels);</font>
       </p>
-      <p><font size="-1">The parameters are as follows:</font> <br />
+      <p><font size="-1">The parameters are as follows:</font> <br /></p>
  
       <table border="0" width="100%">
         <tbody>
@@ -1685,7 +1682,6 @@ values and type_ parameters.</font></td>
           </tr>
         </tbody>
       </table>
-      </p>
       </td>
     </tr>
     <tr>
@@ -1697,8 +1693,7 @@ values and type_ parameters.</font></td>
       <td><font size="-1">Resize image to specified size.</font></td>
     </tr>
   </tbody>
-</table></ul>
-</p>
+</table>
 </div>
 <h2> <a name="Image Attributes"></a> Image Attributes</h2>
 <div class="doc-section">
@@ -1720,7 +1715,7 @@ image.write(filename)
 The supported image attributes and the method arguments required to
 obtain them are shown in the following table: <br />
  
-<ul><table border="1">
+<table border="1">
   <caption>Image Attributes</caption> <tbody>
     <tr>
       <td>
@@ -2985,7 +2980,7 @@ or to capture image from</font></td>
       <td><font size="-1">y resolution of the image</font></td>
     </tr>
   </tbody>
-</table></ul>
+</table>
 </div>
 <h2> <a name="Raw Image Pixel Access"></a> Low-Level Image Pixel Access</h2>
 <div class="doc-section">
@@ -3025,9 +3020,9 @@ supports copying the pixels in the cache to a foreign pixel
 representation according to the format specified by <i>QuantumTypes</i>.</p>
 <p>The pixel region is effectively a small image in which the pixels
 may be accessed, addressed, and updated, as shown in the following
-example:
+example:</p>
+<img class="icon" src="http://legacy.imagemagick.org/api/Cache.png" name="Graphic1" width="254" border="0" />
 <pre class="code">
-<p><img class="icon" src="https://legacy.imagemagick.org/api/Cache.png" name="Graphic1" width="254" border="0" /></p>
 Image image("cow.png"); 
 // Ensure that there are no other references to this image.
 image.modifyImage();
@@ -3046,10 +3041,9 @@ image.syncPixels();
   // Save updated image to file.
 image.write("horse.png");
 </pre>
-</p>
-<p>The image cache supports the following methods: <br />
+<p>The image cache supports the following methods: <br /></p>
  
-<ul><table border="1" width="100%">
+<table border="1" width="100%">
   <caption>Image Cache Methods</caption> <tbody>
     <tr>
       <td>
@@ -3182,8 +3176,7 @@ used to support image encoders. The region transferred corresponds to
 the region set by a preceding getPixels or getConstPixels call.</font></td>
     </tr>
   </tbody>
-</table></ul>
-</p>
+</table>
 </div>
 </div>
   <footer class="magick-footer">
@@ -3202,6 +3195,5 @@ the region set by a preceding getPixels or getConstPixels call.</font></td>
 
   <script src="https://localhost/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script src="../js/magick.html"></script>
-</div>
 </body>
 </html>
