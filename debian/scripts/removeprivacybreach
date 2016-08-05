@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/dash
 set -e
 
 # Set $TMPDIR to "/tmp" only if it didn't have a value previously
@@ -14,5 +14,5 @@ temporary_dir=$(mktemp -d "$TMPDIR/xslt-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX") || { ech
 umask "$save_mask"
 temporary_file=$temporary_dir/htmlprivacy
 
-xsltproc --novalid --nonet "$1" "$2" > $temporary_file
+xsltproc --novalid --nonet --stringparam filename "$2" "$1" "$2" > $temporary_file
 mv $temporary_file "$2"
