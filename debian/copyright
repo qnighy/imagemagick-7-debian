@@ -1,7 +1,11 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: ImageMagick
 Source: http://www.imagemagick.org/script/download.php
-Files-Excluded: images/donate.* images/networkredux.* www/api/Magick*/*
+Files-Excluded: images/donate.*
+                images/networkredux.*
+                www/api/Magick*/*
+                www/js/*.js
+                www/css/*.css
 Comment: Remove non free image and doxygen files
 
 Files: *
