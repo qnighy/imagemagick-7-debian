@@ -1,4 +1,4 @@
-imagemagick (8:6.9.5.4+dfsg-1) unstable; urgency=medium
+imagemagick (8:6.9.5.5+dfsg-1) unstable; urgency=medium
 
   * New upstream version. Fix a few security problems (Closes: #823750):
     - Fix a off-by-one error leading to segfault (Closes: #832455).
@@ -48,36 +48,46 @@ imagemagick (8:6.9.5.4+dfsg-1) unstable; urgency=medium
       (Closes: #832793, LP: #1556273).
     - Fix an out of bound in generic decoder.
       (Closes: #832783, LP: #1542785).
-  * Prevent buffer overflow in magick/draw.c. Fix
-    CVE-2016-4562, CVE-2016-4563, CVE-2016-4564.
-    (Closes: #832885, #832887, #832888).
-  * Fix DOS due to corrupted DDS files
-    (Closes: #832942, #832944).
-  * Fix out of bounds memory read for DDS files. This fix
-    CVE-2016-5687. (Closes: #832890).
-  * Prevent possible buffer overflow when reading TIFF images.
-    This fix CVE-2016-5010. (Closes: #832968).
-  * Fix out of bound access for corrupted WPG file. This fix
-    CVE-2016-5688. (Closes: #833003).
-  * Add additional checks to DCM reader to prevent data-driven faults.
-    This fix CVE-2016-5689, CVE-2016-5690, CVE-2016-5691.
-    (Closes: #833044, #833043, #833042).
-  * Improve checking of EXIF profile to prevent integer overflow.
-    This fix CVE-2016-5841 and CVE-2016-5842.
-    (Closes: #831034).
-  * Prevent buffer overflow in properties reading.
-    This fix CVE-2016-6491. (Closes: #833099).
-  * Fix potential DOS by not releasing memory.
-    (Closes: #833101).
-  * Fix abort when writing to rgf format.
-    (Closes: #827643, LP: #1594060).
+    - Prevent buffer overflow in magick/draw.c. Fix
+      CVE-2016-4562, CVE-2016-4563, CVE-2016-4564.
+      (Closes: #832885, #832887, #832888).
+    - Fix DOS due to corrupted DDS files
+      (Closes: #832942, #832944).
+    - Fix out of bounds memory read for DDS files. This fix
+      CVE-2016-5687. (Closes: #832890).
+    - Prevent possible buffer overflow when reading TIFF images.
+      This fix CVE-2016-5010. (Closes: #832968).
+    - Fix out of bound access for corrupted WPG file. This fix
+      CVE-2016-5688. (Closes: #833003).
+    - Add additional checks to DCM reader to prevent data-driven faults.
+      This fix CVE-2016-5689, CVE-2016-5690, CVE-2016-5691.
+      (Closes: #833044, #833043, #833042).
+    - Improve checking of EXIF profile to prevent integer overflow.
+      This fix CVE-2016-5841 and CVE-2016-5842.
+      (Closes: #831034).
+    - Prevent buffer overflow in properties reading.
+      This fix CVE-2016-6491. (Closes: #833099).
+    - Fix potential DOS by not releasing memory.
+      (Closes: #833101).
+    - Fix abort when writing to rgf format.
+      (Closes: #827643, LP: #1594060).
+    - Fix buffer overflow in draw.c
+      (Closes: #833730).
+    - Fix memory leak in xml file parsing. (Closes: #833730).
+    - Do not load abitrary user modules. (Closes: #833732).
+    - Fix segfault in ReadRLEImage. (Closes: #833743).
+    - Fix RLE check for pixel offset less than 0. (Closes: #833744).
+    - Prevent possible stack overflow (Closes: #833812).
   * Remove Daniel Kobras for uploaders. Thanks Daniel.
     (Closes: #832378).
   * Add JPEG support based on openjpeg. (Closes: #818203, #813343).
   * Add indication about imagemagick-doc in man pages.
     (Closes: #822850).
+  * Fix privacy rules and fixes some deadlink using XLST.
+  * Improve linking of modules by adding if needed libz and
+    libm.
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 05 Aug 2016 15:51:43 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 09 Aug 2016 14:24:36 +0200
 
 imagemagick (8:6.9.2.10+dfsg-3) UNRELEASED; urgency=low
 
