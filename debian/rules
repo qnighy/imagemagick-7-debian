@@ -1,4 +1,4 @@
--#!/usr/bin/make -f
+#!/usr/bin/make -f
 # Sample debian/rules that uses debhelper.
 # GNU copyright 1997 to 1999 by Joey Hess.
 
@@ -210,7 +210,7 @@ quantum_override_dh_auto_test-arch_%:
 		if test "X$(STATIC_HAVE_FPU)" = "Xyes"; then \
 			unset DISPLAY; \
 			if ! dh_auto_test --builddirectory="debian/build-quantum-$*"; then \
-				find "debian/build-quantum-$*/tests" -name *.log -exec cat {} \; ; \
+				find "debian/build-quantum-$*/tests" -name *.log -exec cat {} \; ; false ;\
 			fi; \
 			if test "X$$TEST_POC" = "Xyes"; then \
 				for ARCH in $(POCARCH); do \
@@ -219,11 +219,11 @@ quantum_override_dh_auto_test-arch_%:
 						@echo " Basic test of security problems                                               " ; \
 						@echo "*******************************************************************************" ; \
 						for POC in $(CURDIR)/debian/poc/SEGV/*; do \
-							($(CONVERT) $$POC png:/dev/null || true); \
+							($(CONVERT) $$POC png:/dev/null) || true; \
 						done;\
 					fi ;\
 				done; \
-			fi;
+			fi; \
 			if test "X$$VALGRIND_TEST_POC" = "Xyes"; then \
 				for ARCH in $(VALGRIND_POCARCH); do \
 					if test "X$$ARCH" = "X$(DEB_HOST_ARCH)"; then \
@@ -235,13 +235,12 @@ quantum_override_dh_auto_test-arch_%:
 						done;\
 					fi ;\
 				done; \
-			fi;
+			fi; \
 		else \
 			@echo "*******************************************************************************" ; \
 			@echo " skipped test suite NO FPU. Test suite too slow                                " ; \
 			@echo "*******************************************************************************" ; \
 		fi; \
-	done;	
 	else \
 		@echo "****************************************************************************************" ; \
 		@echo " skipped test suite cross build host=$(DEB_HOST_GNU_TYPE) != build=$(DEB_BUILD_GNU_TYPE)   " ;\
