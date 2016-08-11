@@ -1,4 +1,4 @@
-#!/usr/bin/make -f
+-#!/usr/bin/make -f
 # Sample debian/rules that uses debhelper.
 # GNU copyright 1997 to 1999 by Joey Hess.
 
@@ -11,6 +11,14 @@ export QUANTUMDEPTH ?= q16
 export CORESOVERSION ?= 2
 export WANDSOVERSION ?= 2
 export PPSOVERSION ?= 6
+
+# test POC
+export TEST_POC ?= yes
+export VALGRIND_TEST_POC ?= yes
+
+# poc arch for test
+export POC_ARCH ?= i386 amd64
+export VALGRIND_POC_ARCH ?= i386 amd64
 
 # for hardening
 # export DEB_BUILD_MAINT_OPTIONS = hardening=+all
@@ -25,6 +33,8 @@ export STATIC_DEB_BUILD_GNU_TYPE := $(shell dpkg-architecture -qDEB_BUILD_GNU_TY
 export DEB_BUILD_GNU_TYPE ?= $(STATIC_DEB_BUILD_GNU_TYPE)
 export STATIC_DEB_SOURCE_PACKAGE := $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
 export DEB_SOURCE_PACKAGE ?= $(STATIC_DEB_SOURCE_PACKAGE)
+export STATIC_DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
+export DEB_HOST_ARCH ?= $(STATIC_DEB_HOST_ARCH)
 
 # version extracted from changelog
 export STATIC_DEB_VERSION := $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
@@ -50,6 +60,7 @@ export NOQUANTUMDEPTH := $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
 
 # convert used for icons
 export CONVERT ?= ./magick.sh convert
+export VALGRIND_CONVERT ?= libtool --mode=execute valgrind $(CONVERT)
 export CONVERT_FLAGS ?= -background none -define filter:blur=0.75 -filter Gaussian
 
 # perl path
@@ -141,6 +152,7 @@ HAVE_FPU_CMD:= case $(DEB_HOST_MULTIARCH) in \
 			echo "yes" ;; \
 	       esac
 export STATIC_HAVE_FPU := $(shell $(HAVE_FPU_CMD))
+export HAVE_FPU ?= $(STATIC_HAVE_CPU)
 
 # upper/lower case function
 LC = ${shell echo $1 | sed -e 's/\(.*\)/\L\1/'}
@@ -158,10 +170,10 @@ MAGICK_ANY_Q_PACKAGES = ${shell echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 
 	fi;
 
 fpu_is present:
-	@echo "CPU has FPU...$(STATIC_HAVE_FPU)"
+	@echo "CPU has FPU...$(HAVE_FPU)"
 
 override_dh_autoreconf:
-	@echo "CPU has FPU...$(STATIC_HAVE_FPU)"
+	@echo "CPU has FPU...$(HAVE_FPU)"
 	dh_autoreconf --as-needed
 
 # configure in build directory
@@ -200,15 +212,40 @@ quantum_override_dh_auto_test-arch_%:
 			if ! dh_auto_test --builddirectory="debian/build-quantum-$*"; then \
 				find "debian/build-quantum-$*/tests" -name *.log -exec cat {} \; ; \
 			fi; \
+			if test "X$$TEST_POC" = "Xyes"; then \
+				for ARCH in $(POCARCH); do \
+					if test "X$$ARCH" = "X$(DEB_HOST_ARCH)"; then \
+						@echo "*******************************************************************************" ; \
+						@echo " Basic test of security problems                                               " ; \
+						@echo "*******************************************************************************" ; \
+						for POC in $(CURDIR)/debian/poc/SEGV/*; do \
+							($(CONVERT) $$POC png:/dev/null || true); \
+						done;\
+					fi ;\
+				done; \
+			fi;
+			if test "X$$VALGRIND_TEST_POC" = "Xyes"; then \
+				for ARCH in $(VALGRIND_POCARCH); do \
+					if test "X$$ARCH" = "X$(DEB_HOST_ARCH)"; then \
+						@echo "*******************************************************************************" ; \
+						@echo " Basic test of security problems                                               " ; \
+						@echo "*******************************************************************************" ; \
+						for POC in $(CURDIR)/debian/poc/valgrind/*; do \
+							($(VALGRIND_CONVERT) $$POC png:/dev/null || true); \
+						done;\
+					fi ;\
+				done; \
+			fi;
 		else \
-			echo "*******************************************************************************" ; \
-			echo " skipped test suite NO FPU. Test suite too slow                                " ; \
-			echo "*******************************************************************************" ; \
+			@echo "*******************************************************************************" ; \
+			@echo " skipped test suite NO FPU. Test suite too slow                                " ; \
+			@echo "*******************************************************************************" ; \
 		fi; \
+	done;	
 	else \
-		echo "*******************************************************************************" ; \
-		echo " skipped test suite host=$(DEB_HOST_GNU_TYPE) != build=$(DEB_BUILD_GNU_TYPE)   " ;\
-		echo "*******************************************************************************" ;\
+		@echo "****************************************************************************************" ; \
+		@echo " skipped test suite cross build host=$(DEB_HOST_GNU_TYPE) != build=$(DEB_BUILD_GNU_TYPE)   " ;\
+		@echo "****************************************************************************************" ;\
 	fi;
 
 override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_q16
