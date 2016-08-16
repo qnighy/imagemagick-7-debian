@@ -157,6 +157,11 @@
 #define MAGICKCORE_HAVE_CLOCK 1
 #endif
 
+/* Define to 1 if you have the `clock_getres' function. */
+#ifndef MAGICKCORE_HAVE_CLOCK_GETRES
+#define MAGICKCORE_HAVE_CLOCK_GETRES 1
+#endif
+
 /* Define to 1 if you have clock_gettime. */
 #ifndef MAGICKCORE_HAVE_CLOCK_GETTIME
 #define MAGICKCORE_HAVE_CLOCK_GETTIME 1
@@ -1227,7 +1232,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.5-5"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.5-7"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1242,7 +1247,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.5-5"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.5-7"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1460,7 +1465,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.9.5-5"
+#define MAGICKCORE_VERSION "6.9.5-7"
 #endif
 
 /* Define if you have WEBP library */
