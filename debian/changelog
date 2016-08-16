@@ -1,4 +1,4 @@
-imagemagick (8:6.9.5.5+dfsg-1) unstable; urgency=medium
+imagemagick (8:6.9.5.7+dfsg-1) unstable; urgency=medium
 
   * New upstream version. Fix a few security problems (Closes: #823750):
     - Fix a off-by-one error leading to segfault (Closes: #832455).
@@ -86,8 +86,16 @@ imagemagick (8:6.9.5.5+dfsg-1) unstable; urgency=medium
   * Fix privacy rules and fixes some deadlink using XLST.
   * Improve linking of modules by adding if needed libz and
     libm.
+  * Avoid a double free.
+    (Closes: #834183).
+  * Avoid an out of bound access for malformed exif data.
+    (Closes: #834501).
+  * Avoid a DOS due to improper locking in magick++ lib.
+    (Closes: #834163).
+  * Add upstream patch in order to avoid a buffer overflow
+    in bmp file reader. (Closes: #834504).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 09 Aug 2016 14:24:36 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 16 Aug 2016 22:32:02 +0200
 
 imagemagick (8:6.9.2.10+dfsg-3) UNRELEASED; urgency=low
 
