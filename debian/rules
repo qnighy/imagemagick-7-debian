@@ -203,49 +203,79 @@ override_dh_auto_build-indep:
 	dh_auto_build --builddirectory="debian/build-quantum-indep" -- html
 	cd debian/build-quantum-indep/PerlMagick/default/ && make
 
+# valgrind poc
+ifeq ($(VALGRINDTEST_POC),yes)
+ ifeq (,$(findstring $(DEB_HOST_ARCH),$(VALGRIND_POCARCH)))
+quantum_override_dh_auto_test-arch_native_has_fpu_valgrindpoc_%: quantum_override_dh_auto_test-arch_native_has_fpu_poc_%:
+	@echo "*******************************************************************************"
+	@echo " valgrind test of security problems                                            "
+	@echo "*******************************************************************************"
+	for POC in $(CURDIR)/debian/poc/SEGV/*; do \
+		echo "Test POC $$POC"; \
+		(cd $(CURDIR)/debian/build-quantum-$*; $(VALGRIND_CONVERT) $$POC png:/dev/null) || true; \
+	done;
+ else
+quantum_override_dh_auto_test-arch_native_has_fpu_valgrindpoc_%:
+ endif
+else
+quantum_override_dh_auto_test-arch_native_has_fpu_valgrindpoc_%:
+endif
+	touch quantum_override_dh_auto_test-arch_native_has_fpu_valgrindpoc_$*
+
+# poc
+ifeq ($(TEST_POC),yes)
+ ifeq (,$(findstring $(DEB_HOST_ARCH),$(POCARCH)))
+quantum_override_dh_auto_test-arch_native_has_fpu_poc_%: quantum_override_dh_auto_test-arch_native_has_fpu_testsuite_%
+	@echo "*******************************************************************************" ;
+	@echo " Basic test of security problems                                               " ;
+	@echo "*******************************************************************************" ;
+	for POC in $(CURDIR)/debian/poc/SEGV/*; do \
+		echo "Test POC $$POC"; \
+		(cd $(CURDIR)/debian/build-quantum-$*; $(CONVERT) $$POC png:/dev/null) || true; \
+	done;
+ else
+quantum_override_dh_auto_test-arch_native_has_fpu_poc_%:
+ endif
+else
+quantum_override_dh_auto_test-arch_native_has_fpu_poc_%:
+endif
+	touch quantum_override_dh_auto_test-arch_native_has_fpu_poc_$*
+
+# test suite
+quantum_override_dh_auto_test-arch_native_has_fpu_testsuite_%:
+	unset DISPLAY; \
+	if ! dh_auto_test --builddirectory="debian/build-quantum-$*"; then \
+		find "debian/build-quantum-$*/tests" -name *.log -exec cat {} ; false ;\
+	fi;
+	touch quantum_override_dh_auto_test-arch_native_has_fpu_testsuite_$*
+
+#only run if FPU
+quantum_override_dh_auto_test-arch_native_has_fpu_%: quantum_override_dh_auto_test-arch_native_has_fpu_testsuite_% quantum_override_dh_auto_test-arch_native_has_fpu_poc_% quantum_override_dh_auto_test-arch_native_has_fpu_valgrindpoc_% 
+	touch quantum_override_dh_auto_test-arch_native_has_fpu_$*
+
+# only run if native build
+ifeq ($(STATIC_HAVE_FPU),yes)
+quantum_override_dh_auto_test-arch_native_%: quantum_override_dh_auto_test-arch_native_has_fpu_%
+else
+quantum_override_dh_auto_test-arch_native_%:
+	@echo "*******************************************************************************"
+	@echo " skipped test suite NO FPU. Test suite too slow                                "
+	@echo "*******************************************************************************"
+endif
+	touch quantum_override_dh_auto_test-arch_native_$*
+
 # dh_auto_test in build directory
 # display log in case of failure
+ifeq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
+quantum_override_dh_auto_test-arch_%: quantum_override_dh_auto_test-arch_native_%
+	touch quantum_override_dh_auto_test-arch_$*
+else
 quantum_override_dh_auto_test-arch_%:
-	if test "X$(DEB_HOST_GNU_TYPE)" = "X$(DEB_BUILD_GNU_TYPE)"; then \
-		if test "X$(STATIC_HAVE_FPU)" = "Xyes"; then \
-			unset DISPLAY; \
-			if ! dh_auto_test --builddirectory="debian/build-quantum-$*"; then \
-				find "debian/build-quantum-$*/tests" -name *.log -exec cat {} \; ; false ;\
-			fi; \
-			if test "X$$TEST_POC" = "Xyes"; then \
-				for ARCH in $(POCARCH); do \
-					if test "X$$ARCH" = "X$(DEB_HOST_ARCH)"; then \
-						@echo "*******************************************************************************" ; \
-						@echo " Basic test of security problems                                               " ; \
-						@echo "*******************************************************************************" ; \
-						for POC in $(CURDIR)/debian/poc/SEGV/*; do \
-							($(CONVERT) $$POC png:/dev/null) || true; \
-						done;\
-					fi ;\
-				done; \
-			fi; \
-			if test "X$$VALGRIND_TEST_POC" = "Xyes"; then \
-				for ARCH in $(VALGRIND_POCARCH); do \
-					if test "X$$ARCH" = "X$(DEB_HOST_ARCH)"; then \
-						@echo "*******************************************************************************" ; \
-						@echo " Basic test of security problems                                               " ; \
-						@echo "*******************************************************************************" ; \
-						for POC in $(CURDIR)/debian/poc/valgrind/*; do \
-							($(VALGRIND_CONVERT) $$POC png:/dev/null || true); \
-						done;\
-					fi ;\
-				done; \
-			fi; \
-		else \
-			@echo "*******************************************************************************" ; \
-			@echo " skipped test suite NO FPU. Test suite too slow                                " ; \
-			@echo "*******************************************************************************" ; \
-		fi; \
-	else \
-		@echo "****************************************************************************************" ; \
-		@echo " skipped test suite cross build host=$(DEB_HOST_GNU_TYPE) != build=$(DEB_BUILD_GNU_TYPE)   " ;\
-		@echo "****************************************************************************************" ;\
-	fi;
+	@echo "****************************************************************************************"
+	@echo " skipped test suite cross build host=$(DEB_HOST_GNU_TYPE) != build=$(DEB_BUILD_GNU_TYPE)"
+	@echo "****************************************************************************************"
+	touch quantum_override_dh_auto_test-arch_$*
+endif
 
 override_dh_auto_test-arch: quantum_override_dh_auto_test-arch_q16
 override_dh_auto_test-indep:
@@ -469,6 +499,13 @@ override_dh_prep: quantum_override_dh_prep_q16 quantum_override_dh_prep_indep
 quantum_override_dh_clean_%:
 	[ ! -d debian/build-quantum-$* ] || rm -rf debian/build-quantum-$*
 	[ ! -d debian/tmp-$* ] || rm -rf debian/tmp-$*
+	# test suite target
+	[ ! -f quantum_override_dh_auto_test-arch_$* ] || rm quantum_override_dh_auto_test-arch_$*
+	[ ! -f quantum_override_dh_auto_test-arch_native_$* ] || rm quantum_override_dh_auto_test-arch_native_$*
+	[ ! -f quantum_override_dh_auto_test-arch_native_has_fpu_$* ] || rm quantum_override_dh_auto_test-arch_native_has_fpu_$*
+	[ ! -f quantum_override_dh_auto_test-arch_native_has_fpu_testsuite_$* ] || rm quantum_override_dh_auto_test-arch_native_has_fpu_testsuite_$*
+	[ ! -f quantum_override_dh_auto_test-arch_native_has_fpu_poc_$* ] || rm quantum_override_dh_auto_test-arch_native_has_fpu_poc_$*
+	[ ! -f quantum_override_dh_auto_test-arch_native_has_fpu_valgrindpoc_$* ] || rm quantum_override_dh_auto_test-arch_native_has_fpu_valgrindpoc_$*
 
 override_dh_clean: quantum_override_dh_clean_q16 quantum_override_dh_clean_indep
 	[ ! -f $(CONFIGURE_CACHEFILE) ] || rm -f $(CONFIGURE_CACHEFILE)
