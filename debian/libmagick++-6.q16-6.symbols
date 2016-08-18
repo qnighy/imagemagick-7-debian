@@ -1650,8 +1650,8 @@ libMagick++-6.Q16.so.6 libmagick++-6.q16-6 #MINVER#
  (c++)"Magick::zoomImage::operator()(Magick::Image&) const@Base" 8:6.9.2.3
  (c++)"Magick::zoomImage::zoomImage(Magick::Geometry const&)@Base" 8:6.9.2.3
  (c++|regex|optional=templinst)"^std::.*@Base" 8:6.9.2.3
- (c++|regex|optional=templinst)"void std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::emplace_back<Magick::ChannelMoments>(Magick::ChannelMoments&&)@Base" 8:6.9.5.7
- (c++|regex|optional=templinst)"void std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::_M_emplace_back_aux<Magick::ChannelMoments>(Magick::ChannelMoments&&)@Base" 8:6.9.5.7
+ (c++|optional=templinst)"void std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::emplace_back<Magick::ChannelMoments>(Magick::ChannelMoments&&)@Base" 8:6.9.5.7
+ (c++|optional=templinst)"void std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::_M_emplace_back_aux<Magick::ChannelMoments>(Magick::ChannelMoments&&)@Base" 8:6.9.5.7
  (c++)"typeinfo for Magick::Blob@Base" 8:6.9.2.3
  (c++)"typeinfo for Magick::Color@Base" 8:6.9.2.3
  (c++)"typeinfo for Magick::ColorGray@Base" 8:6.9.2.3
