@@ -94,6 +94,7 @@ imagemagick (8:6.9.5.7+dfsg-1) unstable; urgency=medium
     (Closes: #834163).
   * Add upstream patch in order to avoid a buffer overflow
     in bmp file reader. (Closes: #834504).
+  * Bump standard version. No change.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 16 Aug 2016 22:32:02 +0200
 
