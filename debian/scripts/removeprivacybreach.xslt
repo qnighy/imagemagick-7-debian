@@ -233,13 +233,9 @@
   <!-- replace pointer to legacy site -->
   <xsl:template match="*[local-name(.) = 'a'][contains(@href,'www.imagemagick.org')]">
     <xsl:message><xsl:text>Replace in </xsl:text><xsl:value-of select="$filename" /><xsl:text> </xsl:text><xsl:value-of select="@href" /><xsl:text> by </xsl:text><xsl:call-template name="replacelegacy"><xsl:with-param select="@href" name="path"/></xsl:call-template></xsl:message>
-    <xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
-    OLD CODE
-    <xsl:copy-of select="current()" />
-    <xsl:text disable-output-escaping="yes">--&gt;</xsl:text>
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
-      <xsl:attribute name="href2">
+      <xsl:attribute name="href">
 	<xsl:call-template name="replacelegacy"><xsl:with-param select="@href" name="path"/></xsl:call-template>
       </xsl:attribute>
     </xsl:copy>
@@ -319,7 +315,7 @@
   <xsl:template match="*[local-name(.) = 'link'][substring(@href, string-length(@href) - string-length('magick.html') +1)='magick.html']">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
-      <xsl:attribute name="href2">
+      <xsl:attribute name="href">
 	<xsl:call-template name="magickcsspath"></xsl:call-template>
       </xsl:attribute>
     </xsl:copy>
@@ -327,7 +323,7 @@
   <xsl:template match="*[local-name(.) = 'link'][substring(@href, string-length(@href) - string-length('magick.css') +1)='magick.css']">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
-      <xsl:attribute name="href2">
+      <xsl:attribute name="href">
 	<xsl:call-template name="magickcsspath"></xsl:call-template>
       </xsl:attribute>
     </xsl:copy>
@@ -335,7 +331,7 @@
   <xsl:template match="*[local-name(.) = 'script'][substring(@src, string-length(@src) - string-length('magick.html') +1)='magick.html']">
     <xsl:copy>
       <xsl:apply-templates select="@*"/>
-      <xsl:attribute name="href2">
+      <xsl:attribute name="href">
 	<xsl:value-of select="substring(@src,1,string-length(@src) - string-length('.html'))"/><xsl:text>.js</xsl:text>
       </xsl:attribute>
     </xsl:copy>
