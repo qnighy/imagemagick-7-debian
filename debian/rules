@@ -299,8 +299,37 @@ endif
 override_dh_auto_test-arch: override_dh_auto_test-arch_quantum_q16
 override_dh_auto_test-indep:
 
+
+# build icons cache for quantum
+override_dh_auto_install-arch_iconcache_quantum_%:
+	# build icons cache (build for each arch in order to get more testing)
+	while read SIZE; do \
+		mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/ ;\
+		cd $(CURDIR)/debian/build-quantum-$*; \
+		echo "Make icons for size $$SIZE..."; \
+		$(CONVERT) $(CURDIR)/debian/display-im$(IMVERSION).svg \
+			   $(CONVERT_FLAGS) -resize $$SIZE \
+			   -gravity center -extent $$SIZE  \
+			   +set date:create +set date:modify -define png:exclude-chunk=time  \
+			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display-im$(IMVERSION).$*.png; \
+		echo "Done"; \
+	done < $(CURDIR)/debian/display-im$(IMVERSION).iconssize
+	# make xpm
+	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/pixmaps/
+	cd $(CURDIR)/debian/build-quantum-$*; \
+	echo "Make xpm size 32x32..." ; \
+	$(CONVERT) $(CURDIR)/debian/display-im$(IMVERSION).svg $(CONVERT_FLAGS) -resize 32x32 \
+		-gravity center -extent 32x32  \
+		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display-im$(IMVERSION).$*.xpm ;\
+	echo "Done"
+	# do not forget svgz
+	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/
+	gzip -c -n -9 $(CURDIR)/debian/display-im$(IMVERSION).svg \
+		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(IMVERSION).$*.svgz
+	touch $@
+
 # dh_auto_install in build directory
-override_dh_auto_install-arch_quantum_%:
+override_dh_auto_install-arch_quantum_%: override_dh_auto_install-arch_iconcache_quantum_%
 	dh_auto_install --builddirectory="debian/build-quantum-$*" \
 			--destdir="debian/tmp-$*" \
 			-- install pkgdocdir=/$(DOC_PKG_PATH) V=1
@@ -329,32 +358,6 @@ override_dh_auto_install-arch_quantum_%:
 		      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$*/"; \
 	done;
 
-
-	# build icons cache (build for each arch in order to get more testing)
-	while read SIZE; do \
-		mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/ ;\
-		cd $(CURDIR)/debian/build-quantum-$*; \
-		echo "Make icons for size $$SIZE..."; \
-		$(CONVERT) $(CURDIR)/debian/display-im$(IMVERSION).svg \
-			   $(CONVERT_FLAGS) -resize $$SIZE \
-			   -gravity center -extent $$SIZE  \
-			   +set date:create +set date:modify -define png:exclude-chunk=time  \
-			   $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/display-im$(IMVERSION).$*.png; \
-		echo "Done"; \
-	done < $(CURDIR)/debian/display-im$(IMVERSION).iconssize
-	# make xpm
-	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/pixmaps/
-	cd $(CURDIR)/debian/build-quantum-$*; \
-	echo "Make xpm size 32x32..." ; \
-	$(CONVERT) $(CURDIR)/debian/display-im$(IMVERSION).svg $(CONVERT_FLAGS) -resize 32x32 \
-		-gravity center -extent 32x32  \
-		$(CURDIR)/debian/tmp-$*/usr/share/pixmaps/display-im$(IMVERSION).$*.xpm ;\
-	echo "Done"
-	# do not forget svgz
-	mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/
-	gzip -c -n -9 $(CURDIR)/debian/display-im$(IMVERSION).svg \
-		> $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/scalable/apps/display-im$(IMVERSION).$*.svgz
-
 	# add desktop for default
 	mkdir -p debian/tmp-$*/usr/share/applications/
 	sed < $(CURDIR)/debian/display.desktop.in \
@@ -368,15 +371,6 @@ override_dh_auto_install-arch_quantum_%:
 
 override_dh_auto_install-arch: override_dh_auto_install-arch_quantum_q16
 	true
-
-xslt-rule:
-	# now apply privacy cleanning rules
-	cd "$(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)" && \
-	find  . \
-	     -path './www/api/MagickCore' -prune -o \
-	     -path './www/api/MagickWand' -prune -o \
-	     -type f -and -name '*.html' -and -not -empty -print0 \
-	     | xargs -r -0 -n 1 "$(CURDIR)/debian/scripts/removeprivacybreach" "$(CURDIR)/debian/scripts/removeprivacybreach.xslt"
 
 override_dh_auto_install-indep:
 	# install headers
@@ -526,6 +520,7 @@ override_dh_clean_quantum_%:
 	[ ! -f override_dh_auto_build-arch_quantum_$* ] || rm override_dh_auto_build-arch_quantum_$*
 	# auto install
 	[ ! -f override_dh_auto_install-arch_quantum_$* ] || rm override_dh_auto_install-arch_quantum_$*
+	[ ! -f override_dh_auto_install-arch_iconcache_quantum_$* ] || rm override_dh_auto_install-arch_iconcache_quantum_$*
 	# dh_bugfile
 	[ ! -f override_dh_bugfiles-arch_quantum_$* ] || rm override_dh_bugfiles-arch_quantum_$*
 	# test suite target
