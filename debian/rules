@@ -14,7 +14,7 @@ export PPSOVERSION ?= 6
 
 
 # poc arch for test empty means no test
-export POC_ARCH ?= i386 amd64
+export POC_ARCH ?= any-i386 any-amd64
 export VALGRIND_POC_ARCH ?= 
 
 # for hardening
@@ -140,8 +140,8 @@ export MAGICK_ALL_COMPAT_PACKAGES := imagemagick-common \
 TEST_POC_CMD:= \
 	     POCFOUND='no'; \
 	     for POC in $(POC_ARCH); do \
-	     	if test "x$$POC" = "x$(DEB_HOST_ARCH)"; then \
-			POCFOUND='yes'; \
+	     	if dpkg-architecture -i$$POC; then \
+			POCFOUND='yes'; break;\
 		fi; \
 	     done; \
 	     echo $$POCFOUND
@@ -150,8 +150,8 @@ TEST_POC := $(shell $(TEST_POC_CMD))
 VALGRIND_TEST_POC_CMD:= \
 	     POCFOUND='no'; \
 	     for POC in $(VALGRIND_POC_ARCH); do \
-	     	if test "x$$POC" = "x$(DEB_HOST_ARCH)"; then \
-			POCFOUND='yes'; \
+	     	if dpkg-architecture -i$$POC; then \
+			POCFOUND='yes'; break;\
 		fi; \
 	     done; \
 	     echo $$POCFOUND
