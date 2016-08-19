@@ -10,8 +10,8 @@ Comment: Remove non free image and doxygen files
 
 Files: *
 Copyright: 1987-1999, E. I. du Pont de Nemours and Company
-	   1999-2015, ImageMagick Studio LLC
-	   1987-2015, John Cristy
+	   1999-2016, ImageMagick Studio LLC
+	   1987-2016, John Cristy
 License: ImageMagick
 Comment: Apache-2.0 License with additional preamble
  .
@@ -105,6 +105,10 @@ Files: coders/fd.c
 Copyright: 2000, Bill Radcliffe
 	   2000, John Cristy
 	   2000-2015, ImageMagick Studio LLC
+License: ImageMagick
+
+Files: coders/flif.c
+Copyright: 2016, Jon Sneyers
 License: ImageMagick
 
 Files: coders/fpx.c
@@ -267,7 +271,7 @@ Copyright: 1999-2014, Free Software Foundation, Inc.
 License: GPL-2+
 
 Files: config/config.*
-Copyright: 1992-2015, Free Software Foundation, Inc.
+Copyright: 1992-2016, Free Software Foundation, Inc.
 License: GPL-2+
 
 Files: config/depcomp
