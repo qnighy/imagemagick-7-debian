@@ -178,6 +178,10 @@ UC = ${shell echo $1 | sed -e 's/\(.*\)/\U\1/'}
 REPLACE_QUANTUM = ${shell echo '$1' |  sed -e 's/$$QUANTUM/$2/g'}
 MAGICK_ANY_Q_PACKAGES = ${shell echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 's/$$QUANTUM/$1/g'}
 
+# extract quantum
+QUANTUM_PART = ${shell echo '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
+HDRI_PART = ${shell case $$(echo '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo 'yes';; *) echo 'no' ;; esac }
+
 
 %:
 	@echo "Build $(DEB_SOURCE_PACKAGE) version $(DEB_VERSION) for quantum $(QUANTUMDEPTH)"
@@ -196,18 +200,22 @@ override_dh_autoreconf:
 
 # configure in build directory
 override_dh_auto_configure-arch_quantum_%:
+	@echo "configure for $* : quantum=$(call QUANTUM_PART,$*) HDRI=$(call HDRI_PART,$*)"
 	dh_auto_configure --builddirectory="debian/build-quantum-$*" -- \
 		 ${CONFIGURE_OPTIONS} \
 		--disable-silent-rules \
-		--with-quantum-depth=${shell echo $* | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
+		--with-quantum-depth=$(call QUANTUM_PART,$*) \
+		--enable-hdri=$(call HDRI_PART,$*)
 	touch $@
 
 override_dh_auto_configure-arch: override_dh_auto_configure-arch_quantum_q16
 
 override_dh_auto_configure-indep:
+	@echo "configure indep for $* : quantum=$(call QUANTUM_PART,$*) HDRI=$(call HDRI_PART,$*)"
 	dh_auto_configure --builddirectory="debian/build-quantum-indep" -- \
 		 ${CONFIGURE_OPTIONS} \
-		--with-quantum-depth=${shell echo $(NOQUANTUMDEPTH)  | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
+		--with-quantum-depth=$(call QUANTUM_PART,$(NOQUANTUMDEPTH)) \
+		--enable-hdri=$(call HDRI_PART,$(NOQUANTUMDEPTH))
 	# HACK: create default quantum package Makefile
 	cd debian/build-quantum-indep/PerlMagick/default/ && perl Makefile.PL INSTALLDIRS=vendor
 
@@ -266,7 +274,7 @@ override_dh_auto_test-arch_native_has_fpu_quantum_%: override_dh_auto_test-arch_
 	touch $@
 
 # only run if native build
-ifeq ($(STATIC_HAVE_FPU),yes)
+ifeq ($(HAVE_FPU),yes)
 override_dh_auto_test-arch_native_quantum_%: override_dh_auto_test-arch_native_has_fpu_quantum_%
 else
 override_dh_auto_test-arch_native_quantum_%:
