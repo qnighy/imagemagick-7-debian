@@ -7,7 +7,7 @@ export DH_VERBOSE=1
 
 
 # quantum depth is channel depth
-export QUANTUMDEPTH ?= q16 q16hdri
+export QUANTUMDEPTH ?= q16
 export CORESOVERSION ?= 2
 export WANDSOVERSION ?= 2
 export PPSOVERSION ?= 6
@@ -182,7 +182,6 @@ MAGICK_ANY_Q_PACKAGES = ${shell echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 
 QUANTUM_PART = ${shell echo '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
 HDRI_PART = ${shell case $$(echo '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo 'yes';; *) echo 'no' ;; esac }
 
-
 %:
 	if test "BUG#703261" = "SOLVED"; then \
 		dh $@ --parallel --with autoreconf --with pkgkde_symbolshelper; \
@@ -207,7 +206,7 @@ override_dh_auto_configure-arch_quantum.%:
 		--enable-hdri=$(call HDRI_PART,$*)
 	touch $@
 
-override_dh_auto_configure-arch: override_dh_auto_configure-arch_quantum.q16
+override_dh_auto_configure-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_auto_configure-arch_quantum.$Q)
 
 override_dh_auto_configure-indep:
 	@echo "configure indep for $* : quantum=$(call QUANTUM_PART,$*) HDRI=$(call HDRI_PART,$*)"
@@ -224,7 +223,8 @@ override_dh_auto_build-arch_quantum.%:
 	dh_auto_build --builddirectory="debian/build-quantum-$*" -- all perl-build
 	touch $@
 
-override_dh_auto_build-arch: override_dh_auto_build-arch_quantum.q16
+override_dh_auto_build-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_auto_build-arch_quantum.$Q)
+
 override_dh_auto_build-indep:
 	# generate html doc
 	dh_auto_build --builddirectory="debian/build-quantum-indep" -- html
@@ -295,7 +295,8 @@ override_dh_auto_test-arch_quantum.%:
 endif
 	touch $@
 
-override_dh_auto_test-arch: override_dh_auto_test-arch_quantum.q16
+override_dh_auto_test-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_auto_test-arch_quantum.$Q)
+
 override_dh_auto_test-indep:
 
 
@@ -368,8 +369,7 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
 	touch $@
 
-override_dh_auto_install-arch: override_dh_auto_install-arch_quantum.q16
-	true
+override_dh_auto_install-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_auto_install-arch_quantum.$Q)
 
 override_dh_auto_install-indep:
 	# install headers
@@ -429,7 +429,7 @@ override_dh_install-arch_quantum.%:
 	done < debian/libmagickcore-${IMVERSION}.$*-${CORESOVERSION}-extra.install
 
 # install arch package
-override_dh_install-arch: override_dh_install-arch_quantum.q16
+override_dh_install-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_install-arch_quantum.$Q)
 	# take arch include in default quantum
 	for PKG in $(MAGICK_ANY_PACKAGES); do \
 		dh_install --package=$$PKG \
@@ -465,7 +465,7 @@ override_dh_bugfiles-arch_quantum.%:
 	done
 	touch $@
 
-override_dh_bugfiles-arch: override_dh_bugfiles-arch_quantum.q16
+override_dh_bugfiles-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_bugfiles-arch_quantum.$Q)
 	for PKG in $(MAGICK_ANY_PACKAGES); do \
                 mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 		ln -s imagemagick-$(IMVERSION)-common \
@@ -505,7 +505,7 @@ override_dh_installdocs-arch:
 override_dh_prep_quantum.%:
 	[ ! -d debian/tmp-$* ] || rm -rf debian/tmp-$*
 
-override_dh_prep: override_dh_prep_quantum.q16 override_dh_prep_quantum.indep
+override_dh_prep: $(foreach Q,$(QUANTUMDEPTH),override_dh_prep_quantum.$Q) override_dh_prep_quantum.indep
 	dh_prep
 
 
@@ -531,7 +531,7 @@ override_dh_clean_quantum.%:
 	[ ! -f override_dh_auto_test-arch_native_has_fpu_valgrindpoc_quantum.$* ] || rm override_dh_auto_test-arch_native_has_fpu_valgrindpoc_quantum.$*
 
 
-override_dh_clean: override_dh_clean_quantum.q16 override_dh_clean_quantum.indep
+override_dh_clean: $(foreach Q,$(QUANTUMDEPTH),override_dh_clean_quantum.$Q) override_dh_clean_quantum.indep
 	[ ! -f $(CONFIGURE_CACHEFILE) ] || rm -f $(CONFIGURE_CACHEFILE)
 	dh_clean
 
