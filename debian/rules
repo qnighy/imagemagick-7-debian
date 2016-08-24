@@ -201,7 +201,11 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
-	dh-exec imagemagick-IMVERSION.QUANTUMDEPTH.manpages.in > imagemagick-$(IMVERSION).$*.manpages
+	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.manpages.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.manpages
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.mime.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.mime
 	touch $@
 
 # configure in build directory
@@ -523,6 +527,7 @@ override_dh_clean_quantum.%:
 	[ ! -d debian/tmp-$* ] || rm -rf debian/tmp-$*
 	# generated file
 	[ ! -f imagemagick-$(IMVERSION).$*.manpages ] || rm imagemagick-$(IMVERSION).$*.manpages
+	[ ! -f imagemagick-$(IMVERSION).$*.mime ] || rm imagemagick-$(IMVERSION).$*.mime
 	# autoreconf
 	[ ! -f override_dh_auto_configure-arch_quantum.$* ] || rm override_dh_auto_configure-arch_quantum.$*
 	[ ! -f override_dh_auto_configure-arch_generatefile_quantum.$* ] || rm override_dh_auto_configure-arch_generatefile_quantum.$*
