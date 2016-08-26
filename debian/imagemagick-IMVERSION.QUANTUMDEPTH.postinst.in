@@ -2,6 +2,9 @@
 
 set -e
 
+IM_QUANTUMDEPTH=$(echo $DPKG_MAINTSCRIPT_PACKAGE |sed 's/^.*[.]//g')
+IM_VERSION=$(echo $DPKG_MAINTSCRIPT_PACKAGE |sed 's/^.*[-]im\([^.]*\)[.].*/\1/g')
+
 if [ "$1" = "configure" ]
 then
     # Setup alternatives for each program separately along with their
@@ -12,18 +15,18 @@ then
         # We first remove previous alternatives to -im6, that
         # disappeared because the binaries disappeared
 
-        update-alternatives --remove $prog /usr/bin/$prog-im${IMVERSION}
+        update-alternatives --remove $prog /usr/bin/$prog-im$IM_VERSION
 
 	update-alternatives --install /usr/bin/$prog \
-	                    $prog /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH} 100 \
+	                    $prog /usr/bin/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH 100 \
 	                    --slave /usr/share/man/man1/$prog.1.gz \
-	                    $prog.1.gz /usr/share/man/man1/$prog-im${IMVERSION}.${QUANTUMDEPTH}.1.gz
+	                    $prog.1.gz /usr/share/man/man1/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH.1.gz
 
 
-	update-alternatives --install /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH} \
-	                    $prog-im${IMVERSION} /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH} 100 \
+	update-alternatives --install /usr/bin/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH \
+	                    $prog-im$IM_VERSION /usr/bin/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH 100 \
 	                    --slave /usr/share/man/man1/$prog-im$IM_VERSION.1.gz \
-	                    $prog-im${IMVERSION}.1.gz /usr/share/man/man1/$prog-im${IMVERSION}.${QUANTUMDEPTH}.1.gz
+	                    $prog-im$IM_VERSION.1.gz /usr/share/man/man1/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH.1.gz
 
         # We also remove previous
     done

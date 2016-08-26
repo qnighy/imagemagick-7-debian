@@ -214,15 +214,9 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
-	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.postinst.in > $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.postinst
-	QUANTUM=$(call QUANTUM_PART,$*) \
-	HDRI=$(call HDRI_PART,$*) \
-	QUANTUMDEPTH=$* \
-	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.prerm.in > $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.prerm
-	QUANTUM=$(call QUANTUM_PART,$*) \
-	HDRI=$(call HDRI_PART,$*) \
-	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.install.in > $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.install
+	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.postinst.in $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.postinst
+	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.prerm.in $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.prerm
 	# libimage-magick-QUANTUM-perl
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
