@@ -400,7 +400,7 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 
 	# add desktop for default
 	mkdir -p debian/tmp-$*/usr/share/applications/
-	cp $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.desktop \
+	cp $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.desktop \
            $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).$*.desktop
 
 	# move pc file to quantum one
