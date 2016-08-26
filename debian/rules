@@ -222,6 +222,11 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/libimage-magick-QUANTUMDEPTH-perl.install.in > $(CURDIR)/debian/libimage-magick-$*-perl.install
+	# libmagick++-IMVERSION.QUANTUMDEPTH-PPSOVERSION.install.in
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-PPSOVERSION.install.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).install
 	touch $@
 
 # configure in build directory
@@ -547,6 +552,7 @@ override_dh_clean_quantum.%:
 	[ ! -f debian/imagemagick-$(IMVERSION).$*.prerm ] || rm debian/imagemagick-$(IMVERSION).$*.prerm
 	[ ! -f debian/imagemagick-$(IMVERSION).$*.install ] || rm debian/imagemagick-$(IMVERSION).$*.install
 	[ ! -f debian/libimage-magick-$*-perl.install ] || rm debian/libimage-magick-$*-perl.install
+	[ ! -f debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).install ] || rm debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).install
 	# autoreconf
 	[ ! -f override_dh_auto_configure-arch_quantum.$* ] || rm override_dh_auto_configure-arch_quantum.$*
 	[ ! -f override_dh_auto_configure-arch_generatefile_quantum.$* ] || rm override_dh_auto_configure-arch_generatefile_quantum.$*
