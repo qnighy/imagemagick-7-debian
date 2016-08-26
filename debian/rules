@@ -213,13 +213,13 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
-	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.desktop.in > $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.desktop
+	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.desktop.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.desktop
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
-	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.install.in > $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.install
-	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.postinst.in $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.postinst
-	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.prerm.in $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.prerm
+	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.install.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.install
+	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.postinst.in $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.postinst
+	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.prerm.in $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.prerm
 	# libimage-magick-QUANTUM-perl
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
@@ -406,6 +406,12 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 	# move pc file to quantum one
 	mv "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++.pc" \
 	   "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-im$(IMVERSION).$*.pc"
+	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-$(IMVERSION).$(call UC,$*).pc"
+	ln -s "ImageMagick++-im$(IMVERSION).$*.pc" \
+	      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-im$(IMVERSION).$(call UC,$*).pc"
+	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-$(IMVERSION).$(call UC,$*).pc"
+	ln -s "ImageMagick++-im$(IMVERSION).$*.pc" \
+	      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-im$(IMVERSION).$(call UC,$*).pc"
 	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++.pc"
 	ln -s "ImageMagick++-im$(IMVERSION).$*.pc" \
 	      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-im$(IMVERSION).$*.pc"
