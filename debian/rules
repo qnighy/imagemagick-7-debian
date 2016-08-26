@@ -234,6 +234,11 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-dev.install.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-dev.install
+	# libmagickcore
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	dh-exec $(CURDIR)/debian/libmagickcore-IMVERSION.QUANTUMDEPTH-CORESOVERSION.install.in > $(CURDIR)/debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).install
 	touch $@
 
 # configure in build directory
