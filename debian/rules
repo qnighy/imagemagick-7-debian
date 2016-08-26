@@ -233,7 +233,7 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
-	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-dev.install.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-dev.install.in
+	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-dev.install.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-dev.install
 	touch $@
 
 # configure in build directory
@@ -400,7 +400,7 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 
 	# add desktop for default
 	mkdir -p debian/tmp-$*/usr/share/applications/
-	cp $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.desktop \
+	cp $(CURDIR)/debian/imagemagick-im$(IMVERSION).$*.desktop \
            $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).$*.desktop
 
 	# move pc file to quantum one
@@ -420,7 +420,7 @@ override_dh_auto_install-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_auto_inst
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-im$(IMVERSION).pc"
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-im$(IMVERSION).pc"
-ifeq($(DEFAULTIMVERSION),$(IMVERSION))
+ifeq ($(DEFAULTIMVERSION),$(IMVERSION))
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++.pc"
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
