@@ -220,11 +220,13 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.install.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.install
 	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.postinst.in $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.postinst
 	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.prerm.in $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.prerm
+
 	# libimage-magick-QUANTUM-perl
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/libimage-magick-QUANTUMDEPTH-perl.install.in > $(CURDIR)/debian/libimage-magick-$*-perl.install
+
 	# libmagick++-IMVERSION.QUANTUMDEPTH-PPSOVERSION.install.in
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
@@ -234,6 +236,7 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-dev.install.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-dev.install
+
 	# libmagickcore
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
@@ -247,10 +250,17 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/libmagickcore-IMVERSION.QUANTUMDEPTH-dev.install.in > $(CURDIR)/debian/libmagickcore-$(IMVERSION).$*-dev.install
+
+	# wand
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/libmagickwand-IMVERSION.QUANTUMDEPTH-WANDSOVERSION.install.in > $(CURDIR)/debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).install
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	dh-exec $(CURDIR)/debian/libmagickwand-IMVERSION.QUANTUMDEPTH-dev.install.in > $(CURDIR)/debian/libmagickwand-$(IMVERSION).$*-dev.install
+
 	touch $@
 
 # configure in build directory
@@ -654,6 +664,7 @@ override_dh_clean_quantum.%:
 	[ ! -f debian/libmagickcore-$(IMVERSION).$*-dev.install ] || rm -f debian/libmagickcore-$(IMVERSION).$*-dev.install
 
 	[ ! -f debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).install ] || rm -f debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).install
+	[ ! -f debian/libmagickwand-$(IMVERSION).$*-dev.install ] || rm -f debian/libmagickwand-$(IMVERSION).$*-dev.install
 	# autoreconf
 	[ ! -f override_dh_auto_configure-arch_quantum.$* ] || rm override_dh_auto_configure-arch_quantum.$*
 	[ ! -f override_dh_auto_configure-arch_generatefile_quantum.$* ] || rm override_dh_auto_configure-arch_generatefile_quantum.$*
