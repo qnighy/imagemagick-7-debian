@@ -455,6 +455,17 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore-$(IMVERSION).$(call UC,$*).pc"
 	ln -s "ImageMagick-im$(IMVERSION).$*.pc" \
               "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore-$(IMVERSION).$(call UC,$*).pc"
+	# move pc file to quantum one wand
+	mv "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand.pc" \
+	   "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand-im$(IMVERSION).$*.pc"
+
+	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand-$(IMVERSION).$(call UC,$*).pc"
+	ln -s "MagickWand-im$(IMVERSION).$*.pc" \
+              "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand-$(IMVERSION).$(call UC,$*).pc"
+
+	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand-$(IMVERSION).$(call UC,$*).pc"
+	ln -s "ImageMagick-im$(IMVERSION).$*.pc" \
+              "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand-$(IMVERSION).$(call UC,$*).pc"
 
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
@@ -462,16 +473,33 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 
 override_dh_auto_install-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_auto_install-arch_quantum.$Q)
 	# default quantum pc file for c++
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-im$(IMVERSION).pc"
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-im$(IMVERSION).pc"
-
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-im$(IMVERSION).pc"
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-im$(IMVERSION).pc"
 	# default quantum for core
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick-im$(IMVERSION).pc"
 	ln -s "ImageMagick-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick-im$(IMVERSION).pc"
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore-im$(IMVERSION).pc"
 	ln -s "ImageMagick-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore-im$(IMVERSION).pc"
+	# wand
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand-im$(IMVERSION).pc"
+	ln -s "MagickWand-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
+	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand-im$(IMVERSION).pc"
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand-im$(IMVERSION).pc"
+	ln -s "MagickWand-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
+	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand-im$(IMVERSION).pc"
+	# delete default version
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++.pc"
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++.pc"
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick.pc"
+	-rm -f  "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore.pc"
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand.pc"
+	-rm -f "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand.pc"
 ifeq ($(DEFAULTIMVERSION),$(IMVERSION))
 	# for c++
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
@@ -484,6 +512,11 @@ ifeq ($(DEFAULTIMVERSION),$(IMVERSION))
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick.pc"
 	ln -s "ImageMagick-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore.pc"
+	# for wand
+	ln -s "MagickWand-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
+	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand.pc"
+	ln -s "Wand-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
+	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand.pc"
 endif
 
 override_dh_auto_install-indep:
@@ -567,6 +600,13 @@ ifeq ($(DEFAULTIMVERSION),$(IMVERSION))
 	dh_install --package=libmagickcore-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev \
 		   --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest \
 		   "usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore.pc"
+	# for wand
+	dh_install --package=libmagickwand-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev \
+		   --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest \
+                   "usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand.pc"
+	dh_install --package=libmagickwand-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev \
+		   --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest \
+		   "usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand.pc"
 endif
 
 override_dh_install-indep:
