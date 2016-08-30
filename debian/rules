@@ -416,34 +416,60 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 	cp $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.desktop \
            $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).$*.desktop
 
-	# move pc file to quantum one
+	# move pc file to quantum one c++
 	mv "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++.pc" \
 	   "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-im$(IMVERSION).$*.pc"
+
 	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-$(IMVERSION).$(call UC,$*).pc"
 	ln -s "ImageMagick++-im$(IMVERSION).$*.pc" \
-	      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-im$(IMVERSION).$(call UC,$*).pc"
+	      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-$(IMVERSION).$(call UC,$*).pc"
 	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-$(IMVERSION).$(call UC,$*).pc"
+
 	ln -s "ImageMagick++-im$(IMVERSION).$*.pc" \
 	      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-im$(IMVERSION).$(call UC,$*).pc"
 	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++.pc"
 	ln -s "ImageMagick++-im$(IMVERSION).$*.pc" \
 	      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-im$(IMVERSION).$*.pc"
+	# move pc file to quantum one core
+	mv "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick.pc" \
+	   "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick-im$(IMVERSION).$*.pc"
+
+	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick-$(IMVERSION).$(call UC,$*).pc"
+	ln -s "ImageMagick-im$(IMVERSION).$*.pc" \
+              "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick-$(IMVERSION).$(call UC,$*).pc"
+
+	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore-$(IMVERSION).$(call UC,$*).pc"
+	ln -s "ImageMagick-im$(IMVERSION).$*.pc" \
+              "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore-$(IMVERSION).$(call UC,$*).pc"
 
 	# Remove empty directories in debian/tmp
 	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
 	touch $@
 
 override_dh_auto_install-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_auto_install-arch_quantum.$Q)
-	# default quantum pc file
+	# default quantum pc file for c++
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-im$(IMVERSION).pc"
+
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-im$(IMVERSION).pc"
+	# default quantum for core
+	ln -s "ImageMagick-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
+	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick-im$(IMVERSION).pc"
+	ln -s "ImageMagick-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
+	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore-im$(IMVERSION).pc"
 ifeq ($(DEFAULTIMVERSION),$(IMVERSION))
+	# for c++
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++.pc"
+
 	ln -s "ImageMagick++-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++.pc"
+	# for core
+	ln -s "ImageMagick-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
+	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick.pc"
+	ln -s "ImageMagick-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
+	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore.pc"
 endif
 
 override_dh_auto_install-indep:
@@ -510,6 +536,24 @@ override_dh_install-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_install-arch_q
 		dh_install --package=$$PKG \
 			--sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest; \
 	done;
+
+	# install default pc file
+ifeq ($(DEFAULTIMVERSION),$(IMVERSION))
+	# for c++
+	dh_install --package=libmagick++-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev \
+		   --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest \
+	           "usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++.pc"
+	dh_install --package=libmagick++-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev \
+		   --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest \
+	           "usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++.pc"
+	# for core
+	dh_install --package=libmagickcore-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev \
+		   --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest \
+                   "usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick.pc"
+	dh_install --package=libmagickcore-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev \
+		   --sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest \
+		   "usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickCore.pc"
+endif
 
 override_dh_install-indep:
 	# special source imagemagick-*-common
