@@ -247,6 +247,10 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/libmagickcore-IMVERSION.QUANTUMDEPTH-dev.install.in > $(CURDIR)/debian/libmagickcore-$(IMVERSION).$*-dev.install
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	dh-exec $(CURDIR)/debian/libmagickwand-IMVERSION.QUANTUMDEPTH-WANDSOVERSION.install.in > $(CURDIR)/debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).install
 	touch $@
 
 # configure in build directory
@@ -639,12 +643,17 @@ override_dh_clean_quantum.%:
 	[ ! -f debian/imagemagick-$(IMVERSION).$*.postinst ] || rm debian/imagemagick-$(IMVERSION).$*.postinst
 	[ ! -f debian/imagemagick-$(IMVERSION).$*.prerm ] || rm debian/imagemagick-$(IMVERSION).$*.prerm
 	[ ! -f debian/imagemagick-$(IMVERSION).$*.install ] || rm debian/imagemagick-$(IMVERSION).$*.install
+
 	[ ! -f debian/libimage-magick-$*-perl.install ] || rm debian/libimage-magick-$*-perl.install
+
 	[ ! -f debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).install ] || rm debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).install
 	[ ! -f debian/libmagick++-$(IMVERSION).$*-dev.install ] || rm debian/libmagick++-$(IMVERSION).$*-dev.install
+
 	[ ! -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).install ] || rm -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).install
 	[ ! -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION)-extra.install ] || rm -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION)-extra.install
 	[ ! -f debian/libmagickcore-$(IMVERSION).$*-dev.install ] || rm -f debian/libmagickcore-$(IMVERSION).$*-dev.install
+
+	[ ! -f debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).install ] || rm -f debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).install
 	# autoreconf
 	[ ! -f override_dh_auto_configure-arch_quantum.$* ] || rm override_dh_auto_configure-arch_quantum.$*
 	[ ! -f override_dh_auto_configure-arch_generatefile_quantum.$* ] || rm override_dh_auto_configure-arch_generatefile_quantum.$*
