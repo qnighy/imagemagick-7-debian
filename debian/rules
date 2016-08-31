@@ -464,7 +464,7 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
               "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand-$(IMVERSION).$(call UC,$*).pc"
 
 	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand-$(IMVERSION).$(call UC,$*).pc"
-	ln -s "ImageMagick-im$(IMVERSION).$*.pc" \
+	ln -s "MagickWand-im$(IMVERSION).$*.pc" \
               "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand-$(IMVERSION).$(call UC,$*).pc"
 
 	# Remove empty directories in debian/tmp
@@ -515,7 +515,7 @@ ifeq ($(DEFAULTIMVERSION),$(IMVERSION))
 	# for wand
 	ln -s "MagickWand-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/MagickWand.pc"
-	ln -s "Wand-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
+	ln -s "MagickWand-im$(IMVERSION).${DEFAULTQUANTUMDEPTH}.pc" \
 	      "debian/tmp-${DEFAULTQUANTUMDEPTH}/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand.pc"
 endif
 
