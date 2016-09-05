@@ -2492,8 +2492,8 @@ static MagickBooleanType WriteGROUP4Image(const ImageInfo *image_info,
   (void) SetImageType(huffman_image,BilevelType);
   write_info=CloneImageInfo((ImageInfo *) NULL);
   SetImageInfoFile(write_info,file);
-  (void) SetImageType(image,BilevelType);
   (void) SetImageDepth(image,1);
+  (void) SetImageType(image,BilevelType);
   write_info->compression=Group4Compression;
   write_info->type=BilevelType;
   (void) SetImageOption(write_info,"quantum:polarity","min-is-white");
@@ -3469,7 +3469,9 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
       if ((image_info->interlace == PlaneInterlace) ||
           (image_info->interlace == PartitionInterlace))
         (void) TIFFSetField(tiff,TIFFTAG_PLANARCONFIG,PLANARCONFIG_SEPARATE);
-    rows_per_strip=TIFFDefaultStripSize(tiff,0);
+    rows_per_strip=1;
+    if (TIFFScanlineSize(tiff) != 0)
+      rows_per_strip=TIFFDefaultStripSize(tiff,0);
     option=GetImageOption(image_info,"tiff:rows-per-strip");
     if (option != (const char *) NULL)
       rows_per_strip=(size_t) strtol(option,(char **) NULL,10);

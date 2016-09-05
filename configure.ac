@@ -27,12 +27,11 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [9])
 m4_define([magick_micro_version], [5])
-m4_define([magick_patchlevel_version], [7])
+m4_define([magick_patchlevel_version], [8])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
-m4_define([magick_git_revision], esyscmd([sh -c "(gitversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
-m4_define([magick_tar_name],[ImageMagick.magick_major_version])
-
+m4_define([magick_git_revision], esyscmd([sh -c "(gitversion .) | tr -d '\n'"]))
+m4_define([magick_tar_name],[ImageMagick])
 
 # ==============================================================================
 # Initalize Automake
@@ -221,7 +220,7 @@ eval "eval LIBEXEC_DIR=$libexecdir"
 AC_SUBST(LIBEXEC_DIR)
 eval "eval DATA_DIR=$datadir"
 AC_SUBST(DATA_DIR)
-eval "eval DOC_DIR=$docdir"
+eval "eval DOC_DIR=$datadir/doc"
 AC_SUBST(DOC_DIR)
 eval "eval SYSCONF_DIR=$sysconfdir"
 AC_SUBST(SYSCONF_DIR)
@@ -2960,8 +2959,9 @@ AC_SUBST(FILTER_PATH)
 
 #
 # Path to ImageMagick documentation files
-DOCUMENTATION_PATH="${DOC_DIR}"
-DEFINE_DOCUMENTATION_PATH="${DOC_DIR}"
+DOCUMENTATION_RELATIVE_PATH="${PACKAGE_NAME}-${MAGICK_MAJOR_VERSION}"
+DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}"
+DEFINE_DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}/"
 case "${build_os}" in
   mingw* )
     DEFINE_DOCUMENTATION_PATH=`$WinPathScript "$DEFINE_DOCUMENTATION_PATH" 1`
@@ -2969,18 +2969,6 @@ case "${build_os}" in
 esac
 AC_DEFINE_UNQUOTED(DOCUMENTATION_PATH,"$DEFINE_DOCUMENTATION_PATH",[Directory where ImageMagick documents live.])
 AC_SUBST(DOCUMENTATION_PATH)
-
-
-#
-# Add distribution specific string for documentation
-AC_ARG_WITH([extra-doc-dir],
-    [AC_HELP_STRING([--with-extra-doc-dir=""],
-       [extra documentation dir could be overriden by distribution, for instance by " (you may install the imagemagick-doc package)"])],
-    [extra_doc_dir="$withval"],
-    [extra_doc_dir=""])
-AC_DEFINE_UNQUOTED(EXTRA_DOC_DIR,"$EXTRA_DOC_DIR",[Extra documentation dir could be overriden by distribution, for instance by " (you may install th imagemagick-doc package)"])
-AC_SUBST(EXTRA_DOC_DIR,$extra_doc_dir)
-
 
 #
 # Enable/Disable documentation
