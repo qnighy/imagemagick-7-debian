@@ -6,7 +6,8 @@ imagemagick (8:6.9.5.8+dfsg-1) unstable; urgency=medium
     #836172).
   * Bug fix: "TIFF divide by zero", thanks to Bastien ROUCARIES (Closes:
     #836171).
-  * Use autopkgtest
+  * Use autopkgtest.
+  * Avoid buffer overflow in SGI file handling (Closes: #836776)
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 05 Sep 2016 15:34:53 +0200
 
