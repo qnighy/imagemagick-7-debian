@@ -10,7 +10,7 @@ export DH_VERBOSE=1
 export QUANTUMDEPTH ?= q16
 export CORESOVERSION ?= 2
 export WANDSOVERSION ?= 2
-export PPSOVERSION ?= 6
+export PPSOVERSION ?= 6v6
 
 # default im version used for adding default file
 export DEFAULTIMVERSION ?= 6
@@ -623,7 +623,13 @@ override_dh_compress:
 
 override_dh_makeshlibs:
 	# avoid plugins' dir
-	dh_makeshlibs -v -Xcoders/ -Xfilters/
+	FAIL=0; \
+	for PKG in $$(dh_listpackages -a); do \
+	  echo dh_makeshlibs -p$$PKG -v -Xcoders/ -Xfilters/ ; \
+	  dh_makeshlibs -p$$PKG -v -Xcoders/ -Xfilters/; \
+	  FAIL=$$?; \
+	done; \
+	exit $$fail
 
 # remove after jessie+2
 override_dh_strip:
