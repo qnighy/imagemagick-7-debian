@@ -3,7 +3,7 @@
 set -e
 
 IM_QUANTUMDEPTH=$(echo $DPKG_MAINTSCRIPT_PACKAGE |sed 's/^.*[.]//g')
-IM_VERSION=$(echo $DPKG_MAINTSCRIPT_PACKAGE |sed 's/^.*[-]im\([^.]*\)[.].*/\1/g')
+IM_VERSION=$(echo $DPKG_MAINTSCRIPT_PACKAGE |sed 's/^imagemagick-\([^.]*\)[.].*/\1/g')
 
 if [ "$1" = "remove" ]
 then
