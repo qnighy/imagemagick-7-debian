@@ -1,0 +1,2 @@
+Tests: rose-q16
+Depends: imagemagick-6.q16, libmagickcore-6.q16-2-extra, ghostscript, netpbm

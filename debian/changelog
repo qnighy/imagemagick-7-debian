@@ -1,4 +1,16 @@
-imagemagick (8:6.9.5.7+dfsg-1) unstable; urgency=medium
+imagemagick (8:6.9.5.8+dfsg-1) unstable; urgency=medium
+
+  * Prepare HDRI version by generating a few install file.
+  * Bug fix: "Prevent buffer overflow in SIXEL, PDB, MAP, and CALS coders
+    (bug report from Donghai Zhu)", thanks to Bastien ROUCARIES (Closes:
+    #836172).
+  * Bug fix: "TIFF divide by zero", thanks to Bastien ROUCARIES (Closes:
+    #836171).
+  * Use autopkgtest
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 05 Sep 2016 15:34:53 +0200
+
+imagemagick (8:6.9.5.7+dfsg-1) UNRELEASED; urgency=medium
 
   * New upstream version. Fix a few security problems (Closes: #823750):
     - Fix a off-by-one error leading to segfault (Closes: #832455).

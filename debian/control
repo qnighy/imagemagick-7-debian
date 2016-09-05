@@ -44,6 +44,7 @@ Build-Depends-Indep: doxygen, doxygen-latex, graphviz,
 Vcs-Browser: https://anonscm.debian.org/gitweb/?p=collab-maint/imagemagick.git
 Vcs-Git: https://anonscm.debian.org/collab-maint/imagemagick.git
 Homepage: http://www.imagemagick.org/
+Testsuite: autopkgtest
 
 # arch all package
 Package: imagemagick-6-common
