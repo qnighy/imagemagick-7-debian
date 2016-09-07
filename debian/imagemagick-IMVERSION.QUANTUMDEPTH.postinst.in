@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 set -e
 
@@ -23,7 +23,7 @@ then
 	                    $prog.1.gz /usr/share/man/man1/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH.1.gz
 
 
-	update-alternatives --install /usr/bin/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH \
+	update-alternatives --install /usr/bin/$prog-im$IM_VERSION \
 	                    $prog-im$IM_VERSION /usr/bin/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH 100 \
 	                    --slave /usr/share/man/man1/$prog-im$IM_VERSION.1.gz \
 	                    $prog-im$IM_VERSION.1.gz /usr/share/man/man1/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH.1.gz
