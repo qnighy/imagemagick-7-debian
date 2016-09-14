@@ -1,4 +1,11 @@
-imagemagick (8:6.9.5.8+dfsg-1) unstable; urgency=medium
+imagemagick (8:6.9.5.9+dfsg-1) unstable; urgency=medium
+
+  * Bug fix: "Prevent runtime error: divide by zero", thanks to Bastien
+    ROUCARIES (Closes: #836174).
+    
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 14 Sep 2016 15:44:45 +0200
+
+imagemagick (8:6.9.5.8+dfsg-1) UNRELEASED; urgency=medium
 
   * Prepare HDRI version by generating a few install file.
   * Bug fix: "Prevent buffer overflow in SIXEL, PDB, MAP, and CALS coders
