@@ -2,8 +2,9 @@ imagemagick (8:6.9.5.9+dfsg-1) unstable; urgency=medium
 
   * Bug fix: "Prevent runtime error: divide by zero", thanks to Bastien
     ROUCARIES (Closes: #836174).
-    
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 14 Sep 2016 15:44:45 +0200
+  * Improve privacy rules.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 14 Sep 2016 20:44:45 +0200
 
 imagemagick (8:6.9.5.8+dfsg-1) UNRELEASED; urgency=medium
 
