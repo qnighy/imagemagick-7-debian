@@ -241,6 +241,17 @@
     </xsl:copy>
   </xsl:template>
 
+  <xsl:template match="*[local-name(.) = 'img'][contains(@src,'www.imagemagick.org')]">
+    <xsl:message><xsl:text>Replace in </xsl:text><xsl:value-of select="$filename" /><xsl:text> </xsl:text><xsl:value-of select="@src" /><xsl:text> by </xsl:text><xsl:call-template name="replacelegacy"><xsl:with-param select="@src" name="path"/></xsl:call-template></xsl:message>
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="src">
+	<xsl:call-template name="replacelegacy"><xsl:with-param select="@src" name="path"/></xsl:call-template>
+      </xsl:attribute>
+    </xsl:copy>
+  </xsl:template>
+
+
 
   <!-- remove various privacy breach -->
   <xsl:template match="*[local-name(.) = 'script'][contains(@src,'googlesyndication')]" />
