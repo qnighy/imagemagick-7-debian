@@ -2,11 +2,11 @@ imagemagick (8:6.9.5.9+dfsg-1) experimental; urgency=medium
 
   * Security bug fix: "Prevent runtime error: divide by zero" (Closes: #836174).
   * Improve privacy rules.
-  * Acknowledge NMUs from Emilio Pozuelo Monfort (Closes: #825799), and
-    from Mattia Rizzolo (Closes: #818203).
+  * Acknowledge NMUs from Emilio Pozuelo Monfort, and
+    from Mattia Rizzolo.
   * Fix git header thanks to Mattia Rizzolo.
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 17 Sep 2016 17:22:56 +0200
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 17 Sep 2016 21:26:12 +0200
 
 imagemagick (8:6.9.5.8+dfsg-1) UNRELEASED; urgency=medium
 
