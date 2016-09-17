@@ -41,8 +41,8 @@ Build-Depends: debhelper (>= 9.20151219),
 Build-Depends-Indep: doxygen, doxygen-latex, graphviz,
 		     libxml2-utils,
 		     xsltproc
-Vcs-Browser: https://anonscm.debian.org/gitweb/?p=collab-maint/imagemagick.git
-Vcs-Git: https://anonscm.debian.org/collab-maint/imagemagick.git
+Vcs-Browser: https://anonscm.debian.org/git/collab-maint/imagemagick.git
+Vcs-Git: https://anonscm.debian.org/gitweb/?p=collab-maint/imagemagick.git
 Homepage: http://www.imagemagick.org/
 Testsuite: autopkgtest
 

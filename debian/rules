@@ -17,8 +17,8 @@ export DEFAULTIMVERSION ?= 6
 
 
 # poc arch for test empty means no test
-export POC_ARCH ?= any-i386 any-amd64
-export VALGRIND_POC_ARCH ?= 
+POC_ARCH ?= any-i386 any-amd64
+VALGRIND_POC_ARCH ?= 
 
 # for hardening
 # export DEB_BUILD_MAINT_OPTIONS = hardening=+all
@@ -31,13 +31,13 @@ export STATIC_DEB_HOST_MULTIARCH := $(shell dpkg-architecture -qDEB_HOST_MULTIAR
 export DEB_HOST_MULTIARCH ?= $(STATIC_DEB_HOST_MULTIARCH)
 export STATIC_DEB_BUILD_GNU_TYPE := $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 export DEB_BUILD_GNU_TYPE ?= $(STATIC_DEB_BUILD_GNU_TYPE)
-export STATIC_DEB_SOURCE_PACKAGE := $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
+export STATIC_DEB_SOURCE_PACKAGE := $(shell dpkg-parsechangelog -SSource)
 export DEB_SOURCE_PACKAGE ?= $(STATIC_DEB_SOURCE_PACKAGE)
 export STATIC_DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
 export DEB_HOST_ARCH ?= $(STATIC_DEB_HOST_ARCH)
 
 # version extracted from changelog
-export STATIC_DEB_VERSION := $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
+export STATIC_DEB_VERSION := $(shell dpkg-parsechangelog -SVersion)
 export DEB_VERSION ?= $(STATIC_DEB_VERSION)
 export STATIC_DEB_NOEPOCH_VERSION := $(shell echo $(DEB_VERSION) | cut -d: -f2-)
 export DEB_NOEPOCH_VERSION ?= $(STATIC_DEB_NOEPOCH_VERSION)
@@ -186,14 +186,11 @@ QUANTUM_PART = ${shell echo '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
 HDRI_PART = ${shell case $$(echo '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo 'yes';; *) echo 'no' ;; esac }
 
 %:
-	if test "BUG#703261" = "SOLVED"; then \
+	if test "BUG#704225" = "SOLVED"; then \
 		dh $@ --parallel --with autoreconf --with pkgkde_symbolshelper; \
 	else \
 		dh $@ --with autoreconf --with pkgkde_symbolshelper; \
 	fi;
-
-fpu_is present:
-	@echo "CPU has FPU...$(HAVE_FPU)"
 
 override_dh_autoreconf:
 	@echo "CPU has FPU...$(HAVE_FPU)"
