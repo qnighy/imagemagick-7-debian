@@ -1,3 +1,9 @@
+imagemagick (8:6.9.5.9+dfsg-2) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 11 Oct 2016 12:18:59 +0200
+
 imagemagick (8:6.9.5.9+dfsg-1) experimental; urgency=medium
 
   * Security bug fix: "Prevent runtime error: divide by zero" (Closes: #836174).
@@ -26,57 +32,62 @@ imagemagick (8:6.9.5.7+dfsg-1) UNRELEASED; urgency=medium
 
   * New upstream version. Fix a few security problems (Closes: #823750):
     - Fix a off-by-one error leading to segfault (Closes: #832455).
+      Fix CVE-2016-7513.
     - Fix an out-of-bounds read in coders/psd.c (Closes: #832457,
-      LP: #1533442).
+      LP: #1533442). Fix CVE-2016-7514.
     - Fix rle file handling for corrupted file (Closes: #832461,
-      LP: #1533445)
+      LP: #1533445). Fix CVE-2016-7515.
     - Fix a buffer overflow in sun file handling (Closes: #832464).
+      Fix CVE-2015-8957.
     - Fix a potential DOS in sun file handling due to
-      malformed files (Closes: #832465).
+      malformed files (Closes: #832465). Fix CVE-2015-8958.
     - Fix multiple out of bound problem in rle, pict, viff and
       sun files (Closes: #832467, LP: #1533452, LP: #1533449,
-      LP: #1533447, LP: #1533445).
+      LP: #1533447, LP: #1533445). Fix CVE-2016-7519,
+      CVE-2016-7518, CVE-2016-7517 and CVE-2016-7516.
     - Fix a heap overflow in hdr file handling (Closes: #832469,
-      LP: #1537213).
+      LP: #1537213). Fix CVE-2016-7520.
     - Fix a heap buffer overflow in psd file handling
-      (Closes: #832474, LP: #1537418).
+      (Closes: #832474, LP: #1537418). Fix CVE-2016-7521.
     - Fix an out of bound access for malformed psd file
-      (Closes: #832475, LP: #1537419).
+      (Closes: #832475, LP: #1537419). Fix CVE-2016-7522.
     - Fix a meta file out of bound access (Closes: #832478,
-      LP: #1537420)
+      LP: #1537420). Fix CVE-2016-7524 and CVE-2016-7523.
     - Fix heap buffer overflow in psd file coder
-      (Closes: #832480, LP: #1537424)
+      (Closes: #832480, LP: #1537424). Fix CVE-2016-7525.
     - Fix an out of bound access in wpg file coder (Closes: #832482,
-      LP: #1539050, LP: #1542115).
+      LP: #1539050, LP: #1542115). Fix CVE-2016-7527 and
+      CVE-2016-7526.
     - Fix out of bound access for viff file coder (Closes: #832483,
-      LP: #1537425)
+      LP: #1537425). Fix CVE-2016-7528.
     - Fix an out of bound access in xcf file coder (Closes: #832504,
-      LP: #1539051, LP: #1539052).
+      LP: #1539051, LP: #1539052). Fix CVE-2016-6823 and
+      CVE-2016-7529.
     - Fix out of bound in quantum handling (Closes: #832506,
-      LP: #1539067, LP: #1539053).
+      LP: #1539067, LP: #1539053). Fix CVE-2016-7530.
     - Fix a pbd file out of bound access (Closes: #832633,
-      LP: #1539061, LP: #1542112).
+      LP: #1539061, LP: #1542112). Fix CVE-2016-7531.
     - Fix handling of corrupted psd file (Closes: #832776,
-      LP: #1539066).
+      LP: #1539066). Fix CVE-2016-7101 and CVE-2016-7532.
     - Fix a wpg file out of bound for corrupted file
-      (Closes: #832780, LP: #1542114).
+      (Closes: #832780, LP: #1542114). Fix CVE-2016-7533.
     - Fix an out of bound access in generic decoder (Closes: #832785,
-      LP: #1542785).
+      LP: #1542785). Fix CVE-2016-7534.
     - Fix an out of bound access for corrupted psd file
-      (Closes: #832787, LP: #1545180).
+      (Closes: #832787, LP: #1545180). Fix CVE-2016-7535.
     - Fix a SEGV reported in corrupted profile handling
-      (Closes: #832789, LP: #1545367).
+      (Closes: #832789, LP: #1545367). Fix CVE-2016-7536.
     - Fix an out of bound access for corrupted pdb file
-      (Closes: #832791, LP: #1553366).
+      (Closes: #832791, LP: #1553366). Fix CVE-2016-7537.
     - Fix a SIGABRT for corrupted pdb file
-      (Closes: #832793, LP: #1556273).
+      (Closes: #832793, LP: #1556273). Fix CVE-2016-7538
     - Fix an out of bound in generic decoder.
       (Closes: #832783, LP: #1542785).
     - Prevent buffer overflow in magick/draw.c. Fix
       CVE-2016-4562, CVE-2016-4563, CVE-2016-4564.
       (Closes: #832885, #832887, #832888).
     - Fix DOS due to corrupted DDS files
-      (Closes: #832942, #832944).
+      (Closes: #832942, #832944). Fix CVE-2015-8959 and CVE-2014-9907.
     - Fix out of bounds memory read for DDS files. This fix
       CVE-2016-5687. (Closes: #832890).
     - Prevent possible buffer overflow when reading TIFF images.
@@ -90,11 +101,11 @@ imagemagick (8:6.9.5.7+dfsg-1) UNRELEASED; urgency=medium
       This fix CVE-2016-5841 and CVE-2016-5842.
       (Closes: #831034).
     - Prevent buffer overflow in properties reading.
-      This fix CVE-2016-6491. (Closes: #833099).
+      This fix CVE-2016-6491. (Closes: #833099). Fix CVE-2016-6491.
     - Fix potential DOS by not releasing memory.
-      (Closes: #833101).
+      (Closes: #833101). Fix CVE-2016-7539.
     - Fix abort when writing to rgf format.
-      (Closes: #827643, LP: #1594060).
+      (Closes: #827643, LP: #1594060). Fix CVE-2016-7540.
     - Fix buffer overflow in draw.c
       (Closes: #833730).
     - Fix memory leak in xml file parsing. (Closes: #833730).
@@ -185,13 +196,13 @@ imagemagick (8:6.9.1.2-1) experimental; urgency=low
   - Fix segmentation fault using corrupted file
     (LP: #144963, #1448801, #1448795, #1448767).
   - Fix a denial of service flaw in MIFF file processing.
-    Fix TEMP-0000000-FDAC72.
+    Fix CVE-2015-8901.
   - Fix a denial of service flaw in VICAR file processing.
-    Fix TEMP-0000000-EEF23C.
+    Fix CVE-2015-8903.
   - Fix a denial of service flaw in HDR file processing.
     Fix TEMP-0000000-7C079F.
   - Fix a denial of service flaw in PDB file processing.
-    Fix TEMP-0000000-2FC21E
+    Fix CVE-2015-8902.
   * Fix build on mips by printing progress (Closes: #770009).
   * Drop previous security patches, merged upstream.
   * Use http instead of ftp for uscan.
