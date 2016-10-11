@@ -1398,8 +1398,8 @@ RestoreMSCWarning
              horizontal,
              vertical;
 
-           tiff_status=TIFFGetFieldDefaulted(tiff,TIFFTAG_YCBCRSUBSAMPLING,
-             &horizontal,&vertical);
+           tiff_status=TIFFGetField(tiff,TIFFTAG_YCBCRSUBSAMPLING,&horizontal,
+             &vertical);
            if (tiff_status == 1)
              {
                (void) FormatLocaleString(sampling_factor,MaxTextExtent,"%dx%d",
@@ -1422,6 +1422,79 @@ RestoreMSCWarning
       case COMPRESSION_ADOBE_DEFLATE: image->compression=ZipCompression; break;
       default: image->compression=RLECompression; break;
     }
+    quantum_info=(QuantumInfo *) NULL;
+    if ((photometric == PHOTOMETRIC_PALETTE) &&
+        (pow(2.0,1.0*bits_per_sample) <= MaxColormapSize))
+      {
+        size_t
+          colors;
+
+        colors=(size_t) GetQuantumRange(bits_per_sample)+1;
+        if (AcquireImageColormap(image,colors) == MagickFalse)
+          {
+            TIFFClose(tiff);
+            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          }
+      }
+    if (TIFFGetFieldDefaulted(tiff,TIFFTAG_PAGENUMBER,&value,&pages) == 1)
+      image->scene=value;
+    if (image->storage_class == PseudoClass)
+      {
+        int
+          tiff_status;
+
+        size_t
+          range;
+
+        uint16
+          *blue_colormap,
+          *green_colormap,
+          *red_colormap;
+
+        /*
+          Initialize colormap.
+        */
+        tiff_status=TIFFGetField(tiff,TIFFTAG_COLORMAP,&red_colormap,
+          &green_colormap,&blue_colormap);
+        if (tiff_status == 1)
+          {
+            if ((red_colormap != (uint16 *) NULL) &&
+                (green_colormap != (uint16 *) NULL) &&
+                (blue_colormap != (uint16 *) NULL))
+              {
+                range=255;  /* might be old style 8-bit colormap */
+                for (i=0; i < (ssize_t) image->colors; i++)
+                  if ((red_colormap[i] >= 256) || (green_colormap[i] >= 256) ||
+                      (blue_colormap[i] >= 256))
+                    {
+                      range=65535;
+                      break;
+                    }
+                for (i=0; i < (ssize_t) image->colors; i++)
+                {
+                  image->colormap[i].red=ClampToQuantum(((double)
+                    QuantumRange*red_colormap[i])/range);
+                  image->colormap[i].green=ClampToQuantum(((double)
+                    QuantumRange*green_colormap[i])/range);
+                  image->colormap[i].blue=ClampToQuantum(((double)
+                    QuantumRange*blue_colormap[i])/range);
+                }
+              }
+          }
+      }
+    if (image_info->ping != MagickFalse)
+      {
+        if (image_info->number_scenes != 0)
+          if (image->scene >= (image_info->scene+image_info->number_scenes-1))
+            break;
+        goto next_tiff_frame;
+      }
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     /*
       Allocate memory for the image and pixel buffer.
     */
@@ -1482,83 +1555,6 @@ RestoreMSCWarning
               if (sample_info[i] == EXTRASAMPLE_UNASSALPHA)
                (void) SetImageProperty(image,"tiff:alpha","unassociated");
           }
-      }
-    if ((photometric == PHOTOMETRIC_PALETTE) &&
-        (pow(2.0,1.0*bits_per_sample) <= MaxColormapSize))
-      {
-        size_t
-          colors;
-
-        colors=(size_t) GetQuantumRange(bits_per_sample)+1;
-        if (AcquireImageColormap(image,colors) == MagickFalse)
-          {
-            TIFFClose(tiff);
-            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-          }
-      }
-    if (TIFFGetFieldDefaulted(tiff,TIFFTAG_PAGENUMBER,&value,&pages) == 1)
-      image->scene=value;
-    if (image->storage_class == PseudoClass)
-      {
-        int
-          tiff_status;
-
-        size_t
-          range;
-
-        uint16
-          *blue_colormap,
-          *green_colormap,
-          *red_colormap;
-
-        /*
-          Initialize colormap.
-        */
-        tiff_status=TIFFGetField(tiff,TIFFTAG_COLORMAP,&red_colormap,
-          &green_colormap,&blue_colormap);
-        if (tiff_status == 1)
-          {
-            if ((red_colormap != (uint16 *) NULL) &&
-                (green_colormap != (uint16 *) NULL) &&
-                (blue_colormap != (uint16 *) NULL))
-              {
-                range=255;  /* might be old style 8-bit colormap */
-                for (i=0; i < (ssize_t) image->colors; i++)
-                  if ((red_colormap[i] >= 256) || (green_colormap[i] >= 256) ||
-                      (blue_colormap[i] >= 256))
-                    {
-                      range=65535;
-                      break;
-                    }
-                for (i=0; i < (ssize_t) image->colors; i++)
-                {
-                  image->colormap[i].red=ClampToQuantum(((double)
-                    QuantumRange*red_colormap[i])/range);
-                  image->colormap[i].green=ClampToQuantum(((double)
-                    QuantumRange*green_colormap[i])/range);
-                  image->colormap[i].blue=ClampToQuantum(((double)
-                    QuantumRange*blue_colormap[i])/range);
-                }
-              }
-          }
-        if (image->matte == MagickFalse)
-          image->depth=GetImageDepth(image,exception);
-      }
-    if (image_info->ping != MagickFalse)
-      {
-        if (image_info->number_scenes != 0)
-          if (image->scene >= (image_info->scene+image_info->number_scenes-1))
-            {
-              quantum_info=DestroyQuantumInfo(quantum_info);
-              break;
-            }
-        goto next_tiff_frame;
-      }
-    status=SetImageExtent(image,image->columns,image->rows);
-    if (status == MagickFalse)
-      {
-        InheritException(exception,&image->exception);
-        return(DestroyImageList(image));
       }
     method=ReadGenericMethod;
     if (TIFFGetField(tiff,TIFFTAG_ROWSPERSTRIP,&rows_per_strip) == 1)
@@ -2070,7 +2066,8 @@ RestoreMSCWarning
     }
     SetQuantumImageType(image,quantum_type);
   next_tiff_frame:
-    quantum_info=DestroyQuantumInfo(quantum_info);
+    if (quantum_info != (QuantumInfo *) NULL)
+      quantum_info=DestroyQuantumInfo(quantum_info);
     if (photometric == PHOTOMETRIC_CIELAB)
       DecodeLabImage(image,exception);
     if ((photometric == PHOTOMETRIC_LOGL) ||
@@ -2780,7 +2777,20 @@ static MagickBooleanType GetTIFFInfo(const ImageInfo *image_info,TIFF *tiff,
   (void) ResetMagickMemory(tiff_info,0,sizeof(*tiff_info));
   option=GetImageOption(image_info,"tiff:tile-geometry");
   if (option == (const char *) NULL)
-    return(MagickTrue);
+    {
+      uint32
+        rows_per_strip;
+
+      option=GetImageOption(image_info,"tiff:rows-per-strip");
+      if (option != (const char *) NULL)
+        rows_per_strip=(size_t) strtol(option,(char **) NULL,10);
+      else
+        if (TIFFGetField(tiff,TIFFTAG_IMAGELENGTH,&rows_per_strip) == 0)
+          rows_per_strip=0;  /* use default */
+      rows_per_strip=TIFFDefaultStripSize(tiff,rows_per_strip);
+      (void) TIFFSetField(tiff,TIFFTAG_ROWSPERSTRIP,rows_per_strip);
+      return(MagickTrue);
+    }
   flags=ParseAbsoluteGeometry(option,&tiff_info->tile_geometry);
   if ((flags & HeightValue) == 0)
     tiff_info->tile_geometry.height=tiff_info->tile_geometry.width;
@@ -3122,9 +3132,6 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
     endian,
     photometric;
 
-  uint32
-    rows_per_strip;
-
   unsigned char
     *pixels;
 
@@ -3465,25 +3472,11 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
       if ((image_info->interlace == PlaneInterlace) ||
           (image_info->interlace == PartitionInterlace))
         (void) TIFFSetField(tiff,TIFFTAG_PLANARCONFIG,PLANARCONFIG_SEPARATE);
-    rows_per_strip=(uint32) image->rows;
-    if (TIFFScanlineSize(tiff) != 0)
-      rows_per_strip=TIFFDefaultStripSize(tiff,0);
-    option=GetImageOption(image_info,"tiff:rows-per-strip");
-    if (option != (const char *) NULL)
-      rows_per_strip=(size_t) strtol(option,(char **) NULL,10);
     switch (compress_tag)
     {
       case COMPRESSION_JPEG:
       {
 #if defined(JPEG_SUPPORT)
-        const char
-          *sampling_factor;
-
-        GeometryInfo
-          geometry_info;
-
-        MagickStatusType
-          flags;
 
         if (image_info->quality != UndefinedCompressionQuality)
           (void) TIFFSetField(tiff,TIFFTAG_JPEGQUALITY,image_info->quality);
@@ -3494,26 +3487,37 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
               *value;
 
             (void) TIFFSetField(tiff,TIFFTAG_JPEGCOLORMODE,JPEGCOLORMODE_RGB);
-            sampling_factor=(const char *) NULL;
-            value=GetImageProperty(image,"jpeg:sampling-factor");
-            if (value != (char *) NULL)
+            if (image->colorspace == YCbCrColorspace)
               {
-                sampling_factor=value;
-                if (image->debug != MagickFalse)
-                  (void) LogMagickEvent(CoderEvent,GetMagickModule(),
-                    "  Input sampling-factors=%s",sampling_factor);
-              }
-            if (image_info->sampling_factor != (char *) NULL)
-              sampling_factor=image_info->sampling_factor;
-            if (sampling_factor != (const char *) NULL)
-              {
-                flags=ParseGeometry(sampling_factor,&geometry_info);
-                if ((flags & SigmaValue) == 0)
-                  geometry_info.sigma=geometry_info.rho;
-                if (image->colorspace == YCbCrColorspace)
-                  (void) TIFFSetField(tiff,TIFFTAG_YCBCRSUBSAMPLING,(uint16)
-                    geometry_info.rho,(uint16) geometry_info.sigma);
-              }
+                const char
+                  *sampling_factor;
+
+                GeometryInfo
+                  geometry_info;
+
+                MagickStatusType
+                  flags;
+
+                sampling_factor=(const char *) NULL;
+                value=GetImageProperty(image,"jpeg:sampling-factor");
+                if (value != (char *) NULL)
+                  {
+                    sampling_factor=value;
+                    if (image->debug != MagickFalse)
+                      (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+                        "  Input sampling-factors=%s",sampling_factor);
+                  }
+                if (image_info->sampling_factor != (char *) NULL)
+                  sampling_factor=image_info->sampling_factor;
+                if (sampling_factor != (const char *) NULL)
+                  {
+                    flags=ParseGeometry(sampling_factor,&geometry_info);
+                    if ((flags & SigmaValue) == 0)
+                      geometry_info.sigma=geometry_info.rho;
+                    (void) TIFFSetField(tiff,TIFFTAG_YCBCRSUBSAMPLING,(uint16)
+                      geometry_info.rho,(uint16) geometry_info.sigma);
+                  }
+            }
           }
         (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_BITSPERSAMPLE,
           &bits_per_sample);
@@ -3571,8 +3575,6 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
       default:
         break;
     }
-    rows_per_strip=TIFFDefaultStripSize(tiff,rows_per_strip);
-    (void) TIFFSetField(tiff,TIFFTAG_ROWSPERSTRIP,rows_per_strip);
     if ((image->x_resolution != 0.0) && (image->y_resolution != 0.0))
       {
         unsigned short

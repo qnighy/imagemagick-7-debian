@@ -295,16 +295,6 @@ void *OsLibraryGetFunctionAddress(void *library, const char *functionName)
 #endif
 }
 
-// unload a library.
-void OsLibraryUnload(void *library)
-{
-#ifdef MAGICKCORE_WINDOWS_SUPPORT
-    FreeLibrary( (HMODULE)library);
-#else
-    dlclose(library);
-#endif
-}
-
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -362,17 +352,21 @@ MagickExport MagickCLEnv AcquireMagickOpenCLEnv()
 MagickExport MagickBooleanType RelinquishMagickOpenCLEnv(MagickCLEnv clEnv)
 {
   if (clEnv != (MagickCLEnv) NULL)
-  {
-    while (clEnv->commandQueuesPos >= 0)
     {
-      clEnv->library->clReleaseCommandQueue(
-        clEnv->commandQueues[clEnv->commandQueuesPos--]);
+      while (clEnv->commandQueuesPos >= 0)
+      {
+        clEnv->library->clReleaseCommandQueue(
+          clEnv->commandQueues[clEnv->commandQueuesPos--]);
+      }
+      if (clEnv->programs[0] != (cl_program) NULL)
+        (void) clEnv->library->clReleaseProgram(clEnv->programs[0]);
+      if (clEnv->context != (cl_context) NULL)
+        clEnv->library->clReleaseContext(clEnv->context);
+      DestroySemaphoreInfo(&clEnv->lock);
+      DestroySemaphoreInfo(&clEnv->commandQueuesLock);
+      RelinquishMagickMemory(clEnv);
+      return MagickTrue;
     }
-    DestroySemaphoreInfo(&clEnv->lock);
-    DestroySemaphoreInfo(&clEnv->commandQueuesLock);
-    RelinquishMagickMemory(clEnv);
-    return MagickTrue;
-  }
   return MagickFalse;
 }
 
@@ -407,6 +401,7 @@ static MagickBooleanType bindOpenCLFunctions(void* library)
   BIND(clGetDeviceInfo);
 
   BIND(clCreateContext);
+  BIND(clReleaseContext);
 
   BIND(clCreateBuffer);
   BIND(clReleaseMemObject);
@@ -414,6 +409,7 @@ static MagickBooleanType bindOpenCLFunctions(void* library)
   BIND(clCreateProgramWithSource);
   BIND(clCreateProgramWithBinary);
   BIND(clBuildProgram);
+  BIND(clReleaseProgram);
   BIND(clGetProgramInfo);
   BIND(clGetProgramBuildInfo);
 
@@ -3145,7 +3141,11 @@ MagickPrivate void OpenCLTerminus()
   if (defaultCLEnvLock != (SemaphoreInfo*) NULL)
     DestroySemaphoreInfo(&defaultCLEnvLock);
   if (OpenCLLib != (MagickLibrary *)NULL)
-    OpenCLLib=(MagickLibrary *)RelinquishMagickMemory(OpenCLLib);
+    {
+      if (OpenCLLib->base != (void *) NULL)
+        (void) lt_dlclose(OpenCLLib->base);
+      OpenCLLib=(MagickLibrary *)RelinquishMagickMemory(OpenCLLib);
+    }
   if (OpenCLLibLock != (SemaphoreInfo*)NULL)
     DestroySemaphoreInfo(&OpenCLLibLock);
 #endif

@@ -36,7 +36,8 @@
 %
 %
 */
-
+
+
 /*
   Include declarations.
 */
@@ -100,7 +101,8 @@
 #include "librsvg/librsvg-features.h"
 #endif
 #endif
-
+
+
 /*
   Typedef declarations.
 */
@@ -185,13 +187,15 @@ typedef struct _SVGInfo
     document;
 #endif
 } SVGInfo;
-
+
+
 /*
   Forward declarations.
 */
 static MagickBooleanType
   WriteSVGImage(const ImageInfo *,Image *);
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -225,7 +229,8 @@ static MagickBooleanType IsSVG(const unsigned char *magick,const size_t length)
     return(MagickTrue);
   return(MagickFalse);
 }
-
+
+
 #if defined(MAGICKCORE_XML_DELEGATE)
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2931,6 +2936,9 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         cairo_t
           *cairo_image;
 
+        MagickBooleanType
+          apply_density;
+
         MemoryInfo
           *pixel_info;
 
@@ -2973,7 +2981,7 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (svg_handle == (RsvgHandle *) NULL)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         rsvg_handle_set_base_uri(svg_handle,image_info->filename);
-        if ((image->x_resolution != 90.0) && (image->y_resolution != 90.0))
+        if ((image->x_resolution > 0.0) && (image->y_resolution > 0.0))
           rsvg_handle_set_dpi_x_y(svg_handle,image->x_resolution,
             image->y_resolution);
         while ((n=ReadBlob(image,MaxTextExtent-1,message)) != 0)
@@ -2990,6 +2998,24 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
           g_error_free(error);
 #if defined(MAGICKCORE_CAIRO_DELEGATE)
         rsvg_handle_get_dimensions(svg_handle,&dimension_info);
+        if ((image->x_resolution > 0.0) && (image->y_resolution > 0.0))
+        {
+          RsvgDimensionData
+            dpi_dimension_info;
+
+          /*
+            We should not apply the density when the internal 'factor' is 'i'.
+            This can be checked by using the trick below.
+          */
+          rsvg_handle_set_dpi_x_y(svg_handle,image->x_resolution*256,
+            image->y_resolution*256);
+          rsvg_handle_get_dimensions(svg_handle,&dpi_dimension_info);
+          if ((dpi_dimension_info.width != dimension_info.width) ||
+              (dpi_dimension_info.height != dimension_info.height))
+            apply_density=MagickFalse;
+          rsvg_handle_set_dpi_x_y(svg_handle,image->x_resolution,
+            image->y_resolution);
+        }
         if (image_info->size != (char *) NULL)
           {
             (void) GetGeometry(image_info->size,(ssize_t *) NULL,
@@ -3005,10 +3031,19 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 else
                   image->x_resolution=image->y_resolution=MagickMin(
                     image->x_resolution,image->y_resolution);
+                apply_density=MagickTrue;
               }
           }
-        image->columns=image->x_resolution*dimension_info.width/90.0;
-        image->rows=image->y_resolution*dimension_info.height/90.0;
+        if (apply_density != MagickFalse)
+          {
+            image->columns=image->x_resolution*dimension_info.width/90.0;
+            image->rows=image->y_resolution*dimension_info.height/90.0;
+          }
+        else
+          {
+            image->columns=dimension_info.width;
+            image->rows=dimension_info.height;
+          }
         pixel_info=(MemoryInfo *) NULL;
 #else
         pixel_buffer=rsvg_handle_get_pixbuf(svg_handle);
@@ -3066,8 +3101,9 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             cairo_set_operator(cairo_image,CAIRO_OPERATOR_CLEAR);
             cairo_paint(cairo_image);
             cairo_set_operator(cairo_image,CAIRO_OPERATOR_OVER);
-            cairo_scale(cairo_image,image->x_resolution/90.0,
-              image->y_resolution/90.0);
+            if (apply_density != MagickFalse)
+              cairo_scale(cairo_image,image->x_resolution/90.0,
+                image->y_resolution/90.0);
             rsvg_handle_render_cairo(svg_handle,cairo_image);
             cairo_destroy(cairo_image);
             cairo_surface_destroy(cairo_surface);
@@ -3272,7 +3308,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
   return(GetFirstImageInList(image));
 }
 #endif
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -3359,7 +3396,8 @@ ModuleExport size_t RegisterSVGImage(void)
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -3388,7 +3426,8 @@ ModuleExport void UnregisterSVGImage(void)
   xmlCleanupParser();
 #endif
 }
-
+
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
