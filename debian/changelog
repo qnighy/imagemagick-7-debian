@@ -1,6 +1,8 @@
-imagemagick (8:6.9.5.9+dfsg-2) unstable; urgency=medium
+imagemagick (8:6.9.6.2+dfsg-1) experimental; urgency=high
 
-  * Upload to unstable.
+  * New upstream release.
+  * Fix CVE-2016-7906 mogrify use after free (Closes: #840435).
+  * Fix CVE-2016-7799 mogrify global buffer overflow (Closes: #840437).
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 11 Oct 2016 12:18:59 +0200
 
