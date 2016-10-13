@@ -204,3 +204,4 @@ Description: Perl interface to the ImageMagick graphics routines -- Q16 version
  depth of 16 bits (Q16).
  .
  This package provides the perl Image::Magick::Q16 class.
+

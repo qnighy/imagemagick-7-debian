@@ -185,3 +185,4 @@ Description: low-level image manipulation library - architecture header files
  headers files used by MagickCore.
  .
  This package is independent of channel depth.
+

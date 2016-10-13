@@ -185,9 +185,17 @@ MAGICK_ANY_Q_PACKAGES = ${shell echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 
 QUANTUM_PART = ${shell echo '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
 HDRI_PART = ${shell case $$(echo '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo 'yes';; *) echo 'no' ;; esac }
 
+# bug #840682
+DH_EXEC_SUBST = /usr/lib/dh-exec/dh-exec-subst
+
 # update package files
 update_pkg:
-	cat $(CURDIR)/debian/control.d/noquantum.in $(CURDIR)/debian/control.d/quantum.in $(CURDIR)/debian/control.d/compat.in > $(CURDIR)/control
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/compat.in > $(CURDIR)/debian/control.d/compat
+	cat $(CURDIR)/debian/control.d/noquantum.in $(CURDIR)/debian/control.d/quantum.in $(CURDIR)/debian/control.d/compat > $(CURDIR)/debian/control
+	rm -f $(CURDIR)/debian/control.d/compat
 
 %:
 	if test "BUG#704225" = "SOLVED"; then \
