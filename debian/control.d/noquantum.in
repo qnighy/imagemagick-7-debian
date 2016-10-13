@@ -47,11 +47,11 @@ Homepage: http://www.imagemagick.org/
 Testsuite: autopkgtest
 
 # arch all package
-Package: imagemagick-6-common
+Package: imagemagick-${IMVERSION}-common
 Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}
-Breaks: libmagickcore-6.q16-2 (<< ${source:Version}),
+Breaks: libmagickcore-${IMVERSION}.q16-2 (<< ${source:Version}),
 	imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Provides: imagemagick-common
 # remove breaks/replaces after strech + 2
@@ -64,13 +64,13 @@ Description: image manipulation programs -- infrastructure
  .
  This package is independent of channel depth.
 
-Package: imagemagick-6-doc
+Package: imagemagick-${IMVERSION}-doc
 Architecture: all
 Multi-Arch: foreign
 Section: doc
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}, ${doxygen:Depends},
-	 imagemagick-6-common
+	 imagemagick-${IMVERSION}-common
 Recommends: www-browser,
 	    libjs-jquery,
 	    libjs-bootstrap (>=3.3.5+dfsg-1),
@@ -89,13 +89,14 @@ Description: document files of ImageMagick
  Documentations includes html manuals, examples files, and doxygen generated API
  documentation.
 
-Package: libmagickcore-6-headers
+Package: libmagickcore-${IMVERSION}-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
-	 libmagickcore-6-arch-config (>= ${binary:Version}), libmagickcore-6-arch-config (<< ${binary:Version}.1~)
+	 libmagickcore-${IMVERSION}-arch-config (>= ${binary:Version}),
+	 libmagickcore-${IMVERSION}-arch-config (<< ${binary:Version}.1~)
 Description: low-level image manipulation library - header files
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -108,12 +109,12 @@ Description: low-level image manipulation library - header files
  .
  This package is independent of channel depth.
 
-Package: libmagickwand-6-headers
+Package: libmagickwand-${IMVERSION}-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: libmagickcore-6-headers (= ${source:Version}),
+Depends: libmagickcore-${IMVERSION}-headers (= ${source:Version}),
  ${misc:Depends}
 Description: image manipulation library - headers files
  The MagickWand API is the recommended interface between the C programming
@@ -126,13 +127,13 @@ Description: image manipulation library - headers files
  .
  This package is independent of channel depth.
 
-Package: libmagick++-6-headers
+Package: libmagick++-${IMVERSION}-headers
 Architecture: all
 Multi-Arch: foreign
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: libmagickwand-6-headers (= ${source:Version}),
- libmagickcore-6-headers (= ${source:Version}),
+Depends: libmagickwand-${IMVERSION}-headers (= ${source:Version}),
+ libmagickcore-${IMVERSION}-headers (= ${source:Version}),
  ${misc:Depends}
 Description: object-oriented C++ interface to ImageMagick - header files
  The Magick++ library is a set of C++ wrapper classes that provides access
@@ -167,13 +168,13 @@ Description: Perl interface to the ImageMagick graphics routines
  This package provides the perl Image::Magick class.
 
 # quantum independent
-Package: libmagickcore-6-arch-config
+Package: libmagickcore-${IMVERSION}-arch-config
 Architecture: any
 Multi-Arch: same
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
-	 imagemagick-6-common (= ${source:Version})
+	 imagemagick-${IMVERSION}-common (= ${source:Version})
 Description: low-level image manipulation library - architecture header files
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for

@@ -194,12 +194,17 @@ update_pkg.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/quantum.in >> $(CURDIR)/debian/control.d/quantum
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/noquantum.in >> $(CURDIR)/debian/control.d/noquantum
 
 update_pkg: $(foreach Q,$(QUANTUMDEPTH),update_pkg.$Q)
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/compat.in > $(CURDIR)/debian/control.d/compat
-	cat $(CURDIR)/debian/control.d/noquantum.in $(CURDIR)/debian/control.d/quantum $(CURDIR)/debian/control.d/compat > $(CURDIR)/debian/control
+	cat $(CURDIR)/debian/control.d/noquantum $(CURDIR)/debian/control.d/quantum $(CURDIR)/debian/control.d/compat > $(CURDIR)/debian/control
 	rm -f $(CURDIR)/debian/control.d/compat
 	rm -f $(CURDIR)/debian/control.d/quantum
+	rm -f $(CURDIR)/debian/control.d/noquantum
 
 %:
 	if test "BUG#704225" = "SOLVED"; then \

@@ -95,7 +95,8 @@ Multi-Arch: foreign
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
-	 libmagickcore-6-arch-config (>= ${binary:Version}), libmagickcore-6-arch-config (<< ${binary:Version}.1~)
+	 libmagickcore-6-arch-config (>= ${binary:Version}),
+	 libmagickcore-6-arch-config (<< ${binary:Version}.1~)
 Description: low-level image manipulation library - header files
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
