@@ -189,13 +189,17 @@ HDRI_PART = ${shell case $$(echo '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo '
 DH_EXEC_SUBST = /usr/lib/dh-exec/dh-exec-subst
 
 # update package files
-update_pkg:
+update_pkg.%:
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/quantum.in >> $(CURDIR)/debian/control.d/quantum
+
+update_pkg: $(foreach Q,$(QUANTUMDEPTH),update_pkg.$Q)
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/compat.in > $(CURDIR)/debian/control.d/compat
-	cat $(CURDIR)/debian/control.d/noquantum.in $(CURDIR)/debian/control.d/quantum.in $(CURDIR)/debian/control.d/compat > $(CURDIR)/debian/control
+	cat $(CURDIR)/debian/control.d/noquantum.in $(CURDIR)/debian/control.d/quantum $(CURDIR)/debian/control.d/compat > $(CURDIR)/debian/control
 	rm -f $(CURDIR)/debian/control.d/compat
+	rm -f $(CURDIR)/debian/control.d/quantum
 
 %:
 	if test "BUG#704225" = "SOLVED"; then \

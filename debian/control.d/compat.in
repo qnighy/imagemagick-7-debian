@@ -68,7 +68,7 @@ Description: low-level image manipulation library -- dummy package
  programs using MagickCore.
  .
  This is a transitional package to help migrate systems to the new
- ABI of libmagickcore-6 development files for default channel depth.
+ ABI of libmagickcore-${IMVERSION} development files for default channel depth.
  .
  This is a dummy package.  You can safely purge or remove it.
 
@@ -85,7 +85,7 @@ Description: image manipulation library -- dummy package
  programs using MagickWand.
  .
  This is a transitional package to help migrate systems to the new
- ABI of libmagickwand-6 development files for default channel depth.
+ ABI of libmagickwand-${IMVERSION} development files for default channel depth.
  .
  This is a dummy package.  You can safely purge or remove it.
 
@@ -102,7 +102,7 @@ Description: object-oriented C++ interface to ImageMagick -- dummy package
  to the ImageMagick package functionality from within a C++ application.
  .
  This is a transitional package to help migrate systems to the new
- ABI of libmagick++-6 development files for default channel depth.
+ ABI of libmagick++-${IMVERSION} development files for default channel depth.
  .
  This is a dummy package.  You can safely purge or remove it.
 
