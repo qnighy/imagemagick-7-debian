@@ -51,7 +51,7 @@ Package: imagemagick-${IMVERSION}-common
 Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}
-Breaks: libmagickcore-${IMVERSION}.q16-2 (<< ${source:Version}),
+Breaks: libmagickcore-${IMVERSION}.q16-${CORESOVERSION} (<< ${source:Version}),
 	imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Provides: imagemagick-common
 # remove breaks/replaces after strech + 2

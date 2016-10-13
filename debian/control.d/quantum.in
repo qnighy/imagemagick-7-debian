@@ -3,7 +3,7 @@ Package: imagemagick-${IMVERSION}.q16
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}, hicolor-icon-theme
-Recommends: libmagickcore-${IMVERSION}.q16-2-extra, ghostscript, netpbm
+Recommends: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra, ghostscript, netpbm
 Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  ffmpeg, gimp, gnuplot, grads, graphviz, groff-base, hp2xx, html2ps,
  libwmf-bin, mplayer,
@@ -23,13 +23,13 @@ Description: image manipulation programs -- quantum depth Q16
  an X11 graphical interface (display).
  .
  For working with the SVG, WMF, OpenEXR, DjVu and Graphviz formats,
- you need to install the libmagickcore-${IMVERSION}.q16-2-extra package.
+ you need to install the libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra package.
  .
  This version of imagemagick is compiled for a channel
  depth of 16 bits (Q16).
 
 # predepend on dpkg (>= 1.17.6) for libgomp symbols remove after jeesie +2
-Package: libmagickcore-${IMVERSION}.q16-2
+Package: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -37,7 +37,7 @@ Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
  imagemagick-${IMVERSION}-common (= ${source:Version})
 Recommends: ghostscript, gsfonts
-Suggests: libmagickcore-${IMVERSION}.q16-2-extra
+Suggests: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra
 Description: low-level image manipulation library -- quantum depth Q16
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -51,13 +51,13 @@ Description: low-level image manipulation library -- quantum depth Q16
  This version of libmagickcore is compiled for a channel
  depth of 16 bits (Q16).
 
-Package: libmagickcore-${IMVERSION}.q16-2-extra
+Package: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Enhances: libmagickcore-${IMVERSION}.q16-2
+Enhances: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}
 Provides: libmagickcore-extra, libmagickcore-${IMVERSION}.q16-1-extra
 Suggests: inkscape
 Recommends: libjxr-tools
@@ -73,8 +73,8 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagickcore-${IMVERSION}-headers (= ${source:Version}),
- libmagickcore-${IMVERSION}.q16-2 (= ${binary:Version}),
- libmagickcore-${IMVERSION}.q16-2-extra (= ${binary:Version}),
+ libmagickcore-${IMVERSION}.q16-${CORESOVERSION} (= ${binary:Version}),
+ libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra (= ${binary:Version}),
  libbz2-dev, libdjvulibre-dev,
  libexif-dev, libfreetype6-dev, libgraphviz-dev, libjpeg-dev, libopenjp2-7-dev,
  liblcms2-dev, liblqr-1-0-dev, libltdl-dev, libopenexr-dev, libpng-dev,
@@ -125,7 +125,7 @@ Multi-Arch: same
 Section: libdevel
 Depends: libmagickwand-${IMVERSION}-headers (= ${source:Version}),
  libmagickwand-${IMVERSION}.q16-2 (= ${binary:Version}),
- libmagickcore-${IMVERSION}.q16-2-extra (= ${binary:Version}),
+ libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra (= ${binary:Version}),
  libmagickcore-${IMVERSION}.q16-dev (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
