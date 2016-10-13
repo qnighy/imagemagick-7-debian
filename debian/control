@@ -458,7 +458,9 @@ Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
 Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends}, libmagickcore-6.q16-dev, imagemagick-6-common
+Depends: ${misc:Depends},
+ libmagickcore-6.q16-dev,
+ imagemagick-6-common
 Description: low-level image manipulation library -- dummy package
  This package included header files and static libraries needed to compile
  programs using MagickCore.
@@ -475,7 +477,9 @@ Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
 Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends}, libmagickwand-6.q16-dev, imagemagick-6-common
+Depends: ${misc:Depends},
+ libmagickwand-6.q16-dev,
+ imagemagick-6-common
 Description: image manipulation library -- dummy package
  This package included the static libraries needed to compile
  programs using MagickWand.
@@ -492,7 +496,9 @@ Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
 Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends}, libmagick++-6.q16-dev, imagemagick-6-common
+Depends: ${misc:Depends},
+ libmagick++-6.q16-dev,
+ imagemagick-6-common
 Description: object-oriented C++ interface to ImageMagick -- dummy package
  The Magick++ library was a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
@@ -509,7 +515,8 @@ Architecture: any
 Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
-Depends: ${misc:Depends}, imagemagick-6.q16 (>= 8:6.9.2.10+dfsg-2~)
+Depends: ${misc:Depends},
+ imagemagick-6.q16 (>= 8:6.9.2.10+dfsg-2~)
 Description: image manipulation programs -- binaries
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)
