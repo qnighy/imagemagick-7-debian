@@ -100,7 +100,7 @@ Description: low-level image manipulation library - development files (Q16)
  depth of 16 bits (Q16).
 
 # predepend on dpkg (>= 1.17.6)  for libgomp symbols remove after jeesie + 2
-Package: libmagickwand-${IMVERSION}.q16-2
+Package: libmagickwand-${IMVERSION}.q16-${WANDSOVERSION}
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -124,7 +124,7 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagickwand-${IMVERSION}-headers (= ${source:Version}),
- libmagickwand-${IMVERSION}.q16-2 (= ${binary:Version}),
+ libmagickwand-${IMVERSION}.q16-${WANDSOVERSION} (= ${binary:Version}),
  libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra (= ${binary:Version}),
  libmagickcore-${IMVERSION}.q16-dev (= ${binary:Version}),
  pkg-config,
