@@ -1,3 +1,9 @@
+imagemagick (8:6.9.6.2+dfsg-2) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Thu, 13 Oct 2016 12:32:02 +0200
+
 imagemagick (8:6.9.6.2+dfsg-1) experimental; urgency=high
 
   * New upstream release.
