@@ -193,6 +193,7 @@ update_pkg.%:
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
+	UCQUANTUMDEPTH=$(call UC,$*) \
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/quantum.in > $(CURDIR)/debian/control.d/quantum.$*
 	cat $(CURDIR)/debian/control.d/quantum.$* >> $(CURDIR)/debian/control.d/quantum
 

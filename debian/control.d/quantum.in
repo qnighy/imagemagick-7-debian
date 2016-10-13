@@ -12,7 +12,7 @@ Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
 Replaces: imagemagick (<< 8:6.9.2.10+dfsg-2~)
 Breaks: libmagickcore-dev (<< 8:6.9.2.10+dfsg-2~) 
 Provides: imagemagick-${IMVERSION}.defaultquantum, imagemagick
-Description: image manipulation programs -- quantum depth Q16
+Description: image manipulation programs -- quantum depth ${UCQUANTUMDEPTH}
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)
  including DPX, EXR, GIF, JPEG, JPEG-2000, PDF, PhotoCD, PNG, Postscript,
@@ -26,7 +26,7 @@ Description: image manipulation programs -- quantum depth Q16
  you need to install the libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra package.
  .
  This version of imagemagick is compiled for a channel
- depth of 16 bits (Q16).
+ depth of 16 bits (${UCQUANTUMDEPTH}).
 
 # predepend on dpkg (>= 1.17.6) for libgomp symbols remove after jeesie +2
 Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}
@@ -38,7 +38,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  imagemagick-${IMVERSION}-common (= ${source:Version})
 Recommends: ghostscript, gsfonts
 Suggests: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra
-Description: low-level image manipulation library -- quantum depth Q16
+Description: low-level image manipulation library -- quantum depth ${UCQUANTUMDEPTH}
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
  wizard-level programmers only. Unlike the MagickWand C API which uses only a
@@ -49,7 +49,7 @@ Description: low-level image manipulation library -- quantum depth Q16
  use of MagickCore.
  .
  This version of libmagickcore is compiled for a channel
- depth of 16 bits (Q16).
+ depth of 16 bits (${UCQUANTUMDEPTH}).
 
 Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra
 Architecture: any
@@ -61,12 +61,12 @@ Enhances: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}
 Provides: libmagickcore-extra, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-1-extra
 Suggests: inkscape
 Recommends: libjxr-tools
-Description: low-level image manipulation library - extra codecs (Q16)
+Description: low-level image manipulation library - extra codecs (${UCQUANTUMDEPTH})
  This package adds support for SVG, WMF, OpenEXR, DjVu and Graphviz to
  MagickCore.
  .
  This version of libmagickcore-extra is compiled for a channel
- depth of 16 bits (Q16).
+ depth of 16 bits (${UCQUANTUMDEPTH}).
 
 Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
@@ -86,7 +86,7 @@ Depends: libmagickcore-${IMVERSION}-headers (= ${source:Version}),
 Replaces: libmagickcore-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickcore-dev (<< 8:6.8.3.10-1~)
 Provides: libmagickcore-${IMVERSION}.defaultquantum-dev
-Description: low-level image manipulation library - development files (Q16)
+Description: low-level image manipulation library - development files (${UCQUANTUMDEPTH})
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
  wizard-level programmers only. Unlike the MagickWand C API which uses only a
@@ -97,7 +97,7 @@ Description: low-level image manipulation library - development files (Q16)
  programs using MagickCore.
  .
  This version of libmagickcore-dev is compiled for a channel
- depth of 16 bits (Q16).
+ depth of 16 bits (${UCQUANTUMDEPTH}).
 
 # predepend on dpkg (>= 1.17.6)  for libgomp symbols remove after jeesie + 2
 Package: libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-${WANDSOVERSION}
@@ -117,7 +117,7 @@ Description: image manipulation library
  use of MagickWand.
  .
  This version of libmagickwand is compiled for a channel
- depth of 16 bits (Q16).
+ depth of 16 bits (${UCQUANTUMDEPTH}).
 
 Package: libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
@@ -142,7 +142,7 @@ Description: image manipulation library - development files
  programs using MagickWand.
  .
  This version of libmagickwand-dev is compiled for a channe
- depth of 16 bits (Q16).
+ depth of 16 bits (${UCQUANTUMDEPTH}).
 
 # break and conflict for smooth upgrade for 6 -> 6v6
 Package: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-${PPSOVERSION}
@@ -161,7 +161,7 @@ Description: object-oriented C++ interface to ImageMagick
  use of libMagick++.
  .
  This version of libmagick++ is compiled for a channel
- depth of 16 bits (Q16).
+ depth of 16 bits (${UCQUANTUMDEPTH}).
 
 Package: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
@@ -184,7 +184,7 @@ Description: object-oriented C++ interface to ImageMagick - development files
  programs using Magick++.
  .
  This version of libmagick++-dev is compiled for a channel
- depth of 16 bits (Q16).
+ depth of 16 bits (${UCQUANTUMDEPTH}).
 
 Package: libimage-magick-${QUANTUMDEPTH}-perl
 Architecture: any
@@ -196,13 +196,13 @@ Provides: libimage-magick-defaultquantum-perl
 # remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
 Breaks: perlmagick (<< 8:6.8.3.10-1~)
-Description: Perl interface to the ImageMagick graphics routines -- Q16 version
+Description: Perl interface to the ImageMagick graphics routines -- ${UCQUANTUMDEPTH} version
  PerlMagick is an objected-oriented Perl interface to ImageMagick.
  Use the module to read, manipulate, or write an image or image sequence from
  within a Perl script. This makes it very suitable for Web CGI scripts.
  .
  This version of libimage-magick is compiled for a channel
- depth of 16 bits (Q16).
+ depth of 16 bits (${UCQUANTUMDEPTH}).
  .
- This package provides the perl Image::Magick::Q16 class.
+ This package provides the perl Image::Magick::${UCQUANTUMDEPTH} class.
 
