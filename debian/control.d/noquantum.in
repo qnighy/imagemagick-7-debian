@@ -51,7 +51,7 @@ Package: imagemagick-${IMVERSION}-common
 Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}
-Breaks: libmagickcore-${IMVERSION}.q16-${CORESOVERSION} (<< ${source:Version}),
+Breaks: libmagickcore-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-${CORESOVERSION} (<< ${source:Version}),
 	imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Provides: imagemagick-common
 # remove breaks/replaces after strech + 2
@@ -151,7 +151,7 @@ Multi-Arch: allowed
 Section: perl
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends},
-	 libimage-magick-q16-perl
+	 libimage-magick-${DEFAULTQUANTUMDEPTH}-perl
 Provides: perlmagick
 # remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
@@ -163,7 +163,7 @@ Description: Perl interface to the ImageMagick graphics routines
  within a Perl script. This makes it very suitable for Web CGI scripts.
  .
  This is the compatibility (wrapper) perlmagick package that
- use the default channel depth (16 bits integer).
+ use the default channel depth.
  .
  This package provides the perl Image::Magick class.
 

@@ -163,7 +163,7 @@ Description: Perl interface to the ImageMagick graphics routines
  within a Perl script. This makes it very suitable for Web CGI scripts.
  .
  This is the compatibility (wrapper) perlmagick package that
- use the default channel depth (16 bits integer).
+ use the default channel depth.
  .
  This package provides the perl Image::Magick class.
 
@@ -333,6 +333,7 @@ Description: image manipulation library - development files
  This version of libmagickwand-dev is compiled for a channe
  depth of 16 bits (Q16).
 
+# break and conflict for smooth upgrade for 6 -> 6v6
 Package: libmagick++-6.q16-6v6
 Architecture: any
 Multi-Arch: same
