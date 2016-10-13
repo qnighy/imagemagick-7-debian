@@ -1,9 +1,9 @@
 # quantum dependant
-Package: imagemagick-${IMVERSION}.q16
+Package: imagemagick-${IMVERSION}.${QUANTUMDEPTH}
 Architecture: any
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}, hicolor-icon-theme
-Recommends: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra, ghostscript, netpbm
+Recommends: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra, ghostscript, netpbm
 Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  ffmpeg, gimp, gnuplot, grads, graphviz, groff-base, hp2xx, html2ps,
  libwmf-bin, mplayer,
@@ -23,13 +23,13 @@ Description: image manipulation programs -- quantum depth Q16
  an X11 graphical interface (display).
  .
  For working with the SVG, WMF, OpenEXR, DjVu and Graphviz formats,
- you need to install the libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra package.
+ you need to install the libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra package.
  .
  This version of imagemagick is compiled for a channel
  depth of 16 bits (Q16).
 
 # predepend on dpkg (>= 1.17.6) for libgomp symbols remove after jeesie +2
-Package: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}
+Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -37,7 +37,7 @@ Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
  imagemagick-${IMVERSION}-common (= ${source:Version})
 Recommends: ghostscript, gsfonts
-Suggests: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra
+Suggests: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra
 Description: low-level image manipulation library -- quantum depth Q16
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -51,14 +51,14 @@ Description: low-level image manipulation library -- quantum depth Q16
  This version of libmagickcore is compiled for a channel
  depth of 16 bits (Q16).
 
-Package: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra
+Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Enhances: libmagickcore-${IMVERSION}.q16-${CORESOVERSION}
-Provides: libmagickcore-extra, libmagickcore-${IMVERSION}.q16-1-extra
+Enhances: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}
+Provides: libmagickcore-extra, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-1-extra
 Suggests: inkscape
 Recommends: libjxr-tools
 Description: low-level image manipulation library - extra codecs (Q16)
@@ -68,13 +68,13 @@ Description: low-level image manipulation library - extra codecs (Q16)
  This version of libmagickcore-extra is compiled for a channel
  depth of 16 bits (Q16).
 
-Package: libmagickcore-${IMVERSION}.q16-dev
+Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagickcore-${IMVERSION}-headers (= ${source:Version}),
- libmagickcore-${IMVERSION}.q16-${CORESOVERSION} (= ${binary:Version}),
- libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra (= ${binary:Version}),
+ libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION} (= ${binary:Version}),
+ libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra (= ${binary:Version}),
  libbz2-dev, libdjvulibre-dev,
  libexif-dev, libfreetype6-dev, libgraphviz-dev, libjpeg-dev, libopenjp2-7-dev,
  liblcms2-dev, liblqr-1-0-dev, libltdl-dev, libopenexr-dev, libpng-dev,
@@ -100,7 +100,7 @@ Description: low-level image manipulation library - development files (Q16)
  depth of 16 bits (Q16).
 
 # predepend on dpkg (>= 1.17.6)  for libgomp symbols remove after jeesie + 2
-Package: libmagickwand-${IMVERSION}.q16-${WANDSOVERSION}
+Package: libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-${WANDSOVERSION}
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -119,14 +119,14 @@ Description: image manipulation library
  This version of libmagickwand is compiled for a channel
  depth of 16 bits (Q16).
 
-Package: libmagickwand-${IMVERSION}.q16-dev
+Package: libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagickwand-${IMVERSION}-headers (= ${source:Version}),
- libmagickwand-${IMVERSION}.q16-${WANDSOVERSION} (= ${binary:Version}),
- libmagickcore-${IMVERSION}.q16-${CORESOVERSION}-extra (= ${binary:Version}),
- libmagickcore-${IMVERSION}.q16-dev (= ${binary:Version}),
+ libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-${WANDSOVERSION} (= ${binary:Version}),
+ libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra (= ${binary:Version}),
+ libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-dev (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
 Provides: libmagickwand-${IMVERSION}.defaultquantum-dev
@@ -144,14 +144,15 @@ Description: image manipulation library - development files
  This version of libmagickwand-dev is compiled for a channe
  depth of 16 bits (Q16).
 
-Package: libmagick++-${IMVERSION}.q16-${PPSOVERSION}
+# break and conflict for smooth upgrade for 6 -> 6v6
+Package: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-${PPSOVERSION}
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Conflicts: libmagick++-${IMVERSION}.q16-6
-Replaces: libmagick++-${IMVERSION}.q16-6
+Conflicts: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-6
+Replaces: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-6
 Description: object-oriented C++ interface to ImageMagick
  The Magick++ library is a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
@@ -162,14 +163,14 @@ Description: object-oriented C++ interface to ImageMagick
  This version of libmagick++ is compiled for a channel
  depth of 16 bits (Q16).
 
-Package: libmagick++-${IMVERSION}.q16-dev
+Package: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagick++-${IMVERSION}-headers (= ${source:Version}),
- libmagick++-${IMVERSION}.q16-${PPSOVERSION} (= ${binary:Version}),
- libmagickcore-${IMVERSION}.q16-dev (= ${binary:Version}),
- libmagickwand-${IMVERSION}.q16-dev (= ${binary:Version}),
+ libmagick++-${IMVERSION}.${QUANTUMDEPTH}-${PPSOVERSION} (= ${binary:Version}),
+ libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-dev (= ${binary:Version}),
+ libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-dev (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
 Provides: libmagick++-${IMVERSION}.defaultquantum-dev
@@ -185,7 +186,7 @@ Description: object-oriented C++ interface to ImageMagick - development files
  This version of libmagick++-dev is compiled for a channel
  depth of 16 bits (Q16).
 
-Package: libimage-magick-q16-perl
+Package: libimage-magick-${QUANTUMDEPTH}-perl
 Architecture: any
 Multi-Arch: allowed
 Section: perl
