@@ -181,20 +181,28 @@ UC = ${shell echo $1 | sed -e 's/\(.*\)/\U\1/'}
 REPLACE_QUANTUM = ${shell echo '$1' |  sed -e 's/$$QUANTUM/$2/g'}
 MAGICK_ANY_Q_PACKAGES = ${shell echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 's/$$QUANTUM/$1/g'}
 
+
+
+
 # extract quantum
-QUANTUM_PART = ${shell echo '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
-HDRI_PART = ${shell case $$(echo '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo 'yes';; *) echo 'no' ;; esac }
+QUANTUM_PART = ${shell echo -n '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
+HDRI_PART = ${shell case $$(echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo 'yes';; *) echo 'no' ;; esac }
+HDRI_STR_PART = ${shell case $$(echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo ' HDRI';; *) echo '' ;; esac }
 
 # bug #840682
 DH_EXEC_SUBST = /usr/lib/dh-exec/dh-exec-subst
+
+
 
 # update package files
 update_pkg.%:
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
+	HDRI_STR=$(call HDRI_STR_PART,$*) \
 	QUANTUMDEPTH=$* \
 	UCQUANTUMDEPTH=$(call UC,$*) \
-	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/quantum.in > $(CURDIR)/debian/control.d/quantum.$*
+	DESC_QUANTUM="$$QUANTUM bits$$HDRI_STR" \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/quantum.in > $(CURDIR)/debian/control.d/quantum.$*;
 	cat $(CURDIR)/debian/control.d/quantum.$* >> $(CURDIR)/debian/control.d/quantum
 
 update_pkg: $(foreach Q,$(QUANTUMDEPTH),update_pkg.$Q)

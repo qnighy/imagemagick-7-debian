@@ -26,7 +26,7 @@ Description: image manipulation programs -- quantum depth ${UCQUANTUMDEPTH}
  you need to install the libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra package.
  .
  This version of imagemagick is compiled for a channel
- depth of 16 bits (${UCQUANTUMDEPTH}).
+ depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 # predepend on dpkg (>= 1.17.6) for libgomp symbols remove after jeesie +2
 Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}
@@ -49,7 +49,7 @@ Description: low-level image manipulation library -- quantum depth ${UCQUANTUMDE
  use of MagickCore.
  .
  This version of libmagickcore is compiled for a channel
- depth of 16 bits (${UCQUANTUMDEPTH}).
+ depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra
 Architecture: any
@@ -66,7 +66,7 @@ Description: low-level image manipulation library - extra codecs (${UCQUANTUMDEP
  MagickCore.
  .
  This version of libmagickcore-extra is compiled for a channel
- depth of 16 bits (${UCQUANTUMDEPTH}).
+ depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
@@ -97,7 +97,7 @@ Description: low-level image manipulation library - development files (${UCQUANT
  programs using MagickCore.
  .
  This version of libmagickcore-dev is compiled for a channel
- depth of 16 bits (${UCQUANTUMDEPTH}).
+ depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 # predepend on dpkg (>= 1.17.6)  for libgomp symbols remove after jeesie + 2
 Package: libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-${WANDSOVERSION}
@@ -117,7 +117,7 @@ Description: image manipulation library
  use of MagickWand.
  .
  This version of libmagickwand is compiled for a channel
- depth of 16 bits (${UCQUANTUMDEPTH}).
+ depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 Package: libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
@@ -142,7 +142,7 @@ Description: image manipulation library - development files
  programs using MagickWand.
  .
  This version of libmagickwand-dev is compiled for a channe
- depth of 16 bits (${UCQUANTUMDEPTH}).
+ depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 # break and conflict for smooth upgrade for 6 -> 6v6
 Package: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-${PPSOVERSION}
@@ -161,7 +161,7 @@ Description: object-oriented C++ interface to ImageMagick
  use of libMagick++.
  .
  This version of libmagick++ is compiled for a channel
- depth of 16 bits (${UCQUANTUMDEPTH}).
+ depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 Package: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
@@ -184,7 +184,7 @@ Description: object-oriented C++ interface to ImageMagick - development files
  programs using Magick++.
  .
  This version of libmagick++-dev is compiled for a channel
- depth of 16 bits (${UCQUANTUMDEPTH}).
+ depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 Package: libimage-magick-${QUANTUMDEPTH}-perl
 Architecture: any
@@ -202,7 +202,7 @@ Description: Perl interface to the ImageMagick graphics routines -- ${UCQUANTUMD
  within a Perl script. This makes it very suitable for Web CGI scripts.
  .
  This version of libimage-magick is compiled for a channel
- depth of 16 bits (${UCQUANTUMDEPTH}).
+ depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
  .
  This package provides the perl Image::Magick::${UCQUANTUMDEPTH} class.
 
