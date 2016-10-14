@@ -7,7 +7,7 @@ export DH_VERBOSE=1
 
 
 # quantum depth is channel depth
-export QUANTUMDEPTH ?= q16
+export QUANTUMDEPTH ?= q16 q16hdri
 export CORESOVERSION ?= 2
 export WANDSOVERSION ?= 2
 export PPSOVERSION ?= 6v6
@@ -186,8 +186,8 @@ MAGICK_ANY_Q_PACKAGES = ${shell echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 
 
 # extract quantum
 QUANTUM_PART = ${shell echo -n '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
-HDRI_PART = ${shell case $$(echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo 'yes';; *) echo 'no' ;; esac }
-HDRI_STR_PART = ${shell case $$(echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in hdri) echo ' HDRI';; *) echo '' ;; esac }
+HDRI_PART = ${shell case $$(echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in *hdri) echo 'yes';; *) echo 'no' ;; esac }
+HDRI_STR_PART = ${shell case $$(echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in *hdri) echo ' with high dynamic range';; *) echo '' ;; esac }
 
 # bug #840682
 DH_EXEC_SUBST = /usr/lib/dh-exec/dh-exec-subst
@@ -198,12 +198,16 @@ DH_EXEC_SUBST = /usr/lib/dh-exec/dh-exec-subst
 update_pkg.%:
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
-	HDRI_STR=$(call HDRI_STR_PART,$*) \
+	HDRI_STR="$(call HDRI_STR_PART,$*)" \
 	QUANTUMDEPTH=$* \
 	UCQUANTUMDEPTH=$(call UC,$*) \
 	DESC_QUANTUM="$$QUANTUM bits$$HDRI_STR" \
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/quantum.in > $(CURDIR)/debian/control.d/quantum.$*;
-	cat $(CURDIR)/debian/control.d/quantum.$* >> $(CURDIR)/debian/control.d/quantum
+	if test x$* = x$(DEFAULTQUANTUMDEPTH); then \
+		cat $(CURDIR)/debian/control.d/quantum.$* >> $(CURDIR)/debian/control.d/quantum; \
+	else \
+		cat $(CURDIR)/debian/control.d/quantum.$* | sed '/defaultquantum/d' >> $(CURDIR)/debian/control.d/quantum; \
+	fi;
 
 update_pkg: $(foreach Q,$(QUANTUMDEPTH),update_pkg.$Q)
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/noquantum.in >> $(CURDIR)/debian/control.d/noquantum
