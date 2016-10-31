@@ -15,13 +15,13 @@ then
         update-alternatives --remove $prog /usr/bin/$prog-im${IMVERSION}
 
 	update-alternatives --install /usr/bin/$prog \
-	                    $prog /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH} 100 \
+	                    $prog /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH} ${QUANTUM_PRIO} \
 	                    --slave /usr/share/man/man1/$prog.1.gz \
 	                    $prog.1.gz /usr/share/man/man1/$prog-im${IMVERSION}.${QUANTUMDEPTH}.1.gz
 
 
 	update-alternatives --install /usr/bin/$prog-im${IMVERSION} \
-	                    $prog-im${IMVERSION} /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH} 100 \
+	                    $prog-im${IMVERSION} /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH} ${QUANTUM_PRIO} \
 	                    --slave /usr/share/man/man1/$prog-im${IMVERSION}.1.gz \
 	                    $prog-im${IMVERSION}.1.gz /usr/share/man/man1/$prog-im${IMVERSION}.${QUANTUMDEPTH}.1.gz
 

@@ -190,6 +190,7 @@ MAGICK_ANY_Q_PACKAGES = ${shell set -e;echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  
 QUANTUM_PART = ${shell set -e;echo -n '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
 HDRI_PART = ${shell set -e;case $$(set -e; echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in *hdri) echo 'yes';; *) echo 'no' ;; esac }
 HDRI_STR_PART = ${shell set -e;case $$(set -e;echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in *hdri) echo ' with high dynamic range';; *) echo '' ;; esac }
+PRIO_COMPUTATION =${shell $(CURDIR)/debian/scripts/quantumpriority.sh '$1'}
 
 # bug #840682
 DH_EXEC_SUBST = /usr/lib/dh-exec/dh-exec-subst
@@ -257,6 +258,7 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
+	QUANTUM_PRIO=$(call PRIO_COMPUTATION,$*) \
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.postinst.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.postinst
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
