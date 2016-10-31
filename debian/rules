@@ -239,9 +239,9 @@ update_pkg: $(foreach Q,$(QUANTUMDEPTH),update_pkg.$Q)
 
 %:
 	if test "BUG#704225" = "SOLVED"; then \
-		dh $@ --parallel --with autoreconf --with pkgkde_symbolshelper; \
+		dh $@ --parallel --with pkgkde_symbolshelper; \
 	else \
-		dh $@ --with autoreconf --with pkgkde_symbolshelper; \
+		dh $@  --no-parallel --with pkgkde_symbolshelper; \
 	fi;
 
 
