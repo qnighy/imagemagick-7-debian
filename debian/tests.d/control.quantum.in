@@ -3,3 +3,4 @@ Depends: imagemagick-${IMVERSION}.${QUANTUMDEPTH}, libmagickcore-${IMVERSION}.${
 
 Tests: perlmagick-${IMVERSION}.${QUANTUMDEPTH}
 Depends: libimage-magick-${QUANTUMDEPTH}-perl, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-2-extra, libaliased-perl
+
