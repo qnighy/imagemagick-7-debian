@@ -201,6 +201,7 @@ dummy:
 
 # update package files
 update_pkg.%:
+	# control
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
 	HDRI_STR="$(call HDRI_STR_PART,$*)" \
@@ -213,14 +214,28 @@ update_pkg.%:
 	else \
 		cat $(CURDIR)/debian/control.d/quantum.$* | sed '/defaultquantum/d' >> $(CURDIR)/debian/control.d/quantum; \
 	fi;
+	# test
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	UCQUANTUMDEPTH=$(call UC,$*) \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/tests.d/control.quantum.in >>  $(CURDIR)/debian/tests.d/control.quantum
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	UCQUANTUMDEPTH=$(call UC,$*) \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/tests.d/rose-IMVERSION.QUANTUMDEPTH.in > $(CURDIR)/debian/tests/rose-$(IMVERSION).$*
+	chmod +x $(CURDIR)/debian/tests/rose-$(IMVERSION).$*
 
 update_pkg: $(foreach Q,$(QUANTUMDEPTH),update_pkg.$Q)
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/noquantum.in >> $(CURDIR)/debian/control.d/noquantum
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/compat.in > $(CURDIR)/debian/control.d/compat
 	cat $(CURDIR)/debian/control.d/noquantum $(CURDIR)/debian/control.d/quantum $(CURDIR)/debian/control.d/compat > $(CURDIR)/debian/control
+	cat $(CURDIR)/debian/tests.d/control.quantum > $(CURDIR)/debian/tests/control
 	rm -f $(CURDIR)/debian/control.d/compat
 	rm -f $(CURDIR)/debian/control.d/quantum
 	rm -f $(CURDIR)/debian/control.d/noquantum
+	rm -f $(CURDIR)/debian/tests.d/control.quantum
 
 %:
 	if test "BUG#704225" = "SOLVED"; then \

@@ -1,7 +1,0 @@
-#:/bin/sh
-
-set -e
-convert rose: pdf:/dev/null
-convert rose: png:/dev/null
-convert rose: jpeg:/dev/null
-convert rose: bmp:/dev/null 

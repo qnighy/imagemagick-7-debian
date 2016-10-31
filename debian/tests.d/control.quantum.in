@@ -1,0 +1,3 @@
+Tests: rose-${IMVERSION}.${QUANTUMDEPTH}
+Depends: imagemagick-${IMVERSION}.${QUANTUMDEPTH}, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-2-extra, ghostscript, netpbm
+

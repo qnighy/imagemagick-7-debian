@@ -1,2 +1,6 @@
-Tests: rose-q16
+Tests: rose-6.q16
 Depends: imagemagick-6.q16, libmagickcore-6.q16-2-extra, ghostscript, netpbm
+
+Tests: rose-6.q16hdri
+Depends: imagemagick-6.q16hdri, libmagickcore-6.q16hdri-2-extra, ghostscript, netpbm
+

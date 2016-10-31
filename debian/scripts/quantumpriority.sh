@@ -28,9 +28,9 @@ fi
 
 # hdri is slower divide 
 if test "x$HDRI" = "xyes"; then
-    PRIO_FACTOR=1000;
+    PRIO_OFFSET=100;
 else
-    PRIO_FACTOR=100
+    PRIO_OFFSET=1000;
 fi;
 
 # larger is slower
@@ -49,6 +49,6 @@ in 8)
        ;;
 esac
 
-echo -n $(($BASE_PRIO*$PRIO_FACTOR))
+echo -n $(($BASE_PRIO*100+$PRIO_OFFSET))
 			  
 exit 0;
