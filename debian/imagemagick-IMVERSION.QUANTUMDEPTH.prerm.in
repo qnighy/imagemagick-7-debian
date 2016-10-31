@@ -2,24 +2,13 @@
 
 set -e
 
-IM_QUANTUMDEPTH=$(echo $DPKG_MAINTSCRIPT_PACKAGE |sed 's/^.*[.]//g')
-IM_VERSION=$(echo $DPKG_MAINTSCRIPT_PACKAGE |sed 's/^imagemagick-\([^.]*\)[.].*/\1/g')
 
 if [ "$1" = "remove" ]
 then
     # remove all alternatives
-    for prog in compare animate convert composite conjure \
-	import identify stream display montage mogrify; do
-	update-alternatives --remove $prog /usr/bin/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH
-    done
-fi
-
-if [ "$1" = "remove" ]
-then
-    # remove all alternatives
-    for prog in compare animate convert composite conjure \
-	import identify stream display montage mogrify; do
-	update-alternatives --remove $prog-im$IM_VERSION /usr/bin/$prog-im$IM_VERSION.$IM_QUANTUMDEPTH
+    for prog in ${MAGICK_PROGRAMS}; do
+	update-alternatives --remove $prog /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH}
+	update-alternatives --remove $prog-im${IMVERSION} /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH}
     done
 fi
 

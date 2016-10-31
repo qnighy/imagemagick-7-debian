@@ -25,29 +25,29 @@ VALGRIND_POC_ARCH ?=
 export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
 # arch type extracted from dpkg database
-export STATIC_DEB_HOST_GNU_TYPE := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+STATIC_DEB_HOST_GNU_TYPE := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DEB_HOST_GNU_TYPE  ?= $(STATIC_DEB_HOST_GNU_TYPE)
-export STATIC_DEB_HOST_MULTIARCH := $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+STATIC_DEB_HOST_MULTIARCH := $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 export DEB_HOST_MULTIARCH ?= $(STATIC_DEB_HOST_MULTIARCH)
-export STATIC_DEB_BUILD_GNU_TYPE := $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+STATIC_DEB_BUILD_GNU_TYPE := $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 export DEB_BUILD_GNU_TYPE ?= $(STATIC_DEB_BUILD_GNU_TYPE)
 export STATIC_DEB_SOURCE_PACKAGE := $(shell dpkg-parsechangelog -SSource)
-export DEB_SOURCE_PACKAGE ?= $(STATIC_DEB_SOURCE_PACKAGE)
-export STATIC_DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
+DEB_SOURCE_PACKAGE ?= $(STATIC_DEB_SOURCE_PACKAGE)
+STATIC_DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
 export DEB_HOST_ARCH ?= $(STATIC_DEB_HOST_ARCH)
 
 # version extracted from changelog
-export STATIC_DEB_VERSION := $(shell dpkg-parsechangelog -SVersion)
+STATIC_DEB_VERSION := $(shell dpkg-parsechangelog -SVersion)
 export DEB_VERSION ?= $(STATIC_DEB_VERSION)
-export STATIC_DEB_NOEPOCH_VERSION := $(shell echo $(DEB_VERSION) | cut -d: -f2-)
+STATIC_DEB_NOEPOCH_VERSION := $(shell echo $(DEB_VERSION) | cut -d: -f2-)
 export DEB_NOEPOCH_VERSION ?= $(STATIC_DEB_NOEPOCH_VERSION)
-export STATIC_DEB_UPSTREAM_VERSION := $(shell echo $(DEB_NOEPOCH_VERSION) | sed 's/-[^-]*$$//')
+STATIC_DEB_UPSTREAM_VERSION := $(shell echo $(DEB_NOEPOCH_VERSION) | sed 's/-[^-]*$$//')
 export DEB_UPSTREAM_VERSION ?= $(STATIC_DEB_UPSTREAM_VERSION)
-export STATIC_DEB_ISNATIVE := $(shell dpkg-parsechangelog | egrep '^Version:' | perl -ne 'print if not /^Version:\s*.*-/;')
+STATIC_DEB_ISNATIVE := $(shell dpkg-parsechangelog | egrep '^Version:' | perl -ne 'print if not /^Version:\s*.*-/;')
 export DEB_ISNATIVE ?= $(STATIC_DEB_ISNATIVE)
-export STATIC_DEB_UPSTREAM_VERSION_DROPREVISION := $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
+STATIC_DEB_UPSTREAM_VERSION_DROPREVISION := $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(STATIC_DEB_UPSTREAM_VERSION_DROPREVISION)
-export STATIC_DEB_UPSTREAM_VERSION_MAJOR := $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
+STATIC_DEB_UPSTREAM_VERSION_MAJOR := $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_MAJOR ?= $(STATIC_DEB_UPSTREAM_VERSION_MAJOR)
 export IMVERSION := $(DEB_UPSTREAM_VERSION_MAJOR)
 
@@ -60,28 +60,28 @@ export NOQUANTUMDEPTH := $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
 
 # convert used for icons
 export CONVERT ?= ./magick.sh convert
-export VALGRIND_CONVERT ?= libtool --mode=execute valgrind $(CONVERT)
-export CONVERT_FLAGS ?= -background none -define filter:blur=0.75 -filter Gaussian
+VALGRIND_CONVERT ?= libtool --mode=execute valgrind $(CONVERT)
+CONVERT_FLAGS ?= -background none -define filter:blur=0.75 -filter Gaussian
 
 # perl path
 export DEB_PERL_ARCHLIB := $(shell perl -MConfig -e 'print $$Config{vendorarch}')
 
 
 # configure cache for acceleration
-export STATIC_CONFIGURE_CACHEFILE := config.cache
-export CONFIGURE_CACHEFILE ?= $(STATIC_CONFIGURE_CACHEFILE)
+STATIC_CONFIGURE_CACHEFILE := config.cache
+CONFIGURE_CACHEFILE ?= $(STATIC_CONFIGURE_CACHEFILE)
 
-export STATIC_CONFIGURE_OPTIONS_CACHE := \
+STATIC_CONFIGURE_OPTIONS_CACHE := \
        --cache-file=../../$(CONFIGURE_CACHEFILE)
-export CONFIGURE_OPTIONS_CACHE ?= $(STATIC_CONFIGURE_OPTIONS_CACHE)
+CONFIGURE_OPTIONS_CACHE ?= $(STATIC_CONFIGURE_OPTIONS_CACHE)
 
 # disable arch optimization see #757996 and AX_GCC_ARCHFLAG m4 macro
-export STATIC_CONFIGURE_ARCH_FLAGS := --without-gcc-arch
-export CONFIGURE_ARCH_FLAGS ?= $(STATIC_CONFIGURE_ARCH_FLAGS)
+STATIC_CONFIGURE_ARCH_FLAGS := --without-gcc-arch
+CONFIGURE_ARCH_FLAGS ?= $(STATIC_CONFIGURE_ARCH_FLAGS)
 
 # NOTICE: remove EPL delegate lib gvc (license problem)
 # should be last variable
-export STATIC_CONFIGURE_OPTIONS := \
+STATIC_CONFIGURE_OPTIONS := \
 	--enable-reproducible-build \
 	--prefix=/usr \
 	--libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
@@ -106,38 +106,39 @@ export STATIC_CONFIGURE_OPTIONS := \
 	--x-includes=/usr/include/X11 \
 	--x-libraries=/usr/lib/X11 \
 	--without-rsvg
-export CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS) \
+CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS) \
 			    $(CONFIGURE_OPTIONS_CACHE) \
 			    $(CONFIGURE_ARCH_FLAGS)
 
-export MAGICK_PROGRAM := compare animate convert composite conjure import identify stream display montage mogrify
+# export for alternatives
+export MAGICK_PROGRAMS := compare animate convert composite conjure import identify stream display montage mogrify
 
-export MAGICK_ANY_QUANTUM_PACKAGES := imagemagick-$(IMVERSION).$$QUANTUM \
-				     libmagickcore-${IMVERSION}.$$QUANTUM-${CORESOVERSION} \
-				     libmagickcore-${IMVERSION}.$$QUANTUM-${CORESOVERSION}-extra \
-				     libmagickwand-${IMVERSION}.$$QUANTUM-${WANDSOVERSION} \
-                                     libmagick++-${IMVERSION}.$$QUANTUM-${PPSOVERSION} \
-			             libmagick++-${IMVERSION}.$$QUANTUM-dev \
-                                     libmagickcore-${IMVERSION}.$$QUANTUM-dev \
-                                     libmagickwand-${IMVERSION}.$$QUANTUM-dev \
-                                     libimage-magick-$$QUANTUM-perl
+MAGICK_ANY_QUANTUM_PACKAGES :=  imagemagick-$(IMVERSION).$$QUANTUM \
+				libmagickcore-${IMVERSION}.$$QUANTUM-${CORESOVERSION} \
+				libmagickcore-${IMVERSION}.$$QUANTUM-${CORESOVERSION}-extra \
+				libmagickwand-${IMVERSION}.$$QUANTUM-${WANDSOVERSION} \
+                                libmagick++-${IMVERSION}.$$QUANTUM-${PPSOVERSION} \
+			        libmagick++-${IMVERSION}.$$QUANTUM-dev \
+                                libmagickcore-${IMVERSION}.$$QUANTUM-dev \
+                                libmagickwand-${IMVERSION}.$$QUANTUM-dev \
+                                libimage-magick-$$QUANTUM-perl
 
-export MAGICK_ANY_PACKAGES :=  libmagickcore-$(IMVERSION)-arch-config
-export MAGICK_ANY_COMPAT_PACKAGES := imagemagick
+MAGICK_ANY_PACKAGES :=  libmagickcore-$(IMVERSION)-arch-config
+MAGICK_ANY_COMPAT_PACKAGES := imagemagick
 
-export MAGICK_ALL_PACKAGES :=  imagemagick-$(IMVERSION)-common \
-                              imagemagick-$(IMVERSION)-doc \
-                              libmagickcore-$(IMVERSION)-headers \
-                              libmagickwand-$(IMVERSION)-headers \
-                              libmagick++-$(IMVERSION)-headers \
-                              libimage-magick-perl
+MAGICK_ALL_PACKAGES :=  imagemagick-$(IMVERSION)-common \
+                        imagemagick-$(IMVERSION)-doc \
+                        libmagickcore-$(IMVERSION)-headers \
+                        libmagickwand-$(IMVERSION)-headers \
+                        libmagick++-$(IMVERSION)-headers \
+                        libimage-magick-perl
 
-export MAGICK_ALL_COMPAT_PACKAGES := imagemagick-common \
-                                    imagemagick-doc \
-			            perlmagick \
-                                    libmagickcore-dev \
-                                    libmagickwand-dev \
-                                    libmagick++-dev
+MAGICK_ALL_COMPAT_PACKAGES := imagemagick-common \
+                              imagemagick-doc \
+			      perlmagick \
+                              libmagickcore-dev \
+                              libmagickwand-dev \
+                              libmagick++-dev
 
 # run POC
 TEST_POC_CMD:= \
@@ -251,8 +252,14 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.install.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.install
-	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.postinst.in $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.postinst
-	cp -f $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.prerm.in $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.prerm
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.postinst.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.postinst
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.prerm.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.prerm
 
 	# libimage-magick-QUANTUM-perl
 	QUANTUM=$(call QUANTUM_PART,$*) \
@@ -443,7 +450,7 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 		chrpath -d {} \;
 
 	# move binaries to /usr/bin/*quantum
-	for basename in $(MAGICK_PROGRAM); do \
+	for basename in $(MAGICK_PROGRAMS); do \
 		mv "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename" \
                    "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename-im$(IMVERSION).$*"; \
 		mv "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename.1" \
