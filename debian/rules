@@ -39,15 +39,15 @@ export DEB_HOST_ARCH ?= $(STATIC_DEB_HOST_ARCH)
 # version extracted from changelog
 STATIC_DEB_VERSION := $(shell dpkg-parsechangelog -SVersion)
 export DEB_VERSION ?= $(STATIC_DEB_VERSION)
-STATIC_DEB_NOEPOCH_VERSION := $(shell echo $(DEB_VERSION) | cut -d: -f2-)
+STATIC_DEB_NOEPOCH_VERSION := $(shell set -e;echo $(DEB_VERSION) | cut -d: -f2-)
 export DEB_NOEPOCH_VERSION ?= $(STATIC_DEB_NOEPOCH_VERSION)
-STATIC_DEB_UPSTREAM_VERSION := $(shell echo $(DEB_NOEPOCH_VERSION) | sed 's/-[^-]*$$//')
+STATIC_DEB_UPSTREAM_VERSION := $(shell set -e;echo $(DEB_NOEPOCH_VERSION) | sed 's/-[^-]*$$//')
 export DEB_UPSTREAM_VERSION ?= $(STATIC_DEB_UPSTREAM_VERSION)
-STATIC_DEB_ISNATIVE := $(shell dpkg-parsechangelog | egrep '^Version:' | perl -ne 'print if not /^Version:\s*.*-/;')
+STATIC_DEB_ISNATIVE := $(shell set -e;dpkg-parsechangelog | egrep '^Version:' | perl -ne 'print if not /^Version:\s*.*-/;')
 export DEB_ISNATIVE ?= $(STATIC_DEB_ISNATIVE)
-STATIC_DEB_UPSTREAM_VERSION_DROPREVISION := $(shell echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
+STATIC_DEB_UPSTREAM_VERSION_DROPREVISION := $(shell set -e;echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(STATIC_DEB_UPSTREAM_VERSION_DROPREVISION)
-STATIC_DEB_UPSTREAM_VERSION_MAJOR := $(shell echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
+STATIC_DEB_UPSTREAM_VERSION_MAJOR := $(shell set -e;echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
 export DEB_UPSTREAM_VERSION_MAJOR ?= $(STATIC_DEB_UPSTREAM_VERSION_MAJOR)
 export IMVERSION := $(DEB_UPSTREAM_VERSION_MAJOR)
 
@@ -163,7 +163,8 @@ VALGRIND_TEST_POC_CMD:= \
 VALGRIND_TEST_POC := $(shell $(VALGRIND_TEST_POC_CMD))
 
 # check if FPU
-HAVE_FPU_CMD:= case $(DEB_HOST_MULTIARCH) in \
+HAVE_FPU_CMD:=  set -e \
+		case $(DEB_HOST_MULTIARCH) in \
 		mips*-*) \
 			if grep " FPU" /proc/cpuinfo > /dev/null; then \
 				echo "yes"; \
@@ -177,21 +178,22 @@ export STATIC_HAVE_FPU := $(shell $(HAVE_FPU_CMD))
 export HAVE_FPU ?= $(STATIC_HAVE_CPU)
 
 # upper/lower case function
-LC = ${shell echo $1 | sed -e 's/\(.*\)/\L\1/'}
-UC = ${shell echo $1 | sed -e 's/\(.*\)/\U\1/'}
-REPLACE_QUANTUM = ${shell echo '$1' |  sed -e 's/$$QUANTUM/$2/g'}
-MAGICK_ANY_Q_PACKAGES = ${shell echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 's/$$QUANTUM/$1/g'}
+LC = ${shell set -e; echo '$1' | sed -e 's/\(.*\)/\L\1/'}
+UC = ${shell set -e; echo '$1' | sed -e 's/\(.*\)/\U\1/'}
+REPLACE_QUANTUM = ${shell set -e;echo '$1' |  sed -e 's/$$QUANTUM/$2/g'}
+MAGICK_ANY_Q_PACKAGES = ${shell set -e;echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 's/$$QUANTUM/$1/g'}
 
 
 
 
 # extract quantum
-QUANTUM_PART = ${shell echo -n '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
-HDRI_PART = ${shell case $$(echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in *hdri) echo 'yes';; *) echo 'no' ;; esac }
-HDRI_STR_PART = ${shell case $$(echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in *hdri) echo ' with high dynamic range';; *) echo '' ;; esac }
+QUANTUM_PART = ${shell set -e;echo -n '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
+HDRI_PART = ${shell set -e;case $$(set -e; echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in *hdri) echo 'yes';; *) echo 'no' ;; esac }
+HDRI_STR_PART = ${shell set -e;case $$(set -e;echo -n '$1' | sed -e 's/\(.*\)/\L\1/') in *hdri) echo ' with high dynamic range';; *) echo '' ;; esac }
 
 # bug #840682
 DH_EXEC_SUBST = /usr/lib/dh-exec/dh-exec-subst
+
 
 
 dummy:
