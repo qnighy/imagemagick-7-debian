@@ -226,6 +226,12 @@ update_pkg.%:
 	UCQUANTUMDEPTH=$(call UC,$*) \
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/tests.d/rose-IMVERSION.QUANTUMDEPTH.in > $(CURDIR)/debian/tests/rose-$(IMVERSION).$*
 	chmod +x $(CURDIR)/debian/tests/rose-$(IMVERSION).$*
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	UCQUANTUMDEPTH=$(call UC,$*) \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/tests.d/perlmagick-IMVERSION.QUANTUMDEPTH.in > $(CURDIR)/debian/tests/perlmagick-$(IMVERSION).$*
+	chmod +x $(CURDIR)/debian/tests/perlmagick-$(IMVERSION).$*
 
 update_pkg: $(foreach Q,$(QUANTUMDEPTH),update_pkg.$Q)
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/noquantum.in >> $(CURDIR)/debian/control.d/noquantum

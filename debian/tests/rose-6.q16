@@ -1,4 +1,4 @@
-#:/bin/sh
+#!/bin/sh
 
 CONVERT=convert-6.q16
 
