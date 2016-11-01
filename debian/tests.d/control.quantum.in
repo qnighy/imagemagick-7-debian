@@ -2,5 +2,5 @@ Tests: rose-${IMVERSION}.${QUANTUMDEPTH}
 Depends: imagemagick-${IMVERSION}.${QUANTUMDEPTH}, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-2-extra, ghostscript, netpbm
 
 Tests: perlmagick-${IMVERSION}.${QUANTUMDEPTH}
-Depends: libimage-magick-${QUANTUMDEPTH}-perl, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-2-extra, libaliased-perl
+Depends: libimage-magick-${QUANTUMDEPTH}-perl, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-2-extra, libaliased-perl, gsfonts
 
