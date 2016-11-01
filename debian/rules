@@ -592,7 +592,8 @@ override_dh_auto_install-indep:
 	if test "BUG#703261" = "SOLVED"; then \
 	dh_auto_install --builddirectory="$(CURDIR)/debian/build-quantum-indep" \
 			--destdir="$(CURDIR)/debian/tmp-indep" \
-			--  install-configlibDATA install-data-html \
+			--  install-configlibDATA install-configshareDATA \
+		            install-data-html \
 			    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
 			    V=1;\
@@ -600,7 +601,7 @@ override_dh_auto_install-indep:
 	cd "$(CURDIR)/debian/build-quantum-indep" && \
 		make  DESTDIR=$(CURDIR)/debian/tmp-indep \
 			    install-configlibDATA install-configshareDATA \
-			    install-configinstall-data-html \
+			    install-data-html \
 			    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
 			    V=1 ;\
