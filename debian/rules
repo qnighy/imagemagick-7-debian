@@ -161,30 +161,30 @@ VALGRIND_TEST_POC_CMD:= \
 	     echo $$POCFOUND
 
 VALGRIND_TEST_POC := $(shell $(VALGRIND_TEST_POC_CMD))
-
 # check if FPU
-HAVE_FPU_CMD:=  set -e \
+HAVE_FPU_CMD := \
+		set -e; \
 		case $(DEB_HOST_MULTIARCH) in \
 		mips*-*) \
 			if grep " FPU" /proc/cpuinfo > /dev/null; then \
-				echo "yes"; \
+				echo -n "yes"; \
 			else \
-				echo "no"; \
-			fi ;;\
+				echo -n "no"; \
+			fi; \
+		;;\
 		*) \
-			echo "yes" ;; \
-	       esac
-export STATIC_HAVE_FPU := $(shell $(HAVE_FPU_CMD))
-export HAVE_FPU ?= $(STATIC_HAVE_CPU)
+			echo -n "yes"; \
+		;; \
+	       esac;
+
+STATIC_HAVE_FPU := $(shell $(HAVE_FPU_CMD))
+export HAVE_FPU ?= $(STATIC_HAVE_FPU)
 
 # upper/lower case function
 LC = ${shell set -e; echo '$1' | sed -e 's/\(.*\)/\L\1/'}
 UC = ${shell set -e; echo '$1' | sed -e 's/\(.*\)/\U\1/'}
 REPLACE_QUANTUM = ${shell set -e;echo '$1' |  sed -e 's/$$QUANTUM/$2/g'}
 MAGICK_ANY_Q_PACKAGES = ${shell set -e;echo '$(MAGICK_ANY_QUANTUM_PACKAGES)' |  sed -e 's/$$QUANTUM/$1/g'}
-
-
-
 
 # extract quantum
 QUANTUM_PART = ${shell set -e;echo -n '$1' | sed -r 's/q?([[:digit:]]*)(HDRI)?/\1/gi'}
@@ -198,6 +198,9 @@ DH_EXEC_SUBST = /usr/lib/dh-exec/dh-exec-subst
 
 
 dummy:
+
+test_fpu:
+	echo $(HAVE_FPU)
 
 # update package files
 update_pkg.%:
@@ -596,7 +599,8 @@ override_dh_auto_install-indep:
 	else \
 	cd "$(CURDIR)/debian/build-quantum-indep" && \
 		make  DESTDIR=$(CURDIR)/debian/tmp-indep \
-			    install-configlibDATA install-data-html \
+			    install-configlibDATA install-configshareDATA \
+			    install-configinstall-data-html \
 			    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
 			    V=1 ;\

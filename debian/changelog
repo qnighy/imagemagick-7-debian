@@ -5,10 +5,12 @@ imagemagick (8:6.9.6.2+dfsg-3) unstable; urgency=medium
   * Improve main program postinst/prerm scripts.
   * Switch to compat 10.
   * Improve test suite
-  * Create packages for HDRI (Closes: #476357).
+  * Create packages for HDRI (Closes: #476357). Will allow smooth
+    transition to imagemagick 7.
   * Thus closing "imagemagick; imagemagick-6.q16 packages have the same
     binary", thanks to Ross Gammon (Closes: #817842). Now we have
     imagemagick-6.q16hdri.*
+  * Move files from libmagickcore to imagemagick-6-common.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 31 Oct 2016 23:37:50 +0100
 

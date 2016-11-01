@@ -10,7 +10,7 @@ Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  povray, radiance, sane-utils, texlive-base-bin, transfig,
  ufraw-batch, xdg-utils
 Replaces: imagemagick (<< 8:6.9.2.10+dfsg-2~)
-Breaks: libmagickcore-dev (<< 8:6.9.2.10+dfsg-2~) 
+Breaks: libmagickcore-dev (<< 8:6.9.2.10+dfsg-2~)
 Provides: imagemagick, imagemagick-${IMVERSION}.defaultquantum
 Description: image manipulation programs -- quantum depth ${UCQUANTUMDEPTH}
  ImageMagick is a software suite to create, edit, and compose bitmap images.
@@ -29,13 +29,15 @@ Description: image manipulation programs -- quantum depth ${UCQUANTUMDEPTH}
  depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 # predepend on dpkg (>= 1.17.6) for libgomp symbols remove after jeesie +2
+# normally depends on imagemagick-${IMVERSION}-common >= ${source:version} except
+# here when some files were moved between two packages
 Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
- imagemagick-${IMVERSION}-common (= ${source:Version})
+ imagemagick-${IMVERSION}-common (>= 8:6.9.6.2+dfsg-3)
 Recommends: ghostscript, gsfonts
 Suggests: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra
 Description: low-level image manipulation library -- quantum depth ${UCQUANTUMDEPTH}
