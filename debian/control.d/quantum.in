@@ -109,7 +109,7 @@ Section: libs
 Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
 	 imagemagick-${IMVERSION}-common(= ${source:Version})
-Description: image manipulation library
+Description: image manipulation library -- quantum depth ${UCQUANTUMDEPTH}
  The MagickWand API is the recommended interface between the C programming
  language and the ImageMagick image processing libraries. Unlike the
  MagickCore C API, MagickWand uses only a few opaque types. Accessors are
@@ -134,7 +134,7 @@ Depends: libmagickwand-${IMVERSION}-headers (= ${source:Version}),
 Provides: libmagickwand-${IMVERSION}.defaultquantum-dev
 Replaces: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickwand-dev (<< 8:6.8.3.10-1~)
-Description: image manipulation library - development files
+Description: image manipulation library - development files (${UCQUANTUMDEPTH})
  The MagickWand API is the recommended interface between the C programming
  language and the ImageMagick image processing libraries. Unlike the
  MagickCore C API, MagickWand uses only a few opaque types. Accessors are
@@ -155,7 +155,7 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Conflicts: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-6
 Replaces: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-6
-Description: object-oriented C++ interface to ImageMagick
+Description: C++ interface to ImageMagick -- quantum depth ${UCQUANTUMDEPTH}
  The Magick++ library is a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
  .
@@ -178,7 +178,7 @@ Depends: libmagick++-${IMVERSION}-headers (= ${source:Version}),
 Provides: libmagick++-${IMVERSION}.defaultquantum-dev
 Replaces: libmagick++-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagick++-dev (<< 8:6.8.3.10-1~)
-Description: object-oriented C++ interface to ImageMagick - development files
+Description: C++ interface to ImageMagick - development files (${UCQUANTUMDEPTH})
  The Magick++ library is a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
  .
