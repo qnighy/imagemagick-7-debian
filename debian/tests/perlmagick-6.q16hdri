@@ -21,7 +21,7 @@ $model->Label('Magick');
 $model->Set(background=>'white');
 
 $smile=im->new;
-$x=$smile->ReadImage('smile.gif');
+$x=$smile->ReadImage('logo:');
 warn "$x" if "$x";
 $smile->Label('Smile');
 $smile->Set(background=>'white');
