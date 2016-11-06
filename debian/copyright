@@ -331,6 +331,13 @@ Files: debian/display-im6.svg
 Copyright: 1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 
+Files: debian/tests*/perlmagick*
+Copyright: 1987-1999, E. I. du Pont de Nemours and Company
+	   1999-2016, ImageMagick Studio LLC
+	   1987-2016, John Cristy
+License: ImageMagick
+Comment: adapted from PerlMagick/demo/demo.pl
+
 Files: magick/nt-base.c
 Copyright: 2000-2002, Ghostgum Software Pty Ltd.  All rights reserved.
 	   1987-1999, E. I. du Pont de Nemours and Company
