@@ -8,7 +8,7 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Vincent Fourmond <fourmond@debian.org>
 Standards-Version: 3.9.8
 # for dbg-sym
-Build-Depends: debhelper (>= 9.20151219),
+Build-Depends: debhelper (>= 10),
 # for improving build
  dh-exec, dh-autoreconf,
 # for linking compiling ...
