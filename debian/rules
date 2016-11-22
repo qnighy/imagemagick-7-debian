@@ -143,7 +143,7 @@ MAGICK_ALL_COMPAT_PACKAGES := imagemagick-common \
 # run POC
 TEST_POC_CMD:= \
 	     POCFOUND='no'; \
-	     for POC in $(POC_ARCH); do \
+	     set -e; for POC in $(POC_ARCH); do \
 	     	if dpkg-architecture -i$$POC; then \
 			POCFOUND='yes'; break;\
 		fi; \
@@ -153,7 +153,7 @@ TEST_POC := $(shell $(TEST_POC_CMD))
 
 VALGRIND_TEST_POC_CMD:= \
 	     POCFOUND='no'; \
-	     for POC in $(VALGRIND_POC_ARCH); do \
+	     set -e; for POC in $(VALGRIND_POC_ARCH); do \
 	     	if dpkg-architecture -i$$POC; then \
 			POCFOUND='yes'; break;\
 		fi; \
@@ -371,7 +371,7 @@ override_dh_auto_test-arch_native_has_fpu_valgrindpoc_quantum.%: override_dh_aut
 	@echo "*******************************************************************************"
 	@echo " valgrind test of security problems                                            "
 	@echo "*******************************************************************************"
-	for POC in $(CURDIR)/debian/poc/SEGV/*; do \
+	set -e; for POC in $(CURDIR)/debian/poc/SEGV/*; do \
 		echo "Test POC $$POC"; \
 		(cd $(CURDIR)/debian/build-quantum-$*; $(VALGRIND_CONVERT) $$POC png:/dev/null) || true; \
 	done;
@@ -386,7 +386,7 @@ override_dh_auto_test-arch_native_has_fpu_poc_quantum.%: override_dh_auto_test-a
 	@echo "*******************************************************************************" ;
 	@echo " Basic test of security problems                                               " ;
 	@echo "*******************************************************************************" ;
-	for POC in $(CURDIR)/debian/poc/SEGV/*; do \
+	set -e; for POC in $(CURDIR)/debian/poc/SEGV/*; do \
 		echo "Test POC $$POC"; \
 		(cd $(CURDIR)/debian/build-quantum-$*; $(CONVERT) $$POC png:/dev/null) || true; \
 	done;
@@ -438,7 +438,7 @@ override_dh_auto_test-indep:
 # build icons cache for quantum
 override_dh_auto_install-arch_iconcache_quantum.%:
 	# build icons cache (build for each arch in order to get more testing)
-	while read SIZE; do \
+	set -e; while read SIZE; do \
 		mkdir -p $(CURDIR)/debian/tmp-$*/usr/share/icons/hicolor/$$SIZE/apps/ ;\
 		cd $(CURDIR)/debian/build-quantum-$*; \
 		echo "Make icons for size $$SIZE..."; \
@@ -478,7 +478,7 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 		chrpath -d {} \;
 
 	# move binaries to /usr/bin/*quantum
-	for basename in $(MAGICK_PROGRAMS); do \
+	set -e; for basename in $(MAGICK_PROGRAMS); do \
 		mv "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename" \
                    "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename-im$(IMVERSION).$*"; \
 		mv "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename.1" \
@@ -488,7 +488,7 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 	# move config script to arch directory
 	# TODO: remove after jessie +1
 	mkdir -p "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$*/"; \
-	for SCRIPT in Magick-config MagickCore-config MagickWand-config Wand-config Magick++-config; do \
+	set -e; for SCRIPT in Magick-config MagickCore-config MagickWand-config Wand-config Magick++-config; do \
 		cp -f "debian/tmp-$*/usr/bin/$$SCRIPT" \
 		      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$*/"; \
 	done;
@@ -636,20 +636,20 @@ override_dh_auto_install-indep:
 
 # install quantum package
 override_dh_install-arch_quantum.%:
-	for PKG in $(call REPLACE_QUANTUM, $(MAGICK_ANY_QUANTUM_PACKAGES),$*); do \
+	set -e; for PKG in $(call REPLACE_QUANTUM, $(MAGICK_ANY_QUANTUM_PACKAGES),$*); do \
 		dh_install --package=$$PKG \
 			--sourcedir=debian/tmp-$* --autodest; \
 	done;
 
 	# Remove extra coders from libmagickcore
-	while read FILE; do \
+	set -e; while read FILE; do \
 		rm -f debian/libmagickcore-${IMVERSION}.$*-${CORESOVERSION}/$$FILE; \
 	done < debian/libmagickcore-${IMVERSION}.$*-${CORESOVERSION}-extra.install
 
 # install arch package
 override_dh_install-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_install-arch_quantum.$Q)
 	# take arch include in default quantum
-	for PKG in $(MAGICK_ANY_PACKAGES); do \
+	set -e; for PKG in $(MAGICK_ANY_PACKAGES); do \
 		dh_install --package=$$PKG \
 			--sourcedir=debian/tmp-${DEFAULTQUANTUMDEPTH} --autodest; \
 	done;
@@ -707,7 +707,7 @@ override_dh_strip:
 
 # link bug file
 override_dh_bugfiles-arch_quantum.%:
-	for PKG in ${call REPLACE_QUANTUM, $(MAGICK_ANY_QUANTUM_PACKAGES),$*}; do \
+	set -e; for PKG in ${call REPLACE_QUANTUM, $(MAGICK_ANY_QUANTUM_PACKAGES),$*}; do \
 		mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 		ln -s imagemagick-$(IMVERSION)-common \
 		      $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \
@@ -715,12 +715,12 @@ override_dh_bugfiles-arch_quantum.%:
 	touch $@
 
 override_dh_bugfiles-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_bugfiles-arch_quantum.$Q)
-	for PKG in $(MAGICK_ANY_PACKAGES); do \
+	set -e; for PKG in $(MAGICK_ANY_PACKAGES); do \
                 mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 		ln -s imagemagick-$(IMVERSION)-common \
 		      $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \
 	done
-	for PKG in $(MAGICK_ANY_COMPAT_PACKAGES); do \
+	set -e; for PKG in $(MAGICK_ANY_COMPAT_PACKAGES); do \
                 mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 		ln -s imagemagick-$(IMVERSION)-common \
 		      $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \
@@ -729,7 +729,7 @@ override_dh_bugfiles-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_bugfiles-arch
 override_dh_bugfiles-indep:
 	dh_bugfiles --package=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common
 	# link normal package
-	for PKG in $(MAGICK_ALL_PACKAGES); do \
+	set -e; for PKG in $(MAGICK_ALL_PACKAGES); do \
 		if test "X$$PKG" != Ximagemagick-$(IMVERSION)-common; then \
                         mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 			ln -s imagemagick-$(IMVERSION)-common \
@@ -738,7 +738,7 @@ override_dh_bugfiles-indep:
 	done
 
 	# link compat package
-	for PKG in $(MAGICK_ALL_COMPAT_PACKAGES); do \
+	set -e; for PKG in $(MAGICK_ALL_COMPAT_PACKAGES); do \
 		mkdir -p $(CURDIR)/debian/$$PKG/usr/share/bug/ ; \
 		ln -s imagemagick-$(IMVERSION)-common \
                       $(CURDIR)/debian/$$PKG/usr/share/bug/$$PKG ; \
