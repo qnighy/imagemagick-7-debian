@@ -1,3 +1,22 @@
+imagemagick (8:6.9.6.5+dfsg-1) unstable; urgency=medium
+
+  * Upload to unstable
+  * Fix CVE-2016-9298: heap overflow in WaveletDenoiseImage().
+    (Closes: #844211).
+  * Fixed memory leak in psd file handling.
+    (Closes: #845239).
+  * Fix security bug; "Prevent fault in MSL interpreter"
+    (Closes: #845241).
+  * Fix null pointer dereference in TIFF file handling
+    (Closes: #845243).
+  * Prevent heap buffer overflow in heap-buffer-overflow
+    in IsPixelGray. Backport fixes from upstream.
+    (Closes: #845242).
+  * Supports XPM with > 8464 colours. (Closes: #842632).
+  * Use safer policy.xml file.
+  
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 22 Nov 2016 12:50:29 +0100
+
 imagemagick (8:6.9.6.2+dfsg-3) experimental; urgency=medium
 
   * Simplify rules.
