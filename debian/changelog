@@ -1,4 +1,4 @@
-imagemagick (8:6.9.6.5+dfsg-1) unstable; urgency=medium
+imagemagick (8:6.9.6.5+dfsg-1) unstable; urgency=high
 
   * Upload to unstable
   * Fix CVE-2016-9298: heap overflow in WaveletDenoiseImage().
