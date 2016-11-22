@@ -443,7 +443,7 @@ coders_dcm_la_LIBADD       = $(MAGICKCORE_LIBS) $(MATH_LIBS)
 coders_dds_la_SOURCES      = coders/dds.c
 coders_dds_la_CPPFLAGS     = $(MAGICK_CODER_CPPFLAGS)
 coders_dds_la_LDFLAGS      = $(MODULECOMMONFLAGS)
-coders_dds_la_LIBADD       = $(MAGICKCORE_LIBS) $(MATH_LIBS)
+coders_dds_la_LIBADD       = $(MAGICKCORE_LIBS)
 
 # DEBUG coder module
 coders_debug_la_SOURCES    = coders/debug.c
@@ -635,7 +635,7 @@ coders_jnx_la_LIBADD       = $(MAGICKCORE_LIBS)
 coders_json_la_SOURCES     = coders/json.c
 coders_json_la_CPPFLAGS    = $(MAGICK_CODER_CPPFLAGS)
 coders_json_la_LDFLAGS     = $(MODULECOMMONFLAGS)
-coders_json_la_LIBADD      = $(MAGICKCORE_LIBS) $(MATH_LIBS)
+coders_json_la_LIBADD      = $(MAGICKCORE_LIBS)
 
 # LABEL coder module
 coders_label_la_SOURCES    = coders/label.c
@@ -857,7 +857,7 @@ coders_ps3_la_LIBADD       = $(MAGICKCORE_LIBS) $(JBIG_LIBS) $(JPEG_LIBS) $(LZMA
 coders_psd_la_SOURCES      = coders/psd.c coders/psd-private.h
 coders_psd_la_CPPFLAGS     = $(MAGICK_CODER_CPPFLAGS)
 coders_psd_la_LDFLAGS      = $(MODULECOMMONFLAGS)
-coders_psd_la_LIBADD       = $(MAGICKCORE_LIBS) $(ZLIB_LIBS)
+coders_psd_la_LIBADD       = $(MAGICKCORE_LIBS)
 
 # PWP coder module
 coders_pwp_la_SOURCES      = coders/pwp.c
@@ -1091,7 +1091,7 @@ coders_xps_la_LIBADD       = $(MAGICKCORE_LIBS) $(MUPDF_LIBS) $(FREETYPE_LIBS) $
 coders_xtrn_la_SOURCES     = coders/xtrn.c
 coders_xtrn_la_CPPFLAGS    = $(MAGICK_CODER_CPPFLAGS)
 coders_xtrn_la_LDFLAGS     = $(MODULECOMMONFLAGS)
-coders_xtrn_la_LIBADD      = $(MAGICKCORE_LIBS)
+coders_xtrn_la_LIBADD      = $(MAGICKCORE_LIBS) $(OLE_LIBS)
 
 # XWD coder module
 coders_xwd_la_SOURCES      = coders/xwd.c

@@ -3291,20 +3291,19 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
 			value += (float4)(filter[i]) * pixels[px + (py + i) * prp];
 			++i;
 		}
+		if ((x < imageColumns) && (y < imageRows)) {
+			if (justBlur == 0) {		// apply sharpening
+				float4 srcPixel = convert_float4(im[x + y * imageColumns]);
+				float4 diff = srcPixel - value;
 
-		if (justBlur == 0) {		// apply sharpening
-			float4 srcPixel = convert_float4(im[x + y * imageColumns]);
-			float4 diff = srcPixel - value;
+				float quantumThreshold = QuantumRange*threshold;
 
-			float quantumThreshold = QuantumRange*threshold;
-
-			int4 mask = isless(fabs(2.0f * diff), (float4)quantumThreshold);
-			value = select(srcPixel + diff * gain, srcPixel, mask);
-		}
-	
-		if ((x < imageColumns) && (y < imageRows))
+				int4 mask = isless(fabs(2.0f * diff), (float4)quantumThreshold);
+				value = select(srcPixel + diff * gain, srcPixel, mask);
+			}
 			filtered_im[x + y * imageColumns] = (CLPixelType)(ClampToQuantum(value.s0), ClampToQuantum(value.s1), ClampToQuantum(value.s2), ClampToQuantum(value.s3));
-		}	
+		}
+	}
 	)
 
 	STRINGIFY(
@@ -3314,7 +3313,7 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
 					const int imageWidth,
 					const int imageHeight)
 	{
-		const int pad = (1 << (passes - 1));;
+		const int pad = (1 << (passes - 1));
 		const int tileSize = 64;
 		const int tileRowPixels = 64;
 		const float noise[] = { 0.8002, 0.2735, 0.1202, 0.0585, 0.0291, 0.0152, 0.0080, 0.0044 };

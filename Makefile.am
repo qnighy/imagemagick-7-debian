@@ -4,7 +4,7 @@
 #  You may not use this file except in compliance with the License.  You may
 #  obtain a copy of the License at
 #
-#    http://www.imagemagick.org/script/license.php
+#    https://www.imagemagick.org/script/license.php
 #
 #  Unless required by applicable law or agreed to in writing, software
 #  distributed under the License is distributed on an "AS IS" BASIS,
@@ -248,19 +248,17 @@ endif
 install-data-html:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdocdir)
 	$(INSTALL_DATA) $(srcdir)/index.html $(DESTDIR)$(pkgdocdir)
-	for dir in $(DOCDIRS) ; do \
+	@for dir in $(DOCDIRS) ; do \
 	  $(mkinstalldirs) $(DESTDIR)$(pkgdocdir)/$$dir && \
 	  if test -d $(builddir)/$$dir ; then \
   		docsrcdir=$(builddir)/$$dir; \
 	  else \
   		docsrcdir=$(srcdir)/$$dir; \
 	  fi; \
-	  if test -d $$docsrcdir; then \
-	    for file in $$docsrcdir/*.* ; do \
-		echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdocdir)/$$dir" ; \
-		$(INSTALL_DATA) "$$file" $(DESTDIR)$(pkgdocdir)/$$dir ; \
-	    done ; \
-	  fi; \
+	  for file in $$docsrcdir/*.* ; do \
+	    echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdocdir)/$$dir" ; \
+	    $(INSTALL_DATA) "$$file" $(DESTDIR)$(pkgdocdir)/$$dir ; \
+	  done ; \
 	done
 
 # Uninstall HTML files
