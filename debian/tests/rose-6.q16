@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CONVERT=convert-6.q16
+CONVERT=convert-im6.q16
 
 set -e
 $CONVERT rose: pdf:/dev/null

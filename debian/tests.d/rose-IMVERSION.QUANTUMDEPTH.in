@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CONVERT=convert-${IMVERSION}.${QUANTUMDEPTH}
+CONVERT=convert-im${IMVERSION}.${QUANTUMDEPTH}
 
 set -e
 $CONVERT rose: pdf:/dev/null
