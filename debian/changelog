@@ -1,3 +1,13 @@
+imagemagick (8:6.9.6.6+dfsg-1) unstable; urgency=high
+
+  * New upstream release.
+  * Fix CVE-2016-8862: memory allocation failure in
+    AcquireMagickMemory (memory.c).
+    (Closes: #845634).
+  * Drop a few debians patches used by upstream.
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 25 Nov 2016 23:17:24 +0100
+
 imagemagick (8:6.9.6.5+dfsg-1) unstable; urgency=high
 
   * Upload to unstable
