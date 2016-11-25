@@ -2891,6 +2891,13 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
             (void) ConcatenateMagickString(value,"a",MaxTextExtent);
           break;
         }
+      if (LocaleCompare("colors",property) == 0)
+        {
+          image->colors=GetNumberColors(image,(FILE *) NULL,&image->exception);
+          (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
+            image->colors);
+          break;
+        }
       if (LocaleCompare("colorspace",property) == 0)
         {
           /*
@@ -2904,6 +2911,12 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
         {
           string=CommandOptionToMnemonic(MagickComposeOptions,(ssize_t)
             image->compose);
+          break;
+        }
+      if (LocaleCompare("compression",property) == 0)
+        {
+          string=CommandOptionToMnemonic(MagickCompressOptions,(ssize_t)
+            image->compression);
           break;
         }
       if (LocaleCompare("copyright",property) == 0)
@@ -2980,6 +2993,12 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
       if (LocaleCompare("input",property) == 0)
         {
           string=image->filename;
+          break;
+        }
+      if (LocaleCompare("interlace",property) == 0)
+        {
+          string=CommandOptionToMnemonic(MagickInterlaceOptions,(ssize_t)
+            image->interlace);
           break;
         }
       break;
@@ -3135,8 +3154,24 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
         }
       break;
     }
+    case 'q':
+    {
+      if (LocaleCompare("quality",property) == 0)
+        {
+          (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
+            image->quality);
+          break;
+        }
+      break;
+    }
     case 'r':
     {
+      if (LocaleCompare("rendering-intent",property) == 0)
+        {
+          string=CommandOptionToMnemonic(MagickIntentOptions,(ssize_t)
+            image->rendering_intent);
+          break;
+        }
       if (LocaleCompare("resolution.x",property) == 0)
         {
           (void) FormatLocaleString(value,MaxTextExtent,"%g",
@@ -4086,18 +4121,6 @@ MagickExport MagickBooleanType SetImageProperty(Image *image,
           if (intensity < 0)
             break;
           image->intensity=(PixelIntensityMethod) intensity;
-          break;
-        }
-      if (LocaleCompare("intent",property) == 0)
-        {
-          ssize_t
-            rendering_intent;
-
-          rendering_intent=ParseCommandOption(MagickIntentOptions,MagickFalse,
-            value);
-          if (rendering_intent < 0)
-            break;
-          image->rendering_intent=(RenderingIntent) rendering_intent;
           break;
         }
       if (LocaleCompare("interpolate",property) == 0)

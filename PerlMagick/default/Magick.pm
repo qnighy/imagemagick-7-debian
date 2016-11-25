@@ -47,7 +47,7 @@ It was originally developed to be used by CGI scripts for Web pages.
 
 A web page has been set up for this extension. See:
 
-	 file:///usr/share/doc/ImageMagick-6/www/perl-magick.html
+	 file:///usr/share/doc/ImageMagick-6/www/perl-magick.html@EXTRA_DOC_DIR@
 	 http://www.imagemagick.org/script/perl-magick.php
 
 If you have problems, go to

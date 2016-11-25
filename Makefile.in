@@ -505,7 +505,7 @@ coders_dcm_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(coders_dcm_la_LDFLAGS) $(LDFLAGS) -o $@
 @WITH_MODULES_TRUE@am_coders_dcm_la_rpath = -rpath $(codersdir)
-coders_dds_la_DEPENDENCIES = $(MAGICKCORE_LIBS)
+coders_dds_la_DEPENDENCIES = $(MAGICKCORE_LIBS) $(am__DEPENDENCIES_1)
 am_coders_dds_la_OBJECTS = coders/coders_dds_la-dds.lo
 coders_dds_la_OBJECTS = $(am_coders_dds_la_OBJECTS)
 coders_dds_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -765,7 +765,7 @@ coders_jpeg_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$@
 @JPEG_DELEGATE_TRUE@@WITH_MODULES_TRUE@am_coders_jpeg_la_rpath =  \
 @JPEG_DELEGATE_TRUE@@WITH_MODULES_TRUE@	-rpath $(codersdir)
-coders_json_la_DEPENDENCIES = $(MAGICKCORE_LIBS)
+coders_json_la_DEPENDENCIES = $(MAGICKCORE_LIBS) $(am__DEPENDENCIES_1)
 am_coders_json_la_OBJECTS = coders/coders_json_la-json.lo
 coders_json_la_OBJECTS = $(am_coders_json_la_OBJECTS)
 coders_json_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
@@ -1058,7 +1058,7 @@ coders_ps3_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(coders_ps3_la_LDFLAGS) $(LDFLAGS) -o $@
 @WITH_MODULES_TRUE@am_coders_ps3_la_rpath = -rpath $(codersdir)
-coders_psd_la_DEPENDENCIES = $(MAGICKCORE_LIBS)
+coders_psd_la_DEPENDENCIES = $(MAGICKCORE_LIBS) $(am__DEPENDENCIES_1)
 am_coders_psd_la_OBJECTS = coders/coders_psd_la-psd.lo
 coders_psd_la_OBJECTS = $(am_coders_psd_la_OBJECTS)
 coders_psd_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -3504,7 +3504,7 @@ coders_dcm_la_LIBADD = $(MAGICKCORE_LIBS) $(MATH_LIBS)
 coders_dds_la_SOURCES = coders/dds.c
 coders_dds_la_CPPFLAGS = $(MAGICK_CODER_CPPFLAGS)
 coders_dds_la_LDFLAGS = $(MODULECOMMONFLAGS)
-coders_dds_la_LIBADD = $(MAGICKCORE_LIBS)
+coders_dds_la_LIBADD = $(MAGICKCORE_LIBS) $(MATH_LIBS)
 
 # DEBUG coder module
 coders_debug_la_SOURCES = coders/debug.c
@@ -3696,7 +3696,7 @@ coders_jnx_la_LIBADD = $(MAGICKCORE_LIBS)
 coders_json_la_SOURCES = coders/json.c
 coders_json_la_CPPFLAGS = $(MAGICK_CODER_CPPFLAGS)
 coders_json_la_LDFLAGS = $(MODULECOMMONFLAGS)
-coders_json_la_LIBADD = $(MAGICKCORE_LIBS)
+coders_json_la_LIBADD = $(MAGICKCORE_LIBS) $(MATH_LIBS)
 
 # LABEL coder module
 coders_label_la_SOURCES = coders/label.c
@@ -3918,7 +3918,7 @@ coders_ps3_la_LIBADD = $(MAGICKCORE_LIBS) $(JBIG_LIBS) $(JPEG_LIBS) $(LZMA_LIBS)
 coders_psd_la_SOURCES = coders/psd.c coders/psd-private.h
 coders_psd_la_CPPFLAGS = $(MAGICK_CODER_CPPFLAGS)
 coders_psd_la_LDFLAGS = $(MODULECOMMONFLAGS)
-coders_psd_la_LIBADD = $(MAGICKCORE_LIBS)
+coders_psd_la_LIBADD = $(MAGICKCORE_LIBS) $(ZLIB_LIBS)
 
 # PWP coder module
 coders_pwp_la_SOURCES = coders/pwp.c
@@ -11151,7 +11151,7 @@ distdir: $(DISTFILES)
 	  ! -type d ! -perm -444 -exec $(install_sh) -c -m a+r {} {} \; \
 	|| chmod -R a+r "$(distdir)"
 dist-gzip: distdir
-	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
+	tardir=$(distdir) && $(am__tar) | eval GZIP= gzip $(GZIP_ENV) -c >$(distdir).tar.gz
 	$(am__post_remove_distdir)
 dist-bzip2: distdir
 	tardir=$(distdir) && $(am__tar) | BZIP2=$${BZIP2--9} bzip2 -c >$(distdir).tar.bz2
@@ -11174,7 +11174,7 @@ dist-shar: distdir
 	@echo WARNING: "Support for shar distribution archives is" \
 	               "deprecated." >&2
 	@echo WARNING: "It will be removed altogether in Automake 2.0" >&2
-	shar $(distdir) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).shar.gz
+	shar $(distdir) | eval GZIP= gzip $(GZIP_ENV) -c >$(distdir).shar.gz
 	$(am__post_remove_distdir)
 dist-zip: distdir
 	-rm -f $(distdir).zip
@@ -11191,7 +11191,7 @@ dist dist-all:
 distcheck: dist
 	case '$(DIST_ARCHIVES)' in \
 	*.tar.gz*) \
-	  GZIP=$(GZIP_ENV) gzip -dc $(distdir).tar.gz | $(am__untar) ;;\
+	  eval GZIP= gzip $(GZIP_ENV) -dc $(distdir).tar.gz | $(am__untar) ;;\
 	*.tar.bz2*) \
 	  bzip2 -dc $(distdir).tar.bz2 | $(am__untar) ;;\
 	*.tar.lz*) \
@@ -11201,7 +11201,7 @@ distcheck: dist
 	*.tar.Z*) \
 	  uncompress -c $(distdir).tar.Z | $(am__untar) ;;\
 	*.shar.gz*) \
-	  GZIP=$(GZIP_ENV) gzip -dc $(distdir).shar.gz | unshar ;;\
+	  eval GZIP= gzip $(GZIP_ENV) -dc $(distdir).shar.gz | unshar ;;\
 	*.zip*) \
 	  unzip $(distdir).zip ;;\
 	esac
@@ -11617,17 +11617,19 @@ dist-hook:
 install-data-html:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdocdir)
 	$(INSTALL_DATA) $(srcdir)/index.html $(DESTDIR)$(pkgdocdir)
-	@for dir in $(DOCDIRS) ; do \
+	for dir in $(DOCDIRS) ; do \
 	  $(mkinstalldirs) $(DESTDIR)$(pkgdocdir)/$$dir && \
 	  if test -d $(builddir)/$$dir ; then \
   		docsrcdir=$(builddir)/$$dir; \
 	  else \
   		docsrcdir=$(srcdir)/$$dir; \
 	  fi; \
-	  for file in $$docsrcdir/*.* ; do \
-	    echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdocdir)/$$dir" ; \
-	    $(INSTALL_DATA) "$$file" $(DESTDIR)$(pkgdocdir)/$$dir ; \
-	  done ; \
+	  if test -d $$docsrcdir; then \
+	    for file in $$docsrcdir/*.* ; do \
+		echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdocdir)/$$dir" ; \
+		$(INSTALL_DATA) "$$file" $(DESTDIR)$(pkgdocdir)/$$dir ; \
+	    done ; \
+	  fi; \
 	done
 uninstall-data-html:
 	rm -f $(DESTDIR)$(pkgdocdir)/index.html

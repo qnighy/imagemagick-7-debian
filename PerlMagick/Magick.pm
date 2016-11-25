@@ -1,4 +1,4 @@
-package Image::Magick::Q16;
+package Image::Magick;
 
 #  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
@@ -68,14 +68,14 @@ sub AUTOLOAD {
     goto &$AUTOLOAD;
 }
 
-bootstrap Image::Magick::Q16 $VERSION;
+bootstrap Image::Magick $VERSION;
 
 # Preloaded methods go here.
 
 sub new
 {
     my $this = shift;
-    my $class = ref($this) || $this || "Image::Magick::Q16";
+    my $class = ref($this) || $this || "Image::Magick";
     my $self = [ ];
     bless $self, $class;
     $self->set(@_) if @_;
@@ -85,7 +85,7 @@ sub new
 sub New
 {
     my $this = shift;
-    my $class = ref($this) || $this || "Image::Magick::Q16";
+    my $class = ref($this) || $this || "Image::Magick";
     my $self = [ ];
     bless $self, $class;
     $self->set(@_) if @_;
@@ -101,12 +101,12 @@ __END__
 
 =head1 NAME
 
-Image::Magick::Q16 - objected-oriented Perl interface to ImageMagick (Q16). Use it to create, edit, compose, or convert bitmap images from within a Perl script.
+Image::Magick - objected-oriented Perl interface to ImageMagick. Use it to create, edit, compose, or convert bitmap images from within a Perl script.
 
 =head1 SYNOPSIS
 
-  use Image::Magick::Q16;
-  $p = new Image::Magick::Q16;
+  use Image::Magick;
+  $p = new Image::Magick;
   $p->Read("imagefile");
   $p->Set(attribute => value, ...)
   ($a, ...) = $p->Get("attribute", ...)
@@ -122,7 +122,7 @@ It was originally developed to be used by CGI scripts for Web pages.
 
 A web page has been set up for this extension. See:
 
-	 file:///usr/share/doc/ImageMagick-6/www/perl-magick.html@EXTRA_DOC_DIR@
+	 file:///usr/share/doc/ImageMagick-6.8.0/www/perl-magick.html
 	 http://www.imagemagick.org/script/perl-magick.php
 
 If you have problems, go to
