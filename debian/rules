@@ -8,12 +8,12 @@ export DH_VERBOSE=1
 
 # quantum depth is channel depth
 export QUANTUMDEPTH ?= q16 q16hdri
-export CORESOVERSION ?= 2
-export WANDSOVERSION ?= 2
+export CORESOVERSION ?= 3
+export WANDSOVERSION ?= 3
 export PPSOVERSION ?= 6v6
 
 # default im version used for adding default file
-export DEFAULTIMVERSION ?= 6
+export DEFAULTIMVERSION ?= 7
 
 
 # poc arch for test empty means no test

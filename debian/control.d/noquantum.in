@@ -47,11 +47,12 @@ Homepage: http://www.imagemagick.org/
 Testsuite: autopkgtest
 
 # arch all package
+# do not forget to add breaks if config file syntax change.
 Package: imagemagick-${IMVERSION}-common
 Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}
-Breaks: libmagickcore-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-${CORESOVERSION} (<< ${source:Version}),
+Breaks: libmagickcore-6.q16-3 (<< 8:6.9.6.8+dfsg-1~),
 	libmagickcore-6.q16-2 (<< 8:6.9.6.2+dfsg-3~),
 	imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Provides: imagemagick-common

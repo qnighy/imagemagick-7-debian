@@ -60,7 +60,8 @@ Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Enhances: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}
-Provides: libmagickcore-extra, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-1-extra
+Provides: libmagickcore-extra, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-1-extra,
+ libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-2-extra,
 Suggests: inkscape
 Recommends: libjxr-tools
 Description: low-level image manipulation library - extra codecs (${UCQUANTUMDEPTH})
