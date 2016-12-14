@@ -1,26 +1,6 @@
 # SymbolsHelper-Confirmed: 1.0.0 amd64
 libMagickCore-6.Q16.so.3 libmagickcore-6.q16-3 #MINVER#
  (regex|optional)"^.gomp_critical_user_.*@Base" 8:6.9.6.8
- AccelerateAddNoiseImage@Base 8:6.9.6.8
- AccelerateBlurImage@Base 8:6.9.6.8
- AccelerateCompositeImage@Base 8:6.9.6.8
- AccelerateContrastImage@Base 8:6.9.6.8
- AccelerateContrastStretchImageChannel@Base 8:6.9.6.8
- AccelerateConvolveImage@Base 8:6.9.6.8
- AccelerateConvolveImageChannel@Base 8:6.9.6.8
- AccelerateDespeckleImage@Base 8:6.9.6.8
- AccelerateEqualizeImage@Base 8:6.9.6.8
- AccelerateFunctionImage@Base 8:6.9.6.8
- AccelerateGrayscaleImage@Base 8:6.9.6.8
- AccelerateLocalContrastImage@Base 8:6.9.6.8
- AccelerateModulateImage@Base 8:6.9.6.8
- AccelerateMotionBlurImage@Base 8:6.9.6.8
- AccelerateNegateImageChannel@Base 8:6.9.6.8
- AccelerateRadialBlurImage@Base 8:6.9.6.8
- AccelerateRandomImage@Base 8:6.9.6.8
- AccelerateResizeImage@Base 8:6.9.6.8
- AccelerateUnsharpMaskImage@Base 8:6.9.6.8
- AccelerateWaveletDenoiseImage@Base 8:6.9.6.8
  AcquireAlignedMemory@Base 8:6.9.6.8
  AcquireAuthenticCacheView@Base 8:6.9.6.8
  AcquireCacheView@Base 8:6.9.6.8
@@ -38,7 +18,6 @@ libMagickCore-6.Q16.so.3 libmagickcore-6.q16-3 #MINVER#
  AcquireKernelInfo@Base 8:6.9.6.8
  AcquireMagickMatrix@Base 8:6.9.6.8
  AcquireMagickMemory@Base 8:6.9.6.8
- AcquireMagickOpenCLEnv@Base 8:6.9.6.8
  AcquireMagickResource@Base 8:6.9.6.8
  AcquireMatrixInfo@Base 8:6.9.6.8
  AcquireMemory@Base 8:6.9.6.8
@@ -1022,10 +1001,8 @@ libMagickCore-6.Q16.so.3 libmagickcore-6.q16-3 #MINVER#
  RegistryComponentGenesis@Base 8:6.9.6.8
  RegistryComponentTerminus@Base 8:6.9.6.8
  RelinquishAlignedMemory@Base 8:6.9.6.8
- (optional=InternalABInoAPI)RelinquishCommandQueue@Base 8:6.9.6.8
  RelinquishMagickMatrix@Base 8:6.9.6.8
  RelinquishMagickMemory@Base 8:6.9.6.8
- RelinquishMagickOpenCLEnv@Base 8:6.9.6.8
  RelinquishMagickResource@Base 8:6.9.6.8
  RelinquishSemaphoreInfo@Base 8:6.9.6.8
  RelinquishUniqueFileResource@Base 8:6.9.6.8
@@ -1105,7 +1082,6 @@ libMagickCore-6.Q16.so.3 libmagickcore-6.q16-3 #MINVER#
  SetCacheViewVirtualPixelMethod@Base 8:6.9.6.8
  SetClientName@Base 8:6.9.6.8
  SetClientPath@Base 8:6.9.6.8
- SetDefaultOpenCLEnv@Base 8:6.9.6.8
  SetErrorHandler@Base 8:6.9.6.8
  SetExceptionInfo@Base 8:6.9.6.8
  SetFatalErrorHandler@Base 8:6.9.6.8
@@ -1383,11 +1359,5 @@ libMagickCore-6.Q16.so.3 libmagickcore-6.q16-3 #MINVER#
  ZLIBEncodeImage@Base 8:6.9.6.8
  ZeroKernelNans@Base 8:6.9.6.8
  ZoomImage@Base 8:6.9.6.8
- (optional=InternalABInoAPI)initAccelerateTimer@Base 8:6.9.6.8
- openclCachedFilesDirectory@Base 8:6.9.6.8
- openclCachedFilesDirectoryLock@Base 8:6.9.6.8
- (optional=InternalABInoAPI)readAccelerateTimer@Base 8:6.9.6.8
- (optional=InternalABInoAPI)resetAccelerateTimer@Base 8:6.9.6.8
  sRGBCompandor@Base 8:6.9.6.8
- (optional=InternalABInoAPI)startAccelerateTimer@Base 8:6.9.6.8
- (optional=InternalABInoAPI)stopAccelerateTimer@Base 8:6.9.6.8
+
