@@ -4,8 +4,10 @@ imagemagick (8:6.9.6.8+dfsg-1) experimental; urgency=high
     thanks to Nishanth Aravamudan (Closes: #846385).
   * Fix CVE-2016-8707  ImageMagick Convert Tiff Adobe Deflate
     Code Execution Vulnerability (Closes: #848139)
+  * Bug fix: "fails to upgrade wheezy -> jessie -> stretch", thanks
+    to Andreas Beckmann (Closes: #847282).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 14 Dec 2016 16:19:52 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 14 Dec 2016 17:41:32 +0100
 
 imagemagick (8:6.9.6.6+dfsg-1) unstable; urgency=high
 
