@@ -1,3 +1,12 @@
+imagemagick (8:6.9.6.6+dfsg-2) experimental; urgency=high
+
+  * Bump so version due to structure change
+    thanks to Nishanth Aravamudan (Closes: #846385).
+  * Fix CVE-2016-8707  ImageMagick Convert Tiff Adobe Deflate
+    Code Execution Vulnerability (Closes: #848139)
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 14 Dec 2016 16:19:52 +0100
+
 imagemagick (8:6.9.6.6+dfsg-1) unstable; urgency=high
 
   * New upstream release.
