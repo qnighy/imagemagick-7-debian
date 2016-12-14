@@ -1,4 +1,4 @@
-libMagick++-6.Q16.so.6 libmagick++-6.q16-6v6 #MINVER#
+libMagick++-6.Q16.so.7 libmagick++-6.q16-7 #MINVER#
  (optional=InternalABInoAPI)MagickPlusPlusDestroyMagick@Base 8:6.9.6.8
  (c++)"Magick::adaptiveBlurImage::adaptiveBlurImage(double, double)@Base" 8:6.9.6.8
  (c++)"Magick::adaptiveBlurImage::operator()(Magick::Image&) const@Base" 8:6.9.6.8
