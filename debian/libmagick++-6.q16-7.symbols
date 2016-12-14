@@ -1780,7 +1780,7 @@ libMagick++-6.Q16.so.7 libmagick++-6.q16-7 #MINVER#
  (c++)"typeinfo for Magick::WarningType@Base" 8:6.9.6.8
  (c++)"typeinfo for Magick::WarningUndefined@Base" 8:6.9.6.8
  (c++)"typeinfo for Magick::WarningXServer@Base" 8:6.9.6.8
- (c++)"typeinfo for std::unary_function<MagickCore::_DrawingWand, void>@Base" 8:6.9.6.8
+ (c++|optional=typeinfoUnary)"typeinfo for std::unary_function<MagickCore::_DrawingWand, void>@Base" 8:6.9.6.8
  (c++)"typeinfo name for Magick::Blob@Base" 8:6.9.6.8
  (c++)"typeinfo name for Magick::Color@Base" 8:6.9.6.8
  (c++)"typeinfo name for Magick::ColorGray@Base" 8:6.9.6.8
@@ -1909,7 +1909,7 @@ libMagick++-6.Q16.so.7 libmagick++-6.q16-7 #MINVER#
  (c++)"typeinfo name for Magick::WarningType@Base" 8:6.9.6.8
  (c++)"typeinfo name for Magick::WarningUndefined@Base" 8:6.9.6.8
  (c++)"typeinfo name for Magick::WarningXServer@Base" 8:6.9.6.8
- (c++)"typeinfo name for std::unary_function<MagickCore::_DrawingWand, void>@Base" 8:6.9.6.8
+ (c++|optional=typeinfoUnary)"typeinfo name for std::unary_function<MagickCore::_DrawingWand, void>@Base" 8:6.9.6.8
  (c++)"vtable for Magick::Blob@Base" 8:6.9.6.8
  (c++)"vtable for Magick::Color@Base" 8:6.9.6.8
  (c++)"vtable for Magick::ColorGray@Base" 8:6.9.6.8
