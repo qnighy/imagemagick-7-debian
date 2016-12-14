@@ -341,7 +341,7 @@ Description: image manipulation library - development files (Q16)
  depth of 16 bits (Q16).
 
 # break and conflict for smooth upgrade for 6 -> 6v6
-Package: libmagick++-6.q16-6v6
+Package: libmagick++-6.q16-7
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -364,7 +364,7 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagick++-6-headers (= ${source:Version}),
- libmagick++-6.q16-6v6 (= ${binary:Version}),
+ libmagick++-6.q16-7 (= ${binary:Version}),
  libmagickcore-6.q16-dev (= ${binary:Version}),
  libmagickwand-6.q16-dev (= ${binary:Version}),
  pkg-config,
@@ -549,7 +549,7 @@ Description: image manipulation library - development files (Q16HDRI)
  depth of 16 bits with high dynamic range (Q16HDRI).
 
 # break and conflict for smooth upgrade for 6 -> 6v6
-Package: libmagick++-6.q16hdri-6v6
+Package: libmagick++-6.q16hdri-7
 Architecture: any
 Multi-Arch: same
 Section: libs
@@ -572,7 +572,7 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libmagick++-6-headers (= ${source:Version}),
- libmagick++-6.q16hdri-6v6 (= ${binary:Version}),
+ libmagick++-6.q16hdri-7 (= ${binary:Version}),
  libmagickcore-6.q16hdri-dev (= ${binary:Version}),
  libmagickwand-6.q16hdri-dev (= ${binary:Version}),
  pkg-config,

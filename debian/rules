@@ -10,10 +10,10 @@ export DH_VERBOSE=1
 export QUANTUMDEPTH ?= q16 q16hdri
 export CORESOVERSION ?= 3
 export WANDSOVERSION ?= 3
-export PPSOVERSION ?= 6v6
+export PPSOVERSION ?= 7
 
 # default im version used for adding default file
-export DEFAULTIMVERSION ?= 7
+export DEFAULTIMVERSION ?= 6
 
 
 # poc arch for test empty means no test
