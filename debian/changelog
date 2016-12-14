@@ -1,4 +1,4 @@
-imagemagick (8:6.9.6.6+dfsg-2) experimental; urgency=high
+imagemagick (8:6.9.6.8+dfsg-1) experimental; urgency=high
 
   * Bump so version due to structure change
     thanks to Nishanth Aravamudan (Closes: #846385).
