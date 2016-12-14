@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -95,24 +95,28 @@
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && defined(MAGICKCORE_OPENCL_SUPPORT)
 static void InitializeDcrawOpenCL(ExceptionInfo *exception)
 {
-  MagickBooleanType
-    opencl_disabled;
-
   MagickCLEnv
     clEnv;
 
   (void) SetEnvironmentVariable("DCR_CL_PLATFORM",NULL);
   (void) SetEnvironmentVariable("DCR_CL_DEVICE",NULL);
+  (void) SetEnvironmentVariable("DCR_CL_DISABLED",NULL);
   clEnv=GetDefaultOpenCLEnv();
-  GetMagickOpenCLEnvParam(clEnv,MAGICK_OPENCL_ENV_PARAM_OPENCL_DISABLED,
-    sizeof(MagickBooleanType),&opencl_disabled,exception);
-  if (opencl_disabled != MagickFalse)
-    return;
   if (InitOpenCLEnv(clEnv,exception) != MagickFalse)
     {
       char
         *name;
 
+      MagickBooleanType
+        opencl_disabled;
+
+      GetMagickOpenCLEnvParam(clEnv,MAGICK_OPENCL_ENV_PARAM_OPENCL_DISABLED,
+        sizeof(MagickBooleanType),&opencl_disabled,exception);
+      if (opencl_disabled != MagickFalse)
+        {
+          (void)SetEnvironmentVariable("DCR_CL_DISABLED","1");
+          return;
+        }
       GetMagickOpenCLEnvParam(clEnv,MAGICK_OPENCL_ENV_PARAM_PLATFORM_VENDOR,
         sizeof(char *),&name,exception);
       if (name != (char *) NULL)
@@ -133,6 +137,9 @@ static void InitializeDcrawOpenCL(ExceptionInfo *exception)
 static void InitializeDcrawOpenCL(ExceptionInfo *magick_unused(exception))
 {
   magick_unreferenced(exception);
+#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+  (void) SetEnvironmentVariable("DCR_CL_DISABLED","1");
+#endif
 }
 #endif
 

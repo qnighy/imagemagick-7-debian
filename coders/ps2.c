@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -298,7 +298,7 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
       "      {",
       "        /DataSource pixel_stream %s",
       "        <<",
-      "           /K "CCITTParam,
+      "           /K " CCITTParam,
       "           /Columns columns",
       "           /Rows rows",
       "        >> /CCITTFaxDecode filter",

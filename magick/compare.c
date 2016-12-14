@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -166,6 +166,7 @@ MagickExport Image *CompareImageChannels(Image *image,
     *artifact;
 
   Image
+    *clone_image,
     *difference_image,
     *highlight_image;
 
@@ -201,9 +202,14 @@ MagickExport Image *CompareImageChannels(Image *image,
     distortion,exception);
   if (status == MagickFalse)
     return((Image *) NULL);
-  difference_image=CloneImage(image,0,0,MagickTrue,exception);
+  clone_image=CloneImage(image,0,0,MagickTrue,exception);
+  if (clone_image == (Image *) NULL)
+    return((Image *) NULL);
+  difference_image=CloneImage(clone_image,0,0,MagickTrue,exception);
+  clone_image=DestroyImage(clone_image);
   if (difference_image == (Image *) NULL)
     return((Image *) NULL);
+  (void) SetImageMask(difference_image,(Image *) NULL);
   (void) SetImageAlphaChannel(difference_image,OpaqueAlphaChannel);
   rows=MagickMax(image->rows,reconstruct_image->rows);
   columns=MagickMax(image->columns,reconstruct_image->columns);
@@ -220,13 +226,13 @@ MagickExport Image *CompareImageChannels(Image *image,
       highlight_image=DestroyImage(highlight_image);
       return((Image *) NULL);
     }
-  (void) SetImageAlphaChannel(highlight_image,OpaqueAlphaChannel);
+  (void) SetImageMask(highlight_image,(Image *) NULL);
   (void) QueryMagickColor("#f1001ecc",&highlight,exception);
-  artifact=GetImageArtifact(image,"highlight-color");
+  artifact=GetImageArtifact(image,"compare:highlight-color");
   if (artifact != (const char *) NULL)
     (void) QueryMagickColor(artifact,&highlight,exception);
   (void) QueryMagickColor("#ffffffcc",&lowlight,exception);
-  artifact=GetImageArtifact(image,"lowlight-color");
+  artifact=GetImageArtifact(image,"compare:lowlight-color");
   if (artifact != (const char *) NULL)
     (void) QueryMagickColor(artifact,&lowlight,exception);
   if (highlight_image->colorspace == CMYKColorspace)

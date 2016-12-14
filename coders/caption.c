@@ -17,7 +17,7 @@
 %                               February 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -275,7 +275,7 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
     draw_info->direction == RightToLeftDirection ? image->columns-
     metrics.bounds.x2 : -metrics.bounds.x1,0.0),draw_info->gravity ==
     UndefinedGravity ? metrics.ascent : 0.0);
-  draw_info->geometry=AcquireString(geometry);
+  (void) CloneString(&draw_info->geometry,geometry);
   status=AnnotateImage(image,draw_info);
   if (image_info->pointsize == 0.0)
     { 

@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -41,7 +41,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/accelerate.h"
+#include "magick/accelerate-private.h"
 #include "magick/annotate.h"
 #include "magick/artifact.h"
 #include "magick/attribute.h"
@@ -313,9 +313,11 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
+#if defined(MAGICKCORE_OPENCL_SUPPORT)
   noise_image=AccelerateAddNoiseImage(image,channel,noise_type,exception);
   if (noise_image != (Image *) NULL)
     return(noise_image);
+#endif
   noise_image=CloneImage(image,0,0,MagickTrue,exception);
   if (noise_image == (Image *) NULL)
     return((Image *) NULL);
@@ -1353,7 +1355,7 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
               *q='\0';
               alpha=FxEvaluateSubexpression(fx_info,channel,x,y,subexpression,
                 &depth,&beta,exception);
-              i=(ssize_t) (alpha+0.5);
+              i=(ssize_t) alpha;
               p++;
             }
           if (*p == '.')
@@ -5811,9 +5813,11 @@ MagickExport Image *WaveletDenoiseImage(const Image *image,
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickSignature);
   noise_image=(Image *) NULL;
+#if defined(MAGICKCORE_OPENCL_SUPPORT)
   noise_image=AccelerateWaveletDenoiseImage(image,threshold,exception);
   if (noise_image != (Image *) NULL)
     return(noise_image);
+#endif
   noise_image=CloneImage(image,image->columns,image->rows,MagickTrue,exception);
   if (noise_image == (Image *) NULL)
     return((Image *) NULL);

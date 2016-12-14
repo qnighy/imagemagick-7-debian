@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -259,6 +259,7 @@ extern MagickPrivate void AddOpenCLEvent(const Image *image,cl_event event)
   assert(image != (const Image *) NULL);
   assert(event != (cl_event) NULL);
   cache_info=(CacheInfo *)image->cache;
+  assert(cache_info->opencl != (OpenCLCacheInfo *) NULL);
   clEnv=GetDefaultOpenCLEnv();
   if (cache_info->opencl->events == (cl_event *) NULL)
     {
@@ -1052,7 +1053,8 @@ static inline void RelinquishPixelCachePixels(CacheInfo *cache_info)
         }
 #endif
       if (cache_info->mapped == MagickFalse)
-        cache_info->pixels=RelinquishAlignedMemory(cache_info->pixels);
+        cache_info->pixels=(PixelPacket *) RelinquishAlignedMemory(
+          cache_info->pixels);
       else
         (void) UnmapBlob(cache_info->pixels,(size_t) cache_info->length);
       RelinquishMagickResource(MemoryResource,cache_info->length);

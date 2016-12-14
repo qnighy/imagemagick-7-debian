@@ -18,7 +18,7 @@
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1695,8 +1695,8 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image)
           bmp_info.file_size+=extra_size;
           bmp_info.offset_bits+=extra_size;
         }
-    if ((image->columns != (signed int) image->columns) ||
-        (image->rows != (signed int) image->rows))
+    if (((ssize_t) image->columns != (signed int) image->columns) ||
+        ((ssize_t) image->rows != (signed int) image->rows))
       ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
     bmp_info.width=(ssize_t) image->columns;
     bmp_info.height=(ssize_t) image->rows;

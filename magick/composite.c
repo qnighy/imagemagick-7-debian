@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -41,7 +41,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/accelerate.h"
+#include "magick/accelerate-private.h"
 #include "magick/artifact.h"
 #include "magick/cache-view.h"
 #include "magick/channel.h"
@@ -2266,10 +2266,12 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   /*
     Composite image.
   */
+#if defined(MAGICKCORE_OPENCL_SUPPORT)
   status=AccelerateCompositeImage(image,channel,compose,source_image,
     x_offset,y_offset,canvas_dissolve,source_dissolve,exception);
   if (status != MagickFalse)
     return(status);
+#endif
   status=MagickTrue;
   progress=0;
   midpoint=((MagickRealType) QuantumRange+1.0)/2;

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -40,7 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/accelerate.h"
+#include "magick/accelerate-private.h"
 #include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/cache.h"
@@ -2965,7 +2965,7 @@ MagickExport Image *ResizeImage(const Image *image,const size_t columns,
         filter_type=MitchellFilter;
   resize_filter=AcquireResizeFilter(image,filter_type,blur,MagickFalse,
     exception);
-
+#if defined(MAGICKCORE_OPENCL_SUPPORT)
   resize_image=AccelerateResizeImage(image,columns,rows,resize_filter,
     exception);
   if (resize_image != NULL)
@@ -2973,6 +2973,7 @@ MagickExport Image *ResizeImage(const Image *image,const size_t columns,
       resize_filter=DestroyResizeFilter(resize_filter);
       return(resize_image);
     }
+#endif
   resize_image=CloneImage(image,columns,rows,MagickTrue,exception);
   if (resize_image == (Image *) NULL)
     {

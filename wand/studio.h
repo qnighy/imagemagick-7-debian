@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@ extern "C" {
 # include <arm/limits.h>
 #endif
 
-#if defined(MAGICKCORE__OPENCL)
+#if defined(MAGICKCORE__OPENCL) && !defined(MAGICK_PIXEL_RGBA)
 #if defined(MAGICKCORE_HAVE_CL_CL_H)
 #  include <CL/cl.h>
 #endif

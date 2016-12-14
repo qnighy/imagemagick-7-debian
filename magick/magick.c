@@ -18,7 +18,7 @@
 %                             November 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1372,7 +1372,9 @@ MagickExport void MagickCoreTerminus(void)
   AnnotateComponentTerminus();
   MimeComponentTerminus();
   TypeComponentTerminus();
+#if defined(MAGICKCORE_OPENCL_SUPPORT)
   OpenCLTerminus();
+#endif
   ColorComponentTerminus();
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
   NTWindowsTerminus();

@@ -17,7 +17,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1835,7 +1835,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
       {
         if (LocaleCompare("highlight-color",option+1) == 0)
           {
-            (void) SetImageArtifact(*image,option+1,argv[i+1]);
+            (void) SetImageArtifact(*image,"compare:highlight-color",argv[i+1]);
             break;
           }
         if (LocaleCompare("hough-lines",option+1) == 0)
@@ -2099,7 +2099,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
           }
         if (LocaleCompare("lowlight-color",option+1) == 0)
           {
-            (void) SetImageArtifact(*image,option+1,argv[i+1]);
+            (void) SetImageArtifact(*image,"compare:lowlight-color",argv[i+1]);
             break;
           }
         break;

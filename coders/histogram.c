@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -383,10 +383,10 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
       (LocaleCompare(write_info->magick,"HISTOGRAM") == 0))
     (void) FormatLocaleString(histogram_image->filename,MaxTextExtent,
       "miff:%s",write_info->filename);
-  histogram_image->blob=(void *) DetachBlob(histogram_image->blob);
+  histogram_image->blob=(BlobInfo *) DetachBlob(histogram_image->blob);
   histogram_image->blob=CloneBlobInfo(image->blob);
   status=WriteImage(write_info,histogram_image);
-  image->blob=(void *) DetachBlob(image->blob);
+  image->blob=(BlobInfo *) DetachBlob(image->blob);
   image->blob=CloneBlobInfo(histogram_image->blob);
   histogram_image=DestroyImage(histogram_image);
   write_info=DestroyImageInfo(write_info);

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -56,14 +56,11 @@ extern MagickExport MagickBooleanType
     ExceptionInfo*),
   InitImageMagickOpenCL(ImageMagickOpenCLMode,void*,void*,ExceptionInfo*),
   InitOpenCLEnv(MagickCLEnv,ExceptionInfo*),
-  RelinquishMagickOpenCLEnv(MagickCLEnv),
   SetMagickOpenCLEnvParam(MagickCLEnv,MagickOpenCLEnvParam,size_t,void*,
     ExceptionInfo*);
 
 extern MagickExport MagickCLEnv
-  AcquireMagickOpenCLEnv(),
-  GetDefaultOpenCLEnv(),
-  SetDefaultOpenCLEnv(MagickCLEnv);
+  GetDefaultOpenCLEnv();
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

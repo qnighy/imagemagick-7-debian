@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -87,7 +87,6 @@ extern ModuleExport size_t
   RegisterJBGImage(void),
   RegisterJBIGImage(void),
   RegisterJNXImage(void),
-  RegisterJPGImage(void),
   RegisterJPEGImage(void),
   RegisterJP2Image(void),
   RegisterJSONImage(void),
@@ -252,7 +251,6 @@ extern ModuleExport void
   UnregisterJBGImage(void),
   UnregisterJBIGImage(void),
   UnregisterJNXImage(void),
-  UnregisterJPGImage(void),
   UnregisterJPEGImage(void),
   UnregisterJP2Image(void),
   UnregisterJSONImage(void),

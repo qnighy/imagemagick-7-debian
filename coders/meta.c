@@ -17,7 +17,7 @@
 %                                 July 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -406,7 +406,7 @@ static ssize_t parse8BIM(Image *ifile, Image *ofile)
                     *s = &token[next-1];
 
                   codes_length=convertHTMLcodes(s, strlen(s));
-                  if (codes_length > len)
+                  if ((ssize_t) codes_length > len)
                     len=0;
                   else
                     len-=codes_length;
@@ -709,7 +709,7 @@ static ssize_t parse8BIMW(Image *ifile, Image *ofile)
                     *s = &token[next-1];
 
                   codes_length=convertHTMLcodes(s, strlen(s));
-                  if (codes_length > len)
+                  if ((ssize_t) codes_length > len)
                     len=0;
                   else
                     len-=codes_length;

@@ -1,4 +1,4 @@
-#  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -69,8 +69,8 @@ MAGICK_BASE_SRCS = \
 	magick/ImageMagick.h \
 	magick/MagickCore.h \
 	magick/accelerate.c \
-	magick/accelerate.h \
 	magick/accelerate-private.h \
+	magick/accelerate-kernels-private.h \
 	magick/animate.c \
 	magick/animate.h \
 	magick/animate-private.h \
@@ -317,7 +317,6 @@ endif # if WIN32_NATIVE_BUILD
 MAGICK_INCLUDE_HDRS = \
 	magick/ImageMagick.h \
 	magick/MagickCore.h \
-	magick/accelerate.h \
 	magick/animate.h \
 	magick/annotate.h \
 	magick/api.h \
@@ -414,6 +413,7 @@ MAGICK_INCLUDE_HDRS = \
 
 MAGICK_NOINST_HDRS = \
 	magick/accelerate-private.h \
+  magick/accelerate-kernels-private.h \
 	magick/animate-private.h \
 	magick/blob-private.h \
 	magick/cache-private.h \

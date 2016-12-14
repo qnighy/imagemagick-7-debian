@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -74,7 +74,6 @@ extern "C" {
 # include "magick/methods.h"
 #endif
 #include "magick/magick-type.h"
-#include "magick/accelerate.h"
 #include "magick/animate.h"
 #include "magick/annotate.h"
 #include "magick/artifact.h"

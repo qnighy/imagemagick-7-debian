@@ -21,7 +21,7 @@
 %                                 May 2016                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -42,8 +42,8 @@
 Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/accelerate.h"
 #include "magick/accelerate-private.h"
+#include "magick/accelerate-kernels-private.h"
 #include "magick/artifact.h"
 #include "magick/cache.h"
 #include "magick/cache-private.h"
@@ -60,7 +60,6 @@ Include declarations.
 #include "magick/list.h"
 #include "magick/memory_.h"
 #include "magick/monitor-private.h"
-#include "magick/accelerate.h"
 #include "magick/opencl.h"
 #include "magick/opencl-private.h"
 #include "magick/option.h"
@@ -439,7 +438,7 @@ cleanup:
   return(filteredImage);
 }
 
-MagickExport Image *AccelerateAddNoiseImage(const Image *image,
+MagickPrivate Image *AccelerateAddNoiseImage(const Image *image,
   const ChannelType channel,const NoiseType noise_type,
   ExceptionInfo *exception) 
 {
@@ -745,7 +744,7 @@ cleanup:
   return(filteredImage);
 }
 
-MagickExport Image* AccelerateBlurImage(const Image *image,
+MagickPrivate Image* AccelerateBlurImage(const Image *image,
   const ChannelType channel,const double radius,const double sigma,
   ExceptionInfo *exception)
 {
@@ -922,7 +921,7 @@ cleanup:
   return(outputReady);
 }
 
-MagickExport MagickBooleanType AccelerateCompositeImage(Image *image,
+MagickPrivate MagickBooleanType AccelerateCompositeImage(Image *image,
   const ChannelType channel, const CompositeOperator compose,
   const Image *composite, const ssize_t x_offset, const ssize_t y_offset,
   const float destination_dissolve, const float source_dissolve,
@@ -1074,7 +1073,7 @@ cleanup:
   return(outputReady);
 }
 
-MagickExport MagickBooleanType AccelerateContrastImage(Image *image,
+MagickPrivate MagickBooleanType AccelerateContrastImage(Image *image,
   const MagickBooleanType sharpen,ExceptionInfo *exception)
 {
   MagickBooleanType
@@ -1187,7 +1186,7 @@ cleanup:
   return(outputReady);
 }
 
-MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
+MagickPrivate MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
   const ChannelType channel,const double black_point,const double white_point, 
   ExceptionInfo *exception) 
 {
@@ -1226,7 +1225,7 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
   double
     intensity;
 
-  FloatPixelPacket
+  cl_float4
     black,
     white;
 
@@ -1335,8 +1334,8 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
   /*
      Find the histogram boundaries by locating the black/white levels.
   */
-  black.red=0.0;
-  white.red=MaxRange(QuantumRange);
+  black.z=0.0;
+  white.z=MaxRange(QuantumRange);
   if ((channel & RedChannel) != 0)
   {
     intensity=0.0;
@@ -1346,7 +1345,7 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
       if (intensity > black_point)
         break;
     }
-    black.red=(MagickRealType) i;
+    black.z=(MagickRealType) i;
     intensity=0.0;
     for (i=(ssize_t) MaxMap; i != 0; i--)
     {
@@ -1354,10 +1353,10 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
       if (intensity > ((double) image->columns*image->rows-white_point))
         break;
     }
-    white.red=(MagickRealType) i;
+    white.z=(MagickRealType) i;
   }
-  black.green=0.0;
-  white.green=MaxRange(QuantumRange);
+  black.y=0.0;
+  white.y=MaxRange(QuantumRange);
   if ((channel & GreenChannel) != 0)
   {
     intensity=0.0;
@@ -1367,7 +1366,7 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
       if (intensity > black_point)
         break;
     }
-    black.green=(MagickRealType) i;
+    black.y=(MagickRealType) i;
     intensity=0.0;
     for (i=(ssize_t) MaxMap; i != 0; i--)
     {
@@ -1375,10 +1374,10 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
       if (intensity > ((double) image->columns*image->rows-white_point))
         break;
     }
-    white.green=(MagickRealType) i;
+    white.y=(MagickRealType) i;
   }
-  black.blue=0.0;
-  white.blue=MaxRange(QuantumRange);
+  black.x=0.0;
+  white.x=MaxRange(QuantumRange);
   if ((channel & BlueChannel) != 0)
   {
     intensity=0.0;
@@ -1388,7 +1387,7 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
       if (intensity > black_point)
         break;
     }
-    black.blue=(MagickRealType) i;
+    black.x=(MagickRealType) i;
     intensity=0.0;
     for (i=(ssize_t) MaxMap; i != 0; i--)
     {
@@ -1396,10 +1395,10 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
       if (intensity > ((double) image->columns*image->rows-white_point))
         break;
     }
-    white.blue=(MagickRealType) i;
+    white.x=(MagickRealType) i;
   }
-  black.opacity=0.0;
-  white.opacity=MaxRange(QuantumRange);
+  black.w=0.0;
+  white.w=MaxRange(QuantumRange);
   if ((channel & OpacityChannel) != 0)
   {
     intensity=0.0;
@@ -1409,7 +1408,7 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
       if (intensity > black_point)
         break;
     }
-    black.opacity=(MagickRealType) i;
+    black.w=(MagickRealType) i;
     intensity=0.0;
     for (i=(ssize_t) MaxMap; i != 0; i--)
     {
@@ -1417,7 +1416,7 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
       if (intensity > ((double) image->columns*image->rows-white_point))
         break;
     }
-    white.opacity=(MagickRealType) i;
+    white.w=(MagickRealType) i;
   }
   /*
   black.index=0.0;
@@ -1459,51 +1458,51 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
   {
     if ((channel & RedChannel) != 0)
     {
-      if (i < (ssize_t) black.red)
+      if (i < (ssize_t) black.z)
         stretch_map[i].red=(Quantum) 0;
       else
-        if (i > (ssize_t) white.red)
+        if (i > (ssize_t) white.z)
           stretch_map[i].red=QuantumRange;
         else
-          if (black.red != white.red)
+          if (black.z != white.z)
             stretch_map[i].red=ScaleMapToQuantum((MagickRealType) (MaxMap*
-                  (i-black.red)/(white.red-black.red)));
+                  (i-black.z)/(white.z-black.z)));
     }
     if ((channel & GreenChannel) != 0)
     {
-      if (i < (ssize_t) black.green)
+      if (i < (ssize_t) black.y)
         stretch_map[i].green=0;
       else
-        if (i > (ssize_t) white.green)
+        if (i > (ssize_t) white.y)
           stretch_map[i].green=QuantumRange;
         else
-          if (black.green != white.green)
+          if (black.y != white.y)
             stretch_map[i].green=ScaleMapToQuantum((MagickRealType) (MaxMap*
-                  (i-black.green)/(white.green-black.green)));
+                  (i-black.y)/(white.y-black.y)));
     }
     if ((channel & BlueChannel) != 0)
     {
-      if (i < (ssize_t) black.blue)
+      if (i < (ssize_t) black.x)
         stretch_map[i].blue=0;
       else
-        if (i > (ssize_t) white.blue)
+        if (i > (ssize_t) white.x)
           stretch_map[i].blue= QuantumRange;
         else
-          if (black.blue != white.blue)
+          if (black.x != white.x)
             stretch_map[i].blue=ScaleMapToQuantum((MagickRealType) (MaxMap*
-                  (i-black.blue)/(white.blue-black.blue)));
+                  (i-black.x)/(white.x-black.x)));
     }
     if ((channel & OpacityChannel) != 0)
     {
-      if (i < (ssize_t) black.opacity)
+      if (i < (ssize_t) black.w)
         stretch_map[i].opacity=0;
       else
-        if (i > (ssize_t) white.opacity)
+        if (i > (ssize_t) white.w)
           stretch_map[i].opacity=QuantumRange;
         else
-          if (black.opacity != white.opacity)
+          if (black.w != white.w)
             stretch_map[i].opacity=ScaleMapToQuantum((MagickRealType) (MaxMap*
-                  (i-black.opacity)/(white.opacity-black.opacity)));
+                  (i-black.w)/(white.w-black.w)));
     }
     /*
     if (((channel & IndexChannel) != 0) &&
@@ -1537,25 +1536,25 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
     {
       if ((channel & RedChannel) != 0)
       {
-        if (black.red != white.red)
+        if (black.z != white.z)
           image->colormap[i].red=stretch_map[
             ScaleQuantumToMap(image->colormap[i].red)].red;
       }
       if ((channel & GreenChannel) != 0)
       {
-        if (black.green != white.green)
+        if (black.y != white.y)
           image->colormap[i].green=stretch_map[
             ScaleQuantumToMap(image->colormap[i].green)].green;
       }
       if ((channel & BlueChannel) != 0)
       {
-        if (black.blue != white.blue)
+        if (black.x != white.x)
           image->colormap[i].blue=stretch_map[
             ScaleQuantumToMap(image->colormap[i].blue)].blue;
       }
       if ((channel & OpacityChannel) != 0)
       {
-        if (black.opacity != white.opacity)
+        if (black.w != white.w)
           image->colormap[i].opacity=stretch_map[
             ScaleQuantumToMap(image->colormap[i].opacity)].opacity;
       }
@@ -1584,8 +1583,8 @@ MagickExport MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
   clStatus=clEnv->library->clSetKernelArg(stretchKernel,i++,sizeof(cl_mem),(void *)&imageBuffer);
   clStatus|=clEnv->library->clSetKernelArg(stretchKernel,i++,sizeof(ChannelType),&channel);
   clStatus|=clEnv->library->clSetKernelArg(stretchKernel,i++,sizeof(cl_mem),(void *)&stretchMapBuffer);
-  clStatus|=clEnv->library->clSetKernelArg(stretchKernel,i++,sizeof(FloatPixelPacket),&white);
-  clStatus|=clEnv->library->clSetKernelArg(stretchKernel,i++,sizeof(FloatPixelPacket),&black);
+  clStatus|=clEnv->library->clSetKernelArg(stretchKernel,i++,sizeof(cl_float4),&white);
+  clStatus|=clEnv->library->clSetKernelArg(stretchKernel,i++,sizeof(cl_float4),&black);
   if (clStatus != CL_SUCCESS)
   {
     (void) OpenCLThrowMagickException(exception, GetMagickModule(), ResourceLimitWarning, "clEnv->library->clSetKernelArg failed.", "'%s'", ".");
@@ -1637,7 +1636,7 @@ cleanup:
   return(outputReady);
 }
 
-MagickExport MagickBooleanType AccelerateContrastStretchImageChannel(
+MagickPrivate MagickBooleanType AccelerateContrastStretchImageChannel(
   Image *image,const ChannelType channel,const double black_point,
   const double white_point,ExceptionInfo *exception)
 {
@@ -1940,7 +1939,7 @@ cleanup:
   return(filteredImage);
 }
 
-MagickExport Image *AccelerateConvolveImageChannel(const Image *image,
+MagickPrivate Image *AccelerateConvolveImageChannel(const Image *image,
   const ChannelType channel,const KernelInfo *kernel,ExceptionInfo *exception)
 {
   Image
@@ -2256,7 +2255,7 @@ cleanup:
   return(filteredImage);
 }
 
-MagickExport Image *AccelerateDespeckleImage(const Image* image,
+MagickPrivate Image *AccelerateDespeckleImage(const Image* image,
   ExceptionInfo* exception)
 {
   Image
@@ -2285,7 +2284,7 @@ MagickExport Image *AccelerateDespeckleImage(const Image* image,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
-MagickExport MagickBooleanType ComputeEqualizeImage(Image *image,
+MagickPrivate MagickBooleanType ComputeEqualizeImage(Image *image,
   const ChannelType channel,ExceptionInfo *exception)
 {
 #define EqualizeImageTag  "Equalize/Image"
@@ -2320,7 +2319,7 @@ MagickExport MagickBooleanType ComputeEqualizeImage(Image *image,
   const cl_event
     *events;
 
-  FloatPixelPacket
+  cl_float4
     white,
     black,
     intensity,
@@ -2422,8 +2421,8 @@ MagickExport MagickBooleanType ComputeEqualizeImage(Image *image,
   if (equalize_map == (PixelPacket *) NULL)
     ThrowBinaryException(ResourceLimitWarning,"MemoryAllocationFailed", image->filename);
 
-  map=(FloatPixelPacket *) AcquireQuantumMemory(length,sizeof(*map));
-  if (map == (FloatPixelPacket *) NULL)
+  map=(cl_float4 *) AcquireQuantumMemory(length,sizeof(*map));
+  if (map == (cl_float4 *) NULL)
     ThrowBinaryException(ResourceLimitWarning,"MemoryAllocationFailed", image->filename);
 
   /*
@@ -2434,18 +2433,18 @@ MagickExport MagickBooleanType ComputeEqualizeImage(Image *image,
   {
     if ((channel & SyncChannels) != 0)
     {
-      intensity.red+=histogram[i].s[2];
+      intensity.z+=histogram[i].s[2];
       map[i]=intensity;
       continue;
     }
     if ((channel & RedChannel) != 0)
-      intensity.red+=histogram[i].s[2];
+      intensity.z+=histogram[i].s[2];
     if ((channel & GreenChannel) != 0)
-      intensity.green+=histogram[i].s[1];
+      intensity.y+=histogram[i].s[1];
     if ((channel & BlueChannel) != 0)
-      intensity.blue+=histogram[i].s[0];
+      intensity.x+=histogram[i].s[0];
     if ((channel & OpacityChannel) != 0)
-      intensity.opacity+=histogram[i].s[3];
+      intensity.w+=histogram[i].s[3];
     /*
     if (((channel & IndexChannel) != 0) &&
         (image->colorspace == CMYKColorspace))
@@ -2462,23 +2461,23 @@ MagickExport MagickBooleanType ComputeEqualizeImage(Image *image,
   {
     if ((channel & SyncChannels) != 0)
     {
-      if (white.red != black.red)
+      if (white.z != black.z)
         equalize_map[i].red=ScaleMapToQuantum((MagickRealType) ((MaxMap*
-                (map[i].red-black.red))/(white.red-black.red)));
+                (map[i].z-black.z))/(white.z-black.z)));
       continue;
     }
-    if (((channel & RedChannel) != 0) && (white.red != black.red))
+    if (((channel & RedChannel) != 0) && (white.z != black.z))
       equalize_map[i].red=ScaleMapToQuantum((MagickRealType) ((MaxMap*
-              (map[i].red-black.red))/(white.red-black.red)));
-    if (((channel & GreenChannel) != 0) && (white.green != black.green))
+              (map[i].z-black.z))/(white.z-black.z)));
+    if (((channel & GreenChannel) != 0) && (white.y != black.y))
       equalize_map[i].green=ScaleMapToQuantum((MagickRealType) ((MaxMap*
-              (map[i].green-black.green))/(white.green-black.green)));
-    if (((channel & BlueChannel) != 0) && (white.blue != black.blue))
+              (map[i].y-black.y))/(white.y-black.y)));
+    if (((channel & BlueChannel) != 0) && (white.x != black.x))
       equalize_map[i].blue=ScaleMapToQuantum((MagickRealType) ((MaxMap*
-              (map[i].blue-black.blue))/(white.blue-black.blue)));
-    if (((channel & OpacityChannel) != 0) && (white.opacity != black.opacity))
+              (map[i].x-black.x))/(white.x-black.x)));
+    if (((channel & OpacityChannel) != 0) && (white.w != black.w))
       equalize_map[i].opacity=ScaleMapToQuantum((MagickRealType) ((MaxMap*
-              (map[i].opacity-black.opacity))/(white.opacity-black.opacity)));
+              (map[i].w-black.w))/(white.w-black.w)));
     /*
     if ((((channel & IndexChannel) != 0) &&
           (image->colorspace == CMYKColorspace)) &&
@@ -2497,7 +2496,7 @@ MagickExport MagickBooleanType ComputeEqualizeImage(Image *image,
     {
       if ((channel & SyncChannels) != 0)
       {
-        if (white.red != black.red)
+        if (white.z != black.z)
         {
           image->colormap[i].red=equalize_map[
             ScaleQuantumToMap(image->colormap[i].red)].red;
@@ -2510,17 +2509,17 @@ MagickExport MagickBooleanType ComputeEqualizeImage(Image *image,
         }
         continue;
       }
-      if (((channel & RedChannel) != 0) && (white.red != black.red))
+      if (((channel & RedChannel) != 0) && (white.z != black.z))
         image->colormap[i].red=equalize_map[
           ScaleQuantumToMap(image->colormap[i].red)].red;
-      if (((channel & GreenChannel) != 0) && (white.green != black.green))
+      if (((channel & GreenChannel) != 0) && (white.y != black.y))
         image->colormap[i].green=equalize_map[
           ScaleQuantumToMap(image->colormap[i].green)].green;
-      if (((channel & BlueChannel) != 0) && (white.blue != black.blue))
+      if (((channel & BlueChannel) != 0) && (white.x != black.x))
         image->colormap[i].blue=equalize_map[
           ScaleQuantumToMap(image->colormap[i].blue)].blue;
       if (((channel & OpacityChannel) != 0) &&
-          (white.opacity != black.opacity))
+          (white.w != black.w))
         image->colormap[i].opacity=equalize_map[
           ScaleQuantumToMap(image->colormap[i].opacity)].opacity;
     }
@@ -2547,8 +2546,8 @@ MagickExport MagickBooleanType ComputeEqualizeImage(Image *image,
   clStatus=clEnv->library->clSetKernelArg(equalizeKernel,i++,sizeof(cl_mem),(void *)&imageBuffer);
   clStatus|=clEnv->library->clSetKernelArg(equalizeKernel,i++,sizeof(ChannelType),&channel);
   clStatus|=clEnv->library->clSetKernelArg(equalizeKernel,i++,sizeof(cl_mem),(void *)&equalizeMapBuffer);
-  clStatus|=clEnv->library->clSetKernelArg(equalizeKernel,i++,sizeof(FloatPixelPacket),&white);
-  clStatus|=clEnv->library->clSetKernelArg(equalizeKernel,i++,sizeof(FloatPixelPacket),&black);
+  clStatus|=clEnv->library->clSetKernelArg(equalizeKernel,i++,sizeof(cl_float4),&white);
+  clStatus|=clEnv->library->clSetKernelArg(equalizeKernel,i++,sizeof(cl_float4),&black);
   if (clStatus != CL_SUCCESS)
   {
     (void) OpenCLThrowMagickException(exception, GetMagickModule(), ResourceLimitWarning, "clEnv->library->clSetKernelArg failed.", "'%s'", ".");
@@ -2574,7 +2573,7 @@ cleanup:
   OpenCLLogException(__FUNCTION__,__LINE__,exception);
 
   if (map!=NULL)
-    map=(FloatPixelPacket *) RelinquishMagickMemory(map);
+    map=(cl_float4 *) RelinquishMagickMemory(map);
 
   if (equalizeMapBuffer!=NULL)
     clEnv->library->clReleaseMemObject(equalizeMapBuffer);
@@ -2597,7 +2596,7 @@ cleanup:
   return(outputReady);
 }
 
-MagickExport MagickBooleanType AccelerateEqualizeImage(Image *image,
+MagickPrivate MagickBooleanType AccelerateEqualizeImage(Image *image,
   const ChannelType channel,ExceptionInfo *exception)
 {
   MagickBooleanType
@@ -2747,7 +2746,7 @@ cleanup:
   return(status);
 }
 
-MagickExport MagickBooleanType AccelerateFunctionImage(Image *image,
+MagickPrivate MagickBooleanType AccelerateFunctionImage(Image *image,
   const ChannelType channel,const MagickFunction function,
   const size_t number_parameters,const double *parameters,
   ExceptionInfo *exception)
@@ -2894,7 +2893,7 @@ cleanup:
   return(outputReady);
 }
 
-MagickExport MagickBooleanType AccelerateGrayscaleImage(Image* image,
+MagickPrivate MagickBooleanType AccelerateGrayscaleImage(Image* image,
   const PixelIntensityMethod method,ExceptionInfo *exception)
 {
   MagickBooleanType
@@ -3169,7 +3168,7 @@ cleanup:
   return(filteredImage);
 }
 
-MagickExport Image *AccelerateLocalContrastImage(const Image *image,
+MagickPrivate Image *AccelerateLocalContrastImage(const Image *image,
   const double radius,const double strength,ExceptionInfo *exception)
 {
   Image
@@ -3322,7 +3321,7 @@ cleanup:
   return(outputReady);
 }
 
-MagickExport MagickBooleanType AccelerateModulateImage(Image *image,
+MagickPrivate MagickBooleanType AccelerateModulateImage(Image *image,
   double percent_brightness, double percent_hue, double percent_saturation,
   ColorspaceType colorspace, ExceptionInfo *exception)
 {
@@ -3603,7 +3602,7 @@ cleanup:
   return(filteredImage);
 }
 
-MagickExport Image *AccelerateMotionBlurImage(const Image *image,
+MagickPrivate Image *AccelerateMotionBlurImage(const Image *image,
   const ChannelType channel,const double* kernel,const size_t width,
   const OffsetInfo *offset,ExceptionInfo *exception)
 {
@@ -3855,7 +3854,7 @@ cleanup:
   return filteredImage;
 }
 
-MagickExport Image *AccelerateRadialBlurImage(const Image *image,
+MagickPrivate Image *AccelerateRadialBlurImage(const Image *image,
   const ChannelType channel,const double angle,ExceptionInfo *exception)
 {
   Image
@@ -4488,7 +4487,7 @@ static MagickBooleanType gpuSupportedResizeWeighting(
   return(MagickFalse);
 }
 
-MagickExport Image *AccelerateResizeImage(const Image *image,
+MagickPrivate Image *AccelerateResizeImage(const Image *image,
   const size_t resizedColumns,const size_t resizedRows,
   const ResizeFilter *resizeFilter,ExceptionInfo *exception) 
 {
@@ -4886,10 +4885,10 @@ static Image *ComputeUnsharpMaskImageSingle(const Image *image,
     }
 
     filteredImageBuffer = GetAuthenticOpenCLBuffer(filteredImage,exception);
-    if (imageBuffer == (cl_mem) NULL)
+    if (filteredImageBuffer == (cl_mem) NULL)
     {
       (void) OpenCLThrowMagickException(exception,GetMagickModule(),
-      ResourceLimitWarning,"GetAuthenticOpenCLBuffer failed.",".");
+        ResourceLimitWarning,"GetAuthenticOpenCLBuffer failed.",".");
       goto cleanup;
     }
   }
@@ -4997,7 +4996,7 @@ cleanup:
   return(filteredImage);
 }
 
-MagickExport Image *AccelerateUnsharpMaskImage(const Image *image,
+MagickPrivate Image *AccelerateUnsharpMaskImage(const Image *image,
   const ChannelType channel,const double radius,const double sigma,
   const double gain,const double threshold,ExceptionInfo *exception)
 {
@@ -5176,7 +5175,7 @@ cleanup:
   return(filteredImage);
 }
 
-MagickExport Image *AccelerateWaveletDenoiseImage(const Image *image,
+MagickPrivate Image *AccelerateWaveletDenoiseImage(const Image *image,
   const double threshold,ExceptionInfo *exception)
 {
   Image
@@ -5194,274 +5193,4 @@ MagickExport Image *AccelerateWaveletDenoiseImage(const Image *image,
   return(filteredImage);
 }
 
-#else  /* MAGICKCORE_OPENCL_SUPPORT  */
-
-MagickExport Image *AccelerateAddNoiseImage(const Image *magick_unused(image),
-  const ChannelType magick_unused(channel),
-  const NoiseType magick_unused(noise_type),
-  ExceptionInfo *magick_unused(exception)) 
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(noise_type);
-  magick_unreferenced(exception);
-  return((Image *) NULL);
-}
-
-MagickExport Image *AccelerateBlurImage(const Image *magick_unused(image),
-  const ChannelType magick_unused(channel),const double magick_unused(radius),
-  const double magick_unused(sigma),ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(radius);
-  magick_unreferenced(sigma);
-  magick_unreferenced(exception);
-
-  return((Image *) NULL);
-}
-
-MagickExport MagickBooleanType AccelerateCompositeImage(
-  Image *magick_unused(image),const ChannelType magick_unused(channel),
-  const CompositeOperator magick_unused(compose),
-  const Image *magick_unused(composite),const ssize_t magick_unused(x_offset),
-  const ssize_t magick_unused(y_offset),
-  const float magick_unused(destination_dissolve),
-  const float magick_unused(source_dissolve),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(compose);
-  magick_unreferenced(composite);
-  magick_unreferenced(x_offset);
-  magick_unreferenced(y_offset);
-  magick_unreferenced(destination_dissolve);
-  magick_unreferenced(source_dissolve);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}
-
-MagickExport MagickBooleanType AccelerateContrastImage(
-  Image* magick_unused(image),const MagickBooleanType magick_unused(sharpen),
-  ExceptionInfo* magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(sharpen);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}
-
-MagickExport MagickBooleanType AccelerateContrastStretchImageChannel(
-  Image *magick_unused(image),const ChannelType magick_unused(channel),
-  const double magick_unused(black_point),
-  const double magick_unused(white_point),
-  ExceptionInfo* magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(black_point);
-  magick_unreferenced(white_point);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}
-
-MagickExport Image *AccelerateConvolveImageChannel(
-  const Image *magick_unused(image),const ChannelType magick_unused(channel),
-  const KernelInfo *magick_unused(kernel),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(kernel);
-  magick_unreferenced(exception);
-
-  return((Image *) NULL);
-}
-
-MagickExport MagickBooleanType AccelerateEqualizeImage(
-  Image* magick_unused(image), const ChannelType magick_unused(channel),
-  ExceptionInfo* magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}
-
-MagickExport Image *AccelerateDespeckleImage(const Image* magick_unused(image),
-  ExceptionInfo* magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(exception);
-
-  return((Image *) NULL);
-}
-
-MagickExport MagickBooleanType AccelerateFunctionImage(
-  Image *magick_unused(image),const ChannelType magick_unused(channel),
-  const MagickFunction magick_unused(function),
-  const size_t magick_unused(number_parameters),
-  const double *magick_unused(parameters),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(function);
-  magick_unreferenced(number_parameters);
-  magick_unreferenced(parameters);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}
-
-MagickExport MagickBooleanType AccelerateGrayscaleImage(
-  Image *magick_unused(image),const PixelIntensityMethod magick_unused(method),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(method);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}
-
-MagickExport Image *AccelerateLocalContrastImage(
-  const Image *magick_unused(image),const double magick_unused(radius),
-  const double magick_unused(strength),ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(radius);
-  magick_unreferenced(strength);
-  magick_unreferenced(exception);
-
-  return((Image *) NULL);
-}
-
-MagickExport MagickBooleanType AccelerateModulateImage(
-  Image *magick_unused(image),double magick_unused(percent_brightness),
-  double magick_unused(percent_hue),double magick_unused(percent_saturation),
-  ColorspaceType magick_unused(colorspace),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(percent_brightness);
-  magick_unreferenced(percent_hue);
-  magick_unreferenced(percent_saturation);
-  magick_unreferenced(colorspace);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}
-
-MagickExport Image *AccelerateMotionBlurImage(
-  const Image *magick_unused(image),const ChannelType magick_unused(channel),
-  const double *magick_unused(kernel),const size_t magick_unused(width),
-  const OffsetInfo *magick_unused(offset),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(kernel);
-  magick_unreferenced(width);
-  magick_unreferenced(offset);
-  magick_unreferenced(exception);
-
-  return((Image *) NULL);
-}
-
-MagickExport Image *AccelerateRadialBlurImage(
-  const Image *magick_unused(image),const ChannelType magick_unused(channel),
-  const double magick_unused(angle),ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(angle);
-  magick_unreferenced(exception);
-
-  return((Image *) NULL);
-}
-
-MagickExport Image *AccelerateResizeImage(const Image *magick_unused(image),
-  const size_t magick_unused(resizedColumns),
-  const size_t magick_unused(resizedRows),
-  const ResizeFilter *magick_unused(resizeFilter),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(resizedColumns);
-  magick_unreferenced(resizedRows);
-  magick_unreferenced(resizeFilter);
-  magick_unreferenced(exception);
-
-  return((Image *) NULL);
-}
-
-MagickExport Image *AccelerateUnsharpMaskImage(
-  const Image *magick_unused(image),const ChannelType magick_unused(channel),
-  const double magick_unused(radius),const double magick_unused(sigma),
-  const double magick_unused(gain),const double magick_unused(threshold),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(radius);
-  magick_unreferenced(sigma);
-  magick_unreferenced(gain);
-  magick_unreferenced(threshold);
-  magick_unreferenced(exception);
-
-  return((Image *) NULL);
-}
-
-MagickExport Image *AccelerateWaveletDenoiseImage(
-  const Image *magick_unused(image),const double magick_unused(threshold),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(threshold);
-  magick_unreferenced(exception);
-
-  return((Image *)NULL);
-}
-
 #endif /* MAGICKCORE_OPENCL_SUPPORT */
-
-MagickExport MagickBooleanType AccelerateConvolveImage(
-  const Image *magick_unused(image),const KernelInfo *magick_unused(kernel),
-  Image *magick_unused(convolve_image),ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(kernel);
-  magick_unreferenced(convolve_image);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}
-
-MagickExport
-MagickBooleanType AccelerateNegateImageChannel(
-  Image *magick_unused(image), const ChannelType magick_unused(channel),
-  const MagickBooleanType magick_unused(grayscale),
-  ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(channel);
-  magick_unreferenced(grayscale);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}
-
-MagickExport MagickBooleanType AccelerateRandomImage(
-  Image *magick_unused(image),ExceptionInfo *magick_unused(exception))
-{
-  magick_unreferenced(image);
-  magick_unreferenced(exception);
-
-  return(MagickFalse);
-}

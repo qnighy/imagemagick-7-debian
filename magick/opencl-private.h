@@ -1,5 +1,5 @@
 /*
-Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
+Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
 dedicated to making software imaging solutions freely available.
 
 You may not use this file except in compliance with the License.
@@ -29,15 +29,9 @@ extern "C" {
 #endif
 
 #if !defined(MAGICKCORE_OPENCL_SUPPORT)
-  typedef void* cl_context;
-  typedef void* cl_command_queue;
-  typedef void* cl_device_id;
   typedef void* cl_event;
-  typedef void* cl_kernel;
   typedef void* cl_mem;
-  typedef void* cl_platform_id;
   typedef void* cl_uint;
-  typedef struct { unsigned char t[8]; } cl_device_type; /* 64-bit */
 #else
 
 #define MAX_COMMAND_QUEUES 16
@@ -314,7 +308,6 @@ struct _MagickCLEnv {
   SemaphoreInfo* commandQueuesLock;
 };
 
-#endif
 
 #if defined(MAGICKCORE_HDRI_SUPPORT)
 #define CLOptions "-cl-single-precision-constant -cl-mad-enable -DMAGICKCORE_HDRI_SUPPORT=1 "\
@@ -381,28 +374,33 @@ typedef enum {
   KERNEL_COUNT
 } ProfiledKernels;
 
-extern MagickPrivate cl_context 
+extern MagickPrivate cl_context
   GetOpenCLContext(MagickCLEnv);
 
-extern MagickPrivate cl_kernel 
+extern MagickPrivate cl_kernel
   AcquireOpenCLKernel(MagickCLEnv, MagickOpenCLProgram, const char*);
 
-extern MagickPrivate cl_command_queue 
+extern MagickPrivate cl_command_queue
   AcquireOpenCLCommandQueue(MagickCLEnv);
 
-extern MagickPrivate MagickBooleanType 
+extern MagickPrivate MagickBooleanType
   OpenCLThrowMagickException(ExceptionInfo *,
     const char *,const char *,const size_t,
     const ExceptionType,const char *,const char *,...),
   RecordProfileData(MagickCLEnv,ProfiledKernels,cl_event),
+  RelinquishMagickOpenCLEnv(MagickCLEnv),
   RelinquishOpenCLCommandQueue(MagickCLEnv, cl_command_queue),
   RelinquishOpenCLKernel(MagickCLEnv, cl_kernel);
 
-extern MagickPrivate unsigned long 
+extern MagickPrivate MagickCLEnv
+  AcquireMagickOpenCLEnv(),
+  SetDefaultOpenCLEnv(MagickCLEnv);
+
+extern MagickPrivate unsigned long
   GetOpenCLDeviceLocalMemorySize(MagickCLEnv),
   GetOpenCLDeviceMaxMemAllocSize(MagickCLEnv);
 
-extern MagickPrivate const char* 
+extern MagickPrivate const char*
   GetOpenCLCachedFilesDirectory();
 
 extern MagickPrivate void
@@ -429,7 +427,7 @@ static inline void OpenCLLogException(const char* function,
   magick_unreferenced(exception);
 #endif
 }
-
+#endif
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

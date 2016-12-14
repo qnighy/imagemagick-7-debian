@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -438,7 +438,8 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     (void) SetImageColorspace(image,GRAYColorspace);
     if ((fits_info.min_data == 0.0) && (fits_info.max_data == 0.0))
       {
-        if (fits_info.zero == 0.0)
+        if ((fits_info.bits_per_pixel == -32) ||
+            (fits_info.bits_per_pixel == -64))
           (void) GetFITSPixelExtrema(image,fits_info.bits_per_pixel,
             &fits_info.min_data,&fits_info.max_data);
         else
