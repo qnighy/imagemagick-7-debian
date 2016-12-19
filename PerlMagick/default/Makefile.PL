@@ -194,7 +194,7 @@ WriteMakefile
    'AUTHOR' => 'ImageMagick Studio LLC',
 
    # Module version
-   'VERSION' => '6.96',
+   'VERSION' => '6.97',
 
    # Prerequisite version
    'PREREQ_PM' => {'parent' => '0'},
