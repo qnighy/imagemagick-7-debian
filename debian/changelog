@@ -1,4 +1,4 @@
-imagemagick (8:6.9.6.8+dfsg-1) experimental; urgency=high
+imagemagick (8:6.9.7.0+dfsg-1) experimental; urgency=high
 
   * Bump so version due to structure change
     thanks to Nishanth Aravamudan (Closes: #846385).
@@ -7,7 +7,7 @@ imagemagick (8:6.9.6.8+dfsg-1) experimental; urgency=high
   * Bug fix: "fails to upgrade wheezy -> jessie -> stretch", thanks
     to Andreas Beckmann (Closes: #847282).
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Wed, 14 Dec 2016 17:41:32 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Mon, 19 Dec 2016 11:13:39 +0100
 
 imagemagick (8:6.9.6.6+dfsg-1) unstable; urgency=high
 
