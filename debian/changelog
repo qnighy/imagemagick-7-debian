@@ -1,3 +1,12 @@
+imagemagick (8:6.9.7.0+dfsg-2) experimental; urgency=medium
+
+  * Generate symbols file from generic version for core
+    and wand.
+  * Bug fix: "also clean up quantum control file fragments during
+    update_pkg", thanks to Nishanth Aravamudan (Closes: #846261).
+
+ --
+
 imagemagick (8:6.9.7.0+dfsg-1) experimental; urgency=high
 
   * Bump so version due to structure change
