@@ -318,6 +318,11 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/libmagickcore-IMVERSION.QUANTUMDEPTH-dev.install.in > $(CURDIR)/debian/libmagickcore-$(IMVERSION).$*-dev.install
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	UCQUANTUMDEPTH=$(call UC,$*) \
+	dh-exec $(CURDIR)/debian/libmagickcore-IMVERSION.QUANTUMDEPTH-CORESOVERSION.symbols.in > $(CURDIR)/debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).symbols
 
 	# wand
 	QUANTUM=$(call QUANTUM_PART,$*) \
@@ -778,6 +783,7 @@ override_dh_clean_quantum.%:
 	[ ! -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).install ] || rm -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).install
 	[ ! -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION)-extra.install ] || rm -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION)-extra.install
 	[ ! -f debian/libmagickcore-$(IMVERSION).$*-dev.install ] || rm -f debian/libmagickcore-$(IMVERSION).$*-dev.install
+	[ ! -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).symbols ] || rm -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).symbols
 
 	[ ! -f debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).install ] || rm -f debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).install
 	[ ! -f debian/libmagickwand-$(IMVERSION).$*-dev.install ] || rm -f debian/libmagickwand-$(IMVERSION).$*-dev.install

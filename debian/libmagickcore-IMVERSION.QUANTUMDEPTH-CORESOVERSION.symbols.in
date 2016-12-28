@@ -1,5 +1,5 @@
 # SymbolsHelper-Confirmed: 1.0.0 amd64
-libMagickCore-6.Q16.so.3 libmagickcore-6.q16-3 #MINVER#
+libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION} #MINVER#
  (regex|optional)"^.gomp_critical_user_.*@Base" 8:6.9.6.8
  AcquireAlignedMemory@Base 8:6.9.6.8
  AcquireAuthenticCacheView@Base 8:6.9.6.8
