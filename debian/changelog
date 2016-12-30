@@ -36,14 +36,14 @@ imagemagick (8:6.9.6.5+dfsg-1) unstable; urgency=high
   * Fix CVE-2016-9298: heap overflow in WaveletDenoiseImage().
     (Closes: #844211).
   * Fixed memory leak in psd file handling.
-    (Closes: #845239).
+    (Closes: #845239). Fix CVE-2016-10058.
   * Fix security bug; "Prevent fault in MSL interpreter"
-    (Closes: #845241).
+    (Closes: #845241). Fix CVE-2016-10068.
   * Fix null pointer dereference in TIFF file handling
-    (Closes: #845243).
+    (Closes: #845243). Fix CVE-2016-9559.
   * Prevent heap buffer overflow in heap-buffer-overflow
     in IsPixelGray. Backport fixes from upstream.
-    (Closes: #845242).
+    (Closes: #845242). Fix CVE-2016-9556.
   * Supports XPM with > 8464 colours. (Closes: #842632).
   * Use safer policy.xml file.
   * Improve postinst file by checking version.
@@ -96,10 +96,12 @@ imagemagick (8:6.9.5.8+dfsg-1) UNRELEASED; urgency=medium
   * Prepare HDRI version by generating a few install file.
   * Bug fix: "Prevent buffer overflow in SIXEL, PDB, MAP, and CALS coders
     (bug report from Donghai Zhu)", thanks to Bastien ROUCARIES (Closes:
-    #836172).
+    #836172). Fix CVE-2016-10054, CVE-2016-10055, CVE-2016-10056,
+    and CVE-2016-10057.
   * Bug fix: "TIFF divide by zero", thanks to Bastien ROUCARIES (Closes:
-    #836171).
+    #836171). Fix CVE-2016-10053.
   * Avoid buffer overflow in SGI file handling (Closes: #836776).
+    Fix CVE-2016-7101.
   * Use autopkgtest.
   * So bump for gcc6.
 
@@ -178,17 +180,19 @@ imagemagick (8:6.9.5.7+dfsg-1) UNRELEASED; urgency=medium
       This fix CVE-2016-5841 and CVE-2016-5842.
       (Closes: #831034).
     - Prevent buffer overflow in properties reading.
-      This fix CVE-2016-6491. (Closes: #833099). Fix CVE-2016-6491.
+      This fix CVE-2016-6491. (Closes: #833099).
     - Fix potential DOS by not releasing memory.
       (Closes: #833101). Fix CVE-2016-7539.
     - Fix abort when writing to rgf format.
       (Closes: #827643, LP: #1594060). Fix CVE-2016-7540.
     - Fix buffer overflow in draw.c
-      (Closes: #833730).
+      (Closes: #833730). Fix CVE-2016-10046.
     - Fix memory leak in xml file parsing. (Closes: #833730).
+      Fix CVE-2016-10046.
     - Do not load abitrary user modules. (Closes: #833732).
     - Fix segfault in ReadRLEImage. (Closes: #833743).
     - Fix RLE check for pixel offset less than 0. (Closes: #833744).
+      Fix CVE-2016-10050.
     - Prevent possible stack overflow (Closes: #833812).
   * Remove Daniel Kobras for uploaders. Thanks Daniel.
     (Closes: #832378).
@@ -199,13 +203,14 @@ imagemagick (8:6.9.5.7+dfsg-1) UNRELEASED; urgency=medium
   * Improve linking of modules by adding if needed libz and
     libm.
   * Avoid a double free.
-    (Closes: #834183).
+    (Closes: #834183). Fix CVE-2016-10051
   * Avoid an out of bound access for malformed exif data.
-    (Closes: #834501).
+    (Closes: #834501). Fix CVE-2016-10052
   * Avoid a DOS due to improper locking in magick++ lib.
     (Closes: #834163).
   * Add upstream patch in order to avoid a buffer overflow
     in bmp file reader. (Closes: #834504).
+    Fix CVE-2016-6823.
   * Bump standard version. No change.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 16 Aug 2016 22:32:02 +0200
@@ -277,7 +282,7 @@ imagemagick (8:6.9.1.2-1) experimental; urgency=low
   - Fix a denial of service flaw in VICAR file processing.
     Fix CVE-2015-8903.
   - Fix a denial of service flaw in HDR file processing.
-    Fix TEMP-0000000-7C079F.
+    Fix CVE-2015-8900.
   - Fix a denial of service flaw in PDB file processing.
     Fix CVE-2015-8902.
   * Fix build on mips by printing progress (Closes: #770009).
@@ -324,8 +329,10 @@ imagemagick (8:6.8.9.9-7) unstable; urgency=low
   * Fix various minor security issues
     - Fix an integer overflow that can lead to a buffer overrun
       in the icon parsing code (LP: #1459747, closes: #806441)
+      Fix CVE-2015-8895.
     - Fix an integer overflow that can lead to a double free in
       pict parsing (LP: #1448803, closes: #806441).
+      Fix CVE-2015-8896.
     - Memory Leak while handle psd file (closes: #811308)
       http://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=28791
     - IM 6.9.2 crash with some PNG (closes: #811308, LP: #1492881)
@@ -342,13 +349,13 @@ imagemagick (8:6.8.9.9-6) unstable; urgency=high
 
   * Fix build on mips by printing progress (Closes: #770009).
   * Fix a few security bugs: (closes: #799524)
-    - A DOS on specially crafted MIFF file (TEMP-0000000-FDAC72).
-    - A DOS on specially crafted Vicar file (TEMP-0000000-EEF23C).
-    - A DOS on specially crafted HDR file (TEMP-0000000-7C079F).
-    - A DOS on specially crafted PDB file (TEMP-0000000-2FC21E).
+    - A DOS on specially crafted MIFF file (CVE-2015-8901).
+    - A DOS on specially crafted Vicar file (CVE-2015-8903).
+    - A DOS on specially crafted HDR file (CVE-2015-8900).
+    - A DOS on specially crafted PDB file (CVE-2015-8902).
     - Avoid a null pointer dereference in JNG decoder.
     - Avoid a DOS for RLE file.
-    - Avoid double free on TGA file.
+    - Avoid double free on TGA file. (CVE-2015-8894)
     - Avoid a bufer overflow by using field limit in sprintf.
     - Avoid a stack overflow in fx handling.
   * Replace density of 1 for JPEG by unknown working around
@@ -386,48 +393,64 @@ imagemagick (8:6.8.9.9-5) unstable; urgency=high
 
 imagemagick (8:6.8.9.9-4) unstable; urgency=high
 
-  * Fix a few security bugs see TEMP-0773834-5EB6CF (Closes: #773834):
-  - Avoid a DOS in vision.c due to an infinite loop.
-  - Avoid a SEGV due to a corrupted pnm file.
-  - Do not leak fd due to corrupted file.
-  - Fix a double free in pdb coder.
-  - Fix a SEGV due to corrupted dpc and xwd images.
-  - Fix a SEGV in dpx file handler.
-  - Fix a SEGV in malformed xwd file handler.
-  - Avoid a NULL pointer dereference in ps file handling.
-  - Fix a crash with corrupted viff file.
-  - Fix a NULL pointer dereference in wpg file handling.
-  - Do not continue on corrupted wpg file.
-  - Avoid an out of bound access in viff image.
-  - Avoid a heap buffer overflow in pdb file handling.
-  - Avoid an out of bound acess on malformed sun file.
+  * Fix a few security bugs (Closes: #773834):
+  - Avoid a DOS in vision.c due to an infinite loop. (CVE-2014-9804)
+  - Avoid a SEGV due to a corrupted pnm file. (CVE-2014-9805)
+  - Do not leak fd due to corrupted file. (CVE-2014-9806)
+  - Fix a double free in pdb coder. (CVE-2014-9807)
+  - Fix a SEGV due to corrupted dpc and xwd images. (CVE-2014-9808)
+  - Fix a SEGV in dpx file handler. (CVE-2014-9810)
+  - Fix a SEGV in malformed xwd file handler. (CVE-2014-9809)
+  - Avoid a NULL pointer dereference in ps file handling. (CVE-2014-9812)
+  - Fix a crash with corrupted viff file. (CVE-2014-9813)
+  - Fix a NULL pointer dereference in wpg file handling. (CVE-2014-9814)
+  - Do not continue on corrupted wpg file. (CVE-2014-9815)
+  - Avoid an out of bound access in viff image. (CVE-2014-9816)
+  - Avoid a heap buffer overflow in pdb file handling. (CVE-2014-9817)
+  - Avoid an out of bound acess on malformed sun file. (CVE-2014-9818)
   - Avoid heap overflow in palm, pnm and xpm files.
+    (CVE-2014-9819, CVE-2014-9820, CVE-2014-9821)
   - Fix heap overflow in quantum, palm and psd file.
+    (CVE-2014-9822, CVE-2014-9823, CVE-2014-9824)
   - Fix handling of corrupted of psd, sun and xpm file.
-  - Fix corrupted (too many colors) psd file.
-  - Fix an out of bound acess in sun file.
+    (CVE-2014-9825, CVE-2014-9826, CVE-2014-9827)
+  - Fix corrupted (too many colors) psd file. (CVE-2014-9828)
+  - Fix an out of bound acess in sun file. (CVE-2014-9829)
   - Fix handling of corrupted sun and wpg file.
+    (CVE-2014-9830, CVE-2014-9831)
   - Fix heap overflow in pcx file, psd, pict and wpf files
     and DOS in xpm files.
-  - Add additional PNM sanity checks.
-  - Avoid a crash to out of memory in magick/cache.c
+    (CVE-2014-9832, CVE-2014-9833, CVE-2014-9834, CVE-2014-9835,
+     CVE-2014-9836)
+  - Add additional PNM sanity checks. (CVE-2014-9837)
+  - Avoid a crash to out of memory in magick/cache.c (CVE-2014-9838)
   - Fix a theorical out of bound access in magick/colormap-private.h
+    (CVE-2014-9839)
   - Fix an out of bound access in palm file.
+    (CVE-2014-9840)
   - Fixed throwing of exceptions in psd handling and fix a memory leak.
+    (CVE-2014-9842)
   - Fixed boundary checks in DecodePSDPixels.
+    (CVE-2014-9843)
   - Fix another out of bound problem in rle file.
+    (CVE-2014-9844)
   - Fix crash due to corrupted dib file.
+    (CVE-2014-9845)
   - Added checks to prevent overflow in rle file.
+    (CVE-2014-9846)
   - Impose a limit of 10 million columns or rows in an input PNG
   - Don't try to handle a "previous" image in the JNG decoder.
-  - Avoid a memory leak in quantum management.
-  - Avoid a crash in png coder.
+    (CVE-2014-9847)
+  - Avoid a memory leak in quantum management. (CVE-2014-9848)
+  - Avoid a crash in png coder. (CVE-2014-9849)
   - Thread limit should be at least 1 in order to be efficient.
+    (CVE-2014-9850)
   - In psd file handling fixed parsing resource block and
-    avoid a crash.
+    avoid a crash. (CVE-2014-9851)
   - In cache fix usage of object after it has been destroyed.
-  - Avoid a memory leak in rle file handling.
-  - During identification of image do not fill memory
+  - Avoid a memory leak in rle file handling. (CVE-2014-9852)
+  - During identification of image do not fill memory.
+    (CVE-2014-9854)
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Tue, 23 Dec 2014 22:02:08 +0100
 
