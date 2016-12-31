@@ -1,3 +1,9 @@
+imagemagick (8:6.9.7.0+dfsg-3) UNRELEASED; urgency=medium
+
+  * Add more security POC
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 31 Dec 2016 11:35:11 +0100
+
 imagemagick (8:6.9.7.0+dfsg-2) unstable; urgency=medium
 
   * Generate symbols file from generic version for core

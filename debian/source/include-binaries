@@ -54,6 +54,7 @@ debian/poc/SEGV/SEGV-CVE-2016-5690.dcm
 debian/poc/SEGV/SEGV-CVE-2016-5691.dcm
 debian/poc/SEGV/SEGV-CVE-2016-5842.jpg
 debian/poc/SEGV/SEGV-CVE-2016-5841.jpg
+debian/poc/SEGV/SEGV-CVE-2016-8677.tiff
 debian/poc/valgrind-slow/heapoverflow-CVE-2016-5688-poc1.wpg
 debian/poc/valgrind-slow/invalid-write-CVE-2016-5688-poc2.wpg
 debian/poc/valgrind-slow/invalid-write-CVE-2016-5688-poc3.wpg
