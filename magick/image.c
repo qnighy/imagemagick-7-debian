@@ -511,6 +511,7 @@ MagickExport Image *AppendImages(const Image *images,
     (void) SetImageColorspace(append_image,sRGBColorspace);
   append_image->depth=depth;
   append_image->matte=matte;
+  append_image->page=images->page;
   (void) SetImageBackgroundColor(append_image);
   status=MagickTrue;
   x_offset=0;
@@ -3589,8 +3590,9 @@ MagickExport MagickBooleanType SyncImage(Image *image)
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(image->signature == MagickSignature);
-  if (image->storage_class == DirectClass)
+  if (image->storage_class != PseudoClass)
     return(MagickFalse);
+  assert(image->colormap != (PixelPacket *) NULL);
   range_exception=MagickFalse;
   status=MagickTrue;
   taint=image->taint;

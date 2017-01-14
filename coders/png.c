@@ -2145,10 +2145,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
           "  exit ReadOnePNGImage() with error.");
 
       if (image != (Image *) NULL)
-        {
-          InheritException(exception,&image->exception);
-          image->columns=0;
-        }
+        InheritException(exception,&image->exception);
 
       return(GetFirstImageInList(image));
     }
@@ -2968,7 +2965,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
           Quantum
             scale;
 
-          scale = 65535UL/((1UL << ping_file_depth)-1);
+          scale = 65535/((1UL << ping_file_depth)-1);
 
 #if (MAGICKCORE_QUANTUM_DEPTH > 16)
           scale = ScaleShortToQuantum(scale);

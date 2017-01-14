@@ -2249,6 +2249,9 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
           {
             GetNextToken(q,&q,extent,token);
             factor=strchr(token,'%') != (char *) NULL ? 0.01 : 1.0;
+            graphic_context[n]->opacity=QuantumRange-QuantumRange*((1.0-
+              QuantumScale*graphic_context[n]->opacity)*factor*
+              StringToDouble(token,&next_token));
             graphic_context[n]->fill_opacity=QuantumRange-QuantumRange*((1.0-
               QuantumScale*graphic_context[n]->fill_opacity)*factor*
               StringToDouble(token,&next_token));
@@ -2910,11 +2913,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
         (size_t) number_points,sizeof(*primitive_info));
       if ((primitive_info == (PrimitiveInfo *) NULL) ||
           (number_points != (MagickSizeType) ((size_t) number_points)))
-        {
-          (void) ThrowMagickException(&image->exception,GetMagickModule(),
-            ResourceLimitError,"MemoryAllocationFailed","`%s'",image->filename);
-          break;
-        }
+        ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+          image->filename);
     }
     primitive_info[j].primitive=primitive_type;
     primitive_info[j].coordinates=(size_t) x;
