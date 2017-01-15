@@ -35,7 +35,7 @@ imagemagick (8:6.9.7.0+dfsg-2) unstable; urgency=medium
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Fri, 30 Dec 2016 09:47:13 +0100
 
-imagemagick (8:6.9.7.0+dfsg-1œ) experimental; urgency=high
+imagemagick (8:6.9.7.0+dfsg-1) experimental; urgency=high
 
   * Bump so version due to structure change
     thanks to Nishanth Aravamudan (Closes: #846385).
