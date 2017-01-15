@@ -18,9 +18,10 @@ imagemagick (8:6.9.7.4+dfsg-1) unstable; urgency=high
       CVE-2016-10062.
     + Avoid double free in profile.c (Closes:  #851383).
     + Fix memory leak in MPC image format. (Closes: #851382).
+  * update copyright years in debian/copyright.
   * Add more security POC
 
- --
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 15 Jan 2017 16:38:03 +0100
 
 imagemagick (8:6.9.7.0+dfsg-2) unstable; urgency=medium
 
