@@ -44,6 +44,8 @@ debian/poc/valgrind/outofbound-LP1545367.aip
 debian/poc/valgrind/outofbund-LP1553366.pdb
 debian/poc/valgrind/outofbound-upstream144.pdb
 debian/poc/valgrind/outofbound-CVE-2016-5687.dds
+debian/poc/SEGV/SEGV-debian-851381.tiff
+debian/poc/SEGV/SEGV-upstream347.psb
 debian/poc/SEGV/SEGV-upstream26848.sun
 debian/poc/SEGV/ABRT-upstream26838.sun
 debian/poc/SEGV/ABRT-upstream26857.sun

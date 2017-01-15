@@ -1,8 +1,19 @@
-imagemagick (8:6.9.7.0+dfsg-3) UNRELEASED; urgency=medium
+imagemagick (8:6.9.7.3+dfsg-1) unstable; urgency=high
 
+  * New upstream version:
+    + Fix display -loop option not working/missing (Closes: #793629).
+    + Honor $TMPDIR (Closes: #791460).
+    + Fix inverted colors for monochrome images (Closes: #849507).
+  * Fix a few security bugs:
+    + off-by-one string copy in wpg file handling (Closes: #851483).
+    + check return of memory allocation in ipl file handling.
+      (Closes: #851485)
+    + Fix a heap overflow in psb file handling (Closes: #851374).
+    + Fix  Crash - PushQuantumPixel - Heap-Buffer-Overflow in tiff file
+      handling (Closes: #851381).
   * Add more security POC
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sat, 31 Dec 2016 11:35:11 +0100
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 15 Jan 2017 15:18:45 +0100
 
 imagemagick (8:6.9.7.0+dfsg-2) unstable; urgency=medium
 
