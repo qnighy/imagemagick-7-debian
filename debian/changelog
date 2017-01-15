@@ -4,6 +4,7 @@ imagemagick (8:6.9.7.4+dfsg-1) unstable; urgency=high
     + Fix display -loop option not working/missing (Closes: #793629).
     + Honor $TMPDIR (Closes: #791460).
     + Fix inverted colors for monochrome images (Closes: #849507).
+    + Fix imagemagick not run from menu in Mate (Closes: #773426).
   * Fix a few security bugs:
     + off-by-one string copy in wpg file handling (Closes: #851483).
     + check return of memory allocation in ipl file handling.
@@ -19,7 +20,7 @@ imagemagick (8:6.9.7.4+dfsg-1) unstable; urgency=high
     + Fix memory leak in MPC image format. (Closes: #851382).
   * Add more security POC
 
- -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 15 Jan 2017 15:18:45 +0100
+ --
 
 imagemagick (8:6.9.7.0+dfsg-2) unstable; urgency=medium
 
