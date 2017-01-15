@@ -178,7 +178,7 @@ Multi-Arch: same
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
-	 imagemagick-6-common (= ${source:Version})
+	 imagemagick-6-common (>= 8:6.9.6.2+dfsg-3)
 Description: low-level image manipulation library - architecture header files
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -302,7 +302,7 @@ Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
-	 imagemagick-6-common(= ${source:Version})
+	 imagemagick-6-common (>= 8:6.9.6.2+dfsg-3)
 Description: image manipulation library -- quantum depth Q16
  The MagickWand API is the recommended interface between the C programming
  language and the ImageMagick image processing libraries. Unlike the
@@ -511,7 +511,7 @@ Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
-	 imagemagick-6-common(= ${source:Version})
+	 imagemagick-6-common (>= 8:6.9.6.2+dfsg-3)
 Description: image manipulation library -- quantum depth Q16HDRI
  The MagickWand API is the recommended interface between the C programming
  language and the ImageMagick image processing libraries. Unlike the

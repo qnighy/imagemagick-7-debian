@@ -37,7 +37,7 @@ Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
- imagemagick-${IMVERSION}-common (>= 8:6.9.6.2+dfsg-3)
+ imagemagick-${IMVERSION}-common (>= ${COMMONMINVERSION})
 Recommends: ghostscript, gsfonts
 Suggests: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra
 Description: low-level image manipulation library -- quantum depth ${UCQUANTUMDEPTH}
@@ -109,7 +109,7 @@ Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}, dpkg (>= 1.17.6)
 Depends: ${shlibs:Depends}, ${misc:Depends},
-	 imagemagick-${IMVERSION}-common(= ${source:Version})
+	 imagemagick-${IMVERSION}-common (>= ${COMMONMINVERSION})
 Description: image manipulation library -- quantum depth ${UCQUANTUMDEPTH}
  The MagickWand API is the recommended interface between the C programming
  language and the ImageMagick image processing libraries. Unlike the

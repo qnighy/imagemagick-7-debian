@@ -178,7 +178,7 @@ Multi-Arch: same
 Section: libdevel
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
-	 imagemagick-${IMVERSION}-common (= ${source:Version})
+	 imagemagick-${IMVERSION}-common (>= ${COMMONMINVERSION})
 Description: low-level image manipulation library - architecture header files
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for

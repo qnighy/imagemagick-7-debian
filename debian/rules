@@ -12,6 +12,9 @@ export CORESOVERSION ?= 3
 export WANDSOVERSION ?= 3
 export PPSOVERSION ?= 7
 
+# minimal version ABI compatible of common
+export COMMONMINVERSION ?= 8:6.9.6.2+dfsg-3
+
 # default im version used for adding default file
 export DEFAULTIMVERSION ?= 6
 
