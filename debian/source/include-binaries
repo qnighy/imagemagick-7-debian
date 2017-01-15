@@ -28,6 +28,9 @@ debian/poc/valgrind/outofbound-LP1539053.mat
 debian/poc/valgrind/outofbound-LP1539059.pdb
 debian/poc/valgrind/utofbound-1-LP1539061.pdb
 debian/poc/valgrind/utofbound-2-LP1539061.pdb
+debian/poc/valgrind/outofbound-upstream348.psb
+debian/poc/valgrind/outofbound-upstream350.psb
+debian/poc/valgrind/doublefree-upstream354
 debian/poc/valgrind/outofbound-LP1542112.pdb
 debian/poc/valgrind/outofbound-LP1539065.pdb
 debian/poc/valgrind/outofbound-LP1539066.pdb

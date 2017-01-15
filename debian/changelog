@@ -1,4 +1,4 @@
-imagemagick (8:6.9.7.3+dfsg-1) unstable; urgency=high
+imagemagick (8:6.9.7.4+dfsg-1) unstable; urgency=high
 
   * New upstream version:
     + Fix display -loop option not working/missing (Closes: #793629).
@@ -11,6 +11,12 @@ imagemagick (8:6.9.7.3+dfsg-1) unstable; urgency=high
     + Fix a heap overflow in psb file handling (Closes: #851374).
     + Fix  Crash - PushQuantumPixel - Heap-Buffer-Overflow in tiff file
       handling (Closes: #851381).
+    + Fix a memory corruption in psb file (Closes: #851376).
+    + Fix an out of bound in psd file handling (Closes: #851377).
+    + Check fwrite by using ferror (Closes: #849439). Fix
+      CVE-2016-10062.
+    + Avoid double free in profile.c (Closes:  #851383).
+    + Fix memory leak in MPC image format. (Closes: #851382).
   * Add more security POC
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 15 Jan 2017 15:18:45 +0100
