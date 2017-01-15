@@ -2486,7 +2486,7 @@ static size_t WritePSDChannel(const PSDInfo *psd_info,
     next_image->depth=16;
   monochrome=IsMonochromeImage(image,&image->exception) && (image->depth == 1)
     ? MagickTrue : MagickFalse;
-  quantum_info=AcquireQuantumInfo(image_info,image);
+  quantum_info=AcquireQuantumInfo(image_info,next_image);
   if (quantum_info == (QuantumInfo *) NULL)
     return(0);
   pixels=GetQuantumPixels(quantum_info);
@@ -2606,7 +2606,7 @@ static ssize_t WritePSDChannels(const PSDInfo *psd_info,
   compact_pixels=(unsigned char *) NULL;
   if (next_image->compression == RLECompression)
     {
-      compact_pixels=AcquireCompactPixels(image);
+      compact_pixels=AcquireCompactPixels(next_image);
       if (compact_pixels == (unsigned char *) NULL)
         return(0);
     }
