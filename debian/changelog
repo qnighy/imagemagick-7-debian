@@ -1,3 +1,14 @@
+imagemagick (8:6.9.7.4+dfsg-2) unstable; urgency=high
+
+  * Fix a few security bugs:
+    + Assertion failure in TGA coder (Closes: #856878).
+    + Out of bound in sun file coder (Closes: #856879).
+    + Memory leak in libmagick++ library (Closes: #856880).
+    + Missing null pointer check in xcf coder (Closes: #856881)
+      and psd coder (Closes: #856882).
+
+ -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 05 Mar 2017 23:21:36 +0100
+
 imagemagick (8:6.9.7.4+dfsg-1) unstable; urgency=high
 
   * New upstream version:
