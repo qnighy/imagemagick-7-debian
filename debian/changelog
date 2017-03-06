@@ -2,10 +2,14 @@ imagemagick (8:6.9.7.4+dfsg-2) unstable; urgency=high
 
   * Fix a few security bugs:
     + Assertion failure in TGA coder (Closes: #856878).
+      Fix CVE-2017-6498.
     + Out of bound in sun file coder (Closes: #856879).
+      Fix CVE-2017-6500.
     + Memory leak in libmagick++ library (Closes: #856880).
+      Fix CVE-2017-6499.
     + Missing null pointer check in xcf coder (Closes: #856881)
       and psd coder (Closes: #856882).
+      Fix CVE-2017-6501 and CVE-2017-6497.
 
  -- Bastien Roucariès <roucaries.bastien+debian@gmail.com>  Sun, 05 Mar 2017 23:21:36 +0100
 
@@ -18,17 +22,25 @@ imagemagick (8:6.9.7.4+dfsg-1) unstable; urgency=high
     + Fix imagemagick not run from menu in Mate (Closes: #773426).
   * Fix a few security bugs:
     + off-by-one string copy in wpg file handling (Closes: #851483).
-    + check return of memory allocation in ipl file handling.
-      (Closes: #851485)
+      Fix CVE-2016-7533.
+    + check return of memory allocation in ipl file handling
+      (Closes: #851485).
+      Fix CVE-2016-10144.
     + Fix a heap overflow in psb file handling (Closes: #851374).
+      Fix CVE-2017-5511.
     + Fix  Crash - PushQuantumPixel - Heap-Buffer-Overflow in tiff file
       handling (Closes: #851381).
+      Fix CVE-2017-5508.
     + Fix a memory corruption in psb file (Closes: #851376).
+      Fix CVE-2017-5510.
     + Fix an out of bound in psd file handling (Closes: #851377).
-    + Check fwrite by using ferror (Closes: #849439). Fix
-      CVE-2016-10062.
+      CVE-2017-5509.
+    + Check fwrite by using ferror (Closes: #849439).
+      Fix CVE-2016-10062.
     + Avoid double free in profile.c (Closes:  #851383).
+      Fix CVE-2017-5506.
     + Fix memory leak in MPC image format. (Closes: #851382).
+      Fix CVE-2017-5507.
   * update copyright years in debian/copyright.
   * Relax ${source:Version} depends for imagemagick-6-common.
   * Add more security POC
