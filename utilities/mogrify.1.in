@@ -1,11 +1,11 @@
-.TH mogrify 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
+.TH mogrify-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
 .SH NAME
-mogrify \- resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more. Mogrify overwrites the original image file, whereas, convert(1) writes to a different image file.
+mogrify \- resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more. Mogrify overwrites the original image file, whereas, convert-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) writes to a different image file.
 .SH SYNOPSIS
 .TP
-\fBmagick mogrify\fP [\fIoptions\fP] \fIinput-file\fP 
+\fBmagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ mogrify\fP [\fIoptions\fP] \fIinput-file\fP 
 .SH OVERVIEW
-The \fBmogrify\fP program is a member of the ImageMagick(1) suite of tools.  Use it to resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more. This tool is similar to convert(1) except the original image file is overwritten with any changes you request.
+The \fBmogrify-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP program is a member of the ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) suite of tools.  Use it to resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more. This tool is similar to convert-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) except the original image file is overwritten with any changes you request.
 
 For more information about the mogrify command, point your browser to file://@DOCUMENTATION_PATH@/www/mogrify.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/mogrify.php.
 .SH DESCRIPTION
@@ -329,7 +329,7 @@ Miscellaneous Options:
 
 By default, the image format of `file' is determined by its magic number.  To specify a particular image format, precede the filename with an image format name and a colon (i.e. ps:image) or specify the image type as the filename suffix (i.e. image.ps).  Specify 'file' as '-' for standard input or output.
 .SH SEE ALSO
-ImageMagick(1)
+ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 

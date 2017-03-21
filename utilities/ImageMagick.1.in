@@ -1,12 +1,12 @@
-.TH ImageMagick 1 "2020-04-25" "ImageMagick"
+.TH ImageMagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ 1 "2020-04-25" "ImageMagick"
 
 .SH NAME
 ImageMagick \- a free software suite for the creation, modification and
 display of bitmap images.
 
 .SH SYNOPSIS
-\fBmagick\fP [\fIoptions\fP|\fIinput-file\fP]... \fIoutput-file\fP
-\fBmagick-script\fP \fIscript-file\fP [\fIscript-arguments\fP]...
+\fBmagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP [\fIoptions\fP|\fIinput-file\fP]... \fIoutput-file\fP
+\fBmagick-script-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP \fIscript-file\fP [\fIscript-arguments\fP]...
 
 .SH OVERVIEW
 
@@ -141,18 +141,18 @@ file://@DOCUMENTATION_PATH@/index.html or
 https://imagemagick.org/.
 
 .SH SEE ALSO
-convert(1),
-compare(1),
-composite(1),
-conjure(1),
-identify(1),
-import(1),
-magick(1),
-magick-script(1),
-montage(1),
-display(1),
-animate(1),
-import(1),
+convert-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
+compare-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
+composite-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
+conjure-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
+identify-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
+import-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
+magick,
+magick-script,
+montage-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
+display-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
+animate-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
+import-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1),
 Magick++-config(1),
 MagickCore-config(1),
 MagickWand-config(1)

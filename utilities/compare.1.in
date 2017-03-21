@@ -1,11 +1,11 @@
-.TH compare 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
+.TH compare-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
 .SH NAME
 compare \- mathematically and visually annotate the difference between an image and its reconstruction.
 .SH SYNOPSIS
 .TP
-\fBmagick compare\fP \fIinput-file\fP \fIinput-file\fP [\fIoptions\fP] \fIoutput-file\fP
+\fBmagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ compare\fP \fIinput-file\fP \fIinput-file\fP [\fIoptions\fP] \fIoutput-file\fP
 .SH OVERVIEW
-The \fBcompare\fP program is a member of the ImageMagick(1) suite of tools.  Use it to mathematically and visually annotate the difference between an image and its reconstruction.
+The \fBcompare-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP program is a member of the ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) suite of tools.  Use it to mathematically and visually annotate the difference between an image and its reconstruction.
 
 For more information about the compare command, point your browser to file://@DOCUMENTATION_PATH@/www/compare.html or https://imagemagick.org/script/compare.php.
 .SH DESCRIPTION
@@ -102,7 +102,7 @@ Two images are considered similar if their difference according to the specified
 
 The compare program returns 2 on error, 0 if the images are similar, or a value between 0 and 1 if they are not similar.
 .SH SEE ALSO
-ImageMagick(1)
+ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 

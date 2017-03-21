@@ -1,11 +1,11 @@
-.TH identify 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
+.TH identify-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
 .SH NAME
 identify \- describes the format and characteristics of one or more image files.
 .SH SYNOPSIS
 .TP
-\fBmagick identify\fP [\fIoptions\fP] \fIinput-file\fP
+\fBmagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ identify\fP [\fIoptions\fP] \fIinput-file\fP
 .SH OVERVIEW
-The \fBidentify\fP program is a member of the ImageMagick(1) suite of tools.  It describes the format and characteristics of one or more image files. It also reports if an image is incomplete or corrupt. The information returned includes the image number, the file name, the width and height of the image, whether the image is colormapped or not, the number of colors in the image (by default off use \fI-define unique=true\fP option), the number of bytes in the image, the format of the image (JPEG, PNM, etc.), and finally the number of seconds it took to read and process the image. Many more attributes are available with the verbose option.
+The \fBidentify-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP program is a member of the ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) suite of tools.  It describes the format and characteristics of one or more image files. It also reports if an image is incomplete or corrupt. The information returned includes the image number, the file name, the width and height of the image, whether the image is colormapped or not, the number of colors in the image (by default off use \fI-define unique=true\fP option), the number of bytes in the image, the format of the image (JPEG, PNM, etc.), and finally the number of seconds it took to read and process the image. Many more attributes are available with the verbose option.
 
 For more information about the identify command, point your browser to file://@DOCUMENTATION_PATH@/www/identify.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/identify.php.
 .SH DESCRIPTION
@@ -73,7 +73,7 @@ By default, the image format of `file' is determined by its magic number.  To sp
 .SH NOTE
 Although some options appear to modify the file to be identified, the identify command is strictly \fBread only\fP. For instance, the crop option crops the in-memory image and then describes the result.
 .SH SEE ALSO
-ImageMagick(1)
+ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 
