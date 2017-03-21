@@ -1,11 +1,11 @@
-.TH conjure 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
+.TH conjure-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
 .SH NAME
 conjure \- interprets and executes scripts written in the Magick Scripting Language (MSL).
 .SH SYNOPSIS
 .TP
-\fBmagick conjure\fP [\fIoptions\fP] \fIscript.msl\fP
+\fBmagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ conjure\fP [\fIoptions\fP] \fIscript.msl\fP
 .SH OVERVIEW
-The \fBconjure\fP program is a member of the ImageMagick(1) suite of tools.  Use it to process a Magick Scripting Language (MSL) script. The Magick scripting language (MSL) will primarily benefit those that want to accomplish custom image processing tasks but do not wish to program, or those that do not have access to a Perl interpreter or a compiler.
+The \fBconjure-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP program is a member of the ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) suite of tools.  Use it to process a Magick Scripting Language (MSL) script. The Magick scripting language (MSL) will primarily benefit those that want to accomplish custom image processing tasks but do not wish to program, or those that do not have access to a Perl interpreter or a compiler.
 
 For more information about the conjure command, point your browser to file://@DOCUMENTATION_PATH@/www/conjure.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/conjure.php.
 .SH DESCRIPTION
@@ -27,7 +27,7 @@ In addition, define any key value pairs required by your script.  For example,
 
     conjure \-size 100x100 \-color blue \-foo bar script.msl
 .SH SEE ALSO
-ImageMagick(1)
+ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 

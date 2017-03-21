@@ -1,11 +1,11 @@
-.TH display 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
+.TH display-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
 .SH NAME
 display \- displays an image or image sequence on any X server.
 .SH SYNOPSIS
 .TP
-\fBmagick display\fP [\fIoptions\fP] \fIinput-file\fP
+\fBmagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ display\fP [\fIoptions\fP] \fIinput-file\fP
 .SH OVERVIEW
-The \fBdisplay\fP program is a member of the ImageMagick(1) suite of tools.  Use it to display an image or image sequence on any X server.
+The \fBdisplay-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP program is a member of the ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) suite of tools.  Use it to display an image or image sequence on any X server.
 
 For more information about the display command, point your browser to file://@DOCUMENTATION_PATH@/www/display.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/display.php.
 .SH DESCRIPTION
@@ -133,7 +133,7 @@ The display program defaults to the X screen resolution.  To display vector form
 
   display -density 72 drawing.svg
 .SH SEE ALSO
-ImageMagick(1)
+ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 
