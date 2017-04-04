@@ -18,6 +18,7 @@ Description: image manipulation programs -- infrastructure dummy package
 
 
 # predepend on dpkg (>= 1.17.5) for dir to symlink remove after jeesie +2
+# conflict/replace itself (<< 8:6.9.2.10+dfsg-1~) in order to smooth link issue remove after strech + 2
 # remove after strech+2
 Package: imagemagick-doc
 Architecture: all
@@ -25,9 +26,11 @@ Multi-Arch: foreign
 Section: oldlibs
 Priority: extra
 Depends: ${misc:Depends},
-	 imagemagick-${IMVERSION}-doc, imagemagick-${IMVERSION}-common
+	 imagemagick-${IMVERSION}-doc (>> 8:6.9.2.10+dfsg-1), imagemagick-${IMVERSION}-common
 Pre-Depends: dpkg (>= 1.17.5)
-Conflicts: imagemagick (<= 7:6.4.0)
+Conflicts: imagemagick (<= 7:6.4.0),
+           imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
+Replaces: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
 Description: document files of ImageMagick -- dummy package
  This package contained the document files shipped with ImageMagick, a software
  suite to create, edit, and compose bitmap images.

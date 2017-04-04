@@ -1,3 +1,11 @@
+imagemagick (8:6.9.7.4+dfsg-3) unstable; urgency=medium
+
+  * Bug fix: "fails to upgrade wheezy  jessie stretch", thanks
+    to Andreas Beckmann (Closes: #847282).
+  * Add my debian address.
+
+ -- Bastien Roucariès <rouca@debian.org>  Tue, 04 Apr 2017 15:05:41 +0200
+
 imagemagick (8:6.9.7.4+dfsg-2) unstable; urgency=high
 
   * Fix a few security bugs:
