@@ -1,3 +1,11 @@
+imagemagick (8:6.9.7.4+dfsg-4) unstable; urgency=high
+
+  * Security fixes:
+    + CVE-2017-7606: Undefined behavoir in rle (Closes: #859771).
+    + CVE-2017-7619: Infinite loop due to rounding error (Closes: #859769).
+
+ -- Bastien Roucariès <rouca@debian.org>  Wed, 12 Apr 2017 23:20:43 +0200
+
 imagemagick (8:6.9.7.4+dfsg-3) unstable; urgency=medium
 
   * Bug fix: "fails to upgrade wheezy  jessie stretch", thanks

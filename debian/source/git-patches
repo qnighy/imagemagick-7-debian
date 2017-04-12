@@ -1,2 +1,3 @@
 upstream/$UPSTREAM_REF..debian-patches/6.9.7.4+dfsg-1
 debian-patches/6.9.7.4+dfsg-1..debian-patches/6.9.7.4+dfsg-2
+debian-patches/6.9.7.4+dfsg-2..debian-patches/6.9.7.4+dfsg-4
