@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: ImageMagick Packaging Team <pkg-gmagick-im-team@lists.alioth.debian.org>
 Uploaders: Luciano Bello <luciano@debian.org>,
  Nelson A. de Oliveira <naoliv@debian.org>,
- Bastien Roucariès <roucaries.bastien+debian@gmail.com>,
+ Bastien Roucariès <rouca@debian.org>,
  Vincent Fourmond <fourmond@debian.org>
 Standards-Version: 3.9.8
 # for dbg-sym
@@ -83,7 +83,7 @@ Recommends: www-browser,
 Suggests: imagemagick
 Provides: imagemagick-doc
 # remove breaks/replaces after strech + 2
-Replaces: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
+Replaces: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~), imagemagick (<< 8:6.9.2.10+dfsg-1~)
 Breaks: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
 Built-using: ${doxygen:Built-Using}
 Description: document files of ImageMagick

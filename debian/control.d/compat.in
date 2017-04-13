@@ -29,7 +29,7 @@ Depends: ${misc:Depends},
 	 imagemagick-${IMVERSION}-doc (>> 8:6.9.2.10+dfsg-1), imagemagick-${IMVERSION}-common
 Pre-Depends: dpkg (>= 1.17.5)
 Conflicts: imagemagick (<= 7:6.4.0),
-           imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
+Breaks: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
 Replaces: imagemagick-doc (<< 8:6.9.2.10+dfsg-1~)
 Description: document files of ImageMagick -- dummy package
  This package contained the document files shipped with ImageMagick, a software
