@@ -1,3 +1,11 @@
+imagemagick (8:6.9.7.4+dfsg-5) unstable; urgency=medium
+
+  * Bug fix: "imagemagick-doc upgrade failure: dpkg-maintscript-helper:
+    error: missing arguments after --", thanks to Adrian Bunk (Closes:
+    #860280).
+
+ -- Bastien Roucariès <rouca@debian.org>  Fri, 14 Apr 2017 12:19:36 +0200
+
 imagemagick (8:6.9.7.4+dfsg-4) unstable; urgency=high
 
   * Security fixes:
