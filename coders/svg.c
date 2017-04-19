@@ -3262,6 +3262,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->rows=svg_info->height;
   if (exception->severity >= ErrorException)
     {
+      svg_info=DestroySVGInfo(svg_info);
+      (void) RelinquishUniqueFileResource(filename);
       image=DestroyImage(image);
       return((Image *) NULL);
     }
