@@ -1,4 +1,4 @@
-imagemagick (8:6.9.8.0+dfsg-1) UNRELEASED; urgency=medium
+imagemagick (8:6.9.8.3+dfsg-1) UNRELEASED; urgency=medium
 
    * New upstream version.
      + Fix CVE-2017-6502, webp buffer overflow. (Closes: #856883).
