@@ -27,6 +27,9 @@ extern "C" {
 #if !defined(MAGICKCORE_QUANTUM_DEPTH)
 #define MAGICKCORE_QUANTUM_DEPTH  16
 #endif
+#if !defined(MagickPathExtent)
+#define MagickPathExtent  MaxTextExtent
+#endif
 
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #  define MagickLLConstant(c)  (MagickOffsetType) (c ## i64)
@@ -44,9 +47,9 @@ extern "C" {
   Float_t is not an ABI type.
 */
 #if MAGICKCORE_SIZEOF_FLOAT_T == 0
-typedef float MagickRealType;
+typedef double MagickRealType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_FLOAT)
-typedef float MagickRealType;
+typedef double MagickRealType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_DOUBLE)
 typedef double MagickRealType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_LONG_DOUBLE)
@@ -73,9 +76,9 @@ typedef unsigned char Quantum;
   Float_t is not an ABI type.
 */
 #if MAGICKCORE_SIZEOF_FLOAT_T == 0
-typedef float MagickRealType;
+typedef double MagickRealType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_FLOAT)
-typedef float MagickRealType;
+typedef double MagickRealType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_DOUBLE)
 typedef double MagickRealType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_LONG_DOUBLE)

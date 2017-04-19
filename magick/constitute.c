@@ -383,12 +383,6 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
     flags,
     thread_support;
 
-  PolicyDomain
-    domain;
-
-  PolicyRights
-    rights;
-
   /*
     Determine image type from filename prefix or suffix (e.g. image.jpg).
   */
@@ -404,16 +398,6 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
   (void) SetImageInfo(read_info,0,exception);
   (void) CopyMagickString(filename,read_info->filename,MaxTextExtent);
   (void) CopyMagickString(magick,read_info->magick,MaxTextExtent);
-  domain=CoderPolicyDomain;
-  rights=ReadPolicyRights;
-  if (IsRightsAuthorized(domain,rights,read_info->magick) == MagickFalse)
-    {
-      errno=EPERM;
-      (void) ThrowMagickException(exception,GetMagickModule(),PolicyError,
-        "NotAuthorized","`%s'",read_info->filename);
-      read_info=DestroyImageInfo(read_info);
-      return((Image *) NULL);
-    }
   /*
     Call appropriate image reader based on image type.
   */
@@ -422,6 +406,22 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
   sans_exception=DestroyExceptionInfo(sans_exception);
   if (magick_info != (const MagickInfo *) NULL)
     {
+      PolicyDomain
+        domain;
+
+      PolicyRights
+        rights;
+
+      domain=CoderPolicyDomain;
+      rights=ReadPolicyRights;
+      if (IsRightsAuthorized(domain,rights,magick_info->module) == MagickFalse)
+        {
+          errno=EPERM;
+          (void) ThrowMagickException(exception,GetMagickModule(),PolicyError,
+            "NotAuthorized","`%s'",read_info->filename);
+          read_info=DestroyImageInfo(read_info);
+          return((Image *) NULL);
+        }
       if (GetMagickEndianSupport(magick_info) == MagickFalse)
         read_info->endian=UndefinedEndian;
       else
@@ -599,6 +599,9 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
     const StringInfo
       *profile;
 
+    ssize_t
+      option_type;
+
     next->taint=MagickFalse;
     GetPathComponent(magick_filename,MagickPath,magick_path);
     if (*magick_path == '\0' && *next->magick == '\0')
@@ -649,8 +652,10 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
       value=GetImageProperty(next,"exif:ResolutionUnit");
     if (value != (char *) NULL)
       {
-        next->units=(ResolutionType) ParseCommandOption(MagickResolutionOptions,
-          MagickFalse,value);
+        option_type=ParseCommandOption(MagickResolutionOptions,MagickFalse,
+          value);
+        if (option_type >= 0)
+          next->units=(ResolutionType) option_type;
         (void) DeleteImageProperty(next,"exif:ResolutionUnit");
         (void) DeleteImageProperty(next,"tiff:ResolutionUnit");
       }
@@ -762,8 +767,12 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
       }
     option=GetImageOption(image_info,"dispose");
     if (option != (const char *) NULL)
-      next->dispose=(DisposeType) ParseCommandOption(MagickDisposeOptions,
-        MagickFalse,option);
+      {
+        option_type=ParseCommandOption(MagickDisposeOptions,MagickFalse,
+          option);
+        if (option_type >= 0)
+          next->dispose=(DisposeType) option_type;
+      }
     if (read_info->verbose != MagickFalse)
       (void) IdentifyImage(next,stderr,MagickFalse);
     image=next;
@@ -990,12 +999,6 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
   MagickStatusType
     thread_support;
 
-  PolicyDomain
-    domain;
-
-  PolicyRights
-    rights;
-
   /*
     Determine image type from filename prefix or suffix (e.g. image.jpg).
   */
@@ -1027,15 +1030,6 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
     }
   (void) CopyMagickString(filename,image->filename,MaxTextExtent);
   (void) CopyMagickString(image->filename,write_info->filename,MaxTextExtent);
-  domain=CoderPolicyDomain;
-  rights=WritePolicyRights;
-  if (IsRightsAuthorized(domain,rights,write_info->magick) == MagickFalse)
-    {
-      sans_exception=DestroyExceptionInfo(sans_exception);
-      write_info=DestroyImageInfo(write_info);
-      errno=EPERM;
-      ThrowBinaryException(PolicyError,"NotAuthorized",filename);
-    }
   /*
     Call appropriate image writer based on image type.
   */
@@ -1043,6 +1037,20 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
   sans_exception=DestroyExceptionInfo(sans_exception);
   if (magick_info != (const MagickInfo *) NULL)
     {
+      PolicyDomain
+        domain;
+
+      PolicyRights
+        rights;
+
+      domain=CoderPolicyDomain;
+      rights=WritePolicyRights;
+      if (IsRightsAuthorized(domain,rights,write_info->magick) == MagickFalse)
+        {
+          write_info=DestroyImageInfo(write_info);
+          errno=EPERM;
+          ThrowBinaryException(PolicyError,"NotAuthorized",filename);
+        }
       if (GetMagickEndianSupport(magick_info) == MagickFalse)
         image->endian=UndefinedEndian;
       else

@@ -1159,7 +1159,10 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
         */
         status=AcquireImageColormap(image,colors != 0 ? colors : 256);
         if (status == MagickFalse)
-          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          {
+            InheritException(exception,&image->exception);
+            return(DestroyImageList(image));
+          }
         if (colors != 0)
           {
             size_t
@@ -2276,7 +2279,8 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
 
           length=strlen(value);
           for (i=0; i < (ssize_t) length; i++)
-            if (isspace((int) ((unsigned char) value[i])) != 0)
+            if ((isspace((int) ((unsigned char) value[i])) != 0) ||
+                (value[i] == '}'))
               break;
           if ((i == (ssize_t) length) && (i != 0))
             (void) WriteBlob(image,length,(const unsigned char *) value);

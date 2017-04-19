@@ -1,7 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002, 2003
-// Copyright Dirk Lemstra 2014-2015
+// Copyright Dirk Lemstra 2014-2017
 //
 // Implementation of Exception and derived classes
 //
@@ -838,6 +838,7 @@ MagickPPExport void Magick::throwException(ExceptionInfo *exception_,
 
   std::string message=formatExceptionMessage(exception_);
   nestedException=(Exception *) NULL;
+  q=(Exception *) NULL;
   LockSemaphoreInfo(exception_->semaphore);
   if (exception_->exceptions != (void *) NULL)
     {

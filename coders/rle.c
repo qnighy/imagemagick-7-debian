@@ -274,8 +274,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
         p=colormap;
         for (i=0; i < (ssize_t) number_colormaps; i++)
           for (x=0; x < (ssize_t) map_length; x++)
-            *p++=(unsigned char) ScaleQuantumToChar(ScaleShortToQuantum(
-              ReadBlobLSBShort(image)));
+            *p++=(unsigned char) ScaleShortToQuantum(ReadBlobLSBShort(image));
       }
     if ((flags & 0x08) != 0)
       {
@@ -335,6 +334,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     pixel_info_length=image->columns*image->rows*
       MagickMax(number_planes_filled,4);
     pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
+    (void) ResetMagickMemory(pixels,0,pixel_info_length);
     if ((flags & 0x01) && !(flags & 0x02))
       {
         ssize_t

@@ -403,10 +403,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
         scanline=(unsigned char *) AcquireQuantumMemory(iris_info.columns,
           bytes_per_pixel*sizeof(*scanline));
         if (scanline == (unsigned char *) NULL)
-          {
-            pixel_info=RelinquishVirtualMemory(pixel_info);
-            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-          }
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         for (z=0; z < (ssize_t) iris_info.depth; z++)
         {
           p=pixels+bytes_per_pixel*z;
@@ -463,11 +460,12 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
             (runlength == (size_t *) NULL) ||
             (packet_info == (MemoryInfo *) NULL))
           {
-            offsets=(ssize_t *) RelinquishMagickMemory(offsets);
-            runlength=(size_t *) RelinquishMagickMemory(runlength);
-            if (packet_info != (MemoryInfo *) NULL)
+            if (offsets == (ssize_t *) NULL)
+              offsets=(ssize_t *) RelinquishMagickMemory(offsets);
+            if (runlength == (size_t *) NULL)
+              runlength=(size_t *) RelinquishMagickMemory(runlength);
+            if (packet_info == (MemoryInfo *) NULL)
               packet_info=RelinquishVirtualMemory(packet_info);
-            pixel_info=RelinquishVirtualMemory(pixel_info);
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           }
         packets=(unsigned char *) GetVirtualMemoryBlob(packet_info);
@@ -477,13 +475,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
         {
           runlength[i]=ReadBlobMSBLong(image);
           if (runlength[i] > (4*(size_t) iris_info.columns+10))
-            {
-              offsets=(ssize_t *) RelinquishMagickMemory(offsets);
-              runlength=(size_t *) RelinquishMagickMemory(runlength);
-              packet_info=RelinquishVirtualMemory(packet_info);
-              pixel_info=RelinquishVirtualMemory(pixel_info);
-              ThrowReaderException(CorruptImageError,"ImproperImageHeader");
-            }
+            ThrowReaderException(CorruptImageError,"ImproperImageHeader");
         }
         /*
           Check data order.
@@ -520,14 +512,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
                   (runlength[y+z*iris_info.rows]/bytes_per_pixel),packets,
                   (ssize_t) iris_info.columns,p+bytes_per_pixel*z);
                 if (status == MagickFalse)
-                  {
-                    offsets=(ssize_t *) RelinquishMagickMemory(offsets);
-                    runlength=(size_t *) RelinquishMagickMemory(runlength);
-                    packet_info=RelinquishVirtualMemory(packet_info);
-                    pixel_info=RelinquishVirtualMemory(pixel_info);
-                    ThrowReaderException(CorruptImageError,
-                      "ImproperImageHeader");
-                  }
+                  ThrowReaderException(CorruptImageError,"ImproperImageHeader");
                 p+=(iris_info.columns*4*bytes_per_pixel);
               }
             }
@@ -558,14 +543,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
                   (runlength[y+z*iris_info.rows]/bytes_per_pixel),packets,
                   (ssize_t) iris_info.columns,p+bytes_per_pixel*z);
                 if (status == MagickFalse)
-                  {
-                    offsets=(ssize_t *) RelinquishMagickMemory(offsets);
-                    runlength=(size_t *) RelinquishMagickMemory(runlength);
-                    packet_info=RelinquishVirtualMemory(packet_info);
-                    pixel_info=RelinquishVirtualMemory(pixel_info);
-                    ThrowReaderException(CorruptImageError,
-                      "ImproperImageHeader");
-                  }
+                  ThrowReaderException(CorruptImageError,"ImproperImageHeader");
               }
               p+=(iris_info.columns*4*bytes_per_pixel);
             }

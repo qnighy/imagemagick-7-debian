@@ -159,6 +159,9 @@ static volatile MagickBooleanType
 static SemaphoreInfo
   *cache_semaphore = (SemaphoreInfo *) NULL;
 
+static ssize_t
+  cache_anonymous_memory = (-1);
+
 static time_t
   cache_epoch = 0;
 
@@ -191,26 +194,53 @@ static void CL_API_CALL RelinquishPixelCachePixelsDelayed(
   OpenCLCacheInfo
     *info;
 
+  PixelPacket
+    *pixels;
+
   magick_unreferenced(event);
   magick_unreferenced(event_command_exec_status);
   info=(OpenCLCacheInfo *) user_data;
-  (void) RelinquishAlignedMemory(info->pixels);
+  pixels=info->pixels;
   RelinquishMagickResource(MemoryResource,info->length);
   clEnv=GetDefaultOpenCLEnv();
   (void) RelinquishOpenCLCacheInfo(clEnv,info);
+  (void) RelinquishAlignedMemory(pixels);
 }
 
 static MagickBooleanType RelinquishOpenCLBuffer(
   CacheInfo *magick_restrict cache_info)
 {
+  MagickBooleanType
+    events_completed;
+
   MagickCLEnv
     clEnv;
+
+  ssize_t
+    i;
 
   assert(cache_info != (CacheInfo *) NULL);
   if (cache_info->opencl == (OpenCLCacheInfo *) NULL)
     return(MagickFalse);
   clEnv=GetDefaultOpenCLEnv();
-  if (cache_info->opencl->event_count == 0)
+  events_completed=MagickTrue;
+  for (i=0; i < (ssize_t)cache_info->opencl->event_count; i++)
+  {
+    cl_int
+      event_status;
+
+    cl_uint
+      status;
+
+    status=clEnv->library->clGetEventInfo(cache_info->opencl->events[i],
+      CL_EVENT_COMMAND_EXECUTION_STATUS,sizeof(cl_int),&event_status,NULL);
+    if ((status == CL_SUCCESS) && (event_status != CL_COMPLETE))
+      {
+        events_completed=MagickFalse;
+        break;
+      }
+  }
+  if (events_completed != MagickFalse)
     {
       cache_info->opencl=RelinquishOpenCLCacheInfo(clEnv,cache_info->opencl);
       return(MagickFalse);
@@ -305,7 +335,7 @@ MagickExport Cache AcquirePixelCache(const size_t number_threads)
     *magick_restrict cache_info;
 
   char
-    *synchronize;
+    *value;
 
   cache_info=(CacheInfo *) AcquireQuantumMemory(1,sizeof(*cache_info));
   if (cache_info == (CacheInfo *) NULL)
@@ -327,11 +357,17 @@ MagickExport Cache AcquirePixelCache(const size_t number_threads)
   cache_info->nexus_info=AcquirePixelCacheNexus(cache_info->number_threads);
   if (cache_info->nexus_info == (NexusInfo **) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  synchronize=GetEnvironmentValue("MAGICK_SYNCHRONIZE");
-  if (synchronize != (const char *) NULL)
+  value=GetEnvironmentValue("MAGICK_SYNCHRONIZE");
+  if (value != (const char *) NULL)
     {
-      cache_info->synchronize=IsStringTrue(synchronize);
-      synchronize=DestroyString(synchronize);
+      cache_info->synchronize=IsStringTrue(value);
+      value=DestroyString(value);
+    }
+  value=GetPolicyValue("cache:synchronize");
+  if (value != (const char *) NULL)
+    {
+      cache_info->synchronize=IsStringTrue(value);
+      value=DestroyString(value);
     }
   cache_info->semaphore=AllocateSemaphoreInfo();
   cache_info->reference_count=1;
@@ -3792,6 +3828,30 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
   assert(image->cache != (Cache) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (cache_anonymous_memory < 0)
+    {
+      char
+        *value;
+
+      /*
+        Does the security policy require anonymous mapping for pixel cache?
+      */
+      cache_anonymous_memory=0;
+      value=GetPolicyValue("pixel-cache-memory");
+      if (value == (char *) NULL)
+        value=GetPolicyValue("cache:memory-map");
+      if (LocaleCompare(value,"anonymous") == 0)
+        {
+#if defined(MAGICKCORE_HAVE_MMAP) && defined(MAP_ANONYMOUS)
+          cache_anonymous_memory=1;
+#else
+          (void) ThrowMagickException(exception,GetMagickModule(),
+            MissingDelegateError,"DelegateLibrarySupportNotBuiltIn",
+            "'%s' (policy requires anonymous memory mapping)",image->filename);
+#endif
+        }
+      value=DestroyString(value);
+    }
   if ((image->columns == 0) || (image->rows == 0))
     ThrowBinaryException(CacheError,"NoPixelsDefinedInCache",image->filename);
   cache_info=(CacheInfo *) image->cache;
@@ -3837,9 +3897,18 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
           (cache_info->type == MemoryCache))
         {
           status=MagickTrue;
-          cache_info->mapped=MagickFalse;
-          cache_info->pixels=(PixelPacket *) MagickAssumeAligned(
-            AcquireAlignedMemory(1,(size_t) cache_info->length));
+          if (cache_anonymous_memory <= 0)
+            {
+              cache_info->mapped=MagickFalse;
+              cache_info->pixels=(PixelPacket *) MagickAssumeAligned(
+                AcquireAlignedMemory(1,(size_t) cache_info->length));
+            }
+          else
+            {
+              cache_info->mapped=MagickTrue;
+              cache_info->pixels=(PixelPacket *) MapBlob(-1,IOMode,0,(size_t)
+                cache_info->length);
+            }
           if (cache_info->pixels == (PixelPacket *) NULL)
             cache_info->pixels=source_info.pixels;
           else
@@ -4984,10 +5053,16 @@ static inline MagickBooleanType AcquireCacheNexusPixels(
 {
   if (nexus_info->length != (MagickSizeType) ((size_t) nexus_info->length))
     return(MagickFalse);
-  nexus_info->mapped=MagickFalse;
-  nexus_info->cache=(PixelPacket *) MagickAssumeAligned(AcquireAlignedMemory(1,
-    (size_t) nexus_info->length));
-  if (nexus_info->cache == (PixelPacket *) NULL)
+  if (cache_anonymous_memory <= 0)
+    {
+      nexus_info->mapped=MagickFalse;
+      nexus_info->cache=(PixelPacket *) MagickAssumeAligned(
+        AcquireAlignedMemory(1,(size_t) nexus_info->length));
+      if (nexus_info->cache != (PixelPacket *) NULL)
+        (void) ResetMagickMemory(nexus_info->cache,0,(size_t)
+          nexus_info->length);
+    }
+  else
     {
       nexus_info->mapped=MagickTrue;
       nexus_info->cache=(PixelPacket *) MapBlob(-1,IOMode,0,(size_t)
@@ -5549,7 +5624,7 @@ MagickPrivate MagickBooleanType SyncImagePixelCache(Image *image,
   cache_info=(CacheInfo *) GetImagePixelCache(image,MagickTrue,exception);
   return(cache_info == (CacheInfo *) NULL ? MagickFalse : MagickTrue);
 }
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %

@@ -1,0 +1,11 @@
+--- debian/copyright
++++ debian/copyright
+@@ -390,7 +390,7 @@ License: Magick++
+ 
+ Files: Magick++/lib/Exception.cpp Magick++/lib/Magick++/Exception.h
+ Copyright: 1999-2003 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
+-          2013-2015, Dirk Lemstra
++          2013-2017, Dirk Lemstra
+ License: Magick++
+ 
+ Files: Magick++/lib/Functions.cpp

@@ -61,6 +61,7 @@
 #include "magick/image-private.h"
 #include "magick/list.h"
 #include "magick/magick.h"
+#include "magick/magick-type.h"
 #include "magick/memory_.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
@@ -736,6 +737,16 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     (void) ConcatenateMagickString(options,"-dUseTrimBox ",MaxTextExtent);
   if (stop_on_error != MagickFalse)
     (void) ConcatenateMagickString(options,"-dPDFSTOPONERROR ",MaxTextExtent);
+  option=GetImageOption(image_info,"authenticate");
+  if (option != (char *) NULL)
+    {
+      char
+        passphrase[MagickPathExtent];
+
+      (void) FormatLocaleString(passphrase,MagickPathExtent,
+        "'-sPDFPassword=%s' ",option);
+      (void) ConcatenateMagickString(options,passphrase,MagickPathExtent);
+    }
   read_info=CloneImageInfo(image_info);
   *read_info->magick='\0';
   if (read_info->number_scenes != 0)
@@ -1221,6 +1232,7 @@ RestoreMSCWarning
     basename[MaxTextExtent],
     buffer[MaxTextExtent],
     date[MaxTextExtent],
+    *escape,
     **labels,
     page_geometry[MaxTextExtent],
     *url;
@@ -1405,9 +1417,10 @@ RestoreMSCWarning
         (void) CopyMagickString(create_date,value,MaxTextExtent);
       (void) FormatMagickTime(time((time_t *) NULL),MaxTextExtent,timestamp);
       url=GetMagickHomeURL();
+      escape=EscapeParenthesis(basename);
       i=FormatLocaleString(xmp_profile,MaxTextExtent,XMPProfile,
-        XMPProfileMagick,modify_date,create_date,timestamp,url,
-        EscapeParenthesis(basename),url);
+        XMPProfileMagick,modify_date,create_date,timestamp,url,escape,url);
+      escape=DestroyString(escape);
       url=DestroyString(url);
       (void) FormatLocaleString(buffer,MaxTextExtent,"/Length %.20g\n",(double)
         i);
@@ -2834,8 +2847,9 @@ RestoreMSCWarning
   (void) FormatLocaleString(buffer,MaxTextExtent,"/ModDate (%s)\n",date);
   (void) WriteBlobString(image,buffer);
   url=GetMagickHomeURL();
-  (void) FormatLocaleString(buffer,MaxTextExtent,"/Producer (%s)\n",
-    EscapeParenthesis(url));
+  escape=EscapeParenthesis(url);
+  (void) FormatLocaleString(buffer,MaxTextExtent,"/Producer (%s)\n",escape);
+  escape=DestroyString(escape);
   url=DestroyString(url);
   (void) WriteBlobString(image,buffer);
   (void) WriteBlobString(image,">>\n");

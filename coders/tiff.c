@@ -395,7 +395,10 @@ static Image *ReadGROUP4Image(const ImageInfo *image_info,
   offset=(ssize_t) fseek(file,(ssize_t) offset,SEEK_SET);
   length=WriteLSBLong(file,(unsigned int) length);
   if (ferror(file) != 0)
-    ThrowImageException(FileOpenError,"UnableToCreateTemporaryFile");
+    {
+      (void) fclose(file);
+      ThrowImageException(FileOpenError,"UnableToCreateTemporaryFile");
+    }
   (void) fclose(file);
   (void) CloseBlob(image);
   image=DestroyImage(image);
@@ -1584,9 +1587,11 @@ RestoreMSCWarning
         (void) SetImageProperty(image,"tiff:rows-per-strip",value);
       }
     if ((samples_per_pixel >= 3) && (interlace == PLANARCONFIG_CONTIG))
-      method=ReadRGBAMethod;
+      if ((image->matte == MagickFalse) || (samples_per_pixel >= 4))
+        method=ReadRGBAMethod;
     if ((samples_per_pixel >= 4) && (interlace == PLANARCONFIG_SEPARATE))
-      method=ReadCMYKAMethod;
+      if ((image->matte == MagickFalse) || (samples_per_pixel >= 5))
+        method=ReadCMYKAMethod;
     if ((photometric != PHOTOMETRIC_RGB) &&
         (photometric != PHOTOMETRIC_CIELAB) &&
         (photometric != PHOTOMETRIC_SEPARATED))
@@ -1609,7 +1614,7 @@ RestoreMSCWarning
     quantum_info->endian=LSBEndian;
     quantum_type=RGBQuantum;
     tiff_pixels=(unsigned char *) AcquireMagickMemory(MagickMax(
-      TIFFScanlineSize(tiff),(size_t) (image->columns*samples_per_pixel*
+      TIFFScanlineSize(tiff),(image->columns*samples_per_pixel*
       pow(2.0,ceil(log(bits_per_sample)/log(2.0))))));
     if (tiff_pixels == (unsigned char *) NULL)
       {

@@ -346,14 +346,12 @@ static MagickBooleanType JPEGWarningHandler(j_common_ptr jpeg_info,int level)
         Process warning message.
       */
       (jpeg_info->err->format_message)(jpeg_info,message);
-      if (jpeg_info->err->num_warnings++ > JPEGExcessiveWarnings)
-        JPEGErrorHandler(jpeg_info);
-      ThrowBinaryException(CorruptImageWarning,(char *) message,
-        image->filename);
+      if (jpeg_info->err->num_warnings++ < JPEGExcessiveWarnings)
+        ThrowBinaryException(CorruptImageWarning,(char *) message,
+          image->filename);
     }
   else
-    if ((image->debug != MagickFalse) &&
-        (level >= jpeg_info->err->trace_level))
+    if ((image->debug != MagickFalse) && (level >= jpeg_info->err->trace_level))
       {
         /*
           Process trace message.
@@ -1226,9 +1224,13 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
       (void) SetImageColorspace(image,LabColorspace);
       jpeg_info.out_color_space=JCS_YCbCr;
     }
+  option=GetImageOption(image_info,"jpeg:colors");
   if (option != (const char *) NULL)
     if (AcquireImageColormap(image,StringToUnsignedLong(option)) == MagickFalse)
-      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
   if ((jpeg_info.output_components == 1) && (jpeg_info.quantize_colors == 0))
     {
       size_t
@@ -1236,7 +1238,10 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
 
       colors=(size_t) GetQuantumRange(image->depth)+1;
       if (AcquireImageColormap(image,colors) == MagickFalse)
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        {
+          InheritException(exception,&image->exception);
+          return(DestroyImageList(image));
+        }
     }
   if (image->debug != MagickFalse)
     {

@@ -3500,8 +3500,8 @@ static inline void ModulateHCLp(const double percent_hue,
 }
 
 static inline void ModulateHSB(const double percent_hue,
-  const double percent_saturation,const double percent_brightness,
-  Quantum *red,Quantum *green,Quantum *blue)
+  const double percent_saturation,const double percent_brightness,Quantum *red,
+  Quantum *green,Quantum *blue)
 {
   double
     brightness,
@@ -3519,8 +3519,8 @@ static inline void ModulateHSB(const double percent_hue,
 }
 
 static inline void ModulateHSI(const double percent_hue,
-  const double percent_saturation,const double percent_intensity,
-  Quantum *red,Quantum *green,Quantum *blue)
+  const double percent_saturation,const double percent_intensity,Quantum *red,
+  Quantum *green,Quantum *blue)
 {
   double
     intensity,
@@ -3538,8 +3538,8 @@ static inline void ModulateHSI(const double percent_hue,
 }
 
 static inline void ModulateHSL(const double percent_hue,
-  const double percent_saturation,const double percent_lightness,
-  Quantum *red,Quantum *green,Quantum *blue)
+  const double percent_saturation,const double percent_lightness,Quantum *red,
+  Quantum *green,Quantum *blue)
 {
   double
     hue,

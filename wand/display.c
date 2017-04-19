@@ -184,7 +184,6 @@ static MagickBooleanType DisplayUsage(void)
       "-label string        assign a label to an image",
       "-limit type value    pixel cache resource limit",
       "-loop iterations     loop images then exit",
-      "-nostdin             do not try to open stdin",
       "-map type            display image using this Standard Colormap",
       "-matte               store matte channel if the image has one",
       "-monitor             monitor progress",
@@ -315,7 +314,6 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
     image_stack[MaxImageStackDepth+1];
 
   MagickBooleanType
-    nostdin,
     fire,
     pend,
     respect_parenthesis;
@@ -379,7 +377,6 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
   option=(char *) NULL;
   pend=MagickFalse;
   respect_parenthesis=MagickFalse;
-  nostdin=MagickFalse;
   resource_database=(XrmDatabase) NULL;
   (void) ResetMagickMemory(&resource_info,0,sizeof(resource_info));
   server_name=(char *) NULL;
@@ -416,9 +413,6 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
           ThrowDisplayException(OptionError,"MissingArgument",option);
         server_name=argv[i];
       }
-    if (LocaleCompare("nostdin",option+1) == 0) {
-      nostdin = MagickTrue;
-    }
     if ((LocaleCompare("help",option+1) == 0) ||
         (LocaleCompare("-help",option+1) == 0))
       return(DisplayUsage());
@@ -466,7 +460,7 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
       if (image != (Image *) NULL)
         break;
       else
-        if (isatty(STDIN_FILENO) != MagickFalse || nostdin == MagickTrue)
+        if (isatty(STDIN_FILENO) != MagickFalse)
           option="logo:";
         else
           option="-";
@@ -1431,8 +1425,6 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
           break;
         if (LocaleCompare("normalize",option+1) == 0)
           break;
-	if (LocaleCompare("nostdin",option+1) == 0)
-	  break;
         ThrowDisplayException(OptionError,"UnrecognizedOption",option);
       }
       case 'p':

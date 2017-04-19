@@ -1,6 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002
+// Copyright Dirk Lemstra 2017
 //
 // Implementation of thread support
 //
@@ -59,16 +60,10 @@ Magick::MutexLock::MutexLock(void)
 Magick::MutexLock::~MutexLock(void)
 {
 #if defined(MAGICKCORE_HAVE_PTHREAD)
-  int sysError;
-  if ( (sysError = ::pthread_mutex_destroy( &_mutex )) == 0 )
-    return;
-  throwExceptionExplicit( OptionError, "mutex destruction failed",
-                          strerror(sysError) );
+  (void) ::pthread_mutex_destroy(&_mutex);
 #endif
 #if defined(_MT) && defined(_VISUALC_)
-  if ( ::CloseHandle(_mutex.id) != 0 )
-    return;
-  throwExceptionExplicit( OptionError, "mutex destruction failed" );
+  (void) ::CloseHandle(_mutex.id);
 #endif
 }
 
