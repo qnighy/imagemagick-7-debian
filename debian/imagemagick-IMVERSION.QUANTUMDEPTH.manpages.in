@@ -9,3 +9,4 @@ debian/tmp-${QUANTUMDEPTH}/usr/share/man/man1/import-im${IMVERSION}.${QUANTUMDEP
 debian/tmp-${QUANTUMDEPTH}/usr/share/man/man1/mogrify-im${IMVERSION}.${QUANTUMDEPTH}.1
 debian/tmp-${QUANTUMDEPTH}/usr/share/man/man1/montage-im${IMVERSION}.${QUANTUMDEPTH}.1
 debian/tmp-${QUANTUMDEPTH}/usr/share/man/man1/stream-im${IMVERSION}.${QUANTUMDEPTH}.1
+debian/tmp-${QUANTUMDEPTH}/usr/share/man/man1/ImageMagick-im${IMVERSION}.${QUANTUMDEPTH}.1

@@ -89,7 +89,7 @@ STATIC_CONFIGURE_OPTIONS := \
 	--prefix=/usr \
 	--libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
 	--docdir=/$(DOC_PKG_PATH) \
-	--with-extra-doc-dir=' (on debian system you may install the imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc package)' \
+	--with-extra-doc-dir=' (on debian system you may install the imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR) package)' \
 	--sysconfdir=/etc \
 	--with-includearch-dir=/usr/include/$(DEB_HOST_MULTIARCH)/ \
 	--mandir=/usr/share/man \
@@ -499,6 +499,9 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 		mv "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename.1" \
 		   "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename-im$(IMVERSION).$*.1" ;\
 	done
+	# move generic man page
+	mv "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/ImageMagick.1" \
+           "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/ImageMagick-im$(IMVERSION).$*.1"
 
 	# move config script to arch directory
 	# TODO: remove after jessie +1

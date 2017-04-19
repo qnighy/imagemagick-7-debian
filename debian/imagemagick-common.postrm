@@ -23,4 +23,12 @@ done
 dpkg-maintscript-helper dir_to_symlink \
 	    /usr/share/doc/imagemagick-common /usr/share/doc/imagemagick-6-common 8:6.9.2.10+dfsg-1~ -- "$@"
 
+for f in coder.xml colors.xml delegates.xml log.xml magic.xml \
+    mime.xml policy.xml quantization-table.xml thresholds.xml \
+    type-dejavu.xml type-ghostscript.xml type-windows.xml \
+    type.xml; do
+  dpkg-maintscript-helper rm_conffile \
+      /etc/etc/ImageMagick-6/$f 8:6.9.2.10+dfsg-2~ -- "$@"
+done
+
 #DEBHELPER#
