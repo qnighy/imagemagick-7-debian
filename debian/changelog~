@@ -1,14 +1,3 @@
-imagemagick (8:6.9.8.3+dfsg-1) UNRELEASED; urgency=medium
-
-   * New upstream version.
-     + Fix CVE-2017-6502, webp buffer overflow. (Closes: #856883).
-   * Update copyright file.
-   * Ship ImageMagick man file (Closes: #856997).
-   * Remove configuration files installed by mistake in an
-     experimental version (Closes: #851627).
-
- -- Bastien Roucariès <rouca@debian.org>  Wed, 19 Apr 2017 22:36:50 +0200
-
 imagemagick (8:6.9.7.4+dfsg-7) unstable; urgency=medium
 
   * Fix a few securities bug:
