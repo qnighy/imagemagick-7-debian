@@ -151,7 +151,7 @@ sub fix_doxygen_doc($$)
     my @deps = fix_symlinks($path);
     drop_cruft($path);
     map { addsubstvar($package, "doxygen:Depends", $_) } @deps;
-    my $doxygen_version = `dpkg-query -W -f '\${Version}' doxygen`;
+    my $doxygen_version = `dpkg-query -W -f '\${Source:Version}' doxygen`;
     $doxygen_version or die("failed to query version of installed doxygen");
     addsubstvar($package, "doxygen:Built-Using", "doxygen (= $doxygen_version)");
     return 1;
