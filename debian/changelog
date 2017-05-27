@@ -9,6 +9,23 @@ imagemagick (8:6.9.8.3+dfsg-1) UNRELEASED; urgency=medium
 
  -- Bastien Roucariès <rouca@debian.org>  Wed, 19 Apr 2017 22:36:50 +0200
 
+imagemagick (8:6.9.7.4+dfsg-9) unstable; urgency=high
+
+  * Security fixes assertion failure and memory leaks:
+    + Check for EOF conditions for RLE image format. (Closes: #863126).
+      Fix CVE-2017-9144.
+    + A crafted file revealed an assertion failure in blob.c.
+      (Closes: #863125).
+      Fix CVE-2017-9142.
+    + A crafted file revealed an assertion failure in profile.c.
+      (Closes: #863124). Fix CVE-2017-9142.
+    + Specially crafted arts file could lead to memory leak.
+      (Closes: #863123). Fix CVE-2017-9143.
+  * Fix an information leak due to the use of uninitialized memory
+    in RLE decoder. (Closes:  #862967). Fix CVE-2017-9098.
+
+ -- Bastien Roucariès <rouca@debian.org>  Sat, 27 May 2017 15:54:06 +0200
+
 imagemagick (8:6.9.7.4+dfsg-8) unstable; urgency=high
 
   * Bug fix: "Built-Using field with binary version", thanks to Aurelien
