@@ -9,6 +9,16 @@ imagemagick (8:6.9.8.3+dfsg-1) UNRELEASED; urgency=medium
 
  -- Bastien Roucariès <rouca@debian.org>  Wed, 19 Apr 2017 22:36:50 +0200
 
+imagemagick (8:6.9.7.4+dfsg-10) unstable; urgency=medium
+
+  * Fix minor security bugs:
+    + CVE-2017-9262: Memory leak in the ReadJNGImage function
+      (Closes: #863834).
+    + CVE-2017-9261: Memory leak in the ReadMNGImage function
+      (Closes: #863833).
+
+ -- Bastien Roucariès <rouca@debian.org>  Thu, 01 Jun 2017 11:57:38 +0200
+
 imagemagick (8:6.9.7.4+dfsg-9) unstable; urgency=high
 
   * Security fixes assertion failure and memory leaks:
