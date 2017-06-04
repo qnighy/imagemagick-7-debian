@@ -1,4 +1,4 @@
-imagemagick (8:6.9.8.3+dfsg-1) UNRELEASED; urgency=medium
+imagemagick (8:6.9.8.9+dfsg-1) experimental; urgency=low
 
    * New upstream version.
      + Fix CVE-2017-6502, webp buffer overflow. (Closes: #856883).
@@ -6,13 +6,15 @@ imagemagick (8:6.9.8.3+dfsg-1) UNRELEASED; urgency=medium
    * Ship ImageMagick man file (Closes: #856997).
    * Remove configuration files installed by mistake in an
      experimental version (Closes: #851627).
+  * Bug fix: "Typo in debian/changelog for CVE identifier", thanks to
+    Salvatore Bonaccorso (Closes: #864151).
 
- -- Bastien Roucariès <rouca@debian.org>  Wed, 19 Apr 2017 22:36:50 +0200
+ -- Bastien Roucariès <rouca@debian.org>  Sun, 04 Jun 2017 16:12:56 +0200
 
 imagemagick (8:6.9.7.4+dfsg-11) unstable; urgency=high
 
   * Fix minor security bugs:
-    + CVE-2017-9409: Memory leak in the icon file coder.
+    + CVE-2017-9405: Memory leak in the icon file coder.
       (Closes: #864087)
     + CVE-2017-9407: the ReadPALMImage function in palm.c
       allows attackers to cause a denial of service (memory leak)
@@ -42,7 +44,7 @@ imagemagick (8:6.9.7.4+dfsg-9) unstable; urgency=high
       (Closes: #863125).
       Fix CVE-2017-9142.
     + A crafted file revealed an assertion failure in profile.c.
-      (Closes: #863124). Fix CVE-2017-9142.
+      (Closes: #863124). Fix CVE-2017-9141.
     + Specially crafted arts file could lead to memory leak.
       (Closes: #863123). Fix CVE-2017-9143.
   * Fix an information leak due to the use of uninitialized memory
