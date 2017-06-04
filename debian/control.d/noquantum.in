@@ -52,7 +52,9 @@ Package: imagemagick-${IMVERSION}-common
 Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}
-Breaks: libmagickcore-6.q16-3 (<< 8:6.9.6.8+dfsg-1~),
+Breaks: libmagickcore-6.q16-4 (<< 8:6.9.8.9+dfsg-1~),
+	libmagickcore-6.q16hdri-4 (<< 8:6.9.8.9+dfsg-1~),
+        libmagickcore-6.q16-3 (<< 8:6.9.6.8+dfsg-1~),
 	libmagickcore-6.q16-2 (<< 8:6.9.6.2+dfsg-3~),
 	imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Provides: imagemagick-common

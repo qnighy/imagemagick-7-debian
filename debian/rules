@@ -8,8 +8,8 @@ export DH_VERBOSE=1
 
 # quantum depth is channel depth
 export QUANTUMDEPTH ?= q16 q16hdri
-export CORESOVERSION ?= 3
-export WANDSOVERSION ?= 3
+export CORESOVERSION ?= 4
+export WANDSOVERSION ?= 4
 export PPSOVERSION ?= 7
 
 # minimal version ABI compatible of common

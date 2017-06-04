@@ -8,6 +8,7 @@ imagemagick (8:6.9.8.9+dfsg-1) experimental; urgency=low
      experimental version (Closes: #851627).
   * Bug fix: "Typo in debian/changelog for CVE identifier", thanks to
     Salvatore Bonaccorso (Closes: #864151).
+  * So bump due to policy file incompatibility.
 
  -- Bastien Roucariès <rouca@debian.org>  Sun, 04 Jun 2017 16:12:56 +0200
 
