@@ -5,7 +5,7 @@
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
 
-    http://www.imagemagick.org/script/license.php
+    https://www.imagemagick.org/script/license.php
 
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +28,19 @@ extern "C" {
 
 extern MagickPrivate MagickBooleanType
   ShredFile(const char *);
+
+static inline int MagickReadDirectory(DIR *directory,struct dirent *entry,
+  struct dirent **result)
+{
+#if defined(MAGICKCORE_HAVE_READDIR_R)
+  return(readdir_r(directory,entry,result));
+#else
+  (void) entry;
+  errno=0;
+  *result=readdir(directory);
+  return(errno);
+#endif
+}
 
 /*
   Windows UTF8 compatibility methods.

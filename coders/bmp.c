@@ -24,7 +24,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -908,10 +908,17 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
           packet_size=4;
         offset=SeekBlob(image,start_position+14+bmp_info.size,SEEK_SET);
         if (offset < 0)
-          ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+          {
+            bmp_colormap=(unsigned char *) RelinquishMagickMemory(bmp_colormap);
+            ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+          }
         count=ReadBlob(image,packet_size*image->colors,bmp_colormap);
         if (count != (ssize_t) (packet_size*image->colors))
-          ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
+          {
+            bmp_colormap=(unsigned char *) RelinquishMagickMemory(bmp_colormap);
+            ThrowReaderException(CorruptImageError,
+              "InsufficientImageDataInFile");
+          }
         p=bmp_colormap;
         for (i=0; i < (ssize_t) image->colors; i++)
         {
@@ -1383,7 +1390,7 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (flipped_image != (Image *) NULL)
           {
             DuplicateBlob(flipped_image,image);
-            image=DestroyImage(image);
+            ReplaceImageInList(&image, flipped_image);
             image=flipped_image;
           }
       }

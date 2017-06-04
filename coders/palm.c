@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -418,12 +418,13 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
     if (one_row == (unsigned char *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
     lastrow=(unsigned char *) NULL;
-    if (compressionType == PALM_COMPRESSION_SCANLINE) {
-      lastrow=(unsigned char *) AcquireQuantumMemory(MagickMax(bytes_per_row,
-        2*image->columns),sizeof(*lastrow));
-    if (lastrow == (unsigned char *) NULL)
-      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-    }
+    if (compressionType == PALM_COMPRESSION_SCANLINE)
+      {
+        lastrow=(unsigned char *) AcquireQuantumMemory(MagickMax(bytes_per_row,
+          2*image->columns),sizeof(*lastrow));
+        if (lastrow == (unsigned char *) NULL)
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+      }
     mask=(size_t) (1U << bits_per_pixel)-1;
     for (y=0; y < (ssize_t) image->rows; y++)
     {
@@ -486,7 +487,12 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
       if (bits_per_pixel == 16)
         {
           if (image->columns > (2*bytes_per_row))
-            ThrowReaderException(CorruptImageError,"CorruptImage");
+            {
+              one_row=(unsigned char *) RelinquishMagickMemory(one_row);
+              if (compressionType == PALM_COMPRESSION_SCANLINE)
+                lastrow=(unsigned char *) RelinquishMagickMemory(lastrow);
+              ThrowReaderException(CorruptImageError,"CorruptImage");
+            }
           for (x=0; x < (ssize_t) image->columns; x++)
           {
             color16=(*ptr++ << 8);
@@ -504,7 +510,12 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
           for (x=0; x < (ssize_t) image->columns; x++)
           {
             if ((size_t) (ptr-one_row) >= bytes_per_row)
-              ThrowReaderException(CorruptImageError,"CorruptImage");
+              {
+                one_row=(unsigned char *) RelinquishMagickMemory(one_row);
+                if (compressionType == PALM_COMPRESSION_SCANLINE)
+                  lastrow=(unsigned char *) RelinquishMagickMemory(lastrow);
+                ThrowReaderException(CorruptImageError,"CorruptImage");
+              }
             index=(IndexPacket) (mask-(((*ptr) & (mask << bit)) >> bit));
             SetPixelIndex(indexes+x,index);
             SetPixelRGBO(q,image->colormap+(ssize_t) index);

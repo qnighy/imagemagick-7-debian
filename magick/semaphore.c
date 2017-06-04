@@ -24,7 +24,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -51,6 +51,7 @@
 #include "magick/string_.h"
 #include "magick/thread_.h"
 #include "magick/thread-private.h"
+#include "magick/utility.h"
 
 /*
   Struct declaractions.
@@ -146,8 +147,8 @@ static void *AcquireSemaphoreMemory(const size_t count,const size_t quantum)
     }
   memory=NULL;
   alignment=CACHE_LINE_SIZE;
-  extent=AlignedExtent(size,alignment);
-  if ((size == 0) || (alignment < sizeof(void *)) || (extent < size))
+  extent=AlignedExtent(size,CACHE_LINE_SIZE);
+  if ((size == 0) || (extent < size))
     return((void *) NULL);
 #if defined(MAGICKCORE_HAVE_POSIX_MEMALIGN)
   if (posix_memalign(&memory,alignment,extent) != 0)

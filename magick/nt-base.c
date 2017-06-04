@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -967,6 +967,33 @@ MagickPrivate MagickBooleanType NTGetModulePath(const char *module,char *path)
   if (length != 0)
     GetPathComponent(module_path,HeadPath,path);
   return(MagickTrue);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++    N T G e t P a g e S i z e                                                %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  NTGetPageSize() returns the memory page size under Windows.
+%
+%  The format of the NTPageSize
+%
+%      NTPageSize()
+%
+*/
+MagickPrivate ssize_t NTGetPageSize(void)
+{
+  SYSTEM_INFO
+    system_info;
+
+   GetSystemInfo(&system_info);
+   return((ssize_t) system_info.dwPageSize);
 }
 
 /*
@@ -2709,6 +2736,7 @@ MagickPrivate void NTWarningHandler(const ExceptionType severity,
 
 static LONG WINAPI NTUncaughtException(EXCEPTION_POINTERS *info)
 {
+  magick_unreferenced(info);
   AsynchronousResourceComponentTerminus();
   return(EXCEPTION_CONTINUE_SEARCH);
 }

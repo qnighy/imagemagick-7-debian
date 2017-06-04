@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -1471,7 +1471,9 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       encoding != (char *) NULL ? encoding : "none",
       draw_info->encoding != (char *) NULL ? draw_info->encoding : "none",
       draw_info->pointsize);
-  flags=FT_LOAD_NO_BITMAP;
+  flags=FT_LOAD_DEFAULT;
+  if (draw_info->render == MagickFalse)
+    flags=FT_LOAD_NO_BITMAP;
   if (draw_info->text_antialias == MagickFalse)
     flags|=FT_LOAD_TARGET_MONO;
   else
@@ -1597,9 +1599,17 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
         register unsigned char
           *p;
 
+        MagickBooleanType
+          transparent_fill;
+
         /*
           Rasterize the glyph.
         */
+        transparent_fill=((draw_info->fill.opacity == TransparentOpacity) &&
+          (draw_info->fill_pattern == (Image *) NULL) &&
+          (draw_info->stroke.opacity == TransparentOpacity) &&
+          (draw_info->stroke_pattern == (Image *) NULL)) ? MagickTrue :
+          MagickFalse;
         p=bitmap->bitmap.buffer;
         image_view=AcquireAuthenticCacheView(image,exception);
         for (y=0; y < (ssize_t) bitmap->bitmap.rows; y++)
@@ -1663,10 +1673,24 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
                 exception);
             if (q == (PixelPacket *) NULL)
               continue;
-            (void) GetFillColor(draw_info,x_offset,y_offset,&fill_color);
-            fill_opacity=QuantumRange-fill_opacity*(QuantumRange-
-              fill_color.opacity);
-            MagickCompositeOver(&fill_color,fill_opacity,q,q->opacity,q);
+            if (transparent_fill == MagickFalse)
+              {
+                (void) GetFillColor(draw_info,x_offset,y_offset,&fill_color);
+                fill_opacity=QuantumRange-fill_opacity*(QuantumRange-
+                  fill_color.opacity);
+                MagickCompositeOver(&fill_color,fill_opacity,q,q->opacity,q);
+              }
+            else
+              {
+                double
+                  Sa,
+                  Da;
+                
+                Da=1.0-(QuantumScale*(QuantumRange-q->opacity));
+                Sa=fill_opacity;
+                fill_opacity=(1.0-RoundToUnity(Sa+Da-Sa*Da))*QuantumRange;
+                SetPixelAlpha(q,fill_opacity);
+              }
             if (active == MagickFalse)
               {
                 sync=SyncCacheViewAuthenticPixels(image_view,exception);

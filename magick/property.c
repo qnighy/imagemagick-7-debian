@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -2017,7 +2017,7 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
     "<svg xmlns=\"http://www.w3.org/2000/svg\""
     " width=\"%.20g\" height=\"%.20g\">\n"
     "<g>\n"
-    "<path fill-rule=\"evenodd\" style=\"fill:#00000000;stroke:#00000000;"
+    "<path fill-rule=\"evenodd\" style=\"fill:#000000;stroke:#000000;"
     "stroke-width:0;stroke-antialiasing:false\" d=\"\n"),(double) columns,
     (double) rows);
   (void) ConcatenateString(&path,message);
@@ -2235,6 +2235,50 @@ MagickExport const char *GetImageProperty(const Image *image,
               (void) FormatLocaleString(value,MaxTextExtent,"%.*g",
                 GetMagickPrecision(),(double) alpha);
               (void) SetImageProperty((Image *) image,property,value);
+            }
+          break;
+        }
+      break;
+    }
+    case 'H':
+    case 'h':
+    {
+      if (LocaleNCompare("hex:",property,4) == 0)
+        {
+          MagickPixelPacket
+            pixel;
+
+          GetMagickPixelPacket(image,&pixel);
+          fx_info=AcquireFxInfo(image,property+6);
+          status=FxEvaluateChannelExpression(fx_info,RedChannel,0,0,&alpha,
+            exception);
+          pixel.red=(MagickRealType) QuantumRange*alpha;
+          status&=FxEvaluateChannelExpression(fx_info,GreenChannel,0,0,&alpha,
+            exception);
+          pixel.green=(MagickRealType) QuantumRange*alpha;
+          status&=FxEvaluateChannelExpression(fx_info,BlueChannel,0,0,&alpha,
+            exception);
+          pixel.blue=(MagickRealType) QuantumRange*alpha;
+          status&=FxEvaluateChannelExpression(fx_info,OpacityChannel,0,0,&alpha,
+            exception);
+          pixel.opacity=(MagickRealType) QuantumRange*(1.0-alpha);
+          if (image->colorspace == CMYKColorspace)
+            {
+              status&=FxEvaluateChannelExpression(fx_info,BlackChannel,0,0,
+                &alpha,exception);
+              pixel.index=(MagickRealType) QuantumRange*alpha;
+            }
+          fx_info=DestroyFxInfo(fx_info);
+          if (status != MagickFalse)
+            {
+              char
+                hex[MaxTextExtent],
+                name[MaxTextExtent];
+
+              (void) QueryMagickColorname(image,&pixel,SVGCompliance,name,
+                exception);
+              GetColorTuple(&pixel,MagickTrue,hex);
+              (void) SetImageProperty((Image *) image,property,hex);
             }
           break;
         }

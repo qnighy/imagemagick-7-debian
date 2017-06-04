@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -117,7 +117,6 @@ static MagickBooleanType ImportUsage(void)
       "-help                print program options",
       "-monochrome          transform image to black and white",
       "-negate              replace every pixel with its complementary color ",
-      "-repage geometry     size and location of an image canvas",
       "-quantize colorspace reduce colors in this colorspace",
       "-resize geometry     resize the image",
       "-rotate degrees      apply Paeth rotation to the image",
@@ -164,6 +163,7 @@ static MagickBooleanType ImportUsage(void)
       "-quality value       JPEG/MIFF/PNG compression level",
       "-quiet               suppress all warning messages",
       "-regard-warnings     pay attention to warning messages",
+      "-repage geometry     size and location of an image canvas",
       "-respect-parentheses settings remain in effect until parenthesis boundary",
       "-sampling-factor geometry",
       "                     horizontal and vertical sampling factor",

@@ -13,17 +13,26 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 
-  MagickCore digital signature methods.
+  MagickCore private image color methods.
 */
-#ifndef MAGICKCORE_SIGNATURE_H
-#define MAGICKCORE_SIGNATURE_H
+#ifndef MAGICKCORE_POLICY_PRIVATE_H
+#define MAGICKCORE_POLICY_PRIVATE_H
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-extern MagickExport MagickBooleanType
-  SignatureImage(Image *);
+#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+/*
+  Zero configuration security policy.  Discussion @
+  https://www.imagemagick.org/script/security-policy.php.
+*/
+static const char
+  *ZeroConfigurationPolicy = \
+"<policymap> \
+  <policy domain=\"system\" name=\"precision\" value=\"6\"/> \
+</policymap>";
+#endif
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

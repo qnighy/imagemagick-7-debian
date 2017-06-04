@@ -1,7 +1,7 @@
 // This may look like C code, but it is really -*- C++ -*-
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2002, 2003
-// Copyright Dirk Lemstra 2014
+// Copyright Dirk Lemstra 2014-2017
 //
 // Implementation of Drawable (Graphic objects)
 //
@@ -989,8 +989,8 @@ Magick::DrawableRoundRectangle::~DrawableRoundRectangle ( void )
 void Magick::DrawableRoundRectangle::operator()
   ( MagickCore::DrawingWand * context_ ) const
 {
-  DrawRoundRectangle( context_, _centerX,_centerY, _width,_hight,
-                      _cornerWidth, _cornerHeight);
+  DrawRoundRectangle(context_,_upperLeftX,_upperLeftY,_lowerRightX,
+    _lowerRightY,_cornerWidth, _cornerHeight);
 }
 Magick::DrawableBase* Magick::DrawableRoundRectangle::copy() const
 {

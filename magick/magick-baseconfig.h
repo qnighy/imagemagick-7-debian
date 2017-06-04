@@ -1138,9 +1138,7 @@
 #endif
 
 /* Define if you have OPENJP2 library */
-#ifndef MAGICKCORE_LIBOPENJP2_DELEGATE
-#define MAGICKCORE_LIBOPENJP2_DELEGATE 1
-#endif
+/* #undef LIBOPENJP2_DELEGATE */
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
@@ -1229,7 +1227,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.8-3"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.8-9"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1244,7 +1242,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.8-3"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.8-9"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1462,7 +1460,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.9.8-3"
+#define MAGICKCORE_VERSION "6.9.8-9"
 #endif
 
 /* Define if you have WEBP library */

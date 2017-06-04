@@ -25,7 +25,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -1673,9 +1673,8 @@ static Image *ReadDDSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Initialize image structure.
   */
-  if (ReadDDSInfo(image, &dds_info) != MagickTrue) {
+  if (ReadDDSInfo(image, &dds_info) != MagickTrue)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
-  }
 
   if (dds_info.ddscaps2 & DDSCAPS2_CUBEMAP)
     cubemap = MagickTrue;
@@ -1771,6 +1770,9 @@ static Image *ReadDDSImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   if (volume)
     num_images = dds_info.depth;
+
+  if (num_images < 1)
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
 
   for (n = 0; n < num_images; n++)
   {

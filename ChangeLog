@@ -1,15 +1,63 @@
+2017-06-02  6.9.8-9 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.8-9, GIT revision 11625:91bb35e:20170602.
+
+2017-06-02  6.9.8-9 Cristy  <quetzlzacatenango@image...>
+  * Fix choppy bitmap font rendering (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=32071).
+  * Add support for 'hex:' property.
+
+2017-05-28  6.9.8-8 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.8-8, GIT revision 11606:8b67333:20170528.
+
+2017-05-28  6.9.8-8 Cristy  <quetzlzacatenango@image...>
+  * Transient error validating the JPEG-2000 image format (reference
+    https://github.com/ImageMagick/ImageMagick/issues/501).
+  * Properly allocate DCM image colormap (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=32063).
+
+2017-05-26  6.9.8-7 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.8-7, GIT revision 11598:07d1dee:20170526.
+
+2017-05-23  6.9.8-7 Cristy  <quetzlzacatenango@image...>
+  * Improper allocation of memory for IM instances without threads (reference
+	  https://github.com/ImageMagick/ImageMagick/issues/497).
+  * Delete corrupt image from list (reference
+    https://github.com/ImageMagick/ImageMagick/issues/500).
+
+2017-05-19  6.9.8-6 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.8-6, GIT revision 11590:7ce2d38:20170519.
+
+2017-05-15  6.9.8-6 Cristy  <quetzlzacatenango@image...>
+  * Support various image operators for the compare utility (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=2&t=31938).
+
+2017-05-12  6.9.8-5 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.8-5, GIT revision 11575:186b15d:20170512.
+
+2017-05-10  6.9.8-5 John Cupitt <jcupitt@gmail.com>
+  * Revise DICOM window and rescale handling (reference 
+    https://github.com/ImageMagick/ImageMagick/pull/484)
+
+2017-05-08  6.9.8-5 Cristy  <quetzlzacatenango@image...>
+  * Fix transient PDF bug (reference
+    https://github.com/ImageMagick/ImageMagick/issues/463).
+  * Check for EOF conditions for RLE image format.
+  * Reset histogram page geometry (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=31920).
+
+2017-04-24  6.9.8-4 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.8-4, GIT revision 11521:d7433aa:20170424.
+
+2017-03-26  6.9.8-4 Cristy  <quetzlzacatenango@image...>
+  * Minimize buffer copies to improve OpenCL performance.
+  * Patch a PCD writer problem, dark pixels (reference
+    https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=3164).
+  * Support ICC based PDF's (reference
+    https://github.com/ImageMagick/ImageMagick/issues/417).
+
 2017-03-24  6.9.8-3 Cristy  <quetzlzacatenango@image...>
-  * Release ImageMagick version 6.9.7-3, GIT revision 11444:3f523e5:20170324.
+  * Release ImageMagick version 6.9.8-3, GIT revision 11444:3f523e5:20170324.
 
-2017-03-14  6.9.8-1 Cristy  <quetzlzacatenango@image...>
-  * Support namespaces for the security policy.
-
-2017-03-03  6.9.8-0 Cristy  <quetzlzacatenango@image...>
-  * Release ImageMagick version 6.9.7-0, GIT revision 11408:da91a7c:20170311.
-
-2017-03-06  6.9.8-0 Cristy  <quetzlzacatenango@image...>
-  * Respect throttle policy (reference
-    https://github.com/ImageMagick/ImageMagick/issues/393).
 2017-03-20  6.9.8-3 Cristy  <quetzlzacatenango@image...>
   * MagickWand-config, use --cflags, not --clags (reference
     https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=31602).
@@ -17,13 +65,16 @@
     https://www.imagemagick.org/discourse-server/viewtopic.php?f=3&t=31619).
 
 2017-03-18  6.9.8-2 Cristy  <quetzlzacatenango@image...>
-  * Release ImageMagick version 6.9.7-2, GIT revision 11436:a912791:20170318.
+  * Release ImageMagick version 6.9.8-2, GIT revision 11436:a912791:20170318.
 
-2017-03-14  6.9.8-1 Cristy  <quetzlzacatenango@image...>
+2017-03-14  6.9.8-2 Cristy  <quetzlzacatenango@image...>
   * Support namespaces for the security policy.
 
+2017-03-11  6.9.8-1 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.8-1.
+
 2017-03-03  6.9.8-0 Cristy  <quetzlzacatenango@image...>
-  * Release ImageMagick version 6.9.7-0, GIT revision 11408:da91a7c:20170311.
+  * Release ImageMagick version 6.9.8-0, GIT revision 11408:da91a7c:20170311.
 
 2017-03-06  6.9.8-0 Cristy  <quetzlzacatenango@image...>
   * Respect throttle policy (reference

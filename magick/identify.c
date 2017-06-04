@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -683,7 +683,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
           image->error.normalized_maximum_error);
       if (GetBlobSize(image) != 0)
         {
-          (void) FormatMagickSize(GetBlobSize(image),MagickFalse,format);
+          (void) FormatMagickSize(GetBlobSize(image),MagickTrue,format);
           (void) FormatLocaleFile(file,"%s ",format);
         }
       (void) FormatLocaleFile(file,"%0.3fu %lu:%02lu.%03lu",user_time,
@@ -1451,7 +1451,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
     }
   (void) FormatLocaleFile(file,"  Tainted: %s\n",CommandOptionToMnemonic(
     MagickBooleanOptions,(ssize_t) image->taint));
-  (void) FormatMagickSize(GetBlobSize(image),MagickFalse,format);
+  (void) FormatMagickSize(GetBlobSize(image),MagickTrue,format);
   (void) FormatLocaleFile(file,"  Filesize: %s\n",format);
   (void) FormatMagickSize((MagickSizeType) image->columns*image->rows,
      MagickFalse,format);

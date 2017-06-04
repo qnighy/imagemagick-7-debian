@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -2932,6 +2932,9 @@ MagickExport const PixelPacket *GetVirtualPixelsFromNexus(const Image *image,
   assert(cache_info->signature == MagickSignature);
   if (cache_info->type == UndefinedCache)
     return((const PixelPacket *) NULL);
+#if defined(MAGICKCORE_OPENCL_SUPPORT)
+  CopyOpenCLBuffer(cache_info);
+#endif
   region.x=x;
   region.y=y;
   region.width=columns;
@@ -4199,36 +4202,6 @@ MagickExport MagickBooleanType PersistPixelCache(Image *image,
       *offset+=cache_info->length+page_size-(cache_info->length % page_size);
       return(MagickTrue);
     }
-  if ((cache_info->mode != ReadMode) && (cache_info->type != MemoryCache) &&
-      (cache_info->reference_count == 1))
-    {
-      LockSemaphoreInfo(cache_info->semaphore);
-      if ((cache_info->mode != ReadMode) && (cache_info->type != MemoryCache) &&
-          (cache_info->reference_count == 1))
-        {
-          int
-            status;
-
-          /*
-            Usurp existing persistent pixel cache.
-          */
-          status=rename_utf8(cache_info->cache_filename,filename);
-          if (status == 0)
-            {
-              (void) CopyMagickString(cache_info->cache_filename,filename,
-                MaxTextExtent);
-              *offset+=cache_info->length+page_size-(cache_info->length %
-                page_size);
-              UnlockSemaphoreInfo(cache_info->semaphore);
-              cache_info=(CacheInfo *) ReferencePixelCache(cache_info);
-              if (image->debug != MagickFalse)
-                (void) LogMagickEvent(CacheEvent,GetMagickModule(),
-                  "Usurp resident persistent cache");
-              return(MagickTrue);
-            }
-        }
-      UnlockSemaphoreInfo(cache_info->semaphore);
-    }
   /*
     Clone persistent pixel cache.
   */
@@ -4247,8 +4220,7 @@ MagickExport MagickBooleanType PersistPixelCache(Image *image,
   clone_info=(CacheInfo *) DestroyPixelCache(clone_info);
   return(status);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %

@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -376,6 +376,7 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
   */
   (void) CopyMagickString(histogram_image->filename,image_info->filename,
     MaxTextExtent);
+  (void) ResetImagePage(histogram_image,"0x0+0+0");
   write_info=CloneImageInfo(image_info);
   *write_info->magick='\0';
   (void) SetImageInfo(write_info,1,&image->exception);

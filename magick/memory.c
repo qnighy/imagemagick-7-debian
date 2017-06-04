@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -60,10 +60,11 @@
 #include "magick/exception-private.h"
 #include "magick/memory_.h"
 #include "magick/memory-private.h"
+#include "magick/policy.h"
 #include "magick/resource_.h"
 #include "magick/semaphore.h"
 #include "magick/string_.h"
-#include "magick/utility-private.h"
+#include "magick/utility.h"
 
 /*
   Define declarations.
@@ -221,7 +222,7 @@ static MagickBooleanType
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  AcquireAlignedMemory() returns a pointer to a block of memory at least size
-%  bytes whose address is a multiple of 16*sizeof(void *).
+%  bytes whose address is aligned on a cache line or page boundary.
 %
 %  The format of the AcquireAlignedMemory method is:
 %
@@ -250,10 +251,12 @@ MagickExport void *AcquireAlignedMemory(const size_t count,const size_t quantum)
   if (HeapOverflowSanityCheck(count,quantum) != MagickFalse)
     return((void *) NULL);
   memory=NULL;
-  alignment=CACHE_LINE_SIZE;
   size=count*quantum;
-  extent=AlignedExtent(size,alignment);
-  if ((size == 0) || (alignment < sizeof(void *)) || (extent < size))
+  alignment=CACHE_LINE_SIZE;
+  if (size > (size_t) (GetMagickPageSize() >> 1))
+    alignment=GetMagickPageSize();
+  extent=AlignedExtent(size,CACHE_LINE_SIZE);
+  if ((size == 0) || (extent < size))
     return((void *) NULL);
 #if defined(MAGICKCORE_HAVE_POSIX_MEMALIGN)
   if (posix_memalign(&memory,alignment,extent) != 0)
@@ -568,6 +571,9 @@ MagickExport MemoryInfo *AcquireVirtualMemory(const size_t count,
   size_t
     extent;
 
+  static ssize_t
+    virtual_anonymous_memory = (-1);
+
   if (HeapOverflowSanityCheck(count,quantum) != MagickFalse)
     return((MemoryInfo *) NULL);
   memory_info=(MemoryInfo *) MagickAssumeAligned(AcquireAlignedMemory(1,
@@ -578,66 +584,90 @@ MagickExport MemoryInfo *AcquireVirtualMemory(const size_t count,
   extent=count*quantum;
   memory_info->length=extent;
   memory_info->signature=MagickSignature;
-  if (AcquireMagickResource(MemoryResource,extent) != MagickFalse)
+  if (virtual_anonymous_memory < 0)
     {
-      memory_info->blob=AcquireAlignedMemory(1,extent);
-      if (memory_info->blob != NULL)
-        {
-          memory_info->type=AlignedVirtualMemory;
-          return(memory_info);
-        }
-    }
-  RelinquishMagickResource(MemoryResource,extent);
-  if (AcquireMagickResource(MapResource,extent) != MagickFalse)
-    {
+      char
+        *value;
+
       /*
-        Heap memory failed, try anonymous memory mapping.
+        Does the security policy require anonymous mapping for pixel cache?
       */
-      memory_info->blob=MapBlob(-1,IOMode,0,extent);
-      if (memory_info->blob != NULL)
+      virtual_anonymous_memory=0;
+      value=GetPolicyValue("system:memory-map");
+      if (LocaleCompare(value,"anonymous") == 0)
         {
-          memory_info->type=MapVirtualMemory;
-          return(memory_info);
+#if defined(MAGICKCORE_HAVE_MMAP) && defined(MAP_ANONYMOUS)
+          virtual_anonymous_memory=1;
+#endif
         }
-      if (AcquireMagickResource(DiskResource,extent) != MagickFalse)
+      value=DestroyString(value);
+    }
+  if (virtual_anonymous_memory <= 0)
+    {
+      if (AcquireMagickResource(MemoryResource,extent) != MagickFalse)
         {
-          int
-            file;
-
-          /*
-            Anonymous memory mapping failed, try file-backed memory mapping.
-            If the MapResource request failed, there is no point in trying
-            file-backed memory mapping.
-          */
-          file=AcquireUniqueFileResource(memory_info->filename);
-          if (file != -1)
+          memory_info->blob=AcquireAlignedMemory(1,extent);
+          if (memory_info->blob != NULL)
             {
-              MagickOffsetType
-                offset;
-
-              offset=(MagickOffsetType) lseek(file,extent-1,SEEK_SET);
-              if ((offset == (MagickOffsetType) (extent-1)) &&
-                  (write(file,"",1) == 1))
-                {
-                  memory_info->blob=MapBlob(file,IOMode,0,extent);
-                  if (memory_info->blob != NULL)
-                    {
-                      (void) close(file);
-                      memory_info->type=MapVirtualMemory;
-                      return(memory_info);
-                    }
-                }
-              /*
-                File-backed memory mapping failed, delete the temporary file.
-              */
-              (void) close(file);
-              (void) RelinquishUniqueFileResource(memory_info->filename);
-              *memory_info->filename='\0';
+              memory_info->type=AlignedVirtualMemory;
+              return(memory_info);
             }
         }
-      RelinquishMagickResource(DiskResource,extent);
+      RelinquishMagickResource(MemoryResource,extent);
     }
-  RelinquishMagickResource(MapResource,extent);
+  else
+    {
+      if (AcquireMagickResource(MapResource,extent) != MagickFalse)
+        {
+          /*
+            Acquire anonymous memory map.
+          */
+          memory_info->blob=MapBlob(-1,IOMode,0,extent);
+          if (memory_info->blob != NULL)
+            {
+              memory_info->type=MapVirtualMemory;
+              return(memory_info);
+            }
+          if (AcquireMagickResource(DiskResource,extent) != MagickFalse)
+            {
+              int
+                file;
+
+              /*
+                Anonymous memory mapping failed, try file-backed memory mapping.
+                If the MapResource request failed, there is no point in trying
+                file-backed memory mapping.
+              */
+              file=AcquireUniqueFileResource(memory_info->filename);
+              if (file != -1)
+                {
+                  MagickOffsetType
+                    offset;
+
+                  offset=(MagickOffsetType) lseek(file,extent-1,SEEK_SET);
+                  if ((offset == (MagickOffsetType) (extent-1)) &&
+                      (write(file,"",1) == 1))
+                    {
+                      memory_info->blob=MapBlob(file,IOMode,0,extent);
+                      if (memory_info->blob != NULL)
+                        {
+                          (void) close(file);
+                          memory_info->type=MapVirtualMemory;
+                          return(memory_info);
+                        }
+                    }
+                  /*
+                    File-backed memory mapping fail, delete the temporary file.
+                  */
+                  (void) close(file);
+                  (void) RelinquishUniqueFileResource(memory_info->filename);
+                  *memory_info->filename='\0';
+                }
+            }
+          RelinquishMagickResource(DiskResource,extent);
+        }
+      RelinquishMagickResource(MapResource,extent);
+    }
   if (memory_info->blob == NULL)
     {
       memory_info->blob=AcquireMagickMemory(extent);

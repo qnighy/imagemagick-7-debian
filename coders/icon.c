@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -254,6 +254,9 @@ static Image *ReadICONImage(const ImageInfo *image_info,
   MagickBooleanType
     status;
 
+  MagickSizeType
+    extent;
+
   register IndexPacket
     *indexes;
 
@@ -301,6 +304,7 @@ static Image *ReadICONImage(const ImageInfo *image_info,
       ((icon_file.resource_type != 1) && (icon_file.resource_type != 2)) ||
       (icon_file.count > MaxIcons))
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+  extent=0;
   for (i=0; i < icon_file.count; i++)
   {
     icon_file.directory[i].width=(unsigned char) ReadBlobByte(image);
@@ -314,8 +318,9 @@ static Image *ReadICONImage(const ImageInfo *image_info,
     icon_file.directory[i].offset=ReadBlobLSBLong(image);
     if (EOFBlob(image) != MagickFalse)
       break;
+    extent=MagickMax(extent,icon_file.directory[i].size);
   }
-  if (EOFBlob(image) != MagickFalse)
+  if ((EOFBlob(image) != MagickFalse) || (extent > GetBlobSize(image)))
     ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
   one=1;
   for (i=0; i < icon_file.count; i++)
@@ -433,7 +438,7 @@ static Image *ReadICONImage(const ImageInfo *image_info,
         {
           image->storage_class=PseudoClass;
           image->colors=icon_info.number_colors;
-          if (image->colors == 0)
+          if ((image->colors == 0) || (image->colors > 256))
             image->colors=one << icon_info.bits_per_pixel;
         }
       if (image->storage_class == PseudoClass)
@@ -455,8 +460,12 @@ static Image *ReadICONImage(const ImageInfo *image_info,
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           count=ReadBlob(image,(size_t) (4*image->colors),icon_colormap);
           if (count != (ssize_t) (4*image->colors))
-            ThrowReaderException(CorruptImageError,
-              "InsufficientImageDataInFile");
+            {
+              icon_colormap=(unsigned char *) RelinquishMagickMemory(
+                icon_colormap);
+              ThrowReaderException(CorruptImageError,
+                "InsufficientImageDataInFile");
+            }
           p=icon_colormap;
           for (i=0; i < (ssize_t) image->colors; i++)
           {

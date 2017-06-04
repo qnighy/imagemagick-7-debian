@@ -1182,7 +1182,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'B':
@@ -1229,7 +1232,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'C':
@@ -1333,7 +1339,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'D':
@@ -1436,7 +1445,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'E':
@@ -1469,7 +1481,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'F':
@@ -1539,7 +1554,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'G':
@@ -1583,7 +1601,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'I':
@@ -1654,7 +1675,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'L':
@@ -1673,7 +1697,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'M':
@@ -1766,7 +1793,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'O':
@@ -1797,7 +1827,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'P':
@@ -1909,7 +1942,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'Q':
@@ -1926,7 +1962,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'R':
@@ -2002,7 +2041,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'S':
@@ -2064,7 +2106,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'T':
@@ -2148,7 +2193,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'U':
@@ -2202,7 +2250,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'V':
@@ -2247,7 +2298,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     case 'W':
@@ -2269,7 +2323,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
     default:
@@ -2277,7 +2334,10 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
       if (info)
         SetImageOption(info->image_info,attribute,SvPV(sval,na));
       for ( ; image; image=image->next)
-        SetImageProperty(image,attribute,SvPV(sval,na));
+      {
+        (void) SetImageProperty(image,attribute,SvPV(sval,na));
+        (void) SetImageArtifact(image,attribute,SvPV(sval,na));
+      }
       break;
     }
   }

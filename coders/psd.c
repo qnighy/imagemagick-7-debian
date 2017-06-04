@@ -26,7 +26,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -68,6 +68,7 @@
 #include "magick/option.h"
 #include "magick/pixel.h"
 #include "magick/pixel-accessor.h"
+#include "magick/policy.h"
 #include "magick/profile.h"
 #include "magick/property.h"
 #include "magick/registry.h"
@@ -1182,11 +1183,15 @@ static MagickBooleanType ReadPSDChannelZip(Image *image,const size_t channels,
       ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
         image->filename);
     }
+  if (ReadBlob(image,compact_size,compact_pixels) != (ssize_t) compact_size)
+    {
+      compact_pixels=(unsigned char *) RelinquishMagickMemory(compact_pixels);
+      ThrowBinaryException(CorruptImageError,"UnexpectedEndOfFile",
+        image->filename);
+    }
 
   ResetMagickMemory(&stream,0,sizeof(stream));
   stream.data_type=Z_BINARY;
-  (void) ReadBlob(image,compact_size,compact_pixels);
-
   stream.next_in=(Bytef *)compact_pixels;
   stream.avail_in=(uInt) compact_size;
   stream.next_out=(Bytef *)pixels;
@@ -1202,12 +1207,14 @@ static MagickBooleanType ReadPSDChannelZip(Image *image,const size_t channels,
         ret=inflate(&stream, Z_SYNC_FLUSH);
         if ((ret != Z_OK) && (ret != Z_STREAM_END))
           {
+            (void) inflateEnd(&stream);
             compact_pixels=(unsigned char *) RelinquishMagickMemory(
               compact_pixels);
             pixels=(unsigned char *) RelinquishMagickMemory(pixels);
             return(MagickFalse);
           }
       }
+      (void) inflateEnd(&stream);
     }
 
   if (compression == ZipWithPrediction)
@@ -1440,7 +1447,7 @@ static MagickBooleanType ReadPSDLayer(Image *image,const ImageInfo *image_info,
   return(status);
 }
 
-ModuleExport MagickBooleanType ReadPSDLayers(Image *image,
+static MagickBooleanType ReadPSDLayersInternal(Image *image,
   const ImageInfo *image_info,const PSDInfo *psd_info,
   const MagickBooleanType skip_layers,ExceptionInfo *exception)
 {
@@ -1812,6 +1819,24 @@ ModuleExport MagickBooleanType ReadPSDLayers(Image *image,
   return(status);
 }
 
+ModuleExport MagickBooleanType ReadPSDLayers(Image *image,
+  const ImageInfo *image_info,const PSDInfo *psd_info,
+  const MagickBooleanType skip_layers,ExceptionInfo *exception)
+{
+  PolicyDomain
+    domain;
+
+  PolicyRights
+    rights;
+
+  domain=CoderPolicyDomain;
+  rights=ReadPolicyRights;
+  if (IsRightsAuthorized(domain,rights,"PSD") == MagickFalse)
+    return(MagickFalse);
+  return(ReadPSDLayersInternal(image,image_info,psd_info,skip_layers,
+    exception));
+}
+
 static MagickBooleanType ReadPSDMergedImage(const ImageInfo *image_info,
   Image* image,const PSDInfo* psd_info,ExceptionInfo *exception)
 {
@@ -2091,8 +2116,8 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     }
   else
     {
-      if (ReadPSDLayers(image,image_info,&psd_info,skip_layers,exception) !=
-          MagickTrue)
+      if (ReadPSDLayersInternal(image,image_info,&psd_info,skip_layers,
+            exception) != MagickTrue)
         {
           (void) CloseBlob(image);
           image=DestroyImageList(image);
@@ -2124,7 +2149,8 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (length != 0))
     {
       SeekBlob(image,offset,SEEK_SET);
-      status=ReadPSDLayers(image,image_info,&psd_info,MagickFalse,exception);
+      status=ReadPSDLayersInternal(image,image_info,&psd_info,MagickFalse,
+        exception);
       if (status != MagickTrue)
         {
           (void) CloseBlob(image);

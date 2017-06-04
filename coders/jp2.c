@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -388,7 +388,12 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   opj_stream_destroy(jp2_stream);
   for (i=0; i < (ssize_t) jp2_image->numcomps; i++)
   {
-    if ((jp2_image->comps[i].dx == 0) || (jp2_image->comps[i].dy == 0))
+    if ((jp2_image->comps[0].dx == 0) || (jp2_image->comps[0].dy == 0) ||
+        (jp2_image->comps[0].dx != jp2_image->comps[i].dx) ||
+        (jp2_image->comps[0].dy != jp2_image->comps[i].dy) ||
+        (jp2_image->comps[0].prec != jp2_image->comps[i].prec) ||
+        (jp2_image->comps[0].sgnd != jp2_image->comps[i].sgnd) ||
+        ((image->ping == MagickFalse) && (jp2_image->comps[i].data == NULL)))
       {
         opj_destroy_codec(jp2_codec);
         opj_image_destroy(jp2_image);
@@ -408,17 +413,17 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
       return(DestroyImageList(image));
     }
   image->compression=JPEG2000Compression;
-  if (jp2_image->numcomps <= 2)
+  if (jp2_image->color_space == 2)
     {
       SetImageColorspace(image,GRAYColorspace);
       if (jp2_image->numcomps > 1)
         image->matte=MagickTrue;
     }
+  else
+    if (jp2_image->color_space == 3)
+      SetImageColorspace(image,Rec601YCbCrColorspace);
   if (jp2_image->numcomps > 3)
     image->matte=MagickTrue;
-  for (i=0; i < (ssize_t) jp2_image->numcomps; i++)
-    if ((jp2_image->comps[i].dx > 1) || (jp2_image->comps[i].dy > 1))
-      SetImageColorspace(image,YUVColorspace);
   if (jp2_image->icc_profile_buf != (unsigned char *) NULL)
     {
       StringInfo

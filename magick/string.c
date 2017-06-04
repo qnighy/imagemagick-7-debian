@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the license.  You may  %
 %  obtain a copy of the license at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %  unless required by applicable law or agreed to in writing, software        %
 %  distributed under the license is distributed on an "as is" basis,          %
 %  without warranties or conditions of any kind, either express or implied.   %
@@ -649,7 +649,7 @@ MagickExport StringInfo *ConfigureFileToStringInfo(const char *filename)
   (void) CopyMagickString(string_info->path,filename,MaxTextExtent);
   string_info->length=length;
   if (string_info->datum != (unsigned char *) NULL)
-    string_info->datum=(unsigned char *) RelinquishMagickMemory( 
+    string_info->datum=(unsigned char *) RelinquishMagickMemory(
       string_info->datum);
   string_info->datum=(unsigned char *) string;
   return(string_info);
@@ -1027,7 +1027,7 @@ MagickExport StringInfo *FileToStringInfo(const char *filename,
   string_info=AcquireStringInfo(0);
   (void) CopyMagickString(string_info->path,filename,MaxTextExtent);
   if (string_info->datum != (unsigned char *) NULL)
-    string_info->datum=(unsigned char *) RelinquishMagickMemory( 
+    string_info->datum=(unsigned char *) RelinquishMagickMemory(
       string_info->datum);
   string_info->datum=FileToBlob(filename,extent,&string_info->length,exception);
   if (string_info->datum == (unsigned char *) NULL)
@@ -1069,6 +1069,10 @@ MagickExport StringInfo *FileToStringInfo(const char *filename,
 MagickExport ssize_t FormatMagickSize(const MagickSizeType size,
   const MagickBooleanType bi,char *format)
 {
+  char
+    p[MaxTextExtent],
+    q[MaxTextExtent];
+
   const char
     **units;
 
@@ -1077,8 +1081,7 @@ MagickExport ssize_t FormatMagickSize(const MagickSizeType size,
     length;
 
   register ssize_t
-    i,
-    j;
+    i;
 
   ssize_t
     count;
@@ -1105,16 +1108,18 @@ MagickExport ssize_t FormatMagickSize(const MagickSizeType size,
 #else
   length=(double) size;
 #endif
+  (void) FormatLocaleString(p,MaxTextExtent,"%.*g",GetMagickPrecision(),
+    length);
+  (void) FormatLocaleString(q,MaxTextExtent,"%.20g",length);
+  if (strtod(p,(char **) NULL) == strtod(q,(char **) NULL))
+    {
+      count=FormatLocaleString(format,MaxTextExtent,"%.20g%sB",length,units[0]);
+      return(count);
+    }
   for (i=0; (length >= bytes) && (units[i+1] != (const char *) NULL); i++)
     length/=bytes;
-  count=0;
-  for (j=2; j < 12; j++)
-  {
-    count=FormatLocaleString(format,MaxTextExtent,"%.*g%sB",(int) (i+j),length,
-      units[i]);
-    if (strchr(format,'+') == (char *) NULL)
-      break;
-  }
+  count=FormatLocaleString(format,MaxTextExtent,"%.*g%sB",GetMagickPrecision(),
+    length,units[i]);
   return(count);
 }
 
@@ -1642,15 +1647,15 @@ MagickExport char *SanitizeString(const char *source)
 
   const char
     *q;
-  
+
   register char
     *p;
-  
+
   static char
     whitelist[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 "
       "$-_.+!*'(),{}|\\^~[]`\"><#%;/?:@&=";
-  
+
   sanitize_source=AcquireString(source);
   p=sanitize_source;
   q=sanitize_source+strlen(sanitize_source);

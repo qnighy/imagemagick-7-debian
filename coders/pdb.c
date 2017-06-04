@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -429,19 +429,25 @@ static Image *ReadPDBImage(const ImageInfo *image_info,ExceptionInfo *exception)
     case 0:
     {
       image->compression=NoCompression;
-      count=(ssize_t) ReadBlob(image, packets * image -> rows, pixels);
+      count=(ssize_t) ReadBlob(image,packets*image->rows,pixels);
       break;
     }
     case 1:
     {
       image->compression=RLECompression;
-      if (!DecodeImage(image, pixels, packets * image -> rows))
-        ThrowReaderException( CorruptImageError, "RLEDecoderError" );
+      if (!DecodeImage(image,pixels,packets*image->rows))
+        {
+          pixels=(unsigned char *) RelinquishMagickMemory(pixels);
+          ThrowReaderException( CorruptImageError,"RLEDecoderError");
+        }
       break;
     }
     default:
-      ThrowReaderException(CorruptImageError,
-         "UnrecognizedImageCompressionType" );
+      {
+        pixels=(unsigned char *) RelinquishMagickMemory(pixels);
+        ThrowReaderException(CorruptImageError,
+          "UnrecognizedImageCompressionType");
+      }
   }
   p=pixels;
   switch (bits_per_pixel)
@@ -542,7 +548,10 @@ static Image *ReadPDBImage(const ImageInfo *image_info,ExceptionInfo *exception)
       break;
     }
     default:
+    {
+      pixels=(unsigned char *) RelinquishMagickMemory(pixels);
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    }
   }
   pixels=(unsigned char *) RelinquishMagickMemory(pixels);
   if (EOFBlob(image) != MagickFalse)

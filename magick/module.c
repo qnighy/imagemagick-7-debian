@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -62,6 +62,7 @@
 #include "magick/string_.h"
 #include "magick/token.h"
 #include "magick/utility.h"
+#include "magick/utility-private.h"
 #if defined(MAGICKCORE_MODULES_SUPPORT)
 #if defined(MAGICKCORE_LTDL_DELEGATE)
 #include "ltdl.h"
@@ -380,19 +381,6 @@ static int ModuleCompare(const void *x,const void *y)
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-static inline int MagickReadDirectory(DIR *directory,struct dirent *entry,
-  struct dirent **result)
-{
-#if defined(MAGICKCORE_HAVE_READDIR_R)
-  return(readdir_r(directory,entry,result));
-#else
-  (void) entry;
-  errno=0;
-  *result=readdir(directory);
-  return(errno);
-#endif
-}
 
 MagickExport char **GetModuleList(const char *pattern,
   const MagickModuleType type,size_t *number_modules,ExceptionInfo *exception)

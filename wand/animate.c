@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -116,7 +116,6 @@ static MagickBooleanType AnimateUsage(void)
       "-crop geometry       preferred size and location of the cropped image",
       "-extract geometry    extract area from image",
       "-monochrome          transform image to black and white",
-      "-repage geometry     size and location of an image canvas (operator)",
       "-resample geometry   change the resolution of an image",
       "-resize geometry     resize the image",
       "-rotate degrees      apply Paeth rotation to the image",
@@ -164,6 +163,7 @@ static MagickBooleanType AnimateUsage(void)
       "-quiet               suppress all warning messages",
       "-regard-warnings     pay attention to warning messages",
       "-remote command      execute a command in an remote display process",
+      "-repage geometry     size and location of an image canvas (operator)",
       "-respect-parentheses settings remain in effect until parenthesis boundary",
       "-sampling-factor geometry",
       "                     horizontal and vertical sampling factor",

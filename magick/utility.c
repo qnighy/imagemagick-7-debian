@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -1110,13 +1110,13 @@ MagickExport ssize_t GetMagickPageSize(void)
     return(page_size);
 #if defined(MAGICKCORE_HAVE_SYSCONF) && defined(_SC_PAGE_SIZE)
   page_size=(ssize_t) sysconf(_SC_PAGE_SIZE);
-#else
-#if defined(MAGICKCORE_HAVE_GETPAGESIZE)
+#elif defined(MAGICKCORE_HAVE_GETPAGESIZE)
   page_size=(ssize_t) getpagesize();
-#endif
+#elif defined(MAGICKCORE_WINDOWS_SUPPORT)
+  page_size=NTGetPageSize();
 #endif
   if (page_size <= 0)
-    page_size=16384;
+    page_size=4096;
   return(page_size);
 }
 
@@ -1544,17 +1544,6 @@ static int FileCompare(const void *x,const void *y)
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
-
-static inline int MagickReadDirectory(DIR *directory,struct dirent *entry,
-  struct dirent **result)
-{
-  errno=0;
-  entry=readdir(directory);
-  *result=entry;
-  if ((entry == (struct dirent *) NULL) && (errno != 0))
-    return(-1);
-  return(0);
-}
 
 MagickExport char **ListFiles(const char *directory,const char *pattern,
   size_t *number_entries)

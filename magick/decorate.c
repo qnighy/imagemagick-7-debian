@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -453,29 +453,11 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
     /*
       Set frame interior pixels.
     */
+    for (x=0; x < (ssize_t) image->columns; x++)
     {
-      register const IndexPacket
-        *indexes;
-
-      register const PixelPacket
-        *p;
-
-      p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
-      if (p == (const PixelPacket *) NULL)
-        {
-          status=MagickFalse;
-          continue;
-        }
-      indexes=GetCacheViewVirtualIndexQueue(image_view);
-      (void) CopyMagickMemory(q,p,image->columns*sizeof(*p));
-      if ((image->colorspace == CMYKColorspace) &&
-          (frame_image->colorspace == CMYKColorspace))
-        {
-          (void) CopyMagickMemory(frame_indexes,indexes,image->columns*
-            sizeof(*indexes));
-          frame_indexes+=image->columns;
-        }
-      q+=image->columns;
+      SetPixelPacket(frame_image,&border,q,frame_indexes);
+      q++;
+      frame_indexes++;
     }
     for (x=0; x < (ssize_t) frame_info->inner_bevel; x++)
     {

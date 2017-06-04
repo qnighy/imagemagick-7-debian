@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -258,7 +258,6 @@ static MagickBooleanType CompositeUsage(void)
       "-negate              replace every pixel with its complementary color ",
       "-profile filename    add ICM or IPTC information profile to image",
       "-quantize colorspace reduce colors in this colorspace",
-      "-repage geometry     size and location of an image canvas (operator)",
       "-rotate degrees      apply Paeth rotation to the image",
       "-resize geometry     resize the image",
       "-sharpen geometry    sharpen the image",
@@ -313,6 +312,7 @@ static MagickBooleanType CompositeUsage(void)
       "-quiet               suppress all warning messages",
       "-red-primary point   chromaticity red primary point",
       "-regard-warnings     pay attention to warning messages",
+      "-repage geometry     size and location of an image canvas (operator)",
       "-respect-parentheses settings remain in effect until parenthesis boundary",
       "-sampling-factor geometry",
       "                     horizontal and vertical sampling factor",

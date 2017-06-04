@@ -24,7 +24,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    http://www.imagemagick.org/script/license.php                            %
+%    https://www.imagemagick.org/script/license.php                           %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -332,17 +332,17 @@ static double GetUserSpaceCoordinateValue(const SVGInfo *svg_info,int type,
     }
   GetNextToken(p,&p,MaxTextExtent,token);
   if (LocaleNCompare(token,"cm",2) == 0)
-    return(DefaultResolution*svg_info->scale[0]/2.54*value);
+    return(96.0*svg_info->scale[0]/2.54*value);
   if (LocaleNCompare(token,"em",2) == 0)
     return(svg_info->pointsize*value);
   if (LocaleNCompare(token,"ex",2) == 0)
     return(svg_info->pointsize*value/2.0);
   if (LocaleNCompare(token,"in",2) == 0)
-    return(DefaultResolution*svg_info->scale[0]*value);
+    return(96.0*svg_info->scale[0]*value);
   if (LocaleNCompare(token,"mm",2) == 0)
-    return(DefaultResolution*svg_info->scale[0]/25.4*value);
+    return(96.0*svg_info->scale[0]/25.4*value);
   if (LocaleNCompare(token,"pc",2) == 0)
-    return(DefaultResolution*svg_info->scale[0]/6.0*value);
+    return(96.0*svg_info->scale[0]/6.0*value);
   if (LocaleNCompare(token,"pt",2) == 0)
     return(1.25*svg_info->scale[0]*value);
   if (LocaleNCompare(token,"px",2) == 0)
@@ -2784,7 +2784,7 @@ static void SVGExternalSubset(void *context,const xmlChar *name,
   Static declarations.
 */
 static char
-  SVGDensityGeometry[] = "90.0x90.0";
+  SVGDensityGeometry[] = "96.0x96.0";
 
 static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
@@ -2834,8 +2834,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  if ((image->x_resolution < MagickEpsilon) ||
-      (image->y_resolution < MagickEpsilon))
+  if ((fabs(image->x_resolution) < MagickEpsilon) ||
+      (fabs(image->y_resolution) < MagickEpsilon))
     {
       GeometryInfo
         geometry_info;
@@ -2981,7 +2981,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (svg_handle == (RsvgHandle *) NULL)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         rsvg_handle_set_base_uri(svg_handle,image_info->filename);
-        if ((image->x_resolution > 0.0) && (image->y_resolution > 0.0))
+        if ((fabs(image->x_resolution) > MagickEpsilon) &&
+            (fabs(image->y_resolution) > MagickEpsilon))
           rsvg_handle_set_dpi_x_y(svg_handle,image->x_resolution,
             image->y_resolution);
         while ((n=ReadBlob(image,MaxTextExtent-1,message)) != 0)
@@ -2997,47 +2998,49 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (error != (GError *) NULL)
           g_error_free(error);
 #if defined(MAGICKCORE_CAIRO_DELEGATE)
+        apply_density=MagickTrue;
         rsvg_handle_get_dimensions(svg_handle,&dimension_info);
         if ((image->x_resolution > 0.0) && (image->y_resolution > 0.0))
-        {
-          RsvgDimensionData
-            dpi_dimension_info;
+          {
+            RsvgDimensionData
+              dpi_dimension_info;
 
-          /*
-            We should not apply the density when the internal 'factor' is 'i'.
-            This can be checked by using the trick below.
-          */
-          rsvg_handle_set_dpi_x_y(svg_handle,image->x_resolution*256,
-            image->y_resolution*256);
-          rsvg_handle_get_dimensions(svg_handle,&dpi_dimension_info);
-          if ((dpi_dimension_info.width != dimension_info.width) ||
-              (dpi_dimension_info.height != dimension_info.height))
-            apply_density=MagickFalse;
-          rsvg_handle_set_dpi_x_y(svg_handle,image->x_resolution,
-            image->y_resolution);
-        }
+            /*
+              We should not apply the density when the internal 'factor' is 'i'.
+              This can be checked by using the trick below.
+            */
+            rsvg_handle_set_dpi_x_y(svg_handle,image->x_resolution*256,
+              image->y_resolution*256);
+            rsvg_handle_get_dimensions(svg_handle,&dpi_dimension_info);
+            if ((dpi_dimension_info.width != dimension_info.width) ||
+                (dpi_dimension_info.height != dimension_info.height))
+              apply_density=MagickFalse;
+            rsvg_handle_set_dpi_x_y(svg_handle,image->x_resolution,
+              image->y_resolution);
+          }
         if (image_info->size != (char *) NULL)
           {
             (void) GetGeometry(image_info->size,(ssize_t *) NULL,
               (ssize_t *) NULL,&image->columns,&image->rows);
             if ((image->columns != 0) || (image->rows != 0))
               {
-                image->x_resolution=90.0*image->columns/dimension_info.width;
-                image->y_resolution=90.0*image->rows/dimension_info.height;
-                if (image->x_resolution == 0)
+                image->x_resolution=96.0*image->columns/dimension_info.width;
+                image->y_resolution=96.0*image->rows/dimension_info.height;
+                if (fabs(image->x_resolution) < MagickEpsilon)
                   image->x_resolution=image->y_resolution;
-                else if (image->y_resolution == 0)
-                  image->y_resolution=image->x_resolution;
                 else
-                  image->x_resolution=image->y_resolution=MagickMin(
-                    image->x_resolution,image->y_resolution);
+                  if (fabs(image->y_resolution) < MagickEpsilon)
+                    image->y_resolution=image->x_resolution;
+                  else
+                    image->x_resolution=image->y_resolution=MagickMin(
+                      image->x_resolution,image->y_resolution);
                 apply_density=MagickTrue;
               }
           }
         if (apply_density != MagickFalse)
           {
-            image->columns=image->x_resolution*dimension_info.width/90.0;
-            image->rows=image->y_resolution*dimension_info.height/90.0;
+            image->columns=image->x_resolution*dimension_info.width/96.0;
+            image->rows=image->y_resolution*dimension_info.height/96.0;
           }
         else
           {
@@ -3052,8 +3055,6 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         image->rows=gdk_pixbuf_get_height(pixel_buffer);
 #endif
         image->matte=MagickTrue;
-        SetImageProperty(image,"svg:base-uri",
-          rsvg_handle_get_base_uri(svg_handle));
         status=SetImageExtent(image,image->columns,image->rows);
         if (status == MagickFalse)
           {
@@ -3102,8 +3103,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             cairo_paint(cairo_image);
             cairo_set_operator(cairo_image,CAIRO_OPERATOR_OVER);
             if (apply_density != MagickFalse)
-              cairo_scale(cairo_image,image->x_resolution/90.0,
-                image->y_resolution/90.0);
+              cairo_scale(cairo_image,image->x_resolution/96.0,
+                image->y_resolution/96.0);
             rsvg_handle_render_cairo(svg_handle,cairo_image);
             cairo_destroy(cairo_image);
             cairo_surface_destroy(cairo_surface);
@@ -3262,6 +3263,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->rows=svg_info->height;
   if (exception->severity >= ErrorException)
     {
+      svg_info=DestroySVGInfo(svg_info);
+      (void) RelinquishUniqueFileResource(filename);
       image=DestroyImage(image);
       return((Image *) NULL);
     }
