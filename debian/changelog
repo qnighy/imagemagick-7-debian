@@ -9,6 +9,20 @@ imagemagick (8:6.9.8.3+dfsg-1) UNRELEASED; urgency=medium
 
  -- Bastien Roucariès <rouca@debian.org>  Wed, 19 Apr 2017 22:36:50 +0200
 
+imagemagick (8:6.9.7.4+dfsg-11) unstable; urgency=high
+
+  * Fix minor security bugs:
+    + CVE-2017-9409: Memory leak in the icon file coder.
+      (Closes: #864087)
+    + CVE-2017-9407: the ReadPALMImage function in palm.c
+      allows attackers to cause a denial of service (memory leak)
+      via a crafted file. (Closes: #864089).
+    + CVE-2017-9409: the ReadMPCImage function in mpc.c
+      allows attackers to cause a denial of service (memory leak)
+      via a crafted file. (Closes: #864090).
+
+ -- Bastien Roucariès <rouca@debian.org>  Sun, 04 Jun 2017 12:02:50 +0200
+
 imagemagick (8:6.9.7.4+dfsg-10) unstable; urgency=medium
 
   * Fix minor security bugs:
