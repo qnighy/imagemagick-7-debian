@@ -309,6 +309,11 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-dev.install.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-dev.install
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	UCQUANTUMDEPTH=$(call UC,$*) \
+	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-PPSOVERSION.symbols.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$(QUANTUMDEPTH)-$(PPSOVERSION).symbols
 
 	# libmagickcore
 	QUANTUM=$(call QUANTUM_PART,$*) \
@@ -792,6 +797,7 @@ override_dh_clean_quantum.%:
 
 	[ ! -f debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).install ] || rm debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).install
 	[ ! -f debian/libmagick++-$(IMVERSION).$*-dev.install ] || rm debian/libmagick++-$(IMVERSION).$*-dev.install
+	[ ! -f debian/libmagick++-$(IMVERSION).$(QUANTUMDEPTH)-$(PPSOVERSION).symbols ] || rm debian/libmagick++-$(IMVERSION).$(QUANTUMDEPTH)-$(PPSOVERSION).symbols
 
 	[ ! -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).install ] || rm -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).install
 	[ ! -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION)-extra.install ] || rm -f debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION)-extra.install
