@@ -970,7 +970,11 @@ MATLAB_KO:
     }
 #endif
 
-    if(MATLAB_HDR.DataType!=miMATRIX) continue;  /* skip another objects. */
+    if (MATLAB_HDR.DataType!=miMATRIX)
+      {
+        clone_info=DestroyImageInfo(clone_info);
+        continue;  /* skip another objects. */
+      }
 
     MATLAB_HDR.unknown1 = ReadBlobXXXLong(image2);
     MATLAB_HDR.unknown2 = ReadBlobXXXLong(image2);
@@ -1144,6 +1148,8 @@ RestoreMSCWarning
     status=SetImageExtent(image,image->columns,image->rows);
     if (status == MagickFalse)
       {
+        if ((image != image2) && (image2 != (Image *) NULL))
+          image2=DestroyImage(image2);
         InheritException(exception,&image->exception);
         return(DestroyImageList(image));
       }
@@ -1329,8 +1335,6 @@ done_reading:
   if (quantum_info != (QuantumInfo *) NULL)
     quantum_info=DestroyQuantumInfo(quantum_info);
 END_OF_READING:
-  if (clone_info)
-    clone_info=DestroyImageInfo(clone_info);
   CloseBlob(image);
 
 
@@ -1348,6 +1352,8 @@ END_OF_READING:
         Image *tmp=p;
         if ((p->rows == 0) || (p->columns == 0)) {
           p=p->previous;
+          if (tmp == image2)
+            image2=(Image *) NULL;
           DeleteImageFromList(&tmp);
         } else {
           image=p;

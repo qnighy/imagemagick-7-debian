@@ -372,8 +372,11 @@ static MagickBooleanType load_tile(Image *image,Image *tile_image,
   graydata=(unsigned char *) xcfdata;  /* used by gray and indexed */
   count=ReadBlob(image,data_length,(unsigned char *) xcfdata);
   if (count != (ssize_t) data_length)
-    ThrowBinaryException(CorruptImageError,"NotEnoughPixelData",
-      image->filename);
+    {
+      xcfodata=(XCFPixelPacket *) RelinquishMagickMemory(xcfodata);
+      ThrowBinaryException(CorruptImageError,"NotEnoughPixelData",
+        image->filename);
+    }
   exception=(&image->exception);
   for (y=0; y < (ssize_t) tile_image->rows; y++)
   {
@@ -796,6 +799,9 @@ static void InitXCFImage(XCFLayerInfo *outLayer)
 static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
   XCFDocInfo* inDocInfo,XCFLayerInfo *outLayer,const ssize_t layer)
 {
+  MagickBooleanType
+    status;
+
   MagickOffsetType
     offset;
 
@@ -930,6 +936,14 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
      &image->exception);
   if (outLayer->image == (Image *) NULL)
     return(MagickFalse);
+  status=SetImageExtent(outLayer->image,outLayer->image->columns,
+    outLayer->image->rows);
+  if (status == MagickFalse)
+    {
+      InheritException(&image->exception,&outLayer->image->exception);
+      outLayer->image=DestroyImageList(outLayer->image);
+      return(MagickFalse);
+    }
   /* clear the image based on the layer opacity */
   outLayer->image->background_color.opacity=
     ScaleCharToQuantum((unsigned char) (255-outLayer->alpha));
@@ -1355,10 +1369,11 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
         &layer_info[current_layer],current_layer);
       if (layer_ok == MagickFalse)
         {
-          int j;
+          ssize_t j;
 
-          for (j=0; j < current_layer; j++)
-            layer_info[j].image=DestroyImage(layer_info[j].image);
+          for (j=0; j <= current_layer; j++)
+            if (layer_info[j].image != (Image *) NULL)
+              layer_info[j].image=DestroyImage(layer_info[j].image);
           layer_info=(XCFLayerInfo *) RelinquishMagickMemory(layer_info);
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         }

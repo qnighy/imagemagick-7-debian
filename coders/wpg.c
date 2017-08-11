@@ -1045,6 +1045,8 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
           if(i==EOF)
             break;
           Rd_WP_DWORD(image,&Rec.RecordLength);
+          if (Rec.RecordLength > GetBlobSize(image))
+            ThrowReaderException(CorruptImageError,"ImproperImageHeader");
           if(EOFBlob(image))
             break;
 
@@ -1135,7 +1137,7 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
               status=SetImageExtent(image,image->columns,image->rows);
               if (status == MagickFalse)
                 break;
-              if ((image->colors == 0) && (bpp != 24))
+              if ((image->colors == 0) && (bpp <= 16))
                 {
                   image->colors=one << bpp;
                   if (!AcquireImageColormap(image,image->colors))
