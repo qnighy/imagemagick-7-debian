@@ -775,9 +775,17 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
         (image->storage_class == UndefinedClass) ||
         (image->compression == UndefinedCompression) || (image->columns == 0) ||
         (image->rows == 0))
-      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+      {
+        if (profiles != (LinkedListInfo *) NULL)
+          profiles=DestroyLinkedList(profiles,RelinquishMagickMemory);
+        ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+      }
     if (signature != GetMagickSignature((const StringInfo *) NULL))
-      ThrowReaderException(CacheError,"IncompatibleAPI");
+      {
+        if (profiles != (LinkedListInfo *) NULL)
+          profiles=DestroyLinkedList(profiles,RelinquishMagickMemory);
+        ThrowReaderException(CacheError,"IncompatibleAPI");
+      }
     if (image->montage != (char *) NULL)
       {
         register char
@@ -801,7 +809,12 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
               image->directory=(char *) ResizeQuantumMemory(image->directory,
                 length+MaxTextExtent,sizeof(*image->directory));
               if (image->directory == (char *) NULL)
-                ThrowReaderException(CorruptImageError,"UnableToReadImageData");
+                {
+                  if (profiles != (LinkedListInfo *) NULL)
+                    profiles=DestroyLinkedList(profiles,RelinquishMagickMemory);
+                  ThrowReaderException(CorruptImageError,
+                    "UnableToReadImageData");
+                }
               p=image->directory+strlen(image->directory);
             }
           c=ReadBlobByte(image);
@@ -839,25 +852,27 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
     depth=GetImageQuantumDepth(image,MagickFalse);
     if (image->storage_class == PseudoClass)
       {
+        size_t
+          packet_size;
+
+        unsigned char
+          *colormap;
+
         /*
           Create image colormap.
         */
+        packet_size=(size_t) (3UL*depth/8UL);
+        if ((packet_size*image->colors) > GetBlobSize(image))
+          ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
         image->colormap=(PixelPacket *) AcquireQuantumMemory(image->colors+1,
           sizeof(*image->colormap));
         if (image->colormap == (PixelPacket *) NULL)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         if (image->colors != 0)
           {
-            size_t
-              packet_size;
-
-            unsigned char
-              *colormap;
-
             /*
               Read image colormap from file.
             */
-            packet_size=(size_t) (3UL*depth/8UL);
             colormap=(unsigned char *) AcquireQuantumMemory(image->colors,
               packet_size*sizeof(*colormap));
             if (colormap == (unsigned char *) NULL)
@@ -1013,6 +1028,7 @@ ModuleExport size_t RegisterMPCImage(void)
   entry->encoder=(EncodeImageHandler *) WriteMPCImage;
   entry->magick=(IsImageFormatHandler *) IsMPC;
   entry->description=ConstantString("Magick Persistent Cache image format");
+  entry->seekable_stream=MagickTrue;
   entry->module=ConstantString("MPC");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);

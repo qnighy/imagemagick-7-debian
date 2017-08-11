@@ -1138,17 +1138,19 @@
 #endif
 
 /* Define if you have OPENJP2 library */
-/* #undef LIBOPENJP2_DELEGATE */
+#ifndef MAGICKCORE_LIBOPENJP2_DELEGATE
+#define MAGICKCORE_LIBOPENJP2_DELEGATE 1
+#endif
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/usr/lib64/ImageMagick-6.9.8/"
+#define MAGICKCORE_LIBRARY_PATH "/usr/lib64/ImageMagick-6.9.9/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
    installed. */
 #ifndef MAGICKCORE_LIBRARY_RELATIVE_PATH
-#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.9.8"
+#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-6.9.9"
 #endif
 
 /* Binaries in libraries path base name (will be during install linked to bin)
@@ -1188,7 +1190,7 @@
 
 /* Target Host Vendor */
 #ifndef MAGICKCORE_MAGICK_TARGET_VENDOR
-#define MAGICKCORE_MAGICK_TARGET_VENDOR unknown
+#define MAGICKCORE_MAGICK_TARGET_VENDOR pc
 #endif
 
 /* Module directory name without ABI part. */
@@ -1227,7 +1229,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.8-9"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.9-5"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1242,7 +1244,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.8-9"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.9-5"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1277,6 +1279,11 @@
 
 /* Define if you have RAQM library */
 /* #undef RAQM_DELEGATE */
+
+/* Define if you have LIBRAW library */
+#ifndef MAGICKCORE_RAW_R_DELEGATE
+#define MAGICKCORE_RAW_R_DELEGATE 1
+#endif
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #ifndef MAGICKCORE_RETSIGTYPE
@@ -1460,7 +1467,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.9.8-9"
+#define MAGICKCORE_VERSION "6.9.9-5"
 #endif
 
 /* Define if you have WEBP library */

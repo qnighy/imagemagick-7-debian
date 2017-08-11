@@ -359,6 +359,8 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       ThrowPCXException(CorruptImageError,"ImproperImageHeader");
     pcx_info.reserved=(unsigned char) ReadBlobByte(image);
     pcx_info.planes=(unsigned char) ReadBlobByte(image);
+    if (pcx_info.planes > 6)
+      ThrowPCXException(CorruptImageError,"ImproperImageHeader");
     if ((pcx_info.bits_per_pixel*pcx_info.planes) >= 64)
       ThrowPCXException(CorruptImageError,"ImproperImageHeader");
     if (pcx_info.planes == 0)
@@ -1010,7 +1012,10 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
     length=(size_t) pcx_info.bytes_per_line;
     pixel_info=AcquireVirtualMemory(length,pcx_info.planes*sizeof(*pixels));
     if (pixel_info == (MemoryInfo *) NULL)
-      ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+      {
+        pcx_colormap=(unsigned char *) RelinquishMagickMemory(pcx_colormap);
+        ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+      }
     pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
     q=pixels;
     if ((image->storage_class == DirectClass) || (image->colors > 256))

@@ -1178,8 +1178,14 @@ MagickExport MagickBooleanType ContrastStretchImageChannel(Image *image,
     sizeof(*stretch_map));
   if ((histogram == (MagickPixelPacket *) NULL) ||
       (stretch_map == (QuantumPixelPacket *) NULL))
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
-      image->filename);
+    {
+      if (stretch_map != (QuantumPixelPacket *) NULL)
+        stretch_map=(QuantumPixelPacket *) RelinquishMagickMemory(stretch_map);
+      if (histogram != (MagickPixelPacket *) NULL)
+        histogram=(MagickPixelPacket *) RelinquishMagickMemory(histogram);
+      ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+        image->filename);
+    }
   /*
     Form histogram.
   */

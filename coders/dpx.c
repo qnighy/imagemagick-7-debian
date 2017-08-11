@@ -1115,6 +1115,9 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
           StringInfo
             *profile;
 
+           if (dpx.file.user_size > GetBlobSize(image))
+             ThrowReaderException(CorruptImageError,
+               "InsufficientImageDataInFile");
            profile=BlobToStringInfo((const void *) NULL,
              dpx.file.user_size-sizeof(dpx.user.id));
            if (profile == (StringInfo *) NULL)
@@ -1126,10 +1129,11 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
         }
     }
   for ( ; offset < (MagickOffsetType) dpx.file.image_offset; offset++)
-    (void) ReadBlobByte(image);
-  /*
-    Read DPX image header.
-  */
+    if (ReadBlobByte(image) == EOF)
+      break;
+  if (EOFBlob(image) != MagickFalse)
+    ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
+      image->filename);
   if (image_info->ping != MagickFalse)
     {
       (void) CloseBlob(image);
@@ -1157,7 +1161,8 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
            offset=SeekBlob(image,data_offset,SEEK_SET);
          else
            for ( ; offset < data_offset; offset++)
-             (void) ReadBlobByte(image);
+             if (ReadBlobByte(image) == EOF)
+               break;
           if (offset != data_offset)
             ThrowReaderException(CorruptImageError,"UnableToReadImageData");
        }
@@ -1336,6 +1341,7 @@ ModuleExport size_t RegisterDPXImage(void)
   entry->decoder=(DecodeImageHandler *) ReadDPXImage;
   entry->encoder=(EncodeImageHandler *) WriteDPXImage;
   entry->magick=(IsImageFormatHandler *) IsDPX;
+  entry->seekable_stream=MagickTrue;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("SMPTE 268M-2003 (DPX 2.0)");
   entry->note=ConstantString(DPXNote);

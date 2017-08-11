@@ -1032,6 +1032,8 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     MagickMax(global_colors,256),3UL*sizeof(*global_colormap));
   if (global_colormap == (unsigned char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+  (void) ResetMagickMemory(global_colormap,0,3*MagickMax(global_colors,256)*
+    sizeof(*global_colormap));
   if (BitSet((int) flag,0x80) != 0)
     {
       count=ReadBlob(image,(size_t) (3*global_colors),global_colormap);
@@ -1122,10 +1124,11 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
               loop=LocaleNCompare((char *) header,"NETSCAPE2.0",11) == 0 ?
                 MagickTrue : MagickFalse;
             if (loop != MagickFalse)
+              while (ReadBlobBlock(image,header) != 0)
               {
-                while (ReadBlobBlock(image,header) != 0)
-                  iterations=(size_t) ((header[2] << 8) | header[1]);
-                break;
+                iterations=(size_t) ((header[2] << 8) | header[1]);
+                if (iterations != 0)
+                  iterations++;
               }
             else
               {
@@ -1378,6 +1381,7 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       status=PingGIFImage(image);
     else
       status=DecodeImage(image,opacity);
+    InheritException(exception,&image->exception);
     if ((image_info->ping == MagickFalse) && (status == MagickFalse))
       {
         global_colormap=(unsigned char *) RelinquishMagickMemory(
@@ -1756,7 +1760,7 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
             (void) WriteBlob(image,11,(unsigned char *) "NETSCAPE2.0");
             (void) WriteBlobByte(image,(unsigned char) 0x03);
             (void) WriteBlobByte(image,(unsigned char) 0x01);
-            (void) WriteBlobLSBShort(image,(unsigned short) image->iterations);
+            (void) WriteBlobLSBShort(image,(unsigned short) (image->iterations ? image->iterations - 1 : 0));
             (void) WriteBlobByte(image,(unsigned char) 0x00);
           }
         if ((image->gamma != 1.0f/2.2f))

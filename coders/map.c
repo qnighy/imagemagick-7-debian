@@ -10,7 +10,7 @@
 %                            M   M  A   A  P                                  %
 %                                                                             %
 %                                                                             %
-%                  Read/Write Image Colormaps As An Image File.               %
+%                  Read/Write Image Colormaps as an Image File.               %
 %                                                                             %
 %                              Software Design                                %
 %                                   Cristy                                    %
@@ -385,8 +385,8 @@ static MagickBooleanType WriteMAPImage(const ImageInfo *image_info,Image *image)
   /*
     Allocate colormap.
   */
-  if (IsPaletteImage(image,&image->exception) == MagickFalse)
-    (void) SetImageType(image,PaletteType);
+  if (SetImageType(image,PaletteType) == MagickFalse)
+    ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
   depth=GetImageQuantumDepth(image,MagickTrue);
   packet_size=(size_t) (depth/8);
   pixels=(unsigned char *) AcquireQuantumMemory(image->columns,packet_size*
@@ -396,11 +396,16 @@ static MagickBooleanType WriteMAPImage(const ImageInfo *image_info,Image *image)
     sizeof(*colormap));
   if ((pixels == (unsigned char *) NULL) ||
       (colormap == (unsigned char *) NULL))
-    ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+    {
+      if (colormap != (unsigned char *) NULL)
+        colormap=(unsigned char *) RelinquishMagickMemory(colormap);
+      if (pixels != (unsigned char *) NULL)
+        pixels=(unsigned char *) RelinquishMagickMemory(pixels);
+      ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+    }
   /*
     Write colormap to file.
   */
-  q=colormap;
   q=colormap;
   if (image->colors <= 256)
     for (i=0; i < (ssize_t) image->colors; i++)
@@ -415,9 +420,11 @@ static MagickBooleanType WriteMAPImage(const ImageInfo *image_info,Image *image)
       *q++=(unsigned char) (ScaleQuantumToShort(image->colormap[i].red) >> 8);
       *q++=(unsigned char) (ScaleQuantumToShort(image->colormap[i].red) & 0xff);
       *q++=(unsigned char) (ScaleQuantumToShort(image->colormap[i].green) >> 8);
-      *q++=(unsigned char) (ScaleQuantumToShort(image->colormap[i].green) & 0xff);;
+      *q++=(unsigned char) (ScaleQuantumToShort(image->colormap[i].green) &
+        0xff);
       *q++=(unsigned char) (ScaleQuantumToShort(image->colormap[i].blue) >> 8);
-      *q++=(unsigned char) (ScaleQuantumToShort(image->colormap[i].blue) & 0xff);
+      *q++=(unsigned char) (ScaleQuantumToShort(image->colormap[i].blue) &
+        0xff);
     }
   (void) WriteBlob(image,packet_size*image->colors,colormap);
   colormap=(unsigned char *) RelinquishMagickMemory(colormap);

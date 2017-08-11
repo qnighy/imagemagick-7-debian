@@ -53,6 +53,8 @@
 #include "magick/log.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/monitor.h"
+#include "magick/monitor-private.h"
 #include "magick/opencl.h"
 #include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
@@ -63,6 +65,9 @@
 #include "magick/transform.h"
 #include "magick/utility.h"
 #include "magick/xml-tree.h"
+#if defined(MAGICKCORE_RAW_R_DELEGATE)
+#include <libraw.h>
+#endif
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -134,6 +139,7 @@ static void InitializeDcrawOpenCL(ExceptionInfo *exception)
     }
 }
 #else
+#if !defined(MAGICKCORE_RAW_R_DELEGATE)
 static void InitializeDcrawOpenCL(ExceptionInfo *magick_unused(exception))
 {
   magick_unreferenced(exception);
@@ -142,17 +148,12 @@ static void InitializeDcrawOpenCL(ExceptionInfo *magick_unused(exception))
 #endif
 }
 #endif
+#endif
 
 static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
-  ExceptionInfo
-    *sans_exception;
-
   Image
     *image;
-
-  ImageInfo
-    *read_info;
 
   MagickBooleanType
     status;
@@ -175,95 +176,230 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return((Image *) NULL);
     }
   (void) CloseBlob(image);
-  (void) DestroyImageList(image);
-  /*
-    Convert DNG to PPM with delegate.
-  */
-  InitializeDcrawOpenCL(exception);
-  image=AcquireImage(image_info);
-  read_info=CloneImageInfo(image_info);
-  SetImageInfoBlob(read_info,(void *) NULL,0);
-  (void) InvokeDelegate(read_info,image,"dng:decode",(char *) NULL,exception);
-  image=DestroyImage(image);
-  (void) FormatLocaleString(read_info->filename,MaxTextExtent,"%s.png",
-    read_info->unique);
-  sans_exception=AcquireExceptionInfo();
-  image=ReadImage(read_info,sans_exception);
-  sans_exception=DestroyExceptionInfo(sans_exception);
-  if (image == (Image *) NULL)
+#if defined(MAGICKCORE_RAW_R_DELEGATE)
+  {
+    int
+      errcode;
+
+    libraw_data_t
+      *raw_info;
+
+    libraw_processed_image_t
+      *raw_image;
+
+    register ssize_t
+      y;
+
+    unsigned short
+      *p;
+
+    errcode=0;
+    raw_info=libraw_init(0);
+    if (raw_info == (libraw_data_t *) NULL)
+      {
+        (void) ThrowMagickException(exception,GetMagickModule(),CoderError,
+          libraw_strerror(errcode),"`%s'",image->filename);
+        return(DestroyImageList(image));
+      }
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && defined(_MSC_VER) && (_MSC_VER > 1310)
     {
-      (void) FormatLocaleString(read_info->filename,MaxTextExtent,"%s.ppm",
-        read_info->unique);
-      image=ReadImage(read_info,exception);
+      wchar_t
+        fileName[MagickPathExtent];
+
+      MultiByteToWideChar(CP_UTF8,0,image->filename,-1,fileName,
+        MagickPathExtent);
+      errcode=libraw_open_wfile(raw_info,fileName);
     }
-  (void) RelinquishUniqueFileResource(read_info->filename);
-  if (image != (Image *) NULL)
+#else
+    errcode=libraw_open_file(raw_info,image->filename);
+#endif
+    if (errcode != LIBRAW_SUCCESS)
+      {
+        (void) ThrowMagickException(exception,GetMagickModule(),CoderError,
+          libraw_strerror(errcode),"`%s'",image->filename);
+        return(DestroyImageList(image));
+      }
+    errcode=libraw_unpack(raw_info);
+    if (errcode != LIBRAW_SUCCESS)
+      {
+        (void) ThrowMagickException(exception,GetMagickModule(),CoderError,
+          libraw_strerror(errcode),"`%s'",image->filename);
+        libraw_close(raw_info);
+        return(DestroyImageList(image));
+      }
+    raw_info->params.output_bps=16;
+    errcode=libraw_dcraw_process(raw_info);
+    if (errcode != LIBRAW_SUCCESS)
+      {
+        (void) ThrowMagickException(exception,GetMagickModule(),CoderError,
+          libraw_strerror(errcode),"`%s'",image->filename);
+        libraw_close(raw_info);
+        return(DestroyImageList(image));
+      }
+    raw_image=libraw_dcraw_make_mem_image(raw_info,&errcode);
+    if ((errcode != LIBRAW_SUCCESS) || 
+        (raw_image == (libraw_processed_image_t *) NULL) ||
+        (raw_image->type != LIBRAW_IMAGE_BITMAP) || (raw_image->bits != 16) ||
+        (raw_image->colors < 3) || (raw_image->colors > 4))
+      {
+        if (raw_image != (libraw_processed_image_t *) NULL)
+          libraw_dcraw_clear_mem(raw_image);
+        (void) ThrowMagickException(exception,GetMagickModule(),CoderError,
+          libraw_strerror(errcode),"`%s'",image->filename);
+        libraw_close(raw_info);
+        return(DestroyImageList(image));
+      }
+    image->columns=raw_image->width;
+    image->rows=raw_image->height;
+    image->depth=16;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        libraw_dcraw_clear_mem(raw_image);
+        libraw_close(raw_info);
+        return(DestroyImageList(image));
+      }
+    if (image_info->ping != MagickFalse)
+      {
+        libraw_dcraw_clear_mem(raw_image);
+        libraw_close(raw_info);
+        return(image);
+      }
+    p=(unsigned short *) raw_image->data;
+    for (y=0; y < (ssize_t) image->rows; y++)
     {
-      char
-        filename[MaxTextExtent],
-        *xml;
+      register PixelPacket
+        *q;
 
-      ExceptionInfo
-        *sans;
+      register ssize_t
+        x;
 
-      (void) CopyMagickString(image->magick,read_info->magick,MaxTextExtent);
-      (void) FormatLocaleString(filename,MaxTextExtent,"%s.ufraw",
-        read_info->unique);
-      sans=AcquireExceptionInfo();
-      xml=FileToString(filename,MaxTextExtent,sans);
-      (void) RelinquishUniqueFileResource(filename);
-      if (xml != (char *) NULL)
+      q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
+      if (q == (PixelPacket *) NULL)
+        break;
+      for (x=0; x < (ssize_t) image->columns; x++)
+      {
+        SetPixelRed(q,ScaleShortToQuantum(*p++));
+        SetPixelGreen(q,ScaleShortToQuantum(*p++));
+        SetPixelBlue(q,ScaleShortToQuantum(*p++));
+        if (raw_image->colors > 3)
+          SetPixelAlpha(q,ScaleShortToQuantum(*p++));
+        q++;
+      }
+      if (SyncAuthenticPixels(image,exception) == MagickFalse)
+        break;
+      if (image->previous == (Image *) NULL)
         {
-          XMLTreeInfo
-            *ufraw;
-
-          /*
-            Inject.
-          */
-          ufraw=NewXMLTree(xml,sans);
-          if (ufraw != (XMLTreeInfo *) NULL)
-            {
-              char
-                *content,
-                property[MaxTextExtent];
-
-              const char
-                *tag;
-
-              XMLTreeInfo
-                *next;
-
-              if (image->properties == (void *) NULL)
-                ((Image *) image)->properties=NewSplayTree(
-                  CompareSplayTreeString,RelinquishMagickMemory,
-                  RelinquishMagickMemory);
-              next=GetXMLTreeChild(ufraw,(const char *) NULL);
-              while (next != (XMLTreeInfo *) NULL)
-              {
-                tag=GetXMLTreeTag(next);
-                if (tag == (char *) NULL)
-                  tag="unknown";
-                (void) FormatLocaleString(property,MaxTextExtent,"dng:%s",tag);
-                content=ConstantString(GetXMLTreeContent(next));
-                StripString(content);
-                if ((LocaleCompare(tag,"log") != 0) &&
-                    (LocaleCompare(tag,"InputFilename") != 0) &&
-                    (LocaleCompare(tag,"OutputFilename") != 0) &&
-                    (LocaleCompare(tag,"OutputType") != 0) &&
-                    (strlen(content) != 0))
-                  (void) AddValueToSplayTree((SplayTreeInfo *)
-                    ((Image *) image)->properties,ConstantString(property),
-                    content);
-                next=GetXMLTreeSibling(next);
-              }
-              ufraw=DestroyXMLTree(ufraw);
-            }
-          xml=DestroyString(xml);
+          status=SetImageProgress(image,LoadImageTag,(MagickOffsetType) y,
+            image->rows);
+          if (status == MagickFalse)
+            break;
         }
-      sans=DestroyExceptionInfo(sans);
     }
-  read_info=DestroyImageInfo(read_info);
-  return(image);
+    libraw_dcraw_clear_mem(raw_image);
+    libraw_close(raw_info);
+    return(image);
+  }
+#else
+  {
+    ExceptionInfo
+      *sans_exception;
+
+    ImageInfo
+      *read_info;
+
+    /*
+      Convert DNG to PPM with delegate.
+    */
+    (void) DestroyImageList(image);
+    InitializeDcrawOpenCL(exception);
+    image=AcquireImage(image_info);
+    read_info=CloneImageInfo(image_info);
+    SetImageInfoBlob(read_info,(void *) NULL,0);
+    (void) InvokeDelegate(read_info,image,"dng:decode",(char *) NULL,exception);
+    image=DestroyImage(image);
+    (void) FormatLocaleString(read_info->filename,MaxTextExtent,"%s.png",
+      read_info->unique);
+    sans_exception=AcquireExceptionInfo();
+    image=ReadImage(read_info,sans_exception);
+    sans_exception=DestroyExceptionInfo(sans_exception);
+    if (image == (Image *) NULL)
+      {
+        (void) FormatLocaleString(read_info->filename,MaxTextExtent,"%s.ppm",
+          read_info->unique);
+        image=ReadImage(read_info,exception);
+      }
+    (void) RelinquishUniqueFileResource(read_info->filename);
+    if (image != (Image *) NULL)
+      {
+        char
+          filename[MaxTextExtent],
+          *xml;
+
+        ExceptionInfo
+          *sans;
+
+        (void) CopyMagickString(image->magick,read_info->magick,MaxTextExtent);
+        (void) FormatLocaleString(filename,MaxTextExtent,"%s.ufraw",
+          read_info->unique);
+        sans=AcquireExceptionInfo();
+        xml=FileToString(filename,MaxTextExtent,sans);
+        (void) RelinquishUniqueFileResource(filename);
+        if (xml != (char *) NULL)
+          {
+            XMLTreeInfo
+              *ufraw;
+
+            /*
+              Inject.
+            */
+            ufraw=NewXMLTree(xml,sans);
+            if (ufraw != (XMLTreeInfo *) NULL)
+              {
+                char
+                  *content,
+                  property[MaxTextExtent];
+
+                const char
+                  *tag;
+
+                XMLTreeInfo
+                  *next;
+
+                if (image->properties == (void *) NULL)
+                  ((Image *) image)->properties=NewSplayTree(
+                    CompareSplayTreeString,RelinquishMagickMemory,
+                    RelinquishMagickMemory);
+                next=GetXMLTreeChild(ufraw,(const char *) NULL);
+                while (next != (XMLTreeInfo *) NULL)
+                {
+                  tag=GetXMLTreeTag(next);
+                  if (tag == (char *) NULL)
+                    tag="unknown";
+                  (void) FormatLocaleString(property,MaxTextExtent,"dng:%s",
+                    tag);
+                  content=ConstantString(GetXMLTreeContent(next));
+                  StripString(content);
+                  if ((LocaleCompare(tag,"log") != 0) &&
+                      (LocaleCompare(tag,"InputFilename") != 0) &&
+                      (LocaleCompare(tag,"OutputFilename") != 0) &&
+                      (LocaleCompare(tag,"OutputType") != 0) &&
+                      (strlen(content) != 0))
+                    (void) AddValueToSplayTree((SplayTreeInfo *)
+                      ((Image *) image)->properties,ConstantString(property),
+                      content);
+                  next=GetXMLTreeSibling(next);
+                }
+                ufraw=DestroyXMLTree(ufraw);
+              }
+            xml=DestroyString(xml);
+          }
+        sans=DestroyExceptionInfo(sans);
+      }
+    read_info=DestroyImageInfo(read_info);
+    return(image);
+  }
+#endif
 }
 
 /*
@@ -296,6 +432,7 @@ ModuleExport size_t RegisterDNGImage(void)
 
   entry=SetMagickInfo("3FR");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -304,6 +441,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ARW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -312,6 +450,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("DNG");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -320,6 +459,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("CR2");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -328,6 +468,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("CRW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -336,6 +477,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("DCR");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -344,6 +486,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ERF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -352,6 +495,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("IIQ");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -360,6 +504,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("KDC");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -368,6 +513,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("K25");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -376,6 +522,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("MEF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -384,6 +531,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("MRW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -392,6 +540,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("NEF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -400,6 +549,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("NRW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -408,6 +558,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ORF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -416,6 +567,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("PEF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -424,6 +576,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("RAF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -432,6 +585,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("RAW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -440,6 +594,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("RMF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -448,6 +603,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("RW2");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -456,6 +612,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("SRF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -464,6 +621,7 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("SR2");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
@@ -472,8 +630,8 @@ ModuleExport size_t RegisterDNGImage(void)
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("X3F");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
-  entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
+  entry->blob_support=MagickFalse;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Sigma Camera RAW Picture File");
   entry->module=ConstantString("DNG");

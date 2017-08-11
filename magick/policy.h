@@ -13,7 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 
-  MagickCore image color methods.
+  MagickCore security policy methods.
 */
 #ifndef MAGICKCORE_POLICY_H
 #define MAGICKCORE_POLICY_H
@@ -60,7 +60,8 @@ extern MagickExport const PolicyInfo
 extern MagickExport MagickBooleanType
   IsRightsAuthorized(const PolicyDomain,const PolicyRights,const char *),
   ListPolicyInfo(FILE *,ExceptionInfo *),
-  PolicyComponentGenesis(void);
+  PolicyComponentGenesis(void),
+  SetMagickSecurityPolicy(const char *,ExceptionInfo *);
 
 extern MagickExport void
   PolicyComponentTerminus(void);

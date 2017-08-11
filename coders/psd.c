@@ -720,9 +720,11 @@ static void ParseImageResourceBlocks(Image *image,
   StringInfo
     *profile;
 
+  unsigned char
+    name_length;
+
   unsigned int
-    count,
-    long_sans;
+    count;
 
   unsigned short
     id,
@@ -734,15 +736,20 @@ static void ParseImageResourceBlocks(Image *image,
   SetStringInfoDatum(profile,blocks);
   (void) SetImageProfile(image,"8bim",profile);
   profile=DestroyStringInfo(profile);
-  for (p=blocks; (p >= blocks) && (p < (blocks+length-16)); )
+  for (p=blocks; (p >= blocks) && (p < (blocks+length-7)); )
   {
     if (LocaleNCompare((const char *) p,"8BIM",4) != 0)
       break;
-    p=PushLongPixel(MSBEndian,p,&long_sans);
+    p+=4;
     p=PushShortPixel(MSBEndian,p,&id);
-    p=PushShortPixel(MSBEndian,p,&short_sans);
+    p=PushCharPixel(p,&name_length);
+    if (name_length % 2 == 0)
+      name_length++;
+    p+=name_length;
+    if (p > (blocks+length-4))
+      return;
     p=PushLongPixel(MSBEndian,p,&count);
-    if ((p+count) > (blocks+length-16))
+    if ((p+count) > (blocks+length))
       return;
     switch (id)
     {
@@ -757,6 +764,8 @@ static void ParseImageResourceBlocks(Image *image,
         /*
           Resolution info.
         */
+        if (count < 16)
+          return;
         p=PushShortPixel(MSBEndian,p,&resolution);
         image->x_resolution=(double) resolution;
         (void) FormatLocaleString(value,MaxTextExtent,"%g",
@@ -778,7 +787,7 @@ static void ParseImageResourceBlocks(Image *image,
       }
       case 0x0421:
       {
-        if (*(p+4) == 0)
+        if ((count > 3) && (*(p+4) == 0))
           *has_merged_image=MagickFalse;
         p+=count;
         break;
@@ -871,12 +880,23 @@ static inline void SetPSDPixel(Image *image,const size_t channels,
 {
   if (image->storage_class == PseudoClass)
     {
-      if (packet_size == 1)
-        SetPixelIndex(indexes+x,ScaleQuantumToChar(pixel));
+      PixelPacket
+        *color;
+
+      if (type == 0)
+        {
+          if (packet_size == 1)
+            SetPixelIndex(indexes+x,ScaleQuantumToChar(pixel));
+          else
+            SetPixelIndex(indexes+x,ScaleQuantumToShort(pixel));
+        }
+      color=image->colormap+(ssize_t) ConstrainColormapIndex(image,
+        GetPixelIndex(indexes+x));
+      if ((type == 0) && (channels > 1))
+        return;
       else
-        SetPixelIndex(indexes+x,ScaleQuantumToShort(pixel));
-      SetPixelRGBO(q,image->colormap+(ssize_t)
-        ConstrainColormapIndex(image,GetPixelIndex(indexes+x)));
+        SetPixelAlpha(color,pixel);
+      SetPixelRGBO(q,color);
       return;
     }
   switch (type)
@@ -890,7 +910,7 @@ static inline void SetPSDPixel(Image *image,const size_t channels,
     case 0:
     {
       SetPixelRed(q,pixel);
-      if (channels == 1 || type == -2)
+      if (channels < 3 || type == -2)
         {
           SetPixelGreen(q,GetPixelRed(q));
           SetPixelBlue(q,GetPixelRed(q));
@@ -899,18 +919,12 @@ static inline void SetPSDPixel(Image *image,const size_t channels,
     }
     case 1:
     {
-      if (image->storage_class == PseudoClass)
-        SetPixelAlpha(q,pixel);
-      else
-        SetPixelGreen(q,pixel);
+      SetPixelGreen(q,pixel);
       break;
     }
     case 2:
     {
-      if (image->storage_class == PseudoClass)
-        SetPixelAlpha(q,pixel);
-      else
-        SetPixelBlue(q,pixel);
+      SetPixelBlue(q,pixel);
       break;
     }
     case 3:
@@ -2075,6 +2089,8 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
         (void) LogMagickEvent(CoderEvent,GetMagickModule(),
           "  reading image resource blocks - %.20g bytes",(double)
           ((MagickOffsetType) length));
+      if (length > GetBlobSize(image))
+        ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
       blocks=(unsigned char *) AcquireQuantumMemory((size_t) length,
         sizeof(*blocks));
       if (blocks == (unsigned char *) NULL)
@@ -3107,7 +3123,9 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,
   (void) WriteBlobMSBShort(image,psd_info.version);  /* version */
   for (i=1; i <= 6; i++)
     (void) WriteBlobByte(image, 0);  /* 6 bytes of reserved */
-  if (SetImageGray(image,&image->exception) != MagickFalse)
+  /* When the image has a color profile it won't be converted to gray scale */
+  if ((GetImageProfile(image,"icc") == (StringInfo *) NULL) &&
+      (SetImageGray(image,&image->exception) != MagickFalse))
     num_channels=(image->matte != MagickFalse ? 2UL : 1UL);
   else
     if ((image_info->type != TrueColorType) && (image_info->type !=

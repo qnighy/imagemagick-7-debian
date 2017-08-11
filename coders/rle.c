@@ -270,7 +270,14 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (void) ReadBlobByte(image);
     if (EOFBlob(image) != MagickFalse)
       ThrowRLEException(CorruptImageError,"UnexpectedEndOfFile");
-    colormap=(unsigned char *) NULL;
+    if (image->matte != MagickFalse)
+      number_planes++;
+    number_pixels=(MagickSizeType) image->columns*image->rows;
+    if ((GetBlobSize(image) == 0) || ((((MagickSizeType) number_pixels*
+         number_planes*bits_per_pixel/8)/GetBlobSize(image)) > 254.0))
+      ThrowRLEException(CorruptImageError,"InsufficientImageDataInFile")
+    if (((MagickSizeType) number_colormaps*map_length) > GetBlobSize(image))
+      ThrowRLEException(CorruptImageError,"InsufficientImageDataInFile")
     if (number_colormaps != 0)
       {
         /*
@@ -329,9 +336,6 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     /*
       Allocate RLE pixels.
     */
-    if (image->matte != MagickFalse)
-      number_planes++;
-    number_pixels=(MagickSizeType) image->columns*image->rows;
     number_planes_filled=(number_planes % 2 == 0) ? number_planes :
       number_planes+1;
     if ((number_pixels*number_planes_filled) != (size_t) (number_pixels*
@@ -435,7 +439,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
             number_planes+plane);
           operand++;
           if ((offset < 0) ||
-              ((offset+operand*number_planes) > (ssize_t) pixel_info_length))
+              ((size_t) (offset+operand*number_planes) > pixel_info_length))
             {
               if (number_colormaps != 0)
                 colormap=(unsigned char *) RelinquishMagickMemory(colormap);
@@ -473,7 +477,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
           offset=(ssize_t) (((image->rows-y-1)*image->columns*number_planes)+x*
             number_planes+plane);
           if ((offset < 0) ||
-              ((offset+operand*number_planes) > (ssize_t) pixel_info_length))
+              ((size_t) (offset+operand*number_planes) > pixel_info_length))
             {
               if (number_colormaps != 0)
                 colormap=(unsigned char *) RelinquishMagickMemory(colormap);
@@ -740,6 +744,7 @@ ModuleExport size_t RegisterRLEImage(void)
   entry=SetMagickInfo("RLE");
   entry->decoder=(DecodeImageHandler *) ReadRLEImage;
   entry->magick=(IsImageFormatHandler *) IsRLE;
+  entry->seekable_stream=MagickTrue;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Utah Run length encoded image");
   entry->module=ConstantString("RLE");

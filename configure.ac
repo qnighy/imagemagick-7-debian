@@ -26,11 +26,11 @@ AC_PREREQ(2.69)
 # ==============================================================================
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [9])
-m4_define([magick_micro_version], [8])
-m4_define([magick_patchlevel_version], [9])
+m4_define([magick_micro_version], [9])
+m4_define([magick_patchlevel_version], [5])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
-m4_define([magick_git_revision], esyscmd([sh -c "(gitversion .) | awk '{ print \$1 }' | tr -d '\n'"]))
+m4_define([magick_git_revision], esyscmd([sh -c "(gitversion.sh .) | awk '{ print \$1 }' | tr -d '\n'"]))
 m4_define([magick_tar_name],[ImageMagick])
 
 # ==============================================================================
@@ -1673,6 +1673,7 @@ fi
 if test "$have_zlib" = 'yes'; then
   AC_DEFINE(ZLIB_DELEGATE,1,Define if you have ZLIB library)
   CFLAGS="$ZLIB_CFLAGS $CFLAGS"
+  LIBS="$ZLIB_LIBS $LIBS"
 fi
 
 AM_CONDITIONAL(ZLIB_DELEGATE, test "$have_zlib" = 'yes')
@@ -2592,6 +2593,40 @@ fi
 AM_CONDITIONAL(PNG_DELEGATE, test "$have_png" = 'yes')
 AC_SUBST(PNG_CFLAGS)
 AC_SUBST(PNG_LIBS)
+
+dnl ===========================================================================
+
+#
+# Check for the Raw delegate library.
+#
+AC_ARG_WITH([raw],
+    [AC_HELP_STRING([--without-raw],
+                    [disable Raw support])],
+    [with_raw=$withval],
+    [with_raw='yes'])
+
+if test "$with_raw" != 'yes'; then
+    DISTCHECK_CONFIG_FLAGS="${DISTCHECK_CONFIG_FLAGS} --with-libraw=$with_raw "
+fi
+
+have_raw='no'
+RAW_R_CFLAGS=""
+RAW_R_LIBS=""
+RAW_R_PKG=""
+if test "x$with_raw" = "xyes"; then
+  AC_MSG_RESULT([-------------------------------------------------------------])
+  PKG_CHECK_MODULES(RAW_R,[libraw_r >= 0.14.8], have_raw=yes, have_raw=no)
+  AC_MSG_RESULT([])
+fi
+
+if test "$have_raw" = 'yes'; then
+  AC_DEFINE(RAW_R_DELEGATE,1,Define if you have LIBRAW library)
+  CFLAGS="$RAW_R_CFLAGS $CFLAGS"
+fi
+
+AM_CONDITIONAL(RAW_R_DELEGATE, test "$have_raw" = 'yes')
+AC_SUBST(RAW_R_CFLAGS)
+AC_SUBST(RAW_R_LIBS)
 
 dnl ===========================================================================
 
@@ -3687,6 +3722,9 @@ fi
 if test "$have_raqm"    = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES raqm"
 fi
+if test "$have_raw"    = 'yes' ; then
+   MAGICK_DELEGATES="$MAGICK_DELEGATES raw"
+fi
 if test "$have_ra_ppm" = 'yes' ; then
    MAGICK_DELEGATES="$MAGICK_DELEGATES rad"
 fi
@@ -3765,7 +3803,7 @@ fi
 if test "$build_modules" != 'no'; then
     MAGICK_DEP_LIBS="$USER_LIBS $LCMS_LIBS $FREETYPE_LIBS $RAQM_LIBS $LQR_LIBS $FFTW_LIBS $FLIF_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $JEMALLOC_LIBS $THREAD_LIBS"
 else
-    MAGICK_DEP_LIBS="$USER_LIBS $JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $RAQM_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FLIF_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $JEMALLOC_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$USER_LIBS $JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $RAQM_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FLIF_LIBS $FPX_LIBS $FONTCONFIG_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RAW_R_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $JEMALLOC_LIBS $THREAD_LIBS"
 fi
 AC_SUBST(MAGICK_DEP_LIBS)
 
