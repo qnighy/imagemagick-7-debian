@@ -1,5 +1,4 @@
 libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVERSION}.${QUANTUMDEPTH}-${PPSOVERSION} #MINVER#
- (optional=InternalABInoAPI)MagickPlusPlusDestroyMagick@Base 8:6.9.9.5
  (c++)"Magick::adaptiveBlurImage::adaptiveBlurImage(double, double)@Base" 8:6.9.9.5
  (c++)"Magick::adaptiveBlurImage::operator()(Magick::Image&) const@Base" 8:6.9.9.5
  (c++|subst)"Magick::adaptiveThresholdImage::adaptiveThresholdImage({c++:size_t}, {c++:size_t}, {c++:ssize_t})@Base" 8:6.9.9.5
@@ -1063,8 +1062,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::levelImage::operator()(Magick::Image&) const@Base" 8:6.9.9.5
  (c++)"Magick::lineWidthImage::lineWidthImage(double)@Base" 8:6.9.9.5
  (c++)"Magick::lineWidthImage::operator()(Magick::Image&) const@Base" 8:6.9.9.5
- (c++|optional=InternalABInoAPI)"Magick::MagickCleanUp::~MagickCleanUp()@Base" 8:6.9.9.5
- (c++|optional=InternalABInoAPI)"Magick::MagickCleanUp::MagickCleanUp()@Base" 8:6.9.9.5
  (c++)"Magick::magickImage::magickImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.5
  (c++)"Magick::magickImage::operator()(Magick::Image&) const@Base" 8:6.9.9.5
  (c++)"Magick::magnifyImage::magnifyImage()@Base" 8:6.9.9.5
