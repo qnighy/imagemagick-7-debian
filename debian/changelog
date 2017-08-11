@@ -3,16 +3,34 @@ imagemagick (8:6.9.9.6+dfsg-1) experimental; urgency=medium
   * Bump so due to ABI problem and g++7 (Closes: #871300).
   * New upstream version.
     + Fix CVE-2017-6502, webp buffer overflow. (Closes: #856883).
+    + Fix CVE-2017-11751:
+      The WritePICONImage function in coders/xpm.c
+      allows remote attackers to cause a denial of service (memory leak) via
+      a crafted file. (Closes: #870480).
+    + CVE-2017-12674: a CPU exhaustion vulnerability was found in
+      the function ReadPDBImage in coders/pdb.c, which allows attackers
+      to cause a denial of service.
+    + CVE-2017-12429: a memory exhaustion vulnerability was found in the
+      function ReadMIFFImage in coders/miff.c, which allows attackers
+      to cause a denial of service.
+    + CVE-2017-12140: The ReadDCMImage function in coders\dcm.c has an integer
+      signedness error leading to excessive memory consumption
+      via a crafted DCM file.
+    + CVE-2017-12433: A memory leak vulnerability was found in
+      the function ReadPESImage in coders/pes.c, which allows attackers
+      to cause a denial of service, related to ResizeMagickMemory in memory.c.
+    + CVE-2017-12418:  A memory leaks was found in
+      the parse8BIMW and format8BIM functions in coders/meta.c,
+      related to the WriteImage function in MagickCore/constitute.c.
+    + CVE-2017-12644: a memory leak vulnerability was found
+      in ReadDCMImage in coders\dcm.c.
   * Update copyright file.
   * Ship ImageMagick man file (Closes: #856997).
   * Remove configuration files installed by mistake in an
     experimental version (Closes: #851627).
   * Bug fix: "Typo in debian/changelog for CVE identifier", thanks to
     Salvatore Bonaccorso (Closes: #864151).
-  * Fix CVE-2017-11751:
-    The WritePICONImage function in coders/xpm.c
-    allows remote attackers to cause a denial of service (memory leak) via
-    a crafted file. (Closes: #870480).
+  *
 
  -- Bastien Roucariès <rouca@debian.org>  Fri, 11 Aug 2017 17:09:53 +0200
 
