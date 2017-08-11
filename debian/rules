@@ -8,9 +8,10 @@ export DH_VERBOSE=1
 
 # quantum depth is channel depth
 export QUANTUMDEPTH ?= q16 q16hdri
-export CORESOVERSION ?= 4
-export WANDSOVERSION ?= 4
-export PPSOVERSION ?= 7
+# lib version, run make -f debian/rules update_pkg in order to upgrade
+export CORESOVERSION ?= 5
+export WANDSOVERSION ?= 5
+export PPSOVERSION ?= 8
 
 # minimal version ABI compatible of common
 export COMMONMINVERSION ?= 8:6.9.6.2+dfsg-3

@@ -11,6 +11,8 @@ Standards-Version: 3.9.8
 Build-Depends: debhelper (>= 10),
 # for improving build
  dh-exec, dh-autoreconf,
+# ABI dump
+ g++ (>= 4:7),
 # for linking compiling ...
  pkg-config, libltdl-dev,
 # for libtool does not link to depends lib

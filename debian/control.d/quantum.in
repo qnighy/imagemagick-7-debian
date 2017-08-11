@@ -63,6 +63,7 @@ Enhances: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}
 Provides: libmagickcore-extra, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-1-extra,
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-2-extra,
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-3-extra,
+ libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-4-extra,
 Suggests: inkscape
 Recommends: libjxr-tools
 Description: low-level image manipulation library - extra codecs (${UCQUANTUMDEPTH})
@@ -148,15 +149,12 @@ Description: image manipulation library - development files (${UCQUANTUMDEPTH})
  This version of libmagickwand-dev is compiled for a channe
  depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
-# break and conflict for smooth upgrade for 6 -> 6v6
 Package: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-${PPSOVERSION}
 Architecture: any
 Multi-Arch: same
 Section: libs
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Conflicts: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-6
-Replaces: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-6
 Description: C++ interface to ImageMagick -- quantum depth ${UCQUANTUMDEPTH}
  The Magick++ library is a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
