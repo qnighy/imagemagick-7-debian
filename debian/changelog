@@ -20,33 +20,33 @@ imagemagick (8:6.9.7.4+dfsg-16) unstable; urgency=high
 
   * Security fix release
   * Fix a memory exhaustion in ReadPSDImage
-    (Closes: #870530)
+    (Closes: #870530). Fix CVE-2017-12563.
   * Fix a memory-Leak in ReadPWPImage()
     (Closes: #870527)
   * Avoid unbounded loop in pwp coder
-    (Closes: #870526)
+    (Closes: #870526). Fix CVE-2017-12587.
   * Fix a memory leaks in WriteMSLImage
-    (Closes: #870525)
+    (Closes: #870525). Fix CVE-2017-12427.
   * Fix another memory leak in WriteMSLImage
     (Closes: #870524)
   * Fix a memory exhaustion bug in ReadSUNImage
-    (Closes: #870504)
+    (Closes: #870504). Fix CVE-2017-12435.
   * Fix a memory leak in ReadSVGImage
-    (Closes: #870503)
+    (Closes: #870503). Fix CVE-2017-12566.
   * Fix a memory leak in WriteMAPImage
-    (Closes: #870483)
+    (Closes: #870483). Fix CVE-2017-12663.
   * Fix a memory leak in ReadPICTImage
     (Closes: #870502)
   * Fix a memory leak in WritePICTImage
-    (Closes: #870501)
+    (Closes: #870501). Fix CVE-2017-12665.
   * Fix a memory leak in pdf coder
-    (Closes: #870492)
+    (Closes: #870492). Fix CVE-2017-12662.
   * Fix a memory leak in PCX coder
-    (Closes: #870489)
+    (Closes: #870489). Fix CVE-2017-12668.
   * Memory exhaustion in PCX coder
-    (Closes: #870491)
+    (Closes: #870491). Fix CVE-2017-12432.
   * Memory leak in WriteINLINEImage
-    (Closes: #870482)
+    (Closes: #870482). Fix CVE-2017-12666.
   * CVE-2017-11752
     The ReadMAGICKImage function in coders/magick.c
     allows remote attackers to cause a denial of
@@ -61,7 +61,7 @@ imagemagick (8:6.9.7.4+dfsg-16) unstable; urgency=high
     Fix improper use of NULL in the JNG decoder
     (Closes: #870478)
   * memory leak in WriteCALSImage
-    (Closes: #870475)
+    (Closes: #870475). Fix CVE-2017-12669.
 
  -- Bastien Roucariès <rouca@debian.org>  Wed, 02 Aug 2017 22:38:50 +0200
 
@@ -87,22 +87,22 @@ imagemagick (8:6.9.7.4+dfsg-15) unstable; urgency=high
       (Closes: #870105)
     + Heap buffer overflow in ReadOneMNGImage
       A crafted file will cause x_off[i] out-of-bound operation vulnerability.
-      (Closes: #870106)
+      (Closes: #870106). Fix CVE-2017-12640.
     + memory exhaustion in ReadOneJNGImage in png.c
       When identify JNG file that contains chunk data, imagemagick will
       allocate memory to store the chunk data in function ReadOneJNGImage
       Due to a lack of valition, memory is not limited for corrupted files.
-      (Closes: #870107)
+      (Closes: #870107). Fix CVE-2017-12643.
     + memory leak in ReadOneJNGImage #550
       A crafted file could trigger a memory leak
-      (Closes: #870108)
+      (Closes: #870108). Fix CVE-2017-12641.
     + out-of-bounds read with the MNG CLIP chunk.
       (Closes: #870109)
     + coders/png.c: Memory leak Fixed Issue 600
       (Closes: #870116)
     + memory leak in ReadOneJNGImage (upstream 602)
       Fix a leak triggered by a corrupted file
-      (Closes: #870115)
+      (Closes: #870115). Fix CVE-2017-12565.
     + Stuck in LockSemaphoreInfo after reading a png with
       width==MAGICK_WIDTH_LIMIT
       Some version of libpng need serialization for error recovery
@@ -112,15 +112,17 @@ imagemagick (8:6.9.7.4+dfsg-15) unstable; urgency=high
       A memory leak vulnerability was found in function ReadOneMNGImage,
       which allow attackers to cause a denial of service (memory leak) via
       a crafted file.
-      (Closes: #870117)
+      (Closes: #870117). Fix CVE-2017-12673.
     + memory leak in ReadOneJNGImage #618
       Triggered by a corrupted file
-      (Closes: #870118)
+      (Closes: #870118). Fix CVE-2017-12676.
     + bad free in RelinquishMagickMemory
-      (Closes: #870119)
+      (Closes: #870119). Fix CVE-2017-12671.
     + CVE-2017-11539: coders/png.c: Initialized quantum_info to prevent
       memory leakage
       (Closes: #870120)
+    + CVE-2017-12428: memory leak in CloneDrawInfo
+      (Closes: #869713)
 
  -- Bastien Roucariès <rouca@debian.org>  Sat, 29 Jul 2017 17:14:38 +0200
 
@@ -129,7 +131,7 @@ imagemagick (8:6.9.7.4+dfsg-14) unstable; urgency=high
   * Security bugs:
     + assertion failed in DestroyImageInfo
       A assertion failed in DestroyImageInfo, leading to DOS
-      (Closes: 870014)
+      (Closes: 870014). Fix CVE-2017-12434.
     + CVE-2017-11523: endless loop in ReadTXTImage
       If text image file only contains "MagickID..." line,
       it will cause ReadTXTImage to infinite loop.
@@ -151,18 +153,18 @@ imagemagick (8:6.9.7.4+dfsg-14) unstable; urgency=high
       (Closes: #870016)
     + Memory leak in mat coder
       A special crafted file create a memory leak in MAT coder
-      (Closes: #870015)
+      (Closes: #870015). Fix CVE-2017-12667.
     + Memory leak in mat coder
       In case of corrupted file, cloned image (temporarly image) should be freed
-      (Closes: #870017)
+      (Closes: #870017). Fix CVE-2017-12564.
     + assertion failed in DestroyImageInfo due to mat coder
       (Closes: #870019)
     + assertion failed in DestroyImage due to mat coder
-      (Closes: #870020)
+      (Closes: #870020). Fix CVE-2017-12670.
     + Memory leak in mat coder (upstream 617)
-      (Closes: #870021)
+      (Closes: #870021). Fix CVE-2017-12672.
     + Memory leak in mat coder (upstream 616)
-      (Closes: #870022)
+      (Closes: #870022). Fix CVE-2017-12675.
     + Memory leak in mat coder (upstream 624)
       (Closes: #870023). CVE-2017-11724
 
@@ -186,7 +188,7 @@ imagemagick (8:6.9.7.4+dfsg-13) unstable; urgency=high
       (Closes: #869210).
     + Use after free in ReadWMFImage
       When identify WMF file, a crafted file revealed a use-after-free
-      vulnerability. (Closes: #869715).
+      vulnerability. (Closes: #869715). Fix CVE-2017-12431.
     + CVE-2017-11534:  Memory-Leak in lite_font_map()
       In coders/wmf.c a memory leak is triggered by a crafted file.
       (Closes: #869711).
@@ -198,9 +200,9 @@ imagemagick (8:6.9.7.4+dfsg-13) unstable; urgency=high
       (Closes: #869712)
     + Memory leak in WritePALMImage
       Fix memory leak due to crafted file in palm coder.
-      (Closes: #869721)
+      (Closes: #869721). Fix CVE-2017-12664.
     + Fix another memory leak in quantize.c
-      (Closes: #869722)
+      (Closes: #869722). Fix CVE-2017-12664.
     + CVE-2017-11531 Memory-Leak in WriteHISTOGRAMImage()
       A crafted file could trigger a
       Memory-Leak in WriteHISTOGRAMImage() coders/histogram.c
@@ -227,9 +229,9 @@ imagemagick (8:6.9.7.4+dfsg-13) unstable; urgency=high
       type, but the return value was not checked.
       Here is my policy.xml to limit memory usage,but 256MB limit
       can be bypassed.
-      (Closes: #869727).
+      (Closes: #869727). Fix CVE-2017-12430.
     + Fix a leak in mpc file due to corrupted profiles
-      (Closes: #869796).
+      (Closes: #869796). Fix CVE-2017-12642.
     + CVE-2017-11532: memory leak
       When Imagemagick processes a crafted file in convert,
       it can lead to a Memory Leak in the WriteMPCImage() function in coders/mpc.c.
