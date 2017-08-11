@@ -563,6 +563,7 @@ libMagickWand-${IMVERSION}.${UCQUANTUMDEPTH}.so.${WANDSOVERSION} libmagickwand-$
  MagickSetResolution@Base 8:6.9.9.5
  MagickSetResourceLimit@Base 8:6.9.9.5
  MagickSetSamplingFactors@Base 8:6.9.9.5
+ MagickSetSecurityPolicy@Base 8:6.9.9.5
  MagickSetSize@Base 8:6.9.9.5
  MagickSetSizeOffset@Base 8:6.9.9.5
  MagickSetType@Base 8:6.9.9.5
