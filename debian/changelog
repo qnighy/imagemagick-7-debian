@@ -1,4 +1,4 @@
-imagemagick (8:6.9.9.5+dfsg-1) experimental; urgency=medium
+imagemagick (8:6.9.9.6+dfsg-1) experimental; urgency=medium
 
   * Bump so due to ABI problem and g++7 (Closes: #871300).
   * New upstream version.
@@ -9,8 +9,12 @@ imagemagick (8:6.9.9.5+dfsg-1) experimental; urgency=medium
     experimental version (Closes: #851627).
   * Bug fix: "Typo in debian/changelog for CVE identifier", thanks to
     Salvatore Bonaccorso (Closes: #864151).
+  * Fix CVE-2017-11751:
+    The WritePICONImage function in coders/xpm.c
+    allows remote attackers to cause a denial of service (memory leak) via
+    a crafted file. (Closes: #870480).
 
- -- Bastien Roucariès <rouca@debian.org>  Sun, 04 Jun 2017 16:12:56 +0200
+ -- Bastien Roucariès <rouca@debian.org>  Fri, 11 Aug 2017 17:09:53 +0200
 
 imagemagick (8:6.9.7.4+dfsg-16) unstable; urgency=high
 
@@ -160,7 +164,7 @@ imagemagick (8:6.9.7.4+dfsg-14) unstable; urgency=high
     + Memory leak in mat coder (upstream 616)
       (Closes: #870022)
     + Memory leak in mat coder (upstream 624)
-      (Closes: #870023)
+      (Closes: #870023). CVE-2017-11724
 
  -- Bastien Roucariès <rouca@debian.org>  Sat, 29 Jul 2017 00:51:39 +0200
 
