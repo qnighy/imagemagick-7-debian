@@ -3020,9 +3020,9 @@ supports copying the pixels in the cache to a foreign pixel
 representation according to the format specified by <i>QuantumTypes</i>.</p>
 <p>The pixel region is effectively a small image in which the pixels
 may be accessed, addressed, and updated, as shown in the following
-example:
-<pre class="code">
+example:</p>
 <p><img class="icon" src="https://legacy.imagemagick.org/api/Cache.png" name="Graphic1" width="254" border="0" /></p>
+<pre class="code">
 Image image("cow.png"); 
 // Ensure that there are no other references to this image.
 image.modifyImage();
@@ -3041,7 +3041,6 @@ image.syncPixels();
   // Save updated image to file.
 image.write("horse.png");
 </pre>
-</p>
 <p>The image cache supports the following methods: <br />
  
 <ul><table border="1" width="100%">
@@ -3193,7 +3192,6 @@ the region set by a preceding getPixels or getConstPixels call.</font></td>
     <a href="https://www.imagemagick.org/script/contact.php">Contact Us</a></p>
         <p><small>© 1999-2017 ImageMagick Studio LLC</small></p>
   </footer>
-</div><!-- /.container -->
 
   <script src="https://localhost/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script src="../js/magick.html"></script>
