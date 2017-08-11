@@ -425,7 +425,7 @@ License: Magick++
 
 Files: Magick++/lib/Magick++/Include.h
 Copyright: 1999-2002 Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
-	   2013-2015, Dirk Lemstra
+	   2013-2017, Dirk Lemstra
 License: Magick++
 
 Files: Magick++/lib/Magick++/Options.h
