@@ -88,6 +88,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  AutoLevelImage@Base 8:6.9.9.5
  AutoLevelImageChannel@Base 8:6.9.9.5
  AutoOrientImage@Base 8:6.9.9.5
+ AutoThresholdImage@Base 8:6.9.9.5
  AverageImages@Base 8:6.9.9.5
  BackgroundColor@Base 8:6.9.9.5
  Base64Decode@Base 8:6.9.9.5
@@ -613,6 +614,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  GetPathTemplate@Base 8:6.9.9.5
  GetPixelCacheChannels@Base 8:6.9.9.5
  GetPixelCacheColorspace@Base 8:6.9.9.5
+ GetPixelCacheFilename@Base 8:6.9.9.5
  GetPixelCacheMethods@Base 8:6.9.9.5
  GetPixelCacheNexusExtent@Base 8:6.9.9.5
  GetPixelCachePixels@Base 8:6.9.9.5
@@ -1130,6 +1132,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  SetMagickPrecision@Base 8:6.9.9.5
  SetMagickRegistry@Base 8:6.9.9.5
  SetMagickResourceLimit@Base 8:6.9.9.5
+ SetMagickSecurityPolicy@Base 8:6.9.9.5
  SetMagickThreadValue@Base 8:6.9.9.5
  SetMatrixElement@Base 8:6.9.9.5
  SetMonitorHandler@Base 8:6.9.9.5
