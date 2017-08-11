@@ -14,16 +14,8 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++|subst)"Magick::animationIterationsImage::animationIterationsImage({c++:size_t})@Base" 8:6.9.9.6
  (c++)"Magick::animationIterationsImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&)@Base" 8:6.9.9.6
- (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType, double)@Base" 8:6.9.9.6
- (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType, double)@Base" 8:6.9.9.6
  (c++)"Magick::annotateImage::annotateImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType, double)@Base" 8:6.9.9.6
  (c++)"Magick::annotateImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::antiAliasImage::antiAliasImage(bool)@Base" 8:6.9.9.6
@@ -31,11 +23,8 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::backgroundColorImage::backgroundColorImage(Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::backgroundColorImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::backgroundTextureImage::backgroundTextureImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::backgroundTextureImage::backgroundTextureImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::backgroundTextureImage::backgroundTextureImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::backgroundTextureImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::Blob::base64[abi:cxx11]()@Base" 8:6.9.9.6
- (c++)"Magick::Blob::base64(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::Blob::base64(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::Blob::~Blob()@Base" 8:6.9.9.6
  (c++)"Magick::Blob::Blob()@Base" 8:6.9.9.6
@@ -57,8 +46,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::borderImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::boxColorImage::boxColorImage(Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::boxColorImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
- (c++)"Magick::cdlImage::cdlImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::cdlImage::cdlImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::cdlImage::cdlImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::cdlImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::channelImage::channelImage(MagickCore::ChannelType)@Base" 8:6.9.9.6
@@ -89,13 +76,10 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::chromaWhitePointImage::chromaWhitePointImage(double, double)@Base" 8:6.9.9.6
  (c++)"Magick::chromaWhitePointImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::CloneString(char**, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::CloneString(char**, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::CoderInfo::~CoderInfo()@Base" 8:6.9.9.6
  (c++)"Magick::CoderInfo::CoderInfo()@Base" 8:6.9.9.6
  (c++)"Magick::CoderInfo::CoderInfo(Magick::CoderInfo const&)@Base" 8:6.9.9.6
  (c++)"Magick::CoderInfo::CoderInfo(MagickCore::_MagickInfo const*)@Base" 8:6.9.9.6
- (c++)"Magick::CoderInfo::CoderInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::CoderInfo::CoderInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::CoderInfo::CoderInfo(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::CoderInfo::description[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::CoderInfo::isMultiFrame() const@Base" 8:6.9.9.6
@@ -109,16 +93,12 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Color::Color()@Base" 8:6.9.9.6
  (c++)"Magick::Color::Color(char const*)@Base" 8:6.9.9.6
  (c++)"Magick::Color::Color(float, float, float)@Base" 8:6.9.9.6
- (c++)"Magick::Color::Color(float, float, float)@Base" 8:6.9.9.6
- (c++)"Magick::Color::Color(float, float, float, float)@Base" 8:6.9.9.6
  (c++)"Magick::Color::Color(float, float, float, float)@Base" 8:6.9.9.6
  (c++)"Magick::Color::Color(Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::Color::Color(Magick::Color, Magick::Color, Magick::Color)@Base" 8:6.9.9.6
  (c++)"Magick::Color::Color(Magick::Color, Magick::Color, Magick::Color, Magick::Color)@Base" 8:6.9.9.6
  (c++)"Magick::Color::Color(MagickCore::_PixelPacket const&)@Base" 8:6.9.9.6
  (c++)"Magick::Color::Color(MagickCore::_PixelPacket*, Magick::Color::PixelType)@Base" 8:6.9.9.6
- (c++)"Magick::Color::Color(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Color::Color(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Color::Color(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::colorFuzzImage::colorFuzzImage(double)@Base" 8:6.9.9.6
  (c++)"Magick::colorFuzzImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
@@ -160,8 +140,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Color::operator=(Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::Color::operator=(MagickCore::_PixelPacket const&)@Base" 8:6.9.9.6
  (c++)"Magick::Color::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++|optional=templinst)"Magick::Color::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Color::operator=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Color::operator=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Color::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >() const@Base" 8:6.9.9.6
  (c++)"Magick::Color::pixel(MagickCore::_PixelPacket*, Magick::Color::PixelType)@Base" 8:6.9.9.6
@@ -183,8 +161,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::ColorYUV::v(double)@Base" 8:6.9.9.6
  (c++)"Magick::ColorYUV::y() const@Base" 8:6.9.9.6
  (c++)"Magick::ColorYUV::y(double)@Base" 8:6.9.9.6
- (c++)"Magick::commentImage::commentImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::commentImage::commentImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::commentImage::commentImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::commentImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::composeImage::composeImage(MagickCore::CompositeOperator)@Base" 8:6.9.9.6
@@ -225,8 +201,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawableBezier::~DrawableBezier()@Base" 8:6.9.9.6
  (c++)"Magick::DrawableBezier::DrawableBezier(Magick::DrawableBezier const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableBezier::DrawableBezier(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableBezier::DrawableBezier(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableBezier::DrawableBezier(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableBezier::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCircle::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCircle::~DrawableCircle()@Base" 8:6.9.9.6
@@ -234,8 +208,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawableClipPath::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableClipPath::~DrawableClipPath()@Base" 8:6.9.9.6
  (c++)"Magick::DrawableClipPath::DrawableClipPath(Magick::DrawableClipPath const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableClipPath::DrawableClipPath(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableClipPath::DrawableClipPath(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableClipPath::DrawableClipPath(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableClipPath::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableColor::copy() const@Base" 8:6.9.9.6
@@ -246,23 +218,15 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, double, double, Magick::Image const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, double, double, Magick::Image const&, MagickCore::CompositeOperator)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::CompositeOperator)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::CompositeOperator)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::CompositeOperator)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, Magick::Image const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::DrawableCompositeImage(Magick::DrawableCompositeImage const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::filename[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::filename(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableCompositeImage::filename(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::image() const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::image(Magick::Image const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::magick[abi:cxx11]()@Base" 8:6.9.9.6
- (c++)"Magick::DrawableCompositeImage::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableCompositeImage::operator=(Magick::DrawableCompositeImage const&)@Base" 8:6.9.9.6
@@ -280,8 +244,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawableDashOffset::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableDensity::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableDensity::~DrawableDensity()@Base" 8:6.9.9.6
- (c++)"Magick::DrawableDensity::DrawableDensity(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableDensity::DrawableDensity(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableDensity::DrawableDensity(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableDensity::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::Drawable::~Drawable()@Base" 8:6.9.9.6
@@ -306,10 +268,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawableFont::~DrawableFont()@Base" 8:6.9.9.6
  (c++)"Magick::DrawableFont::DrawableFont(Magick::DrawableFont const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableFont::DrawableFont(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableFont::DrawableFont(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableFont::DrawableFont(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableFont::DrawableFont(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::StyleType, unsigned int, MagickCore::StretchType)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableFont::DrawableFont(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::StyleType, unsigned int, MagickCore::StretchType)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableFont::DrawableFont(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::StyleType, unsigned int, MagickCore::StretchType)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableFont::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableGravity::copy() const@Base" 8:6.9.9.6
@@ -330,8 +288,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawablePath::~DrawablePath()@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePath::DrawablePath(Magick::DrawablePath const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePath::DrawablePath(std::__cxx11::list<Magick::VPath, std::allocator<Magick::VPath> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawablePath::DrawablePath(std::__cxx11::list<Magick::VPath, std::allocator<Magick::VPath> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawablePath::DrawablePath(std::__cxx11::list<Magick::VPath, std::allocator<Magick::VPath> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePath::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePoint::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePoint::~DrawablePoint()@Base" 8:6.9.9.6
@@ -343,14 +299,10 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawablePolygon::~DrawablePolygon()@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePolygon::DrawablePolygon(Magick::DrawablePolygon const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePolygon::DrawablePolygon(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawablePolygon::DrawablePolygon(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawablePolygon::DrawablePolygon(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePolygon::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePolyline::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePolyline::~DrawablePolyline()@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePolyline::DrawablePolyline(Magick::DrawablePolyline const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawablePolyline::DrawablePolyline(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawablePolyline::DrawablePolyline(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePolyline::DrawablePolyline(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePolyline::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePopClipPath::copy() const@Base" 8:6.9.9.6
@@ -366,8 +318,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawablePushClipPath::~DrawablePushClipPath()@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePushClipPath::DrawablePushClipPath(Magick::DrawablePushClipPath const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePushClipPath::DrawablePushClipPath(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawablePushClipPath::DrawablePushClipPath(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawablePushClipPath::DrawablePushClipPath(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePushClipPath::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePushGraphicContext::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePushGraphicContext::~DrawablePushGraphicContext()@Base" 8:6.9.9.6
@@ -376,7 +326,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawablePushPattern::~DrawablePushPattern()@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePushPattern::DrawablePushPattern(Magick::DrawablePushPattern const&)@Base" 8:6.9.9.6
  (c++|subst)"Magick::DrawablePushPattern::DrawablePushPattern(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, {c++:ssize_t}, {c++:ssize_t}, {c++:size_t}, {c++:size_t})@Base" 8:6.9.9.6
- (c++)"Magick::DrawablePushPattern::DrawablePushPattern(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, long, long, unsigned long, unsigned long)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePushPattern::DrawablePushPattern(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, long, long, unsigned long, unsigned long)@Base" 8:6.9.9.6
  (c++)"Magick::DrawablePushPattern::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableRectangle::copy() const@Base" 8:6.9.9.6
@@ -436,10 +385,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawableTextDirection::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::DrawableText::~DrawableText()@Base" 8:6.9.9.6
  (c++)"Magick::DrawableText::DrawableText(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableText::DrawableText(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableText::DrawableText(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableText::DrawableText(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::DrawableText::DrawableText(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableText::DrawableText(double, double, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableText::DrawableText(Magick::DrawableText const&)@Base" 8:6.9.9.6
  (c++)"Magick::DrawableTextInterlineSpacing::copy() const@Base" 8:6.9.9.6
@@ -474,8 +419,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::DrawableViewbox::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::drawImage::drawImage(Magick::Drawable const&)@Base" 8:6.9.9.6
  (c++)"Magick::drawImage::drawImage(std::__cxx11::list<Magick::Drawable, std::allocator<Magick::Drawable> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::drawImage::drawImage(std::__cxx11::list<Magick::Drawable, std::allocator<Magick::Drawable> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::drawImage::drawImage(std::__cxx11::list<Magick::Drawable, std::allocator<Magick::Drawable> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::drawImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::edgeImage::edgeImage(double)@Base" 8:6.9.9.6
  (c++)"Magick::edgeImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
@@ -491,165 +434,75 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::equalizeImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::ErrorBlob::~ErrorBlob()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorBlob::ErrorBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorBlob::ErrorBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorBlob::ErrorBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorBlob::ErrorBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorBlob::ErrorBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorBlob::ErrorBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorCache::~ErrorCache()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorCache::ErrorCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCache::ErrorCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCache::ErrorCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCache::ErrorCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCache::ErrorCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorCache::ErrorCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorCoder::~ErrorCoder()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorCoder::ErrorCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCoder::ErrorCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCoder::ErrorCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCoder::ErrorCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCoder::ErrorCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorCoder::ErrorCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorConfigure::~ErrorConfigure()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorConfigure::ErrorConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorConfigure::ErrorConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorConfigure::ErrorConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorConfigure::ErrorConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorConfigure::ErrorConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorConfigure::ErrorConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorCorruptImage::~ErrorCorruptImage()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorCorruptImage::ErrorCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCorruptImage::ErrorCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCorruptImage::ErrorCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCorruptImage::ErrorCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorCorruptImage::ErrorCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorCorruptImage::ErrorCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorDelegate::~ErrorDelegate()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorDelegate::ErrorDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorDelegate::ErrorDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorDelegate::ErrorDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorDelegate::ErrorDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorDelegate::ErrorDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorDelegate::ErrorDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorDraw::~ErrorDraw()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorDraw::ErrorDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorDraw::ErrorDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorDraw::ErrorDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorDraw::ErrorDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorDraw::ErrorDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorDraw::ErrorDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::Error::~Error()@Base" 8:6.9.9.6
  (c++)"Magick::Error::Error(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Error::Error(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Error::Error(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Error::Error(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::Error::Error(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::Error::Error(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorFileOpen::~ErrorFileOpen()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorFileOpen::ErrorFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorFileOpen::ErrorFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorFileOpen::ErrorFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorFileOpen::ErrorFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorFileOpen::ErrorFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorFileOpen::ErrorFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorImage::~ErrorImage()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorImage::ErrorImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorImage::ErrorImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorImage::ErrorImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorImage::ErrorImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorImage::ErrorImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorImage::ErrorImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorMissingDelegate::~ErrorMissingDelegate()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorMissingDelegate::ErrorMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorMissingDelegate::ErrorMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorMissingDelegate::ErrorMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorMissingDelegate::ErrorMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorMissingDelegate::ErrorMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorMissingDelegate::ErrorMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorModule::~ErrorModule()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorModule::ErrorModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorModule::ErrorModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorModule::ErrorModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorModule::ErrorModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorModule::ErrorModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorModule::ErrorModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorMonitor::~ErrorMonitor()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorMonitor::ErrorMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorMonitor::ErrorMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorMonitor::ErrorMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorMonitor::ErrorMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorMonitor::ErrorMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorMonitor::ErrorMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorOption::~ErrorOption()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorOption::ErrorOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorOption::ErrorOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorOption::ErrorOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorOption::ErrorOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorOption::ErrorOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorOption::ErrorOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorPolicy::~ErrorPolicy()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorPolicy::ErrorPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorPolicy::ErrorPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorPolicy::ErrorPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorPolicy::ErrorPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorPolicy::ErrorPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorPolicy::ErrorPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorRegistry::~ErrorRegistry()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorRegistry::ErrorRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorRegistry::ErrorRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorRegistry::ErrorRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorRegistry::ErrorRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorRegistry::ErrorRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorRegistry::ErrorRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorResourceLimit::~ErrorResourceLimit()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorResourceLimit::ErrorResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorResourceLimit::ErrorResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorResourceLimit::ErrorResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorResourceLimit::ErrorResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorResourceLimit::ErrorResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorResourceLimit::ErrorResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorStream::~ErrorStream()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorStream::ErrorStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorStream::ErrorStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorStream::ErrorStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorStream::ErrorStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorStream::ErrorStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorStream::ErrorStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorType::~ErrorType()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorType::ErrorType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorType::ErrorType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorType::ErrorType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorType::ErrorType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorType::ErrorType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorType::ErrorType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorUndefined::~ErrorUndefined()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorUndefined::ErrorUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorUndefined::ErrorUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorUndefined::ErrorUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorUndefined::ErrorUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorUndefined::ErrorUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorUndefined::ErrorUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorXServer::~ErrorXServer()@Base" 8:6.9.9.6
  (c++)"Magick::ErrorXServer::ErrorXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorXServer::ErrorXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorXServer::ErrorXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorXServer::ErrorXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::ErrorXServer::ErrorXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::ErrorXServer::ErrorXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::Exception::~Exception()@Base" 8:6.9.9.6
  (c++)"Magick::Exception::Exception(Magick::Exception const&)@Base" 8:6.9.9.6
  (c++)"Magick::Exception::Exception(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Exception::Exception(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Exception::Exception(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Exception::Exception(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::Exception::Exception(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::Exception::Exception(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::Exception::nested() const@Base" 8:6.9.9.6
  (c++)"Magick::Exception::nested(Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::Exception::operator=(Magick::Exception const&)@Base" 8:6.9.9.6
  (c++)"Magick::Exception::what() const@Base" 8:6.9.9.6
- (c++)"Magick::fileNameImage::fileNameImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::fileNameImage::fileNameImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::fileNameImage::fileNameImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::fileNameImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::fillColorImage::fillColorImage(Magick::Color const&)@Base" 8:6.9.9.6
@@ -671,8 +524,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::flopImage::flopImage()@Base" 8:6.9.9.6
  (c++)"Magick::flopImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::fontImage::fontImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::fontImage::fontImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::fontImage::fontImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::fontImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++|subst)"Magick::fontPointsizeImage::fontPointsizeImage({c++:size_t})@Base" 8:6.9.9.6
  (c++)"Magick::fontPointsizeImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
@@ -693,15 +544,11 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Geometry::Geometry(MagickCore::_RectangleInfo const&)@Base" 8:6.9.9.6
  (c++)"Magick::Geometry::Geometry(Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::Geometry::Geometry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Geometry::Geometry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Geometry::Geometry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Geometry::operator=(char const*)@Base" 8:6.9.9.6
  (c++)"Magick::Geometry::operator=(MagickCore::_RectangleInfo const&)@Base" 8:6.9.9.6
  (c++)"Magick::Geometry::operator MagickCore::_RectangleInfo() const@Base" 8:6.9.9.6
  (c++)"Magick::Geometry::operator=(Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::Geometry::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++|optional=templinst)"Magick::Geometry::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Geometry::operator=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Geometry::operator=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Geometry::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >() const@Base" 8:6.9.9.6
  (c++|subst)"Magick::gifDisposeMethodImage::gifDisposeMethodImage({c++:size_t})@Base" 8:6.9.9.6
@@ -724,24 +571,16 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::animationIterations() const@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::animationIterations({c++:size_t})@Base" 8:6.9.9.6
  (c++)"Magick::Image::annotate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::Image::annotate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::Image::annotate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::annotate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::annotate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::Image::annotate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType)@Base" 8:6.9.9.6
- (c++)"Magick::Image::annotate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType, double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::annotate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Geometry const&, MagickCore::GravityType, double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::antiAlias(bool)@Base" 8:6.9.9.6
  (c++)"Magick::Image::antiAlias() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::artifact(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 8:6.9.9.6
- (c++)"Magick::Image::artifact(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 8:6.9.9.6
- (c++)"Magick::Image::artifact(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::artifact(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::attenuate(double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::attribute(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, char const*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::attribute(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const@Base" 8:6.9.9.6
- (c++)"Magick::Image::attribute(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const@Base" 8:6.9.9.6
- (c++)"Magick::Image::attribute(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::Image::attribute(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::Image::autoGamma()@Base" 8:6.9.9.6
  (c++)"Magick::Image::autoGammaChannel(MagickCore::ChannelType)@Base" 8:6.9.9.6
@@ -752,15 +591,12 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::backgroundColor(Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::backgroundTexture[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::backgroundTexture(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::backgroundTexture(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::baseColumns() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::baseFilename[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::baseRows() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::blackPointCompensation(bool)@Base" 8:6.9.9.6
  (c++)"Magick::Image::blackPointCompensation() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::blackThresholdChannel(MagickCore::ChannelType, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::blackThresholdChannel(MagickCore::ChannelType, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::blackThreshold(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::blackThreshold(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::blueShift(double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::blurChannel(MagickCore::ChannelType, double, double)@Base" 8:6.9.9.6
@@ -775,7 +611,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::brightnessContrast(double, double)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::cacheThreshold({c++:size_t})@Base" 8:6.9.9.6
  (c++)"Magick::Image::cannyEdge(double, double, double, double)@Base" 8:6.9.9.6
- (c++)"Magick::Image::cdl(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::cdl(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::channelDepth(MagickCore::ChannelType)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::channelDepth(MagickCore::ChannelType, {c++:size_t})@Base" 8:6.9.9.6
@@ -797,7 +632,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::clipMask() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::clipMask(Magick::Image const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::clipPath(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, bool)@Base" 8:6.9.9.6
- (c++)"Magick::Image::clipPath(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, bool)@Base" 8:6.9.9.6
  (c++)"Magick::Image::clutChannel(MagickCore::ChannelType, Magick::Image const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::clut(Magick::Image const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::colorFuzz() const@Base" 8:6.9.9.6
@@ -814,7 +648,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::colorspaceType() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::colorspaceType(MagickCore::ColorspaceType)@Base" 8:6.9.9.6
  (c++)"Magick::Image::comment[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Image::comment(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::comment(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::compareChannel(MagickCore::ChannelType, Magick::Image const&, MagickCore::MetricType)@Base" 8:6.9.9.6
  (c++)"Magick::Image::compareChannel(MagickCore::ChannelType, Magick::Image const&, MagickCore::MetricType, double*)@Base" 8:6.9.9.6
@@ -843,14 +676,9 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::debug(bool)@Base" 8:6.9.9.6
  (c++)"Magick::Image::debug() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::decipher(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::decipher(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::defineSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool)@Base" 8:6.9.9.6
  (c++)"Magick::Image::defineSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool)@Base" 8:6.9.9.6
  (c++)"Magick::Image::defineSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 8:6.9.9.6
- (c++)"Magick::Image::defineSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 8:6.9.9.6
  (c++)"Magick::Image::defineValue(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 8:6.9.9.6
- (c++)"Magick::Image::defineValue(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const@Base" 8:6.9.9.6
- (c++)"Magick::Image::defineValue(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::defineValue(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::density() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::density(Magick::Geometry const&)@Base" 8:6.9.9.6
@@ -864,10 +692,8 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++|subst)"Magick::Image::distort(MagickCore::DistortImageMethod, {c++:size_t}, double const*, bool)@Base" 8:6.9.9.6
  (c++)"Magick::Image::draw(Magick::Drawable const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::draw(std::__cxx11::list<Magick::Drawable, std::allocator<Magick::Drawable> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::draw(std::__cxx11::list<Magick::Drawable, std::allocator<Magick::Drawable> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::edge(double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::emboss(double, double)@Base" 8:6.9.9.6
- (c++)"Magick::Image::encipher(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::encipher(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::endian() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::endian(MagickCore::EndianType)@Base" 8:6.9.9.6
@@ -881,7 +707,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::extent(Magick::Geometry const&, Magick::Color const&, MagickCore::GravityType)@Base" 8:6.9.9.6
  (c++)"Magick::Image::extent(Magick::Geometry const&, MagickCore::GravityType)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fileName[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Image::fileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fileSize() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::fillColor() const@Base" 8:6.9.9.6
@@ -917,27 +742,20 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::font[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::fontFamily[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::fontFamily(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::fontFamily(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fontPointsize() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::fontPointsize(double)@Base" 8:6.9.9.6
- (c++)"Magick::Image::font(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::font(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fontStyle() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::fontStyle(MagickCore::StyleType)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fontTypeMetricsMultiline(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::TypeMetric*)@Base" 8:6.9.9.6
- (c++)"Magick::Image::fontTypeMetricsMultiline(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::TypeMetric*)@Base" 8:6.9.9.6
- (c++)"Magick::Image::fontTypeMetrics(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::TypeMetric*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fontTypeMetrics(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::TypeMetric*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fontWeight() const@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::fontWeight({c++:size_t})@Base" 8:6.9.9.6
  (c++)"Magick::Image::format[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::formatExpression(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
- (c++)"Magick::Image::formatExpression(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::frame({c++:size_t}, {c++:size_t}, {c++:ssize_t}, {c++:ssize_t})@Base" 8:6.9.9.6
  (c++)"Magick::Image::frame(Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fx(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
- (c++)"Magick::Image::fx(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
- (c++)"Magick::Image::fx(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::ChannelType)@Base" 8:6.9.9.6
  (c++)"Magick::Image::fx(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::ChannelType)@Base" 8:6.9.9.6
  (c++)"Magick::Image::gamma() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::gamma(double)@Base" 8:6.9.9.6
@@ -967,18 +785,12 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++|subst)"Magick::Image::Image(Magick::Blob const&, Magick::Geometry const&, {c++:size_t})@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::Image(Magick::Blob const&, Magick::Geometry const&, {c++:size_t}, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::Image(Magick::Blob const&, Magick::Geometry const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::Image(Magick::Blob const&, Magick::Geometry const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::Image(Magick::Blob const&, Magick::Geometry const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::Image(Magick::Blob const&, Magick::Geometry const&, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::Image(Magick::Blob const&, Magick::Geometry const&, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::Image(MagickCore::_Image*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::Image(Magick::Geometry const&, Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::Image(Magick::Image const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::Image(Magick::Image const&, Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::Image(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::Image(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::Image(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::Image(unsigned long, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::StorageType, void const*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::Image(unsigned long, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::StorageType, void const*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::implode(double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::interlaceType() const@Base" 8:6.9.9.6
@@ -996,7 +808,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::kuwahara(double, double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::label[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::label(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::label(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::levelChannel(MagickCore::ChannelType, double, double, double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::levelColorsChannel(MagickCore::ChannelType, Magick::Color const&, Magick::Color const&, bool)@Base" 8:6.9.9.6
  (c++)"Magick::Image::levelColors(Magick::Color const&, Magick::Color const&, bool)@Base" 8:6.9.9.6
@@ -1008,7 +819,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::localContrast(double, double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::lowlightColor(Magick::Color)@Base" 8:6.9.9.6
  (c++)"Magick::Image::magick[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Image::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::magnify()@Base" 8:6.9.9.6
  (c++)"Magick::Image::map(Magick::Image const&, bool)@Base" 8:6.9.9.6
@@ -1056,8 +866,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::operator=(Magick::Image const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::options()@Base" 8:6.9.9.6
  (c++)"Magick::Image::orderedDitherChannel(MagickCore::ChannelType, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
- (c++)"Magick::Image::orderedDitherChannel(MagickCore::ChannelType, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
- (c++)"Magick::Image::orderedDither(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::Image::orderedDither(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::Image::orientation() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::orientation(MagickCore::OrientationType)@Base" 8:6.9.9.6
@@ -1071,18 +879,14 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::perceptible(double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::ping(Magick::Blob const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::ping(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::ping(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::pixelColor({c++:ssize_t}, {c++:ssize_t}) const@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::pixelColor({c++:ssize_t}, {c++:ssize_t}, Magick::Color const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::polaroid(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::polaroid(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, double)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::posterizeChannel(MagickCore::ChannelType, {c++:size_t}, bool)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::posterize({c++:size_t}, bool)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::process(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, {c++:ssize_t}, char const**)@Base" 8:6.9.9.6
  (c++)"Magick::Image::process(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, long, char const**)@Base" 8:6.9.9.6
  (c++)"Magick::Image::profile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const@Base" 8:6.9.9.6
- (c++)"Magick::Image::profile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) const@Base" 8:6.9.9.6
- (c++)"Magick::Image::profile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Magick::Blob const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::profile(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, Magick::Blob const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::quality() const@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::quality({c++:size_t})@Base" 8:6.9.9.6
@@ -1112,13 +916,10 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++|subst)"Magick::Image::read(Magick::Blob const&, Magick::Geometry const&, {c++:size_t})@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::read(Magick::Blob const&, Magick::Geometry const&, {c++:size_t}, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::read(Magick::Blob const&, Magick::Geometry const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::read(Magick::Blob const&, Magick::Geometry const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::read(Magick::Blob const&, Magick::Geometry const&, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::read(MagickCore::_Image*, MagickCore::_ExceptionInfo*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::read(Magick::Geometry const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::read(Magick::Geometry const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::readPixels(MagickCore::QuantumType, unsigned char const*)@Base" 8:6.9.9.6
- (c++)"Magick::Image::read(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::read(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::read(unsigned long, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::StorageType, void const*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::reduceNoise(double)@Base" 8:6.9.9.6
@@ -1201,7 +1002,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::textDirection(MagickCore::DirectionType)@Base" 8:6.9.9.6
  (c++)"Magick::Image::textEncoding[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::textEncoding(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::textEncoding(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::textGravity() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::textGravity(MagickCore::GravityType)@Base" 8:6.9.9.6
  (c++)"Magick::Image::textInterlineSpacing() const@Base" 8:6.9.9.6
@@ -1218,8 +1018,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::thumbnail(Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::tileName[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::tileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::tileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::tint(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::Image::tint(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 8:6.9.9.6
  (c++)"Magick::Image::totalColors() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::transform(Magick::Geometry const&)@Base" 8:6.9.9.6
@@ -1244,28 +1042,22 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Image::verbose() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::view[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::view(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::view(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::vignette(double, double, {c++:ssize_t}, {c++:ssize_t})@Base" 8:6.9.9.6
  (c++)"Magick::Image::virtualPixelMethod() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::virtualPixelMethod(MagickCore::VirtualPixelMethod)@Base" 8:6.9.9.6
  (c++)"Magick::Image::wave(double, double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::waveletDenoise(double, double)@Base" 8:6.9.9.6
  (c++)"Magick::Image::whiteThresholdChannel(MagickCore::ChannelType, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::whiteThresholdChannel(MagickCore::ChannelType, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::whiteThreshold(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::whiteThreshold(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::write({c++:ssize_t}, {c++:ssize_t}, {c++:size_t}, {c++:size_t}, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::StorageType, void*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::write(long, long, unsigned long, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, MagickCore::StorageType, void*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::write(Magick::Blob*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::write(Magick::Blob*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::write(Magick::Blob*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++|subst)"Magick::Image::write(Magick::Blob*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, {c++:size_t})@Base" 8:6.9.9.6
  (c++)"Magick::Image::write(Magick::Blob*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned long)@Base" 8:6.9.9.6
  (c++)"Magick::Image::writePixels(MagickCore::QuantumType, unsigned char*)@Base" 8:6.9.9.6
  (c++)"Magick::Image::write(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Image::write(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::x11Display[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Image::x11Display(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::x11Display(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Image::xResolution() const@Base" 8:6.9.9.6
  (c++)"Magick::Image::yResolution() const@Base" 8:6.9.9.6
@@ -1280,8 +1072,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::isValidImage::isValidImage(bool)@Base" 8:6.9.9.6
  (c++)"Magick::isValidImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::labelImage::labelImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::labelImage::labelImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::labelImage::labelImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::labelImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::levelChannelImage::levelChannelImage(MagickCore::ChannelType, double, double, double)@Base" 8:6.9.9.6
  (c++)"Magick::levelChannelImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
@@ -1289,8 +1079,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::levelImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::lineWidthImage::lineWidthImage(double)@Base" 8:6.9.9.6
  (c++)"Magick::lineWidthImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
- (c++)"Magick::magickImage::magickImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::magickImage::magickImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::magickImage::magickImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::magickImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::magnifyImage::magnifyImage()@Base" 8:6.9.9.6
@@ -1333,12 +1121,9 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++|subst)"Magick::Offset::Offset({c++:ssize_t}, {c++:ssize_t})@Base" 8:6.9.9.6
  (c++)"Magick::Offset::Offset(Magick::Offset const&)@Base" 8:6.9.9.6
  (c++)"Magick::Offset::Offset(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Offset::Offset(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Offset::Offset(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Offset::operator=(char const*)@Base" 8:6.9.9.6
  (c++)"Magick::Offset::operator MagickCore::_OffsetInfo() const@Base" 8:6.9.9.6
  (c++)"Magick::Offset::operator=(Magick::Offset const&)@Base" 8:6.9.9.6
- (c++)"Magick::Offset::operator=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Offset::operator=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Offset::x() const@Base" 8:6.9.9.6
  (c++)"Magick::Offset::y() const@Base" 8:6.9.9.6
@@ -1412,7 +1197,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Options::backgroundColor(Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::backgroundTexture[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::backgroundTexture(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Options::backgroundTexture(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::borderColor() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::borderColor(Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::boxColor() const@Base" 8:6.9.9.6
@@ -1436,7 +1220,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Options::file(_IO_FILE*)@Base" 8:6.9.9.6
  (c++)"Magick::Options::fileName[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::fileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Options::fileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::fillColor() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::fillColor(Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::fillPattern() const@Base" 8:6.9.9.6
@@ -1446,10 +1229,8 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Options::font[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::fontFamily[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::fontFamily(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Options::fontFamily(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::fontPointsize() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::fontPointsize(double)@Base" 8:6.9.9.6
- (c++)"Magick::Options::font(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::font(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::fontStyle() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::fontStyle(MagickCore::StyleType)@Base" 8:6.9.9.6
@@ -1460,7 +1241,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Options::interlaceType() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::interlaceType(MagickCore::InterlaceType)@Base" 8:6.9.9.6
  (c++)"Magick::Options::magick[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Options::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::magick(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::matteColor() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::matteColor(Magick::Color const&)@Base" 8:6.9.9.6
@@ -1490,7 +1270,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Options::resolutionUnits() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::resolutionUnits(MagickCore::ResolutionType)@Base" 8:6.9.9.6
  (c++)"Magick::Options::samplingFactor[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Options::samplingFactor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::samplingFactor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::setOption(char const*, double)@Base" 8:6.9.9.6
  (c++)"Magick::Options::setOption(char const*, Magick::Color const&)@Base" 8:6.9.9.6
@@ -1522,7 +1301,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Options::textDirection(MagickCore::DirectionType)@Base" 8:6.9.9.6
  (c++)"Magick::Options::textEncoding[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::textEncoding(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Options::textEncoding(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::textGravity() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::textGravity(MagickCore::GravityType)@Base" 8:6.9.9.6
  (c++)"Magick::Options::textInterlineSpacing() const@Base" 8:6.9.9.6
@@ -1534,7 +1312,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Options::textUnderColor() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::textUnderColor(Magick::Color const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::tileName[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Options::tileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::tileName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::transformOrigin(double, double)@Base" 8:6.9.9.6
  (c++)"Magick::Options::transformReset()@Base" 8:6.9.9.6
@@ -1548,11 +1325,9 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::Options::verbose() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::view[abi:cxx11]() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::view(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Options::view(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::virtualPixelMethod() const@Base" 8:6.9.9.6
  (c++)"Magick::Options::virtualPixelMethod(MagickCore::VirtualPixelMethod)@Base" 8:6.9.9.6
  (c++)"Magick::Options::x11Display[abi:cxx11]() const@Base" 8:6.9.9.6
- (c++)"Magick::Options::x11Display(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::Options::x11Display(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::pageImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::pageImage::pageImage(Magick::Geometry const&)@Base" 8:6.9.9.6
@@ -1561,8 +1336,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::PathArcAbs::~PathArcAbs()@Base" 8:6.9.9.6
  (c++)"Magick::PathArcAbs::PathArcAbs(Magick::PathArcAbs const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathArcAbs::PathArcAbs(Magick::PathArcArgs const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathArcAbs::PathArcAbs(std::__cxx11::list<Magick::PathArcArgs, std::allocator<Magick::PathArcArgs> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathArcAbs::PathArcAbs(std::__cxx11::list<Magick::PathArcArgs, std::allocator<Magick::PathArcArgs> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathArcAbs::PathArcAbs(std::__cxx11::list<Magick::PathArcArgs, std::allocator<Magick::PathArcArgs> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathArcArgs::~PathArcArgs()@Base" 8:6.9.9.6
  (c++)"Magick::PathArcArgs::PathArcArgs()@Base" 8:6.9.9.6
@@ -1574,8 +1347,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::PathArcRel::PathArcRel(Magick::PathArcArgs const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathArcRel::PathArcRel(Magick::PathArcRel const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathArcRel::PathArcRel(std::__cxx11::list<Magick::PathArcArgs, std::allocator<Magick::PathArcArgs> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathArcRel::PathArcRel(std::__cxx11::list<Magick::PathArcArgs, std::allocator<Magick::PathArcArgs> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathArcRel::PathArcRel(std::__cxx11::list<Magick::PathArcArgs, std::allocator<Magick::PathArcArgs> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathClosePath::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathClosePath::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::PathClosePath::~PathClosePath()@Base" 8:6.9.9.6
@@ -1584,8 +1355,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::PathCurvetoAbs::~PathCurvetoAbs()@Base" 8:6.9.9.6
  (c++)"Magick::PathCurvetoAbs::PathCurvetoAbs(Magick::PathCurvetoAbs const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathCurvetoAbs::PathCurvetoAbs(Magick::PathCurvetoArgs const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathCurvetoAbs::PathCurvetoAbs(std::__cxx11::list<Magick::PathCurvetoArgs, std::allocator<Magick::PathCurvetoArgs> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathCurvetoAbs::PathCurvetoAbs(std::__cxx11::list<Magick::PathCurvetoArgs, std::allocator<Magick::PathCurvetoArgs> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathCurvetoAbs::PathCurvetoAbs(std::__cxx11::list<Magick::PathCurvetoArgs, std::allocator<Magick::PathCurvetoArgs> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathCurvetoArgs::~PathCurvetoArgs()@Base" 8:6.9.9.6
  (c++)"Magick::PathCurvetoArgs::PathCurvetoArgs()@Base" 8:6.9.9.6
@@ -1597,15 +1366,11 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::PathCurvetoRel::PathCurvetoRel(Magick::PathCurvetoArgs const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathCurvetoRel::PathCurvetoRel(Magick::PathCurvetoRel const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathCurvetoRel::PathCurvetoRel(std::__cxx11::list<Magick::PathCurvetoArgs, std::allocator<Magick::PathCurvetoArgs> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathCurvetoRel::PathCurvetoRel(std::__cxx11::list<Magick::PathCurvetoArgs, std::allocator<Magick::PathCurvetoArgs> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathCurvetoRel::PathCurvetoRel(std::__cxx11::list<Magick::PathCurvetoArgs, std::allocator<Magick::PathCurvetoArgs> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoAbs::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoAbs::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoAbs::~PathLinetoAbs()@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoAbs::PathLinetoAbs(Magick::Coordinate const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoAbs::PathLinetoAbs(Magick::PathLinetoAbs const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathLinetoAbs::PathLinetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathLinetoAbs::PathLinetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoAbs::PathLinetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoHorizontalAbs::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoHorizontalAbs::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
@@ -1619,8 +1384,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::PathLinetoRel::PathLinetoRel(Magick::Coordinate const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoRel::PathLinetoRel(Magick::PathLinetoRel const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoRel::PathLinetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathLinetoRel::PathLinetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathLinetoRel::PathLinetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoVerticalAbs::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoVerticalAbs::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::PathLinetoVerticalAbs::~PathLinetoVerticalAbs()@Base" 8:6.9.9.6
@@ -1633,23 +1396,17 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::PathMovetoAbs::PathMovetoAbs(Magick::Coordinate const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathMovetoAbs::PathMovetoAbs(Magick::PathMovetoAbs const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathMovetoAbs::PathMovetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathMovetoAbs::PathMovetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathMovetoAbs::PathMovetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathMovetoRel::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathMovetoRel::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::PathMovetoRel::~PathMovetoRel()@Base" 8:6.9.9.6
  (c++)"Magick::PathMovetoRel::PathMovetoRel(Magick::Coordinate const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathMovetoRel::PathMovetoRel(Magick::PathMovetoRel const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathMovetoRel::PathMovetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathMovetoRel::PathMovetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathMovetoRel::PathMovetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoAbs::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoAbs::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoAbs::~PathQuadraticCurvetoAbs()@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoAbs::PathQuadraticCurvetoAbs(Magick::PathQuadraticCurvetoAbs const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoAbs::PathQuadraticCurvetoAbs(Magick::PathQuadraticCurvetoArgs const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathQuadraticCurvetoAbs::PathQuadraticCurvetoAbs(std::__cxx11::list<Magick::PathQuadraticCurvetoArgs, std::allocator<Magick::PathQuadraticCurvetoArgs> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathQuadraticCurvetoAbs::PathQuadraticCurvetoAbs(std::__cxx11::list<Magick::PathQuadraticCurvetoArgs, std::allocator<Magick::PathQuadraticCurvetoArgs> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoAbs::PathQuadraticCurvetoAbs(std::__cxx11::list<Magick::PathQuadraticCurvetoArgs, std::allocator<Magick::PathQuadraticCurvetoArgs> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoArgs::~PathQuadraticCurvetoArgs()@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoArgs::PathQuadraticCurvetoArgs()@Base" 8:6.9.9.6
@@ -1661,15 +1418,11 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::PathQuadraticCurvetoRel::PathQuadraticCurvetoRel(Magick::PathQuadraticCurvetoArgs const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoRel::PathQuadraticCurvetoRel(Magick::PathQuadraticCurvetoRel const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathQuadraticCurvetoRel::PathQuadraticCurvetoRel(std::__cxx11::list<Magick::PathQuadraticCurvetoArgs, std::allocator<Magick::PathQuadraticCurvetoArgs> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathQuadraticCurvetoRel::PathQuadraticCurvetoRel(std::__cxx11::list<Magick::PathQuadraticCurvetoArgs, std::allocator<Magick::PathQuadraticCurvetoArgs> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathQuadraticCurvetoRel::PathQuadraticCurvetoRel(std::__cxx11::list<Magick::PathQuadraticCurvetoArgs, std::allocator<Magick::PathQuadraticCurvetoArgs> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoAbs::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoAbs::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoAbs::~PathSmoothCurvetoAbs()@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoAbs::PathSmoothCurvetoAbs(Magick::Coordinate const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoAbs::PathSmoothCurvetoAbs(Magick::PathSmoothCurvetoAbs const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathSmoothCurvetoAbs::PathSmoothCurvetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathSmoothCurvetoAbs::PathSmoothCurvetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoAbs::PathSmoothCurvetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoRel::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoRel::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
@@ -1677,23 +1430,17 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::PathSmoothCurvetoRel::PathSmoothCurvetoRel(Magick::Coordinate const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoRel::PathSmoothCurvetoRel(Magick::PathSmoothCurvetoRel const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothCurvetoRel::PathSmoothCurvetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathSmoothCurvetoRel::PathSmoothCurvetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathSmoothCurvetoRel::PathSmoothCurvetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoAbs::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoAbs::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoAbs::~PathSmoothQuadraticCurvetoAbs()@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoAbs::PathSmoothQuadraticCurvetoAbs(Magick::Coordinate const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoAbs::PathSmoothQuadraticCurvetoAbs(Magick::PathSmoothQuadraticCurvetoAbs const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoAbs::PathSmoothQuadraticCurvetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathSmoothQuadraticCurvetoAbs::PathSmoothQuadraticCurvetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathSmoothQuadraticCurvetoAbs::PathSmoothQuadraticCurvetoAbs(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoRel::copy() const@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoRel::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoRel::~PathSmoothQuadraticCurvetoRel()@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoRel::PathSmoothQuadraticCurvetoRel(Magick::Coordinate const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoRel::PathSmoothQuadraticCurvetoRel(Magick::PathSmoothQuadraticCurvetoRel const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathSmoothQuadraticCurvetoRel::PathSmoothQuadraticCurvetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::PathSmoothQuadraticCurvetoRel::PathSmoothQuadraticCurvetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::PathSmoothQuadraticCurvetoRel::PathSmoothQuadraticCurvetoRel(std::__cxx11::list<Magick::Coordinate, std::allocator<Magick::Coordinate> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::penColorImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::penColorImage::penColorImage(Magick::Color const&)@Base" 8:6.9.9.6
@@ -1708,9 +1455,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::PixelData::~PixelData()@Base" 8:6.9.9.6
  (c++|subst)"Magick::PixelData::PixelData(Magick::Image&, {c++:ssize_t}, {c++:ssize_t}, {c++:size_t}, {c++:size_t}, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.9.9.6
  (c++)"Magick::PixelData::PixelData(Magick::Image&, long, long, unsigned long, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.9.9.6
- (c++)"Magick::PixelData::PixelData(Magick::Image&, long, long, unsigned long, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.9.9.6
- (c++)"Magick::PixelData::PixelData(Magick::Image&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.9.9.6
- (c++)"Magick::PixelData::PixelData(Magick::Image&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.9.9.6
  (c++)"Magick::PixelData::PixelData(Magick::Image&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, MagickCore::StorageType)@Base" 8:6.9.9.6
  (c++)"Magick::PixelData::relinquish()@Base" 8:6.9.9.6
  (c++)"Magick::PixelData::size() const@Base" 8:6.9.9.6
@@ -1823,8 +1567,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::throwException(MagickCore::_ExceptionInfo*, bool)@Base" 8:6.9.9.6
  (c++)"Magick::tileNameImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::tileNameImage::tileNameImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::tileNameImage::tileNameImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::tileNameImage::tileNameImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::transformImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::transformImage::transformImage(Magick::Geometry const&)@Base" 8:6.9.9.6
  (c++)"Magick::transformImage::transformImage(Magick::Geometry const&, Magick::Geometry const&)@Base" 8:6.9.9.6
@@ -1847,8 +1589,6 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::verboseImage::verboseImage(bool)@Base" 8:6.9.9.6
  (c++)"Magick::viewImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::viewImage::viewImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::viewImage::viewImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::viewImage::viewImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::VPathBase::~VPathBase()@Base" 8:6.9.9.6
  (c++)"Magick::VPath::operator()(MagickCore::_DrawingWand*) const@Base" 8:6.9.9.6
  (c++)"Magick::VPath::operator=(Magick::VPath const&)@Base" 8:6.9.9.6
@@ -1858,156 +1598,70 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"Magick::VPath::VPath(Magick::VPath const&)@Base" 8:6.9.9.6
  (c++)"Magick::WarningBlob::~WarningBlob()@Base" 8:6.9.9.6
  (c++)"Magick::WarningBlob::WarningBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningBlob::WarningBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningBlob::WarningBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningBlob::WarningBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningBlob::WarningBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningBlob::WarningBlob(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningCache::~WarningCache()@Base" 8:6.9.9.6
  (c++)"Magick::WarningCache::WarningCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCache::WarningCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCache::WarningCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCache::WarningCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCache::WarningCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningCache::WarningCache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningCoder::~WarningCoder()@Base" 8:6.9.9.6
  (c++)"Magick::WarningCoder::WarningCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCoder::WarningCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCoder::WarningCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCoder::WarningCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCoder::WarningCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningCoder::WarningCoder(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningConfigure::~WarningConfigure()@Base" 8:6.9.9.6
  (c++)"Magick::WarningConfigure::WarningConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningConfigure::WarningConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningConfigure::WarningConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningConfigure::WarningConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningConfigure::WarningConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningConfigure::WarningConfigure(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningCorruptImage::~WarningCorruptImage()@Base" 8:6.9.9.6
  (c++)"Magick::WarningCorruptImage::WarningCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCorruptImage::WarningCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCorruptImage::WarningCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCorruptImage::WarningCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningCorruptImage::WarningCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningCorruptImage::WarningCorruptImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningDelegate::~WarningDelegate()@Base" 8:6.9.9.6
  (c++)"Magick::WarningDelegate::WarningDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningDelegate::WarningDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningDelegate::WarningDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningDelegate::WarningDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningDelegate::WarningDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningDelegate::WarningDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningDraw::~WarningDraw()@Base" 8:6.9.9.6
  (c++)"Magick::WarningDraw::WarningDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningDraw::WarningDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningDraw::WarningDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningDraw::WarningDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningDraw::WarningDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningDraw::WarningDraw(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningFileOpen::~WarningFileOpen()@Base" 8:6.9.9.6
  (c++)"Magick::WarningFileOpen::WarningFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningFileOpen::WarningFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningFileOpen::WarningFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningFileOpen::WarningFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningFileOpen::WarningFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningFileOpen::WarningFileOpen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningImage::~WarningImage()@Base" 8:6.9.9.6
  (c++)"Magick::WarningImage::WarningImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningImage::WarningImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningImage::WarningImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningImage::WarningImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningImage::WarningImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningImage::WarningImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningMissingDelegate::~WarningMissingDelegate()@Base" 8:6.9.9.6
  (c++)"Magick::WarningMissingDelegate::WarningMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningMissingDelegate::WarningMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningMissingDelegate::WarningMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningMissingDelegate::WarningMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningMissingDelegate::WarningMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningMissingDelegate::WarningMissingDelegate(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningModule::~WarningModule()@Base" 8:6.9.9.6
  (c++)"Magick::WarningModule::WarningModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningModule::WarningModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningModule::WarningModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningModule::WarningModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningModule::WarningModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningModule::WarningModule(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningMonitor::~WarningMonitor()@Base" 8:6.9.9.6
  (c++)"Magick::WarningMonitor::WarningMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningMonitor::WarningMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningMonitor::WarningMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningMonitor::WarningMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningMonitor::WarningMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningMonitor::WarningMonitor(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningOption::~WarningOption()@Base" 8:6.9.9.6
  (c++)"Magick::WarningOption::WarningOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningOption::WarningOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningOption::WarningOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningOption::WarningOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningOption::WarningOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningOption::WarningOption(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningPolicy::~WarningPolicy()@Base" 8:6.9.9.6
  (c++)"Magick::WarningPolicy::WarningPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningPolicy::WarningPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningPolicy::WarningPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningPolicy::WarningPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningPolicy::WarningPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningPolicy::WarningPolicy(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningRegistry::~WarningRegistry()@Base" 8:6.9.9.6
  (c++)"Magick::WarningRegistry::WarningRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningRegistry::WarningRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningRegistry::WarningRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningRegistry::WarningRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningRegistry::WarningRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningRegistry::WarningRegistry(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningResourceLimit::~WarningResourceLimit()@Base" 8:6.9.9.6
  (c++)"Magick::WarningResourceLimit::WarningResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningResourceLimit::WarningResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningResourceLimit::WarningResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningResourceLimit::WarningResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningResourceLimit::WarningResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningResourceLimit::WarningResourceLimit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningStream::~WarningStream()@Base" 8:6.9.9.6
  (c++)"Magick::WarningStream::WarningStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningStream::WarningStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningStream::WarningStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningStream::WarningStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningStream::WarningStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningStream::WarningStream(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningType::~WarningType()@Base" 8:6.9.9.6
  (c++)"Magick::WarningType::WarningType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningType::WarningType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningType::WarningType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningType::WarningType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningType::WarningType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningType::WarningType(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningUndefined::~WarningUndefined()@Base" 8:6.9.9.6
  (c++)"Magick::WarningUndefined::WarningUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningUndefined::WarningUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningUndefined::WarningUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningUndefined::WarningUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningUndefined::WarningUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningUndefined::WarningUndefined(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::Warning::~Warning()@Base" 8:6.9.9.6
  (c++)"Magick::Warning::Warning(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Warning::Warning(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Warning::Warning(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::Warning::Warning(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::Warning::Warning(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::Warning::Warning(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningXServer::~WarningXServer()@Base" 8:6.9.9.6
  (c++)"Magick::WarningXServer::WarningXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningXServer::WarningXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningXServer::WarningXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::WarningXServer::WarningXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
- (c++)"Magick::WarningXServer::WarningXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::WarningXServer::WarningXServer(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, Magick::Exception*)@Base" 8:6.9.9.6
  (c++)"Magick::waveImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::waveImage::waveImage(double, double)@Base" 8:6.9.9.6
  (c++)"Magick::x11DisplayImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
- (c++)"Magick::x11DisplayImage::x11DisplayImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
- (c++)"Magick::x11DisplayImage::x11DisplayImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::x11DisplayImage::x11DisplayImage(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 8:6.9.9.6
  (c++)"Magick::zoomImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++)"Magick::zoomImage::zoomImage(Magick::Geometry const&)@Base" 8:6.9.9.6
@@ -2271,9 +1925,8 @@ libMagick++-${IMVERSION}.${UCQUANTUMDEPTH}.so.${PPSOVERSION} libmagick++-${IMVER
  (c++)"typeinfo name for Magick::WarningXServer@Base" 8:6.9.9.6
  (c++|optional=typeinfoUnary)"typeinfo name for std::unary_function<MagickCore::_DrawingWand, void>@Base" 8:6.9.9.6
  (c++|optional=templinst)"void std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::emplace_back<Magick::ChannelMoments>(Magick::ChannelMoments&&)@Base" 8:6.9.9.6
- (c++)"void std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::emplace_back<Magick::ChannelMoments>(Magick::ChannelMoments&&)@Base" 8:6.9.9.6
  (c++|optional=templinst)"void std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::_M_emplace_back_aux<Magick::ChannelMoments>(Magick::ChannelMoments&&)@Base" 8:6.9.9.6
- (c++)"void std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::_M_realloc_insert<Magick::ChannelMoments>(__gnu_cxx::__normal_iterator<Magick::ChannelMoments*, std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> > >, Magick::ChannelMoments&&)@Base" 8:6.9.9.6
+ (c++|optional=templinst)"void std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> >::_M_realloc_insert<Magick::ChannelMoments>(__gnu_cxx::__normal_iterator<Magick::ChannelMoments*, std::vector<Magick::ChannelMoments, std::allocator<Magick::ChannelMoments> > >, Magick::ChannelMoments&&)@Base" 8:6.9.9.6
  (c++)"vtable for Magick::Blob@Base" 8:6.9.9.6
  (c++)"vtable for Magick::Color@Base" 8:6.9.9.6
  (c++)"vtable for Magick::ColorGray@Base" 8:6.9.9.6
