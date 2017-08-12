@@ -388,6 +388,8 @@ imagemagick (8:6.9.7.4+dfsg-12) unstable; urgency=medium
        (Closes: #867894). Fix CVE-2017-11450.
      + Fix a memory leak in screenshot coder. Fix CVE-2017-11447.
        (Closes: #867897)
+       
+ -- Bastien Roucariès <rouca@debian.org>  Fri, 14 Jul 2017 15:35:15 +0200
 
 imagemagick (8:6.9.7.4+dfsg-11) unstable; urgency=high
 
