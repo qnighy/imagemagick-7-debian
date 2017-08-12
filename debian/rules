@@ -314,7 +314,7 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	UCQUANTUMDEPTH=$(call UC,$*) \
-	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-PPSOVERSION.symbols.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).symbols
+	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-PPSOVERSION.symbols.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).symbols.notyet
 
 	# libmagickcore
 	QUANTUM=$(call QUANTUM_PART,$*) \
