@@ -2,12 +2,12 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: ImageMagick
 Source: http://www.imagemagick.org/script/download.php
 Files-Excluded: images/donate.*
-                images/networkredux.*
-                www/api/Magick*/*
-                www/js/*.js
-                www/css/*.css
-                www/assets/*.js
-                www/assets/*.css
+		images/networkredux.*
+		www/api/Magick*/*
+		www/js/*.js
+		www/css/*.css
+		www/assets/*.js
+		www/assets/*.css
 Comment: Remove non free image and doxygen files
 
 Files: *
@@ -34,32 +34,32 @@ Comment: Apache-2.0 License with additional preamble
 
 Files: Makefile.in
 Copyright: 1994-2017, Free Software Foundation, Inc.
-           1999-2018, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: Makefile-in and Imagemagick
 
 Files: coders/art.c
 Copyright: 2001, Jaroslav Fojtik
-	   1999-2015, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/bmp.c
 Copyright: 2001, Glenn Randers-Pehrson
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/braille.c
 Copyright: 2008, Samuel Thibault
-	   2008-2017, ImageMagick Studio LLC
+	   2008-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/cin.c
 Copyright: 2003, Kelly Bergougnoux
-	   2003-2017, ImageMagick Studio LLC
+	   2003-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/clipboard.c
 Copyright: 2002, Leonard Rosenthol
-	   2002-2017, ImageMagick Studio LLC
+	   2002-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate but not compiled under debian (windows only)
 
@@ -71,80 +71,86 @@ License: ImageMagick
 Files: coders/dds.c
 Copyright: 2006, Simon Brown
 	   2008, Bianca van Schaik
-	   2008-2015, ImageMagick Studio LLC
+	   2008-2018, ImageMagick Studio LLC
 	   2013, Dirk Lemstra
 License: ImageMagickPartlibsquish
 
 Files: coders/djvu.c
-Copyright: 1999-2017, ImageMagick Studio LLC
+Copyright: 1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: libdjvulibre used by this delegate is under GPL2+
 
 Files: coders/dot.c
-Copyright: 1999-2017, ImageMagick Studio LLC
+Copyright: 1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate under EPL but not compiled under debian
 
 Files: coders/dps.c
-Copyright: 1999-2017, ImageMagick Studio LLC
+Copyright: 1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate but not compiled under debian
 
 Files: coders/emf.c
 Copyright: 2001, Bill Radcliffe
-	   2001-2017, ImageMagick Studio LLC
+	   2014, Dirk Lemstra
+	   2001-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate but not compiled under debian (windows only)
 
 Files: coders/ept.c
-Copyright: 1999-2017, ImageMagick Studio LLC
+Copyright: 1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: Use two delegates:
- * ghostscript under GPL-3+
+ * ghostscript under AGPL-3+
  * libtiff under BSD-2
 
 Files: coders/exr.c
-Copyright: 2007-2017, ImageMagick Studio LLC
+Copyright: 2007-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate libopenexr under BSD-3
 
 Files: coders/fd.c
 Copyright: 2000, Bill Radcliffe
 	   2000, John Cristy
-	   2000-2017, ImageMagick Studio LLC
+	   2000-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/flif.c
 Copyright: 2016, Jon Sneyers
-           1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/fpx.c
-Copyright: 1999-2017, ImageMagick Studio LLC
+Copyright: 1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate but not compiled under debian
 
+Files: coders/heic.c
+Copyright: 2017 Anton Kortunov
+	   2017-2018 YANDEX LLC.
+License: ImageMagick
+
 Files: coders/ipl.c
 Copyright: 2008, Sean Burke
-	   2008-2017, ImageMagick Studio LLC
+	   2008-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/jbig.c
-Copyright: 1999-2017, ImageMagick Studio LLC
+Copyright: 1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use the libjbig delegate under GPL-2+
 
 Files: coders/jp2.c
 Copyright: 2001, Nathan Brown
-	   2001-2017, ImageMagick Studio LLC
 	   2002-2009, GraphicsMagick Group
+	   2001-2018, ImageMagick Studio LLC
 License: ImageMagickPartGraphicsMagick
 Comment: use the libjasper under BSD-2 and libjpeg under BDS-3 like
 
 Files: coders/jpeg.c
-Copyright: 1999-2017, ImageMagick Studio LLC
-	   1999, Glenn Randers-Pehrson
+Copyright: 1999, Glenn Randers-Pehrson
 	   1991-2010, Thomas G. Lane, Guido Vollbeding
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagickPartlibjpeg
 Comment: use libopenjpeg8 under BDS-3 like
 
@@ -162,7 +168,7 @@ Files: coders/msl.c
 Copyright: 2001, William Radcliffe
 	   2001, John Cristy
 	   2001, Leonard Rosenthol
-	   2001-2017, ImageMagick Studio LLC
+	   2001-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/palm.c
@@ -180,51 +186,51 @@ Comment: ImageMagick Licence with part of xfig program
 
 Files: coders/png.c
 Copyright: 1997, Glenn Randers-Pehrson
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use libpng under BSD-3
 
 Files: coders/ps3.c
 Copyright: 1992, Lars Ruben Skyum
 	   1992, John Cristy
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/psd.c
 Copyright: 1992, Leonard Rosenthol
 	   2013, Dirk Lemstra
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/rgf.c
 Copyright: 2013, Brian Wheeler
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/scr.c
 Copyright: 2003, Catalin Mihaila
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/screenshot.c
 Copyright: 2014, Dirk Lemstra
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/sixel.c
 Copyright: 2014, Hayaki Saito
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/svg.c
 Copyright: 2000, William Radcliffe
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use librsvg-2 under LGPL-2+
 
 Files: coders/tiff.c
 Copyright: 1992, John Cristy
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: Use a few libraries for delegate
  * use libtiff under BSD-2 like
@@ -233,41 +239,41 @@ Comment: Use a few libraries for delegate
 
 Files: coders/url.c
 Copyright: 2000, Bill Radcliffe
-	   2000-2017, ImageMagick Studio LLC
+	   2000-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use libxml delegate under BSD-3
 
 Files: coders/vips.c
 Copyright: 2014, Dirk Lemstra
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/wbmp.c
 Copyright: 2000, John Cristy
 	   2000, Milan Votava
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/wmf.c
 Copyright: 2000, John Cristy
 	   2000, Francis J. Franklin
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use libwmf delegate under LGPL-2+
 
 Files: coders/wpg.c
 Copyright: 2000, Jaroslav Fojtik
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/xcf.c
 Copyright: 2001, Leonard Rosenthol
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: coders/xtrn.c
 Copyright: 2001, Bill Radcliffe
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: config/ar-lib
@@ -279,11 +285,11 @@ Copyright: 1999-2014, Free Software Foundation, Inc.
 License: GPL-2+
 
 Files: config/config.*
-Copyright: 1992-2016, Free Software Foundation, Inc.
+Copyright: 1992-2017, Free Software Foundation, Inc.
 License: GPL-2+
 
 Files: config/depcomp
-Copyright: 1999-2014, Free Software Foundation, Inc.
+Copyright: 1999-2017, Free Software Foundation, Inc.
 License: GPL-2+
 
 Files: config/install-sh
@@ -314,11 +320,11 @@ License: BSD-with-FSF-change-public-domain
   FSF changes to this file are in the public domain.
 
 Files: config/missing
-Copyright: 1996-2014, Free Software Foundation, Inc.
+Copyright: 1996-2017, Free Software Foundation, Inc.
 License: GPL-2+
 
 Files: config/*-driver.sh
-Copyright: 2011-2014, Free Software Foundation, Inc.
+Copyright: 2011-2017, Free Software Foundation, Inc.
 License: GPL-2+
 
 Files: debian/*
@@ -327,7 +333,7 @@ Copyright: 1998-2000, Scott K. Ellis
 	   2004-2008, Daniel Kobras
 	   2008, Luciano Bello
 	   2008-2010, Nelson A. de Oliveira
-	   2009-2017, Bastien ROUCARIÈS
+	   2009-2018, Bastien ROUCARIÈS
 	   2011-2015, Vincent Fourmond
 License: ImageMagick
 
@@ -589,6 +595,8 @@ License: GNU-All-Permissive-License
 Files: m4/ax_gcc_archflag.m4
 Copyright: 2008, Steven G. Johnson <stevenj@alum.mit.edu>
 	   2008, Matteo Frigo
+	   2014, Tsukasa Oi
+	   2017, Alexey Kopytov
 License: GPL3+-with-Autoconf-Macros-exception
 
 Files: m4/ax_gcc_x86_cpuid.m4
@@ -645,12 +653,12 @@ Files: magick/accelerate*
 Copyright: 2010-2013, John Cristy
 	   2013, SiuChi Chan
 	   2013, Guansong Zhang
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/distort.c
 Copyright: 1997, Anthony Thyssen
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/draw.c
@@ -658,49 +666,49 @@ Copyright: 1998, Bill Radcliffe
 	   1998, Leonard Rosenthal
 	   1998, David Harr
 	   1998, John Cristy
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/fourier.c
 Copyright: 2009, Sean Burke
 	   2009, Fred Weinhaus
 	   2009, John Cristy
-	   2009-2017, ImageMagick Studio LLC
+	   2009-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: link with libfftw under GPL-2+
 
 Files: magick/histogram.c
 Copyright: 2009, Anthony Thyssen
 	   2009, Fred Weinhaus
-	   2009-2017, ImageMagick Studio LLC
+	   2009-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/magic.c
 Copyright: 1998, Bob Friesenhahn
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/module.c
 Copyright: 2000, Bob Friesenhahn
-	   2000-2017, ImageMagick Studio LLC
+	   2000-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/morphology.c
 Copyright: 2010, Anthony Thyssen
-	   2010-2017, ImageMagick Studio LLC
+	   2010-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/resample.c
 Copyright: 2007, Anthony Thyssen
 	   2007, John Cristy
-	   2007-2017, ImageMagick Studio LLC
+	   2007-2018, ImageMagick Studio LLC
 	   2010, Chantal Racette
 	   2010, Nicolas Robidoux
 License: ImageMagick
 
 Files: magick/resize.c
 Copyright: 1992, John Cristy
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 	   2010, Chantal Racette
 	   2010, Nicolas Robidoux
 License: ImageMagick
@@ -708,20 +716,20 @@ License: ImageMagick
 Files: magick/semaphore.c
 Copyright: 2000, William Radcliffe
 	   2000, John Cristy
-	   2000-2017, ImageMagick Studio LLC
+	   2000-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: magick/timer.c
 Copyright: 1993, Bill Radcliffe
 	   1993, Bob Friesenhahn
 	   1993, John Cristy
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 
 Files: magick/xml-tree.c
 Copyright: 2004-2006, Aaron Voisine <aaron@voisine.org>
-           1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagickLicensePartEZXML
 Comment: Imagemagick with part from ezxml
 
@@ -764,7 +772,7 @@ Files: www/*
 Copyright: 1999-2013, Rick Mabry
 	   1999-2013, John Cristy
 	   1999-2013, Anthony Thyssen
-	   1999-2017, ImageMagick Studio LLC
+	   1999-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 License: ImageMagickPartlibjpeg
