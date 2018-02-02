@@ -1,9 +1,344 @@
+imagemagick (8:6.9.9.34+dfsg-1) experimental; urgency=high
+
+  * New upstream version
+  * Fix a few security issues
+    + Fix CVE-2017-1000445: NULL pointer dereference in
+      the MagickCore component and might lead to denial of service.
+      (Closes: #886281)
+    + Fix CVE-2017-1000476: a CPU exhaustion vulnerability was found in
+      the function ReadDDSInfo in coders/dds.c, which allows attackers
+      to cause a denial of service.
+    + Fix CVE-2017-12140: The ReadDCMImage function in coders\dcm.c
+      has an integer signedness error leading to excessive memory
+      consumption via a crafted DCM file.
+      (Closes: #873059)
+    + Fix CVE-2017-12674: a CPU exhaustion vulnerability was found in
+      the function ReadPDBImage in coders/pdb.c, which allows attackers
+      to cause a denial of service
+      (Closes: #872609)
+    + Fix CVE-2017-12691: The ReadOneLayer function in coders/xcf.c
+      allows remote attackers to cause a denial of service
+      (memory consumption) via a crafted file.
+      (Closes: #875338)
+    + Fix CVE-2017-12692: ReadVIFFImage function in coders/viff.c
+      in ImageMagick allows remote attackers to cause a
+      denial of service (memory consumption) via a crafted VIFF file.
+      (Closes: #875339)
+    + Fix CVE-2017-12693: The ReadBMPImage function in coders/bmp.c
+      allows remote attackers to cause a denial of service
+      (memory consumption) via a crafted BMP
+      (Closes: #875341)
+    + Fix CVE-2017-12875: The WritePixelCachePixels function
+      allows remote attackers to cause a denial of service
+      (CPU consumption) via a crafted file.
+      (Closes: #873871)
+    + Fix CVE-2017-12877: Use-after-free vulnerability in
+      the DestroyImage function in image.c in ImageMagick allows
+      remote attackers to cause a denial of service via a crafted file.
+      (Closes: #872373)
+    + Fix CVE-2017-12983: Heap-based buffer overflow in the ReadSFWImage
+      function in coders/sfw.c in ImageMagick 7.0.6-8 allows remote
+      attackers to cause a denial of service (application crash)
+      or possibly have unspecified other impact via a crafted file.
+      (Closes: #873134)
+    + Fix CVE-2017-13061: A length-validation vulnerability was found
+      in the function ReadPSDLayersInternal in coders/psd.c,
+      which allows attackers to cause a denial of service
+      (ReadPSDImage memory exhaustion) via a crafted file
+      (Closes: #873131)
+    + Fix CVE-2017-13133: the load_level function in coders/xcf.c lacks
+      offset validation, which allows attackers to cause a denial of service
+      (load_tile memory exhaustion) via a crafted file.
+      (Closes: #873100)
+    + Fix CVE-2017-13134: a heap-based buffer over-read was found in the
+      function SFWScan in coders/sfw.c, which allows attackers
+      to cause a denial of service via a crafted file.
+      (Closes: #873099)
+    + Fix CVE-2017-13758: a heap-based buffer overflow in the TracePoint()
+      function in MagickCore/draw.c.
+      (Closes: #878508)
+    + Fix CVE-2017-13768: NULL Pointer Dereference in the IdentifyImage
+      function in MagickCore/identify.c in ImageMagick allows an attacker
+      to perform denial of service by sending a crafted image file.
+      (Closes: #875352)
+    + Fix CVE-2017-13769: The WriteTHUMBNAILImage function in
+      coders/thumbnail.c allows an attacker to cause a denial of service
+      (buffer over-read) by sending a crafted JPEG file.
+      (Closes: #878507)
+    + Fix CVE-2017-14060: a NULL Pointer Dereference issue is present in the
+      ReadCUTImage function in coders/cut.c that could allow an attacker
+      to cause a Denial of Service (in the QueueAuthenticPixelCacheNexus
+      function within the MagickCore/cache.c file) by submitting
+      a malformed image file.
+      (Closes: #878506)
+    + Fix CVE-2017-14172: In coders/ps.c, a DoS in ReadPSImage()
+      due to lack of an EOF (End of File) check cause high CPU consumption.
+      When a crafted PSD file, which claims a large "extent" field
+      in the header but does not contain sufficient backing data,
+      is provided, the loop over "length" would consume huge CPU resources,
+      since there is no EOF check inside the loop.
+      (Closes: #875506)
+    + Fix CVE-2017-14173: In the function ReadTXTImage() in coders/txt.c,
+      an integer overflow might occur for the addition operation
+      "GetQuantumRange(depth)+1" when "depth" is large, producing a smaller
+      value than expected. As a result, an infinite loop would occur
+      for a crafted TXT file that claims a very large "max_value" value.
+      (Closes: #875504)
+    + Fix CVE-2017-14174: In coders/psd.c in ReadPSDLayersInternal()
+      a lack of an EOF (End of File) check might cause huge CPU consumption.
+      When a crafted PSD file, which claims a large "length" field
+      in the header but does not contain sufficient backing data,
+      is provided, the loop over "length" would consume huge CPU resources,
+      since there is no EOF check inside the loop.
+      (Closes: #875503)
+    + Fix CVE-2017-14175: In coders/xbm.c in ReadXBMImage()
+      a lack of an EOF (End of File) check might cause huge CPU consumption.
+      When a crafted XBM file, which claims large rows and columns fields
+      in the header but does not contain sufficient backing data,
+      is provided, the loop over the rows would consume huge CPU resources,
+      since there is no EOF check inside the loop.
+      (Closes: #875502)
+    + Fix CVE-2017-14224: A heap-based buffer overflow in WritePCXImage
+      in coders/pcx.c allows remote attackers to cause a denial
+      of service or code execution via a crafted file.
+      (Closes: #876097)
+    + Fix CVE-2017-14249: Imagemagick mishandles EOF checks in
+      ReadMPCImage in coders/mpc.c, leading to division by zero
+      in GetPixelCacheTileSize in MagickCore/cache.c,
+      allowing remote attackers to cause a denial of service
+      via a crafted file.
+      (Closes: #876099)
+    + Fix CVE-2017-14341: large loop vulnerability in ReadWPGImage
+      in coders/wpg.c, causing CPU exhaustion via a crafted
+      wpg image file.
+      (Closes: #876105)
+    + Fix CVE-2017-14400: PersistPixelCache function in magick/cache.c
+      mishandles the pixel cache nexus, which allows remote attackers
+      to cause a denial of service (NULL pointer dereference
+      in the function GetVirtualPixels in MagickCore/cache.c)
+      via a crafted file.
+      (Closes: #878546)
+    + Fix CVE-2017-14505: DrawGetStrokeDashArray in wand/drawing-wand.c
+      mishandles certain NULL arrays, which allows attackers to perform
+      Denial of Service (NULL pointer dereference and application crash in
+      AcquireQuantumMemory within MagickCore/memory.c) by providing a
+      crafted Image File as input.
+      (Closes: #878545)))
+    + Fix CVE-2017-14532: NULL Pointer Dereference in TIFFIgnoreTags
+      in coders/tiff.c.
+      (Closes: #878541)
+    + Fix CVE-2017-14607: out of bounds read flaw related to ReadTIFFImage
+      has been reported in coders/tiff.c. An attacker could possibly
+      exploit this flaw to disclose potentially sensitive memory
+      or cause an application crash.
+      (Closes: #878527)
+    + Fix CVE-2017-14624: a NULL Pointer Dereference vulnerability
+      in the function PostscriptDelegateMessage in coders/ps.c.
+      (Closes: #877354)
+    + Fix CVE-2017-14625: NULL Pointer Dereference vulnerability
+      in the function sixel_output_create in coders/sixel.c.
+      (Closes: #877355)
+    + Fix CVE-2017-14626: NULL Pointer Dereference vulnerability
+      in the function sixel_decode in coders/sixel.c.
+      (Closes: #878524)
+    + Fix CVE-2017-14682: GetNextToken in MagickCore/token.c
+      allows remote attackers to cause a denial of service
+      (heap-based buffer overflow and application crash)
+      or possibly have unspecified other impact via a
+      crafted SVG document, a different vulnerability
+      than CVE-2017-10928.
+      (Closes: #876488)
+    + Fix CVE-2017-14739: The AcquireResampleFilterThreadSet
+      function in magick/resample-private.h in ImageMagick
+      mishandles failed memory allocation, which allows
+      remote attackers to cause a denial of service
+      (NULL Pointer Dereference in DistortImage in
+      MagickCore/distort.c, and application crash)
+      via unspecified vectors.
+      (Closes: #878547)
+    + Fix CVE-2017-14741: The ReadCAPTIONImage function in coders/caption.c
+      allows remote attackers to cause a denial of service
+      (infinite loop) via a crafted font file.
+      (Closes: #878548)
+    + Fix CVE-2017-14989: A use-after-free in RenderFreetype
+      in MagickCore/annotate.c allows attackers to crash the application
+      via a crafted font file, because the FT_Done_Glyph function
+      (from FreeType 2) is called at an incorrect place in the ImageMagick code.
+      (Closes: #878562)
+    + Fix CVE-2017-15015: NULL pointer dereference vulnerability in
+      PDFDelegateMessage in coders/pdf.c.
+      (Closes: #878555)
+    + Fix CVE-2017-15017: NULL pointer dereference vulnerability
+      in ReadOneMNGImage in coders/png.c.
+      (Closes: #878554)
+    + Fix CVE-2017-15277: ReadGIFImage in coders/gif.c leaves
+      the palette uninitialized when processing a GIF file that has
+      neither a global nor local palette. If the affected product is
+      used as a library loaded into a process that operates on
+      interesting data, this data sometimes can be leaked
+      via the uninitialized palette.
+      (Closes: #878578)
+    + Fix CVE-2017-15281: ReadPSDImage in coders/psd.c
+      allows remote attackers to cause a denial of service
+      (application crash) or possibly have unspecified other impact
+      via a crafted file, related to "Conditional jump or move
+      depends on uninitialised value(s).
+      (Closes: #878579).
+    + Fix CVE-2017-16546: The ReadWPGImage function in coders/wpg.c
+      does not properly validate the colormap index in a WPG palette,
+      which allows remote attackers to cause a denial of service
+      (use of uninitialized data or invalid memory allocation)
+      or possibly have unspecified other impact via a malformed WPG file.
+      (Closes: #881392)
+    + Fix CVE-2017-17499: use-after-free in Magick::Image::read
+      in Magick++/lib/Image.cpp.
+      (Closes: #885339)
+    + Fix CVE-2017-17504: coders/png.c Magick_png_read_raw_profile
+      heap-based buffer over-read via a crafted file, related to
+      ReadOneMNGImage.
+      (Closes: #885340)
+    + Fix CVE-2017-17681: an infinite loop vulnerability was found
+      in the function ReadPSDChannelZip in coders/psd.c, which
+      allows attackers to cause a denial of service (CPU exhaustion)
+      via a crafted psd image file.
+      (Closes: #885941)
+    + Fix CVE-2017-17682: large loop vulnerability was found in the
+      function ExtractPostscript in coders/wpg.c, which allows attackers
+      to cause a denial of service (CPU exhaustion) via a crafted wpg
+      image file that triggers a ReadWPGImage call.
+      (Closes: #885942)
+    + Fix CVE-2017-17879: a heap-based buffer over-read in ReadOneMNGImage
+      in coders/png.c, related to length calculation and caused by an
+      off-by-one error.
+      (Closes: #885125)
+    + Fix CVE-2017-17914: a vulnerability was found in the function
+      ReadOnePNGImage in coders/png.c, which allows attackers to cause
+      a denial of service (ReadOneMNGImage large loop) via a crafted mng
+      image file.
+      (Closes: #886584)
+    + Fix CVE-2018-5248: a heap-based buffer over-read in coders/sixel.c
+      in the ReadSIXELImage function, related to the sixel_decode function.
+      (Closes: #886588)
+  * Fix a few unimportant security bugs:
+    + Fix CVE-2017-12644 memory leak vulnerability
+      in ReadDCMImage in coders\dcm.c
+    + Fix CVE-2017-13058 memory leak in WritePCXImage
+    + Fix CVE-2017-13059 memory leak in WriteJNGImage
+    + Fix CVE-2017-13060 memory leak in ReadMATImage
+    + Fix CVE-2017-13062 memory leak vulnerability
+      found in the function formatIPTC in coders/meta.c,
+      which allows attackers to cause a denial of service
+      (WriteMETAImage memory consumption) via a crafted file.
+    + Fix CVE-2017-13131 a memory leak vulnerability
+      found in the function ReadMIFFImage in coders/miff.c,
+      which allows attackers to cause a denial of service
+      (memory consumption in NewLinkedList in MagickCore/linked-list.c)
+      via a crafted file.
+    + Fix CVE-2017-14137: ReadWEBPImage in coders/webp.c has an issue
+      where memory allocation is excessive,
+      because it depends only on a length field in a header.
+    + Fix CVE-2017-14138: ReadWEBPImage in coders/webp.c
+      because memory is not freed in certain error cases.
+    + Fix CVE-2017-14139: memory leak vulnerability
+      in WriteMSLImage in coders/msl.c.
+    + Fix CVE-2017-14324: memory leak in ReadMPCImage (coders/mpc.c)
+    + Fix CVE-2017-14325: memory leak in ReadMPCImage (coders/mpc.c)
+    + Fix CVE-2017-14326: memory leak vulnerability in the function
+      ReadMATImage in coders/mat.c, which allows attackers
+      to cause a denial of service via a crafted file.
+    + Fix CVE-2017-14342: memory exhaustion vulnerability in
+      ReadWPGImage in coders/wpg.c via a crafted wpg image file.
+    + Fix CVE-2017-14343: memory leak vulnerability in
+      ReadXCFImage in coders/xcf.c via a crafted xcf image file.
+    + Fix CVE-2017-14531: memory exhaustion issue in
+      ReadSUNImage in coders/sun.c.
+    + Fix CVE-2017-14533: memory leak in ReadMATImage in coders/mat.c.
+    + Fix CVE-2017-14684: mory leak vulnerability was found in the
+      function ReadVIPSImage in coders/vips.c, which allows
+      attackers to cause a denial of service (memory consumption
+      in ResizeMagickMemory in MagickCore/memory.c) via a crafted file.
+      (Closes: #876487)
+    + Fix CVE-2017-15016: a NULL pointer dereference vulnerability
+      in ReadEnhMetaFile in coders/emf.c. (source fix not compiled
+      under Debian).
+    + Fix CVE-2017-15032: memory leak in ReadYCBCRImage in
+      coders/ycbcr.c.
+    + Fix CVE-2017-15033: memory leak in ReadYUVImage in coders/yuv.c.
+    + Fix CVE-2017-15217: memory leak in ReadSGIImage in coders/sgi.c.
+    + Fix CVE-2017-15218: memory leak in ReadOneJNGImage in coders/png.c.
+    + Fix CVE-2017-17680: a memory leak vulnerability was found in
+      the function ReadXPMImage in coders/xpm.c, which allows
+      attackers to cause a denial of service via a crafted xpm image file.
+    + Fix CVE-2017-17881: a memory leak vulnerability was found in
+      the function ReadMATImage in coders/mat.c, which allows
+      attackers to cause a denial of service via a crafted MAT image file.
+    + Fix CVE-2017-17882: a memory leak vulnerability was found in the
+      function ReadXPMImage in coders/xpm.c, which allows attackers
+      to cause a denial of service via a crafted XPM image file.
+    + Fix CVE-2017-17883: a memory leak vulnerability was found in the
+      function ReadPGXImage in coders/pgx.c, which allows attackers
+      to cause a denial of service via a crafted PGX image file.
+    + Fix CVE-2017-17884: a memory leak vulnerability was found in the
+      function WriteOnePNGImage in coders/png.c,
+      which allows attackers to cause a denial of service via
+      a crafted PNG image file.
+    + Fix CVE-2017-17885: a memory leak vulnerability was found
+      in the function ReadPICTImage in coders/pict.c, which
+      allows attackers to cause a denial of service via a crafted
+      PICT image file.
+    + Fix CVE-2017-17886: a memory leak vulnerability was found
+      in the function ReadPSDChannelZip in coders/psd.c,
+      which allows attackers to cause a denial of service
+      via a crafted psd image file.
+    + Fix CVE-2017-17887: a memory leak vulnerability
+      was found in the function GetImagePixelCache in magick/cache.c,
+      which allows attackers to cause a denial of service via a crafted
+      MNG image file that is processed by ReadOneMNGImage.
+    + Fix CVE-2017-17934: a memory leaks in coders/msl.c,
+      related to MSLPopImage and ProcessMSLScript,
+      and associated with mishandling of MSLPushImage calls.
+    + Fix CVE-2017-18008: a ùemory Leak in ReadPWPImage in coders/pwp.c.
+    + Fix CVE-2017-18022: memory leaks in MontageImageCommand
+      in MagickWand/montage.c.
+    + Fix CVE-2017-18027: a memory leak vulnerability was found
+      in the function ReadMATImage in coders/mat.c,
+      which allow remote attackers to cause a denial
+      of service via a crafted file.
+    + Fix CVE-2017-18028: a memory exhaustion vulnerability
+      was found in the function ReadTIFFImage in coders/tiff.c,
+      which allow remote attackers to cause a denial
+      of service via a crafted file.
+    + Fix CVE-2017-18029: a memory leak vulnerability was found
+      in the function ReadMATImage in coders/mat.c,
+      which allow remote attackers to cause a denial of
+      service via a crafted file.
+    + Fix CVE-2017-6502: a specially crafted webp file
+      could lead to a file-descriptor leak in libmagickcore
+      (thus, a DoS)
+    + Fix CVE-2018-5246: Fix memory leaks in ReadPATTERNImage
+      in coders/pattern.c.
+    + Fix CVE-2018-5247: Fix memory leaks in ReadRLAImage in coders/rla.c.
+    + Fix CVE-2018-5357: Fix memory leaks in the ReadDCMImage function
+      in coders/dcm.c.
+    + Fix CVE-2018-5358: Fix memory leaks in the EncodeImageAttributes
+      function in coders/json.c, as demonstrated by the
+      ReadPSDLayersInternal function in coders/psd.c.
+  * Backport fix:
+    + Fix CVE-2018-6405: In the ReadDCMImage function in coders/dcm.c
+      in ImageMagick before 7.0.7-23, each redmap, greenmap, and bluemap
+      variable can be overwritten by a new pointer.
+      The previous pointer is lost, which leads to a memory leak.
+      This allows remote attackers to cause a denial of service.
+      (from b0a464122e0d8a1e1e31f6cd6d3f4d085fa8fb0)
+
+ -- Bastien Roucariès <rouca@debian.org>  Fri, 02 Feb 2018 15:16:07 +0100
+
 imagemagick (8:6.9.9.6+dfsg-1) experimental; urgency=medium
 
   * Bump so due to ABI problem and g++7 (Closes: #871300).
   * New upstream version.
     + Fix CVE-2017-6502, webp buffer overflow. (Closes: #856883).
-    + Fix CVE-2017-11751:
+    + Fix CVE-2017-11751, CVE-2017-11754 and CVE-2017-11755:
       The WritePICONImage function in coders/xpm.c
       allows remote attackers to cause a denial of service (memory leak) via
       a crafted file. (Closes: #870480).
@@ -19,9 +354,11 @@ imagemagick (8:6.9.9.6+dfsg-1) experimental; urgency=medium
     + CVE-2017-12433: A memory leak vulnerability was found in
       the function ReadPESImage in coders/pes.c, which allows attackers
       to cause a denial of service, related to ResizeMagickMemory in memory.c.
+      (Closes: #872481)
     + CVE-2017-12418:  A memory leaks was found in
       the parse8BIMW and format8BIM functions in coders/meta.c,
       related to the WriteImage function in MagickCore/constitute.c.
+      (Closes: #872498)
     + CVE-2017-12644: a memory leak vulnerability was found
       in ReadDCMImage in coders\dcm.c.
   * Update copyright file.
