@@ -6,6 +6,8 @@ Files-Excluded: images/donate.*
                 www/api/Magick*/*
                 www/js/*.js
                 www/css/*.css
+                www/assets/*.js
+                www/assets/*.css
 Comment: Remove non free image and doxygen files
 
 Files: *
