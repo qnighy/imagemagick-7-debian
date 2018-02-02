@@ -12,8 +12,8 @@ Comment: Remove non free image and doxygen files
 
 Files: *
 Copyright: 1987-1999, E. I. du Pont de Nemours and Company
-	   1999-2017, ImageMagick Studio LLC
-	   1987-2017, John Cristy
+	   1999-2018, ImageMagick Studio LLC
+	   1987-2018, John Cristy
 License: ImageMagick
 Comment: Apache-2.0 License with additional preamble
  .
@@ -31,6 +31,11 @@ Comment: Apache-2.0 License with additional preamble
  ImageMagick license. For convenience, when ImageMagick is bundled
  with (or compiled with) "delegate" libraries, a copy of the licenses
  for these libraries is provided in a "licenses" directory.
+
+Files: Makefile.in
+Copyright: 1994-2017, Free Software Foundation, Inc.
+           1999-2018, ImageMagick Studio LLC
+License: Makefile-in and Imagemagick
 
 Files: coders/art.c
 Copyright: 2001, Jaroslav Fojtik
@@ -752,7 +757,7 @@ Comment: retrieved from homepage of script http://txt2html.sourceforge.net/txt2h
 
 Files: wand/draw*
 Copyright: 2002, Bob Friesenhahn
-	   2002-2017, ImageMagick Studio LLC
+	   2002-2018, ImageMagick Studio LLC
 License: ImageMagick
 
 Files: www/*
@@ -1508,6 +1513,16 @@ License: GNU-All-Permissive-License
  permitted in any medium without royalty provided the copyright notice
  and this notice are preserved. This file is offered as-is, without any
  warranty.
+
+License: Makefile-in
+  This Makefile.in is free software; the Free Software Foundation
+  gives unlimited permission to copy and/or distribute it,
+  with or without modifications, as long as this notice is preserved.
+  .
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+  even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ PARTICULAR PURPOSE.
 
 License: LGPL-3+
  This program is free software: you can redistribute it and/or modify it
