@@ -17,7 +17,7 @@
 %                              January 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -179,7 +179,6 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
         break;
       }
       case '-':
-      case '.':
       case ',':
       case '+':
       case '0':
@@ -197,6 +196,18 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
       case 'E':
       {
         p++;
+        break;
+      }
+      case '.':
+      {
+        p++;
+        flags|=DecimalValue;
+        break;
+      }
+      case ':':
+      {
+        p++;
+        flags|=AspectRatioValue;
         break;
       }
       default:
@@ -305,7 +316,7 @@ MagickExport MagickStatusType GetGeometry(const char *geometry,ssize_t *x,
         }
       if (((flags & SeparatorValue) != 0) && ((flags & WidthValue) == 0) &&
           (height != (size_t *) NULL) && (width != (size_t *) NULL))
-            *width=(*height);
+        *width=(*height);
     }
 #if 0
   /*
@@ -452,7 +463,7 @@ MagickExport char *GetPageGeometry(const char *page_geometry)
 
   assert(page_geometry != (char *) NULL);
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",page_geometry);
-  CopyMagickString(page,page_geometry,MaxTextExtent);
+  (void) CopyMagickString(page,page_geometry,MaxTextExtent);
   for (i=0; i < (ssize_t) (sizeof(PageSizes)/sizeof(PageSizes[0])); i++)
   {
     int
@@ -937,7 +948,6 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
       case '8':
       case '9':
       case '/':
-      case ':':
       case 215:
       case 'e':
       case 'E':
@@ -949,6 +959,12 @@ MagickExport MagickStatusType ParseGeometry(const char *geometry,
       {
         p++;
         flags|=DecimalValue;
+        break;
+      }
+      case ':':
+      {
+        p++;
+        flags|=AspectRatioValue;
         break;
       }
       default:
@@ -1212,6 +1228,36 @@ MagickExport MagickStatusType ParseGravityGeometry(const Image *image,
       region_info->width=(size_t) floor((scale.x*image->columns/100.0)+0.5);
       region_info->height=(size_t) floor((scale.y*image->rows/100.0)+0.5);
     }
+  if ((flags & AspectRatioValue) != 0)
+    {
+      double
+        geometry_ratio,
+        image_ratio;
+
+      GeometryInfo
+        geometry_info;
+
+      /*
+        Geometry is a relative to image size and aspect ratio.
+      */
+      if (image->gravity != UndefinedGravity)
+        flags|=XValue | YValue;
+      (void) ParseGeometry(geometry,&geometry_info);
+      geometry_ratio=geometry_info.rho;
+      image_ratio=image->columns/(double) image->rows;
+      if (geometry_ratio >= image_ratio)
+        {
+          region_info->width=image->columns;
+          region_info->height=(size_t) floor((image->rows*image_ratio/
+            geometry_ratio)+0.5);
+        }
+      else
+        {
+          region_info->width=(size_t) floor((image->columns*geometry_ratio/
+            image_ratio)+0.5);
+          region_info->height=image->rows;
+        }
+    }
   /*
     Adjust offset according to gravity setting.
   */
@@ -1318,8 +1364,37 @@ MagickExport MagickStatusType ParseMetaGeometry(const char *geometry,ssize_t *x,
       scale.y=geometry_info.sigma;
       if ((flags & SigmaValue) == 0)
         scale.y=scale.x;
-      *width=(size_t) floor(scale.x*former_width/100.0+0.5);
-      *height=(size_t) floor(scale.y*former_height/100.0+0.5);
+      *width=(size_t) MagickMax(floor(scale.x*former_width/100.0+0.5),1.0);
+      *height=(size_t) MagickMax(floor(scale.y*former_height/100.0+0.5),1.0);
+      former_width=(*width);
+      former_height=(*height);
+    }
+  if ((flags & AspectRatioValue) != 0)
+    {
+      double
+        geometry_ratio,
+        image_ratio;
+
+      GeometryInfo
+        geometry_info;
+
+      /*
+        Geometry is a relative to image size and aspect ratio.
+      */
+      (void) ParseGeometry(geometry,&geometry_info);
+      geometry_ratio=geometry_info.rho;
+      image_ratio=former_width/(double) former_height;
+      if (geometry_ratio >= image_ratio)
+        {
+          *width=former_width;
+          *height=(size_t) floor((former_height*image_ratio/geometry_ratio)+
+            0.5);
+        }
+      else
+        {
+          *width=(size_t) floor((former_width*geometry_ratio/image_ratio)+0.5);
+          *height=former_height;
+        }
       former_width=(*width);
       former_height=(*height);
     }
@@ -1558,7 +1633,7 @@ MagickExport MagickStatusType ParseRegionGeometry(const Image *image,
 MagickExport void SetGeometry(const Image *image,RectangleInfo *geometry)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(geometry != (RectangleInfo *) NULL);

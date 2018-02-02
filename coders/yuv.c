@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -128,6 +128,7 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
     y;
 
   size_t
+    length,
     quantum;
 
   unsigned char
@@ -137,12 +138,12 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Allocate image structure.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   if ((image->columns == 0) || (image->rows == 0))
     ThrowReaderException(OptionError,"MustSpecifyImageSize");
@@ -206,6 +207,7 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
       quantum*sizeof(*scanline));
   if (scanline == (unsigned char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+  status=MagickTrue;
   do
   {
     chroma_image=CloneImage(image,(image->columns+horizontal_factor-1)/
@@ -221,10 +223,7 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
         break;
     status=SetImageExtent(image,image->columns,image->rows);
     if (status == MagickFalse)
-      {
-        InheritException(exception,&image->exception);
-        return(DestroyImageList(image));
-      }
+      break;
     if (interlace == PartitionInterlace)
       {
         AppendImageFormat("Y",image->filename);
@@ -243,7 +242,17 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (interlace == NoInterlace)
         {
           if ((y > 0) || (GetPreviousImageInList(image) == (Image *) NULL))
-            (void) ReadBlob(image,(size_t) (2*quantum*image->columns),scanline);
+            {
+              length=2*quantum*image->columns;
+              count=ReadBlob(image,length,scanline);
+              if (count != (ssize_t) length)
+                {
+                  status=MagickFalse;
+                  ThrowFileException(exception,CorruptImageError,
+                    "UnexpectedEndOfFile",image->filename);
+                  break;
+                }
+            }
           p=scanline;
           q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
           if (q == (PixelPacket *) NULL)
@@ -297,7 +306,17 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
       else
         {
           if ((y > 0) || (GetPreviousImageInList(image) == (Image *) NULL))
-            (void) ReadBlob(image,(size_t) quantum*image->columns,scanline);
+            {
+              length=quantum*image->columns;
+              count=ReadBlob(image,length,scanline);
+              if (count != (ssize_t) length)
+                {
+                  status=MagickFalse;
+                  ThrowFileException(exception,CorruptImageError,
+                    "UnexpectedEndOfFile",image->filename);
+                  break;
+                }
+            }
           p=scanline;
           q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
           if (q == (PixelPacket *) NULL)
@@ -344,8 +363,15 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
       {
         for (y=0; y < (ssize_t) chroma_image->rows; y++)
         {
-          (void) ReadBlob(image,(size_t) quantum*chroma_image->columns,
-            scanline);
+          length=quantum*chroma_image->columns;
+          count=ReadBlob(image,length,scanline);
+          if (count != (ssize_t) length)
+            {
+              status=MagickFalse;
+              ThrowFileException(exception,CorruptImageError,
+                "UnexpectedEndOfFile",image->filename);
+              break;
+            }
           p=scanline;
           q=QueueAuthenticPixels(chroma_image,0,y,chroma_image->columns,1,
             exception);
@@ -380,7 +406,15 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
         }
       for (y=0; y < (ssize_t) chroma_image->rows; y++)
       {
-        (void) ReadBlob(image,(size_t) quantum*chroma_image->columns,scanline);
+        length=quantum*chroma_image->columns;
+        count=ReadBlob(image,length,scanline);
+        if (count != (ssize_t) length)
+          {
+            status=MagickFalse;
+            ThrowFileException(exception,CorruptImageError,
+              "UnexpectedEndOfFile",image->filename);
+            break;
+          }
         p=scanline;
         q=GetAuthenticPixels(chroma_image,0,y,chroma_image->columns,1,
           exception);
@@ -428,7 +462,8 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
         break;
     }
     resize_image=DestroyImage(resize_image);
-    SetImageColorspace(image,YCbCrColorspace);
+    if (SetImageColorspace(image,YCbCrColorspace) == MagickFalse)
+      break;
     if (interlace == PartitionInterlace)
       (void) CopyMagickString(image->filename,image_info->filename,
         MaxTextExtent);
@@ -467,7 +502,10 @@ static Image *ReadYUVImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
   } while (count != 0);
   scanline=(unsigned char *) RelinquishMagickMemory(scanline);
+  InheritException(exception,&image->exception);
   (void) CloseBlob(image);
+  if (status == MagickFalse)
+    return(DestroyImageList(image));
   return(GetFirstImageInList(image));
 }
 
@@ -593,9 +631,9 @@ static MagickBooleanType WriteYUVImage(const ImageInfo *image_info,Image *image)
     y;
 
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   quantum=(size_t) (image->depth <= 8 ? 1 : 2);

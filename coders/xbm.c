@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -131,7 +131,7 @@ static MagickBooleanType IsXBM(const unsigned char *magick,const size_t length)
 %
 */
 
-static unsigned int XBMInteger(Image *image,short int *hex_digits)
+static int XBMInteger(Image *image,short int *hex_digits)
 { 
   int
     c;
@@ -146,7 +146,7 @@ static unsigned int XBMInteger(Image *image,short int *hex_digits)
   { 
     c=ReadBlobByte(image);
     if (c == EOF)
-      return(0);
+      return(-1);
   } while ((c == ' ') || (c == '\t') || (c == '\n') || (c == '\r'));
   /*
     Evaluate number.
@@ -162,9 +162,9 @@ static unsigned int XBMInteger(Image *image,short int *hex_digits)
     value+=hex_digits[c];
     c=ReadBlobByte(image);
     if (c == EOF)
-      return(0);
+      return(-1);
   }
-  return(value);
+  return((int) value);
 }
 
 static Image *ReadXBMImage(const ImageInfo *image_info,ExceptionInfo *exception)
@@ -175,6 +175,9 @@ static Image *ReadXBMImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   Image
     *image;
+
+  int
+    c;
 
   MagickBooleanType
     status;
@@ -208,7 +211,6 @@ static Image *ReadXBMImage(const ImageInfo *image_info,ExceptionInfo *exception)
     height,
     length,
     padding,
-    value,
     version,
     width;
 
@@ -216,12 +218,12 @@ static Image *ReadXBMImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -234,6 +236,7 @@ static Image *ReadXBMImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   width=0;
   height=0;
+  *name='\0';
   while (ReadBlobString(image,buffer) != (char *) NULL)
     if (sscanf(buffer,"#define %32s %u",name,&width) == 2)
       if ((strlen(name) >= 6) &&
@@ -304,6 +307,8 @@ static Image *ReadXBMImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Initialize hex values.
   */
+  for (i=0; i < (ssize_t) (sizeof(hex_digits)/sizeof(*hex_digits)); i++)
+    hex_digits[i]=(-1);
   hex_digits[(int) '0']=0;
   hex_digits[(int) '1']=1;
   hex_digits[(int) '2']=2;
@@ -349,16 +354,25 @@ static Image *ReadXBMImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (version == 10)
     for (i=0; i < (ssize_t) (bytes_per_line*image->rows); (i+=2))
     {
-      value=XBMInteger(image,hex_digits);
-      *p++=(unsigned char) value;
+      c=XBMInteger(image,hex_digits);
+      if (c < 0)
+        break;
+      *p++=(unsigned char) c;
       if ((padding == 0) || (((i+2) % bytes_per_line) != 0))
-        *p++=(unsigned char) (value >> 8);
+        *p++=(unsigned char) (c >> 8);
     }
   else
     for (i=0; i < (ssize_t) (bytes_per_line*image->rows); i++)
     {
-      value=XBMInteger(image,hex_digits);
-      *p++=(unsigned char) value;
+      c=XBMInteger(image,hex_digits);
+      if (c < 0)
+        break;
+      *p++=(unsigned char) c;
+    }
+  if (EOFBlob(image) != MagickFalse)
+    {
+      data=(unsigned char *) RelinquishMagickMemory(data);
+      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
     }
   /*
     Convert X bitmap image to pixel packets.
@@ -375,7 +389,7 @@ static Image *ReadXBMImage(const ImageInfo *image_info,ExceptionInfo *exception)
     for (x=0; x < (ssize_t) image->columns; x++)
     {
       if (bit == 0)
-        byte=(size_t) (*p++);
+        byte=(unsigned int) (*p++);
       SetPixelIndex(indexes+x,(byte & 0x01) != 0 ? 0x01 : 0x00);
       bit++;
       byte>>=1;
@@ -511,9 +525,9 @@ static MagickBooleanType WriteXBMImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);

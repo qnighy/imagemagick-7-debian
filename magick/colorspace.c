@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -40,7 +40,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/property.h"
+#include "magick/attribute.h"
 #include "magick/cache.h"
 #include "magick/cache-private.h"
 #include "magick/cache-view.h"
@@ -50,6 +50,7 @@
 #include "magick/colorspace-private.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
+#include "magick/enhance.h"
 #include "magick/image.h"
 #include "magick/image-private.h"
 #include "magick/gem.h"
@@ -58,6 +59,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/pixel-private.h"
+#include "magick/property.h"
 #include "magick/quantize.h"
 #include "magick/quantum.h"
 #include "magick/resource_.h"
@@ -75,6 +77,58 @@ typedef struct _TransformPacket
     y,
     z;
 } TransformPacket;
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   G e t I m a g e C o l o r s p a c e T y p e                               %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetImageColorspaceType() returns the potential colorspace of image:
+%  sRGBColorspaceType, RGBColorspaceType, GRAYColorspaceType, etc.
+%
+%  To ensure the image type matches its potential, use SetImageColorspaceType():
+%
+%    (void) SetImageColorspaceType(image,GetImageColorspaceType(image),
+%      exception);
+%
+%  The format of the GetImageColorspaceType method is:
+%
+%      ColorspaceType GetImageColorspaceType(const Image *image,
+%        ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+MagickExport ColorspaceType GetImageColorspaceType(const Image *image,
+  ExceptionInfo *exception)
+{
+  ColorspaceType
+    colorspace;
+
+  ImageType
+    type;
+
+  assert(image != (Image *) NULL);
+  assert(image->signature == MagickCoreSignature);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  colorspace=image->colorspace;
+  type=IdentifyImageType(image,exception);
+  if ((type == BilevelType) || (type == GrayscaleType) ||
+      (type == GrayscaleMatteType))
+    colorspace=GRAYColorspace;
+  return(colorspace);
+}
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,7 +297,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
     *z_map;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(colorspace != sRGBColorspace);
@@ -275,7 +329,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -326,6 +380,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
         return(MagickFalse);
       return(status);
     }
+    case LinearGRAYColorspace:
     case GRAYColorspace:
     {
       /*
@@ -341,7 +396,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -413,7 +468,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -624,8 +679,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       black=pow(10.0,(reference_black-reference_white)*(gamma/density)*0.002/
         film_gamma);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
         logmap[i]=ScaleMapToQuantum((MagickRealType) (MaxMap*(reference_white+
@@ -634,7 +688,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -700,7 +754,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -764,8 +818,16 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
   if ((x_map == (TransformPacket *) NULL) ||
       (y_map == (TransformPacket *) NULL) ||
       (z_map == (TransformPacket *) NULL))
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
-      image->filename);
+    {
+      if (x_map != (TransformPacket *) NULL)
+        x_map=(TransformPacket *) RelinquishMagickMemory(x_map);
+      if (y_map != (TransformPacket *) NULL)
+        y_map=(TransformPacket *) RelinquishMagickMemory(y_map);
+      if (z_map != (TransformPacket *) NULL)
+        z_map=(TransformPacket *) RelinquishMagickMemory(z_map);
+      ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+        image->filename);
+    }
   (void) ResetMagickMemory(&primary_info,0,sizeof(primary_info));
   switch (colorspace)
   {
@@ -784,8 +846,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       primary_info.y=(double) (MaxMap+1.0)/2.0;
       primary_info.z=(double) (MaxMap+1.0)/2.0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -840,8 +901,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       primary_info.y=(double) (MaxMap+1.0)/2.0;
       primary_info.z=(double) (MaxMap+1.0)/2.0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -896,8 +956,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       primary_info.y=(double) (MaxMap+1.0)/2.0;
       primary_info.z=(double) (MaxMap+1.0)/2.0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -958,8 +1017,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
         Linear conversion tables.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -990,7 +1048,7 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1137,7 +1195,7 @@ MagickExport MagickBooleanType SetImageColorspace(Image *image,
     status;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->colorspace == colorspace)
@@ -1149,8 +1207,7 @@ MagickExport MagickBooleanType SetImageColorspace(Image *image,
   type=image->type;
   if (IsGrayColorspace(colorspace) != MagickFalse)
     {
-      if ((image->intensity == Rec601LuminancePixelIntensityMethod) ||
-          (image->intensity == Rec709LuminancePixelIntensityMethod))
+      if (colorspace == LinearGRAYColorspace)
         image->gamma=1.0;
       type=GrayscaleType;
     }
@@ -1228,7 +1285,7 @@ MagickExport MagickBooleanType SetImageGray(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if ((image->type == BilevelType) || (image->type == GrayscaleType) ||
@@ -1322,7 +1379,7 @@ MagickExport MagickBooleanType SetImageMonochrome(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->type == BilevelType)
@@ -1394,24 +1451,22 @@ MagickExport MagickBooleanType TransformImageColorspace(Image *image,
     status;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->colorspace == colorspace)
     return(MagickTrue);
-  if ((image->colorspace == Rec709LumaColorspace) &&
-      (colorspace == sRGBColorspace))
-    return(SetImageColorspace(image,colorspace));
-  if ((image->colorspace == GRAYColorspace) && (image->gamma != 1.0) &&
-      (colorspace == sRGBColorspace))
-    return(SetImageColorspace(image,colorspace));
+  (void) DeleteImageProfile(image,"icc");
+  (void) DeleteImageProfile(image,"icm");
+  if (colorspace == LinearGRAYColorspace)
+    return(GrayscaleImage(image,Rec709LuminancePixelIntensityMethod));
+  if (colorspace == GRAYColorspace)
+    return(GrayscaleImage(image,Rec709LumaPixelIntensityMethod));
   if (colorspace == UndefinedColorspace)
     return(SetImageColorspace(image,colorspace));
   /*
     Convert the reference image from an alternate colorspace to sRGB.
   */
-  (void) DeleteImageProfile(image,"icc");
-  (void) DeleteImageProfile(image,"icm");
   if (IssRGBColorspace(colorspace) != MagickFalse)
     return(TransformRGBImage(image,image->colorspace));
   status=MagickTrue;
@@ -1849,7 +1904,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
     *z_map;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=MagickTrue;
@@ -1876,7 +1931,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1941,7 +1996,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2021,7 +2076,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2244,7 +2299,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2310,7 +2365,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2398,8 +2453,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         through QuantumRange.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2428,8 +2482,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         through QuantumRange.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2458,8 +2511,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         through QuantumRange.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2487,8 +2539,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         YCC is scaled by 1.3584.  C1 zero is 156 and C2 is at 137.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2514,8 +2565,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
         Linear conversion tables.
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) \
-        magick_threads(image,image,1,1)
+      #pragma omp parallel for schedule(static,4)
 #endif
       for (i=0; i <= (ssize_t) MaxMap; i++)
       {
@@ -2546,7 +2596,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2631,7 +2681,7 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,1,1)
+        magick_number_threads(image,image,image->colors,1)
 #endif
       for (i=0; i < (ssize_t) image->colors; i++)
       {

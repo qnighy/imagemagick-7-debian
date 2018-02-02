@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -127,16 +127,15 @@ static unsigned char *SFWScan(unsigned char *p,const unsigned char *q,
   register ssize_t
     i;
 
-  if ((p+length) < q)
-    while (p < q)
-    {
-      for (i=0; i < (ssize_t) length; i++)
-        if (p[i] != target[i])
-          break;
-      if (i == (ssize_t) length)
-        return((unsigned char *) p);
-      p++;
-    }
+  while ((p+length) < q)
+  {
+    for (i=0; i < (ssize_t) length; i++)
+      if (p[i] != target[i])
+        break;
+    if (i == (ssize_t) length)
+      return((unsigned char *) p);
+    p++;
+  }
   return((unsigned char *) NULL);
 }
 
@@ -236,12 +235,12 @@ static Image *ReadSFWImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -254,8 +253,10 @@ static Image *ReadSFWImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   if (GetBlobSize(image) != (size_t) GetBlobSize(image))
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-  buffer=(unsigned char *) AcquireQuantumMemory((size_t) GetBlobSize(image),
-    sizeof(*buffer));
+  if (GetBlobSize(image) < 141)
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+  buffer=(unsigned char *) AcquireQuantumMemory((size_t) GetBlobSize(image)+
+    MaxTextExtent,sizeof(*buffer));
   if (buffer == (unsigned char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   count=ReadBlob(image,(size_t) GetBlobSize(image),buffer);
@@ -271,7 +272,8 @@ static Image *ReadSFWImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   header=SFWScan(buffer,buffer+count-1,(const unsigned char *)
     "\377\310\377\320",4);
-  if (header == (unsigned char *) NULL)
+  if ((header == (unsigned char *) NULL) || 
+      ((header+140) > (buffer+GetBlobSize(image))))
     {
       buffer=(unsigned char *) RelinquishMagickMemory(buffer);
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
@@ -405,6 +407,7 @@ ModuleExport size_t RegisterSFWImage(void)
   entry=SetMagickInfo("SFW");
   entry->decoder=(DecodeImageHandler *) ReadSFWImage;
   entry->magick=(IsImageFormatHandler *) IsSFW;
+  entry->seekable_stream=MagickTrue;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Seattle Film Works");
   entry->module=ConstantString("SFW");

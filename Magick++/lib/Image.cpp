@@ -669,15 +669,9 @@ Magick::Geometry Magick::Image::density(void) const
 
 void Magick::Image::depth(const size_t depth_)
 {
-  size_t
-    depth=depth_;
-
-  if (depth > MAGICKCORE_QUANTUM_DEPTH)
-    depth=MAGICKCORE_QUANTUM_DEPTH;
-
   modifyImage();
-  image()->depth=depth;
-  options()->depth(depth);
+  image()->depth=depth_;
+  options()->depth(depth_);
 }
 
 size_t Magick::Image::depth(void) const
@@ -5140,9 +5134,14 @@ void Magick::Image::read(MagickCore::Image *image,
       image == (MagickCore::Image *) NULL)
     {
       (void) MagickCore::DestroyExceptionInfo(exceptionInfo);
-      throwExceptionExplicit(ImageWarning,"No image was loaded.");
+      if (!quiet())
+        throwExceptionExplicit(MagickCore::ImageWarning,
+          "No image was loaded.");
     }
-  ThrowImageException;
+  else
+    {
+      ThrowImageException;
+    }
   if (image != (MagickCore::Image *) NULL)
     throwException(&image->exception,quiet());
 }

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -317,12 +317,12 @@ static Image *ReadPDBImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -765,9 +765,9 @@ static MagickBooleanType WritePDBImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
@@ -835,18 +835,24 @@ static MagickBooleanType WritePDBImage(const ImageInfo *image_info,Image *image)
     pdb_image.width=(short) (16*(image->columns/16+1));
   pdb_image.height=(short) image->rows;
   packets=((bits_per_pixel*image->columns+7)/8);
+  packet_size=(size_t) (image->depth > 8 ? 2 : 1);
   runlength=(unsigned char *) AcquireQuantumMemory(9UL*packets,
     image->rows*sizeof(*runlength));
-  if (runlength == (unsigned char *) NULL)
-    ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
   buffer=(unsigned char *) AcquireQuantumMemory(512,sizeof(*buffer));
-  if (buffer == (unsigned char *) NULL)
-    ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
-  packet_size=(size_t) (image->depth > 8 ? 2 : 1);
   scanline=(unsigned char *) AcquireQuantumMemory(image->columns,packet_size*
     sizeof(*scanline));
-  if (scanline == (unsigned char *) NULL)
-    ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+  if ((runlength == (unsigned char *) NULL) ||
+      (buffer == (unsigned char *) NULL) ||
+      (scanline == (unsigned char *) NULL))
+    {
+      if (runlength != (unsigned char *) NULL)
+        runlength=(unsigned char *) RelinquishMagickMemory(runlength);
+      if (buffer != (unsigned char *) NULL)
+        buffer=(unsigned char *) RelinquishMagickMemory(buffer);
+      if (scanline != (unsigned char *) NULL)
+        scanline=(unsigned char *) RelinquishMagickMemory(scanline);
+      ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+    }
   if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
     (void) TransformImageColorspace(image,sRGBColorspace);
   /*

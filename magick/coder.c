@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -379,7 +379,7 @@ static SplayTreeInfo *AcquireCoderCache(const char *filename,
     coder_info->magick=(char *) p->magick;
     coder_info->name=(char *) p->name;
     coder_info->exempt=MagickTrue;
-    coder_info->signature=MagickSignature;
+    coder_info->signature=MagickCoreSignature;
     status&=AddValueToSplayTree(cache,ConstantString(coder_info->magick),
       coder_info);
     if (status == MagickFalse)
@@ -471,23 +471,12 @@ MagickExport void CoderComponentTerminus(void)
 MagickExport const CoderInfo *GetCoderInfo(const char *name,
   ExceptionInfo *exception)
 {
-  const CoderInfo
-    *coder_info;
-
   assert(exception != (ExceptionInfo *) NULL);
   if (IsCoderTreeInstantiated(exception) == MagickFalse)
     return((const CoderInfo *) NULL);
-  LockSemaphoreInfo(coder_semaphore);
   if ((name == (const char *) NULL) || (LocaleCompare(name,"*") == 0))
-    {
-      ResetSplayTreeIterator(coder_cache);
-      coder_info=(const CoderInfo *) GetNextValueInSplayTree(coder_cache);
-      UnlockSemaphoreInfo(coder_semaphore);
-      return(coder_info);
-    }
-  coder_info=(const CoderInfo *) GetValueFromSplayTree(coder_cache,name);
-  UnlockSemaphoreInfo(coder_semaphore);
-  return(coder_info);
+    return((const CoderInfo *) GetRootValueFromSplayTree(coder_cache));
+  return((const CoderInfo *) GetValueFromSplayTree(coder_cache,name));
 }
 
 /*
@@ -914,7 +903,7 @@ static MagickBooleanType LoadCoderCache(SplayTreeInfo *cache,const char *xml,
         (void) ResetMagickMemory(coder_info,0,sizeof(*coder_info));
         coder_info->path=ConstantString(filename);
         coder_info->exempt=MagickFalse;
-        coder_info->signature=MagickSignature;
+        coder_info->signature=MagickCoreSignature;
         continue;
       }
     if (coder_info == (CoderInfo *) NULL)

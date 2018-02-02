@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -268,12 +268,12 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -354,6 +354,12 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->x_resolution=(double) pcx_info.horizontal_resolution;
     image->y_resolution=(double) pcx_info.vertical_resolution;
     image->colors=16;
+    if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
+      if (image->scene >= (image_info->scene+image_info->number_scenes-1))
+        break;
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      ThrowPCXException(image->exception.severity,image->exception.reason);
     count=ReadBlob(image,3*image->colors,pcx_colormap);
     if (count != (ssize_t) (3*image->colors))
       ThrowPCXException(CorruptImageError,"ImproperImageHeader");
@@ -388,15 +394,6 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     pcx_info.vertical_screensize=ReadBlobLSBShort(image);
     for (i=0; i < 54; i++)
       (void) ReadBlobByte(image);
-    if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
-      if (image->scene >= (image_info->scene+image_info->number_scenes-1))
-        break;
-    status=SetImageExtent(image,image->columns,image->rows);
-    if (status == MagickFalse)
-      {
-        InheritException(exception,&image->exception);
-        return(DestroyImageList(image));
-      }
     /*
       Read image data.
     */
@@ -405,6 +402,8 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     pcx_packets=(size_t) image->rows*pcx_info.bytes_per_line;
     if (HeapOverflowSanityCheck(pcx_packets, (size_t) pcx_info.planes) != MagickFalse)
       ThrowPCXException(CorruptImageError,"ImproperImageHeader");
+    if ((pcx_packets/8) > GetBlobSize(image))
+      ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
     pcx_packets=(size_t) pcx_packets*pcx_info.planes;
     if ((size_t) (pcx_info.bits_per_pixel*pcx_info.planes*image->columns) >
         (pcx_packets*8U))
@@ -422,6 +421,7 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
         ThrowPCXException(ResourceLimitError,"MemoryAllocationFailed");
       }
     pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
+    (void) ResetMagickMemory(pixels,0,(size_t) pcx_packets*(2*sizeof(*pixels)));
     /*
       Uncompress image data.
     */
@@ -898,14 +898,16 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
+  if ((image->columns > 65535UL) || (image->rows > 65535UL))
+    ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
   (void) TransformImageColorspace(image,sRGBColorspace);
   page_table=(MagickOffsetType *) NULL;
   if ((LocaleCompare(image_info->magick,"DCX") == 0) ||
@@ -969,8 +971,10 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
         if (image->matte != MagickFalse)
           pcx_info.planes++;
       }
-    pcx_info.bytes_per_line=(unsigned short) (((size_t) image->columns*
-      pcx_info.bits_per_pixel+7)/8);
+    length=(((size_t) image->columns*pcx_info.bits_per_pixel+7)/8);
+    if (length > 65535UL)
+      ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
+    pcx_info.bytes_per_line=(unsigned short) length;
     pcx_info.palette_info=1;
     pcx_info.colormap_signature=0x0c;
     /*

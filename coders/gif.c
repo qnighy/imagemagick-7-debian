@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -226,6 +226,10 @@ static LZWInfo *AcquireLZWInfo(Image *image,const size_t data_size)
       lzw_info=RelinquishLZWInfo(lzw_info);
       return((LZWInfo *) NULL);
     }
+  (void) ResetMagickMemory(lzw_info->table[0],0,MaximumLZWCode*
+    sizeof(**lzw_info->table));
+  (void) ResetMagickMemory(lzw_info->table[1],0,MaximumLZWCode*
+    sizeof(**lzw_info->table));
   for (i=0; i <= (ssize_t) lzw_info->maximum_data_value; i++)
   {
     lzw_info->table[0][i]=0;
@@ -414,7 +418,7 @@ static MagickBooleanType DecodeImage(Image *image,const ssize_t opacity)
     Allocate decoder tables.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   data_size=(unsigned char) ReadBlobByte(image);
@@ -550,9 +554,9 @@ static MagickBooleanType EncodeImage(const ImageInfo *image_info,Image *image,
     Emit a code. \
   */ \
   if (bits > 0) \
-    datum|=(code) << bits; \
+    datum|=(size_t) (code) << bits; \
   else \
-    datum=code; \
+    datum=(size_t) (code); \
   bits+=number_bits; \
   while (bits >= 8) \
   { \
@@ -715,7 +719,7 @@ static MagickBooleanType EncodeImage(const ImageInfo *image_info,Image *image,
           if (next_pixel != MagickFalse)
             continue;
         }
-      GIFOutputCode((size_t) waiting_code);
+      GIFOutputCode(waiting_code);
       if (free_code < MaxGIFTable)
         {
           hash_code[k]=(short) free_code++;
@@ -785,7 +789,7 @@ static MagickBooleanType EncodeImage(const ImageInfo *image_info,Image *image,
   /*
     Flush out the buffered code.
   */
-  GIFOutputCode((size_t) waiting_code);
+  GIFOutputCode(waiting_code);
   GIFOutputCode(end_of_information_code);
   if (bits > 0)
     {
@@ -888,7 +892,7 @@ static ssize_t ReadBlobBlock(Image *image,unsigned char *data)
     block_count;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(data != (unsigned char *) NULL);
   count=ReadBlob(image,1,&block_count);
   if (count != 1)
@@ -933,7 +937,7 @@ static MagickBooleanType PingGIFImage(Image *image)
     data_size;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (ReadBlob(image,1,&data_size) != 1)
@@ -967,9 +971,6 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   MagickBooleanType
     status;
 
-  RectangleInfo
-    page;
-
   register ssize_t
     i;
 
@@ -977,12 +978,10 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     *p;
 
   size_t
-    delay,
-    dispose,
     duration,
     global_colors,
     image_count,
-    iterations,
+    local_colors,
     one;
 
   ssize_t
@@ -991,22 +990,22 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   unsigned char
     background,
+    buffer[257],
     c,
     flag,
     *global_colormap,
-    header[MaxTextExtent],
     magick[12];
 
   /*
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -1021,8 +1020,10 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if ((count != 6) || ((LocaleNCompare((char *) magick,"GIF87",5) != 0) &&
       (LocaleNCompare((char *) magick,"GIF89",5) != 0)))
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
-  page.width=ReadBlobLSBShort(image);
-  page.height=ReadBlobLSBShort(image);
+  (void) ResetMagickMemory(buffer,0,sizeof(buffer));
+  meta_image=AcquireImage(image_info);  /* metadata container */
+  meta_image->page.width=ReadBlobLSBShort(image);
+  meta_image->page.height=ReadBlobLSBShort(image);
   flag=(unsigned char) ReadBlobByte(image);
   background=(unsigned char) ReadBlobByte(image);
   c=(unsigned char) ReadBlobByte(image);  /* reserved */
@@ -1031,7 +1032,10 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   global_colormap=(unsigned char *) AcquireQuantumMemory((size_t)
     MagickMax(global_colors,256),3UL*sizeof(*global_colormap));
   if (global_colormap == (unsigned char *) NULL)
-    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    {
+      meta_image=DestroyImage(meta_image);
+      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    }
   (void) ResetMagickMemory(global_colormap,0,3*MagickMax(global_colors,256)*
     sizeof(*global_colormap));
   if (BitSet((int) flag,0x80) != 0)
@@ -1041,16 +1045,13 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
         {
           global_colormap=(unsigned char *) RelinquishMagickMemory(
             global_colormap);
+          meta_image=DestroyImage(meta_image);
           ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
         }
     }
-  delay=0;
-  dispose=0;
   duration=0;
-  iterations=1;
   opacity=(-1);
   image_count=0;
-  meta_image=AcquireImage(image_info);  /* metadata container */
   for ( ; ; )
   {
     count=ReadBlob(image,1,&c);
@@ -1080,11 +1081,11 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Read graphics control extension.
             */
-            while (ReadBlobBlock(image,header) != 0) ;
-            dispose=(size_t) (header[0] >> 2);
-            delay=(size_t) ((header[2] << 8) | header[1]);
-            if ((ssize_t) (header[0] & 0x01) == 0x01)
-              opacity=(ssize_t) header[3];
+            while (ReadBlobBlock(image,buffer) != 0) ;
+            meta_image->dispose=(DisposeType) ((buffer[0] >> 2) & 0x07);
+            meta_image->delay=((size_t) buffer[2] << 8) | buffer[1];
+            if ((ssize_t) (buffer[0] & 0x01) == 0x01)
+              opacity=(ssize_t) buffer[3];
             break;
           }
           case 0xfe:
@@ -1101,11 +1102,11 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
             comments=AcquireString((char *) NULL);
             for (length=0; ; length+=count)
             {
-              count=ReadBlobBlock(image,header);
+              count=ReadBlobBlock(image,buffer);
               if (count == 0)
                 break;
-              header[count]='\0';
-              (void) ConcatenateString(&comments,(const char *) header);
+              buffer[count]='\0';
+              (void) ConcatenateString(&comments,(const char *) buffer);
             }
             (void) SetImageProperty(meta_image,"comment",comments);
             comments=DestroyString(comments);
@@ -1120,15 +1121,15 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
               Read Netscape Loop extension.
             */
             loop=MagickFalse;
-            if (ReadBlobBlock(image,header) != 0)
-              loop=LocaleNCompare((char *) header,"NETSCAPE2.0",11) == 0 ?
+            if (ReadBlobBlock(image,buffer) != 0)
+              loop=LocaleNCompare((char *) buffer,"NETSCAPE2.0",11) == 0 ?
                 MagickTrue : MagickFalse;
             if (loop != MagickFalse)
-              while (ReadBlobBlock(image,header) != 0)
+              while (ReadBlobBlock(image,buffer) != 0)
               {
-                iterations=(size_t) ((header[2] << 8) | header[1]);
-                if (iterations != 0)
-                  iterations++;
+                meta_image->iterations=((size_t) buffer[2] << 8) | buffer[1];
+                if (meta_image->iterations != 0)
+                  meta_image->iterations++;
               }
             else
               {
@@ -1155,13 +1156,13 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 /*
                   Store GIF application extension as a generic profile.
                 */
-                icc=LocaleNCompare((char *) header,"ICCRGBG1012",11) == 0 ?
+                icc=LocaleNCompare((char *) buffer,"ICCRGBG1012",11) == 0 ?
                   MagickTrue : MagickFalse;
-                magick=LocaleNCompare((char *) header,"ImageMagick",11) == 0 ?
+                magick=LocaleNCompare((char *) buffer,"ImageMagick",11) == 0 ?
                   MagickTrue : MagickFalse;
-                i8bim=LocaleNCompare((char *) header,"MGK8BIM0000",11) == 0 ?
+                i8bim=LocaleNCompare((char *) buffer,"MGK8BIM0000",11) == 0 ?
                   MagickTrue : MagickFalse;
-                iptc=LocaleNCompare((char *) header,"MGKIPTC0000",11) == 0 ?
+                iptc=LocaleNCompare((char *) buffer,"MGKIPTC0000",11) == 0 ?
                   MagickTrue : MagickFalse;
                 number_extensionss++;
                 (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -1171,9 +1172,12 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 if (info == (unsigned char *) NULL)
                   {
                     meta_image=DestroyImage(meta_image);
+                    global_colormap=(unsigned char *) RelinquishMagickMemory(
+                      global_colormap);
                     ThrowReaderException(ResourceLimitError,
                       "MemoryAllocationFailed");
                   }
+                (void) ResetMagickMemory(info,0,255UL*sizeof(*info));
                 reserved_length=255;
                 for (info_length=0; ; )
                 {
@@ -1189,6 +1193,9 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
                       if (info == (unsigned char *) NULL)
                         {
                           meta_image=DestroyImage(meta_image);
+                          global_colormap=(unsigned char *)
+                            RelinquishMagickMemory(global_colormap);
+                          info=(unsigned char *) RelinquishMagickMemory(info);
                           ThrowReaderException(ResourceLimitError,
                             "MemoryAllocationFailed");
                         }
@@ -1198,6 +1205,8 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 if (profile == (StringInfo *) NULL)
                   {
                     meta_image=DestroyImage(meta_image);
+                    global_colormap=(unsigned char *) RelinquishMagickMemory(
+                      global_colormap);
                     ThrowReaderException(ResourceLimitError,
                       "MemoryAllocationFailed");
                   }
@@ -1215,7 +1224,7 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
                   }
                 else
                   (void) FormatLocaleString(name,sizeof(name),"gif:%.11s",
-                    header);
+                    buffer);
                 info=(unsigned char *) RelinquishMagickMemory(info);
                 if (magick == MagickFalse)
                   (void) SetImageProfile(meta_image,name,profile);
@@ -1227,7 +1236,7 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
           }
           default:
           {
-            while (ReadBlobBlock(image,header) != 0) ;
+            while (ReadBlobBlock(image,buffer) != 0) ;
             break;
           }
         }
@@ -1253,6 +1262,8 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     /*
       Read image attributes.
     */
+    meta_image->page.x=(ssize_t) ReadBlobLSBShort(image);
+    meta_image->page.y=(ssize_t) ReadBlobLSBShort(image);
     meta_image->scene=image->scene;
     (void) CloneImageProperties(image,meta_image);
     DestroyImageProperties(meta_image);
@@ -1260,28 +1271,18 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     DestroyImageProfiles(meta_image);
     image->storage_class=PseudoClass;
     image->compression=LZWCompression;
-    page.x=(ssize_t) ReadBlobLSBShort(image);
-    page.y=(ssize_t) ReadBlobLSBShort(image);
     image->columns=ReadBlobLSBShort(image);
     image->rows=ReadBlobLSBShort(image);
     image->depth=8;
     flag=(unsigned char) ReadBlobByte(image);
     image->interlace=BitSet((int) flag,0x40) != 0 ? GIFInterlace : NoInterlace;
-    image->colors=BitSet((int) flag,0x80) == 0 ? global_colors : one <<
+    local_colors=BitSet((int) flag,0x80) == 0 ? global_colors : one <<
       ((size_t) (flag & 0x07)+1);
+    image->colors=local_colors;
     if (opacity >= (ssize_t) image->colors)
-      opacity=(-1);
-    image->page.width=page.width;
-    image->page.height=page.height;
-    image->page.y=page.y;
-    image->page.x=page.x;
-    image->delay=delay;
-    image->iterations=iterations;
+      image->colors=(size_t) (opacity+1);
     image->ticks_per_second=100;
-    image->dispose=(DisposeType) dispose;
     image->matte=opacity >= 0 ? MagickTrue : MagickFalse;
-    delay=0;
-    dispose=0;
     if ((image->columns == 0) || (image->rows == 0))
       {
         global_colormap=(unsigned char *) RelinquishMagickMemory(
@@ -1327,8 +1328,8 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Read local colormap.
         */
-        colormap=(unsigned char *) AcquireQuantumMemory(image->colors,3*
-          sizeof(*colormap));
+        colormap=(unsigned char *) AcquireQuantumMemory((size_t)
+          MagickMax(local_colors,256),3UL*sizeof(*colormap));
         if (colormap == (unsigned char *) NULL)
           {
             global_colormap=(unsigned char *) RelinquishMagickMemory(
@@ -1336,8 +1337,10 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
             meta_image=DestroyImage(meta_image);
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
           }
-        count=ReadBlob(image,(3*image->colors)*sizeof(*colormap),colormap);
-        if (count != (ssize_t) (3*image->colors))
+        (void) ResetMagickMemory(colormap,0,3*MagickMax(local_colors,256)*
+          sizeof(*colormap));
+        count=ReadBlob(image,(3*local_colors)*sizeof(*colormap),colormap);
+        if (count != (ssize_t) (3*local_colors))
           {
             global_colormap=(unsigned char *) RelinquishMagickMemory(
               global_colormap);
@@ -1363,7 +1366,7 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
           if (IsGrayPixel(image->colormap+i) == MagickFalse)
             break;
         (void) SetImageColorspace(image,i == (ssize_t) image->colors ?
-          GRAYColorspace : RGBColorspace);
+          LinearGRAYColorspace : RGBColorspace);
       }
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
@@ -1371,6 +1374,9 @@ static Image *ReadGIFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     status=SetImageExtent(image,image->columns,image->rows);
     if (status == MagickFalse)
       {
+        global_colormap=(unsigned char *) RelinquishMagickMemory(
+          global_colormap);
+        meta_image=DestroyImage(meta_image);
         InheritException(exception,&image->exception);
         return(DestroyImageList(image));
       }
@@ -1549,9 +1555,9 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
@@ -1565,7 +1571,14 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
   colormap=(unsigned char *) AcquireQuantumMemory(768UL,sizeof(*colormap));
   if ((global_colormap == (unsigned char *) NULL) ||
       (colormap == (unsigned char *) NULL))
-    ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+    {
+      if (global_colormap != (unsigned char *) NULL)
+        global_colormap=(unsigned char *) RelinquishMagickMemory(
+          global_colormap);
+      if (colormap != (unsigned char *) NULL)
+        colormap=(unsigned char *) RelinquishMagickMemory(colormap);
+      ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+    }
   for (i=0; i < 768; i++)
     colormap[i]=(unsigned char) 0;
   /*
@@ -1760,7 +1773,8 @@ static MagickBooleanType WriteGIFImage(const ImageInfo *image_info,Image *image)
             (void) WriteBlob(image,11,(unsigned char *) "NETSCAPE2.0");
             (void) WriteBlobByte(image,(unsigned char) 0x03);
             (void) WriteBlobByte(image,(unsigned char) 0x01);
-            (void) WriteBlobLSBShort(image,(unsigned short) (image->iterations ? image->iterations - 1 : 0));
+            (void) WriteBlobLSBShort(image,(unsigned short) (image->iterations ?
+              image->iterations-1 : 0));
             (void) WriteBlobByte(image,(unsigned char) 0x00);
           }
         if ((image->gamma != 1.0f/2.2f))

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -74,6 +74,7 @@
 #include "magick/magic.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/module.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
@@ -206,7 +207,7 @@ MagickExport Image *AcquireImage(const ImageInfo *image_info)
   image->debug=IsEventLogging();
   image->reference_count=1;
   image->semaphore=AllocateSemaphoreInfo();
-  image->signature=MagickSignature;
+  image->signature=MagickCoreSignature;
   if (image_info == (ImageInfo *) NULL)
     return(image);
   /*
@@ -373,7 +374,7 @@ MagickExport void AcquireNextImage(const ImageInfo *image_info,Image *image)
     Allocate image structure.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   image->next=AcquireImage(image_info);
@@ -463,11 +464,11 @@ MagickExport Image *AppendImages(const Image *images,
     Compute maximum area of appended area.
   */
   assert(images != (Image *) NULL);
-  assert(images->signature == MagickSignature);
+  assert(images->signature == MagickCoreSignature);
   if (images->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   matte=images->matte;
   number_images=1;
   width=images->columns;
@@ -535,7 +536,7 @@ MagickExport Image *AppendImages(const Image *images,
     image_view=AcquireVirtualCacheView(next,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
     #pragma omp parallel for schedule(static,4) shared(status) \
-      magick_threads(next,next,next->rows,1)
+      magick_number_threads(next,next,next->rows,1)
 #endif
     for (y=0; y < (ssize_t) next->rows; y++)
     {
@@ -642,7 +643,7 @@ MagickExport ExceptionType CatchImageException(Image *image)
     severity;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   exception=AcquireExceptionInfo();
@@ -707,7 +708,7 @@ MagickExport MagickBooleanType ClipImagePath(Image *image,const char *pathname,
     *image_info;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(pathname != NULL);
@@ -799,22 +800,20 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
     Clone the image.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if ((image->columns == 0) || (image->rows == 0))
     {
       (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageError,
         "NegativeOrZeroImageSize","`%s'",image->filename);
       return((Image *) NULL);
     }
-  clone_image=(Image *) AcquireMagickMemory(sizeof(*clone_image));
-  if (clone_image == (Image *) NULL)
-    ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
+  clone_image=(Image *) AcquireCriticalMemory(sizeof(*clone_image));
   (void) ResetMagickMemory(clone_image,0,sizeof(*clone_image));
-  clone_image->signature=MagickSignature;
+  clone_image->signature=MagickCoreSignature;
   clone_image->storage_class=image->storage_class;
   clone_image->channels=image->channels;
   clone_image->colorspace=image->colorspace;
@@ -955,19 +954,29 @@ MagickExport ImageInfo *CloneImageInfo(const ImageInfo *image_info)
   clone_info->scene=image_info->scene;
   clone_info->number_scenes=image_info->number_scenes;
   clone_info->depth=image_info->depth;
-  (void) CloneString(&clone_info->size,image_info->size);
-  (void) CloneString(&clone_info->extract,image_info->extract);
-  (void) CloneString(&clone_info->scenes,image_info->scenes);
-  (void) CloneString(&clone_info->page,image_info->page);
+  if (image_info->size != (char *) NULL)
+    (void) CloneString(&clone_info->size,image_info->size);
+  if (image_info->extract != (char *) NULL)
+    (void) CloneString(&clone_info->extract,image_info->extract);
+  if (image_info->scenes != (char *) NULL)
+    (void) CloneString(&clone_info->scenes,image_info->scenes);
+  if (image_info->page != (char *) NULL)
+    (void) CloneString(&clone_info->page,image_info->page);
   clone_info->interlace=image_info->interlace;
   clone_info->endian=image_info->endian;
   clone_info->units=image_info->units;
   clone_info->quality=image_info->quality;
-  (void) CloneString(&clone_info->sampling_factor,image_info->sampling_factor);
-  (void) CloneString(&clone_info->server_name,image_info->server_name);
-  (void) CloneString(&clone_info->font,image_info->font);
-  (void) CloneString(&clone_info->texture,image_info->texture);
-  (void) CloneString(&clone_info->density,image_info->density);
+  if (image_info->sampling_factor != (char *) NULL)
+    (void) CloneString(&clone_info->sampling_factor,
+      image_info->sampling_factor);
+  if (image_info->server_name != (char *) NULL)
+    (void) CloneString(&clone_info->server_name,image_info->server_name);
+  if (image_info->font != (char *) NULL)
+    (void) CloneString(&clone_info->font,image_info->font);
+  if (image_info->texture != (char *) NULL)
+    (void) CloneString(&clone_info->texture,image_info->texture);
+  if (image_info->density != (char *) NULL)
+    (void) CloneString(&clone_info->density,image_info->density);
   clone_info->pointsize=image_info->pointsize;
   clone_info->fuzz=image_info->fuzz;
   clone_info->pen=image_info->pen;
@@ -985,8 +994,10 @@ MagickExport ImageInfo *CloneImageInfo(const ImageInfo *image_info)
   clone_info->group=image_info->group;
   clone_info->ping=image_info->ping;
   clone_info->verbose=image_info->verbose;
-  (void) CloneString(&clone_info->view,image_info->view);
-  (void) CloneString(&clone_info->authenticate,image_info->authenticate);
+  if (image_info->view != (char *) NULL)
+    (void) CloneString(&clone_info->view,image_info->view);
+  if (image_info->authenticate != (char *) NULL)
+    (void) CloneString(&clone_info->authenticate,image_info->authenticate);
   (void) CloneImageOptions(clone_info,image_info);
   clone_info->progress_monitor=image_info->progress_monitor;
   clone_info->client_data=image_info->client_data;
@@ -1087,7 +1098,7 @@ MagickExport MagickBooleanType CopyImagePixels(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(source_image,image,geometry->height,1)
+    magick_number_threads(source_image,image,geometry->height,1)
 #endif
   for (y=0; y < (ssize_t) geometry->height; y++)
   {
@@ -1179,7 +1190,7 @@ MagickExport Image *DestroyImage(Image *image)
     Dereference image.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   destroy=MagickFalse;
@@ -1215,7 +1226,7 @@ MagickExport Image *DestroyImage(Image *image)
   (void) ClearExceptionInfo(&image->exception,MagickTrue);
   if (image->semaphore != (SemaphoreInfo *) NULL)
     DestroySemaphoreInfo(&image->semaphore);
-  image->signature=(~MagickSignature);
+  image->signature=(~MagickCoreSignature);
   image=(Image *) RelinquishMagickMemory(image);
   return(image);
 }
@@ -1246,7 +1257,7 @@ MagickExport Image *DestroyImage(Image *image)
 MagickExport ImageInfo *DestroyImageInfo(ImageInfo *image_info)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -1281,7 +1292,7 @@ MagickExport ImageInfo *DestroyImageInfo(ImageInfo *image_info)
   if (image_info->profile != (StringInfo *) NULL)
     image_info->profile=(void *) DestroyStringInfo((StringInfo *)
       image_info->profile);
-  image_info->signature=(~MagickSignature);
+  image_info->signature=(~MagickCoreSignature);
   image_info=(ImageInfo *) RelinquishMagickMemory(image_info);
   return(image_info);
 }
@@ -1313,7 +1324,7 @@ MagickExport ImageInfo *DestroyImageInfo(ImageInfo *image_info)
 MagickExport void DisassociateImageStream(Image *image)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   DisassociateBlob(image);
@@ -1347,7 +1358,7 @@ MagickExport Image *GetImageClipMask(const Image *image,
   assert(image != (const Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->clip_mask == (Image *) NULL)
     return((Image *) NULL);
   return(CloneImage(image->clip_mask,0,0,MagickTrue,exception));
@@ -1384,11 +1395,11 @@ MagickExport void GetImageException(Image *image,ExceptionInfo *exception)
     *next;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   for (next=image; next != (Image *) NULL; next=GetNextImageInList(next))
   {
     if (next->exception.severity == UndefinedException)
@@ -1456,7 +1467,7 @@ MagickExport void GetImageInfo(ImageInfo *image_info)
     exception);
   exception=DestroyExceptionInfo(exception);
   image_info->debug=IsEventLogging();
-  image_info->signature=MagickSignature;
+  image_info->signature=MagickCoreSignature;
 }
 
 /*
@@ -1513,7 +1524,7 @@ MagickExport Image *GetImageMask(const Image *image,ExceptionInfo *exception)
   assert(image != (const Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->mask == (Image *) NULL)
     return((Image *) NULL);
   return(CloneImage(image->mask,0,0,MagickTrue,exception));
@@ -1545,7 +1556,7 @@ MagickExport Image *GetImageMask(const Image *image,ExceptionInfo *exception)
 MagickExport size_t GetImageChannels(Image *image)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   return(image->channels);
@@ -1579,7 +1590,7 @@ MagickExport ssize_t GetImageReferenceCount(Image *image)
     reference_count;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   LockSemaphoreInfo(image->semaphore);
@@ -1615,7 +1626,7 @@ MagickExport ssize_t GetImageReferenceCount(Image *image)
 MagickExport VirtualPixelMethod GetImageVirtualPixelMethod(const Image *image)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   return(GetPixelCacheVirtualMethod(image));
@@ -1845,7 +1856,7 @@ MagickExport MagickBooleanType IsHighDynamicRangeImage(const Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=MagickTrue;
@@ -1853,7 +1864,7 @@ MagickExport MagickBooleanType IsHighDynamicRangeImage(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1945,7 +1956,7 @@ MagickExport MagickBooleanType IsImageObject(const Image *image)
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   for (p=image; p != (Image *) NULL; p=GetNextImageInList(p))
-    if (p->signature != MagickSignature)
+    if (p->signature != MagickCoreSignature)
       return(MagickFalse);
   return(MagickTrue);
 }
@@ -1985,7 +1996,7 @@ MagickExport MagickBooleanType IsTaintImage(const Image *image)
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   (void) CopyMagickString(magick,image->magick,MaxTextExtent);
   (void) CopyMagickString(filename,image->filename,MaxTextExtent);
   for (p=image; p != (Image *) NULL; p=GetNextImageInList(p))
@@ -2034,7 +2045,7 @@ MagickExport MagickBooleanType ModifyImage(Image **image,
 
   assert(image != (Image **) NULL);
   assert(*image != (Image *) NULL);
-  assert((*image)->signature == MagickSignature);
+  assert((*image)->signature == MagickCoreSignature);
   if ((*image)->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",(*image)->filename);
   if (GetImageReferenceCount(*image) <= 1)
@@ -2098,7 +2109,7 @@ MagickExport Image *NewMagickImage(const ImageInfo *image_info,
   assert(image_info != (const ImageInfo *) NULL);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(background != (const MagickPixelPacket *) NULL);
   image=AcquireImage(image_info);
   image->columns=width;
@@ -2112,7 +2123,7 @@ MagickExport Image *NewMagickImage(const ImageInfo *image_info,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2176,7 +2187,7 @@ MagickExport Image *ReferenceImage(Image *image)
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   LockSemaphoreInfo(image->semaphore);
   image->reference_count++;
   UnlockSemaphoreInfo(image->semaphore);
@@ -2216,7 +2227,7 @@ MagickExport MagickBooleanType ResetImagePage(Image *image,const char *page)
     geometry;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   flags=ParseAbsoluteGeometry(page,&geometry);
@@ -2302,7 +2313,7 @@ MagickExport MagickBooleanType SetImageBackgroundColor(Image *image)
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
   if ((IsPixelGray(&image->background_color) == MagickFalse) &&
@@ -2434,7 +2445,7 @@ MagickExport MagickBooleanType SetImageColor(Image *image,
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(color != (const MagickPixelPacket *) NULL);
   image->colorspace=color->colorspace;
   image->matte=color->matte;
@@ -2445,7 +2456,7 @@ MagickExport MagickBooleanType SetImageColor(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2509,7 +2520,7 @@ MagickExport MagickBooleanType SetImageStorageClass(Image *image,
   const ClassType storage_class)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   image->storage_class=storage_class;
@@ -2549,7 +2560,7 @@ MagickExport MagickBooleanType SetImageClipMask(Image *image,
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (clip_mask != (const Image *) NULL)
     if ((clip_mask->columns != image->columns) ||
         (clip_mask->rows != image->rows))
@@ -2601,7 +2612,7 @@ MagickExport MagickBooleanType SetImageExtent(Image *image,const size_t columns,
     ThrowBinaryException(ImageError,"NegativeOrZeroImageSize",image->filename);
   image->columns=columns;
   image->rows=rows;
-  if (image->depth > (8*sizeof(MagickSizeType)))
+  if ((image->depth == 0) || (image->depth > (8*sizeof(MagickSizeType))))
     ThrowBinaryException(ImageError,"ImageDepthNotSupported",image->filename);
   return(SyncImagePixelCache(image,&image->exception));
 }
@@ -2678,7 +2689,7 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
     Look for 'image.format' in filename.
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -2902,7 +2913,7 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
           (IsBlobExempt(image) != MagickFalse))
         {
           /*
-            Copy standard input or pipe to temporary file.
+            Copy image to a seekable temporary file.
           */
           *filename='\0';
           status=ImageToFile(image,filename,exception);
@@ -2985,7 +2996,7 @@ MagickExport void SetImageInfoBlob(ImageInfo *image_info,const void *blob,
   const size_t length)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -3020,7 +3031,7 @@ MagickExport void SetImageInfoBlob(ImageInfo *image_info,const void *blob,
 MagickExport void SetImageInfoFile(ImageInfo *image_info,FILE *file)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -3057,7 +3068,7 @@ MagickExport MagickBooleanType SetImageMask(Image *image,const Image *mask)
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (mask != (const Image *) NULL)
     if ((mask->columns != image->columns) || (mask->rows != image->rows))
       ThrowBinaryException(ImageError,"ImageSizeDiffers",image->filename);
@@ -3117,14 +3128,14 @@ MagickExport MagickBooleanType SetImageOpacity(Image *image,
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   image->matte=MagickTrue;
   status=MagickTrue;
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -3185,7 +3196,7 @@ MagickExport VirtualPixelMethod SetImageVirtualPixelMethod(const Image *image,
   const VirtualPixelMethod virtual_pixel_method)
 {
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   return(SetPixelCacheVirtualMethod(image,virtual_pixel_method));
@@ -3409,11 +3420,11 @@ MagickExport Image *SmushImages(const Image *images,
     Compute maximum area of smushed area.
   */
   assert(images != (Image *) NULL);
-  assert(images->signature == MagickSignature);
+  assert(images->signature == MagickCoreSignature);
   if (images->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=images;
   matte=image->matte;
   number_images=1;
@@ -3589,7 +3600,7 @@ MagickExport MagickBooleanType SyncImage(Image *image)
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->ping != MagickFalse)
     return(MagickTrue);
   if (image->storage_class != PseudoClass)
@@ -3602,7 +3613,7 @@ MagickExport MagickBooleanType SyncImage(Image *image)
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(range_exception,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -3683,9 +3694,9 @@ MagickExport MagickBooleanType SyncImagesSettings(ImageInfo *image_info,
     *image;
 
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(images != (Image *) NULL);
-  assert(images->signature == MagickSignature);
+  assert(images->signature == MagickCoreSignature);
   if (images->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   image=images;
@@ -3718,9 +3729,9 @@ MagickExport MagickBooleanType SyncImageSettings(const ImageInfo *image_info,
     Sync image options.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   option=GetImageOption(image_info,"background");

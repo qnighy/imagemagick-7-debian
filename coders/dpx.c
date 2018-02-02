@@ -17,7 +17,7 @@
 %                                March 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -694,12 +694,12 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -813,7 +813,8 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     case 7: image->orientation=RightBottomOrientation; break;
   }
   dpx.image.number_elements=ReadBlobShort(image);
-  if (dpx.image.number_elements > MaxNumberImageElements)
+  if ((dpx.image.number_elements < 1) ||
+      (dpx.image.number_elements > MaxNumberImageElements))
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   offset+=2;
   dpx.image.pixels_per_line=ReadBlobLong(image);
@@ -1169,6 +1170,8 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     SetPrimaryChromaticity((DPXColorimetric)
       dpx.image.image_element[n].colorimetric,&image->chromaticity);
     image->depth=dpx.image.image_element[n].bit_size;
+    if ((image->depth == 0) || (image->depth > 32))
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     samples_per_pixel=1;
     quantum_type=GrayQuantum;
     component_type=dpx.image.image_element[n].descriptor;
@@ -1233,7 +1236,6 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     /*
       DPX any-bit pixel format.
     */
-    status=MagickTrue;
     row=0;
     quantum_info=AcquireQuantumInfo(image_info,image);
     if (quantum_info == (QuantumInfo *) NULL)
@@ -1259,12 +1261,10 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
         count,
         offset;
 
-      if (status == MagickFalse)
-        continue;
       pixels=(const unsigned char *) ReadBlobStream(image,extent,
         GetQuantumPixels(quantum_info),&count);
       if (count != (ssize_t) extent)
-        status=MagickFalse;
+        break;
       if ((image->progress_monitor != (MagickProgressMonitor) NULL) &&
           (image->previous == (Image *) NULL))
         {
@@ -1274,24 +1274,21 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
           proceed=SetImageProgress(image,LoadImageTag,(MagickOffsetType) row,
             image->rows);
           if (proceed == MagickFalse)
-            status=MagickFalse;
+            break;
         }
       offset=row++;
       q=QueueAuthenticPixels(image,0,offset,image->columns,1,exception);
       if (q == (PixelPacket *) NULL)
-        {
-          status=MagickFalse;
-          continue;
-        }
+        break;
       length=ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
         quantum_type,pixels,exception);
       (void) length;
       sync=SyncAuthenticPixels(image,exception);
       if (sync == MagickFalse)
-        status=MagickFalse;
+        break;
     }
     quantum_info=DestroyQuantumInfo(quantum_info);
-    if (status == MagickFalse)
+    if (y < (ssize_t) image->rows)
       ThrowReaderException(CorruptImageError,"UnableToReadImageData");
     SetQuantumImageType(image,quantum_type);
     if (EOFBlob(image) != MagickFalse)
@@ -1498,9 +1495,9 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   horizontal_factor=4;

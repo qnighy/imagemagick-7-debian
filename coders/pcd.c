@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -177,7 +177,7 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
     Initialize Huffman tables.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(luma != (unsigned char *) NULL);
@@ -518,12 +518,12 @@ static Image *ReadPCDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -609,7 +609,15 @@ static Image *ReadPCDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     sizeof(*luma));
   if ((chroma1 == (unsigned char *) NULL) ||
       (chroma2 == (unsigned char *) NULL) || (luma == (unsigned char *) NULL))
-    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    {
+      if (chroma1 != (unsigned char *) NULL)
+        chroma1=(unsigned char *) RelinquishMagickMemory(chroma1);
+      if (chroma2 != (unsigned char *) NULL)
+        chroma2=(unsigned char *) RelinquishMagickMemory(chroma2);
+      if (luma != (unsigned char *) NULL)
+        luma=(unsigned char *) RelinquishMagickMemory(luma);
+      ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    }
   /*
     Advance to image data.
   */
@@ -1075,9 +1083,9 @@ static MagickBooleanType WritePCDImage(const ImageInfo *image_info,Image *image)
     i;
 
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   pcd_image=image;
@@ -1099,7 +1107,11 @@ static MagickBooleanType WritePCDImage(const ImageInfo *image_info,Image *image)
   */
   status=OpenBlob(image_info,pcd_image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
-    return(status);
+    {
+      if (pcd_image != image)
+        pcd_image=DestroyImage(pcd_image);
+      return(status);
+    }
   if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
     (void) TransformImageColorspace(pcd_image,sRGBColorspace);
   /*

@@ -17,7 +17,7 @@
 %                              May  1993                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -285,7 +285,7 @@ MagickExport void Ascii85Flush(Image *image)
     *tuple;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(image->ascii85 != (Ascii85Info *) NULL);
@@ -315,7 +315,7 @@ MagickExport void Ascii85Encode(Image *image,const unsigned char code)
     n;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(image->ascii85 != (Ascii85Info *) NULL);
   image->ascii85->buffer[image->ascii85->offset]=code;
   image->ascii85->offset++;
@@ -453,9 +453,11 @@ MagickExport MagickBooleanType HuffmanDecodeImage(Image *image)
     Allocate buffers.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (image->blob == (BlobInfo *) NULL)
+    ThrowBinaryException(BlobError,"UnableToOpenBlob",image->filename);
   mb_hash=(HuffmanTable **) AcquireQuantumMemory(HashSize,sizeof(*mb_hash));
   mw_hash=(HuffmanTable **) AcquireQuantumMemory(HashSize,sizeof(*mw_hash));
   scanline=(unsigned char *) AcquireQuantumMemory((size_t) image->columns,
@@ -463,8 +465,16 @@ MagickExport MagickBooleanType HuffmanDecodeImage(Image *image)
   if ((mb_hash == (HuffmanTable **) NULL) ||
       (mw_hash == (HuffmanTable **) NULL) ||
       (scanline == (unsigned char *) NULL))
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
-      image->filename);
+    {
+      if (mb_hash != (HuffmanTable **) NULL)
+        mb_hash=(HuffmanTable **) RelinquishMagickMemory(mb_hash);
+      if (mw_hash != (HuffmanTable **) NULL)
+        mw_hash=(HuffmanTable **) RelinquishMagickMemory(mw_hash);
+      if (scanline != (unsigned char *) NULL)
+        scanline=(unsigned char *) RelinquishMagickMemory(scanline);
+      ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+        image->filename);
+    }
   /*
     Initialize Huffman tables.
   */
@@ -743,13 +753,13 @@ RestoreMSCWarning \
     Allocate scanline buffer.
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(inject_image != (Image *) NULL);
-  assert(inject_image->signature == MagickSignature);
+  assert(inject_image->signature == MagickCoreSignature);
   one=1;
   width=inject_image->columns;
   if (LocaleCompare(image_info->magick,"FAX") == 0)
@@ -925,9 +935,9 @@ MagickExport MagickBooleanType LZWEncodeImage(Image *image,const size_t length,
     number_bits+=code_width; \
     while (number_bits >= 8) \
     { \
-        (void) WriteBlobByte(image,(unsigned char) (accumulator >> 24)); \
-        accumulator=accumulator << 8; \
-        number_bits-=8; \
+      (void) WriteBlobByte(image,(unsigned char) (accumulator >> 24)); \
+      accumulator=accumulator << 8; \
+      number_bits-=8; \
     } \
 }
 
@@ -959,13 +969,14 @@ MagickExport MagickBooleanType LZWEncodeImage(Image *image,const size_t length,
     Allocate string table.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(pixels != (unsigned char *) NULL);
   table=(TableType *) AcquireQuantumMemory(1UL << 12,sizeof(*table));
   if (table == (TableType *) NULL)
-    return(MagickFalse);
+    ThrowBinaryException(ResourceLimitWarning,"MemoryAllocationFailed",
+      image->filename);
   /*
     Initialize variables.
   */
@@ -1094,7 +1105,7 @@ MagickExport MagickBooleanType PackbitsEncodeImage(Image *image,
     Compress pixels with Packbits encoding.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(pixels != (unsigned char *) NULL);
@@ -1247,7 +1258,7 @@ MagickExport MagickBooleanType ZLIBEncodeImage(Image *image,const size_t length,
     stream;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   compress_packets=(size_t) (1.001*length+12);
@@ -1286,7 +1297,7 @@ MagickExport MagickBooleanType ZLIBEncodeImage(Image *image,
   const size_t magick_unused(length),unsigned char *magick_unused(pixels))
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   (void) ThrowMagickException(&image->exception,GetMagickModule(),

@@ -18,7 +18,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -77,7 +77,7 @@
 #include "magick/utility.h"
 #if defined(MAGICKCORE_XML_DELEGATE)
 #  if defined(MAGICKCORE_WINDOWS_SUPPORT)
-#    if !defined(__MINGW32__) && !defined(__MINGW64__)
+#    if !defined(__MINGW32__)
 #      include <win32config.h>
 #    endif
 #  endif
@@ -2821,12 +2821,12 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -3091,8 +3091,11 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             cairo_surface=cairo_image_surface_create_for_data(pixels,
               CAIRO_FORMAT_ARGB32,(int) image->columns,(int) image->rows, (int)
               stride);
-            if (cairo_surface == (cairo_surface_t *) NULL)
+            if ((cairo_surface == (cairo_surface_t *) NULL) ||
+                (cairo_surface_status(cairo_surface) != CAIRO_STATUS_SUCCESS))
               {
+                if (cairo_surface != (cairo_surface_t *) NULL)
+                  cairo_surface_destroy(cairo_surface);
                 pixel_info=RelinquishVirtualMemory(pixel_info);
                 g_object_unref(svg_handle);
                 ThrowReaderException(ResourceLimitError,
@@ -3365,6 +3368,9 @@ ModuleExport size_t RegisterSVGImage(void)
   entry->encoder=(EncodeImageHandler *) WriteSVGImage;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickFalse;
+#if defined(MAGICKCORE_RSVG_DELEGATE)
+  entry->thread_support=MagickFalse;
+#endif
   entry->description=ConstantString("Scalable Vector Graphics");
   entry->mime_type=ConstantString("image/svg+xml");
   if (*version != '\0')
@@ -3379,6 +3385,9 @@ ModuleExport size_t RegisterSVGImage(void)
   entry->encoder=(EncodeImageHandler *) WriteSVGImage;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickFalse;
+#if defined(MAGICKCORE_RSVG_DELEGATE)
+  entry->thread_support=MagickFalse;
+#endif
   entry->description=ConstantString("Compressed Scalable Vector Graphics");
   entry->mime_type=ConstantString("image/svg+xml");
   if (*version != '\0')
@@ -3393,6 +3402,9 @@ ModuleExport size_t RegisterSVGImage(void)
   entry->encoder=(EncodeImageHandler *) WriteSVGImage;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickFalse;
+#if defined(MAGICKCORE_RSVG_DELEGATE)
+  entry->thread_support=MagickFalse;
+#endif
   entry->description=ConstantString("ImageMagick's own SVG internal renderer");
   entry->magick=(IsImageFormatHandler *) IsSVG;
   entry->module=ConstantString("SVG");
@@ -3737,9 +3749,9 @@ static MagickBooleanType WriteSVGImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);

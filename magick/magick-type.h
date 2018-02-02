@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@ extern "C" {
 #define MagickPathExtent  MaxTextExtent
 #endif
 
-#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__) && !defined(__MINGW64__)
-#  define MagickLLConstant(c)  (MagickOffsetType) (c ## i64)
-#  define MagickULLConstant(c)  (MagickSizeType) (c ## ui64)
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
+#  define MagickLLConstant(c)  ((MagickOffsetType) (c ## i64))
+#  define MagickULLConstant(c)  ((MagickSizeType) (c ## ui64))
 #else
-#  define MagickLLConstant(c)  (MagickOffsetType) (c ## LL)
-#  define MagickULLConstant(c)  (MagickSizeType) (c ## ULL)
+#  define MagickLLConstant(c)  ((MagickOffsetType) (c ## LL))
+#  define MagickULLConstant(c)  ((MagickSizeType) (c ## ULL))
 #endif
 
 #if MAGICKCORE_SIZEOF_FLOAT_T == 0
@@ -191,6 +191,29 @@ typedef enum
   MagickFalse = 0,
   MagickTrue = 1
 } MagickBooleanType;
+
+/*
+  The IsNaN test is for special floating point numbers of value Nan (not a
+  number). NaN's are defined as part of the IEEE standard for floating point
+  number representation, and need to be watched out for. Morphology Kernels
+  often use these special numbers as neighbourhood masks.
+
+  The special property that two NaN's are never equal, even if they are from
+  the same variable allows you to test if a value is special NaN value.
+
+  The macros are thus is only true if the value given is NaN.
+*/
+#if defined(MAGICKCORE_HAVE_ISNAN)
+#  define IsNaN(a) isnan(a)
+#elif defined(_MSC_VER) && (_MSC_VER >= 1310)
+#  include <float.h>
+#  define IsNaN(a) _isnan(a)
+#else
+#  define IsNaN(a) (a != a)
+#endif
+#if !defined(INFINITY)
+#  define INFINITY (-logf(0f))
+#endif
 
 typedef struct _BlobInfo BlobInfo;
 

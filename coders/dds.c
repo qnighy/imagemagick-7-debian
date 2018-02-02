@@ -19,7 +19,7 @@
 %                              September 2013                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1656,12 +1656,12 @@ static Image *ReadDDSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -2400,6 +2400,8 @@ static MagickBooleanType SkipDXTMipmaps(Image *image,DDSInfo *dds_info,
         offset = (MagickOffsetType) ((w + 3) / 4) * ((h + 3) / 4) * texel_size;
         if (SeekBlob(image,offset,SEEK_CUR) < 0)
           break;
+        if ((w == 1) && (h == 1))
+          break;
         w = DIV2(w);
         h = DIV2(h);
       }
@@ -2449,6 +2451,8 @@ static MagickBooleanType SkipRGBMipmaps(Image *image,DDSInfo *dds_info,
           break;
         w = DIV2(w);
         h = DIV2(h);
+        if ((w == 1) && (h == 1))
+          break;
       }
     }
   return(MagickTrue);
@@ -2619,9 +2623,9 @@ static MagickBooleanType WriteDDSImage(const ImageInfo *image_info,
     weightByAlpha;
 
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);

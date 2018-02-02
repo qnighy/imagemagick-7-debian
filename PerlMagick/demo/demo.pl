@@ -63,8 +63,8 @@ push(@$images,$example);
 print "Annotate...\n";
 $example=$model->Clone();
 $example->Label('Annotate');
-$example->Annotate(text=>'Magick',geometry=>'+0+20',font=>'Generic.ttf',
-  fill=>'gold',gravity=>'North',pointsize=>14);
+$example->Annotate(text=>'Magick',geometry=>'+0+20',fill=>'gold',
+  gravity=>'North',pointsize=>14);
 push(@$images,$example);
 
 print "Auto-gamma...\n";
@@ -77,6 +77,12 @@ print "Auto-level...\n";
 $example=$model->Clone();
 $example->Label('Auto Level');
 $example->AutoLevel();
+push(@$images,$example);
+
+print "Auto-threshold...\n";
+$example=$model->Clone();
+$example->Label('Auto Threshold');
+$example->AutoThreshold();
 push(@$images,$example);
 
 print "Blur...\n";
@@ -100,7 +106,7 @@ push(@$images,$example);
 print "Charcoal...\n";
 $example=$model->Clone();
 $example->Label('Charcoal');
-$example->Charcoal('0x1');
+$example->Charcoal('2x1');
 push(@$images,$example);
 
 print "ColorMatrix...\n";
@@ -169,7 +175,7 @@ push(@$images,$example);
 print "Detect Edges...\n";
 $example=$model->Clone();
 $example->Label('Detect Edges');
-$example->Edge();
+$example->Edge('2x0.5');
 $example->Clamp();
 push(@$images,$example);
 
@@ -274,13 +280,13 @@ push(@$images,$example);
 print "Median Filter...\n";
 $example=$model->Clone();
 $example->Label('Median Filter');
-$example->MedianFilter();
+$example->MedianFilter('4x4');
 push(@$images,$example);
 
 print "Mode...\n";
 $example=$model->Clone();
 $example->Label('Mode');
-$example->Mode();
+$example->Mode('4x4');
 push(@$images,$example);
 
 print "Modulate...\n";
@@ -323,7 +329,7 @@ push(@$images,$example);
 print "Oil Paint...\n";
 $example=$model->Clone();
 $example->Label('Oil Paint');
-$example->OilPaint();
+$example->OilPaint('2x0.5');
 push(@$images,$example);
 
 print "Plasma...\n";
@@ -367,7 +373,7 @@ push(@$images,$example);
 print "Reduce Noise...\n";
 $example=$model->Clone();
 $example->Label('Reduce Noise');
-$example->ReduceNoise();
+$example->ReduceNoise('2x2');
 push(@$images,$example);
 
 print "Resize...\n";
@@ -497,10 +503,9 @@ push(@$images,$example);
 # Create image montage.
 #
 print "Montage...\n";
-$montage=$images->Montage(geometry=>'128x160+8+4>',gravity=>'Center',
-  tile=>'5x+10+200',compose=>'over',background=>'#ffffff',
-  font=>'Generic.ttf',pointsize=>18,fill=>'#600',stroke=>'none',
-  shadow=>'true');
+$montage=$images->Montage(geometry=>'140x160+8+4>',gravity=>'Center',
+  tile=>'5x+10+200',compose=>'over',background=>'#ffffff',pointsize=>18,
+  fill=>'#600',stroke=>'none',shadow=>'true');
 
 $logo=Image::Magick->new();
 $logo->Read('logo:');

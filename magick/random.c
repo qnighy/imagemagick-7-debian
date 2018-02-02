@@ -16,7 +16,7 @@
 %                              December 2001                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -44,7 +44,7 @@
 #if defined(__VMS)
 #include <time.h>
 #endif
-#if defined(__MINGW32__) || defined(__MINGW64__)
+#if defined(__MINGW32__)
 #include <sys/time.h>
 #endif
 #include "magick/studio.h"
@@ -187,7 +187,7 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
   random_info->protocol_minor=RandomProtocolMinorVersion;
   random_info->semaphore=AllocateSemaphoreInfo();
   random_info->timestamp=(ssize_t) time(0);
-  random_info->signature=MagickSignature;
+  random_info->signature=MagickCoreSignature;
   /*
     Seed random nonce.
   */
@@ -273,7 +273,7 @@ MagickExport RandomInfo *DestroyRandomInfo(RandomInfo *random_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(random_info != (RandomInfo *) NULL);
-  assert(random_info->signature == MagickSignature);
+  assert(random_info->signature == MagickCoreSignature);
   LockSemaphoreInfo(random_info->semaphore);
   if (random_info->reservoir != (StringInfo *) NULL)
     random_info->reservoir=DestroyStringInfo(random_info->reservoir);
@@ -283,7 +283,7 @@ MagickExport RandomInfo *DestroyRandomInfo(RandomInfo *random_info)
     random_info->signature_info=DestroySignatureInfo(
       random_info->signature_info);
   (void) ResetMagickMemory(random_info->seed,0,sizeof(*random_info->seed));
-  random_info->signature=(~MagickSignature);
+  random_info->signature=(~MagickCoreSignature);
   UnlockSemaphoreInfo(random_info->semaphore);
   DestroySemaphoreInfo(&random_info->semaphore);
   random_info=(RandomInfo *) RelinquishMagickMemory(random_info);

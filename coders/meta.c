@@ -17,7 +17,7 @@
 %                                 July 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1172,12 +1172,12 @@ static Image *ReadMETAImage(const ImageInfo *image_info,
     Open file containing binary metadata
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -1226,14 +1226,19 @@ static Image *ReadMETAImage(const ImageInfo *image_info,
       profile=BlobToStringInfo(GetBlobStreamData(buff),(size_t)
         GetBlobSize(buff));
       if (profile == (StringInfo *) NULL)
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        {
+          blob=DetachBlob(buff->blob);
+          blob=(unsigned char *) RelinquishMagickMemory(blob);
+          buff=DestroyImage(buff);
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        }
       status=SetImageProfile(image,"8bim",profile);
       profile=DestroyStringInfo(profile);
-      if (status == MagickFalse)
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
       blob=DetachBlob(buff->blob);
       blob=(unsigned char *) RelinquishMagickMemory(blob);
       buff=DestroyImage(buff);
+      if (status == MagickFalse)
+        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
     }
   if (LocaleNCompare(image_info->magick,"APP1",4) == 0)
     {
@@ -1262,7 +1267,7 @@ static Image *ReadMETAImage(const ImageInfo *image_info,
           if (image_info->profile == (void *) NULL)
             {
               blob=DetachBlob(buff->blob);
-              blob=RelinquishMagickMemory(blob);
+              blob=(unsigned char *) RelinquishMagickMemory(blob);
               buff=DestroyImage(buff);
               ThrowReaderException(CoderError,"NoIPTCProfileAvailable");
             }
@@ -1271,7 +1276,7 @@ static Image *ReadMETAImage(const ImageInfo *image_info,
           if (iptc == (Image *) NULL)
             {
               blob=DetachBlob(buff->blob);
-              blob=RelinquishMagickMemory(blob);
+              blob=(unsigned char *) RelinquishMagickMemory(blob);
               buff=DestroyImage(buff);
               ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
             }
@@ -1279,15 +1284,10 @@ static Image *ReadMETAImage(const ImageInfo *image_info,
             GetStringInfoLength(profile));
           result=jpeg_embed(image,buff,iptc);
           blob=DetachBlob(iptc->blob);
-          blob=RelinquishMagickMemory(blob);
+          blob=(unsigned char *) RelinquishMagickMemory(blob);
           iptc=DestroyImage(iptc);
           if (result == 0)
-            {
-              blob=DetachBlob(buff->blob);
-              blob=RelinquishMagickMemory(blob);
-              buff=DestroyImage(buff);
-              ThrowReaderException(CoderError,"JPEGEmbeddingFailed");
-            }
+            ThrowReaderException(CoderError,"JPEGEmbeddingFailed");
         }
       else
         CopyBlob(image,buff);
@@ -1297,11 +1297,14 @@ static Image *ReadMETAImage(const ImageInfo *image_info,
         ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
       status=SetImageProfile(image,name,profile);
       profile=DestroyStringInfo(profile);
-      if (status == MagickFalse)
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
       blob=DetachBlob(buff->blob);
-      blob=RelinquishMagickMemory(blob);
+      blob=(unsigned char *) RelinquishMagickMemory(blob);
       buff=DestroyImage(buff);
+      if (status == MagickFalse)
+        {
+          buff=DestroyImage(buff);
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        }
     }
   if ((LocaleCompare(image_info->magick,"ICC") == 0) ||
       (LocaleCompare(image_info->magick,"ICM") == 0))
@@ -1320,7 +1323,12 @@ static Image *ReadMETAImage(const ImageInfo *image_info,
       profile=BlobToStringInfo(GetBlobStreamData(buff),(size_t)
         GetBlobSize(buff));
       if (profile == (StringInfo *) NULL)
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        {
+          blob=DetachBlob(buff->blob);
+          blob=(unsigned char *) RelinquishMagickMemory(blob);
+          buff=DestroyImage(buff);
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        }
       (void) SetImageProfile(image,"icc",profile);
       profile=DestroyStringInfo(profile);
       blob=DetachBlob(buff->blob);
@@ -1343,7 +1351,12 @@ static Image *ReadMETAImage(const ImageInfo *image_info,
       profile=BlobToStringInfo(GetBlobStreamData(buff),(size_t)
         GetBlobSize(buff));
       if (profile == (StringInfo *) NULL)
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        {
+          blob=DetachBlob(buff->blob);
+          blob=(unsigned char *) RelinquishMagickMemory(blob);
+          buff=DestroyImage(buff);
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        }
       (void) SetImageProfile(image,"iptc",profile);
       profile=DestroyStringInfo(profile);
       blob=DetachBlob(buff->blob);
@@ -1366,7 +1379,12 @@ static Image *ReadMETAImage(const ImageInfo *image_info,
       profile=BlobToStringInfo(GetBlobStreamData(buff),(size_t)
         GetBlobSize(buff));
       if (profile == (StringInfo *) NULL)
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        {
+          blob=DetachBlob(buff->blob);
+          blob=(unsigned char *) RelinquishMagickMemory(blob);
+          buff=DestroyImage(buff);
+          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        }
       (void) SetImageProfile(image,"xmp",profile);
       profile=DestroyStringInfo(profile);
       blob=DetachBlob(buff->blob);
@@ -1905,10 +1923,12 @@ static int formatIPTC(Image *ifile, Image *ofile)
 
     /* we found the 0x1c tag and now grab the dataset and record number tags */
     c = ReadBlobByte(ifile);
-    if (c == EOF) return -1;
+    if (c == EOF)
+      return(-1);
     dataset = (unsigned char) c;
     c = ReadBlobByte(ifile);
-    if (c == EOF) return -1;
+    if (c == EOF)
+      return(-1);
     recnum = (unsigned char) c;
     /* try to match this record to one of the ones in our named table */
     for (i=0; i< tagcount; i++)
@@ -1924,31 +1944,35 @@ static int formatIPTC(Image *ifile, Image *ofile)
       We decode the length of the block that follows - ssize_t or short fmt.
     */
     c=ReadBlobByte(ifile);
-    if (c == EOF) return -1;
+    if (c == EOF)
+      return(-1);
     if (c & (unsigned char) 0x80)
-      return 0;
+      return(0);
     else
       {
         int
           c0;
 
         c0=ReadBlobByte(ifile);
-        if (c0 == EOF) return -1;
+        if (c0 == EOF)
+          return(-1);
         taglen = (c << 8) | c0;
       }
-    if (taglen < 0) return -1;
+    if (taglen < 0)
+      return(-1);
     /* make a buffer to hold the tag datand snag it from the input stream */
     str=(unsigned char *) AcquireQuantumMemory((size_t) (taglen+MaxTextExtent),
       sizeof(*str));
     if (str == (unsigned char *) NULL)
-      {
-        printf("MemoryAllocationFailed");
-        return 0;
-      }
+      return(0);
     for (tagindx=0; tagindx<taglen; tagindx++)
     {
       c=ReadBlobByte(ifile);
-      if (c == EOF) return -1;
+      if (c == EOF)
+        {
+          str=(unsigned char *) RelinquishMagickMemory(str);
+          return(-1);
+        }
       str[tagindx] = (unsigned char) c;
     }
     str[taglen] = 0;
@@ -2073,10 +2097,7 @@ static int formatIPTCfromBuffer(Image *ofile, char *s, ssize_t len)
     str=(unsigned char *) AcquireQuantumMemory((size_t) (taglen+MaxTextExtent),
       sizeof(*str));
     if (str == (unsigned char *) NULL)
-      {
-        printf("MemoryAllocationFailed");
-        return 0;
-      }
+      return 0;
     for (tagindx=0; tagindx<taglen; tagindx++)
     {
       c = *s++; len--;
@@ -2170,10 +2191,7 @@ static int format8BIM(Image *ifile, Image *ofile)
       PString=(unsigned char *) AcquireQuantumMemory((size_t) (plen+
         MaxTextExtent),sizeof(*PString));
       if (PString == (unsigned char *) NULL)
-        {
-          printf("MemoryAllocationFailed");
-          return 0;
-        }
+        return 0;
       for (i=0; i<plen; i++)
       {
         c=ReadBlobByte(ifile);
@@ -2206,7 +2224,6 @@ static int format8BIM(Image *ifile, Image *ofile)
     if (str == (unsigned char *) NULL)
       {
         PString=(unsigned char *) RelinquishMagickMemory(PString);
-        printf("MemoryAllocationFailed");
         return 0;
       }
     for (i=0; i < (ssize_t) count; i++)
@@ -2214,6 +2231,7 @@ static int format8BIM(Image *ifile, Image *ofile)
       c=ReadBlobByte(ifile);
       if (c == EOF)
         {
+          str=(unsigned char *) RelinquishMagickMemory(str);
           PString=(unsigned char *) RelinquishMagickMemory(PString);
           return(-1);
         }
@@ -2266,9 +2284,9 @@ static MagickBooleanType WriteMETAImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   length=0;

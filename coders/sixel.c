@@ -18,7 +18,7 @@
 %                    Based on kmiya's sixel (2014-03-28)                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -377,7 +377,7 @@ MagickBooleanType sixel_decode(unsigned char              /* in */  *p,         
             /* DECGRI Graphics Repeat Introducer ! Pn Ch */
             p = get_params(++p, param, &n);
 
-            if (n > 0) {
+            if ((n > 0) && (param[0] > 0)) {
                 repeat_count = param[0];
             }
 
@@ -533,6 +533,8 @@ MagickBooleanType sixel_decode(unsigned char              /* in */  *p,         
     *pheight = imsy;
     *ncolors = max_color_index + 1;
     *palette = (unsigned char *) AcquireQuantumMemory(*ncolors,4);
+    if (*palette == (unsigned char *) NULL)
+      return(MagickFalse);
     for (n = 0; n < (ssize_t) *ncolors; ++n) {
         (*palette)[n * 4 + 0] = sixel_palet[n] >> 16 & 0xff;
         (*palette)[n * 4 + 1] = sixel_palet[n] >> 8 & 0xff;
@@ -547,6 +549,8 @@ sixel_output_t *sixel_output_create(Image *image)
     sixel_output_t *output;
 
     output = (sixel_output_t *) AcquireQuantumMemory(sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2, 1);
+    if (output == (sixel_output_t *) NULL)
+      return((sixel_output_t *) NULL);
     output->has_8bit_control = 0;
     output->save_pixel = 0;
     output->save_count = 0;
@@ -978,12 +982,12 @@ static Image *ReadSIXELImage(const ImageInfo *image_info,ExceptionInfo *exceptio
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -995,7 +999,8 @@ static Image *ReadSIXELImage(const ImageInfo *image_info,ExceptionInfo *exceptio
     Read SIXEL file.
   */
   length=MaxTextExtent;
-  sixel_buffer=(char *) AcquireQuantumMemory((size_t) length,sizeof(*sixel_buffer));
+  sixel_buffer=(char *) AcquireQuantumMemory((size_t) length+MaxTextExtent,
+    sizeof(*sixel_buffer));
   p=sixel_buffer;
   if (sixel_buffer != (char *) NULL)
     while (ReadBlobString(image,p) != (char *) NULL)
@@ -1008,15 +1013,15 @@ static Image *ReadSIXELImage(const ImageInfo *image_info,ExceptionInfo *exceptio
       if ((size_t) (p-sixel_buffer+MaxTextExtent) < length)
         continue;
       length<<=1;
-      sixel_buffer=(char *) ResizeQuantumMemory(sixel_buffer,length+MaxTextExtent,
-        sizeof(*sixel_buffer));
+      sixel_buffer=(char *) ResizeQuantumMemory(sixel_buffer,length+
+        MaxTextExtent,sizeof(*sixel_buffer));
       if (sixel_buffer == (char *) NULL)
         break;
       p=sixel_buffer+strlen(sixel_buffer);
     }
   if (sixel_buffer == (char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-
+  sixel_buffer[length]='\0';
   /*
     Decode SIXEL
   */
@@ -1031,6 +1036,8 @@ static Image *ReadSIXELImage(const ImageInfo *image_info,ExceptionInfo *exceptio
   status=SetImageExtent(image,image->columns,image->rows);
   if (status == MagickFalse)
     {
+      sixel_pixels=(unsigned char *) RelinquishMagickMemory(sixel_pixels);
+      sixel_palette=(unsigned char *) RelinquishMagickMemory(sixel_palette);
       InheritException(exception,&image->exception);
       return(DestroyImageList(image));
     }
@@ -1212,9 +1219,9 @@ static MagickBooleanType WriteSIXELImage(const ImageInfo *image_info,Image *imag
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   exception=(&image->exception);
@@ -1291,17 +1298,30 @@ static MagickBooleanType WriteSIXELImage(const ImageInfo *image_info,Image *imag
     Define SIXEL pixels.
   */
   output = sixel_output_create(image);
-  sixel_pixels =(unsigned char *) AcquireQuantumMemory(image->columns , image->rows);
+  if (output == (sixel_output_t *) NULL)
+    ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+  sixel_pixels =(unsigned char *) AcquireQuantumMemory(image->columns,
+    image->rows*sizeof(*sixel_pixels));
+  if (sixel_pixels == (unsigned char *) NULL)
+    {
+      output = (sixel_output_t *) RelinquishMagickMemory(output);
+      ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+    }
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    (void) GetVirtualPixels(image,0,y,image->columns,1,exception);
+    register const PixelPacket
+      *p;
+
+    p=GetVirtualPixels(image,0,y,image->columns,1,exception);
+    if (p == (PixelPacket *) NULL)
+      break;
     indexes=GetVirtualIndexQueue(image);
     for (x=0; x < (ssize_t) image->columns; x++)
-      sixel_pixels[y * image->columns + x] = (unsigned char) ((ssize_t) GetPixelIndex(indexes + x));
+      sixel_pixels[y*image->columns+x]=(unsigned char)
+        ((ssize_t) GetPixelIndex(indexes+x));
   }
   status = sixel_encode_impl(sixel_pixels, image->columns, image->rows,
-                          sixel_palette, image->colors, -1,
-                          output);
+    sixel_palette, image->colors, -1, output);
   sixel_pixels =(unsigned char *) RelinquishMagickMemory(sixel_pixels);
   output = (sixel_output_t *) RelinquishMagickMemory(output);
   (void) CloseBlob(image);

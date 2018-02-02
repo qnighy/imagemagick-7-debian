@@ -17,7 +17,7 @@
 %                               November 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -247,8 +247,8 @@ static CompositeOperator GIMPBlendModeToCompositeOperator(
     case GIMP_SCREEN_MODE:       return(ScreenCompositeOp);
     case GIMP_OVERLAY_MODE:      return(OverlayCompositeOp);
     case GIMP_DIFFERENCE_MODE:   return(DifferenceCompositeOp);
-    case GIMP_ADDITION_MODE:     return(AddCompositeOp);
-    case GIMP_SUBTRACT_MODE:     return(SubtractCompositeOp);
+    case GIMP_ADDITION_MODE:     return(ModulusAddCompositeOp);
+    case GIMP_SUBTRACT_MODE:     return(ModulusSubtractCompositeOp);
     case GIMP_DARKEN_ONLY_MODE:  return(DarkenCompositeOp);
     case GIMP_LIGHTEN_ONLY_MODE: return(LightenCompositeOp);
     case GIMP_HUE_MODE:          return(HueCompositeOp);
@@ -257,7 +257,7 @@ static CompositeOperator GIMPBlendModeToCompositeOperator(
     case GIMP_DODGE_MODE:        return(ColorDodgeCompositeOp);
     case GIMP_BURN_MODE:         return(ColorBurnCompositeOp);
     case GIMP_HARDLIGHT_MODE:    return(HardLightCompositeOp);
-    case GIMP_DIVIDE_MODE:       return(DivideCompositeOp);
+    case GIMP_DIVIDE_MODE:       return(DivideDstCompositeOp);
     /* these are the ones we don't support...yet */
     case GIMP_BEHIND_MODE:       return(OverCompositeOp);
     case GIMP_VALUE_MODE:        return(OverCompositeOp);
@@ -306,7 +306,7 @@ static char *ReadBlobStringWithLongSize(Image *image,char *string,size_t max)
     length;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(max != 0);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
@@ -686,6 +686,9 @@ static MagickBooleanType load_level(Image *image,XCFDocInfo *inDocInfo,
         tile_image_height=TILE_HEIGHT;
       tile_image=CloneImage(inLayerInfo->image,tile_image_width,
         tile_image_height,MagickTrue,exception);
+      if (tile_image == (Image *) NULL)
+        ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+          image->filename);
 
       /* read in the tile */
       switch (inDocInfo->compression)
@@ -1067,12 +1070,12 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -1107,15 +1110,15 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return(DestroyImageList(image));
     }
   if (image_type == GIMP_RGB)
-    ;
+    SetImageColorspace(image,sRGBColorspace);
   else
     if (image_type == GIMP_GRAY)
-      image->colorspace=GRAYColorspace;
+      SetImageColorspace(image,GRAYColorspace);
     else
       if (image_type == GIMP_INDEXED)
         ThrowReaderException(CoderError,"ColormapTypeNotSupported");
-  (void) SetImageOpacity(image,OpaqueOpacity); 
   (void) SetImageBackgroundColor(image);
+  (void) SetImageOpacity(image,OpaqueOpacity); 
   /*
     Read properties.
   */
@@ -1362,11 +1365,13 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       */
       saved_pos=TellBlob(image);
       /* seek to the layer offset */
-      if (SeekBlob(image,offset,SEEK_SET) != offset)
-        ThrowReaderException(ResourceLimitError,"NotEnoughPixelData");
-      /* read in the layer */
-      layer_ok=ReadOneLayer(image_info,image,&doc_info,
-        &layer_info[current_layer],current_layer);
+      layer_ok=MagickFalse;
+      if (SeekBlob(image,offset,SEEK_SET) == offset)
+        {
+          /* read in the layer */
+          layer_ok=ReadOneLayer(image_info,image,&doc_info,
+            &layer_info[current_layer],current_layer);
+        }
       if (layer_ok == MagickFalse)
         {
           ssize_t j;
@@ -1375,7 +1380,7 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
             if (layer_info[j].image != (Image *) NULL)
               layer_info[j].image=DestroyImage(layer_info[j].image);
           layer_info=(XCFLayerInfo *) RelinquishMagickMemory(layer_info);
-          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          ThrowReaderException(ResourceLimitError,"NotEnoughPixelData");
         }
       /* restore the saved position so we'll be ready to
       *  read the next offset.

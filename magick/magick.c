@@ -18,7 +18,7 @@
 %                             November 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -116,7 +116,8 @@ static SplayTreeInfo
 
 static volatile MagickBooleanType
   instantiate_magickcore = MagickFalse,
-  magickcore_signal_in_progress = MagickFalse;
+  magickcore_signal_in_progress = MagickFalse,
+  magick_list_initialized = MagickFalse;
 
 /*
   Forward declarations.
@@ -150,7 +151,7 @@ MagickExport DecodeImageHandler *GetImageDecoder(const MagickInfo *magick_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->decoder);
 }
 
@@ -180,7 +181,7 @@ MagickExport EncodeImageHandler *GetImageEncoder(const MagickInfo *magick_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->encoder);
 }
 
@@ -277,7 +278,7 @@ MagickExport MagickBooleanType GetMagickAdjoin(const MagickInfo *magick_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->adjoin);
 }
 
@@ -308,7 +309,7 @@ MagickExport MagickBooleanType GetMagickBlobSupport(
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->blob_support);
 }
 
@@ -338,7 +339,7 @@ MagickExport const char *GetMagickDescription(const MagickInfo *magick_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->description);
 }
 
@@ -370,7 +371,7 @@ MagickExport MagickBooleanType GetMagickEndianSupport(
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->endian_support);
 }
 
@@ -404,51 +405,36 @@ MagickExport const MagickInfo *GetMagickInfo(const char *name,
   ExceptionInfo *exception)
 {
   register const MagickInfo
-    *p;
+    *magick_info;
 
+  /*
+    Find named module attributes.
+  */
   assert(exception != (ExceptionInfo *) NULL);
   if (IsMagickTreeInstantiated(exception) == MagickFalse)
     return((const MagickInfo *) NULL);
+  magick_info=(const MagickInfo *) NULL;
 #if defined(MAGICKCORE_MODULES_SUPPORT)
-  if ((name != (const char *) NULL) && (LocaleCompare(name,"*") == 0))
-    (void) OpenModules(exception);
-#endif
-  /*
-    Find name in list.
-  */
-  LockSemaphoreInfo(magick_semaphore);
-  ResetSplayTreeIterator(magick_list);
-  p=(const MagickInfo *) GetNextValueInSplayTree(magick_list);
-  if ((name == (const char *) NULL) || (LocaleCompare(name,"*") == 0))
+  if ((name != (const char *) NULL) && (*name != '\0'))
     {
-      ResetSplayTreeIterator(magick_list);
-      p=(const MagickInfo *) GetNextValueInSplayTree(magick_list);
+      LockSemaphoreInfo(magick_semaphore);
+      if (LocaleCompare(name,"*") == 0)
+        (void) OpenModules(exception);
+      else
+        {
+          magick_info=(const MagickInfo *) GetValueFromSplayTree(magick_list,
+            name);
+          if (magick_info == (const MagickInfo *) NULL)
+            (void) OpenModule(name,exception);
+        }
       UnlockSemaphoreInfo(magick_semaphore);
-      return(p);
-    }
-  while (p != (const MagickInfo *) NULL)
-  {
-    if (LocaleCompare(p->name,name) == 0)
-      break;
-    p=(const MagickInfo *) GetNextValueInSplayTree(magick_list);
-  }
-#if defined(MAGICKCORE_MODULES_SUPPORT)
-  if (p == (const MagickInfo *) NULL)
-    {
-      if (*name != '\0')
-        (void) OpenModule(name,exception);
-      ResetSplayTreeIterator(magick_list);
-      p=(const MagickInfo *) GetNextValueInSplayTree(magick_list);
-      while (p != (const MagickInfo *) NULL)
-      {
-        if (LocaleCompare(p->name,name) == 0)
-          break;
-        p=(const MagickInfo *) GetNextValueInSplayTree(magick_list);
-      }
     }
 #endif
-  UnlockSemaphoreInfo(magick_semaphore);
-  return(p);
+  if ((name == (const char *) NULL) || (LocaleCompare(name,"*") == 0))
+    magick_info=(const MagickInfo *) GetRootValueFromSplayTree(magick_list);
+  if (magick_info == (const MagickInfo *) NULL)
+    magick_info=(const MagickInfo *) GetValueFromSplayTree(magick_list,name);
+  return(magick_info);
 }
 
 /*
@@ -661,7 +647,7 @@ MagickExport const char *GetMagickMimeType(const MagickInfo *magick_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->mime_type);
 }
 
@@ -717,7 +703,7 @@ MagickExport MagickBooleanType GetMagickRawSupport(
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->raw);
 }
 
@@ -749,7 +735,7 @@ MagickExport MagickBooleanType GetMagickSeekableStream(
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->seekable_stream);
 }
 
@@ -780,7 +766,7 @@ MagickExport MagickStatusType GetMagickThreadSupport(
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   return(magick_info->thread_support);
 }
 
@@ -833,13 +819,12 @@ static void *DestroyMagickNode(void *magick_info)
 
 static MagickBooleanType IsMagickTreeInstantiated(ExceptionInfo *exception)
 {
-  (void) exception;
-  if (magick_list == (SplayTreeInfo *) NULL)
+  if (magick_list_initialized == MagickFalse)
     {
       if (magick_semaphore == (SemaphoreInfo *) NULL)
         ActivateSemaphoreInfo(&magick_semaphore);
       LockSemaphoreInfo(magick_semaphore);
-      if (magick_list == (SplayTreeInfo *) NULL)
+      if (magick_list_initialized == MagickFalse)
         {
           MagickBooleanType
             status;
@@ -864,6 +849,7 @@ static MagickBooleanType IsMagickTreeInstantiated(ExceptionInfo *exception)
 #if !defined(MAGICKCORE_BUILD_MODULES)
           RegisterStaticModules();
 #endif
+          magick_list_initialized=MagickTrue;
         }
       UnlockSemaphoreInfo(magick_semaphore);
     }
@@ -1089,7 +1075,10 @@ MagickExport void MagickComponentTerminus(void)
     ActivateSemaphoreInfo(&magick_semaphore);
   LockSemaphoreInfo(magick_semaphore);
   if (magick_list != (SplayTreeInfo *) NULL)
-    magick_list=DestroySplayTree(magick_list);
+    {
+      magick_list=DestroySplayTree(magick_list);
+      magick_list_initialized=MagickFalse;
+    }
   UnlockSemaphoreInfo(magick_semaphore);
   DestroySemaphoreInfo(&magick_semaphore);
 }
@@ -1166,6 +1155,10 @@ static void MagickSignalHandler(int signal_number)
 #endif
 #if defined(SIGABRT)
   if (signal_number == SIGABRT)
+    abort();
+#endif
+#if defined(SIGBUS)
+  if (signal_number == SIGBUS)
     abort();
 #endif
 #if defined(SIGFPE)
@@ -1278,6 +1271,10 @@ MagickExport void MagickCoreGenesis(const char *path,
 #if defined(SIGABRT)
       if (signal_handlers[SIGABRT] == (SignalHandler *) NULL)
         signal_handlers[SIGABRT]=RegisterMagickSignalHandler(SIGABRT);
+#endif
+#if defined(SIGBUS)
+      if (signal_handlers[SIGBUS] == (SignalHandler *) NULL)
+        signal_handlers[SIGBUS]=RegisterMagickSignalHandler(SIGBUS);
 #endif
 #if defined(SIGSEGV)
       if (signal_handlers[SIGSEGV] == (SignalHandler *) NULL)
@@ -1436,7 +1433,7 @@ MagickExport MagickInfo *RegisterMagickInfo(MagickInfo *magick_info)
     Register a new image format.
   */
   assert(magick_info != (MagickInfo *) NULL);
-  assert(magick_info->signature == MagickSignature);
+  assert(magick_info->signature == MagickCoreSignature);
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",magick_info->name);
   if (magick_list == (SplayTreeInfo *) NULL)
     return((MagickInfo *) NULL);
@@ -1492,7 +1489,7 @@ MagickExport MagickInfo *SetMagickInfo(const char *name)
   magick_info->blob_support=MagickTrue;
   magick_info->thread_support=(MagickStatusType) (DecoderThreadSupport |
     EncoderThreadSupport);
-  magick_info->signature=MagickSignature;
+  magick_info->signature=MagickCoreSignature;
   return(magick_info);
 }
 

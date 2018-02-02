@@ -17,7 +17,7 @@
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2562,7 +2562,7 @@ WandExport PixelView *NewPixelView(MagickWand *wand)
     *pixel_view;
 
   assert(wand != (MagickWand *) NULL);
-  assert(wand->signature == MagickSignature);
+  assert(wand->signature == MagickCoreSignature);
   pixel_view=(PixelView *) AcquireMagickMemory(sizeof(*pixel_view));
   if (pixel_view == (PixelView *) NULL)
     ThrowWandFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",
@@ -2622,7 +2622,7 @@ WandExport PixelView *NewPixelViewRegion(MagickWand *wand,const ssize_t x,
     *pixel_view;
 
   assert(wand != (MagickWand *) NULL);
-  assert(wand->signature == MagickSignature);
+  assert(wand->signature == MagickCoreSignature);
   pixel_view=(PixelView *) AcquireMagickMemory(sizeof(*pixel_view));
   if (pixel_view == (PixelView *) NULL)
     ThrowWandFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",

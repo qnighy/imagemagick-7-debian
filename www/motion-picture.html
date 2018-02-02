@@ -10,7 +10,7 @@
   <title>Motion Picture Digital Images @ ImageMagick</title>
   <meta name="application-name" content="ImageMagick" />
   <meta name="description" content="ImageMagick® is a software suite to create, edit, compose, or convert bitmap images. It can read and write images in a variety of formats (over 200) including PNG, JPEG, JPEG-2000, GIF, WebP, Postscript, PDF, and SVG. Use ImageMagick to resize, flip, mirror, rotate, distort, shear and transform images, adjust image colors, apply various special effects, or draw text, lines, polygons, ellipses and Bézier curves." />
-  <meta name="application-url" content="https://www.imagemagick.org" />
+  <meta name="application-url" content="https://legacy.imagemagick.org" />
   <meta name="generator" content="PHP" />
   <meta name="keywords" content="motion, picture, digital, images, ImageMagick, PerlMagick, image processing, image, photo, software, Magick++, OpenMP, convert" />
   <meta name="rating" content="GENERAL" />
@@ -22,16 +22,53 @@
   <meta name="copyright" content="Copyright (c) 1999-2017 ImageMagick Studio LLC" />
   <meta name="distribution" content="Global" />
   <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
-  <link href="https://www.imagemagick.org/script/motion-picture.html" rel="canonical" />
+  <link href="motion-picture.html" rel="canonical" />
   <link href="../images/wand.png" rel="icon" />
   <link href="../images/wand.ico" rel="shortcut icon" />
-  <link href="css/magick.css" rel="stylesheet" />
+  <link href="assets/magick.css" rel="stylesheet" />
 </head>
 <body>
-<div class="magick-masthead">
+  <header>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="../index.html"><img class="d-block" id="logo" name="ImageMagick" alt="And Now a Touch of Magick" width="32" height="32" src="../images/wand.ico"/></a>
+    <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar-collapse collapse" id="navbarsExampleDefault" style="">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item ">
+        <a class="nav-link" href="../index.html">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="download.html">Download</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="command-line-tools.html">Tools</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="command-line-processing.html">Command-line</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="resources.html">Resources</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="develop.html">Develop</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" target="_blank" href="https://legacy.imagemagick.org/discourse-server//">Community</a>
+      </li>
+    </ul>
+    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
+    </div>
+  </nav>
   <div class="container">
-    <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
+   <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
          style="display:block"
          data-ad-client="ca-pub-3129977114552745"
          data-ad-slot="6345125851"
@@ -39,19 +76,10 @@
     <script>
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
-    <nav class="nav magick-nav">
-      <a class="nav-link " href="../index.html">Home</a>
-      <a class="nav-link " href="download.html">Download</a>
-      <a class="nav-link " href="command-line-tools.html">Tools</a>
-      <a class="nav-link " href="command-line-processing.html">Command-line</a>
-      <a class="nav-link " href="resources.html">Resources</a>
-      <a class="nav-link " href="develop.html">Develop</a>
-      <a class="nav-link " href="https://www.imagemagick.org/script/search.php">Search</a>
-      <a class="nav-link float-right" href="https://www.imagemagick.org/discourse-server/">Community</a>
-    </nav>
   </div>
-</div>
-<div class="container">
+  </header>
+  <main role="main" class="container">
+    <div class="magick-template">
 <div class="magick-header">
 <p class="text-center"><a href="motion-picture.html#log">Log Format</a> • <a href="motion-picture.html#properties">DPX Properties</a> • <a href="motion-picture.html#settings">DPX Settings</a></p>
 
@@ -67,7 +95,7 @@
 
 <p>The header can contain Film and/or Television specific data related to a production. For example the television header can contain a SMPTE time code so that shots exported as a DPX sequence from a production's edit can be easily replaced once any effects have been added. The film header holds information about the reel of film the frames originated from and various camera settings that were used while filming.  All these details usually stay with the images as they are passed between post-production companies.</p>
 
-<h2 class="magick-post-title"><a id="log"></a>Log Format</h2>
+<h2 class="magick-post-title"><a class="anchor" id="log"></a>Log Format</h2>
 
 <p>The color values for each pixel are often stored logarithmically (particularly if the sequence is destined to be transferred back on to film) which more naturally reflects the density of how color information is stored in the emulsion on the original film. When viewed without alteration logarithmic files appear to have very low contrast (leftmost image), and so require a 'look up table' to translate the logarithmic image to something that resembles what you might see if the image was transferred back to film and projected in a cinema (rightmost image). Apart from making the image linear (like most typical computer images) and adjusting the gamma level this table sets where the black and white point lies.</p>
 
@@ -85,7 +113,7 @@
   <a href="../images/bluebells_darker.jpg"><img src="../images/bluebells_darker.jpg" width="384" height="288" class="image-slices" alt="bluebells-darker" /></a>
 </ul>
 
-<h2 class="magick-post-title"><a id="properties"></a>DPX Properties</h2>
+<h2 class="magick-post-title"><a class="anchor" id="properties"></a>DPX Properties</h2>
 
 <p>ImageMagick supports these DPX properties:</p>
 
@@ -141,29 +169,25 @@ dpx:user.data
 
 <p> To determine which properties are associated with your DPX image, use this command for example:</p>
 
-<pre><code>
-identify -verbose bluebells.dpx
+<pre class="highlight"><code>identify -verbose bluebells.dpx
 </code></pre>
 
 <p>To identify a particular property, try this:</p>
 
-<pre><code>
-identify -format "%[dpx:television.time.code]" bluebells.dpx
+<pre class="highlight"><code>identify -format "%[dpx:television.time.code]" bluebells.dpx
 </code></pre>
 
 <p>Finally, to set a property:</p>
 
-<pre><code>
-convert bluebells.dpx -define dpx:television.time.code=10:00:02:15 bluebells-001.dpx
+<pre class="highlight"><code>convert bluebells.dpx -define dpx:television.time.code=10:00:02:15 bluebells-001.dpx
 </code></pre>
 
-<h2 class="magick-post-title"><a id="settings"></a>DPX Settings</h2>
+<h2 class="magick-post-title"><a class="anchor" id="settings"></a>DPX Settings</h2>
 
 <p>Use <a href="command-line-options.html#set">-set</a> to specify the image or film gamma or black and white points.  For example use:
 </p>
 
-<pre><code>
--set gamma 1.7
+<pre class="highlight"><code>-set gamma 1.7
 -set film-gamma 0.6
 -set reference-black 95
 -set reference-white 685
@@ -171,21 +195,25 @@ convert bluebells.dpx -define dpx:television.time.code=10:00:02:15 bluebells-001
 </code></pre>
 
 </div>
+    </div>
+  </main><!-- /.container -->
   <footer class="magick-footer">
-    <p><a href="support.html">Donate</a> •
-     <a href="sitemap.html">Sitemap</a> •
+    <p><a href="security-policy.html">Security</a> •
+    <a href="architecture.html">Architecture</a> •
     <a href="links.html">Related</a> •
-    <a href="security-policy.html">Security</a> •
-    <a href="architecture.html">Architecture</a>
-</p>
-    <p><a href="motion-picture.html#">Back to top</a> •
-    <a href="http://pgp.mit.edu:11371/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
-    <a href="https://www.imagemagick.org/script/contact.php">Contact Us</a></p>
-        <p><small>© 1999-2017 ImageMagick Studio LLC</small></p>
+     <a href="sitemap.html">Sitemap</a>
+       
+    <a href="motion-picture.html#"><img class="d-inline" id="logo" alt="And Now a Touch of Magick" width="16" height="16" src="../images/wand.ico"/></a>
+       
+    <a href="http://pgp.mit.edu/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
+    <a href="support.html">Donate</a> •
+    <a href="https://legacy.imagemagick.org/script/contact.php">Contact Us</a>
+    <br/>
+        <small>© 1999-2018 ImageMagick Studio LLC</small></p>
   </footer>
-</div><!-- /.container -->
 
-  <script src="https://localhost/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="../js/magick.html"></script>
+  <!-- Javascript assets -->
+  <script src="assets/magick.js" crossorigin="anonymous"></script>
+  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
 </body>
 </html>

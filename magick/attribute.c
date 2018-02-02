@@ -17,7 +17,7 @@
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -145,7 +145,7 @@ MagickExport RectangleInfo GetImageBoundingBox(const Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   bounds.width=0;
@@ -178,7 +178,7 @@ MagickExport RectangleInfo GetImageBoundingBox(const Image *image,
   GetMagickPixelPacket(image,&zero);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -312,7 +312,7 @@ MagickExport size_t GetImageChannelDepth(const Image *image,
   */
   assert(image != (Image *) NULL);
 
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
@@ -327,7 +327,7 @@ MagickExport size_t GetImageChannelDepth(const Image *image,
     {
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,1,1)
+        magick_number_threads(image,image,image->colors,1)
 #endif
       for (i=0; i < (ssize_t) image->colors; i++)
       {
@@ -402,7 +402,7 @@ RestoreMSCWarning
       }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -478,7 +478,7 @@ RestoreMSCWarning
 #endif
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -632,7 +632,7 @@ MagickExport size_t GetImageQuantumDepth(const Image *image,
 MagickExport ImageType GetImageType(const Image *image,ExceptionInfo *exception)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->colorspace == CMYKColorspace)
@@ -703,7 +703,7 @@ MagickExport ImageType IdentifyImageGray(const Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if ((image->type == BilevelType) || (image->type == GrayscaleType) ||
@@ -784,7 +784,7 @@ MagickExport MagickBooleanType IdentifyImageMonochrome(const Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->type == BilevelType)
@@ -852,7 +852,7 @@ MagickExport ImageType IdentifyImageType(const Image *image,
   ExceptionInfo *exception)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->colorspace == CMYKColorspace)
@@ -910,7 +910,7 @@ MagickExport MagickBooleanType IsGrayImage(const Image *image,
   ExceptionInfo *exception)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if ((image->type == BilevelType) || (image->type == GrayscaleType) ||
       (image->type == GrayscaleMatteType))
     return(MagickTrue);
@@ -946,7 +946,7 @@ MagickExport MagickBooleanType IsMonochromeImage(const Image *image,
   ExceptionInfo *exception)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->type == BilevelType)
     return(MagickTrue);
   return(MagickFalse);
@@ -997,7 +997,7 @@ MagickExport MagickBooleanType IsOpaqueImage(const Image *image,
     Determine if image is opaque.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->matte == MagickFalse)
@@ -1077,7 +1077,7 @@ MagickExport MagickBooleanType SetImageChannelDepth(Image *image,
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (depth >= MAGICKCORE_QUANTUM_DEPTH)
     {
       image->depth=depth;
@@ -1091,7 +1091,7 @@ MagickExport MagickBooleanType SetImageChannelDepth(Image *image,
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,1,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (i=0; i < (ssize_t) image->colors; i++)
       {
@@ -1135,7 +1135,7 @@ RestoreMSCWarning
           range);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -1185,7 +1185,7 @@ RestoreMSCWarning
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1276,7 +1276,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   status=MagickTrue;
   image_info=AcquireImageInfo();
   image_info->dither=image->dither;
@@ -1287,38 +1287,32 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
   {
     case BilevelType:
     {
-      if (SetImageMonochrome(image,&image->exception) == MagickFalse)
-       {
-          status=TransformImageColorspace(image,GRAYColorspace);
-          (void) NormalizeImage(image);
-          quantize_info=AcquireQuantizeInfo(image_info);
-          quantize_info->number_colors=2;
-          quantize_info->colorspace=GRAYColorspace;
-          status=QuantizeImage(quantize_info,image);
-          quantize_info=DestroyQuantizeInfo(quantize_info);
-        }
+      status=TransformImageColorspace(image,GRAYColorspace);
+      (void) NormalizeImage(image);
+      quantize_info=AcquireQuantizeInfo(image_info);
+      quantize_info->number_colors=2;
+      quantize_info->colorspace=GRAYColorspace;
+      status=QuantizeImage(quantize_info,image);
+      quantize_info=DestroyQuantizeInfo(quantize_info);
       image->matte=MagickFalse;
       break;
     }
     case GrayscaleType:
     {
-      if (SetImageGray(image,&image->exception) == MagickFalse)
-        status=TransformImageColorspace(image,GRAYColorspace);
+      status=TransformImageColorspace(image,GRAYColorspace);
       image->matte=MagickFalse;
       break;
     }
     case GrayscaleMatteType:
     {
-      if (SetImageGray(image,&image->exception) == MagickFalse)
-        status=TransformImageColorspace(image,GRAYColorspace);
+      status=TransformImageColorspace(image,GRAYColorspace);
       if (image->matte == MagickFalse)
         (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
       break;
     }
     case PaletteType:
     {
-      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
+      status=TransformImageColorspace(image,sRGBColorspace);
       if ((image->storage_class == DirectClass) || (image->colors > 256))
         {
           quantize_info=AcquireQuantizeInfo(image_info);
@@ -1331,8 +1325,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case PaletteBilevelMatteType:
     {
-      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
+      status=TransformImageColorspace(image,sRGBColorspace);
       if (image->matte == MagickFalse)
         (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
       (void) BilevelImageChannel(image,AlphaChannel,(double) QuantumRange/2.0);
@@ -1343,8 +1336,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case PaletteMatteType:
     {
-      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
+      status=TransformImageColorspace(image,sRGBColorspace);
       if (image->matte == MagickFalse)
         (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
       quantize_info=AcquireQuantizeInfo(image_info);
@@ -1355,8 +1347,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case TrueColorType:
     {
-      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
+      status=TransformImageColorspace(image,sRGBColorspace);
       if (image->storage_class != DirectClass)
         status=SetImageStorageClass(image,DirectClass);
       image->matte=MagickFalse;
@@ -1364,8 +1355,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case TrueColorMatteType:
     {
-      if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-        status=TransformImageColorspace(image,sRGBColorspace);
+      status=TransformImageColorspace(image,sRGBColorspace);
       if (image->storage_class != DirectClass)
         status=SetImageStorageClass(image,DirectClass);
       if (image->matte == MagickFalse)
@@ -1374,12 +1364,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case ColorSeparationType:
     {
-      if (image->colorspace != CMYKColorspace)
-        {
-          if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-            (void) TransformImageColorspace(image,sRGBColorspace);
-          status=TransformImageColorspace(image,CMYKColorspace);
-        }
+      status=TransformImageColorspace(image,CMYKColorspace);
       if (image->storage_class != DirectClass)
         status=SetImageStorageClass(image,DirectClass);
       image->matte=MagickFalse;
@@ -1387,12 +1372,7 @@ MagickExport MagickBooleanType SetImageType(Image *image,const ImageType type)
     }
     case ColorSeparationMatteType:
     {
-      if (image->colorspace != CMYKColorspace)
-        {
-          if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-            (void) TransformImageColorspace(image,sRGBColorspace);
-          status=TransformImageColorspace(image,CMYKColorspace);
-        }
+      status=TransformImageColorspace(image,CMYKColorspace);
       if (image->storage_class != DirectClass)
         status=SetImageStorageClass(image,DirectClass);
       if (image->matte == MagickFalse)

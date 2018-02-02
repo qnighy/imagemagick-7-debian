@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -146,6 +146,8 @@ static int MagickDLLCall PDFDelegateMessage(void *handle,const char *message,
       *messages=(char *) ResizeQuantumMemory(*messages,offset+length+1,
         sizeof(char *));
     }
+  if (*messages == (char *) NULL)
+    return(0);
   (void) memcpy(*messages+offset,message,length);
   (*messages)[length+offset] ='\0';
   return(length);
@@ -452,12 +454,12 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     count;
 
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   /*
     Open image file.
   */
@@ -1324,9 +1326,9 @@ RestoreMSCWarning
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);

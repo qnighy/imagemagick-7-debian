@@ -561,7 +561,7 @@ ssize_t TotalSize = 0;
  	  if ((zip_status != Z_OK) && (zip_status != Z_STREAM_END))
       break;
 
-    *Size -= magick_size;
+    *Size -= (unsigned int) magick_size;
   }
 DblBreak:
 
@@ -635,7 +635,7 @@ static Image *ReadMATImageV4(const ImageInfo *image_info,Image *image,
     depth;
 
   (void) SeekBlob(image,0,SEEK_SET);
-  while (EOFBlob(image) != MagickFalse)
+  while (EOFBlob(image) == MagickFalse)
   {
     /*
       Object parser.
@@ -695,7 +695,9 @@ static Image *ReadMATImageV4(const ImageInfo *image_info,Image *image,
     if (image_info->ping != MagickFalse)
       {
         Swap(image->columns,image->rows);
-        return(image);
+        if(HDR.imagf==1) ldblk *= 2;
+        SeekBlob(image, HDR.nCols*ldblk, SEEK_CUR);
+        goto skip_reading_current;
       }
     status=SetImageExtent(image,image->columns,image->rows);
     if (status == MagickFalse)
@@ -779,17 +781,17 @@ static Image *ReadMATImageV4(const ImageInfo *image_info,Image *image,
           InsertComplexFloatRow((float *) pixels,y,image,0,0);
       }
     quantum_info=DestroyQuantumInfo(quantum_info);
-    rotate_image=RotateImage(image,90.0,exception);
-    if (rotate_image != (Image *) NULL)
-      {
-        image=DestroyImage(image);
-        image=rotate_image;
-      }
     if (EOFBlob(image) != MagickFalse)
       {
         ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
           image->filename);
         break;
+      }
+    rotate_image=RotateImage(image,90.0,exception);
+    if (rotate_image != (Image *) NULL)
+      {
+        image=DestroyImage(image);
+        image=rotate_image;
       }
     /*
       Proceed to next image.
@@ -800,6 +802,7 @@ static Image *ReadMATImageV4(const ImageInfo *image_info,Image *image,
     /*
       Allocate next image structure.
     */
+skip_reading_current:
     AcquireNextImage(image_info,image);
     if (GetNextImageInList(image) == (Image *) NULL)
       {
@@ -878,9 +881,9 @@ static Image *ReadMATImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
 
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   logging = LogMagickEvent(CoderEvent,GetMagickModule(),"enter");
 
   /*
@@ -888,6 +891,7 @@ static Image *ReadMATImage(const ImageInfo *image_info,ExceptionInfo *exception)
    */
   quantum_info=(QuantumInfo *) NULL;
   image = AcquireImage(image_info);
+  image2 = (Image *) NULL;
 
   status = OpenBlob(image_info, image, ReadBinaryBlobMode, exception);
   if (status == MagickFalse)
@@ -959,7 +963,11 @@ MATLAB_KO:
       goto MATLAB_KO;
     filepos += MATLAB_HDR.ObjectSize + 4 + 4;
 
+    if (clone_info != (ImageInfo *) NULL)
+      clone_info=DestroyImageInfo(clone_info);
     clone_info=CloneImageInfo(image_info);
+    if ((image != image2) && (image2 != (Image *) NULL))
+      image2=DestroyImage(image2);
     image2 = image;
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
     if(MATLAB_HDR.DataType == miCOMPRESSED)
@@ -998,14 +1006,35 @@ MATLAB_KO:
       case 12: z2=z = ReadBlobXXXLong(image2);  /* 3D matrix RGB*/
            Unknown6 = ReadBlobXXXLong(image2);
            (void) Unknown6;
-         if(z!=3) ThrowReaderException(CoderError, "MultidimensionalMatricesAreNotSupported");
+         if(z!=3)
+           {
+             if (clone_info != (ImageInfo *) NULL)
+               clone_info=DestroyImageInfo(clone_info);
+             if ((image != image2) && (image2 != (Image *) NULL))
+               image2=DestroyImage(image2);
+             ThrowReaderException(CoderError,
+               "MultidimensionalMatricesAreNotSupported");
+           }
          break;
       case 16: z2=z = ReadBlobXXXLong(image2);  /* 4D matrix animation */
          if(z!=3 && z!=1)
-           ThrowReaderException(CoderError, "MultidimensionalMatricesAreNotSupported");
+           {
+             if (clone_info != (ImageInfo *) NULL)
+               clone_info=DestroyImageInfo(clone_info);
+             if ((image != image2) && (image2 != (Image *) NULL))
+               image2=DestroyImage(image2);
+             ThrowReaderException(CoderError,
+               "MultidimensionalMatricesAreNotSupported");
+           }
          Frames = ReadBlobXXXLong(image2);
          if (Frames == 0)
-           ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+           {
+             if (clone_info != (ImageInfo *) NULL)
+               clone_info=DestroyImageInfo(clone_info);
+             if ((image != image2) && (image2 != (Image *) NULL))
+               image2=DestroyImage(image2);
+             ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+           }
          break;
       default:
         if (clone_info != (ImageInfo *) NULL)
@@ -1031,7 +1060,16 @@ MATLAB_KO:
         MATLAB_HDR.StructureClass != mxUINT32_CLASS &&    /* uint32 + uint32 3D */
         MATLAB_HDR.StructureClass != mxINT64_CLASS &&
         MATLAB_HDR.StructureClass != mxUINT64_CLASS)    /* uint64 + uint64 3D */
-      ThrowReaderException(CoderError,"UnsupportedCellTypeInTheMatrix");
+      {
+        if ((image2 != (Image*) NULL) && (image2 != (Image *) image))
+          {
+            CloseBlob(image2);
+            DeleteImageFromList(&image2);
+          }
+        if (clone_info != (ImageInfo *) NULL)
+          DestroyImageInfo(clone_info);
+        ThrowReaderException(CoderError,"UnsupportedCellTypeInTheMatrix");
+      }
 
     switch (MATLAB_HDR.NameFlag)
     {
@@ -1302,6 +1340,8 @@ done_reading:
       /* row scan buffer is no longer needed */
     RelinquishMagickMemory(BImgBuff);
     BImgBuff = NULL;
+    if (quantum_info != (QuantumInfo *) NULL)
+      quantum_info=DestroyQuantumInfo(quantum_info);
 
     if(--Frames>0)
     {
@@ -1325,8 +1365,6 @@ done_reading:
           }
          }
        }
-    if (quantum_info != (QuantumInfo *) NULL)
-      quantum_info=DestroyQuantumInfo(quantum_info);
     if (clone_info)
       clone_info=DestroyImageInfo(clone_info);
   }
@@ -1380,12 +1418,11 @@ END_OF_READING:
     clone_info = NULL;
   }
   if (logging) (void)LogMagickEvent(CoderEvent,GetMagickModule(),"return");
-  if (image==NULL)
+  if ((image != image2) && (image2 != (Image *) NULL))
+    image2=DestroyImage(image2);
+  if (image == (Image *) NULL)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader")
-  else
-    if ((image != image2) && (image2 != (Image *) NULL))
-      image2=DestroyImage(image2);
-  return (image);
+  return(image);
 }
 
 /*
@@ -1503,9 +1540,9 @@ static MagickBooleanType WriteMATImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   (void) LogMagickEvent(CoderEvent,GetMagickModule(),"enter MAT");
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)

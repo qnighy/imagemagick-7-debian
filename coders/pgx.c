@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -165,12 +165,12 @@ static Image *ReadPGXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -182,6 +182,8 @@ static Image *ReadPGXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   count=(ssize_t) sscanf(buffer,"PG%[ \t]%2s%[ \t+-]%d%[ \t]%d%[ \t]%d",sans,
     endian,sign,&precision,sans,&width,sans,&height);
+  if (count != 8)
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   image->depth=(size_t) precision;
   if (LocaleCompare(endian,"ML") == 0)
     image->endian=MSBEndian;
@@ -216,7 +218,7 @@ static Image *ReadPGXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     pixels=(const unsigned char *) ReadBlobStream(image,length,
       GetQuantumPixels(quantum_info),&count);
     if (count != (ssize_t) length)
-      ThrowReaderException(CorruptImageError,"UnableToReadImageData");
+      break;
     (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
       GrayQuantum,pixels,exception);
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
@@ -352,14 +354,14 @@ static MagickBooleanType WritePGXImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   exception=(&image->exception);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
   if (status == MagickFalse)
     return(status);

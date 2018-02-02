@@ -17,7 +17,7 @@
 %                                 July 2009                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -473,12 +473,12 @@ static Image *ReadPESImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -548,8 +548,11 @@ static Image *ReadPESImage(const ImageInfo *image_info,ExceptionInfo *exception)
         */
         j++;
         blocks[j].offset=(ssize_t) i;
-        if (j >= 256)
-          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+        if (j >= 255)
+          {
+            stitches=(PointInfo *) RelinquishMagickMemory(stitches);
+            ThrowReaderException(ResourceLimitError,"CorruptImage");
+          }
         (void) ReadBlobByte(image);
         continue;
       }

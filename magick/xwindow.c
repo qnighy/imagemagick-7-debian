@@ -17,7 +17,7 @@
 %                                  July 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -62,6 +62,7 @@
 #include "magick/log.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/monitor.h"
 #include "magick/nt-base-private.h"
 #include "magick/option.h"
@@ -2111,17 +2112,12 @@ static void XDitherImage(Image *image,XImage *ximage)
   for (i=0; i < 2; i++)
     for (j=0; j < 16; j++)
     {
-      red_map[i][j]=(unsigned char *) AcquireQuantumMemory(256UL,
+      red_map[i][j]=(unsigned char *) AcquireCriticalMemory(256UL*
         sizeof(*red_map));
-      green_map[i][j]=(unsigned char *) AcquireQuantumMemory(256UL,
+      green_map[i][j]=(unsigned char *) AcquireCriticalMemory(256UL*
         sizeof(*green_map));
-      blue_map[i][j]=(unsigned char *) AcquireQuantumMemory(256UL,
+      blue_map[i][j]=(unsigned char *) AcquireCriticalMemory(256UL*
         sizeof(*blue_map));
-      if ((red_map[i][j] == (unsigned char *) NULL) ||
-          (green_map[i][j] == (unsigned char *) NULL) ||
-          (blue_map[i][j] == (unsigned char *) NULL))
-        ThrowXWindowFatalException(ResourceLimitError,
-          "MemoryAllocationFailed",image->filename);
     }
   /*
     Initialize dither tables.
@@ -4556,7 +4552,7 @@ MagickExport void XGetWindowInfo(Display *display,XVisualInfo *visual_info,
           *segment_info;
 
         if (window->segment_info == (void *) NULL)
-          window->segment_info=AcquireQuantumMemory(2,sizeof(*segment_info));
+          window->segment_info=AcquireCriticalMemory(2*sizeof(*segment_info));
         segment_info=(XShmSegmentInfo *) window->segment_info;
         segment_info[0].shmid=(-1);
         segment_info[0].shmaddr=(char *) NULL;
@@ -4824,7 +4820,7 @@ MagickExport Image *XImportImage(const ImageInfo *image_info,
     Open X server connection.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -9803,7 +9799,7 @@ MagickExport Image *XImportImage(const ImageInfo *image_info,
   XImportInfo *ximage_info)
 {
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);

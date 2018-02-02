@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -74,6 +74,7 @@
 #include "magick/splay-tree.h"
 #include "magick/statistic.h"
 #include "magick/string_.h"
+#include "magick/threshold.h"
 #include "magick/token.h"
 #include "magick/utility.h"
 
@@ -113,6 +114,14 @@ static const OptionInfo
     { "Transparent", TransparentAlphaChannel, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedAlphaChannel, UndefinedOptionFlag, MagickFalse }
   },
+  AutoThresholdOptions[] =
+  {
+    { "Undefined", UndefinedThresholdMethod, UndefinedOptionFlag, MagickTrue },
+    { "Kapur", KapurThresholdMethod, UndefinedOptionFlag, MagickFalse },
+    { "OTSU", OTSUThresholdMethod, UndefinedOptionFlag, MagickFalse },
+    { "Triangle", TriangleThresholdMethod, UndefinedOptionFlag, MagickFalse },
+    { (char *) NULL, UndefinedThresholdMethod, UndefinedOptionFlag, MagickFalse }
+  },
   BooleanOptions[] =
   {
     { "False", 0L, UndefinedOptionFlag, MagickFalse },
@@ -136,6 +145,7 @@ static const OptionInfo
     { "A", AlphaChannel, UndefinedOptionFlag, MagickFalse },
     { "All", CompositeChannels, UndefinedOptionFlag, MagickFalse },
     { "Alpha", OpacityChannel, UndefinedOptionFlag, MagickFalse },
+    { "AutoThreshold", MagickAutoThresholdOptions, UndefinedOptionFlag, MagickFalse },
     { "B", BlueChannel, UndefinedOptionFlag, MagickFalse },
     { "Black", BlackChannel, UndefinedOptionFlag, MagickFalse },
     { "Blue", BlueChannel, UndefinedOptionFlag, MagickFalse },
@@ -165,12 +175,12 @@ static const OptionInfo
     { "Sync", SyncChannels, UndefinedOptionFlag, MagickFalse },
     { "Y", YellowChannel, UndefinedOptionFlag, MagickFalse },
     { "Yellow", YellowChannel, UndefinedOptionFlag, MagickFalse },
-    { "0", 0, UndefinedOptionFlag, MagickFalse },
-    { "1", 1, UndefinedOptionFlag, MagickFalse },
-    { "2", 2, UndefinedOptionFlag, MagickFalse },
-    { "3", 3, UndefinedOptionFlag, MagickFalse },
-    { "4", 4, UndefinedOptionFlag, MagickFalse },
-    { "5", 5, UndefinedOptionFlag, MagickFalse },
+    { "0", 1U << 0, UndefinedOptionFlag, MagickFalse },
+    { "1", 1U << 1, UndefinedOptionFlag, MagickFalse },
+    { "2", 1U << 2, UndefinedOptionFlag, MagickFalse },
+    { "3", 1U << 3, UndefinedOptionFlag, MagickFalse },
+    { "4", 1U << 4, UndefinedOptionFlag, MagickFalse },
+    { "5", 1U << 5, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedChannel, UndefinedOptionFlag, MagickFalse }
   },
   ClassOptions[] =
@@ -206,6 +216,7 @@ static const OptionInfo
     { "LCH", LCHColorspace, UndefinedOptionFlag, MagickFalse },
     { "LCHab", LCHabColorspace, UndefinedOptionFlag, MagickFalse },
     { "LCHuv", LCHuvColorspace, UndefinedOptionFlag, MagickFalse },
+    { "LinearGray", LinearGRAYColorspace, UndefinedOptionFlag, MagickFalse },
     { "LMS", LMSColorspace, UndefinedOptionFlag, MagickFalse },
     { "Log", LogColorspace, UndefinedOptionFlag, MagickFalse },
     { "Luv", LuvColorspace, UndefinedOptionFlag, MagickFalse },
@@ -922,6 +933,7 @@ static const OptionInfo
     { "SrcIn", SrcInCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "SrcOut", SrcOutCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "SrcOver", SrcOverCompositeOp, UndefinedOptionFlag, MagickFalse },
+    { "Stereo", StereoCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "VividLight", VividLightCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "Xor", XorCompositeOp, UndefinedOptionFlag, MagickFalse },
     { "Add", AddCompositeOp, DeprecateOptionFlag, MagickTrue },
@@ -1767,12 +1779,12 @@ MagickExport MagickBooleanType CloneImageOptions(ImageInfo *image_info,
   const ImageInfo *clone_info)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(clone_info != (const ImageInfo *) NULL);
-  assert(clone_info->signature == MagickSignature);
+  assert(clone_info->signature == MagickCoreSignature);
   if (clone_info->options != (void *) NULL)
     {
       if (image_info->options != (void *) NULL)
@@ -1860,7 +1872,7 @@ MagickExport MagickBooleanType DeleteImageOption(ImageInfo *image_info,
   const char *option)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -1894,7 +1906,7 @@ MagickExport MagickBooleanType DeleteImageOption(ImageInfo *image_info,
 MagickExport void DestroyImageOptions(ImageInfo *image_info)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -1934,7 +1946,7 @@ MagickExport const char *GetImageOption(const ImageInfo *image_info,
     *option;
 
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -1981,6 +1993,7 @@ static const OptionInfo *GetOptionInfo(const CommandOption option)
   {
     case MagickAlignOptions: return(AlignOptions);
     case MagickAlphaOptions: return(AlphaOptions);
+    case MagickAutoThresholdOptions: return(AutoThresholdOptions);
     case MagickBooleanOptions: return(BooleanOptions);
     case MagickCacheOptions: return(CacheOptions);
     case MagickChannelOptions: return(ChannelOptions);
@@ -2196,7 +2209,7 @@ MagickExport char **GetCommandOptions(const CommandOption option)
 MagickExport char *GetNextImageOption(const ImageInfo *image_info)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -2588,7 +2601,7 @@ MagickExport ssize_t ParseCommandOption(const CommandOption option,
   ssize_t
     option_types;
 
-  if (options == (const char *) NULL)
+  if ((options == (const char *) NULL) || (*options == '\0'))
     return(-1);
   option_info=GetOptionInfo(option);
   if (option_info == (const OptionInfo *) NULL)
@@ -2673,7 +2686,7 @@ MagickExport char *RemoveImageOption(ImageInfo *image_info,const char *option)
     *value;
 
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -2710,7 +2723,7 @@ MagickExport char *RemoveImageOption(ImageInfo *image_info,const char *option)
 MagickExport void ResetImageOptions(const ImageInfo *image_info)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -2746,7 +2759,7 @@ MagickExport void ResetImageOptions(const ImageInfo *image_info)
 MagickExport void ResetImageOptionIterator(const ImageInfo *image_info)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -2786,7 +2799,7 @@ MagickExport MagickBooleanType SetImageOption(ImageInfo *image_info,
   const char *option,const char *value)
 {
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);

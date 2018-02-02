@@ -18,7 +18,7 @@
 %                               Dirk Lemstra                                  %
 %                               January 2014                                  %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -404,6 +404,11 @@ static HENHMETAFILE ReadEnhMetaFile(const char *path,ssize_t *width,
     return(NULL);
   dwSize=GetFileSize(hFile,NULL);
   pBits=(LPBYTE) AcquireQuantumMemory(dwSize,sizeof(*pBits));
+  if (pBits == (LPBYTE) NULL)
+    {
+      CloseHandle(hFile);
+      return((HENHMETAFILE) NULL);
+    }
   ReadFile(hFile,pBits,dwSize,&dwSize,NULL);
   CloseHandle(hFile);
   if (((PAPMHEADER) pBits)->dwKey != 0x9ac6cdd7l)
@@ -699,7 +704,7 @@ static Image *ReadEMFImage(const ImageInfo *image_info,
     fileName[MaxTextExtent];
 
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);

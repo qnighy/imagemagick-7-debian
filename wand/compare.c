@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -137,6 +137,7 @@ static MagickBooleanType CompareUsage(void)
       "-extract geometry    extract area from image",
       "-format \"string\"     output formatted image characteristics",
       "-fuzz distance       colors within this distance are considered equal",
+      "-gravity type        horizontal and vertical text placement",
       "-highlight-color color",
       "                     empasize pixel differences with this color",
       "-identify            identify the format and characteristics of the image",
@@ -298,7 +299,7 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
     Set defaults.
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(exception != (ExceptionInfo *) NULL);
@@ -699,6 +700,27 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
               ThrowCompareException(OptionError,"MissingArgument",option);
             if (IsGeometry(argv[i]) == MagickFalse)
               ThrowCompareInvalidArgumentException(option,argv[i]);
+            break;
+          }
+        ThrowCompareException(OptionError,"UnrecognizedOption",option)
+      }
+      case 'g':
+      {
+        if (LocaleCompare("gravity",option+1) == 0)
+          {
+            ssize_t
+              gravity;
+
+            if (*option == '+')
+              break;
+            i++;
+            if (i == (ssize_t) argc)
+              ThrowCompareException(OptionError,"MissingArgument",option);
+            gravity=ParseCommandOption(MagickGravityOptions,MagickFalse,
+              argv[i]);
+            if (gravity < 0)
+              ThrowCompareException(OptionError,"UnrecognizedGravityType",
+                argv[i]);
             break;
           }
         ThrowCompareException(OptionError,"UnrecognizedOption",option)
@@ -1153,14 +1175,8 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
       metric,&distortion,exception);
   else
     if (similarity_image == (Image *) NULL)
-      {
-        if (metric == PerceptualHashErrorMetric)
-          difference_image=CompareImageChannels(image,reconstruct_image,
-            channels,metric,&distortion,exception);
-        else
-          ThrowCompareException(OptionError,"ImageWidthsOrHeightsDiffer",
-            image->filename);
-      }
+      difference_image=CompareImageChannels(image,reconstruct_image,channels,
+        metric,&distortion,exception);
     else
       {
         Image
@@ -1321,6 +1337,7 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
                       channel_distortion[OpacityChannel]);
                   break;
                 }
+                case LinearGRAYColorspace:
                 case GRAYColorspace:
                 {
                   (void) FormatLocaleFile(stderr,"    gray: %g (%g)\n",
@@ -1374,6 +1391,7 @@ WandExport MagickBooleanType CompareImageCommand(ImageInfo *image_info,
                       channel_distortion[OpacityChannel]);
                   break;
                 }
+                case LinearGRAYColorspace:
                 case GRAYColorspace:
                 {
                   (void) FormatLocaleFile(stderr,"    gray: %g\n",

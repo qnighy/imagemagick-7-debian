@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ typedef struct _NTMEMORYSTATUSEX
     ullAvailExtendedVirtual;
 } NTMEMORYSTATUSEX;
 
-#if !defined(__MINGW32__) && !defined(__MINGW64__)
+#if !defined(__MINGW32__)
 struct timezone
 {
   int
@@ -114,7 +114,7 @@ extern MagickPrivate double
 
 extern MagickPrivate int
   Exit(int),
-#if !defined(__MINGW32__) && !defined(__MINGW64__)
+#if !defined(__MINGW32__)
   gettimeofday(struct timeval *,struct timezone *),
 #endif
   IsWindows95(void),

@@ -17,7 +17,7 @@
 %                                April 2016                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -145,12 +145,12 @@ static Image *ReadFLIFImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -164,7 +164,10 @@ static Image *ReadFLIFImage(const ImageInfo *image_info,
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
   count=ReadBlob(image,length,stream);
   if (count != length)
-    ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
+    {
+      stream=(unsigned char *) RelinquishMagickMemory(stream);
+      ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
+    }
   flifdec=flif_create_decoder();
   if (image_info->quality != UndefinedCompressionQuality)
     flif_decoder_set_quality(flifdec,image_info->quality);
@@ -422,9 +425,9 @@ static MagickBooleanType WriteFLIFImage(const ImageInfo *image_info,
     *pixels;
 
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if ((image->columns > 0xFFFF) || (image->rows > 0xFFFF))

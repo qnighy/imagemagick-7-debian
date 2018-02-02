@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -165,7 +165,7 @@ MagickExport MontageInfo *DestroyMontageInfo(MontageInfo *montage_info)
   if (montage_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(montage_info != (MontageInfo *) NULL);
-  assert(montage_info->signature == MagickSignature);
+  assert(montage_info->signature == MagickCoreSignature);
   if (montage_info->geometry != (char *) NULL)
     montage_info->geometry=(char *)
       RelinquishMagickMemory(montage_info->geometry);
@@ -180,7 +180,7 @@ MagickExport MontageInfo *DestroyMontageInfo(MontageInfo *montage_info)
       montage_info->texture);
   if (montage_info->font != (char *) NULL)
     montage_info->font=DestroyString(montage_info->font);
-  montage_info->signature=(~MagickSignature);
+  montage_info->signature=(~MagickCoreSignature);
   montage_info=(MontageInfo *) RelinquishMagickMemory(montage_info);
   return(montage_info);
 }
@@ -214,7 +214,7 @@ MagickExport void GetMontageInfo(const ImageInfo *image_info,
   MontageInfo *montage_info)
 {
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -233,7 +233,7 @@ MagickExport void GetMontageInfo(const ImageInfo *image_info,
   montage_info->border_color=image_info->border_color;
   montage_info->matte_color=image_info->matte_color;
   montage_info->debug=IsEventLogging();
-  montage_info->signature=MagickSignature;
+  montage_info->signature=MagickCoreSignature;
 }
 
 /*
@@ -370,9 +370,7 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
     geometry,
     extract_info;
 
-
   size_t
-    bevel_width,
     border_width,
     extent,
     height,
@@ -389,6 +387,7 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
     width;
 
   ssize_t
+    bevel_width,
     tile,
     x,
     x_offset,
@@ -402,13 +401,13 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
     Create image tiles.
   */
   assert(images != (Image *) NULL);
-  assert(images->signature == MagickSignature);
+  assert(images->signature == MagickCoreSignature);
   if (images->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   assert(montage_info != (MontageInfo *) NULL);
-  assert(montage_info->signature == MagickSignature);
+  assert(montage_info->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   number_images=GetImageListLength(images);
   master_list=ImageListToArray(images,exception);
   image_list=master_list;
@@ -499,7 +498,7 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
       if ((flags & HeightValue) == 0)
         frame_info.height=frame_info.width;
       if ((flags & XiValue) == 0)
-        frame_info.outer_bevel=(ssize_t) frame_info.width/2;
+        frame_info.outer_bevel=(ssize_t) frame_info.width/2-1;
       if ((flags & PsiValue) == 0)
         frame_info.inner_bevel=frame_info.outer_bevel;
       frame_info.x=(ssize_t) frame_info.width;
@@ -636,7 +635,14 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
       sizeof(*montage->directory));
     if ((montage->montage == (char *) NULL) ||
         (montage->directory == (char *) NULL))
-      ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
+      {
+        if (montage->montage != (char *) NULL)
+          montage->montage=(char *) RelinquishMagickMemory(montage->montage);
+        if (montage->directory != (char *) NULL)
+          montage->directory=(char *) RelinquishMagickMemory(
+            montage->directory);
+        ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
+      }
     x_offset=0;
     y_offset=0;
     if (montage_info->tile != (char *) NULL)
@@ -708,6 +714,8 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
         Copy this tile to the composite.
       */
       image=CloneImage(image_list[tile],0,0,MagickTrue,exception);
+      if (image == (Image *) NULL)
+        ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
       progress_monitor=SetImageProgressMonitor(image,
         (MagickProgressMonitor) NULL,image->client_data);
       width=concatenate != MagickFalse ? image->columns : extract_info.width;
@@ -755,7 +763,7 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
       (void) ParseGravityGeometry(tile_image,tile_geometry,&geometry,exception);
       x=(ssize_t) (geometry.x+border_width);
       y=(ssize_t) (geometry.y+border_width);
-      if ((montage_info->frame != (char *) NULL) && (bevel_width != 0))
+      if ((montage_info->frame != (char *) NULL) && (bevel_width > 0))
         {
           FrameInfo
             extract_info;

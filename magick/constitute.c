@@ -17,7 +17,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -142,7 +142,7 @@ MagickExport Image *ConstituteImage(const size_t columns,
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",map);
   assert(pixels != (void *) NULL);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage((ImageInfo *) NULL);
   if (image == (Image *) NULL)
     return((Image *) NULL);
@@ -216,7 +216,7 @@ MagickExport Image *PingImage(const ImageInfo *image_info,
     *ping_info;
 
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -275,7 +275,7 @@ MagickExport Image *PingImages(const ImageInfo *image_info,
     Ping image list from a file.
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -387,7 +387,7 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
     Determine image type from filename prefix or suffix (e.g. image.jpg).
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image_info->filename != (char *) NULL);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
@@ -822,7 +822,7 @@ MagickExport Image *ReadImages(const ImageInfo *image_info,
     Read image list from a file.
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -930,7 +930,10 @@ MagickExport Image *ReadInlineImage(const ImageInfo *image_info,
   length=0;
   blob=Base64Decode(p,&length);
   if (length == 0)
-    ThrowReaderException(CorruptImageError,"CorruptImage");
+    {
+      blob=(unsigned char *) RelinquishMagickMemory(blob);
+      ThrowReaderException(CorruptImageError,"CorruptImage");
+    }
   read_info=CloneImageInfo(image_info);
   (void) SetImageInfoProgressMonitor(read_info,(MagickProgressMonitor) NULL,
     (void *) NULL);
@@ -1003,12 +1006,12 @@ MagickExport MagickBooleanType WriteImage(const ImageInfo *image_info,
     Determine image type from filename prefix or suffix (e.g. image.jpg).
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   exception=(&image->exception);
   sans_exception=AcquireExceptionInfo();
   write_info=CloneImageInfo(image_info);
@@ -1293,9 +1296,9 @@ MagickExport MagickBooleanType WriteImages(const ImageInfo *image_info,
     *p;
 
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(images != (Image *) NULL);
-  assert(images->signature == MagickSignature);
+  assert(images->signature == MagickCoreSignature);
   if (images->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   assert(exception != (ExceptionInfo *) NULL);

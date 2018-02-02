@@ -1,4 +1,4 @@
-#  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -45,6 +45,7 @@ configlib_DATA = \
 	config/type-apple.xml \
 	config/type-dejavu.xml \
 	config/type-ghostscript.xml \
+	config/type-urw-base35.xml \
 	config/type-windows.xml
 
 CONFIG_EXTRA_DIST = \
@@ -69,5 +70,6 @@ CONFIG_EXTRA_DIST = \
 	config/type-apple.xml.in \
 	config/type-dejavu.xml.in \
 	config/type-ghostscript.xml.in \
+	config/type-urw-base35.xml.in \
 	config/type-windows.xml.in \
 	config/type.xml.in

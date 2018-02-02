@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -98,7 +98,7 @@ MagickExport TokenInfo *AcquireTokenInfo(void)
   token_info=(TokenInfo *) AcquireMagickMemory(sizeof(*token_info));
   if (token_info == (TokenInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  token_info->signature=MagickSignature;
+  token_info->signature=MagickCoreSignature;
   return(token_info);
 }
 
@@ -129,8 +129,8 @@ MagickExport TokenInfo *DestroyTokenInfo(TokenInfo *token_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(token_info != (TokenInfo *) NULL);
-  assert(token_info->signature == MagickSignature);
-  token_info->signature=(~MagickSignature);
+  assert(token_info->signature == MagickCoreSignature);
+  token_info->signature=(~MagickCoreSignature);
   token_info=(TokenInfo *) RelinquishMagickMemory(token_info);
   return(token_info);
 }
@@ -300,7 +300,7 @@ MagickExport void GetNextToken(const char *start,const char **end,
     }
   }
   token[i]='\0';
-  if (LocaleNCompare(token,"url(",4) == 0)
+  if ((LocaleNCompare(token,"url(",4) == 0) && (strlen(token) > 4))
     {
       ssize_t
         offset;

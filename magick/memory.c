@@ -17,7 +17,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -629,7 +629,7 @@ MagickExport MemoryInfo *AcquireVirtualMemory(const size_t count,
   (void) ResetMagickMemory(memory_info,0,sizeof(*memory_info));
   extent=count*quantum;
   memory_info->length=extent;
-  memory_info->signature=MagickSignature;
+  memory_info->signature=MagickCoreSignature;
   if ((virtual_anonymous_memory == 1) &&
       ((count*quantum) <= (size_t) max_memory_request))
     {
@@ -637,7 +637,7 @@ MagickExport MemoryInfo *AcquireVirtualMemory(const size_t count,
       if (memory_info->blob != NULL)
         memory_info->type=AlignedVirtualMemory;
     }
-  else
+  if (memory_info->blob == NULL)
     {
       /*
         Acquire anonymous memory map.
@@ -933,7 +933,7 @@ MagickExport void GetMagickMemoryMethods(
 MagickExport void *GetVirtualMemoryBlob(const MemoryInfo *memory_info)
 {
   assert(memory_info != (const MemoryInfo *) NULL);
-  assert(memory_info->signature == MagickSignature);
+  assert(memory_info->signature == MagickCoreSignature);
   return(memory_info->blob);
 }
 
@@ -1106,7 +1106,7 @@ MagickExport void *RelinquishMagickMemory(void *memory)
 MagickExport MemoryInfo *RelinquishVirtualMemory(MemoryInfo *memory_info)
 {
   assert(memory_info != (MemoryInfo *) NULL);
-  assert(memory_info->signature == MagickSignature);
+  assert(memory_info->signature == MagickCoreSignature);
   if (memory_info->blob != (void *) NULL)
     switch (memory_info->type)
     {
@@ -1119,7 +1119,6 @@ MagickExport MemoryInfo *RelinquishVirtualMemory(MemoryInfo *memory_info)
       {
         (void) UnmapBlob(memory_info->blob,memory_info->length);
         memory_info->blob=NULL;
-        RelinquishMagickResource(MapResource,memory_info->length);
         if (*memory_info->filename != '\0')
           (void) RelinquishUniqueFileResource(memory_info->filename);
         break;
@@ -1131,7 +1130,7 @@ MagickExport MemoryInfo *RelinquishVirtualMemory(MemoryInfo *memory_info)
         break;
       }
     }
-  memory_info->signature=(~MagickSignature);
+  memory_info->signature=(~MagickCoreSignature);
   memory_info=(MemoryInfo *) RelinquishAlignedMemory(memory_info);
   return(memory_info);
 }

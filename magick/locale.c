@@ -17,7 +17,7 @@
 %                                 July 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -877,7 +877,7 @@ MagickExport const char *GetLocaleValue(const LocaleInfo *locale_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(locale_info != (LocaleInfo *) NULL);
-  assert(locale_info->signature == MagickSignature);
+  assert(locale_info->signature == MagickCoreSignature);
   return(locale_info->message);
 }
 
@@ -1329,7 +1329,7 @@ static MagickBooleanType LoadLocaleCache(SplayTreeInfo *cache,const char *xml,
         locale_info->path=ConstantString(filename);
         locale_info->tag=ConstantString(tag);
         locale_info->message=ConstantString(message);
-        locale_info->signature=MagickSignature;
+        locale_info->signature=MagickCoreSignature;
         status=AddValueToSplayTree(cache,locale_info->tag,locale_info);
         if (status == MagickFalse)
           (void) ThrowMagickException(exception,GetMagickModule(),

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -119,7 +119,7 @@ static MagickBooleanType IsTXT(const unsigned char *magick,const size_t length)
     return(MagickFalse);
   if (LocaleNCompare((const char *) magick,MagickID,strlen(MagickID)) != 0)
     return(MagickFalse);
-  count=(ssize_t) sscanf((const char *) magick+32,"%lu,%lu,%lu,%s",&columns,
+  count=(ssize_t) sscanf((const char *) magick+32,"%lu,%lu,%lu,%32s",&columns,
     &rows,&depth,colorspace);
   if (count != 4)
     return(MagickFalse);
@@ -192,12 +192,12 @@ static Image *ReadTEXTImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -271,7 +271,10 @@ static Image *ReadTEXTImage(const ImageInfo *image_info,
   (void) CloneString(&draw_info->geometry,geometry);
   status=GetTypeMetrics(image,draw_info,&metrics);
   if (status == MagickFalse)
-    ThrowReaderException(TypeError,"UnableToGetTypeMetrics");
+    {
+      draw_info=DestroyDrawInfo(draw_info);
+      ThrowReaderException(TypeError,"UnableToGetTypeMetrics");
+    }
   page.y=(ssize_t) ceil((double) page.y+metrics.ascent-0.5);
   (void) FormatLocaleString(geometry,MaxTextExtent,"%gx%g%+g%+g",(double)
     image->columns,(double) image->rows,(double) page.x,(double) page.y);
@@ -424,12 +427,12 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -447,12 +450,14 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     height=0;
     max_value=0;
     *colorspace='\0';
-    count=(ssize_t) sscanf(text+32,"%lu,%lu,%lu,%s",&width,&height,&max_value,
+    count=(ssize_t) sscanf(text+32,"%lu,%lu,%lu,%32s",&width,&height,&max_value,
       colorspace);
     if ((count != 4) || (width == 0) || (height == 0) || (max_value == 0))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     image->columns=width;
     image->rows=height;
+    if ((max_value == 0) || (max_value > 4294967295U))
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     for (depth=1; (GetQuantumRange(depth)+1) < max_value; depth++) ;
     image->depth=depth;
     status=SetImageExtent(image,image->columns,image->rows);
@@ -496,6 +501,7 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
           break;
         switch (image->colorspace)
         {
+          case LinearGRAYColorspace:
           case GRAYColorspace:
           {
             if (image->matte != MagickFalse)
@@ -580,12 +586,7 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
           break;
       }
     }
-    if (EOFBlob(image) != MagickFalse)
-      {
-        ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
-          image->filename);
-        break;
-      }
+    *text='\0';
     (void) ReadBlobString(image,text);
     if (LocaleNCompare((char *) text,MagickID,strlen(MagickID)) == 0)
       {
@@ -744,9 +745,9 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBlobMode,&image->exception);
@@ -805,11 +806,10 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
             /*
               Sparse-color format.
             */
-            if (GetPixelOpacity(p) == (Quantum) OpaqueOpacity)
+            if ((image->matte == MagickFalse) ||
+                (GetPixelOpacity(p) == (Quantum) OpaqueOpacity))
               {
                 GetColorTuple(&pixel,MagickFalse,tuple);
-                (void) QueryMagickColorname(image,&pixel,SVGCompliance,tuple,
-                  &image->exception);
                 (void) FormatLocaleString(buffer,MaxTextExtent,"%.20g,%.20g,",
                   (double) x,(double) y);
                 (void) WriteBlobString(image,buffer);

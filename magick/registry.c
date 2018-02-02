@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -46,6 +46,7 @@
 #include "magick/image.h"
 #include "magick/list.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/registry.h"
 #include "magick/splay-tree.h"
 #include "magick/string_.h"
@@ -197,11 +198,7 @@ MagickExport void *GetImageRegistry(const RegistryType type,const char *key,
     return((void *) NULL);
   registry_info=(RegistryInfo *) GetValueFromSplayTree(registry,key);
   if (registry_info == (void *) NULL)
-    {
-      (void) ThrowMagickException(exception,GetMagickModule(),RegistryError,
-        "UnableToGetRegistryID","`%s'",key);
-      return((void *) NULL);
-    }
+    return((void *) NULL);
   value=(void *) NULL;
   switch (type)
   {
@@ -486,7 +483,7 @@ MagickExport MagickBooleanType SetImageRegistry(const RegistryType type,
         *image;
 
       image=(const Image *) value;
-      if (image->signature != MagickSignature)
+      if (image->signature != MagickCoreSignature)
         {
           (void) ThrowMagickException(exception,GetMagickModule(),RegistryError,
             "UnableToSetRegistry","%s",key);
@@ -501,7 +498,7 @@ MagickExport MagickBooleanType SetImageRegistry(const RegistryType type,
         *image_info;
 
       image_info=(const ImageInfo *) value;
-      if (image_info->signature != MagickSignature)
+      if (image_info->signature != MagickCoreSignature)
         {
           (void) ThrowMagickException(exception,GetMagickModule(),RegistryError,
             "UnableToSetRegistry","%s",key);
@@ -513,13 +510,11 @@ MagickExport MagickBooleanType SetImageRegistry(const RegistryType type,
   }
   if (clone_value == (void *) NULL)
     return(MagickFalse);
-  registry_info=(RegistryInfo *) AcquireMagickMemory(sizeof(*registry_info));
-  if (registry_info == (RegistryInfo *) NULL)
-    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+  registry_info=(RegistryInfo *) AcquireCriticalMemory(sizeof(*registry_info));
   (void) ResetMagickMemory(registry_info,0,sizeof(*registry_info));
   registry_info->type=type;
   registry_info->value=clone_value;
-  registry_info->signature=MagickSignature;
+  registry_info->signature=MagickCoreSignature;
   if (registry == (SplayTreeInfo *) NULL)
     {
       if (registry_semaphore == (SemaphoreInfo *) NULL)

@@ -1,5 +1,5 @@
 /*
-Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
 dedicated to making software imaging solutions freely available.
 
 You may not use this file except in compliance with the License.
@@ -100,7 +100,13 @@ typedef CL_API_ENTRY cl_mem (CL_API_CALL *MAGICKpfn_clCreateBuffer)(
     void *       host_ptr,
     cl_int *     errcode_ret) CL_API_SUFFIX__VERSION_1_0;
 
-typedef CL_API_ENTRY cl_int (CL_API_CALL *MAGICKpfn_clReleaseMemObject)(cl_mem memobj) CL_API_SUFFIX__VERSION_1_0;
+typedef CL_API_ENTRY cl_int
+  (CL_API_CALL *MAGICKpfn_clRetainMemObject)(cl_mem memobj)
+    CL_API_SUFFIX__VERSION_1_0;
+
+typedef CL_API_ENTRY cl_int
+  (CL_API_CALL *MAGICKpfn_clReleaseMemObject)(cl_mem memobj)
+    CL_API_SUFFIX__VERSION_1_0;
 
 /* Program Object APIs */
 typedef CL_API_ENTRY cl_program (CL_API_CALL *MAGICKpfn_clCreateProgramWithSource)(
@@ -264,6 +270,7 @@ struct MagickLibraryRec
   MAGICKpfn_clFinish                  clFinish;
 
   MAGICKpfn_clCreateBuffer            clCreateBuffer;
+  MAGICKpfn_clRetainMemObject         clRetainMemObject;
   MAGICKpfn_clReleaseMemObject        clReleaseMemObject;
   MAGICKpfn_clCreateProgramWithSource clCreateProgramWithSource;
   MAGICKpfn_clCreateProgramWithBinary clCreateProgramWithBinary;
@@ -410,9 +417,7 @@ extern MagickPrivate const char*
   GetOpenCLCachedFilesDirectory();
 
 extern MagickPrivate void
-  OpenCLLog(const char*);
-
-extern MagickPrivate void
+  OpenCLLog(const char*),
   OpenCLTerminus();
 
 /* #define OPENCLLOG_ENABLED 1 */

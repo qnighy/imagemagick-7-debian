@@ -10,7 +10,7 @@
   <title>Porting to ImageMagick Version 7 @ ImageMagick</title>
   <meta name="application-name" content="ImageMagick" />
   <meta name="description" content="ImageMagick® is a software suite to create, edit, compose, or convert bitmap images. It can read and write images in a variety of formats (over 200) including PNG, JPEG, JPEG-2000, GIF, WebP, Postscript, PDF, and SVG. Use ImageMagick to resize, flip, mirror, rotate, distort, shear and transform images, adjust image colors, apply various special effects, or draw text, lines, polygons, ellipses and Bézier curves." />
-  <meta name="application-url" content="https://www.imagemagick.org" />
+  <meta name="application-url" content="https://legacy.imagemagick.org" />
   <meta name="generator" content="PHP" />
   <meta name="keywords" content="porting, to, imagemagick, version, 7, ImageMagick, PerlMagick, image processing, image, photo, software, Magick++, OpenMP, convert" />
   <meta name="rating" content="GENERAL" />
@@ -22,16 +22,53 @@
   <meta name="copyright" content="Copyright (c) 1999-2017 ImageMagick Studio LLC" />
   <meta name="distribution" content="Global" />
   <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
-  <link href="https://www.imagemagick.org/script/porting.html" rel="canonical" />
+  <link href="porting.html" rel="canonical" />
   <link href="../images/wand.png" rel="icon" />
   <link href="../images/wand.ico" rel="shortcut icon" />
-  <link href="css/magick.css" rel="stylesheet" />
+  <link href="assets/magick.css" rel="stylesheet" />
 </head>
 <body>
-<div class="magick-masthead">
+  <header>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="../index.html"><img class="d-block" id="logo" name="ImageMagick" alt="And Now a Touch of Magick" width="32" height="32" src="../images/wand.ico"/></a>
+    <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar-collapse collapse" id="navbarsExampleDefault" style="">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item ">
+        <a class="nav-link" href="../index.html">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="download.html">Download</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="command-line-tools.html">Tools</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="command-line-processing.html">Command-line</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="resources.html">Resources</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="develop.html">Develop</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" target="_blank" href="https://legacy.imagemagick.org/discourse-server//">Community</a>
+      </li>
+    </ul>
+    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
+    </div>
+  </nav>
   <div class="container">
-    <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
+   <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
          style="display:block"
          data-ad-client="ca-pub-3129977114552745"
          data-ad-slot="6345125851"
@@ -39,47 +76,38 @@
     <script>
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
-    <nav class="nav magick-nav">
-      <a class="nav-link " href="../index.html">Home</a>
-      <a class="nav-link " href="download.html">Download</a>
-      <a class="nav-link " href="command-line-tools.html">Tools</a>
-      <a class="nav-link " href="command-line-processing.html">Command-line</a>
-      <a class="nav-link " href="resources.html">Resources</a>
-      <a class="nav-link " href="develop.html">Develop</a>
-      <a class="nav-link " href="https://www.imagemagick.org/script/search.php">Search</a>
-      <a class="nav-link float-right" href="https://www.imagemagick.org/discourse-server/">Community</a>
-    </nav>
   </div>
-</div>
-<div class="container">
+  </header>
+  <main role="main" class="container">
+    <div class="magick-template">
 <div class="magick-header">
 
 <p class="text-center"><a href="porting.html#imv7">ImageMagick Version 7</a> • <a href="porting.html#hdri">High Dynamic Range Imaging</a> • <a href="porting.html#channels">Pixel Channels</a> • <a href="porting.html#alpha">Alpha</a> • <a href="porting.html#grayscale">Grayscale</a> • <a href="porting.html#mask">Masks</a> • <a href="porting.html#core">MagickCore API</a> • <a href="porting.html#headers">Header Files</a>  • <a href="porting.html#deprecate">Deprecated Features Removed</a> • <a href="porting.html#cli">Command-line Interface</a> • <a href="porting.html#summary">Version 7 Change Summary</a> </p>
 
-<p class="lead magick-description">The design of ImageMagick is an evolutionary process, with the design and implementation efforts serving to influence and guide further progress in the other.  With ImageMagick version 7 we aim to improve the design based on lessons learned from the version 6 implementation.  ImageMagick was originally designed to display RGB images to an X Windows server.  Over time we extended support to RGBA images and then to the CMYK and CMYKA image format.  With ImageMagick version 7, we extend support to arbitrary colorspaces with an arbitrary number of pixel channels.  Other design changes are in the works and we will document them here so be sure to revisit periodically.</p>
+<p class="lead magick-description">The design of ImageMagick is an evolutionary process, with the design and implementation efforts serving to influence and guide further progress in the other.  With ImageMagick version 7 we improved the design based on lessons learned from the version 6 implementation.  ImageMagick was originally designed to display RGB images to an X Windows server.  Over time we extended support to RGBA images and then to the CMYK and CMYKA image format.  With ImageMagick version 7, we extend support to arbitrary colorspaces with an arbitrary number of pixel channels.  In addition, ImageMagick 7 stores pixel channels as floats permitting out of band values (e.g. negative) and reduces rounding error.  There are numerous other design enhancements described within.</p>
 
 <p>To support variable pixel channels in the MagickCore API, pixel handling has changed when getting or setting the pixel channels.  You can access channels as an array, <var>pixel[i]</var>, or use an accessor method such as GetPixelRed() or SetPixelRed().  There are some modest changes to the MagickCore and MagickWand API's.   The Magick++ and PerlMagick API's have not changed and matches that of the ImageMagick version 6.</p>
 
-<p>The shell API (command line) of ImageMagick version 7 is also undergoing
+<p>The shell API (command line) of ImageMagick version 7 has undergone
 a major overhaul, with specific emphasis on the ability to read 'options' not
 only from the command line, but also from scripts, and file streams. This
 allows for the use of 'co-processing' programming techniques or performing
 image handling using 'deamon/server backends', and even multi-machine
 distributed processing.</p>
 
-<p>With shell API overhaul other improvements are being made, including:
+<p>With the shell API overhaul other improvements were made, including:
 better reporting of which option failed, the consolidation and deprecation of
 options, and more global use of 'image properties' (more commonly known as
 'percent escapes' in option arguments. </p>
 
-<p>ImageMagick version 7 is available now as an <a href="https://www.imagemagick.org/download/beta/">Beta</a> release.  Look for an official release around 1st Q 2016.  An official ImageMagick version 7 release depends on how smoothly the Beta cycle progresses.  During the Beta cycle, version 6 developers can attempt to port their software to version 7.</p>
+<p>ImageMagick version 7 is available now as a <a href="https://www.imagemagick.org/download/">production</a> release.</p>
 
-<p>Once ImageMagick version 7 is released, we will continue to support and enhance version 6 for a minimum of 10 years.</p>
+<p>Now that ImageMagick version 7 is released, we continue to support and enhance version 6 for a minimum of 10 years.</p>
 
-<h2 class="magick-post-title"><a id="hdri"></a>High Dynamic Range Imaging</h2>
+<h2 class="magick-post-title"><a class="anchor" id="hdri"></a>High Dynamic Range Imaging</h2>
 <p>ImageMagick version 7 enables <a href="high-dynamic-range.html">high dynamic range imaging</a> (HDRI) by default.  HDRI accurately represents the wide range of intensity levels found in real scenes ranging from the brightest direct sunlight to the deepest darkest shadows.  In addition, image processing results are more accurate.  The disadvantage is it requires more memory and may result in slower processing times.  If you see differences in the results of your version 6 command-line with version 7, it is likely due to HDRI.  You may need to add <code>-clamp</code> to your command-line to constrain pixels to the 0 .. QuantumRange range, or disable HDRI when you build ImageMagick version 7.  To disable HDRI (recommended for smart phone builds such as iOS or production sites where performance is a premium), simply add <code>--disable-hdri</code> to the configure script command line when building ImageMagick.</p>
 
-<h2 class="magick-post-title"><a id="channels"></a>Pixel Channels</h2>
+<h2 class="magick-post-title"><a class="anchor" id="channels"></a>Pixel Channels</h2>
 <p>A pixel is comprised of one or more color values, or <var>channels</var> (e.g. red pixel channel).</p>
 <p>Prior versions of ImageMagick (4-6), support 4 to 5 pixel channels (RGBA or CMYKA).  The first 4 channels are accessed with the PixelPacket data structure.   The structure includes 4 members of type Quantum (typically 16-bits) of red, green, blue, and opacity.  The black channel or colormap indexes are supported by a separate method and structure, IndexPacket.  As an example, here is a code snippet from ImageMagick version 6 that negates the color components (but not the alpha component) of the image pixels:</p>
 
@@ -164,15 +192,15 @@ options, and more global use of 'image properties' (more commonly known as
     register ssize_t
       i;
 
-    if (GetPixelReadMask(image,q) == 0)
+    if (GetPixelWriteMask(image,q) &lt;= (QuantumRange/2))
       {
         q+=GetPixelChannels(image);
         continue;
       }
     for (i=0; i &lt; (ssize_t) GetPixelChannels(image); i++)
     {
-      PixelChannel channel=GetPixelChannelChannel(image,i);
-      PixelTrait traits=GetPixelChannelTraits(image,channel);
+      PixelChannel channel = GetPixelChannelChannel(image,i);
+      PixelTrait traits = GetPixelChannelTraits(image,channel);
       if ((traits &amp; UpdatePixelTrait) == 0)
         continue;
       q[i]=QuantumRange-q[i];
@@ -192,7 +220,7 @@ options, and more global use of 'image properties' (more commonly known as
 <h4>Pixel Accessors</h4>
 <p>You can access pixel channel as array elements (e.g. <code>pixel[1]</code>) or use convenience accessors to get or set pixel channels:</p>
 
-<pre><code>GetPixela()                  SetPixela()
+<pre class="highlight"><code>GetPixela()                  SetPixela()
 GetPixelAlpha()              SetPixelAlpha()
 GetPixelb()                  SetPixelb()
 GetPixelBlack()              SetPixelBlack()
@@ -228,7 +256,7 @@ GetPixelY()                  SetPixelY()</code></pre>
 <dd class="col-md-8">blend this pixel channel with the alpha mask if it's enabled</dd>
 </dl>
 <p>We provide these methods to set and get pixel traits:</p>
-<pre><code>GetPixelAlphaTraits()    SetPixelAlphaTraits()
+<pre class="highlight"><code>GetPixelAlphaTraits()    SetPixelAlphaTraits()
 GetPixelBlackTraits()    SetPixelBlackTraits()
 GetPixelBlueTraits()     SetPixelBlueTraits()
 GetPixelCbTraits()       SetPixelCbTraits()
@@ -242,14 +270,13 @@ GetPixelRedTraits()      SetPixelRedTraits()
 GetPixelYellowTraits()   SetPixelYellowTraits()
 GetPixelYTraits()        SetPixelYTraits()</code></pre>
 <p>For convenience you can set the active trait for a set of pixel channels with a channel mask and this method:</p>
-<pre><code>
-SetImageChannelMask()
+<pre class="highlight"><code>SetImageChannelMask()
 </code></pre>
 
 <p>Previously MagickCore methods had channel analogs, for example, NegateImage() and NegateImageChannels().  The channel analog methods are no longer necessary because the pixel channel traits specify whether to act on a particular pixel channel or whether to blend with the alpha mask.  For example, instead of</p>
-<pre><code>NegateImageChannel(image,channel);</code></pre>
+<pre class="highlight"><code>NegateImageChannel(image,channel);</code></pre>
 <p>we use:</p>
-<pre><code>channel_mask=SetImageChannelMask(image,channel);
+<pre class="highlight"><code>channel_mask=SetImageChannelMask(image,channel);
 NegateImage(image,exception);
 (void) SetImageChannelMask(image,channel_mask);</code></pre>
 
@@ -257,35 +284,40 @@ NegateImage(image,exception);
 <p>In version 7, we introduce pixel user channels.  Traditionally we utilize 4 channels, red, green, blue, and alpha.   For CMYK we also have a black channel.  User channels are designed to contain whatever additional channel information that makes sense for your application.  Some examples include extra channels in TIFF or PSD images or perhaps you require a channel with infrared information for the pixel.  You can associate traits with the user channels so that they when they are acted upon by an image processing algorithm (e.g. blur) the pixels are copied, acted upon by the algorithm, or even blended with the alpha channel if that makes sense.</p>
 <h4>Pixel Metacontent</h4>
 <p>In version 7, we introduce pixel metacontent.  Metacontent is content about content. So rather than being the content itself, it's something that describes or is associated with the content.  Here the content is a pixel.  The pixel metacontent is for your exclusive use (internally the data is just copied, it is not modified) and is accessed with these MagickCore API methods:</p>
-<pre><code>SetImageMetacontentExtent()
+<pre class="highlight"><code>SetImageMetacontentExtent()
 GetImageMetacontentExtent()
 GetVirtualMetacontent()
 GetAuthenticMetacontent()
 GetCacheViewAuthenticMetacontent()
 GetCacheViewVirtualMetacontent()</code></pre>
 
-<h2 class="magick-post-title"><a id="alpha"></a>Alpha</h2>
+<h2 class="magick-post-title"><a class="anchor" id="alpha"></a>Alpha</h2>
 <p>We support alpha now, previously opacity.  With alpha, a value of <kbd>0</kbd> means that the pixel does not have any coverage information and is transparent; i.e. there was no color contribution from any geometry because the geometry did not overlap this pixel. A value of <code>QuantumRange</code> means that the pixel is opaque because the geometry completely overlapped the pixel. As a consequence, in version 7, the PixelInfo structure member alpha has replaced the previous opacity member.  Another consequence is the alpha part of a sRGB value in hexadecimal notation is now reversed (e.g. #0000 is fully transparent).</p>
-<h2 class="magick-post-title"><a id="colorspace"></a>Colorspace</h2>
+<h2 class="magick-post-title"><a class="anchor" id="colorspace"></a>Colorspace</h2>
 <p>The <code>Rec601Luma</code> and <code>Rec709Luma</code> colorspaces are no longer supported.  Instead, specify the <code>gray</code> colorspace and choose from these intensity options:</p>
-<pre><code>Rec601Luma
+<pre class="highlight"><code>Rec601Luma
 Rec601Luminance
 Rec709Luma
 Rec709Luminance</code></pre>
 <p>For example,</p>
-<pre><code>convert myImage.png -intensity Rec709Luminance -colorspace gray myImage.jpg</code></pre>
+<pre class="highlight"><code>convert myImage.png -intensity Rec709Luminance -colorspace gray myImage.jpg</code></pre>
 
-<h2 class="magick-post-title"><a id="grayscale"></a>Grayscale</h2>
+<h2 class="magick-post-title"><a class="anchor" id="grayscale"></a>Grayscale</h2>
 <p>Previously, grayscale images were Rec601Luminance and consumed 4 channels: red, green, blue, and alpha.  With version 7, grayscale consumes only 1 channel requiring far less resources as a result.</p>
 
-<h2 class="magick-post-title"><a id="mask"></a>Masks</h2>
+<h2 class="magick-post-title"><a class="anchor" id="mask"></a>Masks</h2>
 <p>Version 7 supports masks for most image operators.  Black pixels in a read mask ignores corresponding pixel in an image whereas black pixels in a write mask protects the corresponding pixel in the image.  From the command-line, you can associate a mask with an image with the <code>-read-mask</code> and <code>-write-mask</code> options.  This polarity is the reverse of masks in version 6 of ImageMagick.  For convenience, we continue to support the <code>-mask</code> option in version 7 to match the behavior of version 6.</p>
 <p>In this example, we compute the distortion of a masked reconstructed image:</p>
-<pre><code>compare -metric rmse -read-mask hat_mask.png hat.png wizard.png difference.png</code></pre>
+<pre class="highlight"><code>compare -metric rmse -read-mask hat_mask.png hat.png wizard.png difference.png</code></pre>
 <p>Here we protect certain pixels from change:</p>
-<pre><code>convert rose: -write-mask rose_bg_mask.png -modulate 110,100,33.3  +mask rose_blue.png</code></pre>
+<pre class="highlight"><code>convert rose: -write-mask rose_bg_mask.png -modulate 110,100,33.3  +mask rose_blue.png</code></pre>
 
-<h2 class="magick-post-title"><a id="core"></a>MagickCore API</h2>
+<p>A mask associated with an image persists until it is modified or removed.  This may produce unexpected results for complex command-lines.  Here we only want to clip when applying the alpha option, not the resize:</p>
+<pre class="highlight">
+convert -density 300 -colorspace srgb image.eps -alpha transparent -clip -alpha opaque +clip -resize 1000x1000 -strip image.png
+</pre>
+
+<h2 class="magick-post-title"><a class="anchor" id="core"></a>MagickCore API</h2>
 <p>Here are a list of changes to the MagickCore API:</p>
 <ul>
 <li>Almost all image processing algorithms are now channel aware.</li>
@@ -299,28 +331,40 @@ Rec709Luminance</code></pre>
 <li>The ChannelMoments structure member <code>I</code> is now <code>invariant</code>.  <code>I</code> conflicts with the <code>complex.h</code> header.</li>
 <li>We added a length parameter to FormatMagickSize() to permit variable length buffers.</li>
 </ul>
-<h2 class="magick-post-title"><a id="core"></a>MagickWand API</h2>
+<h2 class="magick-post-title"><a class="anchor" id="core"></a>MagickWand API</h2>
 <p>Here are a list of changes to the MagickWand API:</p>
 <ul>
+<li>Almost all image processing algorithms are now channel aware.</li>
 <li>The DrawMatte() method is now called DrawAlpha().</li>
 <li>The MagickSetImageBias() and MagickSetImageClipMask() methods are no longer supported.</li>
 </ul>
-<h2 class="magick-post-title"><a id="headers"></a>Header Files</h2>
+<h2 class="magick-post-title"><a class="anchor" id="core"></a>Magick++ API</h2>
+<p>Here are a list of changes to the Magick++ API:</p>
+<ul>
+<li>Almost all image processing algorithms are now channel aware.</li>
+<li>Use this construct, for example, to avoid operating on the alpha channel:
+<pre class="highlight"><code>image.negateChannel(Magick::ChannelType(Magick::CompositeChannels ^ Magick::AlphaChannel));
+</code></pre>
+</li>
+</ul>
+<h2 class="magick-post-title"><a class="anchor" id="headers"></a>Header Files</h2>
 <p>Prior versions of ImageMagick (4-6) reference the ImageMagick header files as <code>magick/</code> and <code>wand/</code>.  ImageMagick 7 instead uses <code>MagickCore/</code> and <code>MagickWand/</code> respectively.  For example,</p>
-<pre><code><code>#include &lt;MagickCore/MagickCore.h>
+<pre class="highlight"><code><code>#include &lt;MagickCore/MagickCore.h>
 #include &lt;MagickWand/MagickWand.h></code></code></pre>
 
-<h2 class="magick-post-title"><a id="deprecate"></a>Deprecated Features Removed</h2>
+<h2 class="magick-post-title"><a class="anchor" id="deprecate"></a>Deprecated Features Removed</h2>
 <p>All deprecated features from ImageMagick version 6 are removed in version 7.  These include the <code>Magick-config</code> and <code>Wand-config</code> configuration utilities.  Instead use:</p>
 
-<pre><code>MagickCore-config
+<pre class="highlight"><code>MagickCore-config
 MagickWand-config</code></pre>
 <p>The FilterImage() method has been removed.  Use ConvolveImage() instead.</p>
 
 <p>In addition, all deprecated <a href="http://magick.imagemagick.org/api/deprecate.html">MagickCore</a> and <a href="http://magick.imagemagick.org/api/magick-deprecate.html">MagickWand</a> methods are no longer available in version 7.</p>
 
+<p>The Bessel filter was removed as it is an alias for Jinc.  Use -filter Jinc instead.</p>
 
-<h2 class="magick-post-title"><a id="cli"></a>Shell API or Command-line Interface</h2>
+
+<h2 class="magick-post-title"><a class="anchor" id="cli"></a>Shell API or Command-line Interface</h2>
 
 <p>As mentioned the primary focus of the changes to the Shell API or Command
 Line Interface is the abstraction so that not only can <var>options</var> be
@@ -389,15 +433,15 @@ be applied to expand the one channel into separate RGB (or other) channels.
 
 <h3>Behavioral Changes</h3>
 <p>Image settings are applied to each image on the command line.  To associate a setting with a particular image, use parenthesis to remove ambiguity.  In this example we assign a unique page offset to each image:</p>
-<pre><code>convert \( -page +10+20 first.png \) \( -page +100+200 second.png \) ...</code></pre>
+<pre class="highlight"><code>convert \( -page +10+20 first.png \) \( -page +100+200 second.png \) ...</code></pre>
 
 <p>By default, image operations such as convolution blends alpha with each channel.  To convolve each channel independently, deactivate the alpha channel as follows:</p>
-<pre><code>convert ... -alpha discrete -blur 0x1 ...</code></pre>
+<pre class="highlight"><code>convert ... -alpha discrete -blur 0x1 ...</code></pre>
 <p>To remove the alpha values from your image, use <code>-alpha off</code>.</p>
 <p>Some options have changed in ImageMagick version 7.  These include:</p>
 <dl>
 <dt class="col-md-4">-channel</dt>
-<dd class="col-md-8">the default is to update the RGBA channels, previously, in IMv6, the default was RGB.  If you get results that differ from IMv6, you may need to specify <code>-channel RGB</code> on your command line (e.g. -level-colors option).</dd>
+<dd class="col-md-8">the default is to update the RGBA channels, previously, in IMv6, the default was RGB.  If you get results that differ from IMv6, you may need to specify <code>-channel RGB</code> on your command line (e.g. -channel RGB -negate).</dd>
 <dt class="col-md-4">+combine</dt>
 <dd class="col-md-8">This option now requires an argument, the image colorspace (e.g. +combine sRGB).</dd>
 <dt class="col-md-4">-gamma</dt>
@@ -423,11 +467,7 @@ scripts.</p>
     are to be processed 'in-place'.  (not yet implemented).  However if
     not provided, "<code>-read</code>" can still be used to differentiate
     secondary image reads (for use in things like alpha composition) from
-    the 'in-place' image being processed. </dd>
-
-<dd class="col-md-8">In other commands (such as "magick") it is equivalent to a explicit
-    "<code>-read</code>" (see below) of the next option as a image (as it was in
-    IMv6).  </dd>
+    the 'in-place' image being processed.  In other commands (such as "magick") it is equivalent to a explicit "<code>-read</code>" (see below) of the next option as a image (as it was in IMv6).  </dd>
 
 <dt class="col-md-4">-alpha discrete</dt>
 <dd class="col-md-8">treat the alpha channel independently (do not blend).</dd>
@@ -438,7 +478,7 @@ scripts.</p>
 
 <p>The expression consists of one or more channels, either mnemonic or numeric (e.g. red or 0, green or 1, etc.), separated by certain operation symbols as follows:</p>
 
-<pre><code>&lt;=&gt;  exchange two channels (e.g. red&lt;=&gt;blue)
+<pre class="highlight"><code>&lt;=&gt;  exchange two channels (e.g. red&lt;=&gt;blue)
 =&gt;   copy one channel to another channel (e.g. red=&gt;green)
 =    assign a constant value to a channel (e.g. red=50%)
 ,    write new image with channels in the specified order (e.g. red, green)
@@ -447,14 +487,14 @@ scripts.</p>
 
 <p>For example, to create 3 grayscale images from the red, green, and blue channels of an image, use:</p>
 
-<pre><code>-channel-fx "red; green; blue"</code></pre>
+<pre class="highlight"><code>-channel-fx "red; green; blue"</code></pre>
 
 <p>A channel without an operation symbol implies separate (i.e, semicolon).</p>
 
 <p>Here we take an sRGB image and a grayscale image and inject the grayscale image into the alpha channel:</p>
-<pre><code>convert wizard.png mask.pgm -channel-fx '| gray=>alpha' wizard-alpha.png</code></pre>
+<pre class="highlight"><code>convert wizard.png mask.pgm -channel-fx '| gray=>alpha' wizard-alpha.png</code></pre>
 <p>Use a similar command to define a read mask:</p>
-<pre><code>convert wizard.png mask.pgm -channel-fx '| gray=>read-mask' wizard-mask.png</code></pre>
+<pre class="highlight"><code>convert wizard.png mask.pgm -channel-fx '| gray=>read-mask' wizard-mask.png</code></pre>
 
 <p>Add <code>-debug pixel</code> prior to the <code>-channel-fx</code> option to track the channel morphology.</p>
 
@@ -464,9 +504,7 @@ scripts.</p>
 <dd class="col-md-8">Stop processing at this point. No further options will be processed after
     this option. Can be used in a script to force the "<code>magick</code>"
     command to exit, without actually closing the pipeline that it is
-    processing options from. </dd>
-
-<dd class="col-md-8">May also be used as a 'final' option on the "<code>magick</code>" command
+    processing options from.  May also be used as a 'final' option on the "<code>magick</code>" command
     line, instead of a implicit output image, to completely prevent any image
     write. ASIDE: even the "<code>NULL:</code>" coder requires at least one
     image, for it to 'not write'! This option does not require any images at
@@ -503,8 +541,7 @@ scripts.</p>
 <dt class="col-md-4">-draw</dt>
 <dd class="col-md-8">The <code>matte</code> primitive is now <code>alpha</code> (e.g. <code>-draw 'alpha 0,0 floodfill'</code>).</dd>
 <dt class="col-md-4">-negate</dt>
-<dd class="col-md-8">currently negates all channels, including alpha if present.  As such you
-    may need to use the -channel option to prevent alpha negation.  </dd>
+<dd class="col-md-8">currently negates all channels, including alpha if present.  As such you may need to use the -channel option to prevent alpha negation (e.g. -channel RGB -negate).  </dd>
 <dt class="col-md-4">-preview</dt>
 <dd class="col-md-8">this option is now an image operator.  The PREVIEW image format has been removed.</dd>
 </dl>
@@ -561,7 +598,7 @@ example "+annotate", "+resize", "+clut", and "+draw" .</p>
 <dt class="col-md-4">-passphrase</dt>
 <dd class="col-md-8">old option, unknown meaning</dd>
 </dl>
-<h2 class="magick-post-title"><a id="summary"></a>Version 7 Change Summary</h2>
+<h2 class="magick-post-title"><a class="anchor" id="summary"></a>Version 7 Change Summary</h2>
 <p>Changes from ImageMagick version 6 to version 7 are summarized here:</p>
 <h4>High Dynamic Range Imaging</h4>
 <ul>
@@ -606,21 +643,25 @@ example "+annotate", "+resize", "+clut", and "+draw" .</p>
 <li>The FilterImage() method has been removed.  Use ConvolveImage() instead.</li>
 </ul>
 </div>
+    </div>
+  </main><!-- /.container -->
   <footer class="magick-footer">
-    <p><a href="support.html">Donate</a> •
-     <a href="sitemap.html">Sitemap</a> •
+    <p><a href="security-policy.html">Security</a> •
+    <a href="architecture.html">Architecture</a> •
     <a href="links.html">Related</a> •
-    <a href="security-policy.html">Security</a> •
-    <a href="architecture.html">Architecture</a>
-</p>
-    <p><a href="porting.html#">Back to top</a> •
-    <a href="http://pgp.mit.edu:11371/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
-    <a href="https://www.imagemagick.org/script/contact.php">Contact Us</a></p>
-        <p><small>© 1999-2017 ImageMagick Studio LLC</small></p>
+     <a href="sitemap.html">Sitemap</a>
+       
+    <a href="porting.html#"><img class="d-inline" id="logo" alt="And Now a Touch of Magick" width="16" height="16" src="../images/wand.ico"/></a>
+       
+    <a href="http://pgp.mit.edu/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
+    <a href="support.html">Donate</a> •
+    <a href="https://legacy.imagemagick.org/script/contact.php">Contact Us</a>
+    <br/>
+        <small>© 1999-2018 ImageMagick Studio LLC</small></p>
   </footer>
-</div><!-- /.container -->
 
-  <script src="https://localhost/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="../js/magick.html"></script>
+  <!-- Javascript assets -->
+  <script src="assets/magick.js" crossorigin="anonymous"></script>
+  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
 </body>
 </html>

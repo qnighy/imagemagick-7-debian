@@ -22,7 +22,7 @@
 %                                January 2013                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -86,7 +86,7 @@
 #define SOCKET_TYPE int
 #define LENGTH_TYPE size_t
 #define MAGICKCORE_HAVE_DISTRIBUTE_CACHE
-#elif defined(MAGICKCORE_WINDOWS_SUPPORT)
+#elif defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
 #define CHAR_TYPE_CAST (char *)
 #define CLOSE_SOCKET(socket) (void) closesocket(socket)
 #define HANDLER_RETURN_TYPE DWORD WINAPI
@@ -253,7 +253,7 @@ static int ConnectPixelCacheServer(const char *hostname,const int port,
 
       nonce=AcquireStringInfo(count);
       (void) memcpy(GetStringInfoDatum(nonce),secret,(size_t) count);
-      *session_key=GetMagickSignature(nonce);
+      *session_key=GetMagickCoreSignature(nonce);
       nonce=DestroyStringInfo(nonce);
     }
   if (*session_key == 0)
@@ -348,7 +348,7 @@ MagickPrivate DistributeCacheInfo *AcquireDistributeCacheInfo(
   if (server_info == (DistributeCacheInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) ResetMagickMemory(server_info,0,sizeof(*server_info));
-  server_info->signature=MagickSignature;
+  server_info->signature=MagickCoreSignature;
   server_info->port=0;
   hostname=GetHostname(&server_info->port,exception);
   session_key=0;
@@ -394,10 +394,10 @@ MagickPrivate DistributeCacheInfo *DestroyDistributeCacheInfo(
   DistributeCacheInfo *server_info)
 {
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   if (server_info->file > 0)
     CLOSE_SOCKET(server_info->file);
-  server_info->signature=(~MagickSignature);
+  server_info->signature=(~MagickCoreSignature);
   server_info=(DistributeCacheInfo *) RelinquishMagickMemory(server_info);
   return(server_info);
 }
@@ -808,7 +808,7 @@ static HANDLER_RETURN_TYPE DistributePixelCacheClient(void *socket)
   random_info=AcquireRandomInfo();
   secret=GetRandomKey(random_info,DPCSessionKeyLength);
   (void) memcpy(p,GetStringInfoDatum(secret),DPCSessionKeyLength);
-  session_key=GetMagickSignature(secret);
+  session_key=GetMagickCoreSignature(secret);
   random_info=DestroyRandomInfo(random_info);
   exception=AcquireExceptionInfo();
   registry=NewSplayTree((int (*)(const void *,const void *)) NULL,
@@ -917,6 +917,8 @@ MagickExport void DistributePixelCacheServer(const int port,
   /*
     Launch distributed pixel cache server.
   */
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickCoreSignature);
   magick_unreferenced(exception);
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
   NTInitializeWinsock(MagickFalse);
@@ -1021,7 +1023,7 @@ MagickExport void DistributePixelCacheServer(const int port,
 MagickPrivate int GetDistributeCacheFile(const DistributeCacheInfo *server_info)
 {
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   return(server_info->file);
 }
 
@@ -1053,7 +1055,7 @@ MagickPrivate const char *GetDistributeCacheHostname(
   const DistributeCacheInfo *server_info)
 {
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   return(server_info->hostname);
 }
 
@@ -1083,7 +1085,7 @@ MagickPrivate const char *GetDistributeCacheHostname(
 MagickPrivate int GetDistributeCachePort(const DistributeCacheInfo *server_info)
 {
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   return(server_info->port);
 }
 
@@ -1135,9 +1137,9 @@ MagickPrivate MagickBooleanType OpenDistributePixelCache(
     Open distributed pixel cache.
   */
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   p=message;
   *p++='o';  /* open */
   /*
@@ -1215,7 +1217,7 @@ MagickPrivate MagickOffsetType ReadDistributePixelCacheIndexes(
     Read distributed pixel cache indexes.
   */
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   assert(region != (RectangleInfo *) NULL);
   assert(indexes != (unsigned char *) NULL);
   if (length > (MagickSizeType) SSIZE_MAX)
@@ -1290,7 +1292,7 @@ MagickPrivate MagickOffsetType ReadDistributePixelCachePixels(
     Read distributed pixel cache pixels.
   */
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   assert(region != (RectangleInfo *) NULL);
   assert(pixels != (unsigned char *) NULL);
   if (length > (MagickSizeType) SSIZE_MAX)
@@ -1362,7 +1364,7 @@ MagickPrivate MagickBooleanType RelinquishDistributePixelCache(
     Delete distributed pixel cache.
   */
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   p=message;
   *p++='d';
   (void) memcpy(p,&server_info->session_key,sizeof(server_info->session_key));
@@ -1426,7 +1428,7 @@ MagickPrivate MagickOffsetType WriteDistributePixelCacheIndexes(
     Write distributed pixel cache indexes.
   */
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   assert(region != (RectangleInfo *) NULL);
   assert(indexes != (unsigned char *) NULL);
   if (length > (MagickSizeType) SSIZE_MAX)
@@ -1502,7 +1504,7 @@ MagickPrivate MagickOffsetType WriteDistributePixelCachePixels(
     Write distributed pixel cache pixels.
   */
   assert(server_info != (DistributeCacheInfo *) NULL);
-  assert(server_info->signature == MagickSignature);
+  assert(server_info->signature == MagickCoreSignature);
   assert(region != (RectangleInfo *) NULL);
   assert(pixels != (const unsigned char *) NULL);
   if (length > (MagickSizeType) SSIZE_MAX)

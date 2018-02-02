@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -157,7 +157,7 @@ static int PNMComment(Image *image)
   comment=AcquireString(GetImageProperty(image,"comment"));
   p=comment+strlen(comment);
   extent=strlen(comment)+MaxTextExtent;
-  for (c='#'; (c != EOF) && (c != (int) '\n'); p++)
+  for (c='#'; (c != EOF) && (c != (int) '\n') && (c != (int) '\r'); p++)
   {
     if ((size_t) (p-comment+1) >= extent)
       {
@@ -207,17 +207,20 @@ static unsigned int PNMInteger(Image *image,const unsigned int base)
     Evaluate number.
   */
   value=0;
-  while (isdigit(c) != 0) {
-    if (value > (unsigned int) (INT_MAX/10))
-      break;
-    value*=10;
-    if (value > (unsigned int) (INT_MAX-(c-(int) '0')))
-      break;
-    value+=c-(int) '0';
+  while (isdigit(c) != 0)
+  {
+    if (value <= (unsigned int) (INT_MAX/10))
+      {
+        value*=10;
+        if (value <= (unsigned int) (INT_MAX-(c-(int) '0')))
+          value+=c-(int) '0';
+      }
     c=ReadBlobByte(image);
     if (c == EOF)
       return(0);
   }
+  if (c == (int) '#')
+    c=PNMComment(image);
   return(value);
 }
 
@@ -258,12 +261,12 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -1548,9 +1551,9 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
@@ -1680,7 +1683,7 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
           {
             packet_size=1;
             (void) CopyMagickString(type,"GRAYSCALE",MaxTextExtent);
-            if (IsMonochromeImage(image,&image->exception) != MagickFalse)
+            if (IdentifyImageMonochrome(image,&image->exception) != MagickFalse)
               (void) CopyMagickString(type,"BLACKANDWHITE",MaxTextExtent);
             break;
           }

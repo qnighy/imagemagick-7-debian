@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -57,6 +57,8 @@
 #include "magick/monitor-private.h"
 #include "magick/opencl.h"
 #include "magick/pixel-accessor.h"
+#include "magick/profile.h"
+#include "magick/property.h"
 #include "magick/quantum-private.h"
 #include "magick/resource_.h"
 #include "magick/static.h"
@@ -150,6 +152,69 @@ static void InitializeDcrawOpenCL(ExceptionInfo *magick_unused(exception))
 #endif
 #endif
 
+#if defined(MAGICKCORE_RAW_R_DELEGATE)
+static void SetDNGProperties(Image *image,const libraw_data_t *raw_info)
+{
+  char
+    property[MagickPathExtent],
+    timestamp[MagickPathExtent];
+
+  (void) SetImageProperty(image,"dng:make",raw_info->idata.make);
+  (void) SetImageProperty(image,"dng:camera.model.name",raw_info->idata.model);
+  (void) FormatMagickTime(raw_info->other.timestamp,MagickPathExtent,timestamp);
+  (void) SetImageProperty(image,"dng:create.date",timestamp);
+  (void) SetImageProperty(image,"dng:f.number",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%0.1f",
+    raw_info->other.iso_speed);
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0,18)
+  (void) SetImageProperty(image,"dng:software",raw_info->idata.software);
+  if (*raw_info->shootinginfo.BodySerial != '\0')
+    (void) SetImageProperty(image,"dng:serial.number",
+      raw_info->shootinginfo.BodySerial);
+  (void) FormatLocaleString(property,MagickPathExtent,"%0.2f",
+    raw_info->other.FlashEC);
+  (void) SetImageProperty(image,"dng:flash.exposure.compensation",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"1/%0.1f",
+    1.0/raw_info->other.shutter);
+  (void) SetImageProperty(image,"dng:exposure.time",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%0.1f",
+    raw_info->other.aperture);
+  (void) SetImageProperty(image,"dng:iso.setting",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%0.1f",
+    raw_info->lens.EXIF_MaxAp);
+  (void) SetImageProperty(image,"dng:max.aperture.value",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%0.1f",
+    raw_info->other.focal_len);
+  (void) SetImageProperty(image,"dng:focal.length",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%f %f %f %f",
+    raw_info->color.cam_mul[0],raw_info->color.cam_mul[2],
+    raw_info->color.cam_mul[1],raw_info->color.cam_mul[3]);
+  (void) SetImageProperty(image,"dng:wb.rb.levels",property);
+  (void) FormatLocaleString(property,MagickPathExtent,
+    "%0.1f-%0.1fmm f/%0.1f-%0.1f",raw_info->lens.makernotes.MinFocal,
+    raw_info->lens.makernotes.MaxFocal,raw_info->lens.makernotes.MaxAp4MinFocal,
+    raw_info->lens.makernotes.MaxAp4MaxFocal);
+  (void) SetImageProperty(image,"dng:lens",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%0.2f",
+    raw_info->lens.makernotes.LensFStops);
+  (void) SetImageProperty(image,"dng:lens.f.stops",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%0.1f mm",
+    raw_info->lens.makernotes.MinFocal);
+  (void) SetImageProperty(image,"dng:min.focal.length",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%0.1f mm",
+    raw_info->lens.makernotes.MaxFocal);
+  (void) SetImageProperty(image,"dng:max.focal.length",property);
+  (void) SetImageProperty(image,"dng:max.aperture.at.min.focal",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%0.1f",
+    raw_info->lens.makernotes.MaxAp4MaxFocal);
+  (void) SetImageProperty(image,"dng:max.aperture.at.max.focal",property);
+  (void) FormatLocaleString(property,MagickPathExtent,"%d mm",
+    raw_info->lens.FocalLengthIn35mmFormat);
+  (void) SetImageProperty(image,"dng:focal.length.in.35mm.format",property);
+#endif
+}
+#endif
+
 static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   Image
@@ -162,12 +227,12 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -189,6 +254,9 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
     register ssize_t
       y;
+
+    StringInfo
+      *profile;
 
     unsigned short
       *p;
@@ -218,6 +286,17 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         (void) ThrowMagickException(exception,GetMagickModule(),CoderError,
           libraw_strerror(errcode),"`%s'",image->filename);
         return(DestroyImageList(image));
+      }
+    image->columns=raw_info->sizes.width;
+    image->rows=raw_info->sizes.height;
+    image->page.width=raw_info->sizes.raw_width;
+    image->page.height=raw_info->sizes.raw_height;
+    image->page.x=raw_info->sizes.left_margin;
+    image->page.y=raw_info->sizes.top_margin;
+    if (image_info->ping != MagickFalse)
+      {
+        libraw_close(raw_info);
+        return(image);
       }
     errcode=libraw_unpack(raw_info);
     if (errcode != LIBRAW_SUCCESS)
@@ -251,19 +330,17 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
     image->columns=raw_image->width;
     image->rows=raw_image->height;
-    image->depth=16;
+    image->depth=raw_image->bits;
+    image->page.width=raw_info->sizes.width;
+    image->page.height=raw_info->sizes.height;
+    image->page.x=raw_info->sizes.left_margin;
+    image->page.y=raw_info->sizes.top_margin;
     status=SetImageExtent(image,image->columns,image->rows);
     if (status == MagickFalse)
       {
         libraw_dcraw_clear_mem(raw_image);
         libraw_close(raw_info);
         return(DestroyImageList(image));
-      }
-    if (image_info->ping != MagickFalse)
-      {
-        libraw_dcraw_clear_mem(raw_image);
-        libraw_close(raw_info);
-        return(image);
       }
     p=(unsigned short *) raw_image->data;
     for (y=0; y < (ssize_t) image->rows; y++)
@@ -297,6 +374,32 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         }
     }
     libraw_dcraw_clear_mem(raw_image);
+    /*
+      Set DNG image metadata.
+    */
+    if (raw_info->color.profile)
+      {
+        profile=BlobToStringInfo(raw_info->color.profile,
+          raw_info->color.profile_length);
+        if (profile != (StringInfo *) NULL)
+          {
+            SetImageProfile(image,"ICC",profile);
+            profile=DestroyStringInfo(profile);
+          }
+      }
+#if LIBRAW_COMPILE_CHECK_VERSION_NOTLESS(0,18)
+    if (raw_info->idata.xmpdata)
+      {
+        profile=BlobToStringInfo(raw_info->idata.xmpdata,
+          raw_info->idata.xmplen);
+        if (profile != (StringInfo *) NULL)
+          {
+            SetImageProfile(image,"XMP",profile);
+            profile=DestroyStringInfo(profile);
+          }
+      }
+#endif
+    SetDNGProperties(image,raw_info);
     libraw_close(raw_info);
     return(image);
   }

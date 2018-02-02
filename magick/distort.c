@@ -18,7 +18,7 @@
 %                                 June 2007                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -294,12 +294,12 @@ MagickExport Image *AffineTransformImage(const Image *image,
   /*
     Affine transform image.
   */
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(affine_matrix != (AffineMatrix *) NULL);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   distort[0]=affine_matrix->sx;
   distort[1]=affine_matrix->rx;
   distort[2]=affine_matrix->ry;
@@ -1480,11 +1480,11 @@ MagickExport Image *DistortResizeImage(const Image *image,
     Distort resize image.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if ((columns == 0) || (rows == 0))
     return((Image *) NULL);
   /* Do not short-circuit this resize if final image size is unchanged */
@@ -1694,11 +1694,11 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
     viewport_given;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 
   /*
     Handle Special Compound Distortions
@@ -2324,7 +2324,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
     distort_view=AcquireAuthenticCacheView(distort_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
     #pragma omp parallel for schedule(static,4) shared(progress,status) \
-      magick_threads(image,distort_image,distort_image->rows,1)
+      magick_number_threads(image,distort_image,distort_image->rows,1)
 #endif
     for (j=0; j < (ssize_t) distort_image->rows; j++)
     {
@@ -2829,11 +2829,11 @@ MagickExport Image *RotateImage(const Image *image,const double degrees,
     Adjust rotation angle.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   angle=degrees;
   while (angle < -45.0)
     angle+=360.0;
@@ -2916,11 +2916,11 @@ MagickExport Image *SparseColorImage(const Image *image,
     number_colors;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 
   /* Determine number of color values needed per control point */
   number_colors=0;
@@ -3047,7 +3047,7 @@ MagickExport Image *SparseColorImage(const Image *image,
     sparse_view=AcquireAuthenticCacheView(sparse_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
     #pragma omp parallel for schedule(static,4) shared(progress,status) \
-      magick_threads(image,sparse_image,sparse_image->rows,1)
+      magick_number_threads(image,sparse_image,sparse_image->rows,1)
 #endif
     for (j=0; j < (ssize_t) sparse_image->rows; j++)
     {

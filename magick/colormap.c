@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -109,7 +109,7 @@ MagickExport MagickBooleanType AcquireImageColormap(Image *image,
     Allocate image colormap.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   image->colors=MagickMax(colors,1);
@@ -182,7 +182,7 @@ MagickExport MagickBooleanType CycleColormapImage(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->storage_class == DirectClass)
@@ -192,7 +192,7 @@ MagickExport MagickBooleanType CycleColormapImage(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,1,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -304,7 +304,7 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image)
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->storage_class != PseudoClass)
     return(MagickTrue);
   /*
@@ -318,10 +318,6 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image)
   /*
     Assign index values to colormap entries.
   */
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,1,1)
-#endif
   for (i=0; i < (ssize_t) image->colors; i++)
     image->colormap[i].opacity=(IndexPacket) i;
   /*
@@ -332,9 +328,6 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image)
   /*
     Update image colormap indexes to sorted colormap order.
   */
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status)
-#endif
   for (i=0; i < (ssize_t) image->colors; i++)
     pixels[(ssize_t) image->colormap[i].opacity]=(unsigned short) i;
   status=MagickTrue;

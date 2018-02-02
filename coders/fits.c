@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -286,12 +286,12 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -394,7 +394,11 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     if ((fits_info.bits_per_pixel != 8) && (fits_info.bits_per_pixel != 16) &&
         (fits_info.bits_per_pixel != 32) && (fits_info.bits_per_pixel != 64) &&
         (fits_info.bits_per_pixel != -32) && (fits_info.bits_per_pixel != -64))
-      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+      {
+        if (comment != (char *) NULL)
+          comment=DestroyString(comment);
+        ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+      }
     number_pixels=(MagickSizeType) fits_info.columns*fits_info.rows;
     if ((fits_info.simple != MagickFalse) && (fits_info.number_axes >= 1) &&
         (fits_info.number_axes <= 4) && (number_pixels != 0))
@@ -646,9 +650,9 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);

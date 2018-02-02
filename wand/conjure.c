@@ -17,7 +17,7 @@
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -173,7 +173,7 @@ WandExport MagickBooleanType ConjureImageCommand(ImageInfo *image_info,
     Set defaults.
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(exception != (ExceptionInfo *) NULL);
@@ -288,8 +288,7 @@ WandExport MagickBooleanType ConjureImageCommand(ImageInfo *image_info,
     status=SetImageOption(image_info,"filename",argv[i]);
     if (status == MagickFalse)
       ThrowConjureException(ImageError,"UnableToPersistKey",argv[i]);
-    (void) FormatLocaleString(image_info->filename,MaxTextExtent,"msl:%s",
-      argv[i]);
+    (void) FormatLocaleString(image_info->filename,MaxTextExtent,"%s",argv[i]);
     (void) SetImageOption(image_info,"filename",argv[i]);
     image=ReadImages(image_info,exception);
     CatchException(exception);

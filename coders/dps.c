@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -158,12 +158,12 @@ static Image *ReadDPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open X server connection.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   display=XOpenDisplay(image_info->server_name);
   if (display == (Display *) NULL)
     return((Image *) NULL);
@@ -318,11 +318,19 @@ static Image *ReadDPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (image_info->ping != MagickFalse)
     {
       (void) CloseBlob(image);
+      colors=(XColor *) RelinquishMagickMemory(colors);
+      XDestroyImage(dps_image);
+      XFreeResources(display,visual_info,map_info,(XPixelInfo *) NULL,
+        (XFontStruct *) NULL,&resource_info,(XWindowInfo *) NULL);
       return(GetFirstImageInList(image));
     }
   status=SetImageExtent(image,image->columns,image->rows);
   if (status == MagickFalse)
     {
+      colors=(XColor *) RelinquishMagickMemory(colors);
+      XDestroyImage(dps_image);
+      XFreeResources(display,visual_info,map_info,(XPixelInfo *) NULL,
+        (XFontStruct *) NULL,&resource_info,(XWindowInfo *) NULL);
       InheritException(exception,&image->exception);
       return(DestroyImageList(image));
     }

@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -190,11 +190,11 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
     y;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   blur_image=CloneImage(image,image->columns,image->rows,MagickTrue,exception);
   if (blur_image == (Image *) NULL)
     return((Image *) NULL);
@@ -280,7 +280,7 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
   blur_view=AcquireAuthenticCacheView(blur_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,blur_image,blur_image->rows,1)
+    magick_number_threads(image,blur_image,blur_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) blur_image->rows; y++)
   {
@@ -512,11 +512,11 @@ MagickExport Image *AdaptiveSharpenImageChannel(const Image *image,
     y;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   sharp_image=CloneImage(image,0,0,MagickTrue,exception);
   if (sharp_image == (Image *) NULL)
     return((Image *) NULL);
@@ -602,7 +602,7 @@ MagickExport Image *AdaptiveSharpenImageChannel(const Image *image,
   sharp_view=AcquireAuthenticCacheView(sharp_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,sharp_image,sharp_image->rows,1)
+    magick_number_threads(image,sharp_image,sharp_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) sharp_image->rows; y++)
   {
@@ -801,11 +801,11 @@ MagickExport Image *BlurImageChannel(const Image *image,
     *blur_image = NULL;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
   blur_image=AccelerateBlurImage(image,channel,radius,sigma,exception);
   if (blur_image != (Image *) NULL)
@@ -895,7 +895,7 @@ MagickExport Image *ConvolveImageChannel(const Image *image,
   kernel_info->height=order;
   kernel_info->x=(ssize_t) (order-1)/2;
   kernel_info->y=(ssize_t) (order-1)/2;
-  kernel_info->signature=MagickSignature;
+  kernel_info->signature=MagickCoreSignature;
   kernel_info->values=(double *) MagickAssumeAligned(AcquireAlignedMemory(
     kernel_info->width,kernel_info->width*sizeof(*kernel_info->values)));
   if (kernel_info->values == (double *) NULL)
@@ -967,7 +967,7 @@ static void Hull(const Image *image,const ssize_t x_offset,
   r=p+(y_offset*(columns+2)+x_offset);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) \
-    magick_threads(image,image,1,1)
+    magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
@@ -1005,7 +1005,7 @@ static void Hull(const Image *image,const ssize_t x_offset,
   s=q-(y_offset*(columns+2)+x_offset);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) \
-    magick_threads(image,image,1,1)
+    magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
@@ -1077,11 +1077,11 @@ MagickExport Image *DespeckleImage(const Image *image,ExceptionInfo *exception)
     Allocate despeckled image.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
   despeckle_image=AccelerateDespeckleImage(image, exception);
   if (despeckle_image != (Image *) NULL)
@@ -1281,11 +1281,11 @@ MagickExport Image *EdgeImage(const Image *image,const double radius,
     width;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   width=GetOptimalKernelWidth1D(radius,0.5);
   kernel_info=AcquireKernelInfo((const char *) NULL);
   if (kernel_info == (KernelInfo *) NULL)
@@ -1295,7 +1295,7 @@ MagickExport Image *EdgeImage(const Image *image,const double radius,
   kernel_info->height=width;
   kernel_info->x=(ssize_t) (kernel_info->width-1)/2;
   kernel_info->y=(ssize_t) (kernel_info->height-1)/2;
-  kernel_info->signature=MagickSignature;
+  kernel_info->signature=MagickCoreSignature;
   kernel_info->values=(double *) MagickAssumeAligned(AcquireAlignedMemory(
     kernel_info->width,kernel_info->height*sizeof(*kernel_info->values)));
   if (kernel_info->values == (double *) NULL)
@@ -1377,11 +1377,11 @@ MagickExport Image *EmbossImage(const Image *image,const double radius,
     v;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   width=GetOptimalKernelWidth1D(radius,sigma);
   kernel_info=AcquireKernelInfo((const char *) NULL);
   if (kernel_info == (KernelInfo *) NULL)
@@ -1514,11 +1514,11 @@ MagickExport Image *FilterImageChannel(const Image *image,
     Initialize filter image attributes.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if ((kernel->width % 2) == 0)
     ThrowImageException(OptionError,"KernelWidthMustBeAnOddNumber");
   if (image->debug != MagickFalse)
@@ -1595,7 +1595,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
   filter_view=AcquireAuthenticCacheView(filter_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,filter_image,image->rows,1)
+    magick_number_threads(image,filter_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1872,11 +1872,11 @@ MagickExport Image *GaussianBlurImageChannel(const Image *image,
     *blur_image;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   (void) FormatLocaleString(geometry,MaxTextExtent,"gaussian:%.20gx%.20g",
     radius,sigma);
   kernel_info=AcquireKernelInfo(geometry);
@@ -2019,7 +2019,7 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
@@ -2074,7 +2074,7 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
   blur_view=AcquireAuthenticCacheView(blur_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,blur_image,image->rows,1)
+    magick_number_threads(image,blur_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2284,11 +2284,11 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
     Initialize Kuwahara image attributes.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   (void) channel;
   width=(size_t) radius+1;
   gaussian_image=BlurImage(image,radius,sigma,exception);
@@ -2317,7 +2317,7 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
   kuwahara_view=AcquireAuthenticCacheView(kuwahara_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,kuwahara_image,kuwahara_image->rows,1)
+    magick_number_threads(image,kuwahara_image,kuwahara_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) kuwahara_image->rows; y++)
   {
@@ -2437,9 +2437,11 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
           status=MagickFalse;
           break;
         }
-      (void) InterpolateMagickPixelPacket(gaussian_image,image_view,
+      status=InterpolateMagickPixelPacket(gaussian_image,image_view,
         UndefinedInterpolatePixel,(double) target.x+target.width/2.0,
         (double) target.y+target.height/2.0,&pixel,exception);
+      if (status == MagickFalse)
+        break;
       SetPixelPacket(kuwahara_image,&pixel,q,kuwahara_indexes+x);
       q++;
     }
@@ -2531,11 +2533,11 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
     Initialize contrast image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
   contrast_image=AccelerateLocalContrastImage(image,radius,strength,exception);
   if (contrast_image != (Image *) NULL)
@@ -2590,7 +2592,7 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
     #pragma omp parallel for schedule(static,4) \
-      magick_threads(image,image,image->columns,1)
+      magick_number_threads(image,image,image->columns,1)
 #endif
     for (x=0; x < (ssize_t) image->columns; x++)
     {
@@ -2669,7 +2671,7 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
 #pragma omp parallel for schedule(static,4) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
     for (y=0; y < (ssize_t) image->rows; y++)
     {
@@ -2835,7 +2837,7 @@ MagickExport Image *PreviewImage(const Image *image,const PreviewType preview,
     Open output image file.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   colors=2;
@@ -3358,16 +3360,25 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
     Allocate blur image.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
   blur_image=AccelerateRadialBlurImage(image,channel,angle,exception);
   if (blur_image != (Image *) NULL)
     return(blur_image);
 #endif
+  blur_image=CloneImage(image,0,0,MagickTrue,exception);
+  if (blur_image == (Image *) NULL)
+    return((Image *) NULL);
+  if (SetImageStorageClass(blur_image,DirectClass) == MagickFalse)
+    {
+      InheritException(exception,&blur_image->exception);
+      blur_image=DestroyImage(blur_image);
+      return((Image *) NULL);
+    }
   blur_center.x=(double) (image->columns-1)/2.0;
   blur_center.y=(double) (image->rows-1)/2.0;
   blur_radius=hypot(blur_center.x,blur_center.y);
@@ -3380,6 +3391,11 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
   if ((cos_theta == (MagickRealType *) NULL) ||
       (sin_theta == (MagickRealType *) NULL))
     {
+      if (cos_theta != (double *) NULL)
+        cos_theta=(double *) RelinquishMagickMemory(cos_theta);
+      if (sin_theta != (double *) NULL)
+        sin_theta=(double *) RelinquishMagickMemory(sin_theta);
+      blur_image=DestroyImage(blur_image);
       ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
     }
   offset=theta*(MagickRealType) (n-1)/2.0;
@@ -3387,21 +3403,6 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
   {
     cos_theta[i]=cos((double) (theta*i-offset));
     sin_theta[i]=sin((double) (theta*i-offset));
-  }
-  blur_image=CloneImage(image,0,0,MagickTrue,exception);
-  if (blur_image == (Image *) NULL)
-    {
-      cos_theta=(MagickRealType *) RelinquishMagickMemory(cos_theta);
-      sin_theta=(MagickRealType *) RelinquishMagickMemory(sin_theta);
-      return((Image *) NULL);
-    }
-  if (SetImageStorageClass(blur_image,DirectClass) == MagickFalse)
-  {
-    cos_theta=(MagickRealType *) RelinquishMagickMemory(cos_theta);
-    sin_theta=(MagickRealType *) RelinquishMagickMemory(sin_theta);
-    InheritException(exception,&blur_image->exception);
-    blur_image=DestroyImage(blur_image);
-    return((Image *) NULL);
   }
   /*
     Radial blur image.
@@ -3413,7 +3414,7 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
   blur_view=AcquireAuthenticCacheView(blur_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,blur_image,blur_image->rows,1)
+    magick_number_threads(image,blur_image,blur_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) blur_image->rows; y++)
   {
@@ -3671,11 +3672,11 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
     Initialize blur image attributes.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   width=GetOptimalKernelWidth1D(radius,sigma);
   kernel=(double *) MagickAssumeAligned(AcquireAlignedMemory((size_t) width,
     width*sizeof(*kernel)));
@@ -3763,7 +3764,7 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
   blur_view=AcquireAuthenticCacheView(blur_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,blur_image,image->rows,1)
+    magick_number_threads(image,blur_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -4074,11 +4075,11 @@ MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
     Initialize shaded image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   linear_image=CloneImage(image,0,0,MagickTrue,exception);
   shade_image=CloneImage(image,image->columns,image->rows,MagickTrue,exception);
   if ((linear_image == (Image *) NULL) || (shade_image == (Image *) NULL))
@@ -4113,7 +4114,7 @@ MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
   shade_view=AcquireAuthenticCacheView(shade_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(linear_image,shade_image,linear_image->rows,1)
+    magick_number_threads(linear_image,shade_image,linear_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) linear_image->rows; y++)
   {
@@ -4305,11 +4306,11 @@ MagickExport Image *SharpenImageChannel(const Image *image,
     v;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   width=GetOptimalKernelWidth2D(radius,sigma);
   kernel_info=AcquireKernelInfo((const char *) NULL);
   if (kernel_info == (KernelInfo *) NULL)
@@ -4319,7 +4320,7 @@ MagickExport Image *SharpenImageChannel(const Image *image,
   kernel_info->height=width;
   kernel_info->x=(ssize_t) (width-1)/2;
   kernel_info->y=(ssize_t) (width-1)/2;
-  kernel_info->signature=MagickSignature;
+  kernel_info->signature=MagickCoreSignature;
   kernel_info->values=(double *) MagickAssumeAligned(AcquireAlignedMemory(
     kernel_info->width,kernel_info->height*sizeof(*kernel_info->values)));
   if (kernel_info->values == (double *) NULL)
@@ -4420,11 +4421,11 @@ MagickExport Image *SpreadImage(const Image *image,const double radius,
     Initialize spread image attributes.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   spread_image=CloneImage(image,image->columns,image->rows,MagickTrue,
     exception);
   if (spread_image == (Image *) NULL)
@@ -4448,7 +4449,7 @@ MagickExport Image *SpreadImage(const Image *image,const double radius,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   key=GetRandomSecretKey(random_info[0]);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,spread_image,spread_image->rows,key == ~0UL)
+    magick_number_threads(image,spread_image,spread_image->rows,key == ~0UL)
 #endif
   for (y=0; y < (ssize_t) spread_image->rows; y++)
   {
@@ -4485,9 +4486,11 @@ MagickExport Image *SpreadImage(const Image *image,const double radius,
 
       point.x=GetPseudoRandomValue(random_info[id]);
       point.y=GetPseudoRandomValue(random_info[id]);
-      (void) InterpolateMagickPixelPacket(image,image_view,image->interpolate,
+      status=InterpolateMagickPixelPacket(image,image_view,image->interpolate,
         (double) x+width*(point.x-0.5),(double) y+width*(point.y-0.5),&pixel,
         exception);
+      if (status == MagickFalse)
+        break;
       SetPixelPacket(spread_image,&pixel,q,indexes+x);
       q++;
     }
@@ -4602,7 +4605,7 @@ MagickExport Image *UnsharpMaskImageChannel(const Image *image,
     y;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
@@ -4627,7 +4630,7 @@ MagickExport Image *UnsharpMaskImageChannel(const Image *image,
   unsharp_view=AcquireAuthenticCacheView(unsharp_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,unsharp_image,image->rows,1)
+    magick_number_threads(image,unsharp_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

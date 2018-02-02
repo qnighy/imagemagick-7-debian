@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -897,14 +897,14 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
     Allocate resize filter.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(UndefinedFilter < filter && filter < SentinelFilter);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  resize_filter=(ResizeFilter *) AcquireMagickMemory(sizeof(*resize_filter));
+  assert(exception->signature == MagickCoreSignature);
   (void) exception;
+  resize_filter=(ResizeFilter *) AcquireMagickMemory(sizeof(*resize_filter));
   if (resize_filter == (ResizeFilter *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) ResetMagickMemory(resize_filter,0,sizeof(*resize_filter));
@@ -915,8 +915,8 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
   window_type=mapping[filter].window;
   resize_filter->blur = blur;     /* function argument blur factor (1.0) */
   /* Promote 1D Windowed Sinc Filters to a 2D Windowed Jinc filters */
-  if (cylindrical != MagickFalse && filter_type == SincFastFilter
-       && filter != SincFastFilter )
+  if ((cylindrical != MagickFalse) && (filter_type == SincFastFilter) &&
+      (filter != SincFastFilter))
     filter_type=JincFilter;  /* 1D Windowed Sinc => 2D Windowed Jinc filters */
 
   /* Expert filter setting override */
@@ -967,7 +967,7 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
   resize_filter->window=filters[window_type].function;
   resize_filter->windowWeightingType=filters[window_type].weightingFunctionType;
   resize_filter->scale=filters[window_type].scale;
-  resize_filter->signature=MagickSignature;
+  resize_filter->signature=MagickCoreSignature;
 
   /* Filter Modifications for orthogonal/cylindrical usage */
   if (cylindrical != MagickFalse)
@@ -1495,8 +1495,8 @@ static MagickRealType BesselOrderOne(MagickRealType x)
 MagickExport ResizeFilter *DestroyResizeFilter(ResizeFilter *resize_filter)
 {
   assert(resize_filter != (ResizeFilter *) NULL);
-  assert(resize_filter->signature == MagickSignature);
-  resize_filter->signature=(~MagickSignature);
+  assert(resize_filter->signature == MagickCoreSignature);
+  resize_filter->signature=(~MagickCoreSignature);
   resize_filter=(ResizeFilter *) RelinquishMagickMemory(resize_filter);
   return(resize_filter);
 }
@@ -1529,7 +1529,7 @@ MagickExport MagickRealType *GetResizeFilterCoefficient(
   const ResizeFilter *resize_filter)
 {
   assert(resize_filter != (ResizeFilter *) NULL);
-  assert(resize_filter->signature == MagickSignature);
+  assert(resize_filter->signature == MagickCoreSignature);
   return((MagickRealType *) resize_filter->coefficient);
 }
 
@@ -1537,7 +1537,7 @@ MagickExport MagickRealType GetResizeFilterBlur(
   const ResizeFilter *resize_filter)
 {
   assert(resize_filter != (ResizeFilter *) NULL);
-  assert(resize_filter->signature == MagickSignature);
+  assert(resize_filter->signature == MagickCoreSignature);
   return(resize_filter->blur);
 }
 
@@ -1545,7 +1545,7 @@ MagickExport MagickRealType GetResizeFilterScale(
   const ResizeFilter *resize_filter)
 {
   assert(resize_filter != (ResizeFilter *) NULL);
-  assert(resize_filter->signature == MagickSignature);
+  assert(resize_filter->signature == MagickCoreSignature);
   return(resize_filter->scale);
 }
 
@@ -1553,7 +1553,7 @@ MagickExport MagickRealType GetResizeFilterWindowSupport(
   const ResizeFilter *resize_filter)
 {
   assert(resize_filter != (ResizeFilter *) NULL);
-  assert(resize_filter->signature == MagickSignature);
+  assert(resize_filter->signature == MagickCoreSignature);
   return(resize_filter->window_support);
 }
 
@@ -1561,7 +1561,7 @@ MagickExport ResizeWeightingFunctionType GetResizeFilterWeightingType(
   const ResizeFilter *resize_filter)
 {
   assert(resize_filter != (ResizeFilter *) NULL);
-  assert(resize_filter->signature == MagickSignature);
+  assert(resize_filter->signature == MagickCoreSignature);
   return(resize_filter->filterWeightingType);
 }
 
@@ -1569,7 +1569,7 @@ MagickExport ResizeWeightingFunctionType GetResizeFilterWindowWeightingType(
   const ResizeFilter *resize_filter)
 {
   assert(resize_filter != (ResizeFilter *) NULL);
-  assert(resize_filter->signature == MagickSignature);
+  assert(resize_filter->signature == MagickCoreSignature);
   return(resize_filter->windowWeightingType);
 }
 
@@ -1577,7 +1577,7 @@ MagickExport MagickRealType GetResizeFilterSupport(
   const ResizeFilter *resize_filter)
 {
   assert(resize_filter != (ResizeFilter *) NULL);
-  assert(resize_filter->signature == MagickSignature);
+  assert(resize_filter->signature == MagickCoreSignature);
   return(resize_filter->support*resize_filter->blur);
 }
 
@@ -1620,7 +1620,7 @@ MagickExport MagickRealType GetResizeFilterWeight(
     Windowing function - scale the weighting filter by this amount.
   */
   assert(resize_filter != (ResizeFilter *) NULL);
-  assert(resize_filter->signature == MagickSignature);
+  assert(resize_filter->signature == MagickCoreSignature);
   x_blur=fabs((double) x)/resize_filter->blur;  /* X offset with blur scaling */
   if ((resize_filter->window_support < MagickEpsilon) ||
       (resize_filter->window == Box))
@@ -1696,11 +1696,11 @@ MagickExport Image *InterpolativeResizeImage(const Image *image,
     Interpolatively resize image.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if ((columns == 0) || (rows == 0))
     return((Image *) NULL);
   if ((columns == image->columns) && (rows == image->rows))
@@ -1722,7 +1722,7 @@ MagickExport Image *InterpolativeResizeImage(const Image *image,
   scale.y=(double) image->rows/resize_image->rows;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,resize_image,resize_image->rows,1)
+    magick_number_threads(image,resize_image,resize_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) resize_image->rows; y++)
   {
@@ -1753,8 +1753,10 @@ MagickExport Image *InterpolativeResizeImage(const Image *image,
     for (x=0; x < (ssize_t) resize_image->columns; x++)
     {
       offset.x=((MagickRealType) x+0.5)*scale.x-0.5;
-      (void) InterpolateMagickPixelPacket(image,image_view,method,offset.x,
+      status=InterpolateMagickPixelPacket(image,image_view,method,offset.x,
         offset.y,&pixel,exception);
+      if (status == MagickFalse)
+        break;
       SetPixelPacket(resize_image,&pixel,q,resize_indexes+x);
       q++;
     }
@@ -1849,7 +1851,7 @@ MagickExport Image *LiquidRescaleImage(const Image *image,const size_t columns,
 
   MagickPixelPacket
     pixel;
- 
+
   MemoryInfo
     *pixel_info;
 
@@ -1860,11 +1862,11 @@ MagickExport Image *LiquidRescaleImage(const Image *image,const size_t columns,
     Liquid rescale image.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if ((columns == 0) || (rows == 0))
     return((Image *) NULL);
   if ((columns == image->columns) && (rows == image->rows))
@@ -1964,11 +1966,11 @@ MagickExport Image *LiquidRescaleImage(const Image *image,
   ExceptionInfo *exception)
 {
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   (void) ThrowMagickException(exception,GetMagickModule(),MissingDelegateError,
     "DelegateLibrarySupportNotBuiltIn","`%s' (LQR)",image->filename);
   return((Image *) NULL);
@@ -2024,11 +2026,11 @@ MagickExport Image *MagnifyImage(const Image *image,ExceptionInfo *exception)
     Initialize magnified image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   magnify_image=CloneImage(image,2*image->columns,2*image->rows,MagickTrue,
     exception);
   if (magnify_image == (Image *) NULL)
@@ -2042,7 +2044,7 @@ MagickExport Image *MagnifyImage(const Image *image,ExceptionInfo *exception)
   magnify_view=AcquireAuthenticCacheView(magnify_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,magnify_image,image->rows,1)
+    magick_number_threads(image,magnify_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2239,11 +2241,11 @@ MagickExport Image *MinifyImage(const Image *image,ExceptionInfo *exception)
     *minify_image;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   minify_image=ResizeImage(image,image->columns/2,image->rows/2,SplineFilter,
     1.0,exception);
   return(minify_image);
@@ -2300,11 +2302,11 @@ MagickExport Image *ResampleImage(const Image *image,const double x_resolution,
     Initialize sampled image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   width=(size_t) (x_resolution*image->columns/(image->x_resolution == 0.0 ?
     72.0 : image->x_resolution)+0.5);
   height=(size_t) (y_resolution*image->rows/(image->y_resolution == 0.0 ?
@@ -2475,7 +2477,7 @@ static MagickBooleanType HorizontalFilter(const ResizeFilter *resize_filter,
   resize_view=AcquireAuthenticCacheView(resize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,resize_image,resize_image->columns,1)
+    magick_number_threads(image,resize_image,resize_image->columns,1)
 #endif
   for (x=0; x < (ssize_t) resize_image->columns; x++)
   {
@@ -2720,7 +2722,7 @@ static MagickBooleanType VerticalFilter(const ResizeFilter *resize_filter,
   resize_view=AcquireAuthenticCacheView(resize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,resize_image,resize_image->rows,1)
+    magick_number_threads(image,resize_image,resize_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) resize_image->rows; y++)
   {
@@ -2936,11 +2938,11 @@ MagickExport Image *ResizeImage(const Image *image,const size_t columns,
     Acquire resize image.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if ((columns == 0) || (rows == 0))
     ThrowImageException(ImageError,"NegativeOrZeroImageSize");
   if ((columns == image->columns) && (rows == image->rows) &&
@@ -3086,11 +3088,11 @@ MagickExport Image *SampleImage(const Image *image,const size_t columns,
     Initialize sampled image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if ((columns == 0) || (rows == 0))
     ThrowImageException(ImageError,"NegativeOrZeroImageSize");
   if ((columns == image->columns) && (rows == image->rows))
@@ -3134,7 +3136,7 @@ MagickExport Image *SampleImage(const Image *image,const size_t columns,
     }
   for (x=0; x < (ssize_t) sample_image->columns; x++)
     x_offset[x]=(ssize_t) ((((double) x+sample_offset.x)*image->columns)/
-                                                  sample_image->columns);
+      sample_image->columns);
   /*
     Sample each row.
   */
@@ -3144,7 +3146,7 @@ MagickExport Image *SampleImage(const Image *image,const size_t columns,
   sample_view=AcquireAuthenticCacheView(sample_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,sample_image,1,1)
+    magick_number_threads(image,sample_image,sample_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) sample_image->rows; y++)
   {
@@ -3287,11 +3289,11 @@ MagickExport Image *ScaleImage(const Image *image,const size_t columns,
     Initialize scaled image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if ((columns == 0) || (rows == 0))
     return((Image *) NULL);
   if ((columns == image->columns) && (rows == image->rows))
@@ -3323,6 +3325,16 @@ MagickExport Image *ScaleImage(const Image *image,const size_t columns,
       (x_vector == (MagickPixelPacket *) NULL) ||
       (y_vector == (MagickPixelPacket *) NULL))
     {
+      if ((image->rows != scale_image->rows) &&
+          (scanline != (MagickPixelPacket *) NULL))
+        scanline=(MagickPixelPacket *) RelinquishMagickMemory(scanline);
+      if (scale_scanline != (MagickPixelPacket *) NULL)
+        scale_scanline=(MagickPixelPacket *) RelinquishMagickMemory(
+          scale_scanline);
+      if (x_vector != (MagickPixelPacket *) NULL)
+        x_vector=(MagickPixelPacket *) RelinquishMagickMemory(x_vector);
+      if (y_vector != (MagickPixelPacket *) NULL)
+        y_vector=(MagickPixelPacket *) RelinquishMagickMemory(y_vector);
       scale_image=DestroyImage(scale_image);
       ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
     }
@@ -3713,11 +3725,11 @@ MagickExport Image *ThumbnailImage(const Image *image,const size_t columns,
     attributes;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   x_factor=(MagickRealType) columns/(MagickRealType) image->columns;
   y_factor=(MagickRealType) rows/(MagickRealType) image->rows;
   if ((x_factor*y_factor) > 0.1)

@@ -17,7 +17,7 @@
 %                               September 2002                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -133,7 +133,7 @@ MagickExport const char *GetMagickDelegates(void)
 #if defined(MAGICKCORE_FREETYPE_DELEGATE)
   "freetype "
 #endif
-#if defined(MAGICKCORE_GS_DELEGATE)
+#if defined(MAGICKCORE_GS_DELEGATE) || defined(MAGICKCORE_WINDOWS_SUPPORT)
   "gslib "
 #endif
 #if defined(MAGICKCORE_GVC_DELEGATE)
@@ -172,8 +172,12 @@ MagickExport const char *GetMagickDelegates(void)
 #if defined(MAGICKCORE_PNG_DELEGATE)
   "png "
 #endif
-#if defined(MAGICKCORE_DPS_DELEGATE) || defined(MAGICKCORE_GS_DELEGATE) || defined(WIN32)
+#if defined(MAGICKCORE_DPS_DELEGATE) || defined(MAGICKCORE_GS_DELEGATE) || \
+    defined(MAGICKCORE_WINDOWS_SUPPORT)
   "ps "
+#endif
+#if defined(MAGICKCORE_RAW_R_DELEGATE)
+  "raw "
 #endif
 #if defined(MAGICKCORE_RSVG_DELEGATE)
   "rsvg "
@@ -444,13 +448,13 @@ MagickExport const char *GetMagickReleaseDate(void)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  GetMagickSignature() returns a signature that uniquely encodes the
+%  GetMagickCoreSignature() returns a signature that uniquely encodes the
 %  MagickCore libary version, quantum depth, HDRI status, OS word size, and
 %  endianness.
 %
-%  The format of the GetMagickSignature method is:
+%  The format of the GetMagickCoreSignature method is:
 %
-%      unsigned int GetMagickSignature(const StringInfo *nonce)
+%      unsigned int GetMagickCoreSignature(const StringInfo *nonce)
 %
 %  A description of each parameter follows:
 %
@@ -501,7 +505,7 @@ static unsigned int CRC32(const unsigned char *message,const size_t length)
   return(crc ^ 0xFFFFFFFF);
 }
 
-MagickExport unsigned int GetMagickSignature(const StringInfo *nonce)
+MagickExport unsigned int GetMagickCoreSignature(const StringInfo *nonce)
 {
   register unsigned char
     *p;
@@ -600,4 +604,21 @@ MagickExport void ListMagickVersion(FILE *file)
   (void) FormatLocaleFile(file,"Features: %s\n",GetMagickFeatures());
   (void) FormatLocaleFile(file,"Delegates (built-in): %s\n",
     GetMagickDelegates());
+  if (IsEventLogging() != MagickFalse)
+    {
+      (void) FormatLocaleFile(file,"Wizard attributes: ");
+      (void) FormatLocaleFile(file,"QuantumRange=%g; ",(double) QuantumRange);
+      (void) FormatLocaleFile(file,"QuantumScale=%.*g; ",GetMagickPrecision(),
+        (double) QuantumScale);
+      (void) FormatLocaleFile(file,"MagickEpsilon=%.*g; ",GetMagickPrecision(),
+        (double) MagickEpsilon);
+      (void) FormatLocaleFile(file,"MaxMap=%g; ",(double) MaxMap);
+      (void) FormatLocaleFile(file,"MaxTextExtent=%g; ",(double) MaxTextExtent);
+      (void) FormatLocaleFile(file,"sizeof(Quantum)=%g; ",(double)
+        sizeof(Quantum));
+      (void) FormatLocaleFile(file,"sizeof(MagickSizeType)=%g; ",(double)
+        sizeof(MagickSizeType));
+      (void) FormatLocaleFile(file,"sizeof(MagickOffsetType)=%g",(double)
+        sizeof(MagickOffsetType));
+    }
 }

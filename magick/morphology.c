@@ -17,7 +17,7 @@
 %                               January 2010                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -242,7 +242,7 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
   kernel->negative_range = kernel->positive_range = 0.0;
   kernel->type = UserDefinedKernel;
   kernel->next = (KernelInfo *) NULL;
-  kernel->signature = MagickSignature;
+  kernel->signature = MagickCoreSignature;
   if (kernel_string == (const char *) NULL)
     return(kernel);
 
@@ -1021,7 +1021,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
       kernel->negative_range = kernel->positive_range = 0.0;
       kernel->type = type;
       kernel->next = (KernelInfo *) NULL;
-      kernel->signature = MagickSignature;
+      kernel->signature = MagickCoreSignature;
       break;
   }
 
@@ -2258,8 +2258,7 @@ MagickExport KernelInfo *DestroyKernelInfo(KernelInfo *kernel)
   kernel=(KernelInfo *) RelinquishMagickMemory(kernel);
   return(kernel);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -2319,16 +2318,22 @@ static void ExpandMirrorKernelInfo(KernelInfo *kernel)
   last = kernel;
 
   clone = CloneKernelInfo(last);
+  if (clone == (KernelInfo *) NULL)
+    return;
   RotateKernelInfo(clone, 180);   /* flip */
   LastKernelInfo(last)->next = clone;
   last = clone;
 
   clone = CloneKernelInfo(last);
+  if (clone == (KernelInfo *) NULL)
+    return;
   RotateKernelInfo(clone, 90);   /* transpose */
   LastKernelInfo(last)->next = clone;
   last = clone;
 
   clone = CloneKernelInfo(last);
+  if (clone == (KernelInfo *) NULL)
+    return;
   RotateKernelInfo(clone, 180);  /* flop */
   LastKernelInfo(last)->next = clone;
 
@@ -2400,21 +2405,24 @@ static MagickBooleanType SameKernelInfo(const KernelInfo *kernel1,
 static void ExpandRotateKernelInfo(KernelInfo *kernel, const double angle)
 {
   KernelInfo
-    *clone,
+    *clone_info,
     *last;
 
-  last = kernel;
+  last=kernel;
 DisableMSCWarning(4127)
-  while(1) {
+  while (1) {
 RestoreMSCWarning
-    clone = CloneKernelInfo(last);
-    RotateKernelInfo(clone, angle);
-    if ( SameKernelInfo(kernel, clone) != MagickFalse )
+    clone_info=CloneKernelInfo(last);
+    if (clone_info == (KernelInfo *) NULL)
       break;
-    LastKernelInfo(last)->next = clone;
-    last = clone;
+    RotateKernelInfo(clone_info,angle);
+    if (SameKernelInfo(kernel,clone_info) != MagickFalse)
+      break;
+    LastKernelInfo(last)->next=clone_info;
+    last=clone_info;
   }
-  clone = DestroyKernelInfo(clone); /* kernel has repeated - junk the clone */
+  if (clone_info != (KernelInfo *) NULL)
+    clone_info=DestroyKernelInfo(clone_info);  /* kernel repeated - junk */
   return;
 }
 
@@ -2577,13 +2585,13 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
     progress;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(result_image != (Image *) NULL);
-  assert(result_image->signature == MagickSignature);
+  assert(result_image->signature == MagickCoreSignature);
   assert(kernel != (KernelInfo *) NULL);
-  assert(kernel->signature == MagickSignature);
+  assert(kernel->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 
   status=MagickTrue;
   progress=0;
@@ -2645,7 +2653,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
     #pragma omp parallel for schedule(static,4) shared(progress,status) \
-      magick_threads(image,result_image,image->columns,1)
+      magick_number_threads(image,result_image,image->columns,1)
 #endif
     for (x=0; x < (ssize_t) image->columns; x++)
     {
@@ -2842,7 +2850,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,result_image,image->rows,1)
+    magick_number_threads(image,result_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -3399,11 +3407,11 @@ static ssize_t MorphologyPrimitiveDirect(Image *image,
   progress=0;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(kernel != (KernelInfo *) NULL);
-  assert(kernel->signature == MagickSignature);
+  assert(kernel->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 
   /* Some methods (including convolve) needs use a reflected kernel.
    * Adjust 'origin' offsets to loop though kernel as a reflection.
@@ -3873,11 +3881,11 @@ MagickExport Image *MorphologyApply(const Image *image, const ChannelType
     v_info[MaxTextExtent];
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(kernel != (KernelInfo *) NULL);
-  assert(kernel->signature == MagickSignature);
+  assert(kernel->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 
   count = 0;      /* number of low-level morphology primitives performed */
   if ( iterations == 0 )

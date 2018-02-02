@@ -18,7 +18,7 @@
 %                              September 1993                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -4952,6 +4952,8 @@ MagickExport void XFileBrowserWidget(Display *display,XWindows *windows,
                 exception=AcquireExceptionInfo();
                 formats=GetMagickList("*",&number_formats,exception);
                 exception=DestroyExceptionInfo(exception);
+                if (formats == (char **) NULL)
+                  break;
                 (void) XCheckDefineCursor(display,windows->widget.id,
                   windows->widget.busy_cursor);
                 windows->popup.x=windows->widget.x+60;

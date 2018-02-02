@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -131,11 +131,11 @@ MagickExport MagickBooleanType CloneImageProperties(Image *image,
   const Image *clone_image)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(clone_image != (const Image *) NULL);
-  assert(clone_image->signature == MagickSignature);
+  assert(clone_image->signature == MagickCoreSignature);
   if (clone_image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       clone_image->filename);
@@ -275,7 +275,7 @@ MagickExport MagickBooleanType DeleteImageProperty(Image *image,
   const char *property)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->properties == (void *) NULL)
@@ -309,7 +309,7 @@ MagickExport MagickBooleanType DeleteImageProperty(Image *image,
 MagickExport void DestroyImageProperties(Image *image)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->properties != (void *) NULL)
@@ -2179,7 +2179,7 @@ MagickExport const char *GetImageProperty(const Image *image,
     *p;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   p=(const char *) NULL;
@@ -2256,7 +2256,7 @@ MagickExport const char *GetImageProperty(const Image *image,
             pixel;
 
           GetMagickPixelPacket(image,&pixel);
-          fx_info=AcquireFxInfo(image,property+6);
+          fx_info=AcquireFxInfo(image,property+4);
           status=FxEvaluateChannelExpression(fx_info,RedChannel,0,0,&alpha,
             exception);
           pixel.red=(MagickRealType) QuantumRange*alpha;
@@ -2466,7 +2466,7 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
     *string;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   *value='\0';
@@ -2962,9 +2962,6 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
         }
       if (LocaleCompare("colorspace",property) == 0)
         {
-          /*
-            Image storage class and colorspace.
-          */
           string=CommandOptionToMnemonic(MagickColorspaceOptions,(ssize_t)
             image->colorspace);
           break;
@@ -3415,7 +3412,7 @@ MagickExport const char *GetMagickProperty(const ImageInfo *image_info,
 MagickExport char *GetNextImageProperty(const Image *image)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image->filename);
@@ -3546,7 +3543,7 @@ RestoreMSCWarning
     number;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (embed_text == (const char *) NULL)
@@ -3922,7 +3919,7 @@ MagickExport char *RemoveImageProperty(Image *image,const char *property)
     *value;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image->filename);
@@ -3960,7 +3957,7 @@ MagickExport char *RemoveImageProperty(Image *image,const char *property)
 MagickExport void ResetImagePropertyIterator(const Image *image)
 {
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image->filename);
@@ -4010,7 +4007,7 @@ MagickExport MagickBooleanType SetImageProperty(Image *image,
     flags;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image->filename);

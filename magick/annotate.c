@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -78,7 +78,7 @@
 #include "magick/utility.h"
 #include "magick/xwindow-private.h"
 #if defined(MAGICKCORE_FREETYPE_DELEGATE)
-#if defined(__MINGW32__) || defined(__MINGW64__)
+#if defined(__MINGW32__)
 #  undef interface
 #endif
 #include <ft2build.h>
@@ -295,11 +295,11 @@ MagickExport MagickBooleanType AnnotateImage(Image *image,
     number_lines;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(draw_info != (DrawInfo *) NULL);
-  assert(draw_info->signature == MagickSignature);
+  assert(draw_info->signature == MagickCoreSignature);
   if (draw_info->text == (char *) NULL)
     return(MagickFalse);
   if (*draw_info->text == '\0')
@@ -768,12 +768,12 @@ MagickExport MagickBooleanType GetMultilineTypeMetrics(Image *image,
     extent;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(draw_info != (DrawInfo *) NULL);
   assert(draw_info->text != (char *) NULL);
-  assert(draw_info->signature == MagickSignature);
+  assert(draw_info->signature == MagickCoreSignature);
   if (*draw_info->text == '\0')
     return(MagickFalse);
   annotate_info=CloneDrawInfo((ImageInfo *) NULL,draw_info);
@@ -871,12 +871,12 @@ MagickExport MagickBooleanType GetTypeMetrics(Image *image,
     offset;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(draw_info != (DrawInfo *) NULL);
   assert(draw_info->text != (char *) NULL);
-  assert(draw_info->signature == MagickSignature);
+  assert(draw_info->signature == MagickCoreSignature);
   annotate_info=CloneDrawInfo((ImageInfo *) NULL,draw_info);
   annotate_info->render=MagickFalse;
   annotate_info->direction=UndefinedDirection;
@@ -1354,15 +1354,16 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       args.pathname=ConstantString(draw_info->font+1);
   face=(FT_Face) NULL;
   ft_status=FT_Open_Face(library,&args,(long) draw_info->face,&face);
-  args.pathname=DestroyString(args.pathname);
   exception=(&image->exception);
   if (ft_status != 0)
     {
       (void) FT_Done_FreeType(library);
       (void) ThrowMagickException(exception,GetMagickModule(),TypeError,
-        "UnableToReadFont","`%s'",draw_info->font);
+        "UnableToReadFont","`%s'",args.pathname);
+      args.pathname=DestroyString(args.pathname);
       return(MagickFalse);
     }
+  args.pathname=DestroyString(args.pathname);
   if ((draw_info->metrics != (char *) NULL) &&
       (IsPathAccessible(draw_info->metrics) != MagickFalse))
     (void) FT_Attach_File(face,draw_info->metrics);
@@ -1719,8 +1720,6 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
             (void) CloneString(&annotate_info->primitive,"path '");
           }
       }
-    if ((bitmap->left+bitmap->bitmap.width) > metrics->width)
-      metrics->width=bitmap->left+bitmap->bitmap.width;
     if ((fabs(draw_info->interword_spacing) >= MagickEpsilon) &&
         (IsUTFSpace(GetUTFCode(p+grapheme[i].cluster)) != MagickFalse) &&
         (IsUTFSpace(code) == MagickFalse))
@@ -1729,6 +1728,8 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       origin.x+=(FT_Pos) grapheme[i].x_advance;
     metrics->origin.x=(double) origin.x;
     metrics->origin.y=(double) origin.y;
+    if (metrics->origin.x > metrics->width)
+      metrics->width=metrics->origin.x;
     if (last_glyph.id != 0)
       FT_Done_Glyph(last_glyph.image);
     last_glyph=glyph;
@@ -1743,35 +1744,13 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
   /*
     Determine font metrics.
   */
-  glyph.id=FT_Get_Char_Index(face,'_');
-  glyph.origin=origin;
-  ft_status=FT_Load_Glyph(face,glyph.id,flags);
-  if (ft_status == 0)
-    {
-      ft_status=FT_Get_Glyph(face->glyph,&glyph.image);
-      if (ft_status == 0)
-        {
-          ft_status=FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph.image)->
-            outline,&bounds);
-          if (ft_status == 0)
-            {
-              FT_Vector_Transform(&glyph.origin,&affine);
-              (void) FT_Glyph_Transform(glyph.image,&affine,&glyph.origin);
-              ft_status=FT_Glyph_To_Bitmap(&glyph.image,ft_render_mode_normal,
-                (FT_Vector *) NULL,MagickTrue);
-              bitmap=(FT_BitmapGlyph) glyph.image;
-              if (bitmap->left > metrics->width)
-                metrics->width=bitmap->left;
-            }
-        }
-      FT_Done_Glyph(glyph.image);
-    }
   metrics->bounds.x1/=64.0;
   metrics->bounds.y1/=64.0;
   metrics->bounds.x2/=64.0;
   metrics->bounds.y2/=64.0;
   metrics->origin.x/=64.0;
   metrics->origin.y/=64.0;
+  metrics->width/=64.0;
   /*
     Relinquish resources.
   */

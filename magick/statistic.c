@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -408,6 +408,44 @@ static MagickRealType ApplyEvaluateOperator(RandomInfo *random_info,
   return(result);
 }
 
+static Image *AcquireImageCanvas(const Image *images,ExceptionInfo *exception)
+{
+  const Image
+    *p,
+    *q;
+
+  size_t
+    columns,
+    number_channels,
+    rows;
+
+  q=images;
+  columns=images->columns;
+  rows=images->rows;
+  number_channels=0;
+  for (p=images; p != (Image *) NULL; p=p->next)
+  {
+    size_t
+      channels;
+
+    channels=3;
+    if (p->matte != MagickFalse)
+      channels+=1;
+    if (p->colorspace == CMYKColorspace)
+      channels+=1;
+    if (channels > number_channels)
+      {
+        number_channels=channels;
+        q=p;
+      }
+    if (p->columns > columns)
+      columns=p->columns;
+    if (p->rows > rows)
+      rows=p->rows;
+  }
+  return(CloneImage(q,columns,rows,MagickTrue,exception));
+}
+
 MagickExport MagickBooleanType EvaluateImage(Image *image,
   const MagickEvaluateOperator op,const double value,ExceptionInfo *exception)
 {
@@ -454,12 +492,12 @@ MagickExport Image *EvaluateImages(const Image *images,
 #endif
 
   assert(images != (Image *) NULL);
-  assert(images->signature == MagickSignature);
+  assert(images->signature == MagickCoreSignature);
   if (images->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  image=CloneImage(images,images->columns,images->rows,MagickTrue,exception);
+  assert(exception->signature == MagickCoreSignature);
+  image=AcquireImageCanvas(images,exception);
   if (image == (Image *) NULL)
     return((Image *) NULL);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
@@ -490,7 +528,7 @@ MagickExport Image *EvaluateImages(const Image *images,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       key=GetRandomSecretKey(random_info[0]);
       #pragma omp parallel for schedule(static,4) shared(progress,status) \
-        magick_threads(image,images,image->rows,key == ~0UL)
+        magick_number_threads(image,images,image->rows,key == ~0UL)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -597,7 +635,7 @@ MagickExport Image *EvaluateImages(const Image *images,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       key=GetRandomSecretKey(random_info[0]);
       #pragma omp parallel for schedule(static,4) shared(progress,status) \
-        magick_threads(image,images,image->rows,key == ~0UL)
+        magick_number_threads(image,images,image->rows,key == ~0UL)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -776,11 +814,11 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
 #endif
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     {
       InheritException(exception,&image->exception);
@@ -793,7 +831,7 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   key=GetRandomSecretKey(random_info[0]);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,key == ~0UL)
+    magick_number_threads(image,image,image->rows,key == ~0UL)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1049,11 +1087,11 @@ MagickExport MagickBooleanType FunctionImageChannel(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     {
       InheritException(exception,&image->exception);
@@ -1070,7 +1108,7 @@ MagickExport MagickBooleanType FunctionImageChannel(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1186,7 +1224,7 @@ MagickExport MagickBooleanType GetImageChannelEntropy(const Image *image,
     channels;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   channel_statistics=GetImageChannelStatistics(image,exception);
@@ -1288,7 +1326,7 @@ MagickExport MagickBooleanType GetImageChannelExtrema(const Image *image,
     status;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=GetImageChannelRange(image,channel,&min,&max,exception);
@@ -1358,7 +1396,7 @@ MagickExport MagickBooleanType GetImageChannelKurtosis(const Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   *kurtosis=0.0;
@@ -1416,12 +1454,12 @@ MagickExport MagickBooleanType GetImageChannelKurtosis(const Image *image,
         }
       if ((channel & OpacityChannel) != 0)
         {
-          mean+=GetPixelOpacity(p);
-          sum_squares+=(double) GetPixelOpacity(p)*GetPixelOpacity(p);
-          sum_cubes+=(double) GetPixelOpacity(p)*GetPixelOpacity(p)*
-            GetPixelOpacity(p);
-          sum_fourth_power+=(double) GetPixelOpacity(p)*GetPixelOpacity(p)*
-            GetPixelOpacity(p)*GetPixelOpacity(p);
+          mean+=GetPixelAlpha(p);
+          sum_squares+=(double) GetPixelOpacity(p)*GetPixelAlpha(p);
+          sum_cubes+=(double) GetPixelOpacity(p)*GetPixelAlpha(p)*
+            GetPixelAlpha(p);
+          sum_fourth_power+=(double) GetPixelAlpha(p)*GetPixelAlpha(p)*
+            GetPixelAlpha(p)*GetPixelAlpha(p);
           area++;
         }
       if (((channel & IndexChannel) != 0) &&
@@ -1430,7 +1468,7 @@ MagickExport MagickBooleanType GetImageChannelKurtosis(const Image *image,
           double
             index;
 
-          index=GetPixelIndex(indexes+x);
+          index=(double) GetPixelIndex(indexes+x);
           mean+=index;
           sum_squares+=index*index;
           sum_cubes+=index*index*index;
@@ -1519,7 +1557,7 @@ MagickExport MagickBooleanType GetImageChannelMean(const Image *image,
     channels;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   channel_statistics=GetImageChannelStatistics(image,exception);
@@ -1639,7 +1677,7 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
     length;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   length=CompositeChannels+1UL;
@@ -2183,7 +2221,7 @@ MagickExport MagickBooleanType GetImageChannelRange(const Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   *maxima=(-MagickMaximumValue);
@@ -2311,7 +2349,7 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   length=CompositeChannels+1UL;
@@ -2395,7 +2433,7 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
             {
               depth=channel_statistics[OpacityChannel].depth;
               range=GetQuantumRange(depth);
-              if (IsPixelAtDepth(GetPixelOpacity(p),range) == MagickFalse)
+              if (IsPixelAtDepth(GetPixelAlpha(p),range) == MagickFalse)
                 {
                   channel_statistics[OpacityChannel].depth++;
                   continue;
@@ -2453,21 +2491,18 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
       histogram[ScaleQuantumToMap(GetPixelBlue(p))].blue++;
       if (image->matte != MagickFalse)
         {
-          if ((double) GetPixelOpacity(p) < channel_statistics[OpacityChannel].minima)
-            channel_statistics[OpacityChannel].minima=(double)
-              GetPixelOpacity(p);
-          if ((double) GetPixelOpacity(p) > channel_statistics[OpacityChannel].maxima)
-            channel_statistics[OpacityChannel].maxima=(double)
-              GetPixelOpacity(p);
-          channel_statistics[OpacityChannel].sum+=GetPixelOpacity(p);
+          if ((double) GetPixelAlpha(p) < channel_statistics[OpacityChannel].minima)
+            channel_statistics[OpacityChannel].minima=(double) GetPixelAlpha(p);
+          if ((double) GetPixelAlpha(p) > channel_statistics[OpacityChannel].maxima)
+            channel_statistics[OpacityChannel].maxima=(double) GetPixelAlpha(p);
+          channel_statistics[OpacityChannel].sum+=GetPixelAlpha(p);
           channel_statistics[OpacityChannel].sum_squared+=(double)
-            GetPixelOpacity(p)*GetPixelOpacity(p);
+            GetPixelAlpha(p)*GetPixelAlpha(p);
           channel_statistics[OpacityChannel].sum_cubed+=(double)
-            GetPixelOpacity(p)*GetPixelOpacity(p)*GetPixelOpacity(p);
+            GetPixelAlpha(p)*GetPixelAlpha(p)*GetPixelAlpha(p);
           channel_statistics[OpacityChannel].sum_fourth_power+=(double)
-            GetPixelOpacity(p)*GetPixelOpacity(p)*GetPixelOpacity(p)*
-            GetPixelOpacity(p);
-          histogram[ScaleQuantumToMap(GetPixelOpacity(p))].opacity++;
+            GetPixelAlpha(p)*GetPixelAlpha(p)*GetPixelAlpha(p)*GetPixelAlpha(p);
+          histogram[ScaleQuantumToMap(GetPixelAlpha(p))].opacity++;
         }
       if (image->colorspace == CMYKColorspace)
         {
@@ -2617,9 +2652,9 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
   channel_statistics[i].mean=channel_statistics[i].sum;
   standard_deviation=sqrt(channel_statistics[i].variance-
     (channel_statistics[i].mean*channel_statistics[i].mean));
-  standard_deviation=sqrt(PerceptibleReciprocal(channels*image->columns*
-    image->rows-1.0)*channels*image->columns*image->rows*standard_deviation*
-    standard_deviation);
+  standard_deviation=sqrt(PerceptibleReciprocal((double) channels*
+    image->columns*image->rows-1.0)*channels*image->columns*image->rows*
+    standard_deviation*standard_deviation);
   channel_statistics[i].standard_deviation=standard_deviation;
   for (i=0; i <= (ssize_t) CompositeChannels; i++)
   {
@@ -2641,6 +2676,17 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
       channel_statistics[i].mean)*(standard_deviation*standard_deviation*
       standard_deviation*standard_deviation)-3.0;
   }
+  channel_statistics[CompositeChannels].mean=0.0;
+  channel_statistics[CompositeChannels].standard_deviation=0.0;
+  for (i=0; i < (ssize_t) CompositeChannels; i++)
+  {
+    channel_statistics[CompositeChannels].mean+=
+      channel_statistics[i].mean;
+    channel_statistics[CompositeChannels].standard_deviation+=
+      channel_statistics[i].standard_deviation;
+  }
+  channel_statistics[CompositeChannels].mean/=(double) channels;
+  channel_statistics[CompositeChannels].standard_deviation/=(double) channels;
   histogram=(MagickPixelPacket *) RelinquishMagickMemory(histogram);
   if (y < (ssize_t) image->rows)
     channel_statistics=(ChannelStatistics *) RelinquishMagickMemory(
@@ -2726,12 +2772,12 @@ MagickExport Image *PolynomialImageChannel(const Image *images,
     y;
 
   assert(images != (Image *) NULL);
-  assert(images->signature == MagickSignature);
+  assert(images->signature == MagickCoreSignature);
   if (images->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  image=CloneImage(images,images->columns,images->rows,MagickTrue,exception);
+  assert(exception->signature == MagickCoreSignature);
+  image=AcquireImageCanvas(images,exception);
   if (image == (Image *) NULL)
     return((Image *) NULL);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
@@ -2758,7 +2804,7 @@ MagickExport Image *PolynomialImageChannel(const Image *images,
   polynomial_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -3001,7 +3047,7 @@ static PixelList *AcquirePixelList(const size_t width,const size_t height)
     (void) ResetMagickMemory(pixel_list->lists[i].nodes,0,65537UL*
       sizeof(*pixel_list->lists[i].nodes));
   }
-  pixel_list->signature=MagickSignature;
+  pixel_list->signature=MagickCoreSignature;
   return(pixel_list);
 }
 
@@ -3574,11 +3620,11 @@ MagickExport Image *StatisticImageChannel(const Image *image,
     Initialize statistics image attributes.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   statistic_image=CloneImage(image,image->columns,image->rows,MagickTrue,
     exception);
   if (statistic_image == (Image *) NULL)
@@ -3608,7 +3654,7 @@ MagickExport Image *StatisticImageChannel(const Image *image,
   statistic_view=AcquireAuthenticCacheView(statistic_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,statistic_image,statistic_image->rows,1)
+    magick_number_threads(image,statistic_image,statistic_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) statistic_image->rows; y++)
   {

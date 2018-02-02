@@ -16,7 +16,7 @@
 %                                 July 2012                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -33,10 +33,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %
-*/
-
-/*
-  Include declarations.
 */
 
 /*
@@ -152,12 +148,12 @@ static Image *ReadJNXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -190,6 +186,8 @@ static Image *ReadJNXImage(const ImageInfo *image_info,ExceptionInfo *exception)
   else
     if (jnx_info.version == 3)
       jnx_info.order=30;
+  if (EOFBlob(image) != MagickFalse)
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   /*
     Read JNX levels.
   */
@@ -201,6 +199,7 @@ static Image *ReadJNXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     jnx_level_info[i].offset=ReadBlobLSBSignedLong(image);
     jnx_level_info[i].scale=ReadBlobLSBLong(image);
+    *jnx_level_info[i].copyright='\0';
     if (jnx_info.version > 3)
       {
         register ssize_t
@@ -214,8 +213,10 @@ static Image *ReadJNXImage(const ImageInfo *image_info,ExceptionInfo *exception)
         while ((c=ReadBlobLSBShort(image)) != 0)
           if (j < (MaxTextExtent-1))
             jnx_level_info[i].copyright[j++]=c;
-        jnx_level_info[i].copyright[j]=0;
+        jnx_level_info[i].copyright[j]='\0';
       }
+    if (EOFBlob(image) != MagickFalse)
+      ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
   }
   /*
     Read JNX tiles.
@@ -265,6 +266,8 @@ static Image *ReadJNXImage(const ImageInfo *image_info,ExceptionInfo *exception)
       southwest.y=180.0*ReadBlobLSBSignedLong(image)/0x7fffffff;
       (void) ReadBlobLSBShort(image); /* width */
       (void) ReadBlobLSBShort(image); /* height */
+      if (EOFBlob(image) != MagickFalse)
+        ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
       tile_length=ReadBlobLSBLong(image);
       tile_offset=ReadBlobLSBSignedLong(image);
       if (tile_offset == -1)

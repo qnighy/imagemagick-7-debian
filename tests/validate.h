@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -289,6 +289,8 @@ static const struct ReferenceFormats
     { "KDC", UndefinedCompression, 0.0 },
     { "MATTE", UndefinedCompression, 0.0 },
     { "MIFF", UndefinedCompression, 0.0 },
+    { "MIFF", RLECompression, 0.0 },
+    { "MIFF", ZipCompression, 0.0 },
     { "MNG", UndefinedCompression, 0.0 },
     { "MONO", UndefinedCompression, 0.0 },
     { "MRW", UndefinedCompression, 0.0 },

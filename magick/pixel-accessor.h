@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -141,6 +141,7 @@ static inline MagickRealType GetPixelLuma(const Image *magick_restrict image,
   MagickRealType
     intensity;
 
+  (void) image;
   intensity=(MagickRealType) (0.212656f*pixel->red+0.715158f*pixel->green+
     0.072186f*pixel->blue);
   return(intensity);

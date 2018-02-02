@@ -412,9 +412,7 @@
 #endif
 
 /* Define to 1 if the system has the type `locale_t'. */
-#ifndef MAGICKCORE_HAVE_LOCALE_T
-#define MAGICKCORE_HAVE_LOCALE_T 1
-#endif
+/* #undef HAVE_LOCALE_T */
 
 /* Define to 1 if you have the `localtime_r' function. */
 #ifndef MAGICKCORE_HAVE_LOCALTIME_R
@@ -432,7 +430,7 @@
 #define MAGICKCORE_HAVE_LONG_DOUBLE_WIDER 1
 #endif
 
-/* Define to 1 if the system has the type 'long long int'. */
+/* Define to 1 if the system has the type `long long int'. */
 #ifndef MAGICKCORE_HAVE_LONG_LONG_INT
 #define MAGICKCORE_HAVE_LONG_LONG_INT 1
 #endif
@@ -976,7 +974,7 @@
 #define MAGICKCORE_HAVE_UNISTD_H 1
 #endif
 
-/* Define to 1 if the system has the type 'unsigned long long int'. */
+/* Define to 1 if the system has the type `unsigned long long int'. */
 #ifndef MAGICKCORE_HAVE_UNSIGNED_LONG_LONG_INT
 #define MAGICKCORE_HAVE_UNSIGNED_LONG_LONG_INT 1
 #endif
@@ -1059,9 +1057,7 @@
 #endif
 
 /* Define to 1 if you have the <xlocale.h> header file. */
-#ifndef MAGICKCORE_HAVE_XLOCALE_H
-#define MAGICKCORE_HAVE_XLOCALE_H 1
-#endif
+/* #undef HAVE_XLOCALE_H */
 
 /* Define to 1 if you have the `_aligned_malloc' function. */
 /* #undef HAVE__ALIGNED_MALLOC */
@@ -1099,6 +1095,11 @@
 /* Whether hdri is enabled or not */
 #ifndef MAGICKCORE_HDRI_ENABLE_OBSOLETE_IN_H
 #define MAGICKCORE_HDRI_ENABLE_OBSOLETE_IN_H 0
+#endif
+
+/* Define if you have HEIC library */
+#ifndef MAGICKCORE_HEIC_DELEGATE
+#define MAGICKCORE_HEIC_DELEGATE 1
 #endif
 
 /* Define if you have jemalloc memory allocation library */
@@ -1162,8 +1163,12 @@
 /* Define if you have LQR library */
 /* #undef LQR_DELEGATE */
 
-/* Define if using libltdl to support dynamically loadable modules */
+/* Define if using libltdl to support dynamically loadable modules and OpenCL
+   */
 /* #undef LTDL_DELEGATE */
+
+/* Native module suffix */
+/* #undef LTDL_MODULE_EXT */
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #ifndef MAGICKCORE_LT_OBJDIR
@@ -1204,6 +1209,9 @@
 /* Magick API method prefix */
 /* #undef NAMESPACE_PREFIX */
 
+/* Magick API method prefix tag */
+/* #undef NAMESPACE_PREFIX_TAG */
+
 /* Define to 1 if assertions should be disabled. */
 /* #undef NDEBUG */
 
@@ -1229,7 +1237,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.9-6"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.9-34"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1244,7 +1252,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.9-6"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.9-34"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1467,7 +1475,12 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.9.9-6"
+#define MAGICKCORE_VERSION "6.9.9-34"
+#endif
+
+/* Define if you have WEBPMUX library */
+#ifndef MAGICKCORE_WEBPMUX_DELEGATE
+#define MAGICKCORE_WEBPMUX_DELEGATE 1
 #endif
 
 /* Define if you have WEBP library */

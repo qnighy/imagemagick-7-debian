@@ -19,7 +19,7 @@
 %                                 July 2009                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -168,11 +168,11 @@ MagickExport Image *ComplexImages(const Image *images,const ComplexOperator op,
     y;
 
   assert(images != (Image *) NULL);
-  assert(images->signature == MagickSignature);
+  assert(images->signature == MagickCoreSignature);
   if (images->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",images->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if (images->next == (Image *) NULL)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),ImageError,
@@ -226,7 +226,7 @@ MagickExport Image *ComplexImages(const Image *images,const ComplexOperator op,
   progress=0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(images,complex_images,images->rows,1L)
+    magick_number_threads(images,complex_images,images->rows,1L)
 #endif
   for (y=0; y < (ssize_t) images->rows; y++)
   {
@@ -1576,7 +1576,7 @@ MagickExport Image *InverseFourierTransformImage(const Image *magnitude_image,
     *fourier_image;
 
   assert(magnitude_image != (Image *) NULL);
-  assert(magnitude_image->signature == MagickSignature);
+  assert(magnitude_image->signature == MagickCoreSignature);
   if (magnitude_image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       magnitude_image->filename);

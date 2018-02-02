@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -155,6 +155,9 @@ MagickExport MagickBooleanType AcquireUniqueSymbolicLink(const char *source,
     destination_file,
     source_file;
 
+  MagickBooleanType
+    status;
+
   size_t
     length,
     quantum;
@@ -171,26 +174,38 @@ MagickExport MagickBooleanType AcquireUniqueSymbolicLink(const char *source,
   assert(source != (const char *) NULL);
   assert(destination != (char *) NULL);
 #if defined(MAGICKCORE_HAVE_SYMLINK)
-  (void) AcquireUniqueFilename(destination);
-  (void) RelinquishUniqueFileResource(destination);
-  if (*source == *DirectorySeparator)
-    {
-      if (symlink(source,destination) == 0)
-        return(MagickTrue);
-    }
-  else
-    {
-      char
-        path[MaxTextExtent];
+  {
+    char
+      *passes;
 
-      *path='\0';
-      if (getcwd(path,MaxTextExtent) == (char *) NULL)
-        return(MagickFalse);
-      (void) ConcatenateMagickString(path,DirectorySeparator,MaxTextExtent);
-      (void) ConcatenateMagickString(path,source,MaxTextExtent);
-      if (symlink(path,destination) == 0)
-        return(MagickTrue);
-    }
+    (void) AcquireUniqueFilename(destination);
+    (void) RelinquishUniqueFileResource(destination);
+    passes=GetPolicyValue("system:shred");
+    if (passes != (char *) NULL)
+      passes=DestroyString(passes);
+    else
+      {
+        if (*source == *DirectorySeparator)
+          {
+            if (symlink(source,destination) == 0)
+              return(MagickTrue);
+          }
+        else
+          {
+            char
+              path[MaxTextExtent];
+
+            *path='\0';
+            if (getcwd(path,MaxTextExtent) == (char *) NULL)
+              return(MagickFalse);
+            (void) ConcatenateMagickString(path,DirectorySeparator,
+              MaxTextExtent);
+            (void) ConcatenateMagickString(path,source,MaxTextExtent);
+            if (symlink(path,destination) == 0)
+              return(MagickTrue);
+          }
+      }
+  }
 #endif
   destination_file=AcquireUniqueFileResource(destination);
   if (destination_file == -1)
@@ -213,6 +228,7 @@ MagickExport MagickBooleanType AcquireUniqueSymbolicLink(const char *source,
       (void) RelinquishUniqueFileResource(destination);
       return(MagickFalse);
     }
+  status=MagickTrue;
   for (length=0; ; )
   {
     count=(ssize_t) read(source_file,buffer,quantum);
@@ -222,17 +238,15 @@ MagickExport MagickBooleanType AcquireUniqueSymbolicLink(const char *source,
     count=(ssize_t) write(destination_file,buffer,length);
     if ((size_t) count != length)
       {
-        (void) close(destination_file);
-        (void) close(source_file);
-        buffer=(unsigned char *) RelinquishMagickMemory(buffer);
         (void) RelinquishUniqueFileResource(destination);
-        return(MagickFalse);
+        status=MagickFalse;
+        break;
       }
   }
   (void) close(destination_file);
   (void) close(source_file);
   buffer=(unsigned char *) RelinquishMagickMemory(buffer);
-  return(MagickTrue);
+  return(status);
 }
 
 /*
@@ -1039,14 +1053,12 @@ MagickExport MagickBooleanType GetExecutionPath(char *path,const size_t extent)
 #if defined(__GNU__)
   {
     char
-      *program_name,
-      *execution_path;
+      *program_name;
 
     ssize_t
       count;
 
     count=0;
-    execution_path=(char *) NULL;
     program_name=program_invocation_name;
     if (*program_invocation_name != '/')
       {
@@ -1063,13 +1075,14 @@ MagickExport MagickBooleanType GetExecutionPath(char *path,const size_t extent)
       }
     if (count != -1)
       {
-        execution_path=realpath(program_name,NULL);
-        if (execution_path != (char *) NULL)
+        char
+          execution_path[PATH_MAX+1];
+
+        if (realpath(program_name,execution_path) != (char *) NULL)
           (void) CopyMagickString(path,execution_path,extent);
       }
     if (program_name != program_invocation_name)
       program_name=(char *) RelinquishMagickMemory(program_name);
-    execution_path=(char *) RelinquishMagickMemory(execution_path);
   }
 #endif
 #if defined(__OpenBSD__)
@@ -1857,7 +1870,7 @@ MagickPrivate MagickBooleanType ShredFile(const char *path)
       if (i == 0)
         ResetStringInfo(key);  /* zero on first pass */
       count=write(file,GetStringInfoDatum(key),(size_t)
-        MagickMin(quantum,length-j));
+        MagickMin((MagickSizeType) quantum,length-j));
       key=DestroyStringInfo(key);
       if (count <= 0)
         {

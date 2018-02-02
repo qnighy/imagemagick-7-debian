@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -195,12 +195,12 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -227,7 +227,7 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
     profiles=(LinkedListInfo *) NULL;
     length=MaxTextExtent;
     options=AcquireString((char *) NULL);
-    signature=GetMagickSignature((const StringInfo *) NULL);
+    signature=GetMagickCoreSignature((const StringInfo *) NULL);
     image->depth=8;
     image->compression=NoCompression;
     while ((isgraph(c) != MagickFalse) && (c != (int) ':'))
@@ -266,7 +266,11 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
             *p=(char) c;
           }
           if (comment == (char *) NULL)
-            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+            {
+              options=DestroyString(options);
+              ThrowReaderException(ResourceLimitError,
+                "MemoryAllocationFailed");
+            }
           *p='\0';
           (void) SetImageProperty(image,"comment",comment);
           comment=DestroyString(comment);
@@ -617,8 +621,13 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     profile=BlobToStringInfo((const void *) NULL,(size_t)
                       StringToLong(options));
                     if (profile == (StringInfo *) NULL)
-                      ThrowReaderException(ResourceLimitError,
-                        "MemoryAllocationFailed");
+                      {
+                        options=DestroyString(options);
+                        profiles=DestroyLinkedList(profiles,
+                          RelinquishMagickMemory);
+                        ThrowReaderException(ResourceLimitError,
+                          "MemoryAllocationFailed");
+                      }
                     (void) SetImageProfile(image,keyword+8,profile);
                     profile=DestroyStringInfo(profile);
                     break;
@@ -780,7 +789,7 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
           profiles=DestroyLinkedList(profiles,RelinquishMagickMemory);
         ThrowReaderException(CorruptImageError,"ImproperImageHeader");
       }
-    if (signature != GetMagickSignature((const StringInfo *) NULL))
+    if (signature != GetMagickCoreSignature((const StringInfo *) NULL))
       {
         if (profiles != (LinkedListInfo *) NULL)
           profiles=DestroyLinkedList(profiles,RelinquishMagickMemory);
@@ -943,12 +952,6 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
             colormap=(unsigned char *) RelinquishMagickMemory(colormap);
           }
       }
-    if (EOFBlob(image) != MagickFalse)
-      {
-        ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
-          image->filename);
-        break;
-      }
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
@@ -961,6 +964,12 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
     status=PersistPixelCache(image,cache_filename,MagickTrue,&offset,exception);
     if (status == MagickFalse)
       ThrowReaderException(CacheError,"UnableToPersistPixelCache");
+    if (EOFBlob(image) != MagickFalse)
+      {
+        ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
+          image->filename);
+        break;
+      }
     /*
       Proceed to next image.
     */
@@ -1111,9 +1120,9 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
     Open persistent cache.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
@@ -1135,7 +1144,7 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
       image->storage_class=DirectClass;
     (void) WriteBlobString(image,"id=MagickCache\n");
     (void) FormatLocaleString(buffer,MaxTextExtent,"magick-signature=%u\n",
-      GetMagickSignature((const StringInfo *) NULL));
+      GetMagickCoreSignature((const StringInfo *) NULL));
     (void) WriteBlobString(image,buffer);
     (void) FormatLocaleString(buffer,MaxTextExtent,
       "class=%s  colors=%.20g  matte=%s\n",CommandOptionToMnemonic(

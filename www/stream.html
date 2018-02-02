@@ -10,7 +10,7 @@
   <title>Command-line Tools: Stream @ ImageMagick</title>
   <meta name="application-name" content="ImageMagick" />
   <meta name="description" content="ImageMagick® is a software suite to create, edit, compose, or convert bitmap images. It can read and write images in a variety of formats (over 200) including PNG, JPEG, JPEG-2000, GIF, WebP, Postscript, PDF, and SVG. Use ImageMagick to resize, flip, mirror, rotate, distort, shear and transform images, adjust image colors, apply various special effects, or draw text, lines, polygons, ellipses and Bézier curves." />
-  <meta name="application-url" content="https://www.imagemagick.org" />
+  <meta name="application-url" content="https://legacy.imagemagick.org" />
   <meta name="generator" content="PHP" />
   <meta name="keywords" content="command-line, tools:, stream, ImageMagick, PerlMagick, image processing, image, photo, software, Magick++, OpenMP, convert" />
   <meta name="rating" content="GENERAL" />
@@ -22,16 +22,53 @@
   <meta name="copyright" content="Copyright (c) 1999-2017 ImageMagick Studio LLC" />
   <meta name="distribution" content="Global" />
   <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
-  <link href="https://www.imagemagick.org/script/stream.html" rel="canonical" />
+  <link href="stream.html" rel="canonical" />
   <link href="../images/wand.png" rel="icon" />
   <link href="../images/wand.ico" rel="shortcut icon" />
-  <link href="css/magick.css" rel="stylesheet" />
+  <link href="assets/magick.css" rel="stylesheet" />
 </head>
 <body>
-<div class="magick-masthead">
+  <header>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="../index.html"><img class="d-block" id="logo" name="ImageMagick" alt="And Now a Touch of Magick" width="32" height="32" src="../images/wand.ico"/></a>
+    <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar-collapse collapse" id="navbarsExampleDefault" style="">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item ">
+        <a class="nav-link" href="../index.html">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="download.html">Download</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="command-line-tools.html">Tools</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="command-line-processing.html">Command-line</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="resources.html">Resources</a>
+      </li>
+      <li class="nav-item ">
+        <a class="nav-link" href="develop.html">Develop</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" target="_blank" href="https://legacy.imagemagick.org/discourse-server//">Community</a>
+      </li>
+    </ul>
+    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
+    </div>
+  </nav>
   <div class="container">
-    <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
+   <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
          style="display:block"
          data-ad-client="ca-pub-3129977114552745"
          data-ad-slot="6345125851"
@@ -39,51 +76,39 @@
     <script>
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
-    <nav class="nav magick-nav">
-      <a class="nav-link " href="../index.html">Home</a>
-      <a class="nav-link " href="download.html">Download</a>
-      <a class="nav-link " href="command-line-tools.html">Tools</a>
-      <a class="nav-link " href="command-line-processing.html">Command-line</a>
-      <a class="nav-link " href="resources.html">Resources</a>
-      <a class="nav-link " href="develop.html">Develop</a>
-      <a class="nav-link " href="https://www.imagemagick.org/script/search.php">Search</a>
-      <a class="nav-link float-right" href="https://www.imagemagick.org/discourse-server/">Community</a>
-    </nav>
   </div>
-</div>
-<div class="container">
+  </header>
+  <main role="main" class="container">
+    <div class="magick-template">
 <div class="magick-header">
 <p class="text-center"><a href="stream.html#usage">Example Usage</a> • <a href="stream.html#options">Option Summary</a></p>
 
 <p class="lead magick-description"><code>Stream</code> is a lightweight tool to stream one or more pixel components of the image or portion of the image to your choice of storage formats.  It writes the pixel components as they are read from the input image a row at a time making <code>stream</code> desirable when working with large images or when you require raw pixel components.</p>
 
-<h2 class="magick-post-title"><a id="usage"></a>Example Usage</h2>
+<h2 class="magick-post-title"><a class="anchor" id="usage"></a>Example Usage</h2>
 
 <p>We list a few examples of the <code>stream</code> command here to illustrate its usefulness and ease of use. To get started, lets stream the red, green, blue components of a 640x480 JPEG image to disk as unsigned characters:</p>
 
-<pre><code>
-stream -map rgb -storage-type char image.jpg pixels.dat
+<pre class="highlight"><code>stream -map rgb -storage-type char image.jpg pixels.dat
 display -depth 8 -size 640x480 rgb:pixels.dat
 </code></pre>
 
 <p>Here we extract a 100x100 region from a TIFF image in the grayscale format as doubles:</p>
 
-<pre><code>
-stream -map i -storage-type double -extract 100x100+30+40 image.tif gray.raw
+<pre class="highlight"><code>stream -map i -storage-type double -extract 100x100+30+40 image.tif gray.raw
 </code></pre>
 
 <p>You can also associate the region to extract with the image filename:</p>
 
-<pre><code>
-stream -map i -storage-type double 'image.tif[100x100+30+40]' gray.raw
+<pre class="highlight"><code>stream -map i -storage-type double 'image.tif[100x100+30+40]' gray.raw
 </code></pre>
 
 
-<h2 class="magick-post-title"><a id="options"></a>Option Summary</h2>
+<h2 class="magick-post-title"><a class="anchor" id="options"></a>Option Summary</h2>
 
 <p>The <code>stream</code> command recognizes these options.  Click on an option to get more details about how that option works.</p>
 
-<table class="table table-condensed table-striped">
+<table class="table table-sm table-striped">
   <tbody>
   <tr>
     <th align="left">Option</th>
@@ -249,21 +274,25 @@ stream -map i -storage-type double 'image.tif[100x100+30+40]' gray.raw
 </table>
 
 </div>
+    </div>
+  </main><!-- /.container -->
   <footer class="magick-footer">
-    <p><a href="support.html">Donate</a> •
-     <a href="sitemap.html">Sitemap</a> •
+    <p><a href="security-policy.html">Security</a> •
+    <a href="architecture.html">Architecture</a> •
     <a href="links.html">Related</a> •
-    <a href="security-policy.html">Security</a> •
-    <a href="architecture.html">Architecture</a>
-</p>
-    <p><a href="stream.html#">Back to top</a> •
-    <a href="http://pgp.mit.edu:11371/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
-    <a href="https://www.imagemagick.org/script/contact.php">Contact Us</a></p>
-        <p><small>© 1999-2017 ImageMagick Studio LLC</small></p>
+     <a href="sitemap.html">Sitemap</a>
+       
+    <a href="stream.html#"><img class="d-inline" id="logo" alt="And Now a Touch of Magick" width="16" height="16" src="../images/wand.ico"/></a>
+       
+    <a href="http://pgp.mit.edu/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
+    <a href="support.html">Donate</a> •
+    <a href="https://legacy.imagemagick.org/script/contact.php">Contact Us</a>
+    <br/>
+        <small>© 1999-2018 ImageMagick Studio LLC</small></p>
   </footer>
-</div><!-- /.container -->
 
-  <script src="https://localhost/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="../js/magick.html"></script>
+  <!-- Javascript assets -->
+  <script src="assets/magick.js" crossorigin="anonymous"></script>
+  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
 </body>
 </html>

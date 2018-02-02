@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -261,12 +261,12 @@ static Image *ReadVIFFImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -294,7 +294,9 @@ static Image *ReadVIFFImage(const ImageInfo *image_info,
     (void) ReadBlob(image,sizeof(viff_info.machine_dependency),
       &viff_info.machine_dependency);
     (void) ReadBlob(image,sizeof(viff_info.reserve),viff_info.reserve);
-    (void) ReadBlob(image,512,(unsigned char *) viff_info.comment);
+    count=ReadBlob(image,512,(unsigned char *) viff_info.comment);
+    if (count != 512)
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     viff_info.comment[511]='\0';
     if (strlen(viff_info.comment) > 4)
       (void) SetImageProperty(image,"comment",viff_info.comment);
@@ -486,12 +488,6 @@ static Image *ReadVIFFImage(const ImageInfo *image_info,
     if ((image_info->ping != MagickFalse) && (image_info->number_scenes != 0))
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
-    status=SetImageExtent(image,image->columns,image->rows);
-    if (status == MagickFalse)
-      {
-        InheritException(exception,&image->exception);
-        return(DestroyImageList(image));
-      }
     /*
       Allocate VIFF pixels.
     */
@@ -517,6 +513,12 @@ static Image *ReadVIFFImage(const ImageInfo *image_info,
       }
     if ((bytes_per_pixel*max_packets) > GetBlobSize(image))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    status=SetImageExtent(image,image->columns,image->rows);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     pixels=(unsigned char *) AcquireQuantumMemory(MagickMax(number_pixels,
       max_packets),bytes_per_pixel*sizeof(*pixels));
     if (pixels == (unsigned char *) NULL)
@@ -968,9 +970,9 @@ static MagickBooleanType WriteVIFFImage(const ImageInfo *image_info,
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);

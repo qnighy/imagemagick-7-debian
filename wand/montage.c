@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -268,6 +268,8 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
 { \
   if (montage_info != (MontageInfo *) NULL) \
     montage_info=DestroyMontageInfo(montage_info); \
+  if (montage_info != (MontageInfo *) NULL) \
+    montage_info=DestroyMontageInfo(montage_info); \
   if (montage_image != (Image *) NULL) \
     montage_image=DestroyImageList(montage_image); \
   DestroyImageStack(); \
@@ -331,7 +333,7 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
     Set defaults.
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(exception != (ExceptionInfo *) NULL);
@@ -1825,7 +1827,6 @@ WandExport MagickBooleanType MontageImageCommand(ImageInfo *image_info,
           text=DestroyString(text);
         }
     }
-  montage_info=DestroyMontageInfo(montage_info);
   DestroyMontage();
   return(status != 0 ? MagickTrue : MagickFalse);
 }

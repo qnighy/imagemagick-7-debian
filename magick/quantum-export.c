@@ -22,7 +22,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -3837,11 +3837,11 @@ MagickExport size_t ExportQuantumPixels(const Image *image,
     extent;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(quantum_info != (QuantumInfo *) NULL);
-  assert(quantum_info->signature == MagickSignature);
+  assert(quantum_info->signature == MagickCoreSignature);
   if (pixels == (unsigned char *) NULL)
     pixels=GetQuantumPixels(quantum_info);
   if (image_view == (CacheView *) NULL)

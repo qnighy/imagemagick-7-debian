@@ -17,7 +17,7 @@
 %                              August 2007                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -210,7 +210,7 @@ MagickExport MatrixInfo *AcquireMatrixInfo(const size_t columns,
   if (matrix_info == (MatrixInfo *) NULL)
     return((MatrixInfo *) NULL);
   (void) ResetMagickMemory(matrix_info,0,sizeof(*matrix_info));
-  matrix_info->signature=MagickSignature;
+  matrix_info->signature=MagickCoreSignature;
   matrix_info->columns=columns;
   matrix_info->rows=rows;
   matrix_info->stride=stride;
@@ -260,7 +260,6 @@ MagickExport MatrixInfo *AcquireMatrixInfo(const size_t columns,
           return(DestroyMatrixInfo(matrix_info));
         }
       matrix_info->type=DiskCache;
-      (void) AcquireMagickResource(MemoryResource,matrix_info->length);
       matrix_info->file=AcquireUniqueFileResource(matrix_info->path);
       if (matrix_info->file == -1)
         return(DestroyMatrixInfo(matrix_info));
@@ -269,14 +268,12 @@ MagickExport MatrixInfo *AcquireMatrixInfo(const size_t columns,
         {
           status=SetMatrixExtent(matrix_info,matrix_info->length);
           if (status != MagickFalse)
-            {
-              matrix_info->elements=(void *) MapBlob(matrix_info->file,IOMode,0,
-                (size_t) matrix_info->length);
-              if (matrix_info->elements != NULL)
-                matrix_info->type=MapCache;
-              else
-                RelinquishMagickResource(MapResource,matrix_info->length);
-            }
+            matrix_info->elements=(void *) MapBlob(matrix_info->file,IOMode,0,
+              (size_t) matrix_info->length);
+          if (matrix_info->elements != NULL)
+            matrix_info->type=MapCache;
+          else
+            RelinquishMagickResource(MapResource,matrix_info->length);
         }
     }
   return(matrix_info);
@@ -331,12 +328,12 @@ MagickExport double **AcquireMagickMatrix(const size_t number_rows,
   {
     matrix[i]=(double *) AcquireQuantumMemory(size,sizeof(*matrix[i]));
     if (matrix[i] == (double *) NULL)
-    {
-      for (j=0; j < i; j++)
-        matrix[j]=(double *) RelinquishMagickMemory(matrix[j]);
-      matrix=(double **) RelinquishMagickMemory(matrix);
-      return((double **) NULL);
-    }
+      {
+        for (j=0; j < i; j++)
+          matrix[j]=(double *) RelinquishMagickMemory(matrix[j]);
+        matrix=(double **) RelinquishMagickMemory(matrix);
+        return((double **) NULL);
+      }
     for (j=0; j < (ssize_t) size; j++)
       matrix[i][j]=0.0;
   }
@@ -369,7 +366,7 @@ MagickExport double **AcquireMagickMatrix(const size_t number_rows,
 MagickExport MatrixInfo *DestroyMatrixInfo(MatrixInfo *matrix_info)
 {
   assert(matrix_info != (MatrixInfo *) NULL);
-  assert(matrix_info->signature == MagickSignature);
+  assert(matrix_info->signature == MagickCoreSignature);
   LockSemaphoreInfo(matrix_info->semaphore);
   switch (matrix_info->type)
   {
@@ -609,7 +606,7 @@ MagickExport MagickBooleanType GaussJordanElimination(double **matrix,
 MagickExport size_t GetMatrixColumns(const MatrixInfo *matrix_info)
 {
   assert(matrix_info != (MatrixInfo *) NULL);
-  assert(matrix_info->signature == MagickSignature);
+  assert(matrix_info->signature == MagickCoreSignature);
   return(matrix_info->columns);
 }
 
@@ -710,7 +707,7 @@ MagickExport MagickBooleanType GetMatrixElement(const MatrixInfo *matrix_info,
     i;
 
   assert(matrix_info != (const MatrixInfo *) NULL);
-  assert(matrix_info->signature == MagickSignature);
+  assert(matrix_info->signature == MagickCoreSignature);
   i=(MagickOffsetType) EdgeY(y,matrix_info->rows)*matrix_info->columns+
     EdgeX(x,matrix_info->columns);
   if (matrix_info->type != DiskCache)
@@ -751,7 +748,7 @@ MagickExport MagickBooleanType GetMatrixElement(const MatrixInfo *matrix_info,
 MagickExport size_t GetMatrixRows(const MatrixInfo *matrix_info)
 {
   assert(matrix_info != (const MatrixInfo *) NULL);
-  assert(matrix_info->signature == MagickSignature);
+  assert(matrix_info->signature == MagickCoreSignature);
   return(matrix_info->rows);
 }
 
@@ -891,9 +888,9 @@ MagickExport Image *MatrixToImage(const MatrixInfo *matrix_info,
     y;
 
   assert(matrix_info != (const MatrixInfo *) NULL);
-  assert(matrix_info->signature == MagickSignature);
+  assert(matrix_info->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if (matrix_info->stride < sizeof(double))
     return((Image *) NULL);
   /*
@@ -939,7 +936,7 @@ MagickExport Image *MatrixToImage(const MatrixInfo *matrix_info,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1014,7 +1011,7 @@ MagickExport MagickBooleanType NullMatrix(MatrixInfo *matrix_info)
     value;
 
   assert(matrix_info != (const MatrixInfo *) NULL);
-  assert(matrix_info->signature == MagickSignature);
+  assert(matrix_info->signature == MagickCoreSignature);
   if (matrix_info->type != DiskCache)
     {
       (void) ResetMagickMemory(matrix_info->elements,0,(size_t)
@@ -1073,7 +1070,7 @@ MagickExport double **RelinquishMagickMatrix(double **matrix,
   if (matrix == (double **) NULL )
     return(matrix);
   for (i=0; i < (ssize_t) number_rows; i++)
-     matrix[i]=(double *) RelinquishMagickMemory(matrix[i]);
+    matrix[i]=(double *) RelinquishMagickMemory(matrix[i]);
   matrix=(double **) RelinquishMagickMemory(matrix);
   return(matrix);
 }
@@ -1116,7 +1113,7 @@ MagickExport MagickBooleanType SetMatrixElement(const MatrixInfo *matrix_info,
     i;
 
   assert(matrix_info != (const MatrixInfo *) NULL);
-  assert(matrix_info->signature == MagickSignature);
+  assert(matrix_info->signature == MagickCoreSignature);
   i=(MagickOffsetType) y*matrix_info->columns+x;
   if ((i < 0) ||
       ((MagickSizeType) (i*matrix_info->stride) >= matrix_info->length))

@@ -23,7 +23,7 @@
 %                             February 1997                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -142,6 +142,7 @@ extern "C" {
 */
 typedef enum
 {
+  NullReference = 0,
   ArrayReference = (~0),
   RealReference = (~0)-1,
   FileReference = (~0)-2,
@@ -223,24 +224,24 @@ static struct
       {"height", IntegerReference}, {"x", IntegerReference},
       {"y", IntegerReference}, {"fuzz", StringReference},
       {"gravity", MagickGravityOptions} } },
-    { "Despeckle", },
+    { "Despeckle", { { (const char *) NULL, NullReference } } },
     { "Edge", { {"radius", RealReference} } },
     { "Emboss", { {"geometry", StringReference}, {"radius", RealReference},
       {"sigma", RealReference} } },
-    { "Enhance", },
-    { "Flip", },
-    { "Flop", },
+    { "Enhance", { { (const char *) NULL, NullReference } } },
+    { "Flip", { { (const char *) NULL, NullReference } } },
+    { "Flop", { { (const char *) NULL, NullReference } } },
     { "Frame", { {"geometry", StringReference}, {"width", IntegerReference},
       {"height", IntegerReference}, {"inner", IntegerReference},
       {"outer", IntegerReference}, {"fill", StringReference},
       {"color", StringReference}, {"compose", MagickComposeOptions} } },
     { "Implode", { {"amount", RealReference},
       {"interpolate", MagickInterpolateOptions} } },
-    { "Magnify", },
+    { "Magnify", { { (const char *) NULL, NullReference } } },
     { "MedianFilter", { {"geometry", StringReference},
       {"width", IntegerReference},{"height", IntegerReference},
       {"channel", MagickChannelOptions} } },
-    { "Minify", },
+    { "Minify", { { (const char *) NULL, NullReference } } },
     { "OilPaint", { {"radius", RealReference} } },
     { "ReduceNoise", { {"geometry", StringReference},
       {"width", IntegerReference},{"height", IntegerReference},
@@ -340,7 +341,7 @@ static struct
     { "Negate", { {"gray", MagickBooleanOptions},
       {"channel", MagickChannelOptions} } },
     { "Normalize", { {"channel", MagickChannelOptions} } },
-    { "NumberColors", },
+    { "NumberColors", { { (const char *) NULL, NullReference } } },
     { "Opaque", { {"color", StringReference}, {"fill", StringReference},
       {"fuzz", StringReference}, {"channel", MagickChannelOptions},
       {"invert", MagickBooleanOptions} } },
@@ -356,10 +357,10 @@ static struct
       {"smoothing-threshold", RealReference},
       {"colorspace", MagickColorspaceOptions},
       {"verbose", MagickBooleanOptions} } },
-    { "Signature", },
+    { "Signature", { { (const char *) NULL, NullReference } } },
     { "Solarize", { {"geometry", StringReference},
       {"threshold", StringReference}, {"channel", MagickChannelOptions} } },
-    { "Sync", },
+    { "Sync", { { (const char *) NULL, NullReference } } },
     { "Texture", { {"texture", ImageReference} } },
     { "Evaluate", { {"value", RealReference},
       {"operator", MagickEvaluateOptions},
@@ -375,11 +376,11 @@ static struct
       {"wavelength", RealReference},
       {"interpolate", MagickInterpolateOptions} } },
     { "Separate", { {"channel", MagickChannelOptions} } },
-    { "Condense", },
+    { "Condense", { { (const char *) NULL, NullReference } } },
     { "Stereo", { {"image", ImageReference}, {"x", IntegerReference},
       {"y", IntegerReference} } },
     { "Stegano", { {"image", ImageReference}, {"offset", IntegerReference} } },
-    { "Deconstruct", },
+    { "Deconstruct", { { (const char *) NULL, NullReference } } },
     { "GaussianBlur", { {"geometry", StringReference},
       {"radius", RealReference}, {"sigma", RealReference},
       {"channel", MagickChannelOptions} } },
@@ -424,7 +425,7 @@ static struct
       {"angle", RealReference}, {"channel", MagickChannelOptions} } },
     { "Thumbnail", { {"geometry", StringReference}, {"width", IntegerReference},
       {"height", IntegerReference} } },
-    { "Strip", },
+    { "Strip", { { (const char *) NULL, NullReference } } },
     { "Tint", { {"fill", StringReference}, {"opacity", StringReference} } },
     { "Channel", { {"channel", MagickChannelOptions} } },
     { "Splice", { {"geometry", StringReference}, {"width", IntegerReference},
@@ -452,21 +453,21 @@ static struct
     { "ContrastStretch", { {"levels", StringReference},
       {"black-point", RealReference},{"white-point", RealReference},
       {"channel", MagickChannelOptions} } },
-    { "Sans0", },
-    { "Sans1", },
+    { "Sans0", { { (const char *) NULL, NullReference } } },
+    { "Sans1", { { (const char *) NULL, NullReference } } },
     { "AdaptiveSharpen", { {"geometry", StringReference},
       {"radius", RealReference}, {"sigma", RealReference},
       {"channel", MagickChannelOptions} } },
-    { "Transpose", },
-    { "Transverse", },
-    { "AutoOrient", },
+    { "Transpose", { { (const char *) NULL, NullReference } } },
+    { "Transverse", { { (const char *) NULL, NullReference } } },
+    { "AutoOrient", { { (const char *) NULL, NullReference } } },
     { "AdaptiveBlur", { {"geometry", StringReference},
       {"radius", RealReference}, {"sigma", RealReference},
       {"channel", MagickChannelOptions} } },
     { "Sketch", { {"geometry", StringReference},
       {"radius", RealReference}, {"sigma", RealReference},
       {"angle", RealReference} } },
-    { "UniqueColors", },
+    { "UniqueColors", { { (const char *) NULL, NullReference } } },
     { "AdaptiveResize", { {"geometry", StringReference},
       {"width", IntegerReference}, {"height", IntegerReference},
       {"filter", MagickFilterOptions}, {"support", StringReference },
@@ -564,6 +565,7 @@ static struct
     { "WaveletDenoise", {  {"geometry", StringReference},
       {"threshold", RealReference}, {"softness", RealReference} } },
     { "Colorspace", { {"colorspace", MagickColorspaceOptions} } },
+    { "AutoThreshold", { {"method", MagickAutoThresholdOptions} } }
   };
 
 static SplayTreeInfo
@@ -7551,6 +7553,8 @@ Mogrify(ref,...)
     WaveletDenoiseImage= 294
     Colorspace         = 295
     ColorspaceImage    = 296
+    AutoThreshold      = 297
+    AutoThresholdImage = 298
     MogrifyRegion      = 666
   PPCODE:
   {
@@ -11157,6 +11161,17 @@ Mogrify(ref,...)
           (void) TransformImageColorspace(image,colorspace);
           break;
         }
+        case 149:  /* AutoThreshold */
+        {
+          AutoThresholdMethod
+            method;
+
+          method=UndefinedThresholdMethod;
+          if (attribute_flag[0] != 0)
+            method=(AutoThresholdMethod) argument_list[0].integer_reference;
+          (void) AutoThresholdImage(image,method,exception);
+          break;
+        }
       }
       if (next != (Image *) NULL)
         (void) CatchImageException(next);
@@ -14498,6 +14513,9 @@ Write(ref,...)
           PackageName);
         goto PerlException;
       }
+    scene=0;
+    for (next=image; next; next=next->next)
+      next->scene=scene++;
     package_info=ClonePackageInfo(info,exception);
     if (items == 2)
       SetAttribute(aTHX_ package_info,NULL,"filename",ST(1),exception);
@@ -14508,12 +14526,8 @@ Write(ref,...)
             exception);
     (void) CopyMagickString(filename,package_info->image_info->filename,
       MaxTextExtent);
-    scene=0;
     for (next=image; next; next=next->next)
-    {
       (void) CopyMagickString(next->filename,filename,MaxTextExtent);
-      next->scene=scene++;
-    }
     *package_info->image_info->magick='\0';
     SetImageInfo(package_info->image_info,(unsigned int)
       GetImageListLength(image),&image->exception);

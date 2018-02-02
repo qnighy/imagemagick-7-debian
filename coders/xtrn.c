@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -59,7 +59,7 @@
 #include "magick/memory_.h"
 #include "magick/module.h"
 #include "magick/string_.h"
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <windows.h>
@@ -99,7 +99,7 @@ static MagickBooleanType
 %    o exception: return any errors or warnings in this structure.
 %
 */
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
 static Image *ReadXTRNImage(const ImageInfo *image_info,
   ExceptionInfo *exception)
 {
@@ -200,7 +200,7 @@ ModuleExport size_t RegisterXTRNImage(void)
     *entry;
 
   entry=SetMagickInfo("XTRNARRAY");
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
   entry->decoder=ReadXTRNImage;
   entry->encoder=WriteXTRNImage;
 #endif
@@ -265,7 +265,7 @@ ModuleExport void UnregisterXTRNImage(void)
 %
 */
 
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
 static size_t SafeArrayFifo(const Image *image,const void *data,
   const size_t length)
 {

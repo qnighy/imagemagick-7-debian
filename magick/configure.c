@@ -17,7 +17,7 @@
 %                                 July 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -176,8 +176,8 @@ static LinkedListInfo *AcquireConfigureCache(const char *filename,
     option=(const StringInfo *) GetNextValueInLinkedList(options);
     while (option != (const StringInfo *) NULL)
     {
-      status&=LoadConfigureCache(cache,(const char *) GetStringInfoDatum(option),
-        GetStringInfoPath(option),0,exception);
+      status&=LoadConfigureCache(cache,(const char *)
+        GetStringInfoDatum(option),GetStringInfoPath(option),0,exception);
       option=(const StringInfo *) GetNextValueInLinkedList(options);
     }
     options=DestroyConfigureOptions(options);
@@ -208,7 +208,7 @@ static LinkedListInfo *AcquireConfigureCache(const char *filename,
     configure_info->name=(char *) p->name;
     configure_info->value=(char *) p->value;
     configure_info->exempt=MagickTrue;
-    configure_info->signature=MagickSignature;
+    configure_info->signature=MagickCoreSignature;
     status&=AppendValueToLinkedList(cache,configure_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
@@ -960,6 +960,9 @@ MagickExport LinkedListInfo *GetConfigurePaths(const char *filename,
       }
   }
 #endif
+  if (GetNumberOfElementsInLinkedList(paths) == 0)
+    (void) ThrowMagickException(exception,GetMagickModule(),ConfigureWarning,
+      "no configuration paths found","`%s'",filename);
   return(paths);
 }
 
@@ -989,7 +992,7 @@ MagickExport const char *GetConfigureValue(const ConfigureInfo *configure_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(configure_info != (ConfigureInfo *) NULL);
-  assert(configure_info->signature == MagickSignature);
+  assert(configure_info->signature == MagickCoreSignature);
   return(configure_info->value);
 }
 
@@ -1257,7 +1260,7 @@ static MagickBooleanType LoadConfigureCache(LinkedListInfo *cache,
         (void) ResetMagickMemory(configure_info,0,sizeof(*configure_info));
         configure_info->path=ConstantString(filename);
         configure_info->exempt=MagickFalse;
-        configure_info->signature=MagickSignature;
+        configure_info->signature=MagickCoreSignature;
         continue;
       }
     if (configure_info == (ConfigureInfo *) NULL)

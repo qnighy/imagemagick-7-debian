@@ -292,12 +292,12 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -423,7 +423,10 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
         last_row=(unsigned char *) AcquireQuantumMemory(MagickMax(bytes_per_row,
           2*image->columns),sizeof(*last_row));
         if (last_row == (unsigned char *) NULL)
-          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          {
+            one_row=(unsigned char *) RelinquishMagickMemory(one_row);
+            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          }
       }
     mask=(size_t) (1U << bits_per_pixel)-1;
     for (y=0; y < (ssize_t) image->rows; y++)
@@ -743,9 +746,9 @@ static MagickBooleanType WritePALMImage(const ImageInfo *image_info,
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   exception=AcquireExceptionInfo();
@@ -879,6 +882,8 @@ static MagickBooleanType WritePALMImage(const ImageInfo *image_info,
       sizeof(*one_row));
     if (one_row == (unsigned char *) NULL)
       {
+        if (last_row != (unsigned char *) NULL)
+          last_row=(unsigned char *) RelinquishMagickMemory(last_row);
         quantize_info=DestroyQuantizeInfo(quantize_info);
         ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
       }

@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -52,14 +52,10 @@ static inline RandomInfo **AcquireRandomInfoThreadSet(void)
   random_info=(RandomInfo **) AcquireAlignedMemory(number_threads,
     sizeof(*random_info));
   if (random_info == (RandomInfo **) NULL)
-    return((RandomInfo **) NULL);
+    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) ResetMagickMemory(random_info,0,number_threads*sizeof(*random_info));
   for (i=0; i < (ssize_t) number_threads; i++)
-  {
     random_info[i]=AcquireRandomInfo();
-    if (random_info[i] == (RandomInfo *) NULL)
-      return(DestroyRandomInfoThreadSet(random_info));
-  }
   return(random_info);
 }
 

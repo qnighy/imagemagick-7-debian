@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -308,11 +308,11 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
     Initialize noise image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
   noise_image=AccelerateAddNoiseImage(image,channel,noise_type,exception);
   if (noise_image != (Image *) NULL)
@@ -342,7 +342,7 @@ MagickExport Image *AddNoiseImageChannel(const Image *image,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   key=GetRandomSecretKey(random_info[0]);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,noise_image,image->rows,key == ~0UL)
+    magick_number_threads(image,noise_image,image->rows,key == ~0UL)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -487,11 +487,11 @@ MagickExport Image *BlueShiftImage(const Image *image,const double factor,
     Allocate blue shift image.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   shift_image=CloneImage(image,image->columns,image->rows,MagickTrue,
     exception);
   if (shift_image == (Image *) NULL)
@@ -511,7 +511,7 @@ MagickExport Image *BlueShiftImage(const Image *image,const double factor,
   shift_view=AcquireAuthenticCacheView(shift_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,shift_image,image->rows,1)
+    magick_number_threads(image,shift_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -631,11 +631,11 @@ MagickExport Image *CharcoalImage(const Image *image,const double radius,
     *edge_image;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   clone_image=CloneImage(image,0,0,MagickTrue,exception);
   if (clone_image == (Image *) NULL)
     return((Image *) NULL);
@@ -720,11 +720,11 @@ MagickExport Image *ColorizeImage(const Image *image,const char *opacity,
     Allocate colorized image.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   colorize_image=CloneImage(image,image->columns,image->rows,MagickTrue,
     exception);
   if (colorize_image == (Image *) NULL)
@@ -766,7 +766,7 @@ MagickExport Image *ColorizeImage(const Image *image,const char *opacity,
   colorize_view=AcquireAuthenticCacheView(colorize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,colorize_image,image->rows,1)
+    magick_number_threads(image,colorize_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -905,11 +905,11 @@ MagickExport Image *ColorMatrixImage(const Image *image,
     Create color matrix.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   i=0;
   for (v=0; v < (ssize_t) color_matrix->height; v++)
     for (u=0; u < (ssize_t) color_matrix->width; u++)
@@ -963,7 +963,7 @@ MagickExport Image *ColorMatrixImage(const Image *image,
   color_view=AcquireAuthenticCacheView(color_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,color_image,image->rows,1)
+    magick_number_threads(image,color_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1183,7 +1183,7 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
 
       (void) GetImageChannelKurtosis(image,channel,&kurtosis,&skewness,
         exception);
-      (void) FormatLocaleString(statistic,MaxTextExtent,"%g",kurtosis);
+      (void) FormatLocaleString(statistic,MaxTextExtent,"%.20g",kurtosis);
     }
   if (LocaleNCompare(symbol,"maxima",6) == 0)
     {
@@ -1192,7 +1192,7 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
         minima;
 
       (void) GetImageChannelRange(image,channel,&minima,&maxima,exception);
-      (void) FormatLocaleString(statistic,MaxTextExtent,"%g",maxima);
+      (void) FormatLocaleString(statistic,MaxTextExtent,"%.20g",maxima);
     }
   if (LocaleNCompare(symbol,"mean",4) == 0)
     {
@@ -1202,7 +1202,7 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
 
       (void) GetImageChannelMean(image,channel,&mean,&standard_deviation,
         exception);
-      (void) FormatLocaleString(statistic,MaxTextExtent,"%g",mean);
+      (void) FormatLocaleString(statistic,MaxTextExtent,"%.20g",mean);
     }
   if (LocaleNCompare(symbol,"minima",6) == 0)
     {
@@ -1211,7 +1211,7 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
         minima;
 
       (void) GetImageChannelRange(image,channel,&minima,&maxima,exception);
-      (void) FormatLocaleString(statistic,MaxTextExtent,"%g",minima);
+      (void) FormatLocaleString(statistic,MaxTextExtent,"%.20g",minima);
     }
   if (LocaleNCompare(symbol,"skewness",8) == 0)
     {
@@ -1221,7 +1221,7 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
 
       (void) GetImageChannelKurtosis(image,channel,&kurtosis,&skewness,
         exception);
-      (void) FormatLocaleString(statistic,MaxTextExtent,"%g",skewness);
+      (void) FormatLocaleString(statistic,MaxTextExtent,"%.20g",skewness);
     }
   if (LocaleNCompare(symbol,"standard_deviation",18) == 0)
     {
@@ -1231,7 +1231,7 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
 
       (void) GetImageChannelMean(image,channel,&mean,&standard_deviation,
         exception);
-      (void) FormatLocaleString(statistic,MaxTextExtent,"%g",
+      (void) FormatLocaleString(statistic,MaxTextExtent,"%.20g",
         standard_deviation);
     }
   (void) AddValueToSplayTree(fx_info->symbols,ConstantString(key),
@@ -1296,6 +1296,9 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
 
   Image
     *image;
+
+  MagickBooleanType
+    status;
 
   MagickPixelPacket
     pixel;
@@ -1430,8 +1433,9 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
       return(0.0);
     }
   GetMagickPixelPacket(image,&pixel);
-  (void) InterpolateMagickPixelPacket(image,fx_info->view[i],image->interpolate,
+  status=InterpolateMagickPixelPacket(image,fx_info->view[i],image->interpolate,
     point.x,point.y,&pixel,exception);
+  (void) status;
   if ((strlen(p) > 2) &&
       (LocaleCompare(p,"intensity") != 0) &&
       (LocaleCompare(p,"luma") != 0) &&
@@ -2335,7 +2339,7 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
           ClearMagickException(exception);
           *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
             exception);
-          (void) FormatLocaleString(numeric,MaxTextExtent,"%g",(double)
+          (void) FormatLocaleString(numeric,MaxTextExtent,"%.20g",(double)
             *beta);
           (void) DeleteNodeFromSplayTree(fx_info->symbols,subexpression);
           (void) AddValueToSplayTree(fx_info->symbols,ConstantString(
@@ -2549,8 +2553,8 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
           if (fx_info->file != (FILE *) NULL)
             (void) FormatLocaleFile(fx_info->file,
               "%s[%.20g,%.20g].%s: %s=%.*g\n",fx_info->images->filename,
-               (double) x,(double) y,type,subexpression,GetMagickPrecision(),
-               (double) alpha);
+              (double) x,(double) y,type,subexpression,GetMagickPrecision(),
+              (double) alpha);
           return(0.0);
         }
       if (LocaleNCompare(expression,"drc",3) == 0)
@@ -3127,7 +3131,7 @@ MagickExport Image *FxImageChannel(const Image *image,const ChannelType channel,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   fx_info=AcquireFxThreadSet(image,expression,exception);
@@ -3154,7 +3158,7 @@ MagickExport Image *FxImageChannel(const Image *image,const ChannelType channel,
   fx_view=AcquireAuthenticCacheView(fx_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,fx_image,fx_image->rows,1)
+    magick_number_threads(image,fx_image,fx_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) fx_image->rows; y++)
   {
@@ -3315,11 +3319,11 @@ MagickExport Image *ImplodeImage(const Image *image,const double amount,
     Initialize implode image attributes.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   implode_image=CloneImage(image,0,0,MagickTrue,exception);
   if (implode_image == (Image *) NULL)
     return((Image *) NULL);
@@ -3357,7 +3361,7 @@ MagickExport Image *ImplodeImage(const Image *image,const double amount,
   implode_view=AcquireAuthenticCacheView(implode_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,implode_image,image->rows,1)
+    magick_number_threads(image,implode_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -3410,10 +3414,12 @@ MagickExport Image *ImplodeImage(const Image *image,const double amount,
           if (distance > 0.0)
             factor=pow(sin((double) (MagickPI*sqrt((double) distance)/
               radius/2)),-amount);
-          (void) InterpolateMagickPixelPacket(image,image_view,
+          status=InterpolateMagickPixelPacket(image,image_view,
             UndefinedInterpolatePixel,(double) (factor*delta.x/scale.x+
             center.x),(double) (factor*delta.y/scale.y+center.y),&pixel,
             exception);
+          if (status == MagickFalse)
+            break;
           SetPixelPacket(implode_image,&pixel,q,implode_indexes+x);
         }
       q++;
@@ -3502,11 +3508,11 @@ MagickExport Image *MorphImages(const Image *image,
     Clone first frame in sequence.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   morph_images=CloneImage(image,0,0,MagickTrue,exception);
   if (morph_images == (Image *) NULL)
     return((Image *) NULL);
@@ -3582,7 +3588,7 @@ MagickExport Image *MorphImages(const Image *image,
       morph_view=AcquireAuthenticCacheView(morph_images,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(morph_image,morph_image,morph_image->rows,1)
+        magick_number_threads(morph_image,morph_image,morph_image->rows,1)
 #endif
       for (y=0; y < (ssize_t) morph_images->rows; y++)
       {
@@ -3934,7 +3940,7 @@ MagickExport MagickBooleanType PlasmaImage(Image *image,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
@@ -4006,11 +4012,11 @@ MagickExport Image *PolaroidImage(const Image *image,const DrawInfo *draw_info,
     Simulate a Polaroid picture.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   quantum=(ssize_t) MagickMax(MagickMax((double) image->columns,(double)
     image->rows)/25.0,10.0);
   height=image->rows+2*quantum;
@@ -4055,7 +4061,7 @@ MagickExport Image *PolaroidImage(const Image *image,const DrawInfo *draw_info,
           caption_image->background_color=image->border_color;
           (void) SetImageBackgroundColor(caption_image);
           (void) CloneString(&annotate_info->text,caption);
-          (void) FormatLocaleString(geometry,MaxTextExtent,"+0+%g",
+          (void) FormatLocaleString(geometry,MaxTextExtent,"+0+%.20g",
             metrics.ascent);
           if (annotate_info->gravity == UndefinedGravity)
             (void) CloneString(&annotate_info->geometry,AcquireString(
@@ -4190,11 +4196,11 @@ MagickExport Image *SepiaToneImage(const Image *image,const double threshold,
     Initialize sepia-toned image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   sepia_image=CloneImage(image,image->columns,image->rows,MagickTrue,exception);
   if (sepia_image == (Image *) NULL)
     return((Image *) NULL);
@@ -4213,7 +4219,7 @@ MagickExport Image *SepiaToneImage(const Image *image,const double threshold,
   sepia_view=AcquireAuthenticCacheView(sepia_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,sepia_image,image->rows,1)
+    magick_number_threads(image,sepia_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -4346,11 +4352,11 @@ MagickExport Image *ShadowImage(const Image *image,const double opacity,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   clone_image=CloneImage(image,0,0,MagickTrue,exception);
   if (clone_image == (Image *) NULL)
     return((Image *) NULL);
@@ -4377,7 +4383,7 @@ MagickExport Image *ShadowImage(const Image *image,const double opacity,
   image_view=AcquireAuthenticCacheView(border_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(border_image,border_image,border_image->rows,1)
+    magick_number_threads(border_image,border_image,border_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) border_image->rows; y++)
   {
@@ -4522,7 +4528,7 @@ MagickExport Image *SketchImage(const Image *image,const double radius,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   key=GetRandomSecretKey(random_info[0]);
 #pragma omp parallel for schedule(static,4) shared(status) \
-magick_threads(random_image,random_image,random_image->rows,key == ~0UL)
+magick_number_threads(random_image,random_image,random_image->rows,key == ~0UL)
 #endif
   for (y=0; y < (ssize_t) random_image->rows; y++)
   {
@@ -4669,7 +4675,7 @@ MagickExport MagickBooleanType SolarizeImageChannel(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
@@ -4703,7 +4709,7 @@ MagickExport MagickBooleanType SolarizeImageChannel(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -4827,13 +4833,13 @@ MagickExport Image *SteganoImage(const Image *image,const Image *watermark,
     Initialize steganographic image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(watermark != (const Image *) NULL);
-  assert(watermark->signature == MagickSignature);
+  assert(watermark->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   one=1UL;
   stegano_image=CloneImage(image,0,0,MagickTrue,exception);
   if (stegano_image == (Image *) NULL)
@@ -4987,14 +4993,14 @@ MagickExport Image *StereoAnaglyphImage(const Image *left_image,
     y;
 
   assert(left_image != (const Image *) NULL);
-  assert(left_image->signature == MagickSignature);
+  assert(left_image->signature == MagickCoreSignature);
   if (left_image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       left_image->filename);
   assert(right_image != (const Image *) NULL);
-  assert(right_image->signature == MagickSignature);
+  assert(right_image->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   assert(right_image != (const Image *) NULL);
   image=left_image;
   if ((left_image->columns != right_image->columns) ||
@@ -5129,11 +5135,11 @@ MagickExport Image *SwirlImage(const Image *image,double degrees,
     Initialize swirl image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   swirl_image=CloneImage(image,0,0,MagickTrue,exception);
   if (swirl_image == (Image *) NULL)
     return((Image *) NULL);
@@ -5169,7 +5175,7 @@ MagickExport Image *SwirlImage(const Image *image,double degrees,
   swirl_view=AcquireAuthenticCacheView(swirl_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,swirl_image,image->rows,1)
+    magick_number_threads(image,swirl_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -5223,10 +5229,12 @@ MagickExport Image *SwirlImage(const Image *image,double degrees,
           factor=1.0-sqrt(distance)/radius;
           sine=sin((double) (degrees*factor*factor));
           cosine=cos((double) (degrees*factor*factor));
-          (void) InterpolateMagickPixelPacket(image,image_view,
+          status=InterpolateMagickPixelPacket(image,image_view,
             UndefinedInterpolatePixel,(double) ((cosine*delta.x-sine*delta.y)/
             scale.x+center.x),(double) ((sine*delta.x+cosine*delta.y)/scale.y+
             center.y),&pixel,exception);
+          if (status == MagickFalse)          
+            break;
           SetPixelPacket(swirl_image,&pixel,q,swirl_indexes+x);
         }
       q++;
@@ -5319,11 +5327,11 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
     Allocate tint image.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   tint_image=CloneImage(image,image->columns,image->rows,MagickTrue,exception);
   if (tint_image == (Image *) NULL)
     return((Image *) NULL);
@@ -5367,7 +5375,7 @@ MagickExport Image *TintImage(const Image *image,const char *opacity,
   tint_view=AcquireAuthenticCacheView(tint_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,tint_image,image->rows,1)
+    magick_number_threads(image,tint_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -5484,11 +5492,11 @@ MagickExport Image *VignetteImage(const Image *image,const double radius,
     *vignette_image;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   canvas_image=CloneImage(image,0,0,MagickTrue,exception);
   if (canvas_image == (Image *) NULL)
     return((Image *) NULL);
@@ -5598,11 +5606,11 @@ MagickExport Image *WaveImage(const Image *image,const double amplitude,
     Initialize wave image attributes.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   wave_image=CloneImage(image,image->columns,(size_t) (image->rows+2.0*
     fabs(amplitude)),MagickTrue,exception);
   if (wave_image == (Image *) NULL)
@@ -5640,7 +5648,7 @@ MagickExport Image *WaveImage(const Image *image,const double amplitude,
     BackgroundVirtualPixelMethod);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,wave_image,wave_image->rows,1)
+    magick_number_threads(image,wave_image,wave_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) wave_image->rows; y++)
   {
@@ -5669,9 +5677,11 @@ MagickExport Image *WaveImage(const Image *image,const double amplitude,
     pixel=zero;
     for (x=0; x < (ssize_t) wave_image->columns; x++)
     {
-      (void) InterpolateMagickPixelPacket(image,image_view,
+      status=InterpolateMagickPixelPacket(image,image_view,
         UndefinedInterpolatePixel,(double) x,(double) (y-sine_map[x]),&pixel,
         exception);
+      if (status == MagickFalse)
+        break;
       SetPixelPacket(wave_image,&pixel,q,indexes+x);
       q++;
     }
@@ -5807,11 +5817,11 @@ MagickExport Image *WaveletDenoiseImage(const Image *image,
     Initialize noise image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   noise_image=(Image *) NULL;
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
   noise_image=AccelerateWaveletDenoiseImage(image,threshold,exception);
@@ -5915,7 +5925,7 @@ MagickExport Image *WaveletDenoiseImage(const Image *image,
       low_pass=(size_t) (number_pixels*((level & 0x01)+1));
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,1) \
-        magick_threads(image,image,image->rows,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -5938,7 +5948,7 @@ MagickExport Image *WaveletDenoiseImage(const Image *image,
       }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,1) \
-        magick_threads(image,image,image->columns,1)
+        magick_number_threads(image,image,image->columns,1)
 #endif
       for (x=0; x < (ssize_t) image->columns; x++)
       {

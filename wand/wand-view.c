@@ -22,7 +22,7 @@
 %                                March 2003                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -294,7 +294,7 @@ WandExport MagickBooleanType DuplexTransferWandViewIterator(WandView *source,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(source_image,destination_image,height,1)
+    magick_number_threads(source_image,destination_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
   {
@@ -572,7 +572,7 @@ WandExport MagickBooleanType GetWandViewIterator(WandView *source,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(source_image,source_image,height,1)
+    magick_number_threads(source_image,source_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
   {
@@ -981,7 +981,7 @@ WandExport MagickBooleanType SetWandViewIterator(WandView *destination,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (destination->extent.height-destination->extent.y);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(destination_image,destination_image,height,1)
+    magick_number_threads(destination_image,destination_image,height,1)
 #endif
   for (y=destination->extent.y; y < (ssize_t) destination->extent.height; y++)
   {
@@ -1073,7 +1073,7 @@ MagickExport void SetWandViewThreads(WandView *image_view,
   const size_t number_threads)
 {
   assert(image_view != (WandView *) NULL);
-  assert(image_view->signature == MagickSignature);
+  assert(image_view->signature == MagickCoreSignature);
   image_view->number_threads=number_threads;
   if (number_threads > (size_t) GetMagickResourceLimit(ThreadResource))
     image_view->number_threads=GetOpenMPMaximumThreads();
@@ -1165,7 +1165,7 @@ WandExport MagickBooleanType TransferWandViewIterator(WandView *source,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(source_image,destination_image,height,1)
+    magick_number_threads(source_image,destination_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
   {
@@ -1340,7 +1340,7 @@ WandExport MagickBooleanType UpdateWandViewIterator(WandView *source,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(source_image,source_image,height,1)
+    magick_number_threads(source_image,source_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
   {

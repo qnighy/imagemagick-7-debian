@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -194,11 +194,11 @@ MagickExport Image *AdaptiveThresholdImage(const Image *image,
     y;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   threshold_image=CloneImage(image,0,0,MagickTrue,exception);
   if (threshold_image == (Image *) NULL)
     return((Image *) NULL);
@@ -219,7 +219,7 @@ MagickExport Image *AdaptiveThresholdImage(const Image *image,
   threshold_view=AcquireAuthenticCacheView(threshold_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,threshold_image,image->rows,1)
+    magick_number_threads(image,threshold_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -600,6 +600,7 @@ static double TriangleThreshold(const Image *image,const double *histogram,
   /*
     Compute optimal threshold with triangle algorithm.
   */
+  (void) exception;
   start=0;  /* find start bin, first bin not zero count */
   for (i=0; i <= (ssize_t) MaxIntensity; i++)
     if (histogram[i] > 0.0)
@@ -690,7 +691,7 @@ MagickExport MagickBooleanType AutoThresholdImage(Image *image,
     Form histogram.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   histogram=(double *) AcquireQuantumMemory(MaxIntensity+1UL,
@@ -837,7 +838,7 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
@@ -853,7 +854,7 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1004,7 +1005,7 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (thresholds == (const char *) NULL)
@@ -1045,7 +1046,7 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1166,7 +1167,7 @@ MagickExport MagickBooleanType ClampImageChannel(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->storage_class == PseudoClass)
@@ -1197,7 +1198,7 @@ MagickExport MagickBooleanType ClampImageChannel(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1847,11 +1848,11 @@ MagickExport MagickBooleanType OrderedPosterizeImageChannel(Image *image,
     *map;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if (threshold_map == (const char *) NULL)
     return(MagickTrue);
   {
@@ -1959,7 +1960,7 @@ printf("DEBUG levels  r=%u g=%u b=%u a=%u i=%u\n",
     image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
     #pragma omp parallel for schedule(static,4) shared(progress,status) \
-      magick_threads(image,image,image->rows,1)
+      magick_number_threads(image,image,image->rows,1)
 #endif
     for (y=0; y < (ssize_t) image->rows; y++)
     {
@@ -2137,7 +2138,7 @@ MagickExport MagickBooleanType PerceptibleImageChannel(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->storage_class == PseudoClass)
@@ -2168,7 +2169,7 @@ MagickExport MagickBooleanType PerceptibleImageChannel(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2312,11 +2313,11 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
 #endif
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if (thresholds == (const char *) NULL)
     return(MagickTrue);
   GetMagickPixelPacket(image,&threshold);
@@ -2357,7 +2358,7 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       key=GetRandomSecretKey(random_info[0]);
       #pragma omp parallel for schedule(static,4) shared(progress,status) \
-        magick_threads(image,image,image->rows,key == ~0UL)
+        magick_number_threads(image,image,image->rows,key == ~0UL)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -2438,7 +2439,7 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   key=GetRandomSecretKey(random_info[0]);
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,key == ~0UL)
+    magick_number_threads(image,image,image->rows,key == ~0UL)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -2631,7 +2632,7 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (thresholds == (const char *) NULL)
@@ -2672,7 +2673,7 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

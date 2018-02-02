@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -275,23 +275,12 @@ static SplayTreeInfo *AcquireTypeCache(const char *filename,
 MagickExport const TypeInfo *GetTypeInfo(const char *name,
   ExceptionInfo *exception)
 {
-  const TypeInfo
-    *type_info;
-
   assert(exception != (ExceptionInfo *) NULL);
   if (IsTypeTreeInstantiated(exception) == MagickFalse)
     return((const TypeInfo *) NULL);
-  LockSemaphoreInfo(type_semaphore);
   if ((name == (const char *) NULL) || (LocaleCompare(name,"*") == 0))
-    {
-      ResetSplayTreeIterator(type_cache);
-      type_info=(const TypeInfo *) GetNextValueInSplayTree(type_cache);
-      UnlockSemaphoreInfo(type_semaphore);
-      return(type_info);
-    }
-  type_info=(const TypeInfo *) GetValueFromSplayTree(type_cache,name);
-  UnlockSemaphoreInfo(type_semaphore);
-  return(type_info);
+    return((const TypeInfo *) GetRootValueFromSplayTree(type_cache));
+  return((const TypeInfo *) GetValueFromSplayTree(type_cache,name));
 }
 
 /*
@@ -810,7 +799,7 @@ MagickExport MagickBooleanType LoadFontConfigFonts(SplayTreeInfo *type_cache,
       continue;
     (void) ResetMagickMemory(type_info,0,sizeof(*type_info));
     type_info->path=ConstantString("System Fonts");
-    type_info->signature=MagickSignature;
+    type_info->signature=MagickCoreSignature;
     (void) CopyMagickString(name,"Unknown",MaxTextExtent);
     status=FcPatternGetString(font_set->fonts[i],FC_FULLNAME,0,&fullname);
     if ((status == FcResultMatch) && (fullname != (FcChar8 *) NULL))
@@ -895,13 +884,17 @@ static MagickBooleanType IsTypeTreeInstantiated(ExceptionInfo *exception)
       LockSemaphoreInfo(type_semaphore);
       if (type_cache == (SplayTreeInfo *) NULL)
         {
-          type_cache=AcquireTypeCache(MagickTypeFilename,exception);
+          SplayTreeInfo
+            *splay_tree;
+
+          splay_tree=AcquireTypeCache(MagickTypeFilename,exception);
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
-          (void) NTAcquireTypeCache(type_cache,exception);
+          (void) NTAcquireTypeCache(splay_tree,exception);
 #endif
 #if defined(MAGICKCORE_FONTCONFIG_DELEGATE)
-          (void) LoadFontConfigFonts(type_cache,exception);
+          (void) LoadFontConfigFonts(splay_tree,exception);
 #endif
+          type_cache=splay_tree;
         }
       UnlockSemaphoreInfo(type_semaphore);
     }
@@ -1188,7 +1181,7 @@ static MagickBooleanType LoadTypeCache(SplayTreeInfo *cache,const char *xml,
           ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
         (void) ResetMagickMemory(type_info,0,sizeof(*type_info));
         type_info->path=ConstantString(filename);
-        type_info->signature=MagickSignature;
+        type_info->signature=MagickCoreSignature;
         continue;
       }
     if (type_info == (TypeInfo *) NULL)

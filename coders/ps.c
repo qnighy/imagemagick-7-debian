@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -135,6 +135,8 @@ static int MagickDLLCall PostscriptDelegateMessage(void *handle,
       *messages=(char *) ResizeQuantumMemory(*messages,offset+length+1,
         sizeof(char *));
     }
+  if (*messages == (char *) NULL)
+    return(0);
   (void) memcpy(*messages+offset,message,length);
   (*messages)[length+offset] ='\0';
   return(length);
@@ -500,12 +502,12 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -631,13 +633,18 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Read ICC profile.
         */
-        profile=AcquireStringInfo(65536);
+        profile=AcquireStringInfo(MaxTextExtent);
+        datum=GetStringInfoDatum(profile);
         for (i=0; (c=ProfileInteger(image,hex_digits)) != EOF; i++)
         {
-          SetStringInfoLength(profile,(size_t) i+1);
-          datum=GetStringInfoDatum(profile);
+          if (i >= (ssize_t) GetStringInfoLength(profile))
+            {
+              SetStringInfoLength(profile,(size_t) i << 1);
+              datum=GetStringInfoDatum(profile);
+            }
           datum[i]=(unsigned char) c;
         }
+        SetStringInfoLength(profile,(size_t) i+1);
         (void) SetImageProfile(image,"icc",profile);
         profile=DestroyStringInfo(profile);
         continue;
@@ -654,6 +661,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (count != 1)
           continue;
         length=extent;
+        if (length > GetBlobSize(image))
+          ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
         profile=BlobToStringInfo((const void *) NULL,length);
         if (profile != (StringInfo *) NULL)
           {
@@ -1046,6 +1055,7 @@ ModuleExport size_t RegisterPSImage(void)
   entry->decoder=(DecodeImageHandler *) ReadPSImage;
   entry->encoder=(EncodeImageHandler *) WritePSImage;
   entry->magick=(IsImageFormatHandler *) IsPS;
+  entry->seekable_stream=MagickTrue;
   entry->adjoin=MagickFalse;
   entry->blob_support=MagickFalse;
   entry->seekable_stream=MagickTrue;
@@ -1057,6 +1067,7 @@ ModuleExport size_t RegisterPSImage(void)
   entry=SetMagickInfo("EPS");
   entry->decoder=(DecodeImageHandler *) ReadPSImage;
   entry->encoder=(EncodeImageHandler *) WritePSImage;
+  entry->seekable_stream=MagickTrue;
   entry->magick=(IsImageFormatHandler *) IsPS;
   entry->adjoin=MagickFalse;
   entry->blob_support=MagickFalse;
@@ -1068,6 +1079,7 @@ ModuleExport size_t RegisterPSImage(void)
   entry=SetMagickInfo("EPSF");
   entry->decoder=(DecodeImageHandler *) ReadPSImage;
   entry->encoder=(EncodeImageHandler *) WritePSImage;
+  entry->seekable_stream=MagickTrue;
   entry->magick=(IsImageFormatHandler *) IsPS;
   entry->adjoin=MagickFalse;
   entry->blob_support=MagickFalse;
@@ -1079,6 +1091,7 @@ ModuleExport size_t RegisterPSImage(void)
   entry=SetMagickInfo("EPSI");
   entry->decoder=(DecodeImageHandler *) ReadPSImage;
   entry->encoder=(EncodeImageHandler *) WritePSImage;
+  entry->seekable_stream=MagickTrue;
   entry->magick=(IsImageFormatHandler *) IsPS;
   entry->adjoin=MagickFalse;
   entry->blob_support=MagickFalse;
@@ -1091,6 +1104,7 @@ ModuleExport size_t RegisterPSImage(void)
   entry=SetMagickInfo("PS");
   entry->decoder=(DecodeImageHandler *) ReadPSImage;
   entry->encoder=(EncodeImageHandler *) WritePSImage;
+  entry->seekable_stream=MagickTrue;
   entry->magick=(IsImageFormatHandler *) IsPS;
   entry->mime_type=ConstantString("application/postscript");
   entry->module=ConstantString("PS");
@@ -1555,9 +1569,9 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);

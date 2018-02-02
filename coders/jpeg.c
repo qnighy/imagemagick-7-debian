@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -86,7 +86,7 @@
 #include <setjmp.h>
 #if defined(MAGICKCORE_JPEG_DELEGATE)
 #define JPEG_INTERNAL_OPTIONS
-#if defined(__MINGW32__) || defined(__MINGW64__)
+#if defined(__MINGW32__)
 # define XMD_H 1  /* Avoid conflicting typedef for INT32 */
 #endif
 #undef HAVE_STDLIB_H
@@ -406,7 +406,15 @@ static boolean ReadComment(j_decompress_ptr jpeg_info)
   error_manager->profile=comment;
   p=GetStringInfoDatum(comment);
   for (i=0; i < (ssize_t) GetStringInfoLength(comment); i++)
-    *p++=(unsigned char) GetCharacter(jpeg_info);
+  {
+    int
+      c;
+
+    c=GetCharacter(jpeg_info);
+    if (c == EOF)
+      break;
+    *p++=(unsigned char) c;
+  }
   *p='\0';
   error_manager->profile=NULL;
   p=GetStringInfoDatum(comment);
@@ -451,7 +459,8 @@ static boolean ReadICCProfile(j_decompress_ptr jpeg_info)
   if (length <= 14)
     {
       while (length-- > 0)
-        (void) GetCharacter(jpeg_info);
+        if (GetCharacter(jpeg_info) == EOF)
+          break;
       return(TRUE);
     }
   for (i=0; i < 12; i++)
@@ -462,7 +471,8 @@ static boolean ReadICCProfile(j_decompress_ptr jpeg_info)
         Not a ICC profile, return.
       */
       for (i=0; i < (ssize_t) (length-12); i++)
-        (void) GetCharacter(jpeg_info);
+        if (GetCharacter(jpeg_info) == EOF)
+          break;
       return(TRUE);
     }
   (void) GetCharacter(jpeg_info);  /* id */
@@ -480,7 +490,15 @@ static boolean ReadICCProfile(j_decompress_ptr jpeg_info)
   error_manager->profile=profile;
   p=GetStringInfoDatum(profile);
   for (i=(ssize_t) GetStringInfoLength(profile)-1; i >= 0; i--)
-    *p++=(unsigned char) GetCharacter(jpeg_info);
+  {
+    int
+      c;
+
+    c=GetCharacter(jpeg_info);
+    if (c == EOF)
+      break;
+    *p++=(unsigned char) c;
+  }
   error_manager->profile=NULL;
   icc_profile=(StringInfo *) GetImageProfile(image,"icc");
   if (icc_profile != (StringInfo *) NULL)
@@ -541,7 +559,8 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
   if (length <= 14)
     {
       while (length-- > 0)
-        (void) GetCharacter(jpeg_info);
+        if (GetCharacter(jpeg_info) == EOF)
+          break;
       return(TRUE);
     }
   /*
@@ -559,14 +578,16 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
         Not a IPTC profile, return.
       */
       for (i=0; i < (ssize_t) length; i++)
-        (void) GetCharacter(jpeg_info);
+        if (GetCharacter(jpeg_info) == EOF)
+          break;
       return(TRUE);
     }
   /*
     Remove the version number.
   */
   for (i=0; i < 4; i++)
-    (void) GetCharacter(jpeg_info);
+    if (GetCharacter(jpeg_info) == EOF)
+      break;
   if (length <= 11)
     return(TRUE);
   length-=4;
@@ -582,7 +603,15 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
   error_manager->profile=profile;
   p=GetStringInfoDatum(profile);
   for (i=0;  i < (ssize_t) GetStringInfoLength(profile); i++)
-    *p++=(unsigned char) GetCharacter(jpeg_info);
+  {
+    int
+      c;
+
+    c=GetCharacter(jpeg_info);
+    if (c == EOF)
+      break;
+    *p++=(unsigned char) c;
+  }
   error_manager->profile=NULL;
   iptc_profile=(StringInfo *) GetImageProfile(image,"8bim");
   if (iptc_profile != (StringInfo *) NULL)
@@ -661,7 +690,15 @@ static boolean ReadProfile(j_decompress_ptr jpeg_info)
   error_manager->profile=profile;
   p=GetStringInfoDatum(profile);
   for (i=0; i < (ssize_t) GetStringInfoLength(profile); i++)
-    *p++=(unsigned char) GetCharacter(jpeg_info);
+  {
+    int
+      c;
+
+    c=GetCharacter(jpeg_info);
+    if (c == EOF)
+      break;
+    *p++=(unsigned char) c;
+  }
   error_manager->profile=NULL;
   if (marker == 1)
     {
@@ -1015,12 +1052,12 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   debug=IsEventLogging();
   (void) debug;
   image=AcquireImage(image_info);
@@ -2142,9 +2179,9 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   exception=(&image->exception);
@@ -2199,6 +2236,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
       jpeg_info.in_color_space=JCS_YCbCr;
       break;
     }
+    case LinearGRAYColorspace:
     case GRAYColorspace:
     case Rec601LumaColorspace:
     case Rec709LumaColorspace:
@@ -2296,7 +2334,8 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
             Perform optimization only if available memory resources permit it.
           */
           status=AcquireMagickResource(MemoryResource,length);
-          RelinquishMagickResource(MemoryResource,length);
+          if (status != MagickFalse)
+            RelinquishMagickResource(MemoryResource,length);
           jpeg_info.optimize_coding=status == MagickFalse ? FALSE : TRUE;
         }
     }

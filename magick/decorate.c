@@ -17,7 +17,7 @@
 %                                   July 1992                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -110,7 +110,7 @@ MagickExport Image *BorderImage(const Image *image,
     frame_info;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(border_info != (RectangleInfo *) NULL);
@@ -203,7 +203,7 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
     Check frame geometry.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(frame_info != (FrameInfo *) NULL);
@@ -406,7 +406,7 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,frame_image,1,1)
+    magick_number_threads(image,frame_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -677,7 +677,7 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(raise_info != (RectangleInfo *) NULL);
@@ -703,7 +703,7 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,1,1)
+    magick_number_threads(image,image,raise_info->height,1)
 #endif
   for (y=0; y < (ssize_t) raise_info->height; y++)
   {
@@ -777,7 +777,7 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
   }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,1,1)
+    magick_number_threads(image,image,image->rows-2*raise_info->height,1)
 #endif
   for (y=(ssize_t) raise_info->height; y < (ssize_t) (image->rows-raise_info->height); y++)
   {
@@ -840,7 +840,7 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
   }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,1,1)
+    magick_number_threads(image,image,image->rows-raise_info->height,1)
 #endif
   for (y=(ssize_t) (image->rows-raise_info->height); y < (ssize_t) image->rows; y++)
   {

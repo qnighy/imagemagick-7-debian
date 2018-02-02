@@ -16,7 +16,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -893,7 +893,7 @@ static LinkedListInfo *AcquireColorCache(const char *filename,
       p->alpha);
     color_info->compliance=(ComplianceType) p->compliance;
     color_info->exempt=MagickTrue;
-    color_info->signature=MagickSignature;
+    color_info->signature=MagickCoreSignature;
     status&=AppendValueToLinkedList(cache,color_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
@@ -1586,7 +1586,8 @@ MagickExport void GetColorTuple(const MagickPixelPacket *pixel,
   if (color.matte != MagickFalse)
     (void) ConcatenateMagickString(tuple,"a",MaxTextExtent);
   (void) ConcatenateMagickString(tuple,"(",MaxTextExtent);
-  if (color.colorspace == GRAYColorspace)
+  if ((color.colorspace == LinearGRAYColorspace) ||
+      (color.colorspace == GRAYColorspace))
     ConcatenateColorComponent(&color,GrayChannel,SVGCompliance,tuple);
   else
     {
@@ -1816,11 +1817,11 @@ MagickExport MagickBooleanType IsImageSimilar(const Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(target_image != (Image *) NULL);
-  assert(target_image->signature == MagickSignature);
+  assert(target_image->signature == MagickCoreSignature);
   assert(x_offset != (ssize_t *) NULL);
   assert(y_offset != (ssize_t *) NULL);
   assert(exception != (ExceptionInfo *) NULL);
@@ -2335,7 +2336,7 @@ static MagickBooleanType LoadColorCache(LinkedListInfo *cache,const char *xml,
         (void) ResetMagickMemory(color_info,0,sizeof(*color_info));
         color_info->path=ConstantString(filename);
         color_info->exempt=MagickFalse;
-        color_info->signature=MagickSignature;
+        color_info->signature=MagickCoreSignature;
         continue;
       }
     if (color_info == (ColorInfo *) NULL)
@@ -2827,12 +2828,17 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
             }
           if (LocaleCompare(colorspace,"gray") == 0)
             {
-              color->colorspace=GRAYColorspace;
               color->green=color->red;
               color->blue=color->red;
               if (((flags & SigmaValue) != 0) && (color->matte != MagickFalse))
                 color->opacity=(MagickRealType) ClampToQuantum((MagickRealType)
                   (QuantumRange-QuantumRange*geometry_info.sigma));
+              if ((icc_color == MagickFalse) &&
+                  (color->colorspace == LinearGRAYColorspace))
+                {
+                  color->colorspace=GRAYColorspace;
+                  color->depth=8;
+                }
             }
           if ((LocaleCompare(colorspace,"HCL") == 0) ||
               (LocaleCompare(colorspace,"HSB") == 0) ||
@@ -2880,6 +2886,9 @@ MagickExport MagickBooleanType QueryMagickColorCompliance(const char *name,
   if (p == (const ColorInfo *) NULL)
     return(MagickFalse);
   color->colorspace=sRGBColorspace;
+  if ((LocaleNCompare(name,"gray",4) == 0) ||
+      (LocaleNCompare(name,"grey",4) == 0))
+    color->colorspace=GRAYColorspace;
   color->depth=8;
   color->matte=p->color.opacity != OpaqueOpacity ? MagickTrue : MagickFalse;
   color->red=(MagickRealType) p->color.red;

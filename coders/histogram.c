@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -225,9 +225,9 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
     Allocate histogram image.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
@@ -340,7 +340,9 @@ static MagickBooleanType WriteHISTOGRAMImage(const ImageInfo *image_info,
   */
   histogram=(MagickPixelPacket *) RelinquishMagickMemory(histogram);
   option=GetImageOption(image_info,"histogram:unique-colors");
-  if ((option == (const char *) NULL) || (IsMagickTrue(option) != MagickFalse))
+  if ((IsHistogramImage(image,exception) != MagickFalse) ||
+      (IsMagickTrue(option) != MagickFalse) ||
+      (GetImageOption(image_info,"format") != (const char *) NULL))
     {
       FILE
         *file;

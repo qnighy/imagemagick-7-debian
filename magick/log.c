@@ -17,7 +17,7 @@
 %                                September 2002                               %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -206,6 +206,9 @@ static char
 static LinkedListInfo
   *log_cache = (LinkedListInfo *) NULL;
 
+static MagickBooleanType
+  event_logging = MagickFalse;
+
 static SemaphoreInfo
   *event_semaphore = (SemaphoreInfo *) NULL,
   *log_semaphore = (SemaphoreInfo *) NULL;
@@ -314,7 +317,7 @@ static LinkedListInfo *AcquireLogCache(const char *filename,
     log_info->handler_mask=p->handler_mask;
     log_info->filename=ConstantString(p->filename);
     log_info->format=ConstantString(p->format);
-    log_info->signature=MagickSignature;
+    log_info->signature=MagickCoreSignature;
     status&=AppendValueToLinkedList(cache,log_info);
     if (status == MagickFalse)
       (void) ThrowMagickException(exception,GetMagickModule(),
@@ -654,6 +657,25 @@ MagickExport const char *GetLogName(void)
 %    o exception: return any errors or warnings in this structure.
 %
 */
+
+static inline void CheckEventLogging()
+{
+  /*
+    Are we logging events?
+  */
+  if (IsLinkedListEmpty(log_cache) != MagickFalse)
+    event_logging=MagickFalse;
+  else
+    {
+      LogInfo
+        *p;
+
+      ResetLinkedListIterator(log_cache);
+      p=(LogInfo *) GetNextValueInLinkedList(log_cache);
+      event_logging=p->event_mask != NoEvents ? MagickTrue: MagickFalse;
+    }
+}
+
 static MagickBooleanType IsLogCacheInstantiated(ExceptionInfo *exception)
 {
   if (log_cache == (LinkedListInfo *) NULL)
@@ -662,7 +684,10 @@ static MagickBooleanType IsLogCacheInstantiated(ExceptionInfo *exception)
         ActivateSemaphoreInfo(&log_semaphore);
       LockSemaphoreInfo(log_semaphore);
       if (log_cache == (LinkedListInfo *) NULL)
-        log_cache=AcquireLogCache(LogFilename,exception);
+        {
+          log_cache=AcquireLogCache(LogFilename,exception);
+          CheckEventLogging();
+        }
       UnlockSemaphoreInfo(log_semaphore);
     }
   return(log_cache != (LinkedListInfo *) NULL ? MagickTrue : MagickFalse);
@@ -689,19 +714,7 @@ static MagickBooleanType IsLogCacheInstantiated(ExceptionInfo *exception)
 */
 MagickExport MagickBooleanType IsEventLogging(void)
 {
-  const LogInfo
-    *log_info;
-
-  ExceptionInfo
-    *exception;
-
-  if ((log_cache == (LinkedListInfo *) NULL) ||
-      (IsLinkedListEmpty(log_cache) != MagickFalse))
-    return(MagickFalse);
-  exception=AcquireExceptionInfo();
-  log_info=GetLogInfo("*",exception);
-  exception=DestroyExceptionInfo(exception);
-  return(log_info->event_mask != NoEvents ? MagickTrue : MagickFalse);
+  return(event_logging);
 }
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -890,6 +903,7 @@ MagickExport void LogComponentTerminus(void)
   LockSemaphoreInfo(log_semaphore);
   if (log_cache != (LinkedListInfo *) NULL)
     log_cache=DestroyLinkedList(log_cache,DestroyLogElement);
+  event_logging=MagickFalse;
   UnlockSemaphoreInfo(log_semaphore);
   DestroySemaphoreInfo(&log_semaphore);
 }
@@ -1253,8 +1267,9 @@ static char *TranslateFilename(const LogInfo *log_info)
   return(filename);
 }
 
-MagickBooleanType LogMagickEventList(const LogEventType type,const char *module,
-  const char *function,const size_t line,const char *format,va_list operands)
+MagickExport MagickBooleanType LogMagickEventList(const LogEventType type,
+  const char *module,const char *function,const size_t line,const char *format,
+  va_list operands)
 {
   char
     event[MaxTextExtent],
@@ -1272,8 +1287,6 @@ MagickBooleanType LogMagickEventList(const LogEventType type,const char *module,
   LogInfo
     *log_info;
 
-  if (IsEventLogging() == MagickFalse)
-    return(MagickFalse);
   exception=AcquireExceptionInfo();
   log_info=(LogInfo *) GetLogInfo("*",exception);
   exception=DestroyExceptionInfo(exception);
@@ -1382,8 +1395,9 @@ MagickBooleanType LogMagickEventList(const LogEventType type,const char *module,
   return(MagickTrue);
 }
 
-MagickBooleanType LogMagickEvent(const LogEventType type,const char *module,
-  const char *function,const size_t line,const char *format,...)
+MagickExport MagickBooleanType LogMagickEvent(const LogEventType type,
+  const char *module,const char *function,const size_t line,
+  const char *format,...)
 {
   va_list
     operands;
@@ -1391,6 +1405,8 @@ MagickBooleanType LogMagickEvent(const LogEventType type,const char *module,
   MagickBooleanType
     status;
 
+  if (IsEventLogging() == MagickFalse)
+    return(MagickFalse);
   va_start(operands,format);
   status=LogMagickEventList(type,module,function,line,format,operands);
   va_end(operands);
@@ -1535,7 +1551,7 @@ static MagickBooleanType LoadLogCache(LinkedListInfo *cache,const char *xml,
         (void) ResetMagickMemory(log_info,0,sizeof(*log_info));
         log_info->path=ConstantString(filename);
         GetTimerInfo((TimerInfo *) &log_info->timer);
-        log_info->signature=MagickSignature;
+        log_info->signature=MagickCoreSignature;
         continue;
       }
     if (log_info == (LogInfo *) NULL)
@@ -1741,6 +1757,7 @@ MagickExport LogEventType SetLogEventMask(const char *events)
   log_info->event_mask=(LogEventType) option;
   if (option == -1)
     log_info->event_mask=UndefinedEvents;
+  CheckEventLogging();
   UnlockSemaphoreInfo(log_semaphore);
   return(log_info->event_mask);
 }
@@ -1784,7 +1801,7 @@ MagickExport void SetLogFormat(const char *format)
   log_info->format=ConstantString(format);
   UnlockSemaphoreInfo(log_semaphore);
 }
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %

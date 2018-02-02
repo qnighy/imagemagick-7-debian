@@ -17,7 +17,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -148,7 +148,7 @@ MagickExport ModuleInfo *AcquireModuleInfo(const char *path,const char *tag)
   if (tag != (const char *) NULL)
     module_info->tag=ConstantString(tag);
   module_info->timestamp=time(0);
-  module_info->signature=MagickSignature;
+  module_info->signature=MagickCoreSignature;
   return(module_info);
 }
 
@@ -580,6 +580,15 @@ static MagickBooleanType GetMagickModulePath(const char *filename,
         if ((q >= path) && (*q != *DirectorySeparator))
           (void) ConcatenateMagickString(path,DirectorySeparator,MaxTextExtent);
         (void) ConcatenateMagickString(path,filename,MaxTextExtent);
+#if defined(MAGICKCORE_HAVE_REALPATH)
+        {
+          char
+            resolved_path[PATH_MAX+1];
+
+          if (realpath(path,resolved_path) != (char *) NULL)
+            (void) CopyMagickString(path,resolved_path,MaxTextExtent);
+        }
+#endif
         if (IsPathAccessible(path) != MagickFalse)
           {
             module_path=DestroyString(module_path);
@@ -884,20 +893,24 @@ static MagickBooleanType IsModuleTreeInstantiated(
           ModuleInfo
             *module_info;
 
-          module_list=NewSplayTree(CompareSplayTreeString,
+          SplayTreeInfo
+            *splay_tree;
+
+          splay_tree=NewSplayTree(CompareSplayTreeString,
             (void *(*)(void *)) NULL,DestroyModuleNode);
-          if (module_list == (SplayTreeInfo *) NULL)
+          if (splay_tree == (SplayTreeInfo *) NULL)
             ThrowFatalException(ResourceLimitFatalError,
               "MemoryAllocationFailed");
           module_info=AcquireModuleInfo((const char *) NULL,"[boot-strap]");
           module_info->stealth=MagickTrue;
-          status=AddValueToSplayTree(module_list,module_info->tag,module_info);
+          status=AddValueToSplayTree(splay_tree,module_info->tag,module_info);
           if (status == MagickFalse)
             ThrowFatalException(ResourceLimitFatalError,
               "MemoryAllocationFailed");
           if (lt_dlinit() != 0)
             ThrowFatalException(ModuleFatalError,
               "UnableToInitializeModuleLoader");
+          module_list=splay_tree;
         }
       UnlockSemaphoreInfo(module_semaphore);
     }
@@ -965,7 +978,7 @@ MagickExport MagickBooleanType InvokeDynamicImageFilter(const char *tag,
     Find the module.
   */
   assert(images != (Image **) NULL);
-  assert((*images)->signature == MagickSignature);
+  assert((*images)->signature == MagickCoreSignature);
   if ((*images)->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       (*images)->filename);
@@ -1012,7 +1025,7 @@ MagickExport MagickBooleanType InvokeDynamicImageFilter(const char *tag,
   (void) FormatLocaleString(name,MaxTextExtent,"%sImage",tag);
 #else
   (void) FormatLocaleString(name,MaxTextExtent,"%s%sImage",
-    MAGICKCORE_NAMESPACE_PREFIX,tag);
+    MAGICKCORE_NAMESPACE_PREFIX_TAG,tag);
 #endif
   /*
     Execute the module.
@@ -1428,7 +1441,7 @@ static const ModuleInfo *RegisterModule(const ModuleInfo *module_info,
     status;
 
   assert(module_info != (ModuleInfo *) NULL);
-  assert(module_info->signature == MagickSignature);
+  assert(module_info->signature == MagickCoreSignature);
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",module_info->tag);
   if (module_list == (SplayTreeInfo *) NULL)
     return((const ModuleInfo *) NULL);
@@ -1572,7 +1585,7 @@ static void TagToModuleName(const char *tag,const char *format,char *module)
       prefix_format[MaxTextExtent];
 
     (void) FormatLocaleString(prefix_format,MaxTextExtent,"%s%s",
-      MAGICKCORE_NAMESPACE_PREFIX,format);
+      MAGICKCORE_NAMESPACE_PREFIX_TAG,format);
     (void) FormatLocaleString(module,MaxTextExtent,prefix_format,name);
   }
 #endif
@@ -1646,7 +1659,7 @@ MagickExport MagickBooleanType InvokeDynamicImageFilter(const char *tag,
     rights;
 
   assert(image != (Image **) NULL);
-  assert((*image)->signature == MagickSignature);
+  assert((*image)->signature == MagickCoreSignature);
   if ((*image)->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",(*image)->filename);
   rights=ReadPolicyRights;

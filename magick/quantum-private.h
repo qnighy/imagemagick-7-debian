@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #ifndef MAGICKCORE_QUANTUM_PRIVATE_H
 #define MAGICKCORE_QUANTUM_PRIVATE_H
 
+#include "magick/memory_.h"
 #include "magick/cache.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -66,7 +67,7 @@ struct _QuantumInfo
   size_t
     number_threads;
 
-  unsigned char
+  MemoryInfo
     **pixels;
 
   size_t

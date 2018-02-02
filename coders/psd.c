@@ -20,7 +20,7 @@
 %                                December 2013                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -301,7 +301,7 @@ static MagickBooleanType CorrectPSDAlphaBlend(const ImageInfo *image_info,
   status=MagickTrue;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
 #pragma omp parallel for schedule(static,4) shared(status) \
-  magick_threads(image,image,image->rows,1)
+  magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -373,7 +373,7 @@ static MagickBooleanType ApplyPSDLayerOpacity(Image *image,Quantum opacity,
   status=MagickTrue;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
 #pragma omp parallel for schedule(static,4) shared(status) \
-  magick_threads(image,image,image->rows,1)
+  magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -426,6 +426,8 @@ static MagickBooleanType ApplyPSDOpacityMask(Image *image,const Image *mask,
       "  applying opacity mask");
   complete_mask=CloneImage(image,image->columns,image->rows,MagickTrue,
     exception);
+  if (complete_mask == (Image *) NULL)
+    return(MagickFalse);
   complete_mask->matte=MagickTrue;
   GetMagickPixelPacket(complete_mask,&color);
   color.red=background;
@@ -440,7 +442,7 @@ static MagickBooleanType ApplyPSDOpacityMask(Image *image,const Image *mask,
   image->matte=MagickTrue;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
 #pragma omp parallel for schedule(static,4) shared(status) \
-  magick_threads(image,image,image->rows,1)
+  magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1114,6 +1116,12 @@ static MagickBooleanType ReadPSDChannelRLE(Image *image,const PSDInfo *psd_info,
     if ((MagickOffsetType) length < sizes[y])
       length=(size_t) sizes[y];
 
+  if (length > (row_size+512))
+    {
+      pixels=(unsigned char *) RelinquishMagickMemory(pixels);
+      ThrowBinaryException(ResourceLimitError,"InvalidLength",image->filename);
+    }
+
   compact_pixels=(unsigned char *) AcquireQuantumMemory(length,sizeof(*pixels));
   if (compact_pixels == (unsigned char *) NULL)
     {
@@ -1199,6 +1207,7 @@ static MagickBooleanType ReadPSDChannelZip(Image *image,const size_t channels,
     }
   if (ReadBlob(image,compact_size,compact_pixels) != (ssize_t) compact_size)
     {
+      pixels=(unsigned char *) RelinquishMagickMemory(pixels);
       compact_pixels=(unsigned char *) RelinquishMagickMemory(compact_pixels);
       ThrowBinaryException(CorruptImageError,"UnexpectedEndOfFile",
         image->filename);
@@ -1218,7 +1227,7 @@ static MagickBooleanType ReadPSDChannelZip(Image *image,const size_t channels,
 
       while (stream.avail_out > 0)
       {
-        ret=inflate(&stream, Z_SYNC_FLUSH);
+        ret=inflate(&stream,Z_SYNC_FLUSH);
         if ((ret != Z_OK) && (ret != Z_STREAM_END))
           {
             (void) inflateEnd(&stream);
@@ -1227,6 +1236,8 @@ static MagickBooleanType ReadPSDChannelZip(Image *image,const size_t channels,
             pixels=(unsigned char *) RelinquishMagickMemory(pixels);
             return(MagickFalse);
           }
+        if (ret == Z_STREAM_END)
+          break;
       }
       (void) inflateEnd(&stream);
     }
@@ -1287,10 +1298,12 @@ static MagickBooleanType ReadPSDChannel(Image *image,
 
   channel_image=image;
   mask=(Image *) NULL;
-  if (layer_info->channel_info[channel].type < -1)
+  if ((layer_info->channel_info[channel].type < -1) &&
+      (layer_info->mask.page.width > 0) && (layer_info->mask.page.height > 0))
     {
       const char
         *option;
+
       /*
         Ignore mask that is not a user supplied layer mask, if the mask is
         disabled or if the flags have unsupported values.
@@ -1313,7 +1326,7 @@ static MagickBooleanType ReadPSDChannel(Image *image,
     }
 
   offset=TellBlob(image);
-  status=MagickTrue;
+  status=MagickFalse;
   switch(compression)
   {
     case Raw:
@@ -1637,9 +1650,9 @@ static MagickBooleanType ReadPSDLayersInternal(Image *image,
                 */
                 layer_info[i].mask.page.y=ReadBlobSignedLong(image);
                 layer_info[i].mask.page.x=ReadBlobSignedLong(image);
-                layer_info[i].mask.page.height=(size_t) (ReadBlobLong(image)-
+                layer_info[i].mask.page.height=(size_t) (ReadBlobSignedLong(image)-
                   layer_info[i].mask.page.y);
-                layer_info[i].mask.page.width=(size_t) (ReadBlobLong(image)-
+                layer_info[i].mask.page.width=(size_t) (ReadBlobSignedLong(image)-
                   layer_info[i].mask.page.x);
                 layer_info[i].mask.background=(unsigned char) ReadBlobByte(
                   image);
@@ -1679,18 +1692,12 @@ static MagickBooleanType ReadPSDLayersInternal(Image *image,
                   (void) LogMagickEvent(CoderEvent,GetMagickModule(),
                     "      layer blending ranges: length=%.20g",(double)
                     ((MagickOffsetType) length));
-                /*
-                  We read it, but don't use it...
-                */
-                for (j=0; j < (ssize_t) length; j+=8)
-                {
-                  size_t blend_source=ReadBlobLong(image);
-                  size_t blend_dest=ReadBlobLong(image);
-                  if (image->debug != MagickFalse)
-                    (void) LogMagickEvent(CoderEvent,GetMagickModule(),
-                      "        source(%x), dest(%x)",(unsigned int)
-                      blend_source,(unsigned int) blend_dest);
-                }
+                if (DiscardBlobBytes(image,length) == MagickFalse)
+                  {
+                    layer_info=DestroyLayerInfo(layer_info,number_layers);
+                    ThrowBinaryException(CorruptImageError,
+                      "UnexpectedEndOfFile",image->filename);
+                  }
               }
             /*
               Layer name.
@@ -1952,12 +1959,12 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
@@ -1994,6 +2001,8 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (double) psd_info.columns,(double) psd_info.rows,(double)
       psd_info.channels,(double) psd_info.depth,ModeToString((PSDImageType)
       psd_info.mode));
+  if (EOFBlob(image) != MagickFalse)
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   /*
     Initialize image.
   */
@@ -2153,6 +2162,8 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     If we are only "pinging" the image, then we're done - so return.
   */
+  if (EOFBlob(image) != MagickFalse)
+    ThrowReaderException(CorruptImageError,"UnexpectedEndOfFile");
   if (image_info->ping != MagickFalse)
     {
       (void) CloseBlob(image);
@@ -2298,7 +2309,7 @@ static inline ssize_t SetPSDOffset(const PSDInfo *psd_info,Image *image,
 {
   if (psd_info->version == 1)
     return(WriteBlobMSBShort(image,(unsigned short) offset));
-  return(WriteBlobMSBLong(image,(unsigned short) offset));
+  return(WriteBlobMSBLong(image,(unsigned int) offset));
 }
 
 static inline ssize_t WritePSDOffset(const PSDInfo *psd_info,Image *image,
@@ -2315,7 +2326,7 @@ static inline ssize_t WritePSDOffset(const PSDInfo *psd_info,Image *image,
   if (psd_info->version == 1)
     result=WriteBlobMSBShort(image,(unsigned short) size);
   else
-    result=(WriteBlobMSBLong(image,(unsigned short) size));
+    result=WriteBlobMSBLong(image,(unsigned int) size);
   SeekBlob(image,current_offset,SEEK_SET);
   return(result);
 }
@@ -2367,7 +2378,7 @@ static size_t PSDPackbitsEncodeImage(Image *image,const size_t length,
     Compress pixels with Packbits encoding.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(pixels != (unsigned char *) NULL);
@@ -3110,9 +3121,9 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
@@ -3358,8 +3369,10 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,
         size+=WriteBlobMSBLong(image,20);
         size+=WriteBlobMSBSignedLong(image,mask->page.y);
         size+=WriteBlobMSBSignedLong(image,mask->page.x);
-        size+=WriteBlobMSBLong(image,mask->rows+mask->page.y);
-        size+=WriteBlobMSBLong(image,mask->columns+mask->page.x);
+        size+=WriteBlobMSBSignedLong(image,(const signed int) mask->rows+
+          mask->page.y);
+        size+=WriteBlobMSBSignedLong(image,(const signed int) mask->columns+
+          mask->page.x);
         size+=WriteBlobByte(image,default_color);
         size+=WriteBlobByte(image,mask->compose == NoCompositeOp ? 2 : 0);
         size+=WriteBlobMSBShort(image,0);
@@ -3404,7 +3417,7 @@ static MagickBooleanType WritePSDImage(const ImageInfo *image_info,
     Write the total size
   */
   size_offset+=WritePSDSize(&psd_info,image,size+
-    (psd_info.version == 1 ? 8 : 16),size_offset);
+    (psd_info.version == 1 ? 8 : 12),size_offset);
   if ((size/2) != ((size+1)/2))
     rounded_size=size+1;
   else

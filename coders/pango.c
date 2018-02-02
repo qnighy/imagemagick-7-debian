@@ -17,7 +17,7 @@
 %                                 March 2012                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -172,12 +172,12 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
     Initialize Image structure.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   (void) ResetImagePage(image,"0x0+0+0");
   /*
@@ -507,6 +507,7 @@ ModuleExport size_t RegisterPANGOImage(void)
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->adjoin=MagickFalse;
+  entry->thread_support=MagickFalse;
   entry->module=ConstantString("PANGO");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);

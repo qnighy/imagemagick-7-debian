@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -115,9 +115,9 @@ static MagickBooleanType CompositeImageList(ImageInfo *image_info,Image **image,
     status;
 
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image **) NULL);
-  assert((*image)->signature == MagickSignature);
+  assert((*image)->signature == MagickCoreSignature);
   if ((*image)->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",(*image)->filename);
   assert(exception != (ExceptionInfo *) NULL);
@@ -125,7 +125,7 @@ static MagickBooleanType CompositeImageList(ImageInfo *image_info,Image **image,
   status=MagickTrue;
   if (composite_image != (Image *) NULL)
     {
-      assert(composite_image->signature == MagickSignature);
+      assert(composite_image->signature == MagickCoreSignature);
       switch( composite_options->compose )
       {
         case BlendCompositeOp:
@@ -449,7 +449,7 @@ WandExport MagickBooleanType CompositeImageCommand(ImageInfo *image_info,
     Set default.
   */
   assert(image_info != (ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(exception != (ExceptionInfo *) NULL);

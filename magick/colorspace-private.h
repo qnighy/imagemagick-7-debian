@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -96,7 +96,8 @@ static inline MagickBooleanType IsCMYKColorspace(
 static inline MagickBooleanType IsGrayColorspace(
   const ColorspaceType colorspace)
 {
-  if ((colorspace == GRAYColorspace) || (colorspace == Rec601LumaColorspace) ||
+  if ((colorspace == LinearGRAYColorspace) || (colorspace == GRAYColorspace) ||
+      (colorspace == Rec601LumaColorspace) ||
       (colorspace == Rec709LumaColorspace))
     return(MagickTrue);
   return(MagickFalse);
@@ -121,9 +122,8 @@ static inline MagickBooleanType IssRGBCompatibleColorspace(
   const ColorspaceType colorspace)
 {
   if ((colorspace == sRGBColorspace) || (colorspace == RGBColorspace) ||
-      (colorspace == scRGBColorspace) ||
-      (colorspace == TransparentColorspace) ||
-      (IsGrayColorspace(colorspace) != MagickFalse))
+      (colorspace == scRGBColorspace) || (colorspace == TransparentColorspace) ||
+      (colorspace == GRAYColorspace) || (colorspace == LinearGRAYColorspace))
     return(MagickTrue);
   return(MagickFalse);
 }

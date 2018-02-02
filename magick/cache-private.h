@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -142,6 +142,9 @@ typedef struct _OpenCLCacheInfo
 
   PixelPacket
     *pixels;
+
+  SemaphoreInfo
+    *events_semaphore;
 } OpenCLCacheInfo;
 
 typedef struct _CacheInfo
@@ -159,7 +162,8 @@ typedef struct _CacheInfo
     type;
 
   MapMode
-    mode;
+    mode,
+    disk_mode;
 
   MagickBooleanType
     mapped;
@@ -298,7 +302,7 @@ extern MagickPrivate MagickBooleanType
   SyncImagePixelCache(Image *,ExceptionInfo *);
 
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
-extern MagickPrivate const cl_event
+extern MagickPrivate cl_event
   *GetOpenCLEvents(const Image *,cl_uint *);
 
 extern MagickPrivate cl_mem

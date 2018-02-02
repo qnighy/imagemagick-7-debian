@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -299,12 +299,12 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -315,6 +315,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Read SGI raster header.
   */
+  (void) ResetMagickMemory(&iris_info,0,sizeof(iris_info));
   iris_info.magic=ReadBlobMSBShort(image);
   do
   {
@@ -335,7 +336,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((iris_info.bytes_per_pixel == 0) || (iris_info.bytes_per_pixel > 2))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     iris_info.dimension=ReadBlobMSBShort(image);
-    if ((iris_info.dimension == 0) || (iris_info.dimension > 3)) 
+    if ((iris_info.dimension == 0) || (iris_info.dimension > 3))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     iris_info.columns=ReadBlobMSBShort(image);
     iris_info.rows=ReadBlobMSBShort(image);
@@ -652,7 +653,10 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
           Create grayscale map.
         */
         if (AcquireImageColormap(image,image->colors) == MagickFalse)
-          ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          {
+            pixel_info=RelinquishVirtualMemory(pixel_info);
+            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+          }
         /*
           Convert SGI image to PseudoClass pixel packets.
         */
@@ -932,9 +936,9 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if ((image->columns > 65535UL) || (image->rows > 65535UL))

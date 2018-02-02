@@ -23,7 +23,7 @@
 %                                March 2002                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1236,7 +1236,7 @@ WandExport ClipPathUnits DrawGetClipUnits(const DrawingWand *wand)
 WandExport char *DrawGetDensity(const DrawingWand *wand)
 {
   assert(wand != (const DrawingWand *) NULL);
-  assert(wand->signature == MagickSignature);
+  assert(wand->signature == MagickCoreSignature);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   if (CurrentContext->density != (char *) NULL)
@@ -1882,11 +1882,14 @@ WandExport double *DrawGetStrokeDashArray(const DrawingWand *wand,
     {
       dasharray=(double *) AcquireQuantumMemory((size_t) n+1UL,
         sizeof(*dasharray));
-      p=CurrentContext->dash_pattern;
-      q=dasharray;
-      for (i=0; i < (ssize_t) n; i++)
-        *q++=(*p++);
-      *q=0.0;
+      if (dasharray != (double *) NULL)
+        {
+          p=CurrentContext->dash_pattern;
+          q=dasharray;
+          for (i=0; i < (ssize_t) n; i++)
+            *q++=(*p++);
+          *q=0.0;
+        }
     }
   return(dasharray);
 }
@@ -4678,7 +4681,7 @@ WandExport MagickBooleanType DrawSetDensity(DrawingWand *wand,
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",density);
   assert(wand != (DrawingWand *) NULL);
-  assert(wand->signature == MagickSignature);
+  assert(wand->signature == MagickCoreSignature);
   assert(density != (const char *) NULL);
   if ((CurrentContext->density == (const char *) NULL) ||
       (wand->filter_off != MagickFalse) ||

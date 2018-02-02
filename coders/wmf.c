@@ -17,7 +17,7 @@
 %                               December 2000                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -454,7 +454,7 @@ int magick_progress_callback(void *context,float quantum)
     status;
 
   image=(Image *) context;
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   status=SetImageProgress(image,LoadImagesTag,TellBlob(image),
     GetBlobSize(image));
   return(status != MagickFalse ? 0 : 1);
@@ -838,7 +838,7 @@ static void ipa_device_close(wmfAPI * API)
       ddata->draw_info=(DrawInfo *)NULL;
     }
   if (WMF_MAGICK_GetFontData(API)->ps_name)
-    WMF_MAGICK_GetFontData(API)->ps_name=RelinquishMagickMemory(
+    WMF_MAGICK_GetFontData(API)->ps_name=(char *) RelinquishMagickMemory(
       WMF_MAGICK_GetFontData(API)->ps_name);
 }
 

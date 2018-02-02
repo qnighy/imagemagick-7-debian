@@ -17,7 +17,7 @@
 %                                December 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -46,6 +46,7 @@
 #include "magick/log.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/nt-base.h"
 #include "magick/nt-base-private.h"
 #include "magick/resource_.h"
@@ -351,7 +352,7 @@ MagickPrivate int Exit(int status)
   exit(status);
 }
 
-#if !defined(__MINGW32__) && !defined(__MINGW64__)
+#if !defined(__MINGW32__)
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1746,7 +1747,7 @@ MagickPrivate DIR *NTOpenDirectory(const char *path)
   if (wcsncat(file_specification,directory_separator,
         MaxTextExtent-wcslen(file_specification)-1) == (wchar_t *) NULL)
     return((DIR *) NULL);
-  entry=(DIR *) AcquireMagickMemory(sizeof(DIR));
+  entry=(DIR *) AcquireCriticalMemory(sizeof(DIR));
   if (entry != (DIR *) NULL)
     {
       entry->firsttime=TRUE;
@@ -1995,10 +1996,7 @@ MagickPrivate unsigned char *NTRegistryKeyLookup(const char *subkey)
     status=RegOpenKeyExA(HKEY_CURRENT_USER,package_key,0,KEY_READ,
       &registry_key);
   if (status != ERROR_SUCCESS)
-    {
-      registry_key=(HKEY) INVALID_HANDLE_VALUE;
-      return((unsigned char *) NULL);
-    }
+    return((unsigned char *) NULL);
   /*
     Look-up sub key.
   */
@@ -2753,7 +2751,7 @@ MagickPrivate void NTWindowsGenesis(void)
       (void) SetErrorMode(StringToInteger(mode));
       mode=DestroyString(mode);
     }
-#if defined(_DEBUG) && !defined(__BORLANDC__) && !defined(__MINGW32__) && !defined(__MINGW64__)
+#if defined(_DEBUG) && !defined(__BORLANDC__) && !defined(__MINGW32__)
   if (IsEventLogging() != MagickFalse)
     {
       int
@@ -2765,6 +2763,28 @@ MagickPrivate void NTWindowsGenesis(void)
       (void) _CrtSetDbgFlag(debug);
       _ASSERTE(_CrtCheckMemory());
     }
+#endif
+#if defined(MAGICKCORE_INSTALLED_SUPPORT)
+  {
+    unsigned char
+      *path;
+
+    path=NTRegistryKeyLookup("LibPath");
+    if (path != (unsigned char *) NULL)
+      {
+        size_t
+          length;
+
+        wchar_t
+          lib_path[MagickPathExtent];
+
+        length=MultiByteToWideChar(CP_UTF8,0,(char *) path,-1,lib_path,
+          MagickPathExtent);
+        if (length != 0)
+          SetDllDirectoryW(lib_path);
+        path=(unsigned char *) RelinquishMagickMemory(path);
+      }
+  }
 #endif
 }
 

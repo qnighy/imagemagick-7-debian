@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -339,12 +339,12 @@ static Image *ReadGROUP4Image(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -943,7 +943,7 @@ static TIFFMethodType GetJPEGMethod(Image* image,TIFF *tiff,uint16 photometric,
 #else
   uint32
 #endif
-    **value;
+    *value;
 
   unsigned char
     buffer[BUFFER_SIZE+32];
@@ -951,12 +951,17 @@ static TIFFMethodType GetJPEGMethod(Image* image,TIFF *tiff,uint16 photometric,
   unsigned short
     length;
 
-  /* only support 8 bit for now */
+  /*
+    Only support 8 bit for now.
+  */
   if ((photometric != PHOTOMETRIC_SEPARATED) || (bits_per_sample != 8) ||
       (samples_per_pixel != 4))
     return(ReadGenericMethod);
-  /* Search for Adobe APP14 JPEG Marker */
-  if (!TIFFGetField(tiff,TIFFTAG_STRIPOFFSETS,&value))
+  /*
+    Search for Adobe APP14 JPEG marker.
+  */
+  value=NULL;
+  if (!TIFFGetField(tiff,TIFFTAG_STRIPOFFSETS,&value) || (value == NULL))
     return(ReadRGBAMethod);
   position=TellBlob(image);
   offset=(MagickOffsetType) (value[0]);
@@ -1068,6 +1073,8 @@ static void TIFFReadPhotoshopLayers(Image* image,const ImageInfo *image_info,
           info.channels=(image->matte != MagickFalse ? 5UL : 4UL);
       }
   (void) ReadPSDLayers(layers,image_info,&info,MagickFalse,exception);
+  /* we need to set the datum in case a realloc happend */
+  ((StringInfo *) layer_info)->datum=GetBlobStreamData(layers);
   InheritException(exception,&layers->exception);
   DeleteImageFromList(&layers);
   if (layers != (Image *) NULL)
@@ -1090,6 +1097,16 @@ static void TIFFReadPhotoshopLayers(Image* image,const ImageInfo *image_info,
 static Image *ReadTIFFImage(const ImageInfo *image_info,
   ExceptionInfo *exception)
 {
+#define ThrowTIFFException(severity,message) \
+{ \
+  if (tiff_pixels != (unsigned char *) NULL) \
+    tiff_pixels=(unsigned char *) RelinquishMagickMemory(tiff_pixels); \
+  if (quantum_info != (QuantumInfo *) NULL) \
+    quantum_info=DestroyQuantumInfo(quantum_info); \
+  TIFFClose(tiff); \
+  ThrowReaderException(severity,message); \
+}
+
   const char
     *option;
 
@@ -1108,9 +1125,6 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
 
   MagickBooleanType
     status;
-
-  MagickSizeType
-    number_pixels;
 
   QuantumInfo
     *quantum_info;
@@ -1162,12 +1176,12 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
     Open image.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -1438,6 +1452,7 @@ RestoreMSCWarning
       case COMPRESSION_ADOBE_DEFLATE: image->compression=ZipCompression; break;
       default: image->compression=RLECompression; break;
     }
+    tiff_pixels=(unsigned char *) NULL;
     quantum_info=(QuantumInfo *) NULL;
     if ((photometric == PHOTOMETRIC_PALETTE) &&
         (pow(2.0,1.0*bits_per_sample) <= MaxColormapSize))
@@ -1508,6 +1523,7 @@ RestoreMSCWarning
     status=SetImageExtent(image,image->columns,image->rows);
     if (status == MagickFalse)
       {
+        TIFFClose(tiff);
         InheritException(exception,&image->exception);
         return(DestroyImageList(image));
       }
@@ -1516,10 +1532,7 @@ RestoreMSCWarning
     */
     quantum_info=AcquireQuantumInfo(image_info,image);
     if (quantum_info == (QuantumInfo *) NULL)
-      {
-        TIFFClose(tiff);
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-      }
+      ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
     if (sample_format == SAMPLEFORMAT_UINT)
       status=SetQuantumFormat(image,quantum_info,UnsignedQuantumFormat);
     if (sample_format == SAMPLEFORMAT_INT)
@@ -1527,11 +1540,7 @@ RestoreMSCWarning
     if (sample_format == SAMPLEFORMAT_IEEEFP)
       status=SetQuantumFormat(image,quantum_info,FloatingPointQuantumFormat);
     if (status == MagickFalse)
-      {
-        TIFFClose(tiff);
-        quantum_info=DestroyQuantumInfo(quantum_info);
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-      }
+      ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
     status=MagickTrue;
     switch (photometric)
     {
@@ -1612,12 +1621,9 @@ RestoreMSCWarning
     quantum_type=RGBQuantum;
     tiff_pixels=(unsigned char *) AcquireMagickMemory(MagickMax(
       TIFFScanlineSize(tiff),(image->columns*samples_per_pixel*
-      pow(2.0,ceil(log(bits_per_sample)/log(2.0))))));
+      pow(2.0,ceil(log(bits_per_sample)/log(2.0)))*sizeof(uint32))));
     if (tiff_pixels == (unsigned char *) NULL)
-      {
-        TIFFClose(tiff);
-        ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-      }
+      ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
     switch (method)
     {
       case ReadSingleSampleMethod:
@@ -1650,10 +1656,7 @@ RestoreMSCWarning
         status=SetQuantumPad(image,quantum_info,pad*pow(2,ceil(log(
           bits_per_sample)/log(2))));
         if (status == MagickFalse)
-          {
-            TIFFClose(tiff);
-            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-          }
+          ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
         for (y=0; y < (ssize_t) image->rows; y++)
         {
           int
@@ -1706,10 +1709,7 @@ RestoreMSCWarning
           }
         status=SetQuantumPad(image,quantum_info,pad*((bits_per_sample+7) >> 3));
         if (status == MagickFalse)
-          {
-            TIFFClose(tiff);
-            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-          }
+          ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
         for (y=0; y < (ssize_t) image->rows; y++)
         {
           int
@@ -1917,24 +1917,17 @@ RestoreMSCWarning
         */
         if ((TIFFGetField(tiff,TIFFTAG_TILEWIDTH,&columns) != 1) ||
             (TIFFGetField(tiff,TIFFTAG_TILELENGTH,&rows) != 1))
-          {
-            TIFFClose(tiff);
-            ThrowReaderException(CoderError,"ImageIsNotTiled");
-          }
+          ThrowTIFFException(CoderError,"ImageIsNotTiled");
+        if ((AcquireMagickResource(WidthResource,columns) == MagickFalse) ||
+            (AcquireMagickResource(HeightResource,rows) == MagickFalse))
+          ThrowTIFFException(ImageError,"WidthOrHeightExceedsLimit");
         (void) SetImageStorageClass(image,DirectClass);
-        number_pixels=(MagickSizeType) columns*rows;
         if (HeapOverflowSanityCheck(rows,sizeof(*tile_pixels)) != MagickFalse)
-          {
-            TIFFClose(tiff);
-            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-          }
+          ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
         tile_pixels=(uint32 *) AcquireQuantumMemory(columns,rows*
            sizeof(*tile_pixels));
         if (tile_pixels == (uint32 *) NULL)
-          {
-            TIFFClose(tiff);
-            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-          }
+          ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
         for (y=0; y < (ssize_t) image->rows; y+=rows)
         {
           PixelPacket
@@ -2021,6 +2014,9 @@ RestoreMSCWarning
         MemoryInfo
           *pixel_info;
 
+        MagickSizeType
+          number_pixels;
+
         register uint32
           *p;
 
@@ -2032,17 +2028,11 @@ RestoreMSCWarning
         */
         number_pixels=(MagickSizeType) image->columns*image->rows;
         if (HeapOverflowSanityCheck(image->rows,sizeof(*pixels)) != MagickFalse)
-          {
-            TIFFClose(tiff);
-            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-          }
+          ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
         pixel_info=AcquireVirtualMemory(image->columns,image->rows*
           sizeof(*pixels));
         if (pixel_info == (MemoryInfo *) NULL)
-          {
-            TIFFClose(tiff);
-            ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-          }
+          ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
         pixels=(uint32 *) GetVirtualMemoryBlob(pixel_info);
         (void) TIFFReadRGBAImage(tiff,(uint32) image->columns,(uint32)
           image->rows,(uint32 *) pixels,0);
@@ -2218,6 +2208,8 @@ static void TIFFIgnoreTags(TIFF *tiff)
   i=0;
   p=tags;
   ignore=(TIFFFieldInfo *) AcquireQuantumMemory(count,sizeof(*ignore));
+  if (ignore == (TIFFFieldInfo *) NULL)
+    return;
   /* This also sets field_bit to 0 (FIELD_IGNORE) */
   ResetMagickMemory(ignore,0,count*sizeof(*ignore));
   while (*p != '\0')
@@ -2482,9 +2474,9 @@ static MagickBooleanType WriteGROUP4Image(const ImageInfo *image_info,
     Write image as CCITT Group4 TIFF image to a temporary file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
@@ -3167,9 +3159,9 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
     Open TIFF file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
@@ -3870,7 +3862,15 @@ RestoreMSCWarning
         blue=(uint16 *) AcquireQuantumMemory(65536,sizeof(*blue));
         if ((red == (uint16 *) NULL) || (green == (uint16 *) NULL) ||
             (blue == (uint16 *) NULL))
-          ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+          {
+            if (red != (uint16 *) NULL)
+              red=(uint16 *) RelinquishMagickMemory(red);
+            if (green != (uint16 *) NULL)
+              green=(uint16 *) RelinquishMagickMemory(green);
+            if (blue != (uint16 *) NULL)
+              blue=(uint16 *) RelinquishMagickMemory(blue);
+            ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+          }
         /*
           Initialize TIFF colormap.
         */

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -163,12 +163,12 @@ static Image *ReadSCTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -179,6 +179,8 @@ static Image *ReadSCTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Read control block.
   */
+  ResetMagickMemory(magick,0,sizeof(magick));
+  ResetMagickMemory(buffer,0,sizeof(buffer));
   count=ReadBlob(image,80,buffer);
   (void) count;
   count=ReadBlob(image,2,(unsigned char *) magick);
@@ -217,6 +219,9 @@ static Image *ReadSCTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   count=ReadBlob(image,768,buffer);
   if (separations_mask == 0x0f)
     SetImageColorspace(image,CMYKColorspace);
+  if ((image->columns < 1) || (image->rows < 1) ||
+      (width < MagickEpsilon) || (height < MagickEpsilon))
+    ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   image->x_resolution=1.0*image->columns/width;
   image->y_resolution=1.0*image->rows/height;
   if (image_info->ping != MagickFalse)

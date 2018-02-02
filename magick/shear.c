@@ -17,7 +17,7 @@
 %                                  July 1992                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -294,7 +294,7 @@ static void RadonProjection(const Image *image,MatrixInfo *source_matrix,
   }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) \
-    magick_threads(image,image,1,1)
+    magick_number_threads(image,image,GetMatrixColumns(p),1)
 #endif
   for (x=0; x < (ssize_t) GetMatrixColumns(p); x++)
   {
@@ -385,7 +385,7 @@ static MagickBooleanType RadonTransform(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,1,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -442,7 +442,7 @@ static MagickBooleanType RadonTransform(const Image *image,
   (void) NullMatrix(source_matrix);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -770,7 +770,7 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
       tile_width=image->columns;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,1,1)
+        magick_number_threads(image,image,image->rows/tile_height,1)
 #endif
       for (tile_y=0; tile_y < (ssize_t) image->rows; tile_y+=(ssize_t) tile_height)
       {
@@ -889,7 +889,7 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
       */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,1,1)
+        magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -971,7 +971,7 @@ MagickExport Image *IntegralRotateImage(const Image *image,size_t rotations,
       tile_width=image->columns;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static,4) shared(status) \
-        magick_threads(image,image,1,1)
+        magick_number_threads(image,image,image->rows/tile_height,1)
 #endif
       for (tile_y=0; tile_y < (ssize_t) image->rows; tile_y+=(ssize_t) tile_height)
       {
@@ -1158,7 +1158,7 @@ static MagickBooleanType XShearImage(Image *image,const MagickRealType degrees,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   GetMagickPixelPacket(image,&background);
@@ -1174,7 +1174,7 @@ static MagickBooleanType XShearImage(Image *image,const MagickRealType degrees,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,height,1)
+    magick_number_threads(image,image,height,1)
 #endif
   for (y=0; y < (ssize_t) height; y++)
   {
@@ -1379,7 +1379,7 @@ static MagickBooleanType YShearImage(Image *image,const MagickRealType degrees,
     x;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   GetMagickPixelPacket(image,&background);
@@ -1395,7 +1395,7 @@ static MagickBooleanType YShearImage(Image *image,const MagickRealType degrees,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,width,1)
+    magick_number_threads(image,image,width,1)
 #endif
   for (x=0; x < (ssize_t) width; x++)
   {
@@ -1593,11 +1593,11 @@ MagickExport Image *ShearImage(const Image *image,const double x_shear,
     bounds;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   if ((x_shear != 0.0) && (fmod(x_shear,90.0) == 0.0))
     ThrowImageException(ImageError,"AngleIsDiscontinuous");
   if ((y_shear != 0.0) && (fmod(y_shear,90.0) == 0.0))
@@ -1738,13 +1738,13 @@ MagickExport Image *ShearRotateImage(const Image *image,const double degrees,
     Adjust rotation angle.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  angle=degrees;
-  while (angle < -45.0)
+  assert(exception->signature == MagickCoreSignature);
+  angle=degrees-360.0*(ssize_t) (degrees/360.0);
+  if (angle < -45.0)
     angle+=360.0;
   for (rotations=0; angle > 45.0; rotations++)
     angle-=90.0;

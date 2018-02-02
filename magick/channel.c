@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -117,11 +117,11 @@ MagickExport Image *CombineImages(const Image *image,const ChannelType channel,
     Ensure the image are the same size.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   for (next=image; next != (Image *) NULL; next=GetNextImageInList(next))
   {
     if ((next->columns != image->columns) || (next->rows != image->rows))
@@ -315,7 +315,7 @@ MagickExport MagickBooleanType GetImageAlphaChannel(const Image *image)
   assert(image != (const Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   return(image->matte);
 }
 
@@ -362,11 +362,11 @@ MagickExport Image *SeparateImage(const Image *image,const ChannelType channel,
     Initialize separate image attributes.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   separate_image=CloneImage(image,0,0,MagickTrue,exception);
   if (separate_image == (Image *) NULL)
     return((Image *) NULL);
@@ -397,7 +397,7 @@ MagickExport MagickBooleanType SeparateImageChannel(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
@@ -413,7 +413,7 @@ MagickExport MagickBooleanType SeparateImageChannel(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -535,7 +535,7 @@ MagickExport MagickBooleanType SeparateImageChannel(Image *image,
     {
       image->matte=MagickFalse;
       image->intensity=Rec709LuminancePixelIntensityMethod;
-      (void) SetImageColorspace(image,GRAYColorspace);
+      (void) SetImageColorspace(image,LinearGRAYColorspace);
     }
   return(status);
 }
@@ -578,7 +578,7 @@ MagickExport Image *SeparateImages(const Image *image,const ChannelType channel,
     *separate_image;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   images=NewImageList();
@@ -663,7 +663,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
   assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   exception=(&image->exception);
   status=MagickTrue;
   switch (alpha_type)
@@ -684,7 +684,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
       #if defined(MAGICKCORE_OPENMP_SUPPORT)
         #pragma omp parallel for schedule(static,4) shared(status) \
-          magick_threads(image,image,image->rows,1)
+          magick_number_threads(image,image,image->rows,1)
       #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -755,7 +755,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
       #if defined(MAGICKCORE_OPENMP_SUPPORT)
         #pragma omp parallel for schedule(static,4) shared(status) \
-          magick_threads(image,image,image->rows,1)
+          magick_number_threads(image,image,image->rows,1)
       #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -837,7 +837,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
       #if defined(MAGICKCORE_OPENMP_SUPPORT)
         #pragma omp parallel for schedule(static,4) shared(status) \
-          magick_threads(image,image,image->rows,1)
+          magick_number_threads(image,image,image->rows,1)
       #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {
@@ -912,7 +912,7 @@ MagickExport MagickBooleanType SetImageAlphaChannel(Image *image,
       image_view=AcquireAuthenticCacheView(image,exception);
       #if defined(MAGICKCORE_OPENMP_SUPPORT)
         #pragma omp parallel for schedule(static,4) shared(status) \
-          magick_threads(image,image,image->rows,1)
+          magick_number_threads(image,image,image->rows,1)
       #endif
       for (y=0; y < (ssize_t) image->rows; y++)
       {

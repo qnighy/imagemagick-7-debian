@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -60,6 +60,7 @@
 #include "magick/layer.h"
 #include "magick/mime-private.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/monitor.h"
 #include "magick/montage.h"
 #include "magick/morphology.h"
@@ -212,6 +213,9 @@ MagickPrivate MagickBooleanType RecordProfileData(MagickCLEnv clEnv, ProfiledKer
   }
   return(MagickTrue);
 #else
+  magick_unreferenced(clEnv);
+  magick_unreferenced(kernel);
+  magick_unreferenced(event);
   return(MagickFalse);
 #endif
 }
@@ -405,6 +409,7 @@ static MagickBooleanType bindOpenCLFunctions(void* library)
   BIND(clReleaseContext);
 
   BIND(clCreateBuffer);
+  BIND(clRetainMemObject);
   BIND(clReleaseMemObject);
 
   BIND(clCreateProgramWithSource);
@@ -890,10 +895,18 @@ static void saveBinaryCLProgram(MagickCLEnv clEnv,MagickOpenCLProgram prog,
       binary_program=(unsigned char **) AcquireMagickMemory(
         binary_program_size);
       for (i = 0; i < num_devices; i++)
+      {
         binary_program[i]=AcquireQuantumMemory(MagickMax(*(program_sizes+i),1),
           sizeof(**binary_program));
-      status=clEnv->library->clGetProgramInfo(clEnv->programs[prog],
-        CL_PROGRAM_BINARIES,binary_program_size,binary_program,NULL);
+        if (binary_program[i] == (unsigned char *) NULL)
+        {
+          status=CL_OUT_OF_HOST_MEMORY;
+          break;
+        }
+      }
+      if (status == CL_SUCCESS)
+        status=clEnv->library->clGetProgramInfo(clEnv->programs[prog],
+          CL_PROGRAM_BINARIES,binary_program_size,binary_program,NULL);
       if (status == CL_SUCCESS)
         {
           for (i = 0; i < num_devices; i++)
@@ -2441,7 +2454,7 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
       cl_uint
         event_count;
 
-      const cl_event
+      cl_event
         *events;
 
       Image
@@ -2471,6 +2484,7 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
           events=GetOpenCLEvents(resizedImage,&event_count);
           if (event_count > 0)
             clEnv->library->clWaitForEvents(event_count,events);
+          events=(cl_event *) RelinquishMagickMemory(events);
         }
 
 #ifdef MAGICKCORE_CLPERFMARKER
@@ -2792,7 +2806,7 @@ MagickBooleanType OpenCLThrowMagickException(ExceptionInfo *exception,
   clEnv = GetDefaultOpenCLEnv();
 
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
 
   if (severity!=0) {
     cl_device_type dType;
@@ -2896,7 +2910,7 @@ const char* GetOpenCLCachedFilesDirectory() {
 
         if (mkdirStatus==0)
         {
-          temp = (char*)AcquireMagickMemory(strlen(path)+1);
+          temp = (char*)AcquireCriticalMemory(strlen(path)+1);
           CopyMagickString(temp,path,strlen(path)+1);
         }
         home=DestroyString(home);
@@ -2941,7 +2955,7 @@ const char* GetOpenCLCachedFilesDirectory() {
 
           if (mkdirStatus==0)
           {
-            temp = (char*)AcquireMagickMemory(strlen(path)+1);
+            temp = (char*)AcquireCriticalMemory(strlen(path)+1);
             CopyMagickString(temp,path,strlen(path)+1);
           }
           home=DestroyString(home);

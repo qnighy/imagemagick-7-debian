@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -102,12 +102,12 @@ static Image *ReadTILEImage(const ImageInfo *image_info,
     Initialize Image structure.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   read_info=CloneImageInfo(image_info);
   SetImageInfoBlob(read_info,(void *) NULL,0);
   *read_info->magick='\0';
@@ -136,7 +136,8 @@ static Image *ReadTILEImage(const ImageInfo *image_info,
     }
   (void) TextureImage(image,tile_image);
   tile_image=DestroyImage(tile_image);
-  if (image->colorspace == GRAYColorspace)
+  if ((image->colorspace == LinearGRAYColorspace) ||
+      (image->colorspace == GRAYColorspace))
     image->type=GrayscaleType;
   return(GetFirstImageInList(image));
 }

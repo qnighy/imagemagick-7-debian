@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -454,7 +454,10 @@ static unsigned char *DecodeImage(Image *blob,Image *image,
   scanline=(unsigned char *) AcquireQuantumMemory(row_bytes,2*
     sizeof(*scanline));
   if (scanline == (unsigned char *) NULL)
-    return((unsigned char *) NULL);
+    {
+      pixels=(unsigned char *) RelinquishMagickMemory(pixels);
+      return((unsigned char *) NULL);
+    }
   if (bytes_per_line < 8)
     {
       /*
@@ -598,7 +601,7 @@ static size_t EncodeImage(Image *image,const unsigned char *scanline,
     Pack scanline.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(scanline != (unsigned char *) NULL);
@@ -859,12 +862,12 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
     Open image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
@@ -931,6 +934,7 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
       InheritException(exception,&image->exception);
       return(DestroyImageList(image));
     }
+  (void) SetImageBackgroundColor(image);
   /*
     Interpret PICT opcodes.
   */
@@ -1042,7 +1046,7 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
                     break;
               }
             else
-              for (j=0; j < (int) height; j++)
+              for (i=0; i < (int) height; i++)
                 if (length > 200)
                   {
                     for (j=0; j < (ssize_t) ReadBlobMSBShort(image); j++)
@@ -1132,7 +1136,7 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             tile_image=CloneImage(image,1UL*(frame.right-frame.left),
               1UL*(frame.bottom-frame.top),MagickTrue,exception);
             if (tile_image == (Image *) NULL)
-              return((Image *) NULL);
+              ThrowReaderException(CorruptImageError,"ImproperImageHeader");
             if ((code == 0x9a) || (code == 0x9b) ||
                 ((bytes_per_line & 0x8000) != 0))
               {
@@ -1347,7 +1351,7 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             if (length == 0)
               break;
             (void) ReadBlobMSBLong(image);
-            length-=4;
+            length-=MagickMin(length,4);
             if (length == 0)
               break;
             info=(unsigned char *) AcquireQuantumMemory(length,sizeof(*info));
@@ -1355,7 +1359,10 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
               break;
             count=ReadBlob(image,length,info);
             if (count != (ssize_t) length)
-              ThrowReaderException(ResourceLimitError,"UnableToReadImageData");
+              {
+                info=(unsigned char *) RelinquishMagickMemory(info);
+                ThrowReaderException(ResourceLimitError,"UnableToReadImageData");
+              }
             switch (type)
             {
               case 0xe0:
@@ -1696,9 +1703,9 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
     Open output image file.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if ((image->columns > 65535L) || (image->rows > 65535L))

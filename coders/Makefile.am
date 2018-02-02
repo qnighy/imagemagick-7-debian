@@ -1,4 +1,4 @@
-#  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -40,6 +40,11 @@ endif
 if FPX_DELEGATE
 MAGICK_FPX_MODULES = coders/fpx.la
 MAGICK_FPX_SRCS = coders/fpx.c
+endif
+
+if HEIC_DELEGATE
+MAGICK_HEIC_MODULES = coders/heic.la
+MAGICK_HEIC_SRCS = coders/heic.c
 endif
 
 if JBIG_DELEGATE
@@ -211,6 +216,7 @@ MAGICK_CODER_SRCS = \
   $(MAGICK_FLIF_SRCS) \
   $(MAGICK_FPX_SRCS) \
   $(MAGICK_GDI32_SRCS) \
+  $(MAGICK_HEIC_SRCS) \
   $(MAGICK_JBIG_SRCS) \
   $(MAGICK_JPEG_SRCS) \
   $(MAGICK_JP2_SRCS) \
@@ -339,6 +345,7 @@ coders_LTLIBRARIES = \
   $(MAGICK_FLIF_MODULES) \
   $(MAGICK_FPX_MODULES) \
   $(MAGICK_GDI32_MODULES)  \
+  $(MAGICK_HEIC_MODULES)  \
   $(MAGICK_JBIG_MODULES) \
   $(MAGICK_JPEG_MODULES) \
   $(MAGICK_JP2_MODULES) \
@@ -469,7 +476,7 @@ coders_djvu_la_LIBADD      = $(MAGICKCORE_LIBS) $(DJVU_LIBS) $(JPEG_LIBS) $(LZMA
 coders_dng_la_SOURCES      = coders/dng.c
 coders_dng_la_CPPFLAGS     = $(MAGICK_CODER_CPPFLAGS)
 coders_dng_la_LDFLAGS      = $(MODULECOMMONFLAGS)
-coders_dng_la_LIBADD       = $(MAGICKCORE_LIBS) $(RAW_R_LIBS)
+coders_dng_la_LIBADD       = $(MAGICKCORE_LIBS) $(RAW_R_LIBS) $(GOMP_LIBS)
 
 # DPS coder module
 coders_dps_la_SOURCES      = coders/dps.c
@@ -572,6 +579,12 @@ coders_hdr_la_SOURCES      = coders/hdr.c
 coders_hdr_la_CPPFLAGS     = $(MAGICK_CODER_CPPFLAGS)
 coders_hdr_la_LDFLAGS      = $(MODULECOMMONFLAGS)
 coders_hdr_la_LIBADD       = $(MAGICKCORE_LIBS) $(GOMP_LIBS) $(MATH_LIBS)
+
+# HEIC coder module
+coders_heic_la_SOURCES     = coders/heic.c
+coders_heic_la_CPPFLAGS    = $(MODULE_CODER_CPPFLAGS)
+coders_heic_la_LDFLAGS     = $(MODULECOMMONFLAGS)
+coders_heic_la_LIBADD      = $(MAGICKCORE_LIBS) $(HEIC_LIBS)
 
 # HRZ coder module
 coders_hrz_la_SOURCES      = coders/hrz.c
@@ -1045,7 +1058,7 @@ coders_wbmp_la_LIBADD      = $(MAGICKCORE_LIBS)
 coders_webp_la_SOURCES     = coders/webp.c
 coders_webp_la_CPPFLAGS    = $(MAGICK_CODER_CPPFLAGS)
 coders_webp_la_LDFLAGS     = $(MODULECOMMONFLAGS)
-coders_webp_la_LIBADD      = $(MAGICKCORE_LIBS) $(WEBP_LIBS) $(MATH_LIBS)
+coders_webp_la_LIBADD      = $(MAGICKCORE_LIBS) $(WEBPMUX_LIBS) $(WEBP_LIBS) $(MATH_LIBS)
 
 # WMF coder module
 coders_wmf_la_SOURCES      = coders/wmf.c

@@ -17,7 +17,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -171,11 +171,11 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
     Check boundary conditions.
   */
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(draw_info != (DrawInfo *) NULL);
-  assert(draw_info->signature == MagickSignature);
+  assert(draw_info->signature == MagickCoreSignature);
   if ((x_offset < 0) || (x_offset >= (ssize_t) image->columns))
     return(MagickFalse);
   if ((y_offset < 0) || (y_offset >= (ssize_t) image->rows))
@@ -446,7 +446,7 @@ MagickExport MagickBooleanType GradientImage(Image *image,
     Set gradient start-stop end points.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(start_color != (const PixelPacket *) NULL);
@@ -746,11 +746,11 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
     Initialize painted image attributes.
   */
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   width=GetOptimalKernelWidth2D(radius,0.5);
   linear_image=CloneImage(image,0,0,MagickTrue,exception);
   paint_image=CloneImage(image,image->columns,image->rows,MagickTrue,exception);
@@ -785,7 +785,7 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
   paint_view=AcquireAuthenticCacheView(paint_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(linear_image,paint_image,linear_image->rows,1)
+    magick_number_threads(linear_image,paint_image,linear_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) linear_image->rows; y++)
   {
@@ -964,7 +964,7 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(target != (MagickPixelPacket *) NULL);
   assert(fill != (MagickPixelPacket *) NULL);
   if (image->debug != MagickFalse)
@@ -983,7 +983,7 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1110,7 +1110,7 @@ MagickExport MagickBooleanType TransparentPaintImage(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(target != (MagickPixelPacket *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
@@ -1128,7 +1128,7 @@ MagickExport MagickBooleanType TransparentPaintImage(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1243,7 +1243,7 @@ MagickExport MagickBooleanType TransparentPaintImageChroma(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(high != (MagickPixelPacket *) NULL);
   assert(low != (MagickPixelPacket *) NULL);
   if (image->debug != MagickFalse)
@@ -1261,7 +1261,7 @@ MagickExport MagickBooleanType TransparentPaintImageChroma(Image *image,
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(progress,status) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {

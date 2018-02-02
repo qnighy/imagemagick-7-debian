@@ -1,4 +1,4 @@
-#  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -239,7 +239,7 @@ dist-hook:
 # Install HTML files
 pkgdocdir = $(DOCUMENTATION_PATH)
 DOCDIRSDOXYGEN = www/api/MagickCore www/api/MagickWand
-DOCDIRSMANUAL = images images/patterns www www/css www/js www/api www/source www/Magick++
+DOCDIRSMANUAL = images images/patterns www www/assets www/api www/source www/Magick++
 DOCDIRS= $(DOCDIRSMANUAL) $(DOCDIRSDOXYGEN)
 
 if INSTALL_DOC

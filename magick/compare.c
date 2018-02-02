@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -135,7 +135,7 @@ static size_t GetNumberChannels(const Image *image,const ChannelType channel)
     channels++;
   if (((channel & IndexChannel) != 0) && (image->colorspace == CMYKColorspace))
     channels++;
-  return(channels == 0 ? 1 : channels);
+  return(channels == 0 ? 1UL : channels);
 }
 
 static inline MagickBooleanType ValidateImageMorphology(
@@ -163,6 +163,9 @@ MagickExport Image *CompareImageChannels(Image *image,
   const char
     *artifact;
 
+  double
+    fuzz;
+
   Image
     *clone_image,
     *difference_image,
@@ -184,11 +187,11 @@ MagickExport Image *CompareImageChannels(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(reconstruct_image != (const Image *) NULL);
-  assert(reconstruct_image->signature == MagickSignature);
+  assert(reconstruct_image->signature == MagickCoreSignature);
   assert(distortion != (double *) NULL);
   *distortion=0.0;
   if (image->debug != MagickFalse)
@@ -243,13 +246,14 @@ MagickExport Image *CompareImageChannels(Image *image,
     Generate difference image.
   */
   status=MagickTrue;
+  fuzz=GetFuzzyColorDistance(image,reconstruct_image);
   GetMagickPixelPacket(image,&zero);
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
   highlight_view=AcquireAuthenticCacheView(highlight_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,highlight_image,rows,1)
+    magick_number_threads(image,highlight_image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
@@ -309,25 +313,47 @@ MagickExport Image *CompareImageChannels(Image *image,
         }
       else
         {
-          if (((channel & RedChannel) != 0) &&
-              (GetPixelRed(p) != GetPixelRed(q)))
-            difference=MagickTrue;
-          if (((channel & GreenChannel) != 0) &&
-              (GetPixelGreen(p) != GetPixelGreen(q)))
-            difference=MagickTrue;
-          if (((channel & BlueChannel) != 0) &&
-              (GetPixelBlue(p) != GetPixelBlue(q)))
-            difference=MagickTrue;
+          double
+            Da,
+            distance,
+            Sa;
+
+          Sa=QuantumScale*(image->matte != MagickFalse ? GetPixelAlpha(p) :
+            (QuantumRange-OpaqueOpacity));
+          Da=QuantumScale*(image->matte != MagickFalse ? GetPixelAlpha(q) :
+            (QuantumRange-OpaqueOpacity));
+          if ((channel & RedChannel) != 0)
+            {
+              distance=Sa*GetPixelRed(p)-Da*GetPixelRed(q);
+              if ((distance*distance) > fuzz)
+                difference=MagickTrue;
+            }
+          if ((channel & GreenChannel) != 0)
+            {
+              distance=Sa*GetPixelGreen(p)-Da*GetPixelGreen(q);
+              if ((distance*distance) > fuzz)
+                difference=MagickTrue;
+            }
+          if ((channel & BlueChannel) != 0)
+            {
+              distance=Sa*GetPixelBlue(p)-Da*GetPixelBlue(q);
+              if ((distance*distance) > fuzz)
+                difference=MagickTrue;
+            }
           if (((channel & OpacityChannel) != 0) &&
-              (image->matte != MagickFalse) &&
-              (GetPixelOpacity(p) != GetPixelOpacity(q)))
-            difference=MagickTrue;
-          if ((((channel & IndexChannel) != 0) &&
-               (image->colorspace == CMYKColorspace) &&
-               (reconstruct_image->colorspace == CMYKColorspace)) &&
-              (GetPixelIndex(indexes+x) !=
-               GetPixelIndex(reconstruct_indexes+x)))
-            difference=MagickTrue;
+              (image->matte != MagickFalse))
+            {
+              distance=(double) GetPixelOpacity(p)-GetPixelOpacity(q);
+              if ((distance*distance) > fuzz)
+                difference=MagickTrue;
+            }
+          if (((channel & IndexChannel) != 0) &&
+              (image->colorspace == CMYKColorspace))
+            {
+              distance=Sa*indexes[x]-Da*reconstruct_indexes[x];
+              if ((distance*distance) > fuzz)
+                difference=MagickTrue;
+            }
         }
       if (difference != MagickFalse)
         SetPixelPacket(highlight_image,&highlight,r,highlight_indexes+x);
@@ -345,7 +371,6 @@ MagickExport Image *CompareImageChannels(Image *image,
   reconstruct_view=DestroyCacheView(reconstruct_view);
   image_view=DestroyCacheView(image_view);
   (void) CompositeImage(difference_image,image->compose,highlight_image,0,0);
-  (void) SetImageAlphaChannel(difference_image,DeactivateAlphaChannel);
   highlight_image=DestroyImage(highlight_image);
   if (status == MagickFalse)
     difference_image=DestroyImage(difference_image);
@@ -408,11 +433,11 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
     *image_view,
     *reconstruct_view;
 
+  double
+    fuzz;
+
   MagickBooleanType
     status;
-
-  MagickPixelPacket
-    zero;
 
   size_t
     columns,
@@ -425,23 +450,21 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
     Compute the absolute difference in pixels between two images.
   */
   status=MagickTrue;
-  GetMagickPixelPacket(image,&zero);
+  fuzz=MagickMin(GetNumberChannels(image,channel),
+    GetNumberChannels(reconstruct_image,channel))*
+    GetFuzzyColorDistance(image,reconstruct_image);
   rows=MagickMax(image->rows,reconstruct_image->rows);
   columns=MagickMax(image->columns,reconstruct_image->columns);
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,rows,1)
+    magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
     double
       channel_distortion[CompositeChannels+1];
-
-    MagickPixelPacket
-      pixel,
-      reconstruct_pixel;
 
     register const IndexPacket
       *magick_restrict indexes,
@@ -466,35 +489,82 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
       }
     indexes=GetCacheViewVirtualIndexQueue(image_view);
     reconstruct_indexes=GetCacheViewVirtualIndexQueue(reconstruct_view);
-    pixel=zero;
-    reconstruct_pixel=pixel;
     (void) ResetMagickMemory(channel_distortion,0,sizeof(channel_distortion));
     for (x=0; x < (ssize_t) columns; x++)
     {
-      SetMagickPixelPacket(image,p,indexes+x,&pixel);
-      SetMagickPixelPacket(reconstruct_image,q,reconstruct_indexes+x,
-        &reconstruct_pixel);
-      if (IsMagickColorSimilar(&pixel,&reconstruct_pixel) == MagickFalse)
+      double
+        Da,
+        distance,
+        pixel,
+        Sa;
+
+      MagickBooleanType
+        difference;
+
+      difference=MagickFalse;
+      Sa=QuantumScale*(image->matte != MagickFalse ? GetPixelAlpha(p) :
+        (QuantumRange-OpaqueOpacity));
+      Da=QuantumScale*(image->matte != MagickFalse ? GetPixelAlpha(q) :
+        (QuantumRange-OpaqueOpacity));
+      distance=0.0;
+      if ((channel & RedChannel) != 0)
         {
-          if ((channel & RedChannel) != 0)
-            channel_distortion[RedChannel]++;
-          if ((channel & GreenChannel) != 0)
-            channel_distortion[GreenChannel]++;
-          if ((channel & BlueChannel) != 0)
-            channel_distortion[BlueChannel]++;
-          if (((channel & OpacityChannel) != 0) &&
-              (image->matte != MagickFalse))
-            channel_distortion[OpacityChannel]++;
-          if (((channel & IndexChannel) != 0) &&
-              (image->colorspace == CMYKColorspace))
-            channel_distortion[BlackChannel]++;
-          channel_distortion[CompositeChannels]++;
+          pixel=Sa*GetPixelRed(p)-Da*GetPixelRed(q);
+          if (distance > fuzz)
+            {
+              channel_distortion[RedChannel]++;
+              difference=MagickTrue;
+            }
         }
+      if ((channel & GreenChannel) != 0)
+        {
+          pixel=Sa*GetPixelGreen(p)-Da*GetPixelGreen(q);
+          distance+=pixel*pixel;
+          if (distance > fuzz)
+            {
+              channel_distortion[GreenChannel]++;
+              difference=MagickTrue;
+            }
+        }
+      if ((channel & BlueChannel) != 0)
+        {
+          pixel=Sa*GetPixelBlue(p)-Da*GetPixelBlue(q);
+          distance+=pixel*pixel;
+          if (distance > fuzz)
+            {
+              channel_distortion[BlueChannel]++;
+              difference=MagickTrue;
+            }
+        }
+      if (((channel & OpacityChannel) != 0) &&
+          (image->matte != MagickFalse))
+        {
+          pixel=(double) GetPixelOpacity(p)-GetPixelOpacity(q);
+          distance+=pixel*pixel;
+          if (distance > fuzz)
+            {
+              channel_distortion[OpacityChannel]++;
+              difference=MagickTrue;
+            }
+        }
+      if (((channel & IndexChannel) != 0) &&
+          (image->colorspace == CMYKColorspace))
+        {
+          pixel=Sa*indexes[x]-Da*reconstruct_indexes[x];
+          distance+=pixel*pixel;
+          if (distance > fuzz)
+            {
+              channel_distortion[BlackChannel]++;
+              difference=MagickTrue;
+            }
+        }
+      if (difference != MagickFalse)
+        channel_distortion[CompositeChannels]++;
       p++;
       q++;
     }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp critical (MagickCore_GetAbsoluteError)
+    #pragma omp critical (MagickCore_GetAbsoluteDistortion)
 #endif
     for (i=0; i <= (ssize_t) CompositeChannels; i++)
       distortion[i]+=channel_distortion[i];
@@ -532,7 +602,7 @@ static MagickBooleanType GetFuzzDistortion(const Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,rows,1)
+    magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
@@ -657,7 +727,7 @@ static MagickBooleanType GetMeanAbsoluteDistortion(const Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,rows,1)
+    magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
@@ -911,7 +981,7 @@ static MagickBooleanType GetMeanSquaredDistortion(const Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,rows,1)
+    magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
@@ -1201,7 +1271,7 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) shared(status) \
-    magick_threads(image,image,rows,1)
+    magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
@@ -1537,11 +1607,11 @@ MagickExport MagickBooleanType GetImageChannelDistortion(Image *image,
     length;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(reconstruct_image != (const Image *) NULL);
-  assert(reconstruct_image->signature == MagickSignature);
+  assert(reconstruct_image->signature == MagickCoreSignature);
   assert(distortion != (double *) NULL);
   *distortion=0.0;
   if (image->debug != MagickFalse)
@@ -1676,11 +1746,11 @@ MagickExport double *GetImageChannelDistortions(Image *image,
     length;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(reconstruct_image != (const Image *) NULL);
-  assert(reconstruct_image->signature == MagickSignature);
+  assert(reconstruct_image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (metric != PerceptualHashErrorMetric)
@@ -1848,9 +1918,9 @@ MagickExport MagickBooleanType IsImagesEqual(Image *image,
     y;
 
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   assert(reconstruct_image != (const Image *) NULL);
-  assert(reconstruct_image->signature == MagickSignature);
+  assert(reconstruct_image->signature == MagickCoreSignature);
   if (ValidateImageMorphology(image,reconstruct_image) == MagickFalse)
     ThrowBinaryException(ImageError,"ImageMorphologyDiffers",image->filename);
   area=0.0;
@@ -2042,11 +2112,11 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
     y;
 
   assert(image != (const Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
+  assert(exception->signature == MagickCoreSignature);
   assert(offset != (RectangleInfo *) NULL);
   SetGeometry(reference,offset);
   *similarity_metric=MagickMaximumValue;
@@ -2076,7 +2146,7 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static,4) \
     shared(progress,status,similarity_metric) \
-    magick_threads(image,image,image->rows,1)
+    magick_number_threads(image,image,image->rows-reference->rows+1,1)
 #endif
   for (y=0; y < (ssize_t) (image->rows-reference->rows+1); y++)
   {

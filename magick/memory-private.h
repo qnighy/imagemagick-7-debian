@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@
 extern "C" {
 #endif
 
+#include "magick/exception-private.h"
+
 #if defined(__powerpc__)
 #  define CACHE_LINE_SIZE 128
 #else
@@ -43,6 +45,20 @@ extern "C" {
 
 MagickExport MagickBooleanType
   HeapOverflowSanityCheck(const size_t,const size_t) magick_alloc_sizes(1,2);
+
+static inline void *AcquireCriticalMemory(const size_t size)
+{
+  register void
+    *memory;
+
+  /*
+    Fail if memory request cannot be fulfilled.
+  */
+  memory=AcquireMagickMemory(size);
+  if (memory == (void *) NULL)
+    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+  return(memory);
+}
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

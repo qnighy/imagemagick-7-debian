@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -13254,12 +13254,12 @@ static MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
     Write logo image.
   */
   assert(image_info != (const ImageInfo *) NULL);
-  assert(image_info->signature == MagickSignature);
+  assert(image_info->signature == MagickCoreSignature);
   if (image_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
       image_info->filename);
   assert(image != (Image *) NULL);
-  assert(image->signature == MagickSignature);
+  assert(image->signature == MagickCoreSignature);
   magick_image=CloneImage(image,0,0,MagickTrue,&image->exception);
   if (magick_image == (Image *) NULL)
     ThrowWriterException(ResourceLimitError,image->exception.reason);
@@ -13292,6 +13292,7 @@ static MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     {
+      blob=RelinquishMagickMemory(blob);
       (void) DestroyImageInfo(write_info);
       return(status);
     }

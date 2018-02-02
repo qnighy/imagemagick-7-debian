@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2017 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -101,7 +101,8 @@ extern "C" {
 # define ModuleExport  MagickExport
 #endif
 
-#define MagickSignature  0xabacadabUL
+#define MagickCoreSignature  0xabacadabUL
+#define MagickSignature  MagickCoreSignature
 #if !defined(MaxTextExtent)
 # define MaxTextExtent  4096  /* always >= 4096 */
 #endif
