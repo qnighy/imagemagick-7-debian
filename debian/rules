@@ -199,7 +199,8 @@ PRIO_COMPUTATION =${shell $(CURDIR)/debian/scripts/quantumpriority.sh '$1'}
 # bug #840682
 DH_EXEC_SUBST = /usr/lib/dh-exec/dh-exec-subst
 
-
+# js dir
+JS_DIR=www/assets
 
 dummy:
 
@@ -560,7 +561,7 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
               "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Wand-$(IMVERSION).$(call UC,$*).pc"
 
 	# Remove empty directories in debian/tmp
-	-find $(CURDIR)/debian/tmp-$* -type d -empty | xargs -r rmdir -p
+	-find $(CURDIR)/debian/tmp-$* -type d -empty -print0 | xargs -0 -r rmdir -p --ignore-fail-on-non-empty
 	touch $@
 
 override_dh_auto_install-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_auto_install-arch_quantum.$Q)
@@ -639,16 +640,18 @@ override_dh_auto_install-indep:
 	cd debian/build-quantum-indep/PerlMagick/default/ && make install DESTDIR=$(CURDIR)/debian/tmp-indep
 
 	# Remove empty directories in debian/tmp
-	-find $(CURDIR)/debian/tmp-indep -type d -empty | xargs -r rmdir -p
+	-find $(CURDIR)/debian/tmp-indep -type d -empty -print0 | xargs -r -0 rmdir -p --ignore-fail-on-non-empty
 
-
-	# remove boostrap copy
-	rm -rf $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/js/*
+	# remove boostrap copy 
+	if test -d "$(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/$(JS_DIR)/"; then \
+	     rm -rf "$(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/$(JS_DIR)/"*; \
+	else \
+	    mkdir -p "$(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/$(JS_DIR)/"; \
+	fi
 	ln -s /usr/share/javascript/bootstrap/js/bootstrap.min.js \
-	     $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/js/magick.js
-	rm -rf $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/css/*
+	     "$(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/$(JS_DIR)/magick.js"
 	ln -s /usr/share/javascript/bootstrap/css/bootstrap.min.css \
-	     $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/css/magick.css
+	     "$(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/$(JS_DIR)/magick.css"
 
 	# now apply privacy cleanning rules
 	cd "$(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)" && \
