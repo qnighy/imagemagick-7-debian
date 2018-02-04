@@ -3055,9 +3055,9 @@ imagemagick (4:5.5.7-1) unstable; urgency=low
   * New upstream version.  closes: #185565
   * Upstream fixes the 'Unsafe tmpfile handling'. closes: #186611
   * Upstream fixes the followins:
-	closes: #172787,#188378
+    closes: #172787,#188378
   * This is not  ImageMagick application.
-	closes: #185583
+    closes: #185583
   * Stop using libdps files.  closes: #188623
   * Wont fix. closes: #190579
 
@@ -3273,19 +3273,19 @@ imagemagick (4:5.4.8.3-1) unstable; urgency=low
 
   * New upstream version.
   * closes: #159492
-	Bob's comment:
-	While back in the ImageMagick 4.X.X days, <magick/magick.h> was the
-	header to include in order to use the ImageMagick API, this was
-	changed several years ago to be <magick/api.h>.  The magick.h header
-	is now an internal implementation header which should not be
-	seperately included.
-
-	Dependent programs should include ImageMagick like:
-
-	#include <stdio.h>
-	#include <time.h>
-	#include <sys/types.h>
-	#include <magick/api.h>
+    Bob's comment:
+    While back in the ImageMagick 4.X.X days, <magick/magick.h> was the
+    header to include in order to use the ImageMagick API, this was
+    changed several years ago to be <magick/api.h>.  The magick.h header
+    is now an internal implementation header which should not be
+    seperately included.
+    .
+    Dependent programs should include ImageMagick like:
+    .
+    #include <stdio.h>
+    #include <time.h>
+    #include <sys/types.h>
+    #include <magick/api.h>
   * Build against new libwmf-dev.  closes: #160152
 
  -- Ryuichi Arafune <arafune@debian.org>  Sat,  7 Sep 2002 16:01:13 +0900
@@ -4014,7 +4014,7 @@ imagemagick (5.1.1-5) unstable; urgency=medium
 imagemagick (5.1.1-4) unstable; urgency=medium
 
   *  Fix Dependency problem
-	(the version of dpsclient must be greater than 0.5.9.1)
+     (the version of dpsclient must be greater than 0.5.9.1)
   *  Some of bugs closing correctry. (due to my typo, they are not cloased)
      closes: #54750
      closes: #50392
