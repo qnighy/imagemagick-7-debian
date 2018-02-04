@@ -2906,16 +2906,16 @@ imagemagick (5:6.0.0.2-1) unstable; urgency=low
   * Following the xlibs split.  closes: #241282
   * PerlMagick: add -pthread. closes: #225354
   * Upstream fix:
-	+ Magick++-config screwed up : closes: #200746
-	+ Convert xcf file : closes: #212886
-	+ convert -verbose doesn't : closes: #233761
-	+ wrong title in vid:* : closes: #193783
-	+ perlmagick: examples now use /usr/bin/perl : closes: #198797
+    + Magick++-config screwed up : closes: #200746
+    + Convert xcf file : closes: #212886
+    + convert -verbose doesn't : closes: #233761
+    + wrong title in vid:* : closes: #193783
+    + perlmagick: examples now use /usr/bin/perl : closes: #198797
   * fix already. closes: #195392, #211004, #222383
   * fix menu problem. : closes: #195363, #234973
   * I cannot reproduce this problem. I think they are fixed  in upstream.
-	+ segmentation fault after conversion closes: #225330
-	+ convert: hangs on GIF animations closes: #225322
+    + segmentation fault after conversion closes: #225330
+    + convert: hangs on GIF animations closes: #225322
 
  -- Ryuichi Arafune <arafune@debian.org>  Thu, 15 Apr 2004 18:38:52 +0900
 
@@ -2930,14 +2930,14 @@ imagemagick (5:6.0.0-1) unstable; urgency=low
   * New upstream version
   * Following the xlibs split.  closes: #241282
   * Upstream fix:
-	+ Magick++-config screwed up : closes: #200746
-	+ Convert xcf file : closes: #212886
-	+ convert -verbose doesn't : closes: #233761
+    + Magick++-config screwed up : closes: #200746
+    + Convert xcf file : closes: #212886
+    + convert -verbose doesn't : closes: #233761
   * fix already. closes: #195392, #211004, #222383
   * fix menu problem. : closes: #195363, #234973
   * I cannot reploduce this problem. I think they are fixed  in upstream.
-	+ segmentation fault after conversion closes: #225330
-	+ convert: hangs on GIF animations closes: #225322
+    + segmentation fault after conversion closes: #225330
+    + convert: hangs on GIF animations closes: #225322
 
  -- Ryuichi Arafune <arafune@debian.org>  Mon, 12 Apr 2004 11:04:13 +0900
 

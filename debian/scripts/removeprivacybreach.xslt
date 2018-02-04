@@ -120,6 +120,11 @@
 	  <xsl:with-param select="concat(substring($path,1,string-length($path) - string-length('.php')),'.html')" name="path" />
 	</xsl:call-template>
       </xsl:when>
+      <xsl:when test="substring($path, string-length($path) - string-length('.php#') +1)='.php#'">
+	<xsl:call-template name="replacelegacy">
+	  <xsl:with-param select="concat(substring($path,1,string-length($path) - string-length('.php#')),'.html')" name="path" />
+	</xsl:call-template>
+      </xsl:when>
       <!-- replace legacy with www -->
       <xsl:when test="substring($path,1,string-length('legacy.imagemagick.org/'))='legacy.imagemagick.org/'">
 	<xsl:call-template name="replacelegacy">
@@ -240,6 +245,16 @@
     </xsl:copy>
   </xsl:template>
 
+  <xsl:template match="*[local-name(.) = 'link'][contains(@href,'legacy.imagemagick.org')][@rel='canonical']">
+    <xsl:message><xsl:text>Replace in !!!!</xsl:text><xsl:value-of select="$filename" /><xsl:text> </xsl:text><xsl:value-of select="@href" /><xsl:text> by </xsl:text><xsl:call-template name="replacelegacy"><xsl:with-param select="@href" name="path"/></xsl:call-template></xsl:message>
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+      <xsl:attribute name="href">
+	<xsl:call-template name="replacelegacy"><xsl:with-param select="@href" name="path"/></xsl:call-template>
+      </xsl:attribute>
+    </xsl:copy>
+  </xsl:template>
+
   <!-- replace pointer to legacy site -->
   <xsl:template match="*[local-name(.) = 'a'][contains(@href,'www.imagemagick.org')]">
     <xsl:message><xsl:text>Replace in </xsl:text><xsl:value-of select="$filename" /><xsl:text> </xsl:text><xsl:value-of select="@href" /><xsl:text> by </xsl:text><xsl:call-template name="replacelegacy"><xsl:with-param select="@href" name="path"/></xsl:call-template></xsl:message>
@@ -292,9 +307,14 @@
   <xsl:template match="*[local-name(.) = 'script'][contains(text(),'window.adsbygoogle')]" />
   <xsl:template match="*[local-name(.) = 'ins'][@class='adsbygoogle']" />
   <xsl:template match="*[local-name(.) = 'script'][contains(text(),'google-analytics.com/analytics.js')]" />
+  <xsl:template match="*[local-name(.) = 'script'][contains(text(),'//www.google.com/cse/cse.js?cx=')]" />
 
   <!-- remove google fonts -->
   <xsl:template match="*[local-name(.) = 'link'][contains(@href,'//fonts.googleapis.com/css')]" />
+
+  <!-- remove strange stuff -->
+  <xsl:template match="*[local-name(.) = 'meta'][@name='magick-serial']" />
+  <xsl:template match="*[local-name(.) = 'meta'][@name='application-url']" />
 
   <!-- flattr -->
   <xsl:template match="*[local-name(.) = 'script'][contains(text(),'http://api.flattr.com/js/0.6/load.js?mode=auto')]" />
