@@ -8,6 +8,8 @@ imagemagick (8:6.9.9.34+dfsg-1) experimental; urgency=high
     + Fix lintian warnings
     + Fix "unnecessary libgraphviz-dev dependency (and graphviz
       suggests?)", thanks to Matthias Klose (Closes: #884444).
+    + Remove Vincent Fourmond <fourmond@debian.org> as uploader, thanks
+      to him. (Closes: #878679).
   * Fix a few security issues
     + Fix CVE-2017-1000445: NULL pointer dereference in
       the MagickCore component and might lead to denial of service.
