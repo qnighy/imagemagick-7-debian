@@ -616,7 +616,6 @@ Package: imagemagick-common
 Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
-Priority: optional
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},  imagemagick-6-common
 Description: image manipulation programs -- infrastructure dummy package
@@ -636,7 +635,6 @@ Package: imagemagick-doc
 Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
-Priority: optional
 Depends: ${misc:Depends},
 	 imagemagick-6-doc (>> 8:6.9.2.10+dfsg-1), imagemagick-6-common
 Pre-Depends: dpkg (>= 1.17.5)
@@ -656,7 +654,6 @@ Package: perlmagick
 Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
-Priority: optional
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends}, libimage-magick-perl, imagemagick-6-common
 Description: Perl interface to ImageMagick -- dummy package
@@ -674,7 +671,6 @@ Package: libmagickcore-dev
 Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
-Priority: optional
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
  libmagickcore-6.q16-dev,
@@ -693,7 +689,6 @@ Package: libmagickwand-dev
 Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
-Priority: optional
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
  libmagickwand-6.q16-dev,
@@ -712,7 +707,6 @@ Package: libmagick++-dev
 Architecture: all
 Multi-Arch: foreign
 Section: oldlibs
-Priority: optional
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
  libmagick++-6.q16-dev,
@@ -732,7 +726,6 @@ Package: imagemagick
 Architecture: any
 Multi-Arch: foreign
 Section: oldlibs
-Priority: optional
 Depends: ${misc:Depends},
  imagemagick-6.q16 (>= 8:6.9.2.10+dfsg-2~)
 Description: image manipulation programs -- binaries
