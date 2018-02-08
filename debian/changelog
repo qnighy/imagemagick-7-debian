@@ -1,6 +1,9 @@
 imagemagick (8:6.9.9.34+dfsg-1) experimental; urgency=high
 
   * New upstream version
+  * Packaging fix:
+    + Fix privacy breach.
+    + Bump compat level to 11.
   * Fix a few security issues
     + Fix CVE-2017-1000445: NULL pointer dereference in
       the MagickCore component and might lead to denial of service.
