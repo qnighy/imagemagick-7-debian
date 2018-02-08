@@ -6,6 +6,8 @@ imagemagick (8:6.9.9.34+dfsg-1) experimental; urgency=high
     + Bump compat level to 11.
     + Bump policy no changes
     + Fix lintian warnings
+    + Fix "unnecessary libgraphviz-dev dependency (and graphviz
+      suggests?)", thanks to Matthias Klose (Closes: #884444).
   * Fix a few security issues
     + Fix CVE-2017-1000445: NULL pointer dereference in
       the MagickCore component and might lead to denial of service.
@@ -128,7 +130,7 @@ imagemagick (8:6.9.9.34+dfsg-1) experimental; urgency=high
       Denial of Service (NULL pointer dereference and application crash in
       AcquireQuantumMemory within MagickCore/memory.c) by providing a
       crafted Image File as input.
-      (Closes: #878545)))
+      (Closes: #878545)
     + Fix CVE-2017-14532: NULL Pointer Dereference in TIFFIgnoreTags
       in coders/tiff.c.
       (Closes: #878541)
@@ -336,7 +338,7 @@ imagemagick (8:6.9.9.34+dfsg-1) experimental; urgency=high
       This allows remote attackers to cause a denial of service.
       (from b0a464122e0d8a1e1e31f6cd6d3f4d085fa8fb0)
 
- -- Bastien Roucariès <rouca@debian.org>  Fri, 02 Feb 2018 15:16:07 +0100
+ -- Bastien Roucariès <rouca@debian.org>  Thu, 08 Feb 2018 13:38:05 +0100
 
 imagemagick (8:6.9.9.6+dfsg-1) experimental; urgency=medium
 
