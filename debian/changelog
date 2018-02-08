@@ -10,6 +10,7 @@ imagemagick (8:6.9.9.34+dfsg-1) experimental; urgency=high
       suggests?)", thanks to Matthias Klose (Closes: #884444).
     + Remove Vincent Fourmond <fourmond@debian.org> as uploader, thanks
       to him. (Closes: #878679).
+    + Aknowledge NMU (Closes: #856601)
   * Fix a few security issues
     + Fix CVE-2017-1000445: NULL pointer dereference in
       the MagickCore component and might lead to denial of service.
@@ -378,6 +379,14 @@ imagemagick (8:6.9.9.6+dfsg-1) experimental; urgency=medium
     Salvatore Bonaccorso (Closes: #864151).
 
  -- Bastien Roucariès <rouca@debian.org>  Fri, 11 Aug 2017 17:09:53 +0200
+
+imagemagick (8:6.9.7.4+dfsg-16.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Remove wrong Multi-Arch: foreign from libmagickcore-dev, libmagickwand-dev
+    and libmagick++-dev. (Closes: #856601)
+
+ -- Helmut Grohne <helmut@subdivi.de>  Sun, 28 Jan 2018 15:12:24 +0100
 
 imagemagick (8:6.9.7.4+dfsg-16) unstable; urgency=high
 
