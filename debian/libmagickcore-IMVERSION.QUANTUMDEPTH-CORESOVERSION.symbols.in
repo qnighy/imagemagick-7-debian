@@ -465,6 +465,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  GetImageChannels@Base 8:6.9.9.5
  GetImageClipMask@Base 8:6.9.9.5
  GetImageClippingPathAttribute@Base 8:6.9.9.5
+ GetImageColorspaceType@Base 8:6.9.9.34
  GetImageDecoder@Base 8:6.9.9.5
  GetImageDepth@Base 8:6.9.9.5
  GetImageDistortion@Base 8:6.9.9.5
@@ -530,6 +531,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  GetMagickAdjoin@Base 8:6.9.9.5
  GetMagickBlobSupport@Base 8:6.9.9.5
  GetMagickCopyright@Base 8:6.9.9.5
+ GetMagickCoreSignature@Base 8:6.9.9.34
  GetMagickDelegates@Base 8:6.9.9.5
  GetMagickDescription@Base 8:6.9.9.5
  GetMagickEndianSupport@Base 8:6.9.9.5
@@ -557,7 +559,6 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  GetMagickResource@Base 8:6.9.9.5
  GetMagickResourceLimit@Base 8:6.9.9.5
  GetMagickSeekableStream@Base 8:6.9.9.5
- GetMagickSignature@Base 8:6.9.9.5
  GetMagickThreadSupport@Base 8:6.9.9.5
  GetMagickThreadValue@Base 8:6.9.9.5
  GetMagickToken@Base 8:6.9.9.5
@@ -648,6 +649,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  GetResizeFilterWeightingType@Base 8:6.9.9.5
  GetResizeFilterWindowSupport@Base 8:6.9.9.5
  GetResizeFilterWindowWeightingType@Base 8:6.9.9.5
+ GetRootValueFromSplayTree@Base 8:6.9.9.34
  GetSignatureBlocksize@Base 8:6.9.9.5
  GetSignatureDigest@Base 8:6.9.9.5
  GetSignatureDigestsize@Base 8:6.9.9.5
