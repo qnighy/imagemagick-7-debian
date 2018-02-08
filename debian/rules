@@ -28,31 +28,13 @@ VALGRIND_POC_ARCH ?=
 # export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
-# arch type extracted from dpkg database
-STATIC_DEB_HOST_GNU_TYPE := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-export DEB_HOST_GNU_TYPE  ?= $(STATIC_DEB_HOST_GNU_TYPE)
-STATIC_DEB_HOST_MULTIARCH := $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
-export DEB_HOST_MULTIARCH ?= $(STATIC_DEB_HOST_MULTIARCH)
-STATIC_DEB_BUILD_GNU_TYPE := $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
-export DEB_BUILD_GNU_TYPE ?= $(STATIC_DEB_BUILD_GNU_TYPE)
-export STATIC_DEB_SOURCE_PACKAGE := $(shell dpkg-parsechangelog -SSource)
-DEB_SOURCE_PACKAGE ?= $(STATIC_DEB_SOURCE_PACKAGE)
-STATIC_DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
-export DEB_HOST_ARCH ?= $(STATIC_DEB_HOST_ARCH)
+include /usr/share/dpkg/pkg-info.mk
+include /usr/share/dpkg/architecture.mk
 
 # version extracted from changelog
-STATIC_DEB_VERSION := $(shell dpkg-parsechangelog -SVersion)
-export DEB_VERSION ?= $(STATIC_DEB_VERSION)
-STATIC_DEB_NOEPOCH_VERSION := $(shell set -e;echo $(DEB_VERSION) | cut -d: -f2-)
-export DEB_NOEPOCH_VERSION ?= $(STATIC_DEB_NOEPOCH_VERSION)
-STATIC_DEB_UPSTREAM_VERSION := $(shell set -e;echo $(DEB_NOEPOCH_VERSION) | sed 's/-[^-]*$$//')
-export DEB_UPSTREAM_VERSION ?= $(STATIC_DEB_UPSTREAM_VERSION)
-STATIC_DEB_ISNATIVE := $(shell set -e;dpkg-parsechangelog | egrep '^Version:' | perl -ne 'print if not /^Version:\s*.*-/;')
-export DEB_ISNATIVE ?= $(STATIC_DEB_ISNATIVE)
-STATIC_DEB_UPSTREAM_VERSION_DROPREVISION := $(shell set -e;echo $(DEB_UPSTREAM_VERSION) |  sed -r "s/(^.+)\..+$$/\1/g")
-export DEB_UPSTREAM_VERSION_DROPREVISION ?= $(STATIC_DEB_UPSTREAM_VERSION_DROPREVISION)
-STATIC_DEB_UPSTREAM_VERSION_MAJOR := $(shell set -e;echo $(DEB_UPSTREAM_VERSION) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
-export DEB_UPSTREAM_VERSION_MAJOR ?= $(STATIC_DEB_UPSTREAM_VERSION_MAJOR)
+#DEB_VERSION_UPSTREAM
+DEB_UPSTREAM_VERSION_DROPREVISION := $(shell set -e;echo $(DEB_VERSION_UPSTREAM) |  sed -r "s/(^.+)\..+$$/\1/g")
+DEB_UPSTREAM_VERSION_MAJOR := $(shell set -e;echo $(DEB_VERSION_UPSTREAM) | sed -r "s/(^[[:digit:]]+)\..+$$/\1/g")
 export IMVERSION := $(DEB_UPSTREAM_VERSION_MAJOR)
 
 # where to put documentation (relative)
@@ -90,7 +72,7 @@ STATIC_CONFIGURE_OPTIONS := \
 	--prefix=/usr \
 	--libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
 	--docdir=/$(DOC_PKG_PATH) \
-	--with-extra-doc-dir=' (on debian system you may install the imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR) package)' \
+	--with-extra-doc-dir=' (on debian system you may install the imagemagick-$(IMVERSION) package)' \
 	--sysconfdir=/etc \
 	--with-includearch-dir=/usr/include/$(DEB_HOST_MULTIARCH)/ \
 	--mandir=/usr/share/man \
@@ -634,7 +616,7 @@ override_dh_auto_install-indep:
 
 	# Use x-terminal emulator for editing (Bug #132947) TODO: proper patch please
 	sed -i 's/xterm/\/etc\/alternatives\/x-terminal-emulator/' \
-		$(CURDIR)/debian/tmp-indep/etc/ImageMagick-$(DEB_UPSTREAM_VERSION_MAJOR)/delegates.xml
+		$(CURDIR)/debian/tmp-indep/etc/ImageMagick-$(IMVERSION)/delegates.xml
 
 	# install default perl
 	cd debian/build-quantum-indep/PerlMagick/default/ && make install DESTDIR=$(CURDIR)/debian/tmp-indep
@@ -708,11 +690,11 @@ endif
 
 override_dh_install-indep:
 	# special source imagemagick-*-common
-	dh_install --package=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common
+	dh_install --package=imagemagick-$(IMVERSION)-common
 	# remaining package
 	dh_install --indep --remaining-packages --sourcedir=debian/tmp-indep --autodest
 	# fix doxygen problem
-	./debian/scripts/dh_doxygen --indep --package=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-doc
+	./debian/scripts/dh_doxygen --indep --package=imagemagick-$(IMVERSION)-doc
 
 override_dh_compress:
 	# fix #611125
@@ -754,7 +736,7 @@ override_dh_bugfiles-arch: $(foreach Q,$(QUANTUMDEPTH),override_dh_bugfiles-arch
 	done
 
 override_dh_bugfiles-indep:
-	dh_bugfiles --package=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common
+	dh_bugfiles --package=imagemagick-$(IMVERSION)-common
 	# link normal package
 	set -e; for PKG in $(MAGICK_ALL_PACKAGES); do \
 		if test "X$$PKG" != Ximagemagick-$(IMVERSION)-common; then \
@@ -772,7 +754,7 @@ override_dh_bugfiles-indep:
 	done
 
 override_dh_installdocs-indep:
-	dh_installdocs --indep --link-doc=imagemagick-$(DEB_UPSTREAM_VERSION_MAJOR)-common
+	dh_installdocs --indep --link-doc=imagemagick-$(IMVERSION)-common
 
 override_dh_installdocs-arch:
 	dh_installdocs --arch
@@ -838,248 +820,11 @@ override_dh_clean: $(foreach Q,$(QUANTUMDEPTH),override_dh_clean_quantum.$Q) ove
 # maint rules
 #########################
 
-export DEB_MAINT_UPSTREAM_BRANCH ?= ImageMagick-${DEB_UPSTREAM_VERSION_MAJOR}
-export DEB_MAINT_CURRENT_DEB_BRANCH ?= debian/${DEB_NOEPOCH_VERSION}
-export DEB_MAINT_CURRENT_DEB_CUSTOM_PATCHES ?= debian-custom-patches/${DEB_NOEPOCH_VERSION}
-
 # get original source
 get-orig-source:
 	uscan
 
-# clone debian repo (do it in another directory)
-maint-clone-debian-tree:
-	@echo "clone debian tree and get in sync with upstream"
-	@echo "Take a few cups of cofeee it take a long time  "
-	@echo "==============================================="
-	git clone git+ssh://login@git.debian.org/git/collab-maint/imagemagick.git
-	git svn init -s --prefix=origin/  https://www.imagemagick.org/subversion/ImageMagick/
-	git config gitpkg.orig-compressor xz
-	git config gitpkg.deb-export-hook /usr/share/gitpkg/hooks/quilt-patches-deb-export-hook
-	git config gitpkg.pre-export-hook /usr/share/gitpkg/hooks/pristine-tar-pre-export-hook
-	git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}
-
-# switch to upstream branch
-maint-switch-to-upstream:
-	git checkout ${DEB_MAINT_UPSTREAM_BRANCH}
-
-# goto upstream branch and merge new work
-maint-merge-upstream-to-local:
-	@echo "merge new upstream to local"
-	git checkout ${DEB_MAINT_UPSTREAM_BRANCH}
-	git merge origin/${DEB_MAINT_UPSTREAM_BRANCH}
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
-
-# git svn fetch
-maint-git-svn-fetch:
-	git svn fetch
-
-# git svn + merge upstream
-maint-refresh-git-svn: maint-git-svn-fetch
-	# try to go to merge upstream if fail goto to previous state
-	if !($(MAKE) -f debian/rules maint-merge-upstream-to-local); then \
-		git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-		exit 1;\
-	else \
-		git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-	fi;
-
-# mark upstream revision by founding it with svn id from upstream changelog
-maint-mark-upstream-revision-%:
-	git checkout ${DEB_MAINT_UPSTREAM_BRANCH}
-	if test "x${DEB_MAINT_UPSTREAM_SVNREV}" = "x" ; then \
-		DEB_MAINT_UPSTREAM_SVNREV=`grep "New version $*" ChangeLog | sed "s/.*SVN revision \([0-9]*\).*/\1/g"`; \
-		if test "x$$DEB_MAINT_UPSTREAM_SVNREV" = "x"; then exit 1; fi ;\
-		echo -n "Found svn revision $* git sha id: " ;\
-		git rev-list --all --grep "svn-id.*@$$DEB_MAINT_UPSTREAM_SVNREV" ;\
-		git checkout -b upstream/$* \
-				`git rev-list --all --grep "svn-id.*@$$DEB_MAINT_UPSTREAM_SVNREV"`; \
-	else \
-	   git checkout -b upstream/$* ${DEB_MAINT_UPSTREAM_SVNREV}; \
-	fi;
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
-
-# get upstream revision like in upstream changelog
-maint-get-upstream-rev-doit:
-	@echo "Try to get upstream revision $(DEB_MAINT_NEW_VERSION)."
-	DEB_MAINT_NEW_VERSION_RAW=`echo $(DEB_MAINT_NEW_VERSION) | sed "s/\(.*\)\.\([:digit:]*\)/\1-\2/g"`; \
-	if test "x$$DEB_MAINT_NEW_VERSION_RAW" = "x"; then exit 1; fi;\
-	if !(git show-ref --verify --quiet refs/heads/upstream/$$DEB_MAINT_NEW_VERSION_RAW) ; then \
-		if ! ($(MAKE) -f debian/rules \
-				 maint-mark-upstream-revision-$$DEB_MAINT_NEW_VERSION_RAW \
-				 DEB_MAINT_NEW_VERSION=${DEB_MAINT_NEW_VERSION} \
-				 DEB_MAINT_UPSTREAM_SVNREV=${DEB_MAINT_UPSTREAM_SVNREV}); then \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-			exit 1; \
-		else \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-		fi; \
-	fi;
-
-
-# get upstream version
-maint-get-upstream-rev: #maint-refresh-git-svn
-	$(MAKE) -f debian/rules \
-		   maint-get-upstream-rev-doit \
-		   DEB_MAINT_NEW_VERSION:=$(shell uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g")
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
-
-
-# put it in a new make in order to fail gracefully
-maint-get-upstream-rev-from-tar-new-make-%:
-	git checkout -f upstream/`echo $* | sed "s/\(.*\)\.\([:digit:]*\)/\1-\2/g"`
-	git checkout -b upstream/$*
-	find ./*  -path './.git' -prune -o -exec rm -rf '{}' +
-	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.xz
-	git add --all .
-	git commit -a -m "Add upstream tar.xz for version $*"
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
-
-# reconstruct upstream for tar
-maint-reconstruct-upstream-doit: maint-get-upstream-rev-doit
-	@echo "get upstream from tar and merge it"
-	if !(git show-ref --verify --quiet refs/heads/upstream/${DEB_MAINT_NEW_VERSION}) ; then \
-		if ! ($(MAKE) -f debian/rules maint-get-upstream-rev-from-tar-new-make-${DEB_MAINT_NEW_VERSION}); then \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-			git branch -D upstream/${DEB_MAINT_NEW_VERSION} || true; \
-			exit 1; \
-		else \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-		fi; \
-	fi;
-
-# reconstruct upstream
-maint-reconstruct-upstream:
-	$(MAKE) -f debian/rules \
-		   maint-reconstruct-upstream-doit \
-		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH};
-
-add-pristine-tar-new-make-%:
-	git checkout -f upstream/$*
-	pristine-tar commit ../imagemagick_$*.orig.tar.xz upstream/$*
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
-
-# add pristine-tar from a sub make
-maint-add-pristine-tar-doit: maint-reconstruct-upstream-doit
-	@echo "execute pristine-tar"
-	if !(pristine-tar list | grep ${DEB_MAINT_NEW_VERSION}); then \
-		if ! ($(MAKE) -f debian/rules add-pristine-tar-new-make-${DEB_MAINT_NEW_VERSION}) ; then \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-			exit 1; \
-		else \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-		fi; \
-	fi;
-
-# add pristine-tar
-maint-add-pristine-tar:
-	$(MAKE) -f debian/rules \
-		   maint-add-pristine-tar-doit \
-		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
-
-# manually merge debian branch
-maint-merge-debian-branch-new-make-%:
-	git checkout ${DEB_MAINT_CURRENT_DEB_BRANCH}
-	git checkout -b debian/$*-1
-	if ! (git show-ref --verify --quiet refs/heads/upstream/$*) ; then exit 1; fi;
-	git merge --no-commit upstream/$* || true
-	find ./* -path './debian' -prune -o -path './.git' -prune -o -exec rm -rf '{}' +
-	tar --strip 1 -xaf ../imagemagick_$*.orig.tar.xz
-	git add --all .
-	git commit -a -m 'merge debian branch with upstream $*'
-
-# merge debian branch
-maint-merge-debian-branch-doit: maint-add-pristine-tar-doit
-	if ! (git show-ref --verify --quiet refs/heads/debian/${DEB_MAINT_NEW_VERSION}-1); then \
-		if ! ($(MAKE) -f debian/rules maint-merge-debian-branch-new-make-${DEB_MAINT_NEW_VERSION}); then \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-			git branch -D debian/${DEB_MAINT_NEW_VERSION}-1 || true; \
-			exit 1; \
-		else \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-		fi; \
-	fi;
-
-# merge debian branch
-maint-merge-debian-branch:
-	$(MAKE) -f debian/rules \
-		   maint-merge-debian-branch-doit \
-		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
-
-
-maint-create-debian-patches-new-make-%:
-	git checkout -f upstream/${DEB_MAINT_NEW_VERSION}
-	git checkout -b debian-patches/${DEB_MAINT_NEW_VERSION}-1
-
-maint-create-debian-patches-doit: maint-merge-debian-branch-doit
-	if ! (git show-ref --verify --quiet refs/heads/debian-patches/${DEB_MAINT_NEW_VERSION}-1); then \
-		if ! ($(MAKE) -f debian/rules maint-create-debian-patches-new-make-${DEB_MAINT_NEW_VERSION}); then \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-			git branch -D debian-patches/${DEB_MAINT_NEW_VERSION}-1 || true; \
-			exit 1; \
-		else \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-		fi; \
-	fi;
-
-
-# create a new debian patches branch
-maint-create-debian-patches:
-	$(MAKE) -f debian/rules \
-		   maint-create-debian-patches-doit \
-		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
-
-
-maint-create-debian-custom-patches-new-make-%:
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_CUSTOM_PATCHES}
-	if ! (git show-ref --verify --quiet refs/heads/debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1) ; then \
-		git checkout -b debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1; \
-	fi;
-	git rebase upstream/${DEB_UPSTREAM_VERSION} debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1 --onto debian-patches/${DEB_MAINT_NEW_VERSION}-1
-	git checkout debian-patches/${DEB_MAINT_NEW_VERSION}-1
-	git merge --ff debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1
-
-maint-create-debian-custom-patches-doit: maint-create-debian-patches-doit
-	if ! (git show-ref --verify --quiet refs/heads/debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1); then \
-		if ! ($(MAKE) -f debian/rules maint-create-debian-custom-patches-new-make-${DEB_MAINT_NEW_VERSION}); then \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-			git branch -D debian-custom-patches/${DEB_MAINT_NEW_VERSION}-1 || true; \
-			exit 1; \
-		else \
-			git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-		fi; \
-	fi;
-
-
-# create not forwarded debian patches (debian-custom-patches)
-maint-create-debian-custom-patches:
-	$(MAKE) -f debian/rules \
-		   maint-create-debian-custom-patches-doit \
-		   DEB_MAINT_NEW_VERSION:=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`
-	git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}
-
-
-# create a new version
-maint-do-new-version:
-	DEB_MAINT_NEW_VERSION=`uscan --report --dehs | grep "<upstream-version>" | sed "s/<upstream-version>\(.*\)<\/upstream-version>/\1/g"`;\
-	if test "x$$DEB_MAINT_NEW_VERSION" = "x" ; then exit 1; fi; \
-	if !($(MAKE) -f debian/rules maint-create-debian-custom-patches-doit \
-			 DEB_MAINT_NEW_VERSION:=$$DEB_MAINT_NEW_VERSION ); then \
-	    git checkout -f ${DEB_MAINT_CURRENT_DEB_BRANCH}; \
-	else \
-	    git checkout -f debian/$$DEB_MAINT_NEW_VERSION-1; \
-	fi;
-
-	# check if upstream is sane
-	# check if html doc is well formed in order to run xslt rule
-	-find $(CURDIR)/www \
-		-maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
-		| xargs -r -0 -t xmllint --noout --nonet || true
-
 maint-html-is-sane:
-	find $(CURDIR)/www \
-		-maxdepth 2 -type f -and -name '*.html' -and -not -empty -print0 \
+	find $(CURDIR) \
+		-maxdepth 3 -type f -and -name '*.html' -and -not -empty -print0 \
 		| xargs -r -0 -t xmllint --noout --nonet
