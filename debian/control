@@ -6,11 +6,11 @@ Uploaders: Luciano Bello <luciano@debian.org>,
  Nelson A. de Oliveira <naoliv@debian.org>,
  Bastien Roucariès <rouca@debian.org>,
  Vincent Fourmond <fourmond@debian.org>
-Standards-Version: 3.9.8
+Standards-Version: 4.1.3
 # for dbg-sym
 Build-Depends: debhelper (>= 11),
 # for improving build
- dh-exec, dh-autoreconf,
+ dh-exec,
 # ABI dump
  g++ (>= 4:7),
 # for linking compiling ...
