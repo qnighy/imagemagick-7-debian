@@ -1,3 +1,9 @@
+imagemagick (8:6.9.9.34+dfsg-2) experimental; urgency=high
+
+  * Fix FTBFS for s390x where float_t is double
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 12 Feb 2018 22:29:24 +0100
+
 imagemagick (8:6.9.9.34+dfsg-1) experimental; urgency=high
 
   * New upstream version
