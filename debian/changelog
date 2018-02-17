@@ -1,3 +1,9 @@
+imagemagick (8:6.9.9.34+dfsg-3) unstable; urgency=high
+
+  * Upload to unstable (urgency high due to security issues).
+
+ -- Bastien Roucariès <rouca@debian.org>  Sun, 18 Feb 2018 00:12:41 +0100
+
 imagemagick (8:6.9.9.34+dfsg-2) experimental; urgency=high
 
   * Fix FTBFS for s390x where float_t is double
