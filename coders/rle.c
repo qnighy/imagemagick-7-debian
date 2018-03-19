@@ -247,6 +247,8 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((number_planes == 0) || (number_planes == 2) || ((flags & 0x04) &&
         ((number_planes <= 2) || number_planes > 254)) || (bits_per_pixel != 8))
       ThrowRLEException(CorruptImageError,"ImproperImageHeader");
+    if (number_planes > 4)
+      ThrowRLEException(CorruptImageError,"ImproperImageHeader");
     if ((image->columns == 0) || (image->columns >= 32768) ||
         (image->rows == 0) || (image->rows >= 32768))
       ThrowRLEException(CorruptImageError,"ImproperImageHeader");
@@ -332,6 +334,10 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     status=SetImageExtent(image,image->columns,image->rows);
     if (status == MagickFalse)
       {
+        if (colormap != (unsigned char *) NULL)
+          colormap=(unsigned char *) RelinquishMagickMemory(colormap);
+        if (pixel_info != (MemoryInfo *) NULL)
+          pixel_info=RelinquishVirtualMemory(pixel_info);
         InheritException(exception,&image->exception);
         return(DestroyImageList(image));
       }
@@ -350,7 +356,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     pixel_info_length=image->columns*image->rows*
       MagickMax(number_planes_filled,4);
     pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
-    (void) ResetMagickMemory(pixels,0,pixel_info_length);
+    (void) memset(pixels,0,pixel_info_length);
     if ((flags & 0x01) && !(flags & 0x02))
       {
         ssize_t
@@ -381,7 +387,11 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
     y=0;
     opcode=ReadBlobByte(image);
     if (opcode == EOF)
-      ThrowRLEException(CorruptImageError,"UnexpectedEndOfFile");
+      {
+        if (number_colormaps != 0)
+          colormap=(unsigned char *) RelinquishMagickMemory(colormap);
+        ThrowRLEException(CorruptImageError,"UnexpectedEndOfFile");
+      }
     do
     {
       switch (opcode & 0x3f)
@@ -442,12 +452,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
           operand++;
           if ((offset < 0) ||
               ((size_t) (offset+operand*number_planes) > pixel_info_length))
-            {
-              if (number_colormaps != 0)
-                colormap=(unsigned char *) RelinquishMagickMemory(colormap);
-              pixel_info=RelinquishVirtualMemory(pixel_info);
-              ThrowRLEException(CorruptImageError,"UnableToReadImageData");
-            }
+            ThrowRLEException(CorruptImageError,"UnableToReadImageData");
           p=pixels+offset;
           for (i=0; i < (ssize_t) operand; i++)
           {
@@ -480,12 +485,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
             number_planes+plane);
           if ((offset < 0) ||
               ((size_t) (offset+operand*number_planes) > pixel_info_length))
-            {
-              if (number_colormaps != 0)
-                colormap=(unsigned char *) RelinquishMagickMemory(colormap);
-              pixel_info=RelinquishVirtualMemory(pixel_info);
-              ThrowRLEException(CorruptImageError,"UnableToReadImageData");
-            }
+            ThrowRLEException(CorruptImageError,"UnableToReadImageData");
           p=pixels+offset;
           for (i=0; i < (ssize_t) operand; i++)
           {
@@ -536,11 +536,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
                 p++;
               }
         if ((i < (ssize_t) number_pixels) || (x < (ssize_t) number_planes))
-          {
-            colormap=(unsigned char *) RelinquishMagickMemory(colormap);
-            pixel_info=RelinquishVirtualMemory(pixel_info);
-            ThrowRLEException(CorruptImageError,"UnableToReadImageData");
-          }
+          ThrowRLEException(CorruptImageError,"UnableToReadImageData");
       }
     /*
       Initialize image structure.

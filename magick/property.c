@@ -92,6 +92,15 @@
 #include "lcms.h"
 #endif
 #endif
+#if defined(MAGICKCORE_XML_DELEGATE)
+#  if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#    if !defined(__MINGW32__)
+#      include <win32config.h>
+#    endif
+#  endif
+#  include <libxml/parser.h>
+#  include <libxml/tree.h>
+#endif
 
 /*
   Define declarations.
@@ -680,7 +689,7 @@ static MagickBooleanType Get8BIMProperty(const Image *image,const char *key)
         sizeof(*attribute));
     if (attribute != (char *) NULL)
       {
-        (void) CopyMagickMemory(attribute,(char *) info,(size_t) count);
+        (void) memcpy(attribute,(char *) info,(size_t) count);
         attribute[count]='\0';
         info+=count;
         length-=MagickMin(count,(ssize_t) length);
@@ -1310,6 +1319,8 @@ static MagickBooleanType GetEXIFProperty(const Image *image,
   if (tag == (~0UL))
     return(MagickFalse);
   length=GetStringInfoLength(profile);
+  if (length < 6)
+    return(MagickFalse);
   exif=GetStringInfoDatum(profile);
   while (length != 0)
   {
@@ -1689,6 +1700,29 @@ static MagickBooleanType SkipXMPValue(const char *value)
   return(MagickTrue);
 }
 
+static MagickBooleanType ValidateXMPProfile(const char *profile,
+  const size_t length)
+{
+#if defined(MAGICKCORE_XML_DELEGATE)
+  {
+    xmlDocPtr
+      document;
+    
+    /*
+      Parse XML profile.
+    */
+    document=xmlReadMemory(profile,length,"xmp.xml",NULL,XML_PARSE_NOERROR |
+      XML_PARSE_NOWARNING);
+    if (document == (xmlDocPtr) NULL)
+      return(MagickFalse);
+    xmlFreeDoc(document);
+    return(MagickTrue);
+  }
+#else
+  return(MagickFalse);
+#endif
+}
+
 static MagickBooleanType GetXMPProperty(const Image *image,const char *property)
 {
   char
@@ -1719,11 +1753,18 @@ static MagickBooleanType GetXMPProperty(const Image *image,const char *property)
   profile=GetImageProfile(image,"xmp");
   if (profile == (StringInfo *) NULL)
     return(MagickFalse);
+  if (GetStringInfoLength(profile) < 17)
+    return(MagickFalse);
   if ((property == (const char *) NULL) || (*property == '\0'))
     return(MagickFalse);
   xmp_profile=StringInfoToString(profile);
   if (xmp_profile == (char *) NULL)
     return(MagickFalse);
+  if (ValidateXMPProfile(xmp_profile,GetStringInfoLength(profile)) == MagickFalse)
+    {
+      xmp_profile=DestroyString(xmp_profile);
+      return(MagickFalse);
+    }
   for (p=xmp_profile; *p != '\0'; p++)
     if ((*p == '<') && (*(p+1) == 'x'))
       break;
@@ -1836,9 +1877,9 @@ static char *TracePSClippath(const unsigned char *blob,size_t length,
     The clipping path format is defined in "Adobe Photoshop File
     Formats Specification" version 6.0 downloadable from adobe.com.
   */
-  (void) ResetMagickMemory(point,0,sizeof(point));
-  (void) ResetMagickMemory(first,0,sizeof(first));
-  (void) ResetMagickMemory(last,0,sizeof(last));
+  (void) memset(point,0,sizeof(point));
+  (void) memset(first,0,sizeof(first));
+  (void) memset(last,0,sizeof(last));
   knot_count=0;
   in_subpath=MagickFalse;
   while (length > 0)
@@ -2028,9 +2069,9 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
     "stroke-width:0;stroke-antialiasing:false\" d=\"\n"),(double) columns,
     (double) rows);
   (void) ConcatenateString(&path,message);
-  (void) ResetMagickMemory(point,0,sizeof(point));
-  (void) ResetMagickMemory(first,0,sizeof(first));
-  (void) ResetMagickMemory(last,0,sizeof(last));
+  (void) memset(point,0,sizeof(point));
+  (void) memset(first,0,sizeof(first));
+  (void) memset(last,0,sizeof(last));
   knot_count=0;
   in_subpath=MagickFalse;
   while (length != 0)
@@ -2255,6 +2296,8 @@ MagickExport const char *GetImageProperty(const Image *image,
           MagickPixelPacket
             pixel;
 
+          if ((image->columns == 0) || (image->rows == 0))
+            break;
           GetMagickPixelPacket(image,&pixel);
           fx_info=AcquireFxInfo(image,property+4);
           status=FxEvaluateChannelExpression(fx_info,RedChannel,0,0,&alpha,
@@ -2621,7 +2664,8 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
         Image storage class and colorspace.
       */
       colorspace=image->colorspace;
-      if (SetImageGray(image,&image->exception) != MagickFalse)
+      if ((image->columns != 0) && (image->rows != 0) &&
+          (SetImageGray(image,&image->exception) != MagickFalse))
         colorspace=GRAYColorspace;
       (void) FormatLocaleString(value,MaxTextExtent,"%s %s %s",
         CommandOptionToMnemonic(MagickClassOptions,(ssize_t)
@@ -2883,7 +2927,8 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
       /*
         Image signature.
       */
-      (void) SignatureImage(image);
+      if ((image->columns != 0) && (image->rows != 0))
+        (void) SignatureImage(image);
       string=GetImageProperty(image,"signature");
       break;
     }
@@ -4119,10 +4164,11 @@ MagickExport MagickBooleanType SetImageProperty(Image *image,
             geometry_info;
 
           flags=ParseGeometry(value,&geometry_info);
-          image->x_resolution=geometry_info.rho;
-          image->y_resolution=geometry_info.sigma;
-          if ((flags & SigmaValue) == 0)
-            image->y_resolution=image->x_resolution;
+          if ((flags & RhoValue) != 0)
+            image->x_resolution=geometry_info.rho;
+          image->y_resolution=image->x_resolution;
+          if ((flags & SigmaValue) != 0)
+            image->y_resolution=geometry_info.sigma;
         }
       if (LocaleCompare("depth",property) == 0)
         {

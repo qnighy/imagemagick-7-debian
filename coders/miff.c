@@ -306,8 +306,8 @@ static void PushRunlengthPacket(Image *image,const unsigned char *pixels,
 
       p=PushShortPixel(MSBEndian,p,&quantum);
       SetPixelRed(pixel,quantum >> (image->depth-MAGICKCORE_QUANTUM_DEPTH));
-      SetPixelGreen(pixel,ScaleCharToQuantum(quantum));
-      SetPixelBlue(pixel,ScaleCharToQuantum(quantum));
+      SetPixelGreen(pixel,ScaleCharToQuantum((unsigned char) quantum));
+      SetPixelBlue(pixel,ScaleCharToQuantum((unsigned char) quantum));
       if (IsGrayColorspace(image->colorspace) == MagickFalse)
         {
           p=PushShortPixel(MSBEndian,p,&quantum);
@@ -506,7 +506,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
   if (c == EOF)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   *id='\0';
-  (void) ResetMagickMemory(keyword,0,sizeof(keyword));
+  (void) memset(keyword,0,sizeof(keyword));
   version=0.0;
   (void) version;
   do
@@ -514,6 +514,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
     /*
       Decode image header;  header terminates one character beyond a ':'.
     */
+    SetGeometryInfo(&geometry_info);
     length=MaxTextExtent;
     options=AcquireString((char *) NULL);
     quantum_format=UndefinedQuantumFormat;
@@ -573,7 +574,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
             /*
               Get the keyword.
             */
-            length=MaxTextExtent;
+            length=MaxTextExtent-1;
             p=keyword;
             do
             {
@@ -891,28 +892,12 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
                     image->intensity=(PixelIntensityMethod) intensity;
                     break;
                   }
-                if ((LocaleNCompare(keyword,"profile:",8) == 0) ||
-                    (LocaleNCompare(keyword,"profile-",8) == 0))
+                if (LocaleCompare(keyword,"profile") == 0)
                   {
-                    StringInfo
-                      *profile;
-
                     if (profiles == (LinkedListInfo *) NULL)
                       profiles=NewLinkedList(0);
                     (void) AppendValueToLinkedList(profiles,
-                      AcquireString(keyword+8));
-                    profile=BlobToStringInfo((const void *) NULL,(size_t)
-                      StringToLong(options));
-                    if (profile == (StringInfo *) NULL)
-                      {
-                        options=DestroyString(options);
-                        profiles=DestroyLinkedList(profiles,
-                          RelinquishMagickMemory);
-                        ThrowReaderException(ResourceLimitError,
-                          "MemoryAllocationFailed");
-                      }
-                    (void) SetImageProfile(image,keyword+8,profile);
-                    profile=DestroyStringInfo(profile);
+                      AcquireString(options));
                     break;
                   }
                 (void) SetImageProperty(image,keyword,options);
@@ -1142,25 +1127,35 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
         const char
           *name;
 
-        const StringInfo
+        StringInfo
           *profile;
 
         /*
-          Read image profiles.
+          Read image profile blobs.
         */
         ResetLinkedListIterator(profiles);
         name=(const char *) GetNextValueInLinkedList(profiles);
         while (name != (const char *) NULL)
         {
-          profile=GetImageProfile(image,name);
-          if (profile != (StringInfo *) NULL)
-            {
-              register unsigned char
-                *p;
+          ssize_t
+            count;
 
-              p=GetStringInfoDatum(profile);
-              (void) ReadBlob(image,GetStringInfoLength(profile),p);
+          length=ReadBlobMSBLong(image);
+          if ((MagickSizeType) length > GetBlobSize(image))
+            break;
+          profile=AcquireStringInfo(length);
+          if (profile == (StringInfo *) NULL)
+            break;
+          count=ReadBlob(image,length,GetStringInfoDatum(profile));
+          if (count != (ssize_t) length)
+            {
+              profile=DestroyStringInfo(profile);
+              break;
             }
+          status=SetImageProfile(image,name,profile);
+          profile=DestroyStringInfo(profile);
+          if (status == MagickFalse)
+            break;
           name=(const char *) GetNextValueInLinkedList(profiles);
         }
         profiles=DestroyLinkedList(profiles,RelinquishMagickMemory);
@@ -1178,7 +1173,9 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
           Create image colormap.
         */
         packet_size=(size_t) (3UL*image->depth/8UL);
-        if ((packet_size*colors) > GetBlobSize(image))
+        if ((MagickSizeType) colors > GetBlobSize(image))
+          ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
+        if (((MagickSizeType) packet_size*colors) > GetBlobSize(image))
           ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
         status=AcquireImageColormap(image,colors != 0 ? colors : 256);
         if (status == MagickFalse)
@@ -1264,6 +1261,12 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
         InheritException(exception,&image->exception);
         return(DestroyImageList(image));
       }
+    status=ResetImagePixels(image,exception);
+    if (status == MagickFalse)
+      {
+        InheritException(exception,&image->exception);
+        return(DestroyImageList(image));
+      }
     /*
       Allocate image pixels.
     */
@@ -1325,15 +1328,15 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
           quantum_type=IndexAlphaQuantum;
       }
     status=MagickTrue;
-    (void) ResetMagickMemory(&pixel,0,sizeof(pixel));
+    (void) memset(&pixel,0,sizeof(pixel));
 #if defined(MAGICKCORE_BZLIB_DELEGATE)
-    (void) ResetMagickMemory(&bzip_info,0,sizeof(bzip_info));
+    (void) memset(&bzip_info,0,sizeof(bzip_info));
 #endif
 #if defined(MAGICKCORE_LZMA_DELEGATE)
-    (void) ResetMagickMemory(&allocator,0,sizeof(allocator));
+    (void) memset(&allocator,0,sizeof(allocator));
 #endif
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
-    (void) ResetMagickMemory(&zip_info,0,sizeof(zip_info));
+    (void) memset(&zip_info,0,sizeof(zip_info));
 #endif
     switch (image->compression)
     {
@@ -1363,7 +1366,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
         allocator.free=RelinquishLZMAMemory;
         lzma_info=initialize_lzma;
         lzma_info.allocator=(&allocator);
-        (void) ResetMagickMemory(&allocator,0,sizeof(allocator));
+        (void) memset(&allocator,0,sizeof(allocator));
         allocator.alloc=AcquireLZMAMemory;
         allocator.free=RelinquishLZMAMemory;
         lzma_info=initialize_lzma;
@@ -2059,7 +2062,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
       }
     else
       if (image->depth < 16)
-        DeleteImageProperty(image,"quantum:format");
+        (void) DeleteImageProperty(image,"quantum:format");
     compression=UndefinedCompression;
     if (image_info->compression != UndefinedCompression)
       compression=image_info->compression;
@@ -2280,18 +2283,16 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
           *profile;
 
         /*
-          Write image profiles.
+          Write image profile names.
         */
         ResetImageProfileIterator(image);
-        name=GetNextImageProfile(image);
-        while (name != (const char *) NULL)
+        for (name=GetNextImageProfile(image); name != (const char *) NULL; )
         {
           profile=GetImageProfile(image,name);
           if (profile != (StringInfo *) NULL)
             {
-              (void) FormatLocaleString(buffer,MaxTextExtent,
-                "profile:%s=%.20g\n",name,(double)
-                GetStringInfoLength(profile));
+              (void) FormatLocaleString(buffer,MagickPathExtent,"profile=%s\n",
+                name);
               (void) WriteBlobString(image,buffer);
             }
           name=GetNextImageProfile(image);
@@ -2334,7 +2335,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
                 {
                   if (value[i] == (int) '}')
                     (void) WriteBlobByte(image,'\\');
-                  (void) WriteBlobByte(image,value[i]);
+                  (void) WriteBlobByte(image,(unsigned char) value[i]);
                 }
               (void) WriteBlobByte(image,'}');
             }
@@ -2353,7 +2354,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
             image->directory);
         (void) WriteBlobByte(image,'\0');
       }
-    if (image->profiles != (void *) NULL)
+    if (image->profiles != 0)
       {
         const char
           *name;
@@ -2362,13 +2363,15 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
           *profile;
 
         /*
-          Generic profile.
+          Write image profile blob.
         */
         ResetImageProfileIterator(image);
         name=GetNextImageProfile(image);
         while (name != (const char *) NULL)
         {
           profile=GetImageProfile(image,name);
+          (void) WriteBlobMSBLong(image,(unsigned int)
+            GetStringInfoLength(profile));
           (void) WriteBlob(image,GetStringInfoLength(profile),
             GetStringInfoDatum(profile));
           name=GetNextImageProfile(image);
@@ -2458,7 +2461,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
         int
           code;
 
-        (void) ResetMagickMemory(&bzip_info,0,sizeof(bzip_info));
+        (void) memset(&bzip_info,0,sizeof(bzip_info));
         bzip_info.bzalloc=AcquireBZIPMemory;
         bzip_info.bzfree=RelinquishBZIPMemory;
         code=BZ2_bzCompressInit(&bzip_info,(int) (image->quality ==
@@ -2475,7 +2478,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
         int
           code;
 
-        (void) ResetMagickMemory(&allocator,0,sizeof(allocator));
+        (void) memset(&allocator,0,sizeof(allocator));
         allocator.alloc=AcquireLZMAMemory;
         allocator.free=RelinquishLZMAMemory;
         lzma_info=initialize_lzma;
@@ -2493,7 +2496,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
         int
           code;
 
-        (void) ResetMagickMemory(&zip_info,0,sizeof(zip_info));
+        (void) memset(&zip_info,0,sizeof(zip_info));
         zip_info.zalloc=AcquireZIPMemory;
         zip_info.zfree=RelinquishZIPMemory;
         code=deflateInit(&zip_info,(int) (image->quality ==

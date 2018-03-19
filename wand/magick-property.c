@@ -706,7 +706,7 @@ WandExport unsigned char *MagickGetImageProfile(MagickWand *wand,
     sizeof(*datum));
   if (datum == (unsigned char *) NULL)
     return((unsigned char *) NULL);
-  (void) CopyMagickMemory(datum,GetStringInfoDatum(profile),
+  (void) memcpy(datum,GetStringInfoDatum(profile),
     GetStringInfoLength(profile));
   *length=(size_t) GetStringInfoLength(profile);
   return(datum);
@@ -1237,7 +1237,7 @@ WandExport MagickBooleanType MagickGetPage(const MagickWand *wand,
   assert(wand->signature == WandSignature);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  (void) ResetMagickMemory(&geometry,0,sizeof(geometry));
+  (void) memset(&geometry,0,sizeof(geometry));
   (void) ParseAbsoluteGeometry(wand->image_info->page,&geometry);
   *width=geometry.width;
   *height=geometry.height;
@@ -1573,7 +1573,7 @@ WandExport MagickBooleanType MagickGetSize(const MagickWand *wand,
   assert(wand->signature == WandSignature);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  (void) ResetMagickMemory(&geometry,0,sizeof(geometry));
+  (void) memset(&geometry,0,sizeof(geometry));
   (void) ParseAbsoluteGeometry(wand->image_info->size,&geometry);
   *columns=geometry.width;
   *rows=geometry.height;
@@ -1616,7 +1616,7 @@ WandExport MagickBooleanType MagickGetSizeOffset(const MagickWand *wand,
   assert(wand->signature == WandSignature);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
-  (void) ResetMagickMemory(&geometry,0,sizeof(geometry));
+  (void) memset(&geometry,0,sizeof(geometry));
   (void) ParseAbsoluteGeometry(wand->image_info->size,&geometry);
   *offset=geometry.x;
   return(MagickTrue);
@@ -1785,7 +1785,7 @@ WandExport unsigned char *MagickRemoveImageProfile(MagickWand *wand,
     sizeof(*datum));
   if (datum == (unsigned char *) NULL)
     return((unsigned char *) NULL);
-  (void) CopyMagickMemory(datum,GetStringInfoDatum(profile),
+  (void) memcpy(datum,GetStringInfoDatum(profile),
     GetStringInfoLength(profile));
   *length=GetStringInfoLength(profile);
   profile=DestroyStringInfo(profile);

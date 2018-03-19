@@ -351,7 +351,7 @@ static ChannelStatistics *GetLocationStatistics(const Image *image,
     sizeof(*channel_statistics));
   if (channel_statistics == (ChannelStatistics *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(channel_statistics,0,length*
+  (void) memset(channel_statistics,0,length*
     sizeof(*channel_statistics));
   for (i=0; i <= (ssize_t) CompositeChannels; i++)
   {
@@ -1502,7 +1502,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
       (double) image->page.width,(double) image->page.height,
       (double) image->page.x,(double) image->page.y);
   if ((image->page.x != 0) || (image->page.y != 0))
-    (void) FormatLocaleFile(file,"    \"originGeometry\": %+.20g%+.20g,\n",
+    (void) FormatLocaleFile(file,"    \"originGeometry\": \"%+.20g%+.20g\",\n",
       (double) image->page.x,(double) image->page.y);
   JSONFormatLocaleFile(file,"    \"dispose\": %s,\n",
     CommandOptionToMnemonic(MagickDisposeOptions,(ssize_t) image->dispose));
@@ -1555,7 +1555,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
       while (*p != '\0')
       {
         q=p;
-        while ((*q != '\n') && (*q != '\0'))
+        while ((*q != '\xff') && (*q != '\0'))
           q++;
         (void) CopyMagickString(image_info->filename,p,(size_t) (q-p+1));
         p=q+1;

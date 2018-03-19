@@ -248,10 +248,8 @@ static int CompareMagickInfoSize(const void *a,const void *b)
 
   ma=(MagicInfo *) a;
   mb=(MagicInfo *) b;
-
   if (ma->offset != mb->offset)
     return((int) (ma->offset-mb->offset));
-
   return((int) (mb->length-ma->length));
 }
 
@@ -317,7 +315,7 @@ static LinkedListInfo *AcquireMagicCache(const char *filename,
           ResourceLimitError,"MemoryAllocationFailed","`%s'",p->name);
         continue;
       }
-    (void) ResetMagickMemory(magic_info,0,sizeof(*magic_info));
+    (void) memset(magic_info,0,sizeof(*magic_info));
     magic_info->path=(char *) "[built-in]";
     magic_info->name=(char *) p->name;
     magic_info->offset=p->offset;
@@ -842,7 +840,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
           GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
-              if (depth > 200)
+              if (depth > MagickMaxRecursionDepth)
                 (void) ThrowMagickException(exception,GetMagickModule(),
                   ConfigureError,"IncludeElementNestedTooDeeply","`%s'",token);
               else
@@ -879,7 +877,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
         magic_info=(MagicInfo *) AcquireMagickMemory(sizeof(*magic_info));
         if (magic_info == (MagicInfo *) NULL)
           ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-        (void) ResetMagickMemory(magic_info,0,sizeof(*magic_info));
+        (void) memset(magic_info,0,sizeof(*magic_info));
         magic_info->path=ConstantString(filename);
         magic_info->exempt=MagickFalse;
         magic_info->signature=MagickCoreSignature;

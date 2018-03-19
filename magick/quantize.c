@@ -478,18 +478,18 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
 {
 #define AssignImageTag  "Assign/Image"
 
+  ColorspaceType
+    colorspace;
+
   ssize_t
     y;
 
   /*
     Allocate image colormap.
   */
-  if ((cube_info->quantize_info->colorspace != UndefinedColorspace) &&
-      (cube_info->quantize_info->colorspace != CMYKColorspace))
+  colorspace=image->colorspace;
+  if (cube_info->quantize_info->colorspace != UndefinedColorspace)
     (void) TransformImageColorspace(image,cube_info->quantize_info->colorspace);
-  else
-    if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
-      (void) TransformImageColorspace(image,sRGBColorspace);
   if (AcquireImageColormap(image,cube_info->colors) == MagickFalse)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
@@ -518,7 +518,7 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
       exception=(&image->exception);
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status) \
+      #pragma omp parallel for schedule(static) shared(status) \
         magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
@@ -647,8 +647,8 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
     }
   (void) SyncImage(image);
   if ((cube_info->quantize_info->colorspace != UndefinedColorspace) &&
-      (cube_info->quantize_info->colorspace != CMYKColorspace))
-    (void) TransformImageColorspace((Image *) image,sRGBColorspace);
+      (IssRGBCompatibleColorspace(colorspace) == MagickFalse))
+    (void) TransformImageColorspace(image,colorspace);
   return(MagickTrue);
 }
 
@@ -1415,7 +1415,7 @@ static DoublePixelPacket **AcquirePixelThreadSet(const size_t count)
     sizeof(*pixels));
   if (pixels == (DoublePixelPacket **) NULL)
     return((DoublePixelPacket **) NULL);
-  (void) ResetMagickMemory(pixels,0,number_threads*sizeof(*pixels));
+  (void) memset(pixels,0,number_threads*sizeof(*pixels));
   for (i=0; i < (ssize_t) number_threads; i++)
   {
     pixels[i]=(DoublePixelPacket *) AcquireQuantumMemory(count,
@@ -1827,7 +1827,7 @@ static MagickBooleanType RiemersmaDither(Image *image,CacheView *image_view,
       /*
         Propagate the error as the last entry of the error queue.
       */
-      (void) CopyMagickMemory(p->error,p->error+1,(ErrorQueueLength-1)*
+      (void) memmove(p->error,p->error+1,(ErrorQueueLength-1)*
         sizeof(p->error[0]));
       AssociateAlphaPixel(cube_info,image->colormap+index,&color);
       p->error[ErrorQueueLength-1].red=pixel.red-color.red;
@@ -1869,7 +1869,7 @@ static MagickBooleanType DitherImage(Image *image,CubeInfo *cube_info)
   /*
     Distribute quantization error along a Hilbert curve.
   */
-  (void) ResetMagickMemory(cube_info->error,0,ErrorQueueLength*
+  (void) memset(cube_info->error,0,ErrorQueueLength*
     sizeof(*cube_info->error));
   cube_info->x=0;
   cube_info->y=0;
@@ -1944,7 +1944,7 @@ static CubeInfo *GetCubeInfo(const QuantizeInfo *quantize_info,
   cube_info=(CubeInfo *) AcquireMagickMemory(sizeof(*cube_info));
   if (cube_info == (CubeInfo *) NULL)
     return((CubeInfo *) NULL);
-  (void) ResetMagickMemory(cube_info,0,sizeof(*cube_info));
+  (void) memset(cube_info,0,sizeof(*cube_info));
   cube_info->depth=depth;
   if (cube_info->depth > MaxTreeDepth)
     cube_info->depth=MaxTreeDepth;
@@ -1972,7 +1972,7 @@ static CubeInfo *GetCubeInfo(const QuantizeInfo *quantize_info,
   /*
     Initialize color cache.
   */
-  (void) ResetMagickMemory(cube_info->cache,(-1),sizeof(*cube_info->cache)*
+  (void) memset(cube_info->cache,(-1),sizeof(*cube_info->cache)*
     length);
   /*
     Distribute weights along a curve of exponential decay.
@@ -2056,7 +2056,7 @@ static NodeInfo *GetNodeInfo(CubeInfo *cube_info,const size_t id,
   cube_info->nodes++;
   cube_info->free_nodes--;
   node_info=cube_info->next_node++;
-  (void) ResetMagickMemory(node_info,0,sizeof(*node_info));
+  (void) memset(node_info,0,sizeof(*node_info));
   node_info->parent=parent;
   node_info->id=id;
   node_info->level=level;
@@ -2134,7 +2134,7 @@ MagickExport MagickBooleanType GetImageQuantizeError(Image *image)
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   image->total_colors=GetNumberColors(image,(FILE *) NULL,&image->exception);
-  (void) ResetMagickMemory(&image->error,0,sizeof(image->error));
+  (void) memset(&image->error,0,sizeof(image->error));
   if (image->storage_class == DirectClass)
     return(MagickTrue);
   alpha=1.0;
@@ -2221,7 +2221,7 @@ MagickExport void GetQuantizeInfo(QuantizeInfo *quantize_info)
 {
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(quantize_info != (QuantizeInfo *) NULL);
-  (void) ResetMagickMemory(quantize_info,0,sizeof(*quantize_info));
+  (void) memset(quantize_info,0,sizeof(*quantize_info));
   quantize_info->number_colors=256;
   quantize_info->dither=MagickTrue;
   quantize_info->dither_method=RiemersmaDitherMethod;
@@ -2318,7 +2318,7 @@ MagickExport MagickBooleanType PosterizeImageChannel(Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (image->storage_class == PseudoClass)
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    #pragma omp parallel for schedule(static) shared(progress,status) \
       magick_number_threads(image,image,image->colors,1)
 #endif
     for (i=0; i < (ssize_t) image->colors; i++)
@@ -2343,7 +2343,7 @@ MagickExport MagickBooleanType PosterizeImageChannel(Image *image,
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -3263,7 +3263,7 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
       ExceptionInfo
         *exception;
 
-      (void) ResetMagickMemory(colormap_index,(-1),MaxColormapSize*
+      (void) memset(colormap_index,(-1),MaxColormapSize*
         sizeof(*colormap_index));
       if (AcquireImageColormap(image,MaxColormapSize) == MagickFalse)
         {
@@ -3276,7 +3276,7 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
       exception=(&image->exception);
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status) \
+      #pragma omp parallel for schedule(static) shared(status) \
         magick_number_threads(image,image,image->rows,1)
 #endif
       for (y=0; y < (ssize_t) image->rows; y++)
@@ -3358,7 +3358,7 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)

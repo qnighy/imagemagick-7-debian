@@ -113,7 +113,7 @@ MagickExport ImageView *CloneImageView(const ImageView *image_view)
   clone_view=(ImageView *) AcquireMagickMemory(sizeof(*clone_view));
   if (clone_view == (ImageView *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(clone_view,0,sizeof(*clone_view));
+  (void) memset(clone_view,0,sizeof(*clone_view));
   clone_view->description=ConstantString(image_view->description);
   clone_view->extent=image_view->extent;
   clone_view->view=CloneCacheView(image_view->view);
@@ -249,7 +249,7 @@ MagickExport MagickBooleanType DuplexTransferImageViewIterator(
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,destination_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
@@ -562,7 +562,7 @@ MagickExport MagickBooleanType GetImageViewIterator(ImageView *source,
   progress=0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,source_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
@@ -727,7 +727,7 @@ MagickExport ImageView *NewImageView(Image *image)
   image_view=(ImageView *) AcquireMagickMemory(sizeof(*image_view));
   if (image_view == (ImageView *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(image_view,0,sizeof(*image_view));
+  (void) memset(image_view,0,sizeof(*image_view));
   image_view->description=ConstantString("ImageView");
   image_view->image=image;
   image_view->exception=AcquireExceptionInfo();
@@ -781,7 +781,7 @@ MagickExport ImageView *NewImageViewRegion(Image *image,const ssize_t x,
   image_view=(ImageView *) AcquireMagickMemory(sizeof(*image_view));
   if (image_view == (ImageView *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(image_view,0,sizeof(*image_view));
+  (void) memset(image_view,0,sizeof(*image_view));
   image_view->description=ConstantString("ImageView");
   image_view->exception=AcquireExceptionInfo();
   image_view->view=AcquireVirtualCacheView(image_view->image,
@@ -911,7 +911,7 @@ MagickExport MagickBooleanType SetImageViewIterator(ImageView *destination,
 #endif
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(destination_image,destination_image,height,1)
 #endif
   for (y=destination->extent.y; y < (ssize_t) destination->extent.height; y++)
@@ -1082,7 +1082,7 @@ MagickExport MagickBooleanType TransferImageViewIterator(ImageView *source,
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,destination_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
@@ -1219,7 +1219,7 @@ MagickExport MagickBooleanType UpdateImageViewIterator(ImageView *source,
   exception=source->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,source_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)

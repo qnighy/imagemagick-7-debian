@@ -260,8 +260,9 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
 
   size_t
     bytes_per_row,
-    flags,
     bits_per_pixel,
+    extent,
+    flags,
     version,
     nextDepthOffset,
     transparentIndex,
@@ -320,6 +321,7 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
         InheritException(exception,&image->exception);
         return(DestroyImageList(image));
       }
+    (void) SetImageBackgroundColor(image);
     bytes_per_row=ReadBlobMSBShort(image);
     flags=ReadBlobMSBShort(image);
     bits_per_pixel=(size_t) ReadBlobByte(image);
@@ -413,10 +415,11 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
         InheritException(exception,&image->exception);
         return(DestroyImageList(image));
       }
-    one_row=(unsigned char *) AcquireQuantumMemory(MagickMax(bytes_per_row,
-      2*image->columns),sizeof(*one_row));
+    extent=MagickMax(bytes_per_row,2*image->columns);
+    one_row=(unsigned char *) AcquireQuantumMemory(extent,sizeof(*one_row));
     if (one_row == (unsigned char *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    (void) memset(one_row,0,extent*sizeof(*one_row));
     last_row=(unsigned char *) NULL;
     if (compressionType == PALM_COMPRESSION_SCANLINE)
       {
@@ -452,7 +455,7 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
                   break;
                 count=MagickMin(count,(ssize_t) bytes_per_row-i);
                 byte=(size_t) ReadBlobByte(image);
-                (void) ResetMagickMemory(one_row+i,(int) byte,(size_t) count);
+                (void) memset(one_row+i,(int) byte,(size_t) count);
                 i+=count;
               }
           }
@@ -479,7 +482,7 @@ static Image *ReadPALMImage(const ImageInfo *image_info,
                     one_row[i+bit]=last_row[i+bit];
                 }
               }
-              (void) CopyMagickMemory(last_row, one_row, bytes_per_row);
+              (void) memcpy(last_row, one_row, bytes_per_row);
             }
         }
       ptr=one_row;
@@ -890,7 +893,7 @@ static MagickBooleanType WritePALMImage(const ImageInfo *image_info,
     for (y=0; y < (ssize_t) image->rows; y++)
     {
       ptr=one_row;
-      (void) ResetMagickMemory(ptr,0,bytes_per_row);
+      (void) memset(ptr,0,bytes_per_row);
       p=GetAuthenticPixels(image,0,y,image->columns,1,exception);
       if (p == (PixelPacket *) NULL)
         break;
@@ -975,7 +978,7 @@ static MagickBooleanType WritePALMImage(const ImageInfo *image_info,
               (void) WriteBlobByte(image, byte);
               (void) WriteBlob(image,tptr-tmpbuf,(unsigned char *) tmpbuf);
             }
-            (void) CopyMagickMemory(last_row,one_row,bytes_per_row);
+            (void) memcpy(last_row,one_row,bytes_per_row);
           }
         else
           (void) WriteBlob(image,bytes_per_row,one_row);

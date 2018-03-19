@@ -300,7 +300,7 @@ MagickExport void GetNextToken(const char *start,const char **end,
     }
   }
   token[i]='\0';
-  if ((LocaleNCompare(token,"url(",4) == 0) && (strlen(token) > 4))
+  if ((LocaleNCompare(token,"url(",4) == 0) && (strlen(token) > 5))
     {
       ssize_t
         offset;
@@ -309,8 +309,11 @@ MagickExport void GetNextToken(const char *start,const char **end,
       if (token[offset] == '#')
         offset++;
       i=(ssize_t) strlen(token);
-      (void) CopyMagickString(token,token+offset,MaxTextExtent);
-      token[i-offset-1]='\0';
+      if (i > offset)
+        {
+          (void) CopyMagickString(token,token+offset,MaxTextExtent);
+          token[i-offset-1]='\0';
+        }
     }
   while (isspace((int) ((unsigned char) *p)) != 0)
     p++;

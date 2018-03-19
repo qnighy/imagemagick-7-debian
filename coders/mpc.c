@@ -185,9 +185,6 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
   ssize_t
     count;
 
-  StringInfo
-    *profile;
-
   unsigned int
     signature;
 
@@ -208,7 +205,7 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  (void) CopyMagickString(cache_filename,image->filename,MaxTextExtent);
+  (void) CopyMagickString(cache_filename,image->filename,MaxTextExtent-6);
   AppendImageFormat("cache",cache_filename);
   c=ReadBlobByte(image);
   if (c == EOF)
@@ -217,13 +214,14 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return((Image *) NULL);
     }
   *id='\0';
-  (void) ResetMagickMemory(keyword,0,sizeof(keyword));
+  (void) memset(keyword,0,sizeof(keyword));
   offset=0;
   do
   {
     /*
       Decode image header;  header terminates one character beyond a ':'.
     */
+    SetGeometryInfo(&geometry_info);
     profiles=(LinkedListInfo *) NULL;
     length=MaxTextExtent;
     options=AcquireString((char *) NULL);
@@ -282,7 +280,7 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
             /*
               Get the keyword.
             */
-            length=MaxTextExtent;
+            length=MaxTextExtent-1;
             p=keyword;
             do
             {
@@ -611,25 +609,12 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
                     image->intensity=(PixelIntensityMethod) intensity;
                     break;
                   }
-                if ((LocaleNCompare(keyword,"profile:",8) == 0) ||
-                    (LocaleNCompare(keyword,"profile-",8) == 0))
+                if (LocaleCompare(keyword,"profile") == 0)
                   {
                     if (profiles == (LinkedListInfo *) NULL)
                       profiles=NewLinkedList(0);
                     (void) AppendValueToLinkedList(profiles,
-                      AcquireString(keyword+8));
-                    profile=BlobToStringInfo((const void *) NULL,(size_t)
-                      StringToLong(options));
-                    if (profile == (StringInfo *) NULL)
-                      {
-                        options=DestroyString(options);
-                        profiles=DestroyLinkedList(profiles,
-                          RelinquishMagickMemory);
-                        ThrowReaderException(ResourceLimitError,
-                          "MemoryAllocationFailed");
-                      }
-                    (void) SetImageProfile(image,keyword+8,profile);
-                    profile=DestroyStringInfo(profile);
+                      AcquireString(options));
                     break;
                   }
                 (void) SetImageProperty(image,keyword,options);
@@ -827,6 +812,8 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
               p=image->directory+strlen(image->directory);
             }
           c=ReadBlobByte(image);
+          if (c == EOF)
+            break;
           *p++=(char) c;
         } while (c != (int) '\0');
       }
@@ -835,25 +822,32 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
         const char
           *name;
 
-        const StringInfo
+        StringInfo
           *profile;
 
-        register unsigned char
-          *p;
-
         /*
-          Read image profiles.
+          Read image profile blobs.
         */
         ResetLinkedListIterator(profiles);
         name=(const char *) GetNextValueInLinkedList(profiles);
         while (name != (const char *) NULL)
         {
-          profile=GetImageProfile(image,name);
-          if (profile != (StringInfo *) NULL)
+          length=ReadBlobMSBLong(image);
+          if ((MagickSizeType) length > GetBlobSize(image))
+            break;
+          profile=AcquireStringInfo(length);
+          if (profile == (StringInfo *) NULL)
+            break;
+          count=ReadBlob(image,length,GetStringInfoDatum(profile));
+          if (count != (ssize_t) length)
             {
-              p=GetStringInfoDatum(profile);
-              (void) ReadBlob(image,GetStringInfoLength(profile),p);
+              profile=DestroyStringInfo(profile);
+              break;
             }
+          status=SetImageProfile(image,name,profile);
+          profile=DestroyStringInfo(profile);
+          if (status == MagickFalse)
+            break;
           name=(const char *) GetNextValueInLinkedList(profiles);
         }
         profiles=DestroyLinkedList(profiles,RelinquishMagickMemory);
@@ -871,7 +865,7 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
           Create image colormap.
         */
         packet_size=(size_t) (3UL*depth/8UL);
-        if ((packet_size*image->colors) > GetBlobSize(image))
+        if ((MagickSizeType) (packet_size*image->colors) > GetBlobSize(image))
           ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
         image->colormap=(PixelPacket *) AcquireQuantumMemory(image->colors+1,
           sizeof(*image->colormap));
@@ -963,7 +957,10 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
     */
     status=PersistPixelCache(image,cache_filename,MagickTrue,&offset,exception);
     if (status == MagickFalse)
-      ThrowReaderException(CacheError,"UnableToPersistPixelCache");
+      {
+        status=SetImageExtent(image,image->columns,image->rows);
+        ThrowReaderException(CacheError,"UnableToPersistPixelCache");
+      }
     if (EOFBlob(image) != MagickFalse)
       {
         ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
@@ -1128,7 +1125,7 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  (void) CopyMagickString(cache_filename,image->filename,MaxTextExtent);
+  (void) CopyMagickString(cache_filename,image->filename,MaxTextExtent-6);
   AppendImageFormat("cache",cache_filename);
   scene=0;
   offset=0;
@@ -1320,7 +1317,7 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
           *profile;
 
         /*
-          Generic profile.
+          Write image profile names.
         */
         ResetImageProfileIterator(image);
         for (name=GetNextImageProfile(image); name != (const char *) NULL; )
@@ -1328,9 +1325,8 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
           profile=GetImageProfile(image,name);
           if (profile != (StringInfo *) NULL)
             {
-              (void) FormatLocaleString(buffer,MaxTextExtent,
-                "profile:%s=%.20g\n",name,(double)
-                GetStringInfoLength(profile));
+              (void) FormatLocaleString(buffer,MagickPathExtent,"profile=%s\n",
+                name);
               (void) WriteBlobString(image,buffer);
             }
           name=GetNextImageProfile(image);
@@ -1370,7 +1366,7 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
                 {
                   if (value[i] == (int) '}')
                     (void) WriteBlobByte(image,'\\');
-                  (void) WriteBlobByte(image,value[i]);
+                  (void) WriteBlobByte(image,(unsigned char) value[i]);
                 }
               (void) WriteBlobByte(image,'}');
             }
@@ -1397,13 +1393,15 @@ static MagickBooleanType WriteMPCImage(const ImageInfo *image_info,Image *image)
           *profile;
 
         /*
-          Write image profiles.
+          Write image profile blob.
         */
         ResetImageProfileIterator(image);
         name=GetNextImageProfile(image);
         while (name != (const char *) NULL)
         {
           profile=GetImageProfile(image,name);
+          (void) WriteBlobMSBLong(image,(unsigned int)
+            GetStringInfoLength(profile));
           (void) WriteBlob(image,GetStringInfoLength(profile),
             GetStringInfoDatum(profile));
           name=GetNextImageProfile(image);

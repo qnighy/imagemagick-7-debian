@@ -125,13 +125,18 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
   assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   (void) ResetImagePage(image,"0x0+0+0");
+  if ((image->columns != 0) && (image->rows != 0))
+    (void) SetImageBackgroundColor(image);
   property=InterpretImageProperties(image_info,image,image_info->filename);
+  if (property == (char *) NULL)
+    return(DestroyImageList(image));
   (void) SetImageProperty(image,"label",property);
   property=DestroyString(property);
   label=GetImageProperty(image,"label");
   draw_info=CloneDrawInfo(image_info,(DrawInfo *) NULL);
   draw_info->text=ConstantString(label);
-  metrics.width=0;
+  metrics.width=0.0;
+  metrics.height=0.0;
   metrics.ascent=0.0;
   status=GetMultilineTypeMetrics(image,draw_info,&metrics);
   if ((image->columns == 0) && (image->rows == 0))
@@ -140,7 +145,7 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
       image->rows=(size_t) floor(metrics.height+draw_info->stroke_width+0.5);
     }
   else
-    if ((strlen(label) > 0) &&
+    if ((status != MagickFalse) && (strlen(label) > 0) &&
         (((image->columns == 0) || (image->rows == 0)) ||
          (fabs(image_info->pointsize) < MagickEpsilon)))
       {
@@ -148,16 +153,21 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
           high,
           low;
 
+        ssize_t
+          n;
+
         /*
           Auto fit text into bounding box.
         */
-        for ( ; ; draw_info->pointsize*=2.0)
+        for (n=0; n < 32; n++, draw_info->pointsize*=2.0)
         {
           (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",
             -metrics.bounds.x1,metrics.ascent);
           if (draw_info->gravity == UndefinedGravity)
             (void) CloneString(&draw_info->geometry,geometry);
-          (void) GetMultilineTypeMetrics(image,draw_info,&metrics);
+          status=GetMultilineTypeMetrics(image,draw_info,&metrics);
+          if (status == MagickFalse)
+            break;
           width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
           height=(size_t) floor(metrics.height+draw_info->stroke_width+0.5);
           if ((image->columns != 0) && (image->rows != 0))
@@ -170,6 +180,12 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
                 ((image->rows != 0) && (height >= image->rows)))
               break;
         }
+        if (status == MagickFalse)
+          {
+            draw_info=DestroyDrawInfo(draw_info);
+            image=DestroyImageList(image);
+            return((Image *) NULL);
+          }
         high=draw_info->pointsize;
         for (low=1.0; (high-low) > 0.5; )
         {
@@ -178,7 +194,9 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
             -metrics.bounds.x1,metrics.ascent);
           if (draw_info->gravity == UndefinedGravity)
             (void) CloneString(&draw_info->geometry,geometry);
-          (void) GetMultilineTypeMetrics(image,draw_info,&metrics);
+          status=GetMultilineTypeMetrics(image,draw_info,&metrics);
+          if (status == MagickFalse)
+            break;
           width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
           height=(size_t) floor(metrics.height+draw_info->stroke_width+0.5);
           if ((image->columns != 0) && (image->rows != 0))
@@ -195,9 +213,12 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
             else
               high=draw_info->pointsize-0.5;
         }
-        draw_info->pointsize=(low+high)/2.0-0.5;
+        if (status != MagickFalse)
+          {
+            draw_info->pointsize=(low+high)/2.0-0.5;
+            status=GetMultilineTypeMetrics(image,draw_info,&metrics);
+          }
       }
-  status=GetMultilineTypeMetrics(image,draw_info,&metrics);
   if (status == MagickFalse)
     {
       draw_info=DestroyDrawInfo(draw_info);
@@ -234,7 +255,7 @@ static Image *ReadLABELImage(const ImageInfo *image_info,
     Draw label.
   */
   (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",
-    draw_info->direction == RightToLeftDirection ? image->columns-
+    draw_info->direction == RightToLeftDirection ? (double) image->columns-
     metrics.bounds.x2 : 0.0,draw_info->gravity == UndefinedGravity ?
     metrics.ascent : 0.0);
   (void) CloneString(&draw_info->geometry,geometry);

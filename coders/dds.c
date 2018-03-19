@@ -1414,7 +1414,7 @@ static void ComputePrincipleComponent(const float *covariance,
     w.z = (row2.z * v.z) + w.z;
     w.w = (row2.w * v.z) + w.w;
 
-    a = 1.0f / MagickMax(w.x,MagickMax(w.y,w.z));
+    a = (float) PerceptibleReciprocal(MagickMax(w.x,MagickMax(w.y,w.z)));
 
     v.x = w.x * a;
     v.y = w.y * a;
@@ -1771,8 +1771,11 @@ static Image *ReadDDSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (volume)
     num_images = dds_info.depth;
 
-  if (num_images < 1)
+  if ((num_images == 0) || (num_images > GetBlobSize(image)))
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+
+  if (AcquireMagickResource(ListLengthResource,num_images) == MagickFalse)
+    ThrowReaderException(ResourceLimitError,"ListLengthExceedsLimit");
 
   for (n = 0; n < num_images; n++)
   {
@@ -1805,7 +1808,7 @@ static Image *ReadDDSImage(const ImageInfo *image_info,ExceptionInfo *exception)
         InheritException(exception,&image->exception);
         return(DestroyImageList(image));
       }
-
+    (void) SetImageBackgroundColor(image);
     if ((decoder)(image, &dds_info, exception) != MagickTrue)
       {
         (void) CloseBlob(image);
@@ -2763,7 +2766,7 @@ static void WriteDDSInfo(Image *image, const size_t pixelFormat,
 
   (void) WriteBlobLSBLong(image,0x00);
   (void) WriteBlobLSBLong(image,(unsigned int) mipmaps+1);
-  (void) ResetMagickMemory(software,0,sizeof(software));
+  (void) memset(software,0,sizeof(software));
   (void) CopyMagickString(software,"IMAGEMAGICK",MaxTextExtent);
   (void) WriteBlob(image,44,(unsigned char *) software);
 

@@ -131,7 +131,7 @@ WandExport WandView *CloneWandView(const WandView *wand_view)
   if (clone_view == (WandView *) NULL)
     ThrowWandFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",
       wand_view->name);
-  (void) ResetMagickMemory(clone_view,0,sizeof(*clone_view));
+  (void) memset(clone_view,0,sizeof(*clone_view));
   clone_view->id=AcquireWandId();
   (void) FormatLocaleString(clone_view->name,MaxTextExtent,"%s-%.20g",
     WandViewId,(double) clone_view->id);
@@ -293,7 +293,7 @@ WandExport MagickBooleanType DuplexTransferWandViewIterator(WandView *source,
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,destination_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
@@ -571,7 +571,7 @@ WandExport MagickBooleanType GetWandViewIterator(WandView *source,
   progress=0;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,source_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
@@ -763,7 +763,7 @@ static PixelWand ***AcquirePixelsThreadSet(const size_t number_wands,
     sizeof(*pixel_wands));
   if (pixel_wands == (PixelWand ***) NULL)
     return((PixelWand ***) NULL);
-  (void) ResetMagickMemory(pixel_wands,0,number_threads*sizeof(*pixel_wands));
+  (void) memset(pixel_wands,0,number_threads*sizeof(*pixel_wands));
   for (i=0; i < (ssize_t) number_threads; i++)
   {
     pixel_wands[i]=NewPixelWands(number_wands);
@@ -784,7 +784,7 @@ WandExport WandView *NewWandView(MagickWand *wand)
   if (wand_view == (WandView *) NULL)
     ThrowWandFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",
       GetExceptionMessage(errno));
-  (void) ResetMagickMemory(wand_view,0,sizeof(*wand_view));
+  (void) memset(wand_view,0,sizeof(*wand_view));
   wand_view->id=AcquireWandId();
   (void) FormatLocaleString(wand_view->name,MaxTextExtent,"%s-%.20g",
     WandViewId,(double) wand_view->id);
@@ -845,7 +845,7 @@ WandExport WandView *NewWandViewExtent(MagickWand *wand,const ssize_t x,
   if (wand_view == (WandView *) NULL)
     ThrowWandFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",
       GetExceptionMessage(errno));
-  (void) ResetMagickMemory(wand_view,0,sizeof(*wand_view));
+  (void) memset(wand_view,0,sizeof(*wand_view));
   wand_view->id=AcquireWandId();
   (void) FormatLocaleString(wand_view->name,MaxTextExtent,"%s-%.20g",
     WandViewId,(double) wand_view->id);
@@ -980,7 +980,7 @@ WandExport MagickBooleanType SetWandViewIterator(WandView *destination,
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (destination->extent.height-destination->extent.y);
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(destination_image,destination_image,height,1)
 #endif
   for (y=destination->extent.y; y < (ssize_t) destination->extent.height; y++)
@@ -1164,7 +1164,7 @@ WandExport MagickBooleanType TransferWandViewIterator(WandView *source,
   exception=destination->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,destination_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)
@@ -1339,7 +1339,7 @@ WandExport MagickBooleanType UpdateWandViewIterator(WandView *source,
   exception=source->exception;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   height=(size_t) (source->extent.height-source->extent.y);
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,source_image,height,1)
 #endif
   for (y=source->extent.y; y < (ssize_t) source->extent.height; y++)

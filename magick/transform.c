@@ -250,7 +250,7 @@ MagickExport Image *ChopImage(const Image *image,const RectangleInfo *chop_info,
   image_view=AcquireVirtualCacheView(image,exception);
   chop_view=AcquireAuthenticCacheView(chop_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,chop_image,extent.y,1)
 #endif
   for (y=0; y < (ssize_t) extent.y; y++)
@@ -313,7 +313,7 @@ MagickExport Image *ChopImage(const Image *image,const RectangleInfo *chop_info,
     Extract chop image.
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) (image->rows-(extent.y+extent.height)); y++)
@@ -741,7 +741,7 @@ MagickExport Image *CropImage(const Image *image,const RectangleInfo *geometry,
   image_view=AcquireVirtualCacheView(image,exception);
   crop_view=AcquireAuthenticCacheView(crop_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,crop_image,crop_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) crop_image->rows; y++)
@@ -771,10 +771,10 @@ MagickExport Image *CropImage(const Image *image,const RectangleInfo *geometry,
       }
     indexes=GetCacheViewVirtualIndexQueue(image_view);
     crop_indexes=GetCacheViewAuthenticIndexQueue(crop_view);
-    (void) CopyMagickMemory(q,p,(size_t) crop_image->columns*sizeof(*p));
+    (void) memcpy(q,p,(size_t) crop_image->columns*sizeof(*p));
     if ((indexes != (IndexPacket *) NULL) &&
         (crop_indexes != (IndexPacket *) NULL))
-      (void) CopyMagickMemory(crop_indexes,indexes,(size_t) crop_image->columns*
+      (void) memcpy(crop_indexes,indexes,(size_t) crop_image->columns*
         sizeof(*crop_indexes));
     if (SyncCacheViewAuthenticPixels(crop_view,exception) == MagickFalse)
       status=MagickFalse;
@@ -1079,7 +1079,7 @@ MagickExport Image *ExcerptImage(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   excerpt_view=AcquireAuthenticCacheView(excerpt_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,excerpt_image,excerpt_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) excerpt_image->rows; y++)
@@ -1105,13 +1105,13 @@ MagickExport Image *ExcerptImage(const Image *image,
         status=MagickFalse;
         continue;
       }
-    (void) CopyMagickMemory(q,p,(size_t) excerpt_image->columns*sizeof(*q));
+    (void) memcpy(q,p,(size_t) excerpt_image->columns*sizeof(*q));
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     if (indexes != (IndexPacket *) NULL)
       {
         excerpt_indexes=GetCacheViewAuthenticIndexQueue(excerpt_view);
         if (excerpt_indexes != (IndexPacket *) NULL)
-          (void) CopyMagickMemory(excerpt_indexes,indexes,(size_t)
+          (void) memcpy(excerpt_indexes,indexes,(size_t)
             excerpt_image->columns*sizeof(*excerpt_indexes));
       }
     if (SyncCacheViewAuthenticPixels(excerpt_view,exception) == MagickFalse)
@@ -1263,7 +1263,7 @@ MagickExport Image *FlipImage(const Image *image,ExceptionInfo *exception)
   image_view=AcquireVirtualCacheView(image,exception);
   flip_view=AcquireAuthenticCacheView(flip_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,flip_image,flip_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) flip_image->rows; y++)
@@ -1290,13 +1290,13 @@ MagickExport Image *FlipImage(const Image *image,ExceptionInfo *exception)
         status=MagickFalse;
         continue;
       }
-    (void) CopyMagickMemory(q,p,(size_t) image->columns*sizeof(*q));
+    (void) memcpy(q,p,(size_t) image->columns*sizeof(*q));
     indexes=GetCacheViewVirtualIndexQueue(image_view);
     if (indexes != (const IndexPacket *) NULL)
       {
         flip_indexes=GetCacheViewAuthenticIndexQueue(flip_view);
         if (flip_indexes != (IndexPacket *) NULL)
-          (void) CopyMagickMemory(flip_indexes,indexes,(size_t) image->columns*
+          (void) memcpy(flip_indexes,indexes,(size_t) image->columns*
             sizeof(*flip_indexes));
       }
     if (SyncCacheViewAuthenticPixels(flip_view,exception) == MagickFalse)
@@ -1391,7 +1391,7 @@ MagickExport Image *FlopImage(const Image *image,ExceptionInfo *exception)
   image_view=AcquireVirtualCacheView(image,exception);
   flop_view=AcquireAuthenticCacheView(flop_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,flop_image,flop_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) flop_image->rows; y++)
@@ -1507,7 +1507,7 @@ static MagickBooleanType CopyImageRegion(Image *destination,const Image *source,
   source_view=AcquireVirtualCacheView(source,exception);
   destination_view=AcquireAuthenticCacheView(destination,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(source,destination,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
@@ -1540,12 +1540,12 @@ static MagickBooleanType CopyImageRegion(Image *destination,const Image *source,
         continue;
       }
     indexes=GetCacheViewVirtualIndexQueue(source_view);
-    (void) CopyMagickMemory(q,p,(size_t) columns*sizeof(*p));
+    (void) memcpy(q,p,(size_t) columns*sizeof(*p));
     if (indexes != (IndexPacket *) NULL)
       {
         destination_indexes=GetCacheViewAuthenticIndexQueue(destination_view);
         if (destination_indexes != (IndexPacket *) NULL)
-          (void) CopyMagickMemory(destination_indexes,indexes,(size_t)
+          (void) memcpy(destination_indexes,indexes,(size_t)
             columns*sizeof(*indexes));
       }
     sync=SyncCacheViewAuthenticPixels(destination_view,exception);
@@ -1821,7 +1821,7 @@ MagickExport Image *SpliceImage(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   splice_view=AcquireAuthenticCacheView(splice_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,splice_image,splice_geometry.y,1)
 #endif
   for (y=0; y < (ssize_t) splice_geometry.y; y++)
@@ -1899,7 +1899,7 @@ MagickExport Image *SpliceImage(const Image *image,
       }
   }
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,splice_image,splice_image->rows,1)
 #endif
   for (y=(ssize_t) (splice_geometry.y+splice_geometry.height);
@@ -2221,7 +2221,7 @@ MagickExport Image *TransposeImage(const Image *image,ExceptionInfo *exception)
   image_view=AcquireVirtualCacheView(image,exception);
   transpose_view=AcquireAuthenticCacheView(transpose_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,transpose_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -2247,13 +2247,13 @@ MagickExport Image *TransposeImage(const Image *image,ExceptionInfo *exception)
         status=MagickFalse;
         continue;
       }
-    (void) CopyMagickMemory(q,p,(size_t) image->columns*sizeof(*q));
+    (void) memcpy(q,p,(size_t) image->columns*sizeof(*q));
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     if (indexes != (IndexPacket *) NULL)
       {
         transpose_indexes=GetCacheViewAuthenticIndexQueue(transpose_view);
         if (transpose_indexes != (IndexPacket *) NULL)
-          (void) CopyMagickMemory(transpose_indexes,indexes,(size_t)
+          (void) memcpy(transpose_indexes,indexes,(size_t)
             image->columns*sizeof(*transpose_indexes));
       }
     if (SyncCacheViewAuthenticPixels(transpose_view,exception) == MagickFalse)
@@ -2350,7 +2350,7 @@ MagickExport Image *TransverseImage(const Image *image,ExceptionInfo *exception)
   image_view=AcquireVirtualCacheView(image,exception);
   transverse_view=AcquireAuthenticCacheView(transverse_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,transverse_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)

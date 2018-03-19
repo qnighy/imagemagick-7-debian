@@ -450,7 +450,7 @@ static unsigned char *DecodeImage(Image *blob,Image *image,
   if (pixels == (unsigned char *) NULL)
     return((unsigned char *) NULL);
   *extent=row_bytes*image->rows*sizeof(*pixels);
-  (void) ResetMagickMemory(pixels,0,*extent);
+  (void) memset(pixels,0,*extent);
   scanline=(unsigned char *) AcquireQuantumMemory(row_bytes,2*
     sizeof(*scanline));
   if (scanline == (unsigned char *) NULL)
@@ -458,6 +458,7 @@ static unsigned char *DecodeImage(Image *blob,Image *image,
       pixels=(unsigned char *) RelinquishMagickMemory(pixels);
       return((unsigned char *) NULL);
     }
+  (void) memset(scanline,0,2*row_bytes*sizeof(*scanline));
   if (bytes_per_line < 8)
     {
       /*
@@ -483,7 +484,7 @@ static unsigned char *DecodeImage(Image *blob,Image *image,
               image->filename);
             break;
           }
-        (void) CopyMagickMemory(q,p,(size_t) number_pixels);
+        (void) memcpy(q,p,(size_t) number_pixels);
       }
       scanline=(unsigned char *) RelinquishMagickMemory(scanline);
       return(pixels);
@@ -498,7 +499,7 @@ static unsigned char *DecodeImage(Image *blob,Image *image,
       scanline_length=ReadBlobMSBShort(blob);
     else
       scanline_length=1UL*ReadBlobByte(blob);
-    if (scanline_length >= row_bytes)
+    if ((scanline_length >= row_bytes) || (scanline_length == 0))
       {
         (void) ThrowMagickException(&image->exception,GetMagickModule(),
           CorruptImageError,"UnableToUncompressImage","`%s'",image->filename);
@@ -518,7 +519,7 @@ static unsigned char *DecodeImage(Image *blob,Image *image,
           number_pixels=length*bytes_per_pixel;
           p=ExpandBuffer(scanline+j+1,&number_pixels,bits_per_pixel);
           if ((q-pixels+number_pixels) <= *extent)
-            (void) CopyMagickMemory(q,p,(size_t) number_pixels);
+            (void) memcpy(q,p,(size_t) number_pixels);
           q+=number_pixels;
           j+=(ssize_t) (length*bytes_per_pixel+1);
         }
@@ -530,7 +531,7 @@ static unsigned char *DecodeImage(Image *blob,Image *image,
           for (i=0; i < (ssize_t) length; i++)
           {
             if ((q-pixels+number_pixels) <= *extent)
-              (void) CopyMagickMemory(q,p,(size_t) number_pixels);
+              (void) memcpy(q,p,(size_t) number_pixels);
             q+=number_pixels;
           }
           j+=(ssize_t) bytes_per_pixel+1;
@@ -799,8 +800,9 @@ static MagickBooleanType ReadRectangle(Image *image,PICTRectangle *rectangle)
   rectangle->left=(short) ReadBlobMSBShort(image);
   rectangle->bottom=(short) ReadBlobMSBShort(image);
   rectangle->right=(short) ReadBlobMSBShort(image);
-  if ((EOFBlob(image) != MagickFalse) || (rectangle->left > rectangle->right) ||
-      (rectangle->top > rectangle->bottom))
+  if ((EOFBlob(image) != MagickFalse) ||
+      ((rectangle->bottom-rectangle->top) <= 0) ||
+      ((rectangle->right-rectangle->left) <= 0))
     return(MagickFalse);
   return(MagickTrue);
 }
@@ -934,7 +936,13 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
       InheritException(exception,&image->exception);
       return(DestroyImageList(image));
     }
-  (void) SetImageBackgroundColor(image);
+  image->matte=MagickTrue;
+  status=ResetImagePixels(image,exception);
+  if (status == MagickFalse)
+    {
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
   /*
     Interpret PICT opcodes.
   */
@@ -950,6 +958,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
       code=ReadBlobMSBSignedShort(image);
     if (code < 0)
       break;
+    if (code == 0)
+      continue;
     if (code > 0xa1)
       {
         if (image->debug != MagickFalse)
@@ -987,7 +997,6 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
                 InheritException(exception,&image->exception);
                 return(DestroyImageList(image));
               }
-            (void) SetImageBackgroundColor(image);
             break;
           }
           case 0x12:
@@ -1047,6 +1056,9 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
               }
             else
               for (i=0; i < (int) height; i++)
+              {
+                if (EOFBlob(image) != MagickFalse)
+                  break;
                 if (length > 200)
                   {
                     for (j=0; j < (ssize_t) ReadBlobMSBShort(image); j++)
@@ -1057,6 +1069,7 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
                   for (j=0; j < (ssize_t) ReadBlobByte(image); j++)
                     if (ReadBlobByte(image) == EOF)
                       break;
+              }
             break;
           }
           case 0x1b:
@@ -1428,6 +1441,9 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
       continue;
     if (code == 0x8200)
       {
+        char
+          filename[MaxTextExtent];
+
         FILE
           *file;
 
@@ -1447,7 +1463,9 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
         read_info=CloneImageInfo(image_info);
         SetImageInfoBlob(read_info,(void *) NULL,0);
         file=(FILE *) NULL;
-        unique_file=AcquireUniqueFileResource(read_info->filename);
+        unique_file=AcquireUniqueFileResource(filename);
+        (void) FormatLocaleString(read_info->filename,MaxTextExtent,"jpeg:%s",
+          filename);
         if (unique_file != -1)
           file=fdopen(unique_file,"wb");
         if ((unique_file == -1) || (file == (FILE *) NULL))
@@ -1485,7 +1503,7 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
         (void) fclose(file);
         (void) close(unique_file);
         tile_image=ReadImage(read_info,exception);
-        (void) RelinquishUniqueFileResource(read_info->filename);
+        (void) RelinquishUniqueFileResource(filename);
         read_info=DestroyImageInfo(read_info);
         if (tile_image == (Image *) NULL)
           continue;
@@ -1782,12 +1800,12 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
         buffer=(unsigned char *) RelinquishMagickMemory(buffer);
       ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
     }
-  (void) ResetMagickMemory(scanline,0,row_bytes);
-  (void) ResetMagickMemory(packed_scanline,0,(size_t) (row_bytes+MaxCount));
+  (void) memset(scanline,0,row_bytes);
+  (void) memset(packed_scanline,0,(size_t) (row_bytes+MaxCount));
   /*
     Write header, header size, size bounding box, version, and reserved.
   */
-  (void) ResetMagickMemory(buffer,0,PictInfoSize);
+  (void) memset(buffer,0,PictInfoSize);
   (void) WriteBlob(image,PictInfoSize,buffer);
   (void) WriteBlobMSBShort(image,0);
   (void) WriteBlobMSBShort(image,(unsigned short) size_rectangle.top);
@@ -2018,7 +2036,7 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
   else
     if (image_info->compression == JPEGCompression)
       {
-        (void) ResetMagickMemory(scanline,0,row_bytes);
+        (void) memset(scanline,0,row_bytes);
         for (y=0; y < (ssize_t) image->rows; y++)
           count+=EncodeImage(image,scanline,(size_t) (row_bytes & 0x7FFF),
             packed_scanline);

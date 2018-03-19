@@ -358,7 +358,7 @@ MagickExport Cache AcquirePixelCache(const size_t number_threads)
     *value;
 
   cache_info=(CacheInfo *) AcquireCriticalMemory(sizeof(*cache_info));
-  (void) ResetMagickMemory(cache_info,0,sizeof(*cache_info));
+  (void) memset(cache_info,0,sizeof(*cache_info));
   cache_info->type=UndefinedCache;
   cache_info->mode=IOMode;
   cache_info->disk_mode=IOMode;
@@ -434,7 +434,7 @@ MagickExport NexusInfo **AcquirePixelCacheNexus(const size_t number_threads)
     sizeof(**nexus_info));
   if (nexus_info[0] == (NexusInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(nexus_info[0],0,number_threads*sizeof(**nexus_info));
+  (void) memset(nexus_info[0],0,number_threads*sizeof(**nexus_info));
   for (i=0; i < (ssize_t) number_threads; i++)
   {
     nexus_info[i]=(&nexus_info[0][i]);
@@ -817,10 +817,8 @@ static MagickBooleanType ClonePixelCacheRepository(
 #define MaxCacheThreads  ((size_t) GetMagickResourceLimit(ThreadResource))
 #define cache_number_threads(source,destination,chunk,multithreaded) \
   num_threads((multithreaded) == 0 ? 1 : \
-    (((source)->type != MemoryCache) && \
-     ((source)->type != MapCache)) || \
-    (((destination)->type != MemoryCache) && \
-     ((destination)->type != MapCache)) ? \
+    (((source)->type != MemoryCache) && ((source)->type != MapCache)) || \
+    (((destination)->type != MemoryCache) && ((destination)->type != MapCache)) ? \
     MagickMax(MagickMin(GetMagickResourceLimit(ThreadResource),2),1) : \
     MagickMax(MagickMin((ssize_t) GetMagickResourceLimit(ThreadResource),(ssize_t) (chunk)/256),1))
 
@@ -878,7 +876,7 @@ static MagickBooleanType ClonePixelCacheRepository(
     sizeof(*cache_info->pixels);
   status=MagickTrue;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     cache_number_threads(cache_info,clone_info,cache_info->rows,1)
 #endif
   for (y=0; y < (ssize_t) cache_info->rows; y++)
@@ -912,8 +910,7 @@ static MagickBooleanType ClonePixelCacheRepository(
       clone_nexus[id],exception);
     if (pixels == (PixelPacket *) NULL)
       continue;
-    (void) ResetMagickMemory(clone_nexus[id]->pixels,0,(size_t)
-      clone_nexus[id]->length);
+    (void) memset(clone_nexus[id]->pixels,0,(size_t) clone_nexus[id]->length);
     (void) memcpy(clone_nexus[id]->pixels,cache_nexus[id]->pixels,length);
     status=WritePixelCachePixels(clone_info,clone_nexus[id],exception);
   }
@@ -926,7 +923,7 @@ static MagickBooleanType ClonePixelCacheRepository(
       length=(size_t) MagickMin(cache_info->columns,clone_info->columns)*
         sizeof(*cache_info->indexes);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status) \
+      #pragma omp parallel for schedule(static) shared(status) \
         cache_number_threads(cache_info,clone_info,cache_info->rows,1)
 #endif
       for (y=0; y < (ssize_t) cache_info->rows; y++)
@@ -1389,8 +1386,7 @@ MagickPrivate cl_mem GetAuthenticOpenCLBuffer(const Image *image,
       context=GetOpenCLContext(clEnv);
       cache_info->opencl=(OpenCLCacheInfo *) AcquireCriticalMemory(
         sizeof(*cache_info->opencl));
-      (void) ResetMagickMemory(cache_info->opencl,0,
-        sizeof(*cache_info->opencl));
+      (void) memset(cache_info->opencl,0,sizeof(*cache_info->opencl));
       cache_info->opencl->events_semaphore=AllocateSemaphoreInfo();
       cache_info->opencl->length=cache_info->length;
       cache_info->opencl->pixels=cache_info->pixels;
@@ -2011,10 +2007,8 @@ MagickExport MagickBooleanType GetOneAuthenticPixel(Image *image,
   cache_info=(CacheInfo *) image->cache;
   assert(cache_info->signature == MagickCoreSignature);
   *pixel=image->background_color;
-  if (cache_info->methods.get_one_authentic_pixel_from_handler !=
-       (GetOneAuthenticPixelFromHandler) NULL)
-    return(cache_info->methods.get_one_authentic_pixel_from_handler(image,x,y,
-      pixel,exception));
+  if (cache_info->methods.get_one_authentic_pixel_from_handler != (GetOneAuthenticPixelFromHandler) NULL)
+    return(cache_info->methods.get_one_authentic_pixel_from_handler(image,x,y,pixel,exception));
   pixels=GetAuthenticPixelsCache(image,x,y,1UL,1UL,exception);
   if (pixels == (PixelPacket *) NULL)
     return(MagickFalse);
@@ -2471,7 +2465,7 @@ MagickExport const char *GetPixelCacheFilename(const Image *image)
 MagickExport void GetPixelCacheMethods(CacheMethods *cache_methods)
 {
   assert(cache_methods != (CacheMethods *) NULL);
-  (void) ResetMagickMemory(cache_methods,0,sizeof(*cache_methods));
+  (void) memset(cache_methods,0,sizeof(*cache_methods));
   cache_methods->get_virtual_pixel_handler=GetVirtualPixelCache;
   cache_methods->get_virtual_pixels_handler=GetVirtualPixelsCache;
   cache_methods->get_virtual_indexes_from_handler=GetVirtualIndexesFromCache;
@@ -3910,6 +3904,10 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
       (AcquireMagickResource(HeightResource,image->rows) == MagickFalse))
     ThrowBinaryException(ImageError,"WidthOrHeightExceedsLimit",
       image->filename);
+  length=GetImageListLength(image);
+  if (AcquireMagickResource(ListLengthResource,length) == MagickFalse)
+    ThrowBinaryException(ResourceLimitError,"ListLengthExceedsLimit",
+      image->filename);
   source_info=(*cache_info);
   source_info.file=(-1);
   (void) FormatLocaleString(cache_info->filename,MaxTextExtent,"%s[%.20g]",
@@ -4085,7 +4083,6 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
     }
   if (OpenPixelCacheOnDisk(cache_info,mode) == MagickFalse)
     {
-      RelinquishMagickResource(DiskResource,cache_info->length);
       ThrowFileException(exception,CacheError,"UnableToOpenPixelCache",
         image->filename);
       return(MagickFalse);
@@ -5101,8 +5098,7 @@ static inline MagickBooleanType AcquireCacheNexusPixels(
       nexus_info->cache=(PixelPacket *) MagickAssumeAligned(
         AcquireAlignedMemory(1,(size_t) nexus_info->length));
       if (nexus_info->cache != (PixelPacket *) NULL)
-        (void) ResetMagickMemory(nexus_info->cache,0,(size_t)
-          nexus_info->length);
+        (void) memset(nexus_info->cache,0,(size_t) nexus_info->length);
     }
   else
     {
@@ -5302,7 +5298,7 @@ static MagickBooleanType SetCacheAlphaChannel(Image *image,
   status=MagickTrue;
   image_view=AcquireVirtualCacheView(image,&image->exception);  /* must be virtual */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)

@@ -205,7 +205,7 @@ static Image *ReadTEXTImage(const ImageInfo *image_info,
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  (void) ResetMagickMemory(text,0,sizeof(text));
+  (void) memset(text,0,sizeof(text));
   (void) ReadBlobString(image,text);
   /*
     Set the page geometry.
@@ -440,10 +440,12 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image=DestroyImageList(image);
       return((Image *) NULL);
     }
-  (void) ResetMagickMemory(text,0,sizeof(text));
+  (void) memset(text,0,sizeof(text));
   (void) ReadBlobString(image,text);
   if (LocaleNCompare((char *) text,MagickID,strlen(MagickID)) != 0)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+  x_offset=(-1);
+  y_offset=(-1);
   do
   {
     width=0;
@@ -478,9 +480,10 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if (type < 0)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     image->colorspace=(ColorspaceType) type;
-    (void) ResetMagickMemory(&pixel,0,sizeof(pixel));
+    (void) memset(&pixel,0,sizeof(pixel));
     (void) SetImageBackgroundColor(image);
     range=GetQuantumRange(image->depth);
+    status=MagickTrue;
     for (y=0; y < (ssize_t) image->rows; y++)
     {
       double
@@ -490,6 +493,8 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
         opacity,
         red;
 
+      if (status == MagickFalse)
+        break;
       red=0.0;
       green=0.0;
       blue=0.0;
@@ -498,7 +503,10 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
       for (x=0; x < (ssize_t) image->columns; x++)
       {
         if (ReadBlobString(image,text) == (char *) NULL)
-          break;
+          {
+            status=MagickFalse;
+            break;
+          }
         switch (image->colorspace)
         {
           case LinearGRAYColorspace:
@@ -583,9 +591,14 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (image->matte != MagickFalse)
           SetPixelAlpha(q,pixel.opacity);
         if (SyncAuthenticPixels(image,exception) == MagickFalse)
-          break;
+          {
+            status=MagickFalse;
+            break;
+          }
       }
     }
+    if (status == MagickFalse)
+      break;
     *text='\0';
     (void) ReadBlobString(image,text);
     if (LocaleNCompare((char *) text,MagickID,strlen(MagickID)) == 0)

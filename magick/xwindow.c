@@ -1515,6 +1515,7 @@ MagickExport void XClientMessage(Display *display,const Window window,
     client_event;
 
   assert(display != (Display *) NULL);
+  (void) memset(&client_event,0,sizeof(client_event));
   client_event.type=ClientMessage;
   client_event.window=window;
   client_event.message_type=protocol;
@@ -1791,7 +1792,7 @@ MagickExport void XDestroyResourceInfo(XResourceInfo *resource_info)
       RelinquishMagickMemory(resource_info->client_name);
   if (resource_info->name != (char *) NULL)
     resource_info->name=DestroyString(resource_info->name);
-  (void) ResetMagickMemory(resource_info,0,sizeof(*resource_info));
+  (void) memset(resource_info,0,sizeof(*resource_info));
 }
 
 /*
@@ -3406,7 +3407,7 @@ MagickExport void XGetResourceInfo(const ImageInfo *image_info,
   */
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(resource_info != (XResourceInfo *) NULL);
-  (void) ResetMagickMemory(resource_info,0,sizeof(*resource_info));
+  (void) memset(resource_info,0,sizeof(*resource_info));
   resource_info->resource_database=database;
   resource_info->image_info=(ImageInfo *) image_info;
   (void) SetImageInfoProgressMonitor(resource_info->image_info,
@@ -5065,7 +5066,7 @@ MagickExport XWindows *XInitializeWindows(Display *display,
   if (windows == (XWindows *) NULL)
     ThrowXWindowFatalException(XServerFatalError,"MemoryAllocationFailed",
         "...");
-  (void) ResetMagickMemory(windows,0,sizeof(*windows));
+  (void) memset(windows,0,sizeof(*windows));
   windows->pixel_info=(XPixelInfo *) AcquireMagickMemory(
     sizeof(*windows->pixel_info));
   windows->icon_pixel=(XPixelInfo *) AcquireMagickMemory(
@@ -5560,12 +5561,22 @@ MagickExport MagickBooleanType XMakeImage(Display *display,
     }
   if (window->shared_memory == MagickFalse)
     {
-      if (ximage->format != XYBitmap)
-        ximage->data=(char *) malloc((size_t) ximage->bytes_per_line*
-          ximage->height);
+      if (ximage->format == XYBitmap)
+        {
+          ximage->data=(char *) AcquireQuantumMemory((size_t)
+            ximage->bytes_per_line,(size_t) ximage->depth*ximage->height);
+          if (ximage->data != (char *) NULL)
+            (void) memset(ximage->data,0,(size_t)
+              ximage->bytes_per_line*ximage->depth*ximage->height);
+        }
       else
-        ximage->data=(char *) malloc((size_t) ximage->bytes_per_line*
-          ximage->depth*ximage->height);
+        {
+          ximage->data=(char *) AcquireQuantumMemory((size_t)
+            ximage->bytes_per_line,(size_t) ximage->height);
+          if (ximage->data != (char *) NULL)
+            (void) memset(ximage->data,0,(size_t)
+              ximage->bytes_per_line*ximage->height);
+        }
     }
   if (ximage->data == (char *) NULL)
     {
@@ -8299,7 +8310,7 @@ MagickExport void XMakeWindow(Display *display,Window parent,char **argv,
         if ((isspace((int) ((unsigned char) *p)) == 0) && (*p != '%'))
           p++;
         else
-          (void) CopyMagickString(p,p+1,MaxTextExtent-(p-geometry));
+          (void) memmove(p,p+1,MaxTextExtent-(p-geometry));
       }
       flags=XWMGeometry(display,window_info->screen,geometry,default_geometry,
         window_info->border_width,size_hints,&size_hints->x,&size_hints->y,

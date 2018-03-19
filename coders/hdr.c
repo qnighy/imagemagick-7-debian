@@ -406,6 +406,7 @@ static Image *ReadHDRImage(const ImageInfo *image_info,ExceptionInfo *exception)
     sizeof(*pixels));
   if (pixels == (unsigned char *) NULL)
     ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+  (void) memset(pixels,0,4*image->columns*sizeof(*pixels));
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     if (image->compression != RLECompression)
@@ -706,14 +707,15 @@ static MagickBooleanType WriteHDRImage(const ImageInfo *image_info,Image *image)
   /*
     Write header.
   */
-  (void) ResetMagickMemory(header,' ',MaxTextExtent);
+  (void) memset(header,' ',MaxTextExtent);
   length=CopyMagickString(header,"#?RADIANCE\n",MaxTextExtent);
   (void) WriteBlob(image,length,(unsigned char *) header);
   property=GetImageProperty(image,"comment");
   if ((property != (const char *) NULL) &&
       (strchr(property,'\n') == (char *) NULL))
     {
-      count=FormatLocaleString(header,MaxTextExtent,"#%s\n",property);
+      count=FormatLocaleString(header,MagickPathExtent,"#%.*s\n",
+        MagickPathExtent-3,property); 
       (void) WriteBlob(image,(size_t) count,(unsigned char *) header);
     }
   property=GetImageProperty(image,"hdr:exposure");
@@ -747,7 +749,7 @@ static MagickBooleanType WriteHDRImage(const ImageInfo *image_info,Image *image)
     sizeof(*pixels));
   if (pixels == (unsigned char *) NULL)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(pixels,0,4*(image->columns+128)*sizeof(*pixels));
+  (void) memset(pixels,0,4*(image->columns+128)*sizeof(*pixels));
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);

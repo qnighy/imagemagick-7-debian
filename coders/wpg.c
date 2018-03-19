@@ -456,6 +456,7 @@ static int UnpackWPGRaster(Image *image,int bpp)
   BImgBuff=(unsigned char *) AcquireQuantumMemory((size_t) ldblk,
     8*sizeof(*BImgBuff));
   if(BImgBuff==NULL) return(-2);
+  (void) memset(BImgBuff,0,(size_t) ldblk*8*sizeof(*BImgBuff));
 
   while(y<(ssize_t) image->rows)
   {
@@ -487,8 +488,10 @@ static int UnpackWPGRaster(Image *image,int bpp)
           {
             for(i=0;i < (int) RunCount;i++)
               {
-                bbuf=ReadBlobByte(image);
-                InsertByte(bbuf);
+                c=ReadBlobByte(image);
+                if (c < 0)
+                  break;
+                InsertByte(c);
               }
           }
         else {  /* repeat previous line runcount* */
@@ -575,6 +578,7 @@ static int UnpackWPG2Raster(Image *image,int bpp)
     sizeof(*BImgBuff));
   if(BImgBuff==NULL)
     return(-2);
+  (void) memset(BImgBuff,0,ldblk*sizeof(*BImgBuff));
 
   while( y< image->rows)
     {
@@ -596,8 +600,9 @@ static int UnpackWPG2Raster(Image *image,int bpp)
             }
           break;
         case 0x7E:
-          (void) FormatLocaleFile(stderr,
-            "\nUnsupported WPG token XOR, please report!");
+          if (y == 0)
+            (void) FormatLocaleFile(stderr,
+              "\nUnsupported WPG token XOR, please report!");
           XorMe=!XorMe;
           break;
         case 0x7F:
@@ -758,6 +763,9 @@ static Image *ExtractPostscript(Image *image,const ImageInfo *image_info,
   Image
     *image2;
 
+  MagickBooleanType
+    status;
+
   unsigned char
     magick[2*MaxTextExtent];
 
@@ -768,6 +776,7 @@ static Image *ExtractPostscript(Image *image,const ImageInfo *image_info,
     return(image);
   clone_info->blob=(void *) NULL;
   clone_info->length=0;
+  status=MagickFalse;
 
   /* Obtain temporary file */
   (void) AcquireUniqueFilename(postscript_file);
@@ -800,8 +809,12 @@ static Image *ExtractPostscript(Image *image,const ImageInfo *image_info,
   /*     printf("Detected:%s  \n",magic_info->name); */
   if(exception->severity != UndefinedException) goto FINISH_UNL;
   if(magic_info->name == (char *) NULL) goto FINISH_UNL;
+  if (LocaleCompare(magic_info->name,"WPG") == 0)
+    goto FINISH_UNL;
 
   (void) strncpy(clone_info->magick,magic_info->name,MaxTextExtent-1);
+  if (LocaleCompare(image_info->magick,clone_info->magick) == 0)
+    (void) strcpy(clone_info->magick,"PS");
 
     /* Read nested image */
   /*FormatString(clone_info->filename,"%s:%s",magic_info->name,postscript_file);*/
@@ -813,7 +826,7 @@ static Image *ExtractPostscript(Image *image,const ImageInfo *image_info,
   if(exception->severity>=ErrorException)
   {
     CloseBlob(image2);
-    DestroyImageList(image2);  
+    DestroyImageList(image2);
     goto FINISH_UNL;
   }
 
@@ -831,7 +844,7 @@ static Image *ExtractPostscript(Image *image,const ImageInfo *image_info,
       (void) CopyMagickString(p->magick_filename,image->magick_filename,
         MagickPathExtent);
       (void) CopyMagickString(p->magick,image->magick,MagickPathExtent);
-      DestroyBlob(p);      
+      DestroyBlob(p);
       if ((p->rows == 0) || (p->columns == 0))
         {
           DeleteImageFromList(&p);
@@ -857,12 +870,15 @@ static Image *ExtractPostscript(Image *image,const ImageInfo *image_info,
 
   AppendImageToList(&image,image2);
   while (image->next != NULL)
-    image=image->next;    
+    image=image->next;
+  status=MagickTrue;
 
  FINISH_UNL:
   (void) RelinquishUniqueFileResource(postscript_file);
  FINISH:
   DestroyImageInfo(clone_info);
+  if (status == MagickFalse)
+    return(DestroyImageList(image));
   return(image);
 }
 
@@ -1058,6 +1074,7 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
   image->columns = 1;
   image->rows = 1;
   image->colors = 0;
+  (void) ResetImagePixels(image,exception);
   bpp=0;
   BitmapHeader2.RotAngle=0;
   Rec2.RecordLength = 0;
@@ -1174,9 +1191,13 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
               status=SetImageExtent(image,image->columns,image->rows);
               if (status == MagickFalse)
                 break;
+              (void) ResetImagePixels(image,exception);
               if ((image->storage_class != PseudoClass) && (bpp < 24))
                 {
                   image->colors=one << bpp;
+                  if (image->colors > GetBlobSize(image))
+                    ThrowReaderException(CorruptImageError,
+                      "InsufficientImageDataInFile");
                   if (!AcquireImageColormap(image,image->colors))
                     {
                     NoMemory:
@@ -1215,12 +1236,13 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
                     }
                 }
 
-              if(UnpackWPGRaster(image,bpp) < 0)
-                /* The raster cannot be unpacked */
-                {
-                DecompressionFailed:
-                  ThrowReaderException(CoderError,"UnableToDecompressImage");
-                    }
+              if(!image_info->ping)
+                if(UnpackWPGRaster(image,bpp) < 0)
+                  /* The raster cannot be unpacked */
+                  {
+                  DecompressionFailed:
+                    ThrowReaderException(CoderError,"UnableToDecompressImage");
+                      }
 
               if(Rec.RecType==0x14 && BitmapHeader2.RotAngle!=0 && !image_info->ping)
                 {
@@ -1323,6 +1345,8 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
               if ((WPG_Palette.NumOfEntries-WPG_Palette.StartIndex) >
                   (Rec2.RecordLength-2-2) / 3)
                 ThrowReaderException(CorruptImageError,"InvalidColormapIndex");
+              if (WPG_Palette.StartIndex >= WPG_Palette.NumOfEntries)
+                ThrowReaderException(CorruptImageError,"InvalidColormapIndex");
               image->colors=WPG_Palette.NumOfEntries;
               if (AcquireImageColormap(image,image->colors) == MagickFalse)
                 ThrowReaderException(ResourceLimitError,
@@ -1374,6 +1398,7 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
               status=SetImageExtent(image,image->columns,image->rows);
               if (status == MagickFalse)
                 break;
+              (void) ResetImagePixels(image,exception);
               if ((image->colors == 0) && (bpp != 24))
                 {
                   size_t
@@ -1406,7 +1431,12 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
 
                     for (i=0; i< (ssize_t) image->rows; i++)
                     {
-                      (void) ReadBlob(image,ldblk,BImgBuff);
+                      ssize_t
+                        count;
+
+                      count=ReadBlob(image,(size_t) ldblk,BImgBuff);
+                      if (count != ldblk)
+                        break;
                       if (InsertRow(BImgBuff,i,image,bpp) == MagickFalse)
                         {
                           if(BImgBuff)
@@ -1421,8 +1451,9 @@ static Image *ReadWPGImage(const ImageInfo *image_info,
                   }
                 case 1:    /*RLE for WPG2 */
                   {
-                    if( UnpackWPG2Raster(image,bpp) < 0)
-                      goto DecompressionFailed;
+                    if(!image_info->ping)
+                      if( UnpackWPG2Raster(image,bpp) < 0)
+                        goto DecompressionFailed;
                     break;
                   }
                 }

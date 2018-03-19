@@ -169,6 +169,7 @@ static Image *ReadMVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       /*
         Determine size of image canvas.
       */
+      (void) memset(&bounds,0,sizeof(bounds));
       while (ReadBlobString(image,primitive) != (char *) NULL)
       {
         for (p=primitive; (*p == ' ') || (*p == '\t'); p++) ;
@@ -214,7 +215,7 @@ static Image *ReadMVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       draw_info->primitive=(char *) AcquireMagickMemory(GetBlobSize(image)+1);
       if (draw_info->primitive != (char *) NULL)
         {
-          CopyMagickMemory(draw_info->primitive,GetBlobStreamData(image),
+          memcpy(draw_info->primitive,GetBlobStreamData(image),
             GetBlobSize(image));
           draw_info->primitive[GetBlobSize(image)]='\0';
         }

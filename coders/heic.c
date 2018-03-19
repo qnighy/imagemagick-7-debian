@@ -177,9 +177,13 @@ typedef struct _DataBuffer {
 
 
 #define ATOM(a,b,c,d) ((a << 24) + (b << 16) + (c << 8) + d)
+#define ThrowImproperImageHeader(msg) { \
+  (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageError, \
+    "ImproperImageHeader","`%s'",msg); \
+}
 #define ThrowAndReturn(msg) { \
-    ThrowFileException(exception, CorruptImageError, "Bad image: " # msg, __func__); \
-    return MagickFalse; \
+  ThrowImproperImageHeader(msg) \
+  return(MagickFalse); \
 }
 
 inline static unsigned int readInt(const unsigned char* data)
@@ -296,7 +300,7 @@ static MagickBooleanType ParseFullBox(Image *image, DataBuffer *db,
   }
 
   for (i = 0; i < MAX_ATOMS_IN_BOX && DBGetSize(db) > 0; i++) {
-    ParseAtom(image, db, ctx, exception);
+    (void) ParseAtom(image, db, ctx, exception);
   }
 
   return MagickTrue;
@@ -309,7 +313,7 @@ static MagickBooleanType ParseBox(Image *image, DataBuffer *db,
     i;
 
   for (i = 0; i < MAX_ATOMS_IN_BOX && DBGetSize(db) > 0; i++) {
-    ParseAtom(image, db, ctx, exception);
+    (void) ParseAtom(image, db, ctx, exception);
   }
 
   return MagickTrue;
@@ -401,7 +405,7 @@ static MagickBooleanType ParseIpcoAtom(Image *image, DataBuffer *db,
     prop = &(ctx->itemProps[ctx->itemPropsCount]);
     prop->type = atom;
     prop->size = length - 8;
-    prop->data = AcquireMagickMemory(prop->size);
+    prop->data = (uint8_t *) AcquireMagickMemory(prop->size);
     if (DBChop(&propDb, db, prop->size) != MagickTrue) {
       ThrowAndReturn("incorrect read size");
     }
@@ -445,15 +449,14 @@ static MagickBooleanType ParseIinfAtom(Image *image, DataBuffer *db,
   ctx->idsCount = count;
   ctx->itemInfo = (HEICItemInfo *)AcquireMagickMemory(sizeof(HEICItemInfo)*(count+1));
   if (ctx->itemInfo == (HEICItemInfo *) NULL)
-  {
-    ThrowAndReturn("unable to allocate memory");
-  }
+    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+      image->filename);
 
-  ResetMagickMemory(ctx->itemInfo, 0, sizeof(HEICItemInfo)*(count+1));
+  memset(ctx->itemInfo, 0, sizeof(HEICItemInfo)*(count+1));
 
   for (i = 0; i < count && DBGetSize(db) > 0; i++)
   {
-    ParseAtom(image, db, ctx, exception);
+    (void) ParseAtom(image, db, ctx, exception);
   }
 
   return MagickTrue;
@@ -484,7 +487,7 @@ static MagickBooleanType ParseInfeAtom(Image *image, DataBuffer *db,
   /*
      item indicies starts from 1
   */
-  if (id > ctx->idsCount) {
+  if (id > (ssize_t) ctx->idsCount) {
     ThrowAndReturn("item id is incorrect");
   }
 
@@ -522,7 +525,7 @@ static MagickBooleanType ParseIpmaAtom(Image *image, DataBuffer *db,
     /*
        item indicies starts from 1
        */
-    if (id > ctx->idsCount) {
+    if (id > (ssize_t) ctx->idsCount) {
       ThrowAndReturn("item id is incorrect");
     }
 
@@ -583,7 +586,7 @@ static MagickBooleanType ParseIlocAtom(Image *image, DataBuffer *db,
     /*
        item indicies starts from 1
     */
-    if (id > ctx->idsCount) {
+    if (id > (ssize_t) ctx->idsCount) {
       ThrowAndReturn("item id is incorrect");
     }
 
@@ -677,10 +680,10 @@ static MagickBooleanType ParseAtom(Image *image, DataBuffer *db,
     case ATOM('i', 'd', 'a', 't'):
       {
         ctx->idatSize = atom_size - 8;
-        ctx->idat = AcquireMagickMemory(ctx->idatSize);
-        if (ctx->idat == NULL) {
-          ThrowAndReturn("unable to allocate memory");
-        }
+        ctx->idat = (uint8_t *) AcquireMagickMemory(ctx->idatSize);
+        if (ctx->idat == NULL)
+          ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+            image->filename);
 
         memcpy(ctx->idat, atomDb.data, ctx->idatSize);
       }
@@ -689,15 +692,11 @@ static MagickBooleanType ParseAtom(Image *image, DataBuffer *db,
       break;
   }
 
-  if (status != MagickTrue)
-    ThrowAndReturn("atom parsing failed");
-
   return status;
 }
 
-
-static MagickSizeType ParseRootAtom(Image *image, MagickSizeType size,
-    HEICImageContext *ctx, ExceptionInfo *exception)
+static MagickBooleanType ParseRootAtom(Image *image,MagickSizeType *size,
+  HEICImageContext *ctx,ExceptionInfo *exception)
 {
   MagickBooleanType
     status;
@@ -708,11 +707,8 @@ static MagickSizeType ParseRootAtom(Image *image, MagickSizeType size,
   unsigned int
     atom;
 
-  if (size < 8)
-  {
-    ThrowFileException(exception, CorruptImageError, "Bad image: atom is too short", __func__);
-    return -1;
-  }
+  if (*size < 8)
+    ThrowAndReturn("atom is too short");
 
   atom_size = ReadBlobMSBLong(image);
   atom = ReadBlobMSBLong(image);
@@ -723,11 +719,8 @@ static MagickSizeType ParseRootAtom(Image *image, MagickSizeType size,
   }
 
 
-  if (atom_size > size)
-  {
-    ThrowFileException(exception, CorruptImageError, "Bad image: atom is too short", __func__);
-    return -1;
-  }
+  if (atom_size > *size)
+    ThrowAndReturn("atom is too short");
 
   status = MagickTrue;
 
@@ -746,17 +739,15 @@ static MagickSizeType ParseRootAtom(Image *image, MagickSizeType size,
 
         db.pos = 0;
         db.size = atom_size - 8;
-        db.data = AcquireMagickMemory(db.size);
-        if (db.data == NULL) {
-          ThrowFileException(exception, CorruptImageError, "unable to allocate memory", __func__);
-          return -1;
-        }
+        db.data = (unsigned char *) AcquireMagickMemory(db.size);
+        if (db.data == NULL)
+          ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+            image->filename);
 
         count = ReadBlob(image, db.size, db.data);
         if (count != db.size) {
           RelinquishMagickMemory((void *)db.data);
-          ThrowFileException(exception, CorruptImageError, "Bad image: unable to read data", __func__);
-          return -1;
+          ThrowAndReturn("unable to read data");
         }
 
         /*
@@ -774,21 +765,17 @@ static MagickSizeType ParseRootAtom(Image *image, MagickSizeType size,
       DiscardBlobBytes(image, atom_size-8);
       break;
   }
-
-  if (status != MagickTrue) {
-    ThrowFileException(exception, CorruptImageError, "Bad image: atom parsing failed", __func__);
-    return -1;
-  }
-
-  return size - atom_size;
+  *size=*size-atom_size;
+  return(status);
 }
 
-static MagickBooleanType decodeGrid(HEICImageContext *ctx, ExceptionInfo *exception)
+static MagickBooleanType decodeGrid(HEICImageContext *ctx,
+  ExceptionInfo *exception)
 {
   unsigned int
     i, flags;
 
-  for (i = 1; i <= ctx->idsCount; i++) {
+  for (i = 1; i <= (ssize_t) ctx->idsCount; i++) {
     HEICItemInfo
       *info = &ctx->itemInfo[i];
     if (info->type != ATOM('g','r','i','d'))
@@ -825,8 +812,11 @@ static MagickBooleanType decodeH265Image(Image *image, HEICImageContext *ctx, un
   unsigned char
     *buffer = NULL;
 
+  unsigned char
+    *p;
+
   size_t
-    count, pos;
+    count, pos, nal_unit_size;
 
   int
     more, i;
@@ -843,13 +833,13 @@ static MagickBooleanType decodeH265Image(Image *image, HEICImageContext *ctx, un
   x_offset = 512 * ((id-1) % (ctx->grid.columnsMinusOne + 1));
   y_offset = 512 * ((id-1) / (ctx->grid.columnsMinusOne + 1));
 
-  for (i = 0; i < ctx->itemInfo[id].assocsCount; i++) {
-    size_t
+  for (i = 0; i < (ssize_t) ctx->itemInfo[id].assocsCount; i++) {
+    ssize_t
       assoc;
 
     assoc = ctx->itemInfo[id].assocs[i] & 0x7f;
     if (assoc > ctx->itemPropsCount) {
-      ThrowFileException(exception, CorruptImageError,"Bad image: incorrect item property index", "decodeH265Image");
+      ThrowImproperImageHeader("incorrect item property index");
       goto err_out_free;
     }
 
@@ -857,7 +847,7 @@ static MagickBooleanType decodeH265Image(Image *image, HEICImageContext *ctx, un
       case ATOM('h', 'v', 'c', 'C'):
         err = de265_push_data(ctx->h265Ctx, ctx->itemProps[assoc].data, ctx->itemProps[assoc].size, pos, (void*)2);
         if (err != DE265_OK) {
-          ThrowFileException(exception, CorruptImageError,"Bad image: unable to push data", "decodeH265Image");
+          ThrowImproperImageHeader("unable to push data");
           goto err_out_free;
         }
 
@@ -879,36 +869,41 @@ static MagickBooleanType decodeH265Image(Image *image, HEICImageContext *ctx, un
     }
   }
 
-  buffer = AcquireMagickMemory(ctx->itemInfo[id].size);
+  buffer = (unsigned char *) AcquireMagickMemory(ctx->itemInfo[id].size);
   if (buffer == NULL) {
-    ThrowFileException(exception, CorruptImageError,"Bad image: unable to allocate memory", "decodeH265Image");
-    return MagickFalse;
+    (void) ThrowMagickException(exception,GetMagickModule(),ResourceLimitError,
+      "MemoryAllocationFailed","`%s'",image->filename);
+    goto err_out_free;
   }
 
   SeekBlob(image, ctx->itemInfo[id].offset, SEEK_SET);
   count = ReadBlob(image, ctx->itemInfo[id].size, buffer);
   if (count != ctx->itemInfo[id].size) {
-    ThrowFileException(exception, CorruptImageError,"Bad image: unable to read data", "decodeH265Image");
+    ThrowImproperImageHeader("unable to read data");
     goto err_out_free;
   }
 
   /*
    * AVCC to AnnexB
    */
-  buffer[0] = 0;
-  buffer[1] = 0;
-  buffer[2] = 0;
-  buffer[3] = 1;
+  for (p = buffer; p < buffer + ctx->itemInfo[id].size; /* void */) {
+    nal_unit_size = readInt(p);
+    p[0] = 0;
+    p[1] = 0;
+    p[2] = 0;
+    p[3] = 1;
+    p += nal_unit_size + 4;
+  }
 
   err = de265_push_data(ctx->h265Ctx, buffer, ctx->itemInfo[id].size, pos, (void*)2);
   if (err != DE265_OK) {
-    ThrowFileException(exception, CorruptImageError,"Bad image: unable to push data", "decodeH265Image");
+    ThrowImproperImageHeader("unable to push data");
     goto err_out_free;
   }
 
   err = de265_flush_data(ctx->h265Ctx);
   if (err != DE265_OK) {
-    ThrowFileException(exception, CorruptImageError,"Bad image: unable to push data", "decodeH265Image");
+    ThrowImproperImageHeader("unable to flush data");
     goto err_out_free;
   }
 
@@ -917,7 +912,7 @@ static MagickBooleanType decodeH265Image(Image *image, HEICImageContext *ctx, un
   do {
     err = de265_decode(ctx->h265Ctx, &more);
     if (err != DE265_OK) {
-      ThrowFileException(exception, CorruptImageError,"Bad image: unable to decode data", "decodeH265Image");
+      ThrowImproperImageHeader("unable to decode data");
       goto err_out_free;
     }
 
@@ -927,7 +922,8 @@ static MagickBooleanType decodeH265Image(Image *image, HEICImageContext *ctx, un
         break;
       }
 
-      ThrowMagickException(exception, GetMagickModule(), CoderWarning, "Warning: decoding image: ", "%s", de265_get_error_text(warning));
+      ThrowBinaryException(CoderWarning,(const char *)NULL,
+        de265_get_error_text(warning));
     }
 
     const struct de265_image* img = de265_get_next_picture(ctx->h265Ctx);
@@ -1030,16 +1026,15 @@ err_loop_free:
   } while (more);
 
   de265_reset(ctx->h265Ctx);
-  buffer = RelinquishMagickMemory(buffer);
+  buffer = (unsigned char *) RelinquishMagickMemory(buffer);
   return MagickTrue;
 
 err_out_free:
   de265_reset(ctx->h265Ctx);
-  buffer = RelinquishMagickMemory(buffer);
-  ThrowFileException(exception, CorruptImageError,"Bad image: error decoding h265", __func__);
+  buffer = (unsigned char *) RelinquishMagickMemory(buffer);
   return MagickFalse;
 }
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1080,7 +1075,7 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
     status;
 
   RectangleInfo
-      crop_info;
+    crop_info;
 
   MagickSizeType
     length;
@@ -1092,7 +1087,7 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
   HEICImageContext
     ctx;
 
-  ResetMagickMemory(&ctx, 0, sizeof(ctx));
+  memset(&ctx, 0, sizeof(ctx));
 
   /*
     Open image file.
@@ -1111,39 +1106,29 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
     image=DestroyImageList(image);
     return((Image *) NULL);
   }
-
-  if (!IsBlobSeekable(image)) {
-    ThrowFileException(exception,CorruptImageError,"Only seekable sources are supported","ReadHEIC");
-    goto cleanup;
-  }
+  cropped=(Image *) NULL;
 
   length=GetBlobSize(image);
   count = MAX_ATOMS_IN_BOX;
   while (length && ctx.finished == MagickFalse && count--)
   {
-    length = ParseRootAtom(image, length, &ctx, exception);
-    if (length == (MagickSizeType)-1) {
-      ThrowFileException(exception,CorruptImageError,"Unable To Decode Image File","ReadHEIC");
+    if (ParseRootAtom(image, &length, &ctx, exception) == MagickFalse)
       goto cleanup;
-    }
   }
 
-  if (ctx.finished != MagickTrue) {
-    ThrowFileException(exception,CorruptImageError,"Unable To Decode Image File","ReadHEIC");
+  if (ctx.finished != MagickTrue)
     goto cleanup;
-  }
 
   /*
      Initialize h265 decoder
   */
   ctx.h265Ctx = de265_new_decoder();
   if (ctx.h265Ctx == NULL) {
-    ThrowFileException(exception,CorruptImageError,"Unable To Initialize Decoder","ReadHEIC");
+    ThrowImproperImageHeader("unable to initialize decode");
     goto cleanup;
   }
 
   if (decodeGrid(&ctx, exception) != MagickTrue) {
-    ThrowFileException(exception,CorruptImageError,"Unable to decode image grid","ReadHEIC");
     goto cleanup;
   }
 
@@ -1153,36 +1138,45 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
   image->rows = 512 * (ctx.grid.rowsMinusOne + 1);
   image->depth=8;
 
-  ctx.tmp = CloneImage(image, 256, 256, MagickTrue, exception);
-  if (ctx.tmp == NULL) {
-    ThrowFileException(exception,CorruptImageError,"Unable to clone image","ReadHEIC");
+  status=SetImageExtent(image,image->columns,image->rows);
+  if (status == MagickFalse)
     goto cleanup;
-  }
 
-  DuplicateBlob(ctx.tmp, image);
+  if (image_info->ping == MagickFalse)
+    {
+      ctx.tmp = CloneImage(image, 256, 256, MagickTrue, exception);
+      if (ctx.tmp == NULL) {
+        (void) ThrowMagickException(exception,GetMagickModule(),
+          ResourceLimitError,"MemoryAllocationFailed","`%s'",image->filename);
+        goto cleanup;
+      }
 
-  for (i = 0; i < count; i++) {
-    decodeH265Image(image, &ctx, i+1, exception);
-  }
+      DuplicateBlob(ctx.tmp, image);
+
+      for (i = 0; i < count; i++) {
+        decodeH265Image(image, &ctx, i+1, exception);
+      }
+    }
 
 
   crop_info.x = 0;
   crop_info.y = 0;
 
   for (i = 0; i < ctx.itemInfo[ctx.grid.id].assocsCount; i++) {
-    size_t
+    ssize_t
       assoc;
 
     assoc = ctx.itemInfo[ctx.grid.id].assocs[i] & 0x7f;
     if (assoc > ctx.itemPropsCount) {
-      ThrowFileException(exception,CorruptImageError,"Bad image: incorrect item property index","ReadHEIC");
+      ThrowImproperImageHeader("incorrect item property index");
       goto cleanup;
     }
 
     switch (ctx.itemProps[assoc].type) {
       case ATOM('i', 's', 'p', 'e'):
         if (ctx.itemProps[assoc].size < 12) {
-          ThrowReaderException(CorruptImageError,"Bad image: ispe atom is too short");
+          ThrowImproperImageHeader("ispe atom is too short");
+          goto cleanup;
         }
         crop_info.width = readInt(ctx.itemProps[assoc].data+4);
         crop_info.height = readInt(ctx.itemProps[assoc].data+8);
@@ -1190,10 +1184,11 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
 
       case ATOM('i', 'r', 'o', 't'):
         {
-          char *value;
+          const char *value;
 
           if (ctx.itemProps[assoc].size < 1) {
-            ThrowReaderException(CorruptImageError,"Bad image: ispe atom is too short");
+            ThrowImproperImageHeader("irot atom is too short");
+            goto cleanup;
           }
 
           switch (ctx.itemProps[assoc].data[0])
@@ -1237,9 +1232,10 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
     if (info->type != ATOM('E','x','i','f'))
       continue;
 
-    buffer = AcquireMagickMemory(info->size);
+    buffer = (unsigned char *) AcquireMagickMemory(info->size);
     if (buffer == NULL) {
-      ThrowFileException(exception, CorruptImageError,"Bad image: unable to allocate memory", "ReadHEIC");
+      (void) ThrowMagickException(exception,GetMagickModule(),ResourceLimitError,
+        "MemoryAllocationFailed","`%s'",image->filename);
       goto cleanup;
     }
 
@@ -1254,9 +1250,13 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
 
   cropped = CropImage(image, &crop_info, exception);
   image = DestroyImage(image);
-
   if (cropped != NULL)
-    SetImageColorspace(cropped, YCbCrColorspace);
+    {
+      if (image_info->ping != MagickFalse)
+        cropped->colorspace=YCbCrColorspace;
+      else
+        SetImageColorspace(cropped,YCbCrColorspace);
+    }
 
 cleanup:
   if (image) {
@@ -1269,14 +1269,14 @@ cleanup:
       ctx.tmp = DestroyImage(ctx.tmp);
   }
   if (ctx.idat) {
-      ctx.idat = RelinquishMagickMemory(ctx.idat);
+      ctx.idat = (uint8_t *) RelinquishMagickMemory(ctx.idat);
   }
   if (ctx.itemInfo) {
-      ctx.itemInfo = RelinquishMagickMemory(ctx.itemInfo);
+      ctx.itemInfo = (HEICItemInfo *) RelinquishMagickMemory(ctx.itemInfo);
   }
   for (i = 1; i <= ctx.itemPropsCount; i++) {
       if (ctx.itemProps[i].data) {
-          ctx.itemProps[i].data = RelinquishMagickMemory(ctx.itemProps[i].data);
+          ctx.itemProps[i].data = (uint8_t *) RelinquishMagickMemory(ctx.itemProps[i].data);
       }
   }
   return cropped;

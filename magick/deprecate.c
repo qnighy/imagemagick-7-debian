@@ -1088,7 +1088,7 @@ MagickExport void *CloneMemory(void *destination,const void *source,
   p=(const unsigned char *) source;
   q=(unsigned char *) destination;
   if ((p <= q) || ((p+size) >= q))
-    return(CopyMagickMemory(destination,source,size));
+    return(memcpy(destination,source,size));
   /*
     Overlap, copy backwards.
   */
@@ -1974,7 +1974,7 @@ MagickExport Image *ExtractSubimageFromImage(Image *image,
   similarity_threshold=(double) image->columns*image->rows;
   SetGeometry(reference,&offset);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4)
+  #pragma omp parallel for schedule(static)
 #endif
   for (y=0; y < (ssize_t) (image->rows-reference->rows); y++)
   {
@@ -2672,7 +2672,7 @@ MagickExport PixelPacket *GetCacheViewPixels(CacheView *cache_view,const ssize_t
 MagickExport void GetExceptionInfo(ExceptionInfo *exception)
 {
   assert(exception != (ExceptionInfo *) NULL);
-  (void) ResetMagickMemory(exception,0,sizeof(*exception));
+  (void) memset(exception,0,sizeof(*exception));
   exception->severity=UndefinedException;
   exception->exceptions=(void *) NewLinkedList(0);
   exception->semaphore=AllocateSemaphoreInfo();
@@ -2747,7 +2747,7 @@ MagickExport const ImageAttribute *GetImageAttribute(const Image *image,
   attribute=(ImageAttribute *) AcquireMagickMemory(sizeof(*attribute));
   if (attribute == (ImageAttribute *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(attribute,0,sizeof(*attribute));
+  (void) memset(attribute,0,sizeof(*attribute));
   attribute->key=ConstantString(key);
   attribute->value=ConstantString(value);
   (void) AddValueToSplayTree((SplayTreeInfo *) ((Image *) image)->attributes,
@@ -3520,7 +3520,7 @@ MagickExport void IdentityAffine(AffineMatrix *affine)
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   (void) LogMagickEvent(DeprecateEvent,GetMagickModule(),"last use: v5.5.7");
   assert(affine != (AffineMatrix *) NULL);
-  (void) ResetMagickMemory(affine,0,sizeof(AffineMatrix));
+  (void) memset(affine,0,sizeof(AffineMatrix));
   affine->sx=1.0;
   affine->sy=1.0;
 }
@@ -6947,7 +6947,7 @@ MagickExport void Strip(char *message)
   if (q > p)
     if ((*q == '\'') || (*q == '"'))
       q--;
-  (void) CopyMagickMemory(message,p,(size_t) (q-p+1));
+  (void) memcpy(message,p,(size_t) (q-p+1));
   message[q-p+1]='\0';
 }
 

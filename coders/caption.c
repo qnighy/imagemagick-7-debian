@@ -147,6 +147,8 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
       property=InterpretImageProperties(image_info,image,option+8);
     else
       property=InterpretImageProperties(image_info,image,option);
+  if (property == (char *) NULL)
+    return(DestroyImageList(image));
   (void) SetImageProperty(image,"caption",property);
   property=DestroyString(property);
   caption=ConstantString(GetImageProperty(image,"caption"));
@@ -191,12 +193,14 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
     status=SetImageExtent(image,image->columns,image->rows);
   if (status == MagickFalse)
     { 
+      caption=DestroyString(caption);
       draw_info=DestroyDrawInfo(draw_info);
       InheritException(exception,&image->exception);
       return(DestroyImageList(image));
     }
   if (SetImageBackgroundColor(image) == MagickFalse)
     {
+      caption=DestroyString(caption);
       draw_info=DestroyDrawInfo(draw_info);
       InheritException(exception,&image->exception);
       image=DestroyImageList(image);
@@ -225,7 +229,8 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
         if (draw_info->gravity == UndefinedGravity)
           (void) CloneString(&draw_info->geometry,geometry);
         status=GetMultilineTypeMetrics(image,draw_info,&metrics);
-        (void) status;
+        if (status == MagickFalse)
+          break;
         width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
         height=(size_t) floor(metrics.height+draw_info->stroke_width+0.5);
         if ((image->columns != 0) && (image->rows != 0))
@@ -250,7 +255,9 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
           -metrics.bounds.x1,metrics.ascent);
         if (draw_info->gravity == UndefinedGravity)
           (void) CloneString(&draw_info->geometry,geometry);
-        (void) GetMultilineTypeMetrics(image,draw_info,&metrics);
+        status=GetMultilineTypeMetrics(image,draw_info,&metrics);
+        if (status == MagickFalse)
+          break;
         width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
         height=(size_t) floor(metrics.height+draw_info->stroke_width+0.5);
         if ((image->columns != 0) && (image->rows != 0))

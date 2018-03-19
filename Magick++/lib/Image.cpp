@@ -732,11 +732,18 @@ Magick::Blob Magick::Image::exifProfile(void) const
 
 void Magick::Image::fileName(const std::string &fileName_)
 {
+  ssize_t
+    max_length;
+
   modifyImage();
 
-  fileName_.copy(image()->filename,sizeof(image()->filename)-1);
-  image()->filename[fileName_.length()]=0; // Null terminate
-  
+  max_length=sizeof(image()->filename)-1;
+  fileName_.copy(image()->filename,max_length);
+  if ((ssize_t) fileName_.length() > max_length)
+    image()->filename[max_length]=0;
+  else
+    image()->filename[fileName_.length()]=0;
+
   options()->fileName(fileName_);
 }
 
@@ -4921,6 +4928,8 @@ void Magick::Image::write(Blob *blob_)
   data=ImagesToBlob(constImageInfo(),image(),&length,exceptionInfo);
   if (length > 0)
     blob_->updateNoCopy(data,length,Blob::MallocAllocator);
+  else
+    data=RelinquishMagickMemory(data);
   ThrowImageException;
   throwImageException();
 }
@@ -4939,6 +4948,8 @@ void Magick::Image::write(Blob *blob_,const std::string &magick_)
   data=ImagesToBlob(constImageInfo(),image(),&length,exceptionInfo);
   if (length > 0)
     blob_->updateNoCopy(data,length,Blob::MallocAllocator);
+  else
+    data=RelinquishMagickMemory(data);
   ThrowImageException;
   throwImageException();
 }
@@ -4959,6 +4970,8 @@ void Magick::Image::write(Blob *blob_,const std::string &magick_,
   data=ImagesToBlob(constImageInfo(),image(),&length,exceptionInfo);
   if (length > 0)
     blob_->updateNoCopy(data,length,Blob::MallocAllocator);
+  else
+    data=RelinquishMagickMemory(data);
   ThrowImageException;
   throwImageException();
 }
@@ -5137,6 +5150,7 @@ void Magick::Image::read(MagickCore::Image *image,
       if (!quiet())
         throwExceptionExplicit(MagickCore::ImageWarning,
           "No image was loaded.");
+      return;
     }
   else
     {

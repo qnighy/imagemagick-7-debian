@@ -252,7 +252,7 @@ MagickExport Image *CompareImageChannels(Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
   highlight_view=AcquireAuthenticCacheView(highlight_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,highlight_image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
@@ -458,7 +458,7 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
@@ -489,7 +489,7 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
       }
     indexes=GetCacheViewVirtualIndexQueue(image_view);
     reconstruct_indexes=GetCacheViewVirtualIndexQueue(reconstruct_view);
-    (void) ResetMagickMemory(channel_distortion,0,sizeof(channel_distortion));
+    (void) memset(channel_distortion,0,sizeof(channel_distortion));
     for (x=0; x < (ssize_t) columns; x++)
     {
       double
@@ -601,7 +601,7 @@ static MagickBooleanType GetFuzzDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
@@ -632,7 +632,7 @@ static MagickBooleanType GetFuzzDistortion(const Image *image,
       }
     indexes=GetCacheViewVirtualIndexQueue(image_view);
     reconstruct_indexes=GetCacheViewVirtualIndexQueue(reconstruct_view);
-    (void) ResetMagickMemory(channel_distortion,0,sizeof(channel_distortion));
+    (void) memset(channel_distortion,0,sizeof(channel_distortion));
     for (x=0; x < (ssize_t) columns; x++)
     {
       MagickRealType
@@ -726,7 +726,7 @@ static MagickBooleanType GetMeanAbsoluteDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
@@ -757,7 +757,7 @@ static MagickBooleanType GetMeanAbsoluteDistortion(const Image *image,
       }
     indexes=GetCacheViewVirtualIndexQueue(image_view);
     reconstruct_indexes=GetCacheViewVirtualIndexQueue(reconstruct_view);
-    (void) ResetMagickMemory(channel_distortion,0,sizeof(channel_distortion));
+    (void) memset(channel_distortion,0,sizeof(channel_distortion));
     for (x=0; x < (ssize_t) columns; x++)
     {
       MagickRealType
@@ -980,7 +980,7 @@ static MagickBooleanType GetMeanSquaredDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
@@ -1011,7 +1011,7 @@ static MagickBooleanType GetMeanSquaredDistortion(const Image *image,
       }
     indexes=GetCacheViewVirtualIndexQueue(image_view);
     reconstruct_indexes=GetCacheViewVirtualIndexQueue(reconstruct_view);
-    (void) ResetMagickMemory(channel_distortion,0,sizeof(channel_distortion));
+    (void) memset(channel_distortion,0,sizeof(channel_distortion));
     for (x=0; x < (ssize_t) columns; x++)
     {
       MagickRealType
@@ -1270,7 +1270,7 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,rows,1)
 #endif
   for (y=0; y < (ssize_t) rows; y++)
@@ -1301,7 +1301,7 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
       }
     indexes=GetCacheViewVirtualIndexQueue(image_view);
     reconstruct_indexes=GetCacheViewVirtualIndexQueue(reconstruct_view);
-    (void) ResetMagickMemory(channel_distortion,0,sizeof(channel_distortion));
+    (void) memset(channel_distortion,0,sizeof(channel_distortion));
     for (x=0; x < (ssize_t) columns; x++)
     {
       MagickRealType
@@ -1627,7 +1627,7 @@ MagickExport MagickBooleanType GetImageChannelDistortion(Image *image,
     sizeof(*channel_distortion));
   if (channel_distortion == (double *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(channel_distortion,0,length*
+  (void) memset(channel_distortion,0,length*
     sizeof(*channel_distortion));
   switch (metric)
   {
@@ -1768,7 +1768,7 @@ MagickExport double *GetImageChannelDistortions(Image *image,
     sizeof(*channel_distortion));
   if (channel_distortion == (double *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(channel_distortion,0,length*
+  (void) memset(channel_distortion,0,length*
     sizeof(*channel_distortion));
   status=MagickTrue;
   switch (metric)
@@ -2144,7 +2144,7 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
   progress=0;
   similarity_view=AcquireVirtualCacheView(similarity_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) \
+  #pragma omp parallel for schedule(static) \
     shared(progress,status,similarity_metric) \
     magick_number_threads(image,image,image->rows-reference->rows+1,1)
 #endif

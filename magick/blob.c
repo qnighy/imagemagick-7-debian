@@ -117,6 +117,9 @@ struct _BlobInfo
     extent,
     quantum;
 
+  BlobMode
+    mode;
+
   MagickBooleanType
     mapped,
     eof;
@@ -1323,7 +1326,7 @@ MagickExport FILE *GetBlobFileHandle(const Image *image)
 MagickExport void GetBlobInfo(BlobInfo *blob_info)
 {
   assert(blob_info != (BlobInfo *) NULL);
-  (void) ResetMagickMemory(blob_info,0,sizeof(*blob_info));
+  (void) memset(blob_info,0,sizeof(*blob_info));
   blob_info->type=UndefinedStream;
   blob_info->quantum=(size_t) MagickMaxBlobExtent;
   blob_info->properties.st_mtime=time((time_t *) NULL);
@@ -1583,7 +1586,7 @@ MagickExport unsigned char *ImageToBlob(const ImageInfo *image_info,
         Native blob support for this image format.
       */
       blob_info->length=0;
-      blob_info->blob=(void *) AcquireQuantumMemory(MagickMaxBlobExtent,
+      blob_info->blob=AcquireQuantumMemory(MagickMaxBlobExtent,
         sizeof(unsigned char));
       if (blob_info->blob == (void *) NULL)
         (void) ThrowMagickException(exception,GetMagickModule(),
@@ -1597,7 +1600,9 @@ MagickExport unsigned char *ImageToBlob(const ImageInfo *image_info,
           InheritException(exception,&image->exception);
           *length=image->blob->length;
           blob=DetachBlob(image->blob);
-          if (status == MagickFalse)
+          if (blob == (unsigned char *) NULL)
+            blob_info->blob=RelinquishMagickMemory(blob_info->blob);
+          else if (status == MagickFalse)
             blob=(unsigned char *) RelinquishMagickMemory(blob);
           else
             blob=(unsigned char *) ResizeQuantumMemory(blob,*length+1,
@@ -1844,7 +1849,7 @@ MagickExport unsigned char *ImagesToBlob(const ImageInfo *image_info,
         Native blob support for this images format.
       */
       clone_info->length=0;
-      clone_info->blob=(void *) AcquireQuantumMemory(MagickMaxBlobExtent,
+      clone_info->blob=AcquireQuantumMemory(MagickMaxBlobExtent,
         sizeof(unsigned char));
       if (clone_info->blob == (void *) NULL)
         (void) ThrowMagickException(exception,GetMagickModule(),
@@ -1857,7 +1862,9 @@ MagickExport unsigned char *ImagesToBlob(const ImageInfo *image_info,
           status=WriteImages(clone_info,images,images->filename,exception);
           *length=images->blob->length;
           blob=DetachBlob(images->blob);
-          if (status == MagickFalse)
+          if (blob == (unsigned char *) NULL)
+            clone_info->blob=RelinquishMagickMemory(clone_info->blob);
+          else if (status == MagickFalse)
             blob=(unsigned char *) RelinquishMagickMemory(blob);
           else
             blob=(unsigned char *) ResizeQuantumMemory(blob,*length+1,
@@ -2125,9 +2132,9 @@ MagickExport MagickBooleanType IsBlobSeekable(const Image *image)
   blob_info=image->blob;
   switch (blob_info->type)
   {
-    case StandardStream:
+    case BlobStream:
+      return(MagickTrue);
     case FileStream:
-    case ZipStream:
     {
       int
         status;
@@ -2137,8 +2144,26 @@ MagickExport MagickBooleanType IsBlobSeekable(const Image *image)
       status=fseek(blob_info->file_info.file,0,SEEK_CUR);
       return(status == -1 ? MagickFalse : MagickTrue);
     }
-    case BlobStream:
-      return(MagickTrue);
+    case ZipStream:
+    {
+#if defined(MAGICKCORE_ZLIB_DELEGATE)
+      int
+        status;
+
+      if (blob_info->file_info.gzfile == (gzFile) NULL)
+        return(MagickFalse);
+      status=gzseek(blob_info->file_info.gzfile,0,SEEK_CUR);
+      return(status == -1 ? MagickFalse : MagickTrue);
+#else
+      break;
+#endif
+    }
+    case UndefinedStream:
+    case BZipStream:
+    case FifoStream:
+    case PipeStream:
+    case StandardStream:
+      break;
     default:
       break;
   }
@@ -2451,6 +2476,7 @@ MagickExport MagickBooleanType OpenBlob(const ImageInfo *image_info,
       return(MagickTrue);
     }
   (void) DetachBlob(blob_info);
+  blob_info->mode=mode;
   switch (mode)
   {
     default: type="r"; break;
@@ -2495,7 +2521,7 @@ MagickExport MagickBooleanType OpenBlob(const ImageInfo *image_info,
       if (strchr(type,'b') != (char *) NULL)
         setmode(fileno(blob_info->file_info.file),_O_BINARY);
 #endif
-      blob_info->type=FileStream;
+      blob_info->type=StandardStream;
       blob_info->exempt=MagickTrue;
       return(SetStreamBuffering(image_info,image));
     }
@@ -2618,7 +2644,7 @@ MagickExport MagickBooleanType OpenBlob(const ImageInfo *image_info,
 
             blob_info->type=FileStream;
             (void) SetStreamBuffering(image_info,image);
-            (void) ResetMagickMemory(magick,0,sizeof(magick));
+            (void) memset(magick,0,sizeof(magick));
             count=fread(magick,1,sizeof(magick),blob_info->file_info.file);
             (void) fseek(blob_info->file_info.file,-((off_t) count),SEEK_CUR);
 #if defined(MAGICKCORE_POSIX_SUPPORT)
@@ -3913,36 +3939,31 @@ MagickExport const void *ReadBlobStream(Image *image,const size_t length,
 */
 MagickExport char *ReadBlobString(Image *image,char *string)
 {
-  register const unsigned char
-    *p;
+  int
+    c;
 
   register ssize_t
     i;
-
-  ssize_t
-    count;
-
-  unsigned char
-    buffer[1];
 
   assert(image != (Image *) NULL);
   assert(image->signature == MagickCoreSignature);
   for (i=0; i < (MaxTextExtent-1L); i++)
   {
-    p=(const unsigned char *) ReadBlobStream(image,1,buffer,&count);
-    if (count != 1)
+    c=ReadBlobByte(image);
+    if (c == EOF)
       {
         if (i == 0)
           return((char *) NULL);
-        string[i]='\0';
         break;
       }
-    string[i]=(char) (*p);
-    if ((string[i] == '\r') || (string[i] == '\n'))
-      break;
+    string[i]=c;
+    if (c == '\n')
+      {
+        if ((i > 0) && (string[i-1] == '\r'))
+          i--;
+        break;
+      }
   }
-  if (string[i] == '\r')
-    (void) ReadBlobStream(image,1,buffer,&count);
   string[i]='\0';
   return(string);
 }
@@ -4089,9 +4110,9 @@ MagickExport MagickOffsetType SeekBlob(Image *image,
           blob_info->eof=MagickFalse;
           break;
         }
-      if (blob_info->offset < (MagickOffsetType) ((off_t) blob_info->extent))
-        break;
-      return(-1);
+      if (blob_info->offset >= (MagickOffsetType) ((off_t) blob_info->extent))
+        return(-1);
+      break;
     }
   }
   return(blob_info->offset);

@@ -174,7 +174,7 @@ MagickExport XMLTreeInfo *AddChildToXMLTree(XMLTreeInfo *xml_info,
   child=(XMLTreeInfo *) AcquireMagickMemory(sizeof(*child));
   if (child == (XMLTreeInfo *) NULL)
     return((XMLTreeInfo *) NULL);
-  (void) ResetMagickMemory(child,0,sizeof(*child));
+  (void) memset(child,0,sizeof(*child));
   child->tag=ConstantString(tag);
   child->attributes=sentinel;
   child->content=ConstantString("");
@@ -595,7 +595,6 @@ MagickExport XMLTreeInfo *DestroyXMLTree(XMLTreeInfo *xml_info)
 %    o extent: Maximum length of the string.
 %
 */
-
 MagickPrivate char *FileToXML(const char *filename,const size_t extent)
 {
   char
@@ -1315,7 +1314,7 @@ static char *ConvertUTF16ToUTF8(const char *content,size_t *length)
       /*
         Already UTF-8.
       */
-      (void) CopyMagickMemory(utf8,content,*length*sizeof(*utf8));
+      (void) memcpy(utf8,content,*length*sizeof(*utf8));
       utf8[*length]='\0';
       return(utf8);
     }
@@ -1400,7 +1399,7 @@ static char *ParseEntities(char *xml,char **entities,int state)
     {
       *(xml++)='\n';
       if (*xml == '\n')
-        (void) CopyMagickMemory(xml,xml+1,strlen(xml));
+        (void) memmove(xml,xml+1,strlen(xml));
     }
   for (xml=p; ; )
   {
@@ -1454,7 +1453,7 @@ static char *ParseEntities(char *xml,char **entities,int state)
               xml++;
             }
           }
-        (void) CopyMagickMemory(xml,strchr(xml,';')+1,strlen(strchr(xml,';')));
+        (void) memmove(xml,strchr(xml,';')+1,strlen(strchr(xml,';')));
       }
     else
       if (((*xml == '&') && ((state == '&') || (state == ' ') ||
@@ -1483,27 +1482,28 @@ static char *ParseEntities(char *xml,char **entities,int state)
                     offset=(ssize_t) (xml-p);
                     extent=(size_t) (offset+length+strlen(entity));
                     if (p != q)
-                      p=(char *) ResizeQuantumMemory(p,extent+1,sizeof(*p));
+                      p=(char *) ResizeQuantumMemory(p,extent,sizeof(*p));
                     else
                       {
                         char
                           *xml;
 
-                        xml=(char *) AcquireQuantumMemory(extent+1,
-                          sizeof(*xml));
+                        xml=(char *) AcquireQuantumMemory(extent,sizeof(*xml));
                         if (xml != (char *) NULL)
-                          (void) CopyMagickString(xml,p,extent*sizeof(*xml));
+                          {
+                            memset(xml,0,extent*sizeof(*xml));
+                            (void) CopyMagickString(xml,p,extent*sizeof(*xml));
+                          }
                         p=xml;
                       }
                     if (p == (char *) NULL)
                       ThrowFatalException(ResourceLimitFatalError,
                         "MemoryAllocationFailed");
-                    p[extent]='\0';
                     xml=p+offset;
                     entity=strchr(xml,';');
                   }
                 if (entity != (char *) NULL)
-                  (void) CopyMagickMemory(xml+length,entity+1,strlen(entity));
+                  (void) memcpy(xml+length,entity+1,strlen(entity));
                 (void) strncpy(xml,entities[i],length);
               }
         }
@@ -1527,9 +1527,11 @@ static char *ParseEntities(char *xml,char **entities,int state)
 
         i=(ssize_t) strspn(xml,accept);
         if (i != 0)
-          (void) CopyMagickMemory(xml,xml+i,strlen(xml+i)+1);
+          (void) memmove(xml,xml+i,strlen(xml+i)+1);
         while ((*xml != '\0') && (*xml != ' '))
           xml++;
+        if (*xml == '\0')
+          break;
       }
       xml--;
       if ((xml >= p) && (*xml == ' '))
@@ -1577,7 +1579,8 @@ static XMLTreeInfo *ParseCloseTag(XMLTreeRoot *root,char *tag,
   return((XMLTreeInfo *) NULL);
 }
 
-static MagickBooleanType ValidateEntities(char *tag,char *xml,char **entities)
+static MagickBooleanType ValidateEntities(char *tag,char *xml,
+  const size_t depth,char **entities)
 {
   register ssize_t
     i;
@@ -1585,6 +1588,8 @@ static MagickBooleanType ValidateEntities(char *tag,char *xml,char **entities)
   /*
     Check for circular entity references.
   */
+  if (depth > MagickMaxRecursionDepth)
+    return(MagickFalse);
   for ( ; ; xml++)
   {
     while ((*xml != '\0') && (*xml != '&'))
@@ -1598,7 +1603,7 @@ static MagickBooleanType ValidateEntities(char *tag,char *xml,char **entities)
            (strncmp(entities[i],xml+1,strlen(entities[i])) == 0))
       i+=2;
     if ((entities[i] != (char *) NULL) &&
-        (ValidateEntities(tag,entities[i+1],entities) == 0))
+        (ValidateEntities(tag,entities[i+1],depth+1,entities) == 0))
       return(MagickFalse);
   }
 }
@@ -1702,21 +1707,25 @@ static MagickBooleanType ParseInternalDoctype(XMLTreeRoot *root,char *xml,
   predefined_entitites=(char **) AcquireMagickMemory(sizeof(sentinel));
   if (predefined_entitites == (char **) NULL)
     ThrowFatalException(ResourceLimitError,"MemoryAllocationFailed");
-  (void) CopyMagickMemory(predefined_entitites,sentinel,sizeof(sentinel));
+  (void) memcpy(predefined_entitites,sentinel,sizeof(sentinel));
   for (xml[length]='\0'; xml != (char *) NULL; )
   {
     while ((*xml != '\0') && (*xml != '<') && (*xml != '%'))
       xml++;
     if (*xml == '\0')
       break;
-    if (strncmp(xml,"<!ENTITY",8) == 0)
+    if ((strlen(xml) > 9) && (strncmp(xml,"<!ENTITY",8) == 0))
       {
         /*
           Parse entity definitions.
         */
+        if (strspn(xml+8,XMLWhitespace) == 0)
+          break;
         xml+=strspn(xml+8,XMLWhitespace)+8;
         c=xml;
         n=xml+strspn(xml,XMLWhitespace "%");
+        if ((isalpha((int) ((unsigned char) *n)) == 0) && (*n != '_'))
+          break;
         xml=n+strcspn(n,XMLWhitespace);
         *xml=';';
         v=xml+strspn(xml+1,XMLWhitespace)+1;
@@ -1750,7 +1759,7 @@ static MagickBooleanType ParseInternalDoctype(XMLTreeRoot *root,char *xml,
           }
         entities[i+1]=ParseEntities(v,predefined_entitites,'%');
         entities[i+2]=(char *) NULL;
-        if (ValidateEntities(n,entities[i+1],entities) != MagickFalse)
+        if (ValidateEntities(n,entities[i+1],0,entities) != MagickFalse)
           entities[i]=n;
         else
           {
@@ -2024,7 +2033,8 @@ MagickExport XMLTreeInfo *NewXMLTree(const char *xml,ExceptionInfo *exception)
         p+=strcspn(p,XMLWhitespace "/>");
         while (isspace((int) ((unsigned char) *p)) != 0)
           *p++='\0';
-        if (ignore_depth == 0)
+        if (((isalpha((int) ((unsigned char) *p)) != 0) || (*p == '_')) &&
+            (ignore_depth == 0))
           {
             if ((*p != '\0') && (*p != '/') && (*p != '>'))
               {
@@ -2174,8 +2184,8 @@ MagickExport XMLTreeInfo *NewXMLTree(const char *xml,ExceptionInfo *exception)
               return(&root->root);
             }
           *p='\0';
-          if (ignore_depth == 0 && ParseCloseTag(root,tag,exception) !=
-              (XMLTreeInfo *) NULL)
+          if ((ignore_depth == 0) &&
+              (ParseCloseTag(root,tag,exception) != (XMLTreeInfo *) NULL))
             {
               utf8=DestroyString(utf8);
               return(&root->root);
@@ -2356,7 +2366,7 @@ MagickExport XMLTreeInfo *NewXMLTreeTag(const char *tag)
   root=(XMLTreeRoot *) AcquireMagickMemory(sizeof(*root));
   if (root == (XMLTreeRoot *) NULL)
     return((XMLTreeInfo *) NULL);
-  (void) ResetMagickMemory(root,0,sizeof(*root));
+  (void) memset(root,0,sizeof(*root));
   root->root.tag=(char *) NULL;
   if (tag != (char *) NULL)
     root->root.tag=ConstantString(tag);
@@ -2365,7 +2375,7 @@ MagickExport XMLTreeInfo *NewXMLTreeTag(const char *tag)
   root->entities=(char **) AcquireMagickMemory(sizeof(predefined_entities));
   if (root->entities == (char **) NULL)
     return((XMLTreeInfo *) NULL);
-  (void) CopyMagickMemory(root->entities,predefined_entities,
+  (void) memcpy(root->entities,predefined_entities,
     sizeof(predefined_entities));
   root->root.attributes=sentinel;
   root->attributes=(char ***) root->root.attributes;
@@ -2526,16 +2536,15 @@ MagickExport XMLTreeInfo *SetXMLTreeAttribute(XMLTreeInfo *xml_info,
     }
   if (xml_info->attributes[i] != (char *) NULL)
     xml_info->attributes[i]=DestroyString(xml_info->attributes[i]);
-  (void) CopyMagickMemory(xml_info->attributes+i,xml_info->attributes+i+2,
+  (void) memmove(xml_info->attributes+i,xml_info->attributes+i+2,
     (size_t) (j-i)*sizeof(*xml_info->attributes));
   xml_info->attributes=(char **) ResizeQuantumMemory(xml_info->attributes,
     (size_t) (j+2),sizeof(*xml_info->attributes));
   if (xml_info->attributes == (char **) NULL)
     ThrowFatalException(ResourceLimitFatalError,"UnableToAcquireString");
   j-=2;
-  (void) CopyMagickMemory(xml_info->attributes[j+1]+(i/2),
-    xml_info->attributes[j+1]+(i/2)+1,(size_t) (((j+2)/2)-(i/2))*
-    sizeof(**xml_info->attributes));
+  (void) memmove(xml_info->attributes[j+1]+(i/2),xml_info->attributes[j+1]+
+    (i/2)+1,(size_t) (((j+2)/2)-(i/2))*sizeof(**xml_info->attributes));
   return(xml_info);
 }
 

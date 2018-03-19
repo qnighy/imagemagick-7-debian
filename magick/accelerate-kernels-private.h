@@ -298,50 +298,63 @@ OPENCL_ELIF((MAGICKCORE_QUANTUM_DEPTH == 32))
 
 OPENCL_ENDIF()
 
-STRINGIFY(
-  inline int ClampToCanvas(const int offset, const int range)
-  {
-    return clamp(offset, (int)0, range - 1);
-  }
+OPENCL_IF((MAGICKCORE_HDRI_SUPPORT == 1))
+
+  STRINGIFY(
+    inline CLQuantum ClampToQuantum(const float value)
+    {
+      return (CLQuantum) value;
+    }
   )
 
-    STRINGIFY(
-      inline int ClampToCanvasWithHalo(const int offset, const int range, const int edge, const int section)
-  {
-    return clamp(offset, section ? (int)(0 - edge) : (int)0, section ? (range - 1) : (range - 1 + edge));
-  }
+OPENCL_ELSE()
+
+  STRINGIFY(
+    inline CLQuantum ClampToQuantum(const float value)
+    {
+      return (CLQuantum) (clamp(value, 0.0f, QuantumRange) + 0.5f);
+    }
   )
 
-    STRINGIFY(
-      inline CLQuantum ClampToQuantum(const float value)
-  {
-    return (CLQuantum)(clamp(value, 0.0f, (float)QuantumRange) + 0.5f);
-  }
+OPENCL_ENDIF()
+
+  STRINGIFY(
+    inline int ClampToCanvas(const int offset, const int range)
+    {
+      return clamp(offset, (int)0, range - 1);
+    }
   )
 
-    STRINGIFY(
-      inline uint ScaleQuantumToMap(CLQuantum value)
-  {
-    if (value >= (CLQuantum)MaxMap)
-      return ((uint)MaxMap);
-    else
-      return ((uint)value);
-  }
+  STRINGIFY(
+    inline int ClampToCanvasWithHalo(const int offset, const int range, const int edge, const int section)
+    {
+      return clamp(offset, section ? (int)(0 - edge) : (int)0, section ? (range - 1) : (range - 1 + edge));
+    }
   )
 
-    STRINGIFY(
-      inline float PerceptibleReciprocal(const float x)
-  {
-    float sign = x < (float) 0.0 ? (float)-1.0 : (float) 1.0;
-    return((sign*x) >= MagickEpsilon ? (float) 1.0 / x : sign*((float) 1.0 / MagickEpsilon));
-  }
+  STRINGIFY(
+    inline uint ScaleQuantumToMap(CLQuantum value)
+    {
+      if (value >= (CLQuantum)MaxMap)
+        return ((uint)MaxMap);
+      else
+        return ((uint)value);
+    }
   )
 
-    STRINGIFY(
-      inline float RoundToUnity(const float value)
-  {
-    return clamp(value, 0.0f, 1.0f);
-  }
+  STRINGIFY(
+    inline float PerceptibleReciprocal(const float x)
+    {
+      float sign = x < (float) 0.0 ? (float)-1.0 : (float) 1.0;
+      return((sign*x) >= MagickEpsilon ? (float) 1.0 / x : sign*((float) 1.0 / MagickEpsilon));
+    }
+  )
+
+  STRINGIFY(
+    inline float RoundToUnity(const float value)
+    {
+      return clamp(value, 0.0f, 1.0f);
+    }
   )
 
     STRINGIFY(
@@ -560,18 +573,15 @@ uint2 MWC_SeedImpl_Mod64(ulong A, ulong M, uint vecSize, uint vecOffset, ulong s
 }
 
 //! Represents the state of a particular generator
-typedef struct{ uint x; uint c; } mwc64x_state_t;
-
-enum{ MWC64X_A = 4294883355U };
-enum{ MWC64X_M = 18446383549859758079UL };
+typedef struct{ uint x; uint c; uint seed0; ulong seed1; } mwc64x_state_t;
 
 void MWC64X_Step(mwc64x_state_t *s)
 {
 	uint X=s->x, C=s->c;
 	
-	uint Xn=MWC64X_A*X+C;
+	uint Xn=s->seed0*X+C;
 	uint carry=(uint)(Xn<C);				// The (Xn<C) will be zero or one for scalar
-	uint Cn=mad_hi(MWC64X_A,X,carry);  
+	uint Cn=mad_hi(s->seed0,X,carry);  
 	
 	s->x=Xn;
 	s->c=Cn;
@@ -579,14 +589,14 @@ void MWC64X_Step(mwc64x_state_t *s)
 
 void MWC64X_Skip(mwc64x_state_t *s, ulong distance)
 {
-	uint2 tmp=MWC_SkipImpl_Mod64((uint2)(s->x,s->c), MWC64X_A, MWC64X_M, distance);
+	uint2 tmp=MWC_SkipImpl_Mod64((uint2)(s->x,s->c), s->seed0, s->seed1, distance);
 	s->x=tmp.x;
 	s->c=tmp.y;
 }
 
 void MWC64X_SeedStreams(mwc64x_state_t *s, ulong baseOffset, ulong perStreamOffset)
 {
-	uint2 tmp=MWC_SeedImpl_Mod64(MWC64X_A, MWC64X_M, 1, 0, baseOffset, perStreamOffset);
+	uint2 tmp=MWC_SeedImpl_Mod64(s->seed0, s->seed1, 1, 0, baseOffset, perStreamOffset);
 	s->x=tmp.x;
 	s->c=tmp.y;
 }
@@ -715,8 +725,8 @@ uint MWC64X_NextUint(mwc64x_state_t *s)
 					,const unsigned int numRandomNumbersPerPixel) {
 
 	mwc64x_state_t rng;
-	rng.x = seed0;
-	rng.c = seed1;
+	rng.seed0 = seed0;
+	rng.seed1 = seed1;
 
 	uint span = pixelsPerWorkItem * numRandomNumbersPerPixel;	// length of RNG substream each workitem will use
 	uint offset = span * get_local_size(0) * get_group_id(0);	// offset of this workgroup's RNG substream (in master stream);

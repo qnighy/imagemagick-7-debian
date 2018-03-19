@@ -358,7 +358,7 @@ static double **AcquirePixelThreadSet(const size_t columns,
   pixels=(double **) AcquireQuantumMemory(number_threads,sizeof(*pixels));
   if (pixels == (double **) NULL)
     return((double **) NULL);
-  (void) ResetMagickMemory(pixels,0,number_threads*sizeof(*pixels));
+  (void) memset(pixels,0,number_threads*sizeof(*pixels));
   for (i=0; i < (ssize_t) number_threads; i++)
   {
     pixels[i]=(double *) AcquireQuantumMemory(columns,channels*
@@ -401,7 +401,7 @@ static cmsHTRANSFORM *AcquireTransformThreadSet(Image *image,
     sizeof(*transform));
   if (transform == (cmsHTRANSFORM *) NULL)
     return((cmsHTRANSFORM *) NULL);
-  (void) ResetMagickMemory(transform,0,number_threads*sizeof(*transform));
+  (void) memset(transform,0,number_threads*sizeof(*transform));
   for (i=0; i < (ssize_t) number_threads; i++)
   {
     transform[i]=cmsCreateTransformTHR((cmsContext) image,source_profile,
@@ -984,32 +984,6 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
                 (target_colorspace == UndefinedColorspace))
               ThrowProfileException(ImageError,"ColorspaceColorProfileMismatch",
                 name);
-             if (((source_colorspace == LinearGRAYColorspace) ||
-                  (source_colorspace == GRAYColorspace)) &&
-                 (SetImageGray(image,exception) == MagickFalse))
-              ThrowProfileException(ImageError,"ColorspaceColorProfileMismatch",
-                name);
-             if ((source_colorspace == CMYKColorspace) &&
-                 (image->colorspace != CMYKColorspace))
-              ThrowProfileException(ImageError,"ColorspaceColorProfileMismatch",
-                name);
-             if ((source_colorspace == XYZColorspace) &&
-                 (image->colorspace != XYZColorspace))
-              ThrowProfileException(ImageError,"ColorspaceColorProfileMismatch",
-                name);
-             if ((source_colorspace == YCbCrColorspace) &&
-                 (image->colorspace != YCbCrColorspace))
-              ThrowProfileException(ImageError,"ColorspaceColorProfileMismatch",
-                name);
-             if ((source_colorspace != CMYKColorspace) &&
-                 (source_colorspace != LinearGRAYColorspace) &&
-                 (source_colorspace != GRAYColorspace) &&
-                 (source_colorspace != LabColorspace) &&
-                 (source_colorspace != XYZColorspace) &&
-                 (source_colorspace != YCbCrColorspace) &&
-                 (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse))
-              ThrowProfileException(ImageError,"ColorspaceColorProfileMismatch",
-                name);
             switch (image->rendering_intent)
             {
               case AbsoluteIntent: intent=INTENT_ABSOLUTE_COLORIMETRIC; break;
@@ -1056,7 +1030,7 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
             progress=0;
             image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp parallel for schedule(static,4) shared(status) \
+            #pragma omp parallel for schedule(static) shared(status) \
               magick_number_threads(image,image,image->rows,1)
 #endif
             for (y=0; y < (ssize_t) image->rows; y++)
@@ -1108,20 +1082,23 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
               q-=image->columns;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                SetPixelRed(q,target_scale*QuantumRange*(*p));
+                SetPixelRed(q,ClampToQuantum(target_scale*QuantumRange*(*p)));
                 SetPixelGreen(q,GetPixelRed(q));
                 SetPixelBlue(q,GetPixelRed(q));
                 p++;
                 if (target_channels > 1)
                   {
-                    SetPixelGreen(q,target_scale*QuantumRange*(*p));
+                    SetPixelGreen(q,ClampToQuantum(target_scale*
+                      QuantumRange*(*p)));
                     p++;
-                    SetPixelBlue(q,target_scale*QuantumRange*(*p));
+                    SetPixelBlue(q,ClampToQuantum(target_scale*
+                      QuantumRange*(*p)));
                     p++;
                   }
                 if (target_channels > 3)
                   {
-                    SetPixelIndex(indexes+x,target_scale*QuantumRange*(*p));
+                    SetPixelIndex(indexes+x,ClampToQuantum(target_scale*
+                      QuantumRange*(*p)));
                     p++;
                   }
                 q++;
@@ -1349,7 +1326,7 @@ static inline void WriteResourceLong(unsigned char *p,
   buffer[1]=(unsigned char) (quantum >> 16);
   buffer[2]=(unsigned char) (quantum >> 8);
   buffer[3]=(unsigned char) quantum;
-  (void) CopyMagickMemory(p,buffer,4);
+  (void) memcpy(p,buffer,4);
 }
 
 static void WriteTo8BimProfile(Image *image,const char *name,
@@ -1415,8 +1392,7 @@ static void WriteTo8BimProfile(Image *image,const char *name,
     count=(ssize_t) value;
     if ((count & 0x01) != 0)
       count++;
-    if ((count < 0) || (p > (datum+length-count)) ||
-        (count > (ssize_t) length))
+    if ((count < 0) || (p > (datum+length-count)) || (count > (ssize_t) length))
       break;
     if (id != profile_id)
       p+=count;
@@ -1438,7 +1414,7 @@ static void WriteTo8BimProfile(Image *image,const char *name,
           {
             offset=(q-datum);
             extract_profile=AcquireStringInfo(offset+extent);
-            (void) CopyMagickMemory(extract_profile->datum,datum,offset);
+            (void) memcpy(extract_profile->datum,datum,offset);
           }
         else
           {
@@ -1447,13 +1423,13 @@ static void WriteTo8BimProfile(Image *image,const char *name,
             if ((extract_extent & 0x01) != 0)
               extract_extent++;
             extract_profile=AcquireStringInfo(offset+extract_extent+extent);
-            (void) CopyMagickMemory(extract_profile->datum,datum,offset-4);
+            (void) memcpy(extract_profile->datum,datum,offset-4);
             WriteResourceLong(extract_profile->datum+offset-4,(unsigned int)
               profile->length);
-            (void) CopyMagickMemory(extract_profile->datum+offset,
+            (void) memcpy(extract_profile->datum+offset,
               profile->datum,profile->length);
           }
-        (void) CopyMagickMemory(extract_profile->datum+offset+extract_extent,
+        (void) memcpy(extract_profile->datum+offset+extract_extent,
           p+count,extent);
         (void) AddValueToSplayTree((SplayTreeInfo *) image->profiles,
           ConstantString("8bim"),CloneStringInfo(extract_profile));
@@ -1506,8 +1482,7 @@ static void GetProfilesFromResourceBlock(Image *image,
       break;
     p=ReadResourceLong(p,&value);
     count=(ssize_t) value;
-    if ((p > (datum+length-count)) || (count > (ssize_t) length) ||
-        (count < 0))
+    if ((p > (datum+length-count)) || (count > (ssize_t) length) || (count < 0))
       break;
     switch (id)
     {
@@ -1522,6 +1497,8 @@ static void GetProfilesFromResourceBlock(Image *image,
         /*
           Resolution.
         */
+        if (count < 10)
+          break;
         p=ReadResourceLong(p,&resolution);
         image->x_resolution=((double) resolution)/65536.0;
         p=ReadResourceShort(p,&units)+2;
@@ -1817,14 +1794,14 @@ static inline void WriteProfileLong(const EndianType endian,
       buffer[1]=(unsigned char) (value >> 8);
       buffer[2]=(unsigned char) (value >> 16);
       buffer[3]=(unsigned char) (value >> 24);
-      (void) CopyMagickMemory(p,buffer,4);
+      (void) memcpy(p,buffer,4);
       return;
     }
   buffer[0]=(unsigned char) (value >> 24);
   buffer[1]=(unsigned char) (value >> 16);
   buffer[2]=(unsigned char) (value >> 8);
   buffer[3]=(unsigned char) value;
-  (void) CopyMagickMemory(p,buffer,4);
+  (void) memcpy(p,buffer,4);
 }
 
 static void WriteProfileShort(const EndianType endian,
@@ -1837,12 +1814,12 @@ static void WriteProfileShort(const EndianType endian,
     {
       buffer[0]=(unsigned char) value;
       buffer[1]=(unsigned char) (value >> 8);
-      (void) CopyMagickMemory(p,buffer,2);
+      (void) memcpy(p,buffer,2);
       return;
     }
   buffer[0]=(unsigned char) (value >> 8);
   buffer[1]=(unsigned char) value;
-  (void) CopyMagickMemory(p,buffer,2);
+  (void) memcpy(p,buffer,2);
 }
 
 static MagickBooleanType Sync8BimProfile(Image *image,StringInfo *profile)
@@ -1875,9 +1852,10 @@ static MagickBooleanType Sync8BimProfile(Image *image,StringInfo *profile)
       return(MagickFalse);
     id=ReadProfileMSBShort(&p,&length);
     count=(ssize_t) ReadProfileByte(&p,&length);
-    if ((count > (ssize_t) length) || (count < 0))
+    if ((count >= (ssize_t) length) || (count < 0))
       return(MagickFalse);
     p+=count;
+    length-=count;
     if ((*p & 0x01) == 0)
       (void) ReadProfileByte(&p,&length);
     count=(ssize_t) ReadProfileMSBLong(&p,&length);

@@ -360,6 +360,8 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     status=SetImageExtent(image,image->columns,image->rows);
     if (status == MagickFalse)
       ThrowPCXException(image->exception.severity,image->exception.reason);
+    (void) SetImageBackgroundColor(image);
+    (void) memset(pcx_colormap,0,sizeof(pcx_colormap));
     count=ReadBlob(image,3*image->colors,pcx_colormap);
     if (count != (ssize_t) (3*image->colors))
       ThrowPCXException(CorruptImageError,"ImproperImageHeader");
@@ -402,8 +404,6 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     pcx_packets=(size_t) image->rows*pcx_info.bytes_per_line;
     if (HeapOverflowSanityCheck(pcx_packets, (size_t) pcx_info.planes) != MagickFalse)
       ThrowPCXException(CorruptImageError,"ImproperImageHeader");
-    if ((pcx_packets/8) > GetBlobSize(image))
-      ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
     pcx_packets=(size_t) pcx_packets*pcx_info.planes;
     if ((size_t) (pcx_info.bits_per_pixel*pcx_info.planes*image->columns) >
         (pcx_packets*8U))
@@ -420,8 +420,10 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
           pixel_info=RelinquishVirtualMemory(pixel_info);
         ThrowPCXException(ResourceLimitError,"MemoryAllocationFailed");
       }
+    (void) memset(scanline,0,(size_t) MagickMax(image->columns,
+      pcx_info.bytes_per_line)*MagickMax(8,pcx_info.planes)*sizeof(*scanline));
     pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
-    (void) ResetMagickMemory(pixels,0,(size_t) pcx_packets*(2*sizeof(*pixels)));
+    (void) memset(pixels,0,(size_t) pcx_packets*(2*sizeof(*pixels)));
     /*
       Uncompress image data.
     */
@@ -617,7 +619,7 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
             }
             case 8:
             {
-              (void) CopyMagickMemory(r,p,image->columns);
+              (void) memcpy(r,p,image->columns);
               break;
             }
             default:

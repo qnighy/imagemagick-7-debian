@@ -198,10 +198,10 @@ static Image *ReadXPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   cmyk=image->colorspace == CMYKColorspace ? MagickTrue : MagickFalse;
   count=0;
-  (void) ResetMagickMemory(&bounding_box,0,sizeof(bounding_box));
-  (void) ResetMagickMemory(&bounds,0,sizeof(bounds));
-  (void) ResetMagickMemory(&page,0,sizeof(page));
-  (void) ResetMagickMemory(command,0,sizeof(command));
+  (void) memset(&bounding_box,0,sizeof(bounding_box));
+  (void) memset(&bounds,0,sizeof(bounds));
+  (void) memset(&page,0,sizeof(page));
+  (void) memset(command,0,sizeof(command));
   p=command;
   for (c=ReadBlobByte(image); c != EOF; c=ReadBlobByte(image))
   {
@@ -273,7 +273,10 @@ static Image *ReadXPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
      else
        delegate_info=GetDelegateInfo("xps:color",(char *) NULL,exception);
   if (delegate_info == (const DelegateInfo *) NULL)
-    return((Image *) NULL);
+    {
+      image=DestroyImage(image);
+      return((Image *) NULL);
+    }
   density=AcquireString("");
   options=AcquireString("");
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",

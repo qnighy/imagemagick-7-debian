@@ -20,6 +20,8 @@
 
 #include "magick/memory_.h"
 #include "magick/cache.h"
+#include "magick/image-private.h"
+#include "magick/pixel-accessor.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -94,8 +96,15 @@ static inline MagickSizeType GetQuantumRange(const size_t depth)
   MagickSizeType
     one;
 
+  size_t
+    max_depth;
+
+  if (depth == 0)
+    return(0);
   one=1;
-  return((MagickSizeType) ((one << (depth-1))+((one << (depth-1))-1)));
+  max_depth=8*sizeof(MagickSizeType);
+  return((MagickSizeType) ((one << (MagickMin(depth,max_depth)-1))+
+    ((one << (MagickMin(depth,max_depth)-1))-1)));
 }
 
 static inline float HalfToSinglePrecision(const unsigned short half)
@@ -275,9 +284,11 @@ static inline Quantum ScaleAnyToQuantum(const QuantumAny quantum,
   if (quantum > range)
     return(QuantumRange);
 #if !defined(MAGICKCORE_HDRI_SUPPORT)
-  return((Quantum) (((MagickRealType) QuantumRange*quantum)/range+0.5));
+  return((Quantum) (((MagickRealType) QuantumRange*quantum)*
+    PerceptibleReciprocal((double) range)+0.5));
 #else
-  return((Quantum) (((MagickRealType) QuantumRange*quantum)/range));
+  return((Quantum) (((MagickRealType) QuantumRange*quantum)*
+    PerceptibleReciprocal((double) range)));
 #endif
 }
 

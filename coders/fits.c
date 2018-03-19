@@ -302,7 +302,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
   /*
     Initialize image header.
   */
-  (void) ResetMagickMemory(&fits_info,0,sizeof(fits_info));
+  (void) memset(&fits_info,0,sizeof(fits_info));
   fits_info.extend=MagickFalse;
   fits_info.simple=MagickFalse;
   fits_info.bits_per_pixel=8;
@@ -455,7 +455,8 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
     /*
       Convert FITS pixels to pixel packets.
     */
-    scale=QuantumRange/(fits_info.max_data-fits_info.min_data);
+    scale=QuantumRange*PerceptibleReciprocal(fits_info.max_data-
+      fits_info.min_data);
     for (y=(ssize_t) image->rows-1; y >= 0; y--)
     {
       q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
@@ -665,7 +666,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   fits_info=(char *) AcquireQuantumMemory(FITSBlocksize,sizeof(*fits_info));
   if (fits_info == (char *) NULL)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(fits_info,' ',FITSBlocksize*sizeof(*fits_info));
+  (void) memset(fits_info,' ',FITSBlocksize*sizeof(*fits_info));
   /*
     Initialize image header.
   */
@@ -838,7 +839,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   length=(size_t) (FITSBlocksize-TellBlob(image) % FITSBlocksize);
   if (length != 0)
     {
-      (void) ResetMagickMemory(fits_info,0,length*sizeof(*fits_info));
+      (void) memset(fits_info,0,length*sizeof(*fits_info));
       (void) WriteBlob(image,length,(unsigned char *) fits_info);
     }
   fits_info=DestroyString(fits_info);

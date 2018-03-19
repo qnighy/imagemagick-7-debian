@@ -150,6 +150,7 @@ static const OptionInfo
     { "Black", BlackChannel, UndefinedOptionFlag, MagickFalse },
     { "Blue", BlueChannel, UndefinedOptionFlag, MagickFalse },
     { "C", CyanChannel, UndefinedOptionFlag, MagickFalse },
+    { "Chroma", GreenChannel, UndefinedOptionFlag, MagickFalse },
     { "Cyan", CyanChannel, UndefinedOptionFlag, MagickFalse },
     { "Default", DefaultChannels, UndefinedOptionFlag, MagickFalse },
     { "G", GreenChannel, UndefinedOptionFlag, MagickFalse },
@@ -1605,6 +1606,7 @@ static const OptionInfo
     { "Throttle", ThrottleResource, UndefinedOptionFlag, MagickFalse },
     { "Time", TimeResource, UndefinedOptionFlag, MagickFalse },
     { "Width", WidthResource, UndefinedOptionFlag, MagickFalse },
+    { "ListLength", ListLengthResource, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedResource, UndefinedOptionFlag, MagickFalse }
   },
   SparseColorOptions[] =
@@ -2113,7 +2115,7 @@ MagickExport ssize_t GetCommandOptionFlags(const CommandOption option,
       if (LocaleCompare(token,option_info[i].mnemonic) == 0)
         break;
     command_info=option_info+i;
-    if ((command_info->mnemonic == (const char *) NULL) &&
+    if ((command_info->mnemonic == (const char *) NULL) && (*token != '\0') &&
         ((strchr(token+1,'-') != (char *) NULL) ||
          (strchr(token+1,'_') != (char *) NULL)))
       {

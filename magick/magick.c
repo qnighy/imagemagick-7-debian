@@ -72,6 +72,7 @@
 #include "magick/semaphore-private.h"
 #include "magick/signature-private.h"
 #include "magick/splay-tree.h"
+#include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/string-private.h"
 #include "magick/thread_.h"
@@ -414,22 +415,28 @@ MagickExport const MagickInfo *GetMagickInfo(const char *name,
   if (IsMagickTreeInstantiated(exception) == MagickFalse)
     return((const MagickInfo *) NULL);
   magick_info=(const MagickInfo *) NULL;
-#if defined(MAGICKCORE_MODULES_SUPPORT)
   if ((name != (const char *) NULL) && (*name != '\0'))
     {
       LockSemaphoreInfo(magick_semaphore);
       if (LocaleCompare(name,"*") == 0)
+#if defined(MAGICKCORE_BUILD_MODULES)
         (void) OpenModules(exception);
+#else
+        RegisterStaticModules();
+#endif
       else
         {
           magick_info=(const MagickInfo *) GetValueFromSplayTree(magick_list,
             name);
           if (magick_info == (const MagickInfo *) NULL)
+#if defined(MAGICKCORE_BUILD_MODULES)
             (void) OpenModule(name,exception);
+#else
+            (void) RegisterStaticModule(name,exception);
+#endif
         }
       UnlockSemaphoreInfo(magick_semaphore);
     }
-#endif
   if ((name == (const char *) NULL) || (LocaleCompare(name,"*") == 0))
     magick_info=(const MagickInfo *) GetRootValueFromSplayTree(magick_list);
   if (magick_info == (const MagickInfo *) NULL)
@@ -846,9 +853,6 @@ static MagickBooleanType IsMagickTreeInstantiated(ExceptionInfo *exception)
 #if defined(MAGICKCORE_MODULES_SUPPORT)
           (void) GetModuleInfo((char *) NULL,exception);
 #endif
-#if !defined(MAGICKCORE_BUILD_MODULES)
-          RegisterStaticModules();
-#endif
           magick_list_initialized=MagickTrue;
         }
       UnlockSemaphoreInfo(magick_semaphore);
@@ -1132,6 +1136,9 @@ static SignalHandler *SetMagickSignalHandler(int signal_number,
   action.sa_flags=0;
 #if defined(SA_INTERRUPT)
   action.sa_flags|=SA_INTERRUPT;
+#endif
+#if defined(SA_ONSTACK)
+  action.sa_flags|=SA_ONSTACK;
 #endif
   status=sigaction(signal_number,&action,&previous_action);
   if (status < 0)
@@ -1483,7 +1490,7 @@ MagickExport MagickInfo *SetMagickInfo(const char *name)
   magick_info=(MagickInfo *) AcquireMagickMemory(sizeof(*magick_info));
   if (magick_info == (MagickInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(magick_info,0,sizeof(*magick_info));
+  (void) memset(magick_info,0,sizeof(*magick_info));
   magick_info->name=ConstantString(name);
   magick_info->adjoin=MagickTrue;
   magick_info->blob_support=MagickTrue;

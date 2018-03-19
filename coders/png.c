@@ -1220,7 +1220,7 @@ static void PNGShort(png_bytep p,png_uint_16 value)
 
 static void PNGType(png_bytep p,const png_byte *type)
 {
-  (void) CopyMagickMemory(p,type,4*sizeof(png_byte));
+  (void) memcpy(p,type,4*sizeof(png_byte));
 }
 
 static void LogPNGChunk(MagickBooleanType logging, const png_byte *type,
@@ -2458,7 +2458,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
     {
       image->rendering_intent=UndefinedIntent;
       intent=Magick_RenderingIntent_to_PNG_RenderingIntent(UndefinedIntent);
-      (void) ResetMagickMemory(&image->chromaticity,0,
+      (void) memset(&image->chromaticity,0,
         sizeof(image->chromaticity));
     }
 
@@ -4084,7 +4084,7 @@ static Image *ReadPNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Initialize members of the MngInfo structure.
   */
-  (void) ResetMagickMemory(mng_info,0,sizeof(MngInfo));
+  (void) memset(mng_info,0,sizeof(MngInfo));
   mng_info->image=image;
 
   image=ReadOnePNGImage(mng_info,image_info,exception);
@@ -4812,7 +4812,6 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
 
   if (jng_image == (Image *) NULL)
   {
-    jng_image=DestroyImage(jng_image);
     DestroyJNG(NULL,NULL,NULL,&alpha_image,&alpha_image_info);
     return(DestroyImageList(image));
   }
@@ -4840,7 +4839,7 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
     q=GetAuthenticPixels(image,0,y,image->columns,1,exception);
     if ((s == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))
       break;
-    (void) CopyMagickMemory(q,s,length);
+    (void) memcpy(q,s,length);
 
     if (SyncAuthenticPixels(image,exception) == MagickFalse)
       break;
@@ -5032,7 +5031,7 @@ static Image *ReadJNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   /* Initialize members of the MngInfo structure.  */
 
-  (void) ResetMagickMemory(mng_info,0,sizeof(MngInfo));
+  (void) memset(mng_info,0,sizeof(MngInfo));
 
   mng_info->image=image;
   image=ReadOneJNGImage(mng_info,image_info,exception);
@@ -5569,8 +5568,13 @@ static Image *ReadOneMNGImage(MngInfo* mng_info, const ImageInfo *image_info,
                     sizeof(*mng_info->global_plte));
 
                 if (mng_info->global_plte == (png_colorp) NULL)
-                  ThrowReaderException(ResourceLimitError,
-                    "MemoryAllocationFailed");
+                  {
+                    mng_info->global_plte_length=0;
+                    chunk=(unsigned char *) RelinquishMagickMemory(chunk);
+                    mng_info=MngInfoFreeStruct(mng_info);
+                    ThrowReaderException(ResourceLimitError,
+                      "MemoryAllocationFailed");
+                  }
 
                 for (i=0; i < (ssize_t) (length/3); i++)
                 {
@@ -6768,7 +6772,7 @@ static Image *ReadOneMNGImage(MngInfo* mng_info, const ImageInfo *image_info,
                   }
 
                 n=GetAuthenticPixels(image,0,0,image->columns,1,exception);
-                (void) CopyMagickMemory(next,n,length);
+                (void) memcpy(next,n,length);
 
                 for (y=0; y < (ssize_t) image->rows; y++)
                 {
@@ -6795,7 +6799,7 @@ static Image *ReadOneMNGImage(MngInfo* mng_info, const ImageInfo *image_info,
                     {
                       n=GetAuthenticPixels(image,0,y+1,image->columns,1,
                           exception);
-                      (void) CopyMagickMemory(next,n,length);
+                      (void) memcpy(next,n,length);
                     }
 
                   for (i=0; i < m; i++, yy++)
@@ -7485,7 +7489,7 @@ static Image *ReadMNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   /* Initialize members of the MngInfo structure.  */
 
-  (void) ResetMagickMemory(mng_info,0,sizeof(MngInfo));
+  (void) memset(mng_info,0,sizeof(MngInfo));
   mng_info->image=image;
   image=ReadOneMNGImage(mng_info,image_info,exception);
   mng_info=MngInfoFreeStruct(mng_info);
@@ -11848,7 +11852,7 @@ static MagickBooleanType WritePNGImage(const ImageInfo *image_info,Image *image)
   /*
     Initialize members of the MngInfo structure.
   */
-  (void) ResetMagickMemory(mng_info,0,sizeof(MngInfo));
+  (void) memset(mng_info,0,sizeof(MngInfo));
   mng_info->image=image;
   mng_info->equal_backgrounds=MagickTrue;
 
@@ -13126,7 +13130,7 @@ static MagickBooleanType WriteJNGImage(const ImageInfo *image_info,Image *image)
   /*
     Initialize members of the MngInfo structure.
   */
-  (void) ResetMagickMemory(mng_info,0,sizeof(MngInfo));
+  (void) memset(mng_info,0,sizeof(MngInfo));
   mng_info->image=image;
 
   (void) WriteBlob(image,8,(const unsigned char *) "\213JNG\r\n\032\n");
@@ -13221,7 +13225,7 @@ static MagickBooleanType WriteMNGImage(const ImageInfo *image_info,Image *image)
   /*
     Initialize members of the MngInfo structure.
   */
-  (void) ResetMagickMemory(mng_info,0,sizeof(MngInfo));
+  (void) memset(mng_info,0,sizeof(MngInfo));
   mng_info->image=image;
   write_mng=LocaleCompare(image_info->magick,"MNG") == 0;
 

@@ -217,7 +217,7 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
     ghost_info_struct;
 
   ghost_info=(&ghost_info_struct);
-  (void) ResetMagickMemory(&ghost_info_struct,0,sizeof(ghost_info_struct));
+  (void) memset(&ghost_info_struct,0,sizeof(ghost_info_struct));
   ghost_info_struct.delete_instance=(void (*)(gs_main_instance *))
     gsapi_delete_instance;
   ghost_info_struct.exit=(int (*)(gs_main_instance *)) gsapi_exit;
@@ -227,8 +227,8 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
     gsapi_init_with_args;
   ghost_info_struct.run_string=(int (*)(gs_main_instance *,const char *,int,
     int *)) gsapi_run_string;
-  ghost_info_struct.set_stdio=(int (*)(gs_main_instance *,int(*)(void *,char *,
-    int),int(*)(void *,const char *,int),int(*)(void *, const char *, int)))
+  ghost_info_struct.set_stdio=(int (*)(gs_main_instance *,int (*)(void *,char *,
+    int),int (*)(void *,const char *,int),int (*)(void *, const char *, int)))
     gsapi_set_stdio;
   ghost_info_struct.revision=(int (*)(gsapi_revision_t *,int)) gsapi_revision;
 #endif
@@ -254,7 +254,7 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
       (ghost_info->delete_instance)(interpreter);
       return(MagickFalse);
     }
-  (void) (ghost_info->set_stdio)(interpreter,(int(MagickDLLCall *)(void *,
+  (void) (ghost_info->set_stdio)(interpreter,(int (MagickDLLCall *)(void *,
     char *,int)) NULL,PDFDelegateMessage,PDFDelegateMessage);
   status=(ghost_info->init_with_args)(interpreter,argc-1,argv+1);
   if (status == 0)
@@ -270,14 +270,14 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
       SetArgsStart(command,args_start);
       if (status == -101) /* quit */
         (void) FormatLocaleString(message,MaxTextExtent,
-          "[ghostscript library %.2f]%s: %s",(double)revision.revision / 100,
+          "[ghostscript library %.2f]%s: %s",(double)revision.revision/100.0,
           args_start,errors);
       else
         {
           (void) ThrowMagickException(exception,GetMagickModule(),
             DelegateError,"PDFDelegateFailed",
-            "`[ghostscript library %.2f]%s': %s",
-            (double)revision.revision / 100,args_start,errors);
+            "`[ghostscript library %.2f]%s': %s",(double) revision.revision/
+            100.0,args_start,errors);
           if (errors != (char *) NULL)
             errors=DestroyString(errors);
           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -373,10 +373,12 @@ static MagickBooleanType IsPDFRendered(const char *path)
 
 static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
+#define BeginXMPPacket  "<?xpacket begin="
 #define CMYKProcessColor  "CMYKProcessColor"
 #define CropBox  "CropBox"
 #define DefaultCMYK  "DefaultCMYK"
 #define DeviceCMYK  "DeviceCMYK"
+#define EndXMPPacket  "<?xpacket end="
 #define MediaBox  "MediaBox"
 #define RenderPostscriptText  "Rendering Postscript...  "
 #define PDFRotate  "Rotate"
@@ -499,7 +501,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if ((flags & SigmaValue) == 0)
         image->y_resolution=image->x_resolution;
     }
-  (void) ResetMagickMemory(&page,0,sizeof(page));
+  (void) memset(&page,0,sizeof(page));
   (void) ParseAbsoluteGeometry(PSPageGeometry,&page);
   if (image_info->page != (char *) NULL)
     (void) ParseAbsoluteGeometry(image_info->page,&page);
@@ -525,10 +527,10 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     trimbox=IsMagickTrue(option);
   count=0;
   spotcolor=0;
-  (void) ResetMagickMemory(&bounding_box,0,sizeof(bounding_box));
-  (void) ResetMagickMemory(&bounds,0,sizeof(bounds));
-  (void) ResetMagickMemory(&hires_bounds,0,sizeof(hires_bounds));
-  (void) ResetMagickMemory(command,0,sizeof(command));
+  (void) memset(&bounding_box,0,sizeof(bounding_box));
+  (void) memset(&bounds,0,sizeof(bounds));
+  (void) memset(&hires_bounds,0,sizeof(hires_bounds));
+  (void) memset(command,0,sizeof(command));
   angle=0.0;
   p=command;
   for (c=ReadBlobByte(image); c != EOF; c=ReadBlobByte(image))
@@ -679,7 +681,6 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       geometry=DestroyString(geometry);
       fitPage=MagickTrue;
     }
-  (void) CloseBlob(image);
   if ((fabs(angle) == 90.0) || (fabs(angle) == 270.0))
     {
       size_t
@@ -823,6 +824,49 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
           pdf_image=cmyk_image;
         }
     }
+  (void) SeekBlob(image,0,SEEK_SET);
+  for (c=ReadBlobByte(image); c != EOF; c=ReadBlobByte(image))
+  {
+    /*
+      Note document structuring comments.
+    */
+    *p++=(char) c;
+    if ((strchr("\n\r%",c) == (char *) NULL) &&
+        ((size_t) (p-command) < (MagickPathExtent-1)))
+      continue;
+    *p='\0';
+    p=command;
+    if (LocaleNCompare(BeginXMPPacket,command,strlen(BeginXMPPacket)) == 0)
+      {
+        StringInfo
+          *profile;
+
+        /*
+          Read XMP profile.
+        */
+        p=command;
+        profile=StringToStringInfo(command);
+        for (i=(ssize_t) GetStringInfoLength(profile)-1; c != EOF; i++)
+        {
+          SetStringInfoLength(profile,(size_t) (i+1));
+          c=ReadBlobByte(image);
+          GetStringInfoDatum(profile)[i]=(unsigned char) c;
+          *p++=(char) c;
+          if ((strchr("\n\r%",c) == (char *) NULL) &&
+              ((size_t) (p-command) < (MagickPathExtent-1)))
+            continue;
+          *p='\0';
+          p=command;
+          if (LocaleNCompare(EndXMPPacket,command,strlen(EndXMPPacket)) == 0)
+            break;
+        }
+        SetStringInfoLength(profile,(size_t) i);
+        (void) SetImageProfile(image,"xmp",profile);
+        profile=DestroyStringInfo(profile);
+        continue;
+      }
+  }
+  (void) CloseBlob(image);
   if (image_info->number_scenes != 0)
     {
       Image
@@ -1183,6 +1227,12 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
 {
 #define CFormat  "/Filter [ /%s ]\n"
 #define ObjectsPerImage  14
+#define ThrowPDFException(exception,message) \
+{ \
+  if (xref != (MagickOffsetType *) NULL) \
+    xref=(MagickOffsetType *) RelinquishMagickMemory(xref); \
+  ThrowWriterException((exception),(message)); \
+}
 
 DisableMSCWarning(4310)
   static const char
@@ -1340,7 +1390,7 @@ RestoreMSCWarning
   xref=(MagickOffsetType *) AcquireQuantumMemory(2048UL,sizeof(*xref));
   if (xref == (MagickOffsetType *) NULL)
     ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(xref,0,2048UL*sizeof(*xref));
+  (void) memset(xref,0,2048UL*sizeof(*xref));
   /*
     Write Info object.
   */
@@ -1851,7 +1901,7 @@ RestoreMSCWarning
     offset=TellBlob(image);
     number_pixels=(MagickSizeType) image->columns*image->rows;
     if ((4*number_pixels) != (MagickSizeType) ((size_t) (4*number_pixels)))
-      ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+      ThrowPDFException(ResourceLimitError,"MemoryAllocationFailed");
     if ((compression == FaxCompression) || (compression == Group4Compression) ||
         ((image_info->type != TrueColorType) &&
          (SetImageGray(image,&image->exception) != MagickFalse)))
@@ -1874,7 +1924,7 @@ RestoreMSCWarning
             status=InjectImageBlob(image_info,image,image,"jpeg",
               &image->exception);
             if (status == MagickFalse)
-              ThrowWriterException(CoderError,image->exception.reason);
+              ThrowPDFException(CoderError,image->exception.reason);
             break;
           }
           case JPEG2000Compression:
@@ -1882,7 +1932,7 @@ RestoreMSCWarning
             status=InjectImageBlob(image_info,image,image,"jp2",
               &image->exception);
             if (status == MagickFalse)
-              ThrowWriterException(CoderError,image->exception.reason);
+              ThrowPDFException(CoderError,image->exception.reason);
             break;
           }
           case RLECompression:
@@ -1897,7 +1947,7 @@ RestoreMSCWarning
             length=(size_t) number_pixels;
             pixel_info=AcquireVirtualMemory(length,sizeof(*pixels));
             if (pixel_info == (MemoryInfo *) NULL)
-              ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+              ThrowPDFException(ResourceLimitError,"MemoryAllocationFailed");
             pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
             /*
               Dump Runlength encoded pixels.
@@ -1980,7 +2030,7 @@ RestoreMSCWarning
             status=InjectImageBlob(image_info,image,image,"jpeg",
               &image->exception);
             if (status == MagickFalse)
-              ThrowWriterException(CoderError,image->exception.reason);
+              ThrowPDFException(CoderError,image->exception.reason);
             break;
           }
           case JPEG2000Compression:
@@ -1988,7 +2038,7 @@ RestoreMSCWarning
             status=InjectImageBlob(image_info,image,image,"jp2",
               &image->exception);
             if (status == MagickFalse)
-              ThrowWriterException(CoderError,image->exception.reason);
+              ThrowPDFException(CoderError,image->exception.reason);
             break;
           }
           case RLECompression:
@@ -2006,8 +2056,7 @@ RestoreMSCWarning
             if (pixel_info == (MemoryInfo *) NULL)
               {
                 xref=(MagickOffsetType *) RelinquishMagickMemory(xref);
-                ThrowWriterException(ResourceLimitError,
-                  "MemoryAllocationFailed");
+                ThrowPDFException(ResourceLimitError,"MemoryAllocationFailed");
               }
             pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
             /*
@@ -2112,7 +2161,7 @@ RestoreMSCWarning
               if (pixel_info == (MemoryInfo *) NULL)
                 {
                   xref=(MagickOffsetType *) RelinquishMagickMemory(xref);
-                  ThrowWriterException(ResourceLimitError,
+                  ThrowPDFException(ResourceLimitError,
                     "MemoryAllocationFailed");
                 }
               pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
@@ -2288,7 +2337,7 @@ RestoreMSCWarning
     tile_image=ThumbnailImage(image,geometry.width,geometry.height,
       &image->exception);
     if (tile_image == (Image *) NULL)
-      ThrowWriterException(ResourceLimitError,image->exception.reason);
+      ThrowPDFException(ResourceLimitError,image->exception.reason);
     xref[object++]=TellBlob(image);
     (void) FormatLocaleString(buffer,MaxTextExtent,"%.20g 0 obj\n",(double)
       object);
@@ -2393,7 +2442,7 @@ RestoreMSCWarning
             status=InjectImageBlob(image_info,image,tile_image,"jpeg",
               &image->exception);
             if (status == MagickFalse)
-              ThrowWriterException(CoderError,tile_image->exception.reason);
+              ThrowPDFException(CoderError,tile_image->exception.reason);
             break;
           }
           case JPEG2000Compression:
@@ -2401,7 +2450,7 @@ RestoreMSCWarning
             status=InjectImageBlob(image_info,image,tile_image,"jp2",
               &image->exception);
             if (status == MagickFalse)
-              ThrowWriterException(CoderError,tile_image->exception.reason);
+              ThrowPDFException(CoderError,tile_image->exception.reason);
             break;
           }
           case RLECompression:
@@ -2418,8 +2467,7 @@ RestoreMSCWarning
             if (pixel_info == (MemoryInfo *) NULL)
               {
                 tile_image=DestroyImage(tile_image);
-                ThrowWriterException(ResourceLimitError,
-                  "MemoryAllocationFailed");
+                ThrowPDFException(ResourceLimitError,"MemoryAllocationFailed");
               }
             pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
             /*
@@ -2491,7 +2539,7 @@ RestoreMSCWarning
             status=InjectImageBlob(image_info,image,tile_image,"jpeg",
               &image->exception);
             if (status == MagickFalse)
-              ThrowWriterException(CoderError,tile_image->exception.reason);
+              ThrowPDFException(CoderError,tile_image->exception.reason);
             break;
           }
           case JPEG2000Compression:
@@ -2499,7 +2547,7 @@ RestoreMSCWarning
             status=InjectImageBlob(image_info,image,tile_image,"jp2",
               &image->exception);
             if (status == MagickFalse)
-              ThrowWriterException(CoderError,tile_image->exception.reason);
+              ThrowPDFException(CoderError,tile_image->exception.reason);
             break;
           }
           case RLECompression:
@@ -2517,8 +2565,7 @@ RestoreMSCWarning
             if (pixel_info == (MemoryInfo *) NULL)
               {
                 tile_image=DestroyImage(tile_image);
-                ThrowWriterException(ResourceLimitError,
-                  "MemoryAllocationFailed");
+                ThrowPDFException(ResourceLimitError,"MemoryAllocationFailed");
               }
             pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
             /*
@@ -2611,7 +2658,7 @@ RestoreMSCWarning
               if (pixel_info == (MemoryInfo *) NULL)
                 {
                   tile_image=DestroyImage(tile_image);
-                  ThrowWriterException(ResourceLimitError,
+                  ThrowPDFException(ResourceLimitError,
                     "MemoryAllocationFailed");
                 }
               pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
@@ -2816,8 +2863,7 @@ RestoreMSCWarning
             if (pixel_info == (MemoryInfo *) NULL)
               {
                 image=DestroyImage(image);
-                ThrowWriterException(ResourceLimitError,
-                  "MemoryAllocationFailed");
+                ThrowPDFException(ResourceLimitError,"MemoryAllocationFailed");
               }
            pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
             /*

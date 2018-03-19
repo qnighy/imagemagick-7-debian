@@ -150,7 +150,7 @@ static ChannelStatistics *GetLocationStatistics(const Image *image,
     sizeof(*channel_statistics));
   if (channel_statistics == (ChannelStatistics *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(channel_statistics,0,length*
+  (void) memset(channel_statistics,0,length*
     sizeof(*channel_statistics));
   for (i=0; i <= (ssize_t) CompositeChannels; i++)
   {
@@ -1199,7 +1199,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
       for (p=image->directory; *p != '\0'; p++)
       {
         q=p;
-        while ((*q != '\n') && (*q != '\0') && 
+        while ((*q != '\xff') && (*q != '\0') && 
                ((size_t) (q-p) < sizeof(image_info->filename)))
           q++;
         (void) CopyMagickString(image_info->filename,p,(size_t) (q-p+1));

@@ -629,7 +629,7 @@ MagickExport MagickBooleanType GradientImage(Image *image,
   if (gradient->stops == (StopInfo *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
-  (void) ResetMagickMemory(gradient->stops,0,gradient->number_stops*
+  (void) memset(gradient->stops,0,gradient->number_stops*
     sizeof(*gradient->stops));
   for (i=0; i < (ssize_t) gradient->number_stops; i++)
     GetMagickPixelPacket(image,&gradient->stops[i].color);
@@ -704,7 +704,7 @@ static size_t **AcquireHistogramThreadSet(const size_t count)
     sizeof(*histogram));
   if (histogram == (size_t **) NULL)
     return((size_t **) NULL);
-  (void) ResetMagickMemory(histogram,0,number_threads*sizeof(*histogram));
+  (void) memset(histogram,0,number_threads*sizeof(*histogram));
   for (i=0; i < (ssize_t) number_threads; i++)
   {
     histogram[i]=(size_t *) AcquireQuantumMemory(count,
@@ -784,7 +784,7 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
   image_view=AcquireVirtualCacheView(linear_image,exception);
   paint_view=AcquireAuthenticCacheView(paint_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(linear_image,paint_image,linear_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) linear_image->rows; y++)
@@ -841,7 +841,7 @@ MagickExport Image *OilPaintImage(const Image *image,const double radius,
       i=0;
       j=0;
       count=0;
-      (void) ResetMagickMemory(histogram,0,NumberPaintBins*sizeof(*histogram));
+      (void) memset(histogram,0,NumberPaintBins*sizeof(*histogram));
       for (v=0; v < (ssize_t) width; v++)
       {
         for (u=0; u < (ssize_t) width; u++)
@@ -982,7 +982,7 @@ MagickExport MagickBooleanType OpaquePaintImageChannel(Image *image,
   GetMagickPixelPacket(image,&zero);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -1127,7 +1127,7 @@ MagickExport MagickBooleanType TransparentPaintImage(Image *image,
   GetMagickPixelPacket(image,&zero);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -1260,7 +1260,7 @@ MagickExport MagickBooleanType TransparentPaintImageChroma(Image *image,
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)

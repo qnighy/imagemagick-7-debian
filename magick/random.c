@@ -173,7 +173,7 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
   random_info=(RandomInfo *) AcquireMagickMemory(sizeof(*random_info));
   if (random_info == (RandomInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(random_info,0,sizeof(*random_info));
+  (void) memset(random_info,0,sizeof(*random_info));
   random_info->signature_info=AcquireSignatureInfo();
   random_info->nonce=AcquireStringInfo(2*GetSignatureDigestsize(
     random_info->signature_info));
@@ -219,7 +219,7 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
   if (random_info->secret_key == ~0UL)
     {
       key=GetRandomKey(random_info,sizeof(random_info->secret_key));
-      (void) CopyMagickMemory(random_info->seed,GetStringInfoDatum(key),
+      (void) memcpy(random_info->seed,GetStringInfoDatum(key),
         GetStringInfoLength(key));
       key=DestroyStringInfo(key);
     }
@@ -235,7 +235,7 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
       key=DestroyStringInfo(key);
       FinalizeSignature(signature_info);
       digest=GetSignatureDigest(signature_info);
-      (void) CopyMagickMemory(random_info->seed,GetStringInfoDatum(digest),
+      (void) memcpy(random_info->seed,GetStringInfoDatum(digest),
         MagickMin(GetSignatureDigestsize(signature_info),
         sizeof(*random_info->seed)));
       signature_info=DestroySignatureInfo(signature_info);
@@ -282,7 +282,7 @@ MagickExport RandomInfo *DestroyRandomInfo(RandomInfo *random_info)
   if (random_info->signature_info != (SignatureInfo *) NULL)
     random_info->signature_info=DestroySignatureInfo(
       random_info->signature_info);
-  (void) ResetMagickMemory(random_info->seed,0,sizeof(*random_info->seed));
+  (void) memset(random_info->seed,0,sizeof(*random_info->seed));
   random_info->signature=(~MagickCoreSignature);
   UnlockSemaphoreInfo(random_info->semaphore);
   DestroySemaphoreInfo(&random_info->semaphore);
@@ -912,7 +912,7 @@ MagickExport void SetRandomKey(RandomInfo *random_info,const size_t length,
     UpdateSignature(signature_info,random_info->nonce);
     FinalizeSignature(signature_info);
     IncrementRandomNonce(random_info->nonce);
-    (void) CopyMagickMemory(p,GetStringInfoDatum(GetSignatureDigest(
+    (void) memcpy(p,GetStringInfoDatum(GetSignatureDigest(
       signature_info)),GetSignatureDigestsize(signature_info));
     p+=GetSignatureDigestsize(signature_info);
     i-=GetSignatureDigestsize(signature_info);

@@ -207,7 +207,7 @@ static MagickBooleanType InvokePostscriptDelegate(
     ghost_info_struct;
 
   ghost_info=(&ghost_info_struct);
-  (void) ResetMagickMemory(&ghost_info_struct,0,sizeof(ghost_info_struct));
+  (void) memset(&ghost_info_struct,0,sizeof(ghost_info_struct));
   ghost_info_struct.delete_instance=(void (*)(gs_main_instance *))
     gsapi_delete_instance;
   ghost_info_struct.exit=(int (*)(gs_main_instance *)) gsapi_exit;
@@ -217,8 +217,8 @@ static MagickBooleanType InvokePostscriptDelegate(
     gsapi_init_with_args;
   ghost_info_struct.run_string=(int (*)(gs_main_instance *,const char *,int,
     int *)) gsapi_run_string;
-  ghost_info_struct.set_stdio=(int (*)(gs_main_instance *,int(*)(void *,char *,
-    int),int(*)(void *,const char *,int),int(*)(void *, const char *, int)))
+  ghost_info_struct.set_stdio=(int (*)(gs_main_instance *,int (*)(void *,char *,
+    int),int (*)(void *,const char *,int),int (*)(void *, const char *, int)))
     gsapi_set_stdio;
   ghost_info_struct.revision=(int (*)(gsapi_revision_t *,int)) gsapi_revision;
 #endif
@@ -244,7 +244,7 @@ static MagickBooleanType InvokePostscriptDelegate(
       (ghost_info->delete_instance)(interpreter);
       return(MagickFalse);
     }
-  (void) (ghost_info->set_stdio)(interpreter,(int(MagickDLLCall *)(void *,
+  (void) (ghost_info->set_stdio)(interpreter,(int (MagickDLLCall *)(void *,
     char *,int)) NULL,PostscriptDelegateMessage,PostscriptDelegateMessage);
   status=(ghost_info->init_with_args)(interpreter,argc-1,argv+1);
   if (status == 0)
@@ -260,14 +260,14 @@ static MagickBooleanType InvokePostscriptDelegate(
       SetArgsStart(command,args_start);
       if (status == -101) /* quit */
         (void) FormatLocaleString(message,MaxTextExtent,
-          "[ghostscript library %.2f]%s: %s",(double)revision.revision / 100,
+          "[ghostscript library %.2f]%s: %s",(double) revision.revision/100.0,
           args_start,errors);
       else
         {
           (void) ThrowMagickException(exception,GetMagickModule(),
             DelegateError,"PostscriptDelegateFailed",
-            "`[ghostscript library %.2f]%s': %s",
-            (double)revision.revision / 100,args_start,errors);
+            "`[ghostscript library %.2f]%s': %s",(double) revision.revision/
+            100.0,args_start,errors);
           if (errors != (char *) NULL)
             errors=DestroyString(errors);
           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -526,7 +526,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Initialize hex values.
   */
-  (void) ResetMagickMemory(hex_digits,0,sizeof(hex_digits));
+  (void) memset(hex_digits,0,sizeof(hex_digits));
   hex_digits[(int) '0']=0;
   hex_digits[(int) '1']=1;
   hex_digits[(int) '2']=2;
@@ -580,10 +580,10 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Determine page geometry from the Postscript bounding box.
   */
-  (void) ResetMagickMemory(&bounds,0,sizeof(bounds));
-  (void) ResetMagickMemory(command,0,sizeof(command));
+  (void) memset(&bounds,0,sizeof(bounds));
+  (void) memset(command,0,sizeof(command));
   cmyk=image_info->colorspace == CMYKColorspace ? MagickTrue : MagickFalse;
-  (void) ResetMagickMemory(&hires_bounds,0,sizeof(hires_bounds));
+  (void) memset(&hires_bounds,0,sizeof(hires_bounds));
   priority=0;
   columns=0;
   rows=0;
@@ -625,84 +625,6 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       (void) sscanf(command,Pages " %lu",&pages);
     if (LocaleNCompare(ImageData,command,strlen(ImageData)) == 0)
       (void) sscanf(command,ImageData " %lu %lu",&columns,&rows);
-    if (LocaleNCompare(ICCProfile,command,strlen(ICCProfile)) == 0)
-      {
-        unsigned char
-          *datum;
-
-        /*
-          Read ICC profile.
-        */
-        profile=AcquireStringInfo(MaxTextExtent);
-        datum=GetStringInfoDatum(profile);
-        for (i=0; (c=ProfileInteger(image,hex_digits)) != EOF; i++)
-        {
-          if (i >= (ssize_t) GetStringInfoLength(profile))
-            {
-              SetStringInfoLength(profile,(size_t) i << 1);
-              datum=GetStringInfoDatum(profile);
-            }
-          datum[i]=(unsigned char) c;
-        }
-        SetStringInfoLength(profile,(size_t) i+1);
-        (void) SetImageProfile(image,"icc",profile);
-        profile=DestroyStringInfo(profile);
-        continue;
-      }
-    if (LocaleNCompare(PhotoshopProfile,command,strlen(PhotoshopProfile)) == 0)
-      {
-        unsigned char
-          *p;
-
-        /*
-          Read Photoshop profile.
-        */
-        count=(ssize_t) sscanf(command,PhotoshopProfile " %lu",&extent);
-        if (count != 1)
-          continue;
-        length=extent;
-        if (length > GetBlobSize(image))
-          ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
-        profile=BlobToStringInfo((const void *) NULL,length);
-        if (profile != (StringInfo *) NULL)
-          {
-            p=GetStringInfoDatum(profile);
-            for (i=0; i < (ssize_t) length; i++)
-              *p++=(unsigned char) ProfileInteger(image,hex_digits);
-            (void) SetImageProfile(image,"8bim",profile);
-            profile=DestroyStringInfo(profile);
-          }
-        continue;
-      }
-    if (LocaleNCompare(BeginXMPPacket,command,strlen(BeginXMPPacket)) == 0)
-      {
-        register size_t
-          i;
-
-        /*
-          Read XMP profile.
-        */
-        p=command;
-        profile=StringToStringInfo(command);
-        for (i=GetStringInfoLength(profile)-1; c != EOF; i++)
-        {
-          SetStringInfoLength(profile,i+1);
-          c=ReadBlobByte(image);
-          GetStringInfoDatum(profile)[i]=(unsigned char) c;
-          *p++=(char) c;
-          if ((strchr("\n\r%",c) == (char *) NULL) &&
-              ((size_t) (p-command) < (MaxTextExtent-1)))
-            continue;
-          *p='\0';
-          p=command;
-          if (LocaleNCompare(EndXMPPacket,command,strlen(EndXMPPacket)) == 0)
-            break;
-        }
-        SetStringInfoLength(profile,i);
-        (void) SetImageProfile(image,"xmp",profile);
-        profile=DestroyStringInfo(profile);
-        continue;
-      }
     /*
       Is this a CMYK document?
     */
@@ -790,7 +712,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (i == (ssize_t) priority)
         continue;
     hires_bounds=bounds;
-    priority=i;
+    priority=(size_t) i;
   }
   if ((fabs(hires_bounds.x2-hires_bounds.x1) >= MagickEpsilon) &&
       (fabs(hires_bounds.y2-hires_bounds.y1) >= MagickEpsilon))
@@ -810,30 +732,30 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   fitPage=MagickFalse;
   option=GetImageOption(image_info,"eps:fit-page");
   if (option != (char *) NULL)
-  {
-    char
-      *geometry;
+    {
+      char
+        *geometry;
 
-    MagickStatusType
-      flags;
+      MagickStatusType
+        flags;
 
-    geometry=GetPageGeometry(option);
-    flags=ParseMetaGeometry(geometry,&page.x,&page.y,&page.width,&page.height);
-    if (flags == NoValue)
-      {
-        (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
-          "InvalidGeometry","`%s'",option);
-        image=DestroyImage(image);
-        return((Image *) NULL);
-      }
-    page.width=(size_t) ceil((double) (page.width*image->x_resolution/delta.x)
-      -0.5);
-    page.height=(size_t) ceil((double) (page.height*image->y_resolution/
-      delta.y) -0.5);
-    geometry=DestroyString(geometry);
-    fitPage=MagickTrue;
-  }
-  (void) CloseBlob(image);
+      geometry=GetPageGeometry(option);
+      flags=ParseMetaGeometry(geometry,&page.x,&page.y,&page.width,
+        &page.height);
+      if (flags == NoValue)
+        {
+          (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
+            "InvalidGeometry","`%s'",option);
+          image=DestroyImage(image);
+          return((Image *) NULL);
+        }
+      page.width=(size_t) ceil((double) (page.width*image->x_resolution/delta.x)
+        -0.5);
+      page.height=(size_t) ceil((double) (page.height*image->y_resolution/
+        delta.y) -0.5);
+      geometry=DestroyString(geometry);
+      fitPage=MagickTrue;
+    }
   if (IssRGBCompatibleColorspace(image_info->colorspace) != MagickFalse)
     cmyk=MagickFalse;
   /*
@@ -979,6 +901,119 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
           postscript_image=cmyk_image;
         }
     }
+  (void) SeekBlob(image,0,SEEK_SET);
+  for (c=ReadBlobByte(image); c != EOF; c=ReadBlobByte(image))
+  {
+    /*
+      Note document structuring comments.
+    */
+    *p++=(char) c;
+    if ((strchr("\n\r%",c) == (char *) NULL) &&
+        ((size_t) (p-command) < (MaxTextExtent-1)))
+      continue;
+    *p='\0';
+    p=command;
+    /*
+      Skip %%BeginDocument thru %%EndDocument.
+    */
+    if (LocaleNCompare(BeginDocument,command,strlen(BeginDocument)) == 0)
+      skip=MagickTrue;
+    if (LocaleNCompare(EndDocument,command,strlen(EndDocument)) == 0)
+      skip=MagickFalse;
+    if (skip != MagickFalse)
+      continue;
+    if (LocaleNCompare(PostscriptLevel,command,strlen(PostscriptLevel)) == 0)
+      {
+        (void) SetImageProperty(image,"ps:Level",command+4);
+        if (GlobExpression(command,"*EPSF-*",MagickTrue) != MagickFalse)
+          pages=1;
+      }
+    if (LocaleNCompare(LanguageLevel,command,strlen(LanguageLevel)) == 0)
+      (void) sscanf(command,LanguageLevel " %lu",&language_level);
+    if (LocaleNCompare(Pages,command,strlen(Pages)) == 0)
+      (void) sscanf(command,Pages " %lu",&pages);
+    if (LocaleNCompare(ImageData,command,strlen(ImageData)) == 0)
+      (void) sscanf(command,ImageData " %lu %lu",&columns,&rows);
+    if (LocaleNCompare(ICCProfile,command,strlen(ICCProfile)) == 0)
+      {
+        unsigned char
+          *datum;
+
+        /*
+          Read ICC profile.
+        */
+        profile=AcquireStringInfo(MaxTextExtent);
+        datum=GetStringInfoDatum(profile);
+        for (i=0; (c=ProfileInteger(image,hex_digits)) != EOF; i++)
+        {
+          if (i >= (ssize_t) GetStringInfoLength(profile))
+            {
+              SetStringInfoLength(profile,(size_t) i << 1);
+              datum=GetStringInfoDatum(profile);
+            }
+          datum[i]=(unsigned char) c;
+        }
+        SetStringInfoLength(profile,(size_t) i+1);
+        (void) SetImageProfile(image,"icc",profile);
+        profile=DestroyStringInfo(profile);
+        continue;
+      }
+    if (LocaleNCompare(PhotoshopProfile,command,strlen(PhotoshopProfile)) == 0)
+      {
+        unsigned char
+          *p;
+
+        /*
+          Read Photoshop profile.
+        */
+        count=(ssize_t) sscanf(command,PhotoshopProfile " %lu",&extent);
+        if (count != 1)
+          continue;
+        length=extent;
+        if ((MagickSizeType) length > GetBlobSize(image))
+          ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
+        profile=BlobToStringInfo((const void *) NULL,length);
+        if (profile != (StringInfo *) NULL)
+          {
+            p=GetStringInfoDatum(profile);
+            for (i=0; i < (ssize_t) length; i++)
+              *p++=(unsigned char) ProfileInteger(image,hex_digits);
+            (void) SetImageProfile(image,"8bim",profile);
+            profile=DestroyStringInfo(profile);
+          }
+        continue;
+      }
+    if (LocaleNCompare(BeginXMPPacket,command,strlen(BeginXMPPacket)) == 0)
+      {
+        register size_t
+          i;
+
+        /*
+          Read XMP profile.
+        */
+        p=command;
+        profile=StringToStringInfo(command);
+        for (i=GetStringInfoLength(profile)-1; c != EOF; i++)
+        {
+          SetStringInfoLength(profile,(size_t) (i+1));
+          c=ReadBlobByte(image);
+          GetStringInfoDatum(profile)[i]=(unsigned char) c;
+          *p++=(char) c;
+          if ((strchr("\n\r%",c) == (char *) NULL) &&
+              ((size_t) (p-command) < (MaxTextExtent-1)))
+            continue;
+          *p='\0';
+          p=command;
+          if (LocaleNCompare(EndXMPPacket,command,strlen(EndXMPPacket)) == 0)
+            break;
+        }
+        SetStringInfoLength(profile,(size_t) i);
+        (void) SetImageProfile(image,"xmp",profile);
+        profile=DestroyStringInfo(profile);
+        continue;
+      }
+  }
+  (void) CloseBlob(image);
   if (image_info->number_scenes != 0)
     {
       Image
@@ -1577,7 +1612,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  (void) ResetMagickMemory(&bounds,0,sizeof(bounds));
+  (void) memset(&bounds,0,sizeof(bounds));
   compression=image->compression;
   if (image_info->compression != UndefinedCompression)
     compression=image_info->compression;
@@ -1908,7 +1943,7 @@ RestoreMSCWarning
         }
         labels=(char **) RelinquishMagickMemory(labels);
       }
-    (void) ResetMagickMemory(&pixel,0,sizeof(pixel));
+    (void) memset(&pixel,0,sizeof(pixel));
     pixel.opacity=(Quantum) TransparentOpacity;
     index=(IndexPacket) 0;
     x=0;

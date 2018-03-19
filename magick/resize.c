@@ -907,7 +907,7 @@ MagickExport ResizeFilter *AcquireResizeFilter(const Image *image,
   resize_filter=(ResizeFilter *) AcquireMagickMemory(sizeof(*resize_filter));
   if (resize_filter == (ResizeFilter *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(resize_filter,0,sizeof(*resize_filter));
+  (void) memset(resize_filter,0,sizeof(*resize_filter));
   /*
     Defaults for the requested filter.
   */
@@ -1721,7 +1721,7 @@ MagickExport Image *InterpolativeResizeImage(const Image *image,
   scale.x=(double) image->columns/resize_image->columns;
   scale.y=(double) image->rows/resize_image->rows;
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,resize_image,resize_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) resize_image->rows; y++)
@@ -2043,7 +2043,7 @@ MagickExport Image *MagnifyImage(const Image *image,ExceptionInfo *exception)
   image_view=AcquireVirtualCacheView(image,exception);
   magnify_view=AcquireAuthenticCacheView(magnify_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,magnify_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -2403,7 +2403,7 @@ static ContributionInfo **AcquireContributionThreadSet(const size_t count)
     sizeof(*contribution));
   if (contribution == (ContributionInfo **) NULL)
     return((ContributionInfo **) NULL);
-  (void) ResetMagickMemory(contribution,0,number_threads*sizeof(*contribution));
+  (void) memset(contribution,0,number_threads*sizeof(*contribution));
   for (i=0; i < (ssize_t) number_threads; i++)
   {
     contribution[i]=(ContributionInfo *) MagickAssumeAligned(
@@ -2472,11 +2472,11 @@ static MagickBooleanType HorizontalFilter(const ResizeFilter *resize_filter,
     }
   status=MagickTrue;
   scale=PerceptibleReciprocal(scale);
-  (void) ResetMagickMemory(&zero,0,sizeof(zero));
+  (void) memset(&zero,0,sizeof(zero));
   image_view=AcquireVirtualCacheView(image,exception);
   resize_view=AcquireAuthenticCacheView(resize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,resize_image,resize_image->columns,1)
 #endif
   for (x=0; x < (ssize_t) resize_image->columns; x++)
@@ -2717,11 +2717,11 @@ static MagickBooleanType VerticalFilter(const ResizeFilter *resize_filter,
     }
   status=MagickTrue;
   scale=PerceptibleReciprocal(scale);
-  (void) ResetMagickMemory(&zero,0,sizeof(zero));
+  (void) memset(&zero,0,sizeof(zero));
   image_view=AcquireVirtualCacheView(image,exception);
   resize_view=AcquireAuthenticCacheView(resize_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,resize_image,resize_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) resize_image->rows; y++)
@@ -3145,7 +3145,7 @@ MagickExport Image *SampleImage(const Image *image,const size_t columns,
   image_view=AcquireVirtualCacheView(image,exception);
   sample_view=AcquireAuthenticCacheView(sample_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,sample_image,sample_image->rows,1)
 #endif
   for (y=0; y < (ssize_t) sample_image->rows; y++)
@@ -3345,10 +3345,10 @@ MagickExport Image *ScaleImage(const Image *image,const size_t columns,
   next_row=MagickTrue;
   span.y=1.0;
   scale.y=(double) scale_image->rows/(double) image->rows;
-  (void) ResetMagickMemory(y_vector,0,(size_t) image->columns*
+  (void) memset(y_vector,0,(size_t) image->columns*
     sizeof(*y_vector));
   GetMagickPixelPacket(image,&pixel);
-  (void) ResetMagickMemory(&zero,0,sizeof(zero));
+  (void) memset(&zero,0,sizeof(zero));
   i=0;
   status=MagickTrue;
   image_view=AcquireVirtualCacheView(image,exception);

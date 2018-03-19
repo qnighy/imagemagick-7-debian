@@ -274,8 +274,9 @@ static Image *ReadTGAImage(const ImageInfo *image_info,
 
           one=1;
           image->colors=one << tga_info.bits_per_pixel;
-          if (image->colors > ((~0UL)/sizeof(*image->colormap)))
-            ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+          if (image->colors > GetBlobSize(image))
+            ThrowReaderException(CorruptImageError,
+              "InsufficientImageDataInFile");
           if (AcquireImageColormap(image,image->colors) == MagickFalse)
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         }
@@ -328,7 +329,7 @@ static Image *ReadTGAImage(const ImageInfo *image_info,
       InheritException(exception,&image->exception);
       return(DestroyImageList(image));
     }
-  (void) ResetMagickMemory(&pixel,0,sizeof(pixel));
+  (void) memset(&pixel,0,sizeof(pixel));
   pixel.opacity=(Quantum) OpaqueOpacity;
   if (tga_info.colormap_type != 0)
     {
@@ -450,7 +451,9 @@ static Image *ReadTGAImage(const ImageInfo *image_info,
             /*
               Gray scale.
             */
-            index=(IndexPacket) ReadBlobByte(image);
+            if (ReadBlob(image,1,pixels) != 1)
+              ThrowReaderException(CorruptImageError,"UnableToReadImageData");
+            index=(Quantum) pixels[0];
             if (tga_info.colormap_type != 0)
               pixel=image->colormap[(ssize_t) ConstrainColormapIndex(image,
                 1UL*index)];
@@ -590,6 +593,7 @@ ModuleExport size_t RegisterTGAImage(void)
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Truevision Targa image");
   entry->module=ConstantString("TGA");
+  entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("TGA");
   entry->decoder=(DecodeImageHandler *) ReadTGAImage;
@@ -597,6 +601,7 @@ ModuleExport size_t RegisterTGAImage(void)
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Truevision Targa image");
   entry->module=ConstantString("TGA");
+  entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("VDA");
   entry->decoder=(DecodeImageHandler *) ReadTGAImage;
@@ -604,6 +609,7 @@ ModuleExport size_t RegisterTGAImage(void)
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Truevision Targa image");
   entry->module=ConstantString("TGA");
+  entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("VST");
   entry->decoder=(DecodeImageHandler *) ReadTGAImage;
@@ -611,6 +617,7 @@ ModuleExport size_t RegisterTGAImage(void)
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Truevision Targa image");
   entry->module=ConstantString("TGA");
+  entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

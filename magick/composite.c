@@ -246,23 +246,15 @@ static inline void CompositeClear(const MagickPixelPacket *q,
 static MagickRealType ColorBurn(const MagickRealType Sca,
   const MagickRealType Sa,const MagickRealType Dca,const MagickRealType Da)
 {
-#if 0
-  /*
-    Oct 2004 SVG specification.
-  */
-  if (Sca*Da + Dca*Sa <= Sa*Da)
-    return(Sca*(1.0-Da)+Dca*(1.0-Sa));
-  return(Sa*(Sca*Da+Dca*Sa-Sa*Da)/Sca + Sca*(1.0-Da) + Dca*(1.0-Sa));
-#else
-  /*
-    March 2009 SVG specification.
-  */
+  double
+    SaSca;
+
   if ((fabs(Sca) < MagickEpsilon) && (fabs(Dca-Da) < MagickEpsilon))
     return(Sa*Da+Dca*(1.0-Sa));
   if (Sca < MagickEpsilon)
     return(Dca*(1.0-Sa));
-  return(Sa*Da-Sa*MagickMin(Da,(Da-Dca)*Sa/Sca)+Sca*(1.0-Da)+Dca*(1.0-Sa));
-#endif
+  SaSca=Sa*PerceptibleReciprocal(Sca);    
+  return(Sa*Da-Sa*MagickMin(Da,(Da-Dca)*SaSca)+Sca*(1.0-Da)+Dca*(1.0-Sa));
 }
 
 static inline void CompositeColorBurn(const MagickPixelPacket *p,
@@ -298,7 +290,7 @@ static MagickRealType ColorDodge(const MagickRealType Sca,
   */
   if ((Sca*Da+Dca*Sa) >= Sa*Da)
     return(Sa*Da+Sca*(1.0-Da)+Dca*(1.0-Sa));
-  return(Dca*Sa*Sa/(Sa-Sca)+Sca*(1.0-Da)+Dca*(1.0-Sa));
+  return(Dca*Sa*Sa*PerceptibleReciprocal(Sa-Sca)+Sca*(1.0-Da)+Dca*(1.0-Sa));
 #if 0
   /*
     New specification, March 2009 SVG specification.  This specification was
@@ -491,7 +483,7 @@ static MagickRealType Divide(const MagickRealType Sca,const MagickRealType Sa,
     return(Sca*(1.0-Da)+Dca*(1.0-Sa));
   if (fabs(Dca) < MagickEpsilon)
     return(Sa*Da+Sca*(1.0-Da)+Dca*(1.0-Sa));
-  return(Sca*Da*Da/Dca+Sca*(1.0-Da)+Dca*(1.0-Sa));
+  return(Sca*Da*Da*PerceptibleReciprocal(Dca)+Sca*(1.0-Da)+Dca*(1.0-Sa));
 }
 
 static inline void CompositeDivide(const MagickPixelPacket *p,
@@ -1328,7 +1320,7 @@ static MagickRealType PegtopLight(const MagickRealType Sca,
   */
   if (fabs(Da) < MagickEpsilon)
     return(Sca);
-  return(Dca*Dca*(Sa-2.0*Sca)/Da+Sca*(2.0*Dca+1.0-Da)+Dca*(1.0-Sa));
+  return(Dca*Dca*(Sa-2.0*Sca)*PerceptibleReciprocal(Da)+Sca*(2.0*Dca+1.0-Da)+Dca*(1.0-Sa));
 }
 
 static inline void CompositePegtopLight(const MagickPixelPacket *p,
@@ -1450,27 +1442,11 @@ static inline void CompositeScreen(const MagickPixelPacket *p,
 static MagickRealType SoftLight(const MagickRealType Sca,
   const MagickRealType Sa, const MagickRealType Dca, const MagickRealType Da)
 {
-#if 0
-  /*
-    Oct 2004 SVG specification -- was found to be incorrect
-    See  http://lists.w3.org/Archives/Public/www-svg/2009Feb/0014.html.
-  */
-  if (2.0*Sca < Sa)
-    return(Dca*(Sa-(1.0-Dca/Da)*(2.0*Sca-Sa))+Sca*(1.0-Da)+Dca*(1.0-Sa));
-  if (8.0*Dca <= Da)
-    return(Dca*(Sa-(1.0-Dca/Da)*(2.0*Sca-Sa)*(3.0-8.0*Dca/Da))+
-      Sca*(1.0-Da)+Dca*(1.0-Sa));
-  return((Dca*Sa+(pow(Dca/Da,0.5)*Da-Dca)*(2.0*Sca-Sa))+Sca*(1.0-Da)+
-    Dca*(1.0-Sa));
-#else
   MagickRealType
     alpha,
     beta;
 
-  /*
-    New specification:  March 2009 SVG specification.
-  */
-  alpha=Dca/Da;
+  alpha=Dca*PerceptibleReciprocal(Da);
   if ((2.0*Sca) < Sa)
     return(Dca*(Sa+(2.0*Sca-Sa)*(1.0-alpha))+Sca*(1.0-Da)+Dca*(1.0-Sa));
   if (((2.0*Sca) > Sa) && ((4.0*Dca) <= Da))
@@ -1481,7 +1457,6 @@ static MagickRealType SoftLight(const MagickRealType Sca,
     }
   beta=Dca*Sa+Da*(2.0*Sca-Sa)*(pow(alpha,0.5)-alpha)+Sca*(1.0-Da)+Dca*(1.0-Sa);
   return(beta);
-#endif
 }
 
 static inline void CompositeSoftLight(const MagickPixelPacket *p,
@@ -1553,8 +1528,10 @@ static MagickRealType VividLight(const MagickRealType Sca,
   if ((fabs(Sa) < MagickEpsilon) || (fabs(Sca-Sa) < MagickEpsilon))
     return(Sa*Da+Sca*(1.0-Da)+Dca*(1.0-Sa));
   if ((2*Sca) <= Sa)
-    return(Sa*(Da+Sa*(Dca-Da)/(2.0*Sca))+Sca*(1.0-Da)+Dca*(1.0-Sa));
-  return(Dca*Sa*Sa/(2.0*(Sa-Sca))+Sca*(1.0-Da)+Dca*(1.0-Sa));
+    return(Sa*(Da+Sa*(Dca-Da)*PerceptibleReciprocal(2.0*Sca))+Sca*(1.0-Da)+
+      Dca*(1.0-Sa));
+  return(Dca*Sa*Sa*PerceptibleReciprocal(2.0*(Sa-Sca))+Sca*(1.0-Da)+Dca*
+    (1.0-Sa));
 }
 
 static inline void CompositeVividLight(const MagickPixelPacket *p,
@@ -1731,7 +1708,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
       source_view=AcquireVirtualCacheView(source_image,exception);
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-      #pragma omp parallel for schedule(static,4) shared(status) \
+      #pragma omp parallel for schedule(static) shared(status) \
         magick_number_threads(source_image,image,source_image->rows,1)
 #endif
       for (y=0; y < (ssize_t) source_image->rows; y++)
@@ -1764,10 +1741,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           }
         source_indexes=GetCacheViewVirtualIndexQueue(source_view);
         indexes=GetCacheViewAuthenticIndexQueue(image_view);
-        (void) CopyMagickMemory(q,p,source_image->columns*sizeof(*p));
+        (void) memcpy(q,p,source_image->columns*sizeof(*p));
         if ((indexes != (IndexPacket *) NULL) &&
             (source_indexes != (const IndexPacket *) NULL))
-          (void) CopyMagickMemory(indexes,source_indexes,
+          (void) memcpy(indexes,source_indexes,
             source_image->columns*sizeof(*indexes));
         sync=SyncCacheViewAuthenticPixels(image_view,exception);
         if (sync == MagickFalse)
@@ -2283,7 +2260,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   source_view=AcquireVirtualCacheView(source_image,exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -3014,7 +2991,7 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
   texture_view=AcquireVirtualCacheView(texture_image,exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,texture_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -3059,11 +3036,11 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
       width=texture_image->columns;
       if ((x+(ssize_t) width) > (ssize_t) image->columns)
         width=image->columns-x;
-      (void) CopyMagickMemory(q,p,width*sizeof(*p));
+      (void) memcpy(q,p,width*sizeof(*p));
       if ((image->colorspace == CMYKColorspace) &&
           (texture_image->colorspace == CMYKColorspace))
         {
-          (void) CopyMagickMemory(indexes,texture_indexes,width*
+          (void) memcpy(indexes,texture_indexes,width*
             sizeof(*indexes));
           indexes+=width;
         }

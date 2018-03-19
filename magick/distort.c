@@ -799,6 +799,7 @@ static double *GenerateCoefficients(const Image *image,
       /* 8x8 least-squares matrix (zeroed) */
       matrix = AcquireMagickMatrix(8UL,8UL);
       if (matrix == (double **) NULL) {
+        coeff=(double *) RelinquishMagickMemory(coeff);
         (void) ThrowMagickException(exception,GetMagickModule(),
                   ResourceLimitError,"MemoryAllocationFailed",
                   "%s", "DistortCoefficients");
@@ -856,6 +857,7 @@ static double *GenerateCoefficients(const Image *image,
         Arguments: Perspective Coefficents (forward mapping)
       */
       if (number_arguments != 8) {
+        coeff = (double *) RelinquishMagickMemory(coeff);
         (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
               "InvalidArgument", "%s : 'Needs 8 coefficient values'",
               CommandOptionToMnemonic(MagickDistortOptions, *method));
@@ -1489,7 +1491,7 @@ MagickExport Image *DistortResizeImage(const Image *image,
     return((Image *) NULL);
   /* Do not short-circuit this resize if final image size is unchanged */
 
-  (void) ResetMagickMemory(distort_args,0,12*sizeof(double));
+  (void) memset(distort_args,0,12*sizeof(double));
   distort_args[4]=(double) image->columns;
   distort_args[6]=(double) columns;
   distort_args[9]=(double) image->rows;
@@ -2279,10 +2281,14 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
   distort_image=CloneImage(image,geometry.width,geometry.height,MagickTrue,
     exception);
   if (distort_image == (Image *) NULL)
-    return((Image *) NULL);
+    {
+      coeff=(double *) RelinquishMagickMemory(coeff);
+      return((Image *) NULL);
+    }
   /* if image is ColorMapped - change it to DirectClass */
   if (SetImageStorageClass(distort_image,DirectClass) == MagickFalse)
     {
+      coeff=(double *) RelinquishMagickMemory(coeff);
       InheritException(exception,&distort_image->exception);
       distort_image=DestroyImage(distort_image);
       return((Image *) NULL);
@@ -2323,7 +2329,7 @@ MagickExport Image *DistortImage(const Image *image,DistortImageMethod method,
       UndefinedVirtualPixelMethod,MagickFalse,exception);
     distort_view=AcquireAuthenticCacheView(distort_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    #pragma omp parallel for schedule(static) shared(progress,status) \
       magick_number_threads(image,distort_image,distort_image->rows,1)
 #endif
     for (j=0; j < (ssize_t) distort_image->rows; j++)
@@ -2771,7 +2777,7 @@ if ( d.x == 0.5 && d.y == 0.5 ) {
     distort_image->page.x = 0;
     distort_image->page.y = 0;
   }
-  coeff = (double *) RelinquishMagickMemory(coeff);
+  coeff=(double *) RelinquishMagickMemory(coeff);
   return(distort_image);
 }
 
@@ -2834,7 +2840,7 @@ MagickExport Image *RotateImage(const Image *image,const double degrees,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickCoreSignature);
-  angle=degrees;
+  angle=fmod(degrees,360.0);
   while (angle < -45.0)
     angle+=360.0;
   for (rotations=0; angle > 45.0; rotations++)
@@ -3046,7 +3052,7 @@ MagickExport Image *SparseColorImage(const Image *image,
     progress=0;
     sparse_view=AcquireAuthenticCacheView(sparse_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    #pragma omp parallel for schedule(static) shared(progress,status) \
       magick_number_threads(image,sparse_image,sparse_image->rows,1)
 #endif
     for (j=0; j < (ssize_t) sparse_image->rows; j++)

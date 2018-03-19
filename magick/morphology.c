@@ -237,7 +237,7 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
   kernel=(KernelInfo *) AcquireMagickMemory(sizeof(*kernel));
   if (kernel == (KernelInfo *) NULL)
     return(kernel);
-  (void) ResetMagickMemory(kernel,0,sizeof(*kernel));
+  (void) memset(kernel,0,sizeof(*kernel));
   kernel->minimum = kernel->maximum = kernel->angle = 0.0;
   kernel->negative_range = kernel->positive_range = 0.0;
   kernel->type = UserDefinedKernel;
@@ -1016,7 +1016,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
       kernel=(KernelInfo *) AcquireMagickMemory(sizeof(*kernel));
       if (kernel == (KernelInfo *) NULL)
         return(kernel);
-      (void) ResetMagickMemory(kernel,0,sizeof(*kernel));
+      (void) memset(kernel,0,sizeof(*kernel));
       kernel->minimum = kernel->maximum = kernel->angle = 0.0;
       kernel->negative_range = kernel->positive_range = 0.0;
       kernel->type = type;
@@ -1079,7 +1079,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
                       kernel->values[i] = exp(-((double)(u*u+v*v))*A)*B;
               }
             else /* limiting case - a unity (normalized Dirac) kernel */
-              { (void) ResetMagickMemory(kernel->values,0, (size_t)
+              { (void) memset(kernel->values,0, (size_t)
                   kernel->width*kernel->height*sizeof(*kernel->values));
                 kernel->values[kernel->x+kernel->y*kernel->width] = 1.0;
               }
@@ -1111,7 +1111,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
                     }
               }
             else /* special case - generate a unity kernel */
-              { (void) ResetMagickMemory(kernel->values,0, (size_t)
+              { (void) memset(kernel->values,0, (size_t)
                   kernel->width*kernel->height*sizeof(*kernel->values));
                 kernel->values[kernel->x+kernel->y*kernel->width] = 1.0;
               }
@@ -1170,7 +1170,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
 
         /* initialize */
         v = (ssize_t) (kernel->width*KernelRank-1)/2; /* start/end points to fit range */
-        (void) ResetMagickMemory(kernel->values,0, (size_t)
+        (void) memset(kernel->values,0, (size_t)
            kernel->width*kernel->height*sizeof(*kernel->values));
         /* Calculate a Positive 1D Gaussian */
         if ( sigma > MagickEpsilon )
@@ -1196,7 +1196,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
               kernel->values[i] = exp(-((double)(u*u))*alpha)*beta;
           }
         else /* special case - generate a unity kernel */
-          { (void) ResetMagickMemory(kernel->values,0, (size_t)
+          { (void) memset(kernel->values,0, (size_t)
               kernel->width*kernel->height*sizeof(*kernel->values));
             kernel->values[kernel->x+kernel->y*kernel->width] = 1.0;
           }
@@ -1254,7 +1254,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
 #if 1
 #define KernelRank 3
             v = (ssize_t) kernel->width*KernelRank; /* start/end points */
-            (void) ResetMagickMemory(kernel->values,0, (size_t)
+            (void) memset(kernel->values,0, (size_t)
               kernel->width*sizeof(*kernel->values));
             sigma *= KernelRank;            /* simplify the loop expression */
             A = 1.0/(2.0*sigma*sigma);
@@ -1276,7 +1276,7 @@ MagickExport KernelInfo *AcquireKernelBuiltIn(const KernelInfoType type,
 #endif
           }
         else /* special case - generate a unity kernel */
-          { (void) ResetMagickMemory(kernel->values,0, (size_t)
+          { (void) memset(kernel->values,0, (size_t)
               kernel->width*kernel->height*sizeof(*kernel->values));
             kernel->values[kernel->x+kernel->y*kernel->width] = 1.0;
             kernel->positive_range = 1.0;
@@ -2652,7 +2652,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
       x;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp parallel for schedule(static,4) shared(progress,status) \
+    #pragma omp parallel for schedule(static) shared(progress,status) \
       magick_number_threads(image,result_image,image->columns,1)
 #endif
     for (x=0; x < (ssize_t) image->columns; x++)
@@ -2849,7 +2849,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
   ** Normal handling of horizontal or rectangular kernels (row by row)
   */
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(image,result_image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -4309,7 +4309,7 @@ exit_cleanup:
        or "-define convolve:bias=??")
 %    * Kernel Scale/normalize settings     ("-set 'option:convolve:scale'")
 %      This can also includes the addition of a scaled unity kernel.
-%    * Show Kernel being applied           ("-set option:showkernel 1")
+%    * Show Kernel being applied           ("-set option:showKernel 1")
 %
 %  The format of the MorphologyImage method is:
 %
@@ -4396,9 +4396,9 @@ MagickExport Image *MorphologyImageChannel(const Image *image,
     }
 
   /* display the (normalized) kernel via stderr */
-  if ( IsMagickTrue(GetImageArtifact(image,"showkernel"))
-    || IsMagickTrue(GetImageArtifact(image,"convolve:showkernel"))
-    || IsMagickTrue(GetImageArtifact(image,"morphology:showkernel")) )
+  if ( IsMagickTrue(GetImageArtifact(image,"showKernel"))
+    || IsMagickTrue(GetImageArtifact(image,"convolve:showKernel"))
+    || IsMagickTrue(GetImageArtifact(image,"morphology:showKernel")) )
     ShowKernelInfo(curr_kernel);
 
   /* Override the default handling of multi-kernel morphology results
@@ -4841,9 +4841,9 @@ MagickExport void ScaleKernelInfo(KernelInfo *kernel,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  ShowKernelInfo() outputs the details of the given kernel defination to
-%  standard error, generally due to a users 'showkernel' option request.
+%  standard error, generally due to a users 'showKernel' option request.
 %
-%  The format of the ShowKernel method is:
+%  The format of the ShowKernelInfo method is:
 %
 %      void ShowKernelInfo(const KernelInfo *kernel)
 %

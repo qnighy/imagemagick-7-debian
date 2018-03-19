@@ -57,6 +57,7 @@
 #include "magick/property.h"
 #include "magick/quantize.h"
 #include "magick/quantum-private.h"
+#include "magick/resource_.h"
 #include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/module.h"
@@ -664,6 +665,9 @@ static MagickBooleanType load_level(Image *image,XCFDocInfo *inDocInfo,
     /* read in the offset of the next tile so we can calculate the amount
        of data needed for this tile*/
     offset2=(MagickOffsetType)ReadBlobMSBLong(image);
+    if ((MagickSizeType) offset2 > GetBlobSize(image))
+      ThrowBinaryException(CorruptImageError,"InsufficientImageDataInFile",
+        image->filename);
     /* if the offset is 0 then we need to read in the maximum possible
        allowing for negative compression */
     if (offset2 == 0)
@@ -689,6 +693,7 @@ static MagickBooleanType load_level(Image *image,XCFDocInfo *inDocInfo,
       if (tile_image == (Image *) NULL)
         ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename);
+      (void) SetImageBackgroundColor(tile_image);
 
       /* read in the tile */
       switch (inDocInfo->compression)
@@ -703,9 +708,11 @@ static MagickBooleanType load_level(Image *image,XCFDocInfo *inDocInfo,
             status=MagickTrue;
           break;
         case COMPRESS_ZLIB:
+          tile_image=DestroyImage(tile_image);
           ThrowBinaryException(CoderError,"ZipCompressNotSupported",
             image->filename)
         case COMPRESS_FRACTAL:
+          tile_image=DestroyImage(tile_image);
           ThrowBinaryException(CoderError,"FractalCompressNotSupported",
             image->filename)
       }
@@ -816,7 +823,7 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
     layer_mask_offset;
 
   /* clear the block! */
-  (void) ResetMagickMemory( outLayer, 0, sizeof( XCFLayerInfo ) );
+  (void) memset( outLayer, 0, sizeof( XCFLayerInfo ) );
   /* read in the layer width, height, type and name */
   outLayer->width = ReadBlobMSBLong(image);
   outLayer->height = ReadBlobMSBLong(image);
@@ -825,6 +832,10 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
     sizeof(outLayer->name));
   if (EOFBlob(image) != MagickFalse)
     ThrowBinaryException(CorruptImageError,"InsufficientImageDataInFile",
+      image->filename);
+  if ((outLayer->width < 1) || (outLayer->width > image->columns) ||
+      (outLayer->height < 1) || (outLayer->height > image->rows))
+    ThrowBinaryException(CorruptImageError,"ImproperImageHeader",
       image->filename);
   /* read the layer properties! */
   foundPropEnd = 0;
@@ -1087,7 +1098,7 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if ((count != 14) ||
       (LocaleNCompare((char *) magick,"gimp xcf",8) != 0))
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
-  (void) ResetMagickMemory(&doc_info,0,sizeof(XCFDocInfo));
+  (void) memset(&doc_info,0,sizeof(XCFDocInfo));
   doc_info.exception=exception;
   doc_info.width=ReadBlobMSBLong(image);
   doc_info.height=ReadBlobMSBLong(image);
@@ -1333,6 +1344,8 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
             break;
           }
     } while (foundAllLayers == MagickFalse);
+    if (AcquireMagickResource(ListLengthResource,number_layers) == MagickFalse)
+      ThrowReaderException(ResourceLimitError,"ListLengthExceedsLimit");
     doc_info.number_layers=number_layers;
     offset=SeekBlob(image,oldPos,SEEK_SET); /* restore the position! */
     if (offset < 0)
@@ -1343,7 +1356,7 @@ static Image *ReadXCFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       sizeof(*layer_info));
     if (layer_info == (XCFLayerInfo *) NULL)
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
-    (void) ResetMagickMemory(layer_info,0,number_layers*sizeof(XCFLayerInfo));
+    (void) memset(layer_info,0,number_layers*sizeof(XCFLayerInfo));
     for ( ; ; )
     {
       MagickBooleanType

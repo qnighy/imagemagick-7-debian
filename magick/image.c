@@ -166,7 +166,7 @@ MagickExport Image *AcquireImage(const ImageInfo *image_info)
   image=(Image *) AcquireMagickMemory(sizeof(*image));
   if (image == (Image *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(image,0,sizeof(*image));
+  (void) memset(image,0,sizeof(*image));
   /*
     Initialize Image structure.
   */
@@ -233,6 +233,7 @@ MagickExport Image *AcquireImage(const ImageInfo *image_info)
       RectangleInfo
         geometry;
 
+      (void) memset(&geometry,0,sizeof(geometry));
       flags=ParseAbsoluteGeometry(image_info->extract,&geometry);
       if (((flags & XValue) != 0) || ((flags & YValue) != 0))
         {
@@ -535,7 +536,7 @@ MagickExport Image *AppendImages(const Image *images,
       y_offset-=geometry.y;
     image_view=AcquireVirtualCacheView(next,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-    #pragma omp parallel for schedule(static,4) shared(status) \
+    #pragma omp parallel for schedule(static) shared(status) \
       magick_number_threads(next,next,next->rows,1)
 #endif
     for (y=0; y < (ssize_t) next->rows; y++)
@@ -812,7 +813,7 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
       return((Image *) NULL);
     }
   clone_image=(Image *) AcquireCriticalMemory(sizeof(*clone_image));
-  (void) ResetMagickMemory(clone_image,0,sizeof(*clone_image));
+  (void) memset(clone_image,0,sizeof(*clone_image));
   clone_image->signature=MagickCoreSignature;
   clone_image->storage_class=image->storage_class;
   clone_image->channels=image->channels;
@@ -869,7 +870,7 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
           clone_image=DestroyImage(clone_image);
           ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
         }
-      (void) CopyMagickMemory(clone_image->colormap,image->colormap,length*
+      (void) memcpy(clone_image->colormap,image->colormap,length*
         sizeof(*clone_image->colormap));
     }
   if ((columns == 0) || (rows == 0))
@@ -1097,7 +1098,7 @@ MagickExport MagickBooleanType CopyImagePixels(Image *image,
   source_view=AcquireVirtualCacheView(source_image,exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(progress,status) \
+  #pragma omp parallel for schedule(static) shared(progress,status) \
     magick_number_threads(source_image,image,geometry->height,1)
 #endif
   for (y=0; y < (ssize_t) geometry->height; y++)
@@ -1445,7 +1446,7 @@ MagickExport void GetImageInfo(ImageInfo *image_info)
   */
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
   assert(image_info != (ImageInfo *) NULL);
-  (void) ResetMagickMemory(image_info,0,sizeof(*image_info));
+  (void) memset(image_info,0,sizeof(*image_info));
   image_info->adjoin=MagickTrue;
   image_info->interlace=NoInterlace;
   image_info->channel=DefaultChannels;
@@ -1680,11 +1681,12 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
   register const char
     *p;
 
-  size_t
-    length;
+  ssize_t
+    field_width,
+    offset;
 
   canonical=MagickFalse;
-  length=0;
+  offset=0;
   (void) CopyMagickString(filename,format,MaxTextExtent);
   for (p=strchr(format,'%'); p != (char *) NULL; p=strchr(p+1,'%'))
   {
@@ -1694,14 +1696,9 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
         p=q+1;
         continue;
       }
+    field_width=0;
     if (*q == '0')
-      {
-        ssize_t
-          value;
-
-        value=(ssize_t) strtol(q,&q,10);
-        (void) value;
-      }
+      field_width=(ssize_t) strtol(q,&q,10);
     switch (*q)
     {
       case 'd':
@@ -1711,8 +1708,9 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
         q++;
         c=(*q);
         *q='\0';
-        (void) FormatLocaleString(filename+(p-format),(size_t) (MaxTextExtent-
-          (p-format)),p,value);
+        (void) FormatLocaleString(filename+(p-format-offset),(size_t)
+          (MaxTextExtent-(p-format-offset)),p,value);
+        offset+=(4-field_width);
         *q=c;
         (void) ConcatenateMagickString(filename,q,MaxTextExtent);
         canonical=MagickTrue;
@@ -1759,16 +1757,6 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
         if (LocaleNCompare(pattern,"filename:",9) != 0)
           break;
         value=(const char *) NULL;
-#if 0
-        /* FUTURE: remove this code. -- Anthony  29 Arpil 2012
-           Removed as GetMagickProperty() will will never match a "filename:"
-           string as this is not a 'known' image property.
-        */
-        if ((image_info != (const ImageInfo *) NULL) &&
-            (image != (const Image *) NULL))
-          value=GetMagickProperty(image_info,image,pattern);
-        else
-#endif
         if (image != (Image *) NULL)
           value=GetImageProperty(image,pattern);
         if ((value == (const char *) NULL) &&
@@ -1782,9 +1770,9 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
         q--;
         c=(*q);
         *q='\0';
-        (void) CopyMagickString(filename+(p-format-length),value,(size_t)
-          (MaxTextExtent-(p-format-length)));
-        length+=strlen(pattern)-1;
+        (void) CopyMagickString(filename+(p-format-offset),value,(size_t)
+          (MaxTextExtent-(p-format-offset)));
+        offset+=strlen(pattern)-4;
         *q=c;
         (void) ConcatenateMagickString(filename,r+1,MaxTextExtent);
         canonical=MagickTrue;
@@ -1863,7 +1851,7 @@ MagickExport MagickBooleanType IsHighDynamicRangeImage(const Image *image,
   GetMagickPixelPacket(image,&zero);
   image_view=AcquireVirtualCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -2122,7 +2110,7 @@ MagickExport Image *NewMagickImage(const ImageInfo *image_info,
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -2261,6 +2249,107 @@ MagickExport MagickBooleanType ResetImagePage(Image *image,const char *page)
         }
     }
   return(MagickTrue);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   R e s e t I m a g e P i x e l s                                           %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  ResetImagePixels() reset the image pixels, that is, all the pixel components
+%  are zereod.
+%
+%  The format of the SetImage method is:
+%
+%      MagickBooleanType ResetImagePixels(Image *image,
+%        ExceptionInfo *exception)
+%
+%  A description of each parameter follows:
+%
+%    o image: the image.
+%
+%    o exception: return any errors or warnings in this structure.
+%
+*/
+MagickExport MagickBooleanType ResetImagePixels(Image *image,
+  ExceptionInfo *exception)
+{
+  CacheView
+    *image_view;
+
+  const void
+    *pixels;
+
+  MagickBooleanType
+    status;
+
+  MagickSizeType
+    length;
+
+  ssize_t
+    y;
+
+  assert(image != (Image *) NULL);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
+  assert(image->signature == MagickCoreSignature);
+  pixels=AcquirePixelCachePixels(image,&length,exception);
+  if (pixels != (void *) NULL)
+    {
+      /*
+        Reset in-core image pixels.
+      */
+      (void) memset((void *) pixels,0,(size_t) length);
+      return(MagickTrue);
+    }
+  /*
+    Reset image pixels.
+  */
+  status=MagickTrue;
+  image_view=AcquireAuthenticCacheView(image,exception);
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+  #pragma omp parallel for schedule(static) shared(status) \
+    magick_number_threads(image,image,image->rows,1)
+#endif
+  for (y=0; y < (ssize_t) image->rows; y++)
+  {
+    register IndexPacket
+      *magick_restrict indexes;
+
+    register PixelPacket
+      *magick_restrict q;
+
+    register ssize_t
+      x;
+
+    if (status == MagickFalse)
+      continue;
+    q=QueueCacheViewAuthenticPixels(image_view,0,y,image->columns,1,exception);
+    if (q == (PixelPacket *) NULL)
+      {
+        status=MagickFalse;
+        continue;
+      }
+    indexes=GetCacheViewAuthenticIndexQueue(image_view);
+    for (x=0; x < (ssize_t) image->columns; x++)
+    {
+      (void) memset(q,0,sizeof(PixelPacket));
+      if ((image->storage_class == PseudoClass) ||
+          (image->colorspace == CMYKColorspace))
+        indexes[x]=0;
+      q++;
+    }
+    if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
+      status=MagickFalse;
+  }
+  image_view=DestroyCacheView(image_view);
+  return(status);
 }
 
 /*
@@ -2455,7 +2544,7 @@ MagickExport MagickBooleanType SetImageColor(Image *image,
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -2934,7 +3023,7 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
           (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
           image_info->temporary=MagickTrue;
         }
-      (void) ResetMagickMemory(magick,0,sizeof(magick));
+      (void) memset(magick,0,sizeof(magick));
       count=ReadBlob(image,2*MaxTextExtent,magick);
       (void) SeekBlob(image,-((MagickOffsetType) count),SEEK_CUR);
       (void) CloseBlob(image);
@@ -3134,7 +3223,7 @@ MagickExport MagickBooleanType SetImageOpacity(Image *image,
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(status) \
+  #pragma omp parallel for schedule(static) shared(status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -3612,7 +3701,7 @@ MagickExport MagickBooleanType SyncImage(Image *image)
   exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-  #pragma omp parallel for schedule(static,4) shared(range_exception,status) \
+  #pragma omp parallel for schedule(static) shared(range_exception,status) \
     magick_number_threads(image,image,image->rows,1)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)

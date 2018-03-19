@@ -2133,7 +2133,7 @@ static MagickBooleanType LoadDelegateCache(LinkedListInfo *cache,
           GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
-              if (depth > 200)
+              if (depth > MagickMaxRecursionDepth)
                 (void) ThrowMagickException(exception,GetMagickModule(),
                   ConfigureError,"IncludeElementNestedTooDeeply","`%s'",token);
               else
@@ -2171,7 +2171,7 @@ static MagickBooleanType LoadDelegateCache(LinkedListInfo *cache,
           sizeof(*delegate_info));
         if (delegate_info == (DelegateInfo *) NULL)
           ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-        (void) ResetMagickMemory(delegate_info,0,sizeof(*delegate_info));
+        (void) memset(delegate_info,0,sizeof(*delegate_info));
         delegate_info->path=ConstantString(filename);
         delegate_info->thread_support=MagickTrue;
         delegate_info->signature=MagickCoreSignature;

@@ -163,7 +163,8 @@ MagickExport char *AcquireString(const char *source)
 %    o length: the string length.
 %
 */
-MagickExport StringInfo *AcquireStringInfo(const size_t length)
+
+static StringInfo *AcquireStringInfoContainer()
 {
   StringInfo
     *string_info;
@@ -171,15 +172,25 @@ MagickExport StringInfo *AcquireStringInfo(const size_t length)
   string_info=(StringInfo *) AcquireMagickMemory(sizeof(*string_info));
   if (string_info == (StringInfo *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  (void) ResetMagickMemory(string_info,0,sizeof(*string_info));
+  (void) memset(string_info,0,sizeof(*string_info));
   string_info->signature=MagickCoreSignature;
+  return(string_info);
+}
+
+MagickExport StringInfo *AcquireStringInfo(const size_t length)
+{
+  StringInfo
+    *string_info;
+
+  string_info=AcquireStringInfoContainer();
   string_info->length=length;
-  string_info->datum=(unsigned char *) NULL;
   if (~string_info->length >= (MaxTextExtent-1))
     string_info->datum=(unsigned char *) AcquireQuantumMemory(
       string_info->length+MaxTextExtent,sizeof(*string_info->datum));
   if (string_info->datum == (unsigned char *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+  (void) memset(string_info->datum,0,(length+MagickPathExtent)*
+    sizeof(*string_info->datum));
   return(string_info);
 }
 
@@ -215,14 +226,10 @@ MagickExport StringInfo *BlobToStringInfo(const void *blob,const size_t length)
 
   if (~length < MaxTextExtent)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
-  string_info=AcquireStringInfo(0);
+  string_info=AcquireStringInfoContainer();
   string_info->length=length;
-  if (string_info->datum == (unsigned char *) NULL)
-    string_info->datum=(unsigned char *) AcquireQuantumMemory(length+
-      MaxTextExtent,sizeof(*string_info->datum));
-  else
-    string_info->datum=(unsigned char *) ResizeQuantumMemory(string_info->datum,
-      length+MaxTextExtent,sizeof(*string_info->datum));
+  string_info->datum=(unsigned char *) AcquireQuantumMemory(length+
+    MaxTextExtent,sizeof(*string_info->datum));
   if (string_info->datum == (unsigned char *) NULL)
     {
       string_info=DestroyStringInfo(string_info);
@@ -230,6 +237,8 @@ MagickExport StringInfo *BlobToStringInfo(const void *blob,const size_t length)
     }
   if (blob != (const void *) NULL)
     (void) memcpy(string_info->datum,blob,length);
+  (void) memset(string_info->datum+length,0,MagickPathExtent*
+    sizeof(*string_info->datum));
   return(string_info);
 }
 
@@ -645,12 +654,9 @@ MagickExport StringInfo *ConfigureFileToStringInfo(const char *filename)
     }
   string[length]='\0';
   file=close(file)-1;
-  string_info=AcquireStringInfo(0);
+  string_info=AcquireStringInfoContainer();
   (void) CopyMagickString(string_info->path,filename,MaxTextExtent);
   string_info->length=length;
-  if (string_info->datum != (unsigned char *) NULL)
-    string_info->datum=(unsigned char *) RelinquishMagickMemory(
-      string_info->datum);
   string_info->datum=(unsigned char *) string;
   return(string_info);
 }
@@ -838,6 +844,8 @@ MagickExport StringInfo *DestroyStringInfo(StringInfo *string_info)
   if (string_info->datum != (unsigned char *) NULL)
     string_info->datum=(unsigned char *) RelinquishMagickMemory(
       string_info->datum);
+  if (string_info->name != (char *) NULL)
+    string_info->name=DestroyString(string_info->name);
   string_info->signature=(~MagickCoreSignature);
   string_info=(StringInfo *) RelinquishMagickMemory(string_info);
   return(string_info);
@@ -1024,11 +1032,8 @@ MagickExport StringInfo *FileToStringInfo(const char *filename,
   assert(filename != (const char *) NULL);
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",filename);
   assert(exception != (ExceptionInfo *) NULL);
-  string_info=AcquireStringInfo(0);
+  string_info=AcquireStringInfoContainer();
   (void) CopyMagickString(string_info->path,filename,MaxTextExtent);
-  if (string_info->datum != (unsigned char *) NULL)
-    string_info->datum=(unsigned char *) RelinquishMagickMemory(
-      string_info->datum);
   string_info->datum=FileToBlob(filename,extent,&string_info->length,exception);
   if (string_info->datum == (unsigned char *) NULL)
     {
@@ -1166,8 +1171,8 @@ MagickExport ssize_t FormatMagickTime(const time_t time,const size_t length,
     timezone;
 
   assert(timestamp != (char *) NULL);
-  (void) ResetMagickMemory(&local_time,0,sizeof(local_time));
-  (void) ResetMagickMemory(&gm_time,0,sizeof(gm_time));
+  (void) memset(&local_time,0,sizeof(local_time));
+  (void) memset(&gm_time,0,sizeof(gm_time));
 #if defined(MAGICKCORE_HAVE_LOCALTIME_R)
   (void) localtime_r(&time,&local_time);
 #else
@@ -1293,6 +1298,35 @@ MagickExport size_t GetStringInfoLength(const StringInfo *string_info)
   assert(string_info != (StringInfo *) NULL);
   assert(string_info->signature == MagickCoreSignature);
   return(string_info->length);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   G e t S t r i n g I n f o N a m e                                         %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetStringInfoName() returns the name associated with the string.
+%
+%  The format of the GetStringInfoName method is:
+%
+%      const char *GetStringInfoName(const StringInfo *string_info)
+%
+%  A description of each parameter follows:
+%
+%    o string_info: the string info.
+%
+*/
+MagickExport const char *GetStringInfoName(const StringInfo *string_info)
+{
+  assert(string_info != (StringInfo *) NULL);
+  assert(string_info->signature == MagickCoreSignature);
+  return(string_info->name);
 }
 
 /*
@@ -1545,7 +1579,7 @@ MagickExport void PrintStringInfo(FILE *file,const char *id,
       break;
     p++;
   }
-  (void) FormatLocaleFile(file,"%s(%.20g): ",id,(double) string_info->length);
+  (void) FormatLocaleFile(file,"%s(%.20g):\n",id,(double) string_info->length);
   if (i == string_info->length)
     {
       for (i=0; i < string_info->length; i++)
@@ -1612,7 +1646,7 @@ MagickExport void ResetStringInfo(StringInfo *string_info)
 {
   assert(string_info != (StringInfo *) NULL);
   assert(string_info->signature == MagickCoreSignature);
-  (void) ResetMagickMemory(string_info->datum,0,string_info->length);
+  (void) memset(string_info->datum,0,string_info->length);
 }
 
 /*
@@ -1697,7 +1731,7 @@ MagickExport void SetStringInfo(StringInfo *string_info,
   assert(source->signature == MagickCoreSignature);
   if (string_info->length == 0)
     return;
-  (void) ResetMagickMemory(string_info->datum,0,string_info->length);
+  (void) memset(string_info->datum,0,string_info->length);
   (void) memcpy(string_info->datum,source->datum,MagickMin(string_info->length,
     source->length));
 }
@@ -1786,7 +1820,39 @@ MagickExport void SetStringInfoLength(StringInfo *string_info,
 %                                                                             %
 %                                                                             %
 %                                                                             %
-%   S e t S t r i n g I n f o D a t u m                                       %
+%   S e t S t r i n g I n f o N a m e                                         %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  SetStringInfoName() sets the name associated with the string.
+%
+%  The format of the SetStringInfoName method is:
+%
+%      void SetStringInfoName(StringInfo *string_info,const char *name)
+%
+%  A description of each parameter follows:
+%
+%    o string_info: the string info.
+%
+%    o name: the name.
+%
+*/
+MagickExport void SetStringInfoName(StringInfo *string_info,const char *name)
+{
+  assert(string_info != (StringInfo *) NULL);
+  assert(string_info->signature == MagickCoreSignature);
+  assert(name != (const char *) NULL);
+  string_info->name=ConstantString(name);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   S e t S t r i n g I n f o P a t h                                         %
 %                                                                             %
 %                                                                             %
 %                                                                             %
@@ -2559,9 +2625,9 @@ MagickExport MagickBooleanType SubstituteString(char **string,
       Replace string.
     */
     if (search_extent != replace_extent)
-      (void) CopyMagickMemory(p+replace_extent,p+search_extent,
+      (void) memmove(p+replace_extent,p+search_extent,
         strlen(p+search_extent)+1);
-    (void) CopyMagickMemory(p,replace,replace_extent);
+    (void) memcpy(p,replace,replace_extent);
     p+=replace_extent-1;
   }
   return(status);
