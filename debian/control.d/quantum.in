@@ -90,7 +90,7 @@ Depends: libmagickcore-${IMVERSION}-headers (= ${source:Version}),
 # remove breaks/replaces after jessie +2
 Replaces: libmagickcore-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickcore-dev (<< 8:6.8.3.10-1~)
-Provides: libmagickcore-${IMVERSION}.defaultquantum-dev
+${PROVIDES_LIBMAGICKCORE_DEV}
 Description: low-level image manipulation library - development files (${UCQUANTUMDEPTH})
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -134,7 +134,7 @@ Depends: libmagickwand-${IMVERSION}-headers (= ${source:Version}),
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-dev (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
-Provides: libmagickwand-${IMVERSION}.defaultquantum-dev
+${PROVIDES_LIBMAGICKCORE_DEV}
 Replaces: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Description: image manipulation library - development files (${UCQUANTUMDEPTH})
@@ -175,9 +175,9 @@ Depends: libmagick++-${IMVERSION}-headers (= ${source:Version}),
  libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-dev (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
-Provides: libmagick++-${IMVERSION}.defaultquantum-dev
 Replaces: libmagick++-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagick++-dev (<< 8:6.8.3.10-1~)
+${PROVIDES_LIBMAGICKPP_DEV}
 Description: C++ interface to ImageMagick - development files (${UCQUANTUMDEPTH})
  The Magick++ library is a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
@@ -194,7 +194,7 @@ Multi-Arch: allowed
 Section: perl
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: imagemagick-doc
-Provides: libimage-magick-defaultquantum-perl
+${PROVIDES_MAGICK_PERL}
 # remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
 Breaks: perlmagick (<< 8:6.8.3.10-1~)

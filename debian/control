@@ -285,7 +285,7 @@ Depends: libmagickcore-6-headers (= ${source:Version}),
 # remove breaks/replaces after jessie +2
 Replaces: libmagickcore-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickcore-dev (<< 8:6.8.3.10-1~)
-Provides: libmagickcore-6.defaultquantum-dev
+Provides: libmagickcore-6.defaultquantum-dev, libmagickcore-dev (=8:6.9.9.39+dfsg-1)
 Description: low-level image manipulation library - development files (Q16)
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -329,7 +329,7 @@ Depends: libmagickwand-6-headers (= ${source:Version}),
  libmagickcore-6.q16-dev (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
-Provides: libmagickwand-6.defaultquantum-dev
+Provides: libmagickcore-6.defaultquantum-dev, libmagickcore-dev (=8:6.9.9.39+dfsg-1)
 Replaces: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Description: image manipulation library - development files (Q16)
@@ -370,9 +370,9 @@ Depends: libmagick++-6-headers (= ${source:Version}),
  libmagickwand-6.q16-dev (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
-Provides: libmagick++-6.defaultquantum-dev
 Replaces: libmagick++-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagick++-dev (<< 8:6.8.3.10-1~)
+Provides: libmagick++-6.defaultquantum-dev, libmagick++-dev (=8:6.9.9.39+dfsg-1)
 Description: C++ interface to ImageMagick - development files (Q16)
  The Magick++ library is a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
@@ -389,7 +389,7 @@ Multi-Arch: allowed
 Section: perl
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: imagemagick-doc
-Provides: libimage-magick-defaultquantum-perl
+Provides: libimage-magick-defaultquantum-perl, perlmagick (=8:6.9.9.39+dfsg-1)
 # remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
 Breaks: perlmagick (<< 8:6.8.3.10-1~)
@@ -644,74 +644,6 @@ Description: document files of ImageMagick -- dummy package
  .
  This is a transitional package to help migrate systems to the new
  imagemagick-6-doc package.
- .
- This is a dummy package.  You can safely purge or remove it.
-
-# compatibility package (remove after jessie+2)
-Package: perlmagick
-Architecture: all
-Multi-Arch: foreign
-Section: oldlibs
-Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends}, libimage-magick-perl, imagemagick-6-common
-Description: Perl interface to ImageMagick -- dummy package
- PerlMagick is an objected-oriented Perl interface to ImageMagick.
- Use the module to read, manipulate, or write an image or image sequence from
- within a Perl script. This makes it very suitable for Web CGI scripts.
- .
- This is a transitional package to help migrate systems to the new
- libimage-magick-perl perl library.
- .
- This is a dummy package.  You can safely purge or remove it.
-
-# compatibility package (remove after jessie+2)
-Package: libmagickcore-dev
-Architecture: all
-Section: oldlibs
-Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends},
- libmagickcore-6.q16-dev,
- imagemagick-6-common
-Description: low-level image manipulation library -- dummy package
- This package included header files and static libraries needed to compile
- programs using MagickCore.
- .
- This is a transitional package to help migrate systems to the new
- ABI of libmagickcore-6 development files for default channel depth.
- .
- This is a dummy package.  You can safely purge or remove it.
-
-# compatibility package (remove after jessie+2)
-Package: libmagickwand-dev
-Architecture: all
-Section: oldlibs
-Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends},
- libmagickwand-6.q16-dev,
- imagemagick-6-common
-Description: image manipulation library -- dummy package
- This package included the static libraries needed to compile
- programs using MagickWand.
- .
- This is a transitional package to help migrate systems to the new
- ABI of libmagickwand-6 development files for default channel depth.
- .
- This is a dummy package.  You can safely purge or remove it.
-
-# compatibility package (remove after jessie+2)
-Package: libmagick++-dev
-Architecture: all
-Section: oldlibs
-Pre-Depends: dpkg (>= 1.15.7.2)
-Depends: ${misc:Depends},
- libmagick++-6.q16-dev,
- imagemagick-6-common
-Description: object-oriented C++ interface to ImageMagick -- dummy package
- The Magick++ library was a set of C++ wrapper classes that provides access
- to the ImageMagick package functionality from within a C++ application.
- .
- This is a transitional package to help migrate systems to the new
- ABI of libmagick++-6 development files for default channel depth.
  .
  This is a dummy package.  You can safely purge or remove it.
 

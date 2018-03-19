@@ -189,6 +189,17 @@ dummy:
 test_fpu:
 	echo $(HAVE_FPU)
 
+PROVIDES_COMPAT_VERSION=$(DEB_VERSION)
+PROVIDES_PKG_LIBMAGICKCORE_DEV_DEFAULTQ=libmagickcore-${IMVERSION}.defaultquantum-dev, libmagickcore-dev (=${PROVIDES_COMPAT_VERSION})
+PROVIDES_LIBMAGICKCORE_DEV_DEFAULTQ=Provides: ${PROVIDES_PKG_LIBMAGICKCORE_DEV_DEFAULTQ}
+PROVIDES_PKG_LIBMAGICKWAND_DEV_DEFAULTQ=libmagickwand-${IMVERSION}.defaultquantum-dev, libmagickwand-dev (=${PROVIDES_COMPAT_VERSION})
+PROVIDES_LIBMAGICKWAND_DEV_DEFAULTQ=Provides: ${PROVIDES_PKG_LIBMAGICKWAND_DEV_DEFAULTQ}
+PROVIDES_PKG_LIBMAGICKPP_DEV_DEFAULTQ=libmagick++-${IMVERSION}.defaultquantum-dev, libmagick++-dev (=${PROVIDES_COMPAT_VERSION})
+PROVIDES_LIBMAGICKPP_DEV_DEFAULTQ=Provides: ${PROVIDES_PKG_LIBMAGICKPP_DEV_DEFAULTQ}
+PROVIDES_PKG_MAGICK_PERL_DEFAULTQ=libimage-magick-defaultquantum-perl, perlmagick (=${PROVIDES_COMPAT_VERSION})
+PROVIDES_MAGICK_PERL_DEFAULTQ=Provides: ${PROVIDES_PKG_MAGICK_PERL_DEFAULTQ}
+DELPLACEHOLDER=XXXXX_DELETE_XXXXX
+
 # update package files
 update_pkg.%:
 	# control
@@ -198,11 +209,15 @@ update_pkg.%:
 	QUANTUMDEPTH=$* \
 	UCQUANTUMDEPTH=$(call UC,$*) \
 	DESC_QUANTUM="$$QUANTUM bits$$HDRI_STR" \
+	PROVIDES_LIBMAGICKCORE_DEV="$(if $(subst $(DEFAULTQUANTUMDEPTH),,$*),$(DELPLACEHOLDER),${PROVIDES_LIBMAGICKCORE_DEV_DEFAULTQ})" \
+	PROVIDES_LIBMAGICKWAND_DEV="$(if $(subst $(DEFAULTQUANTUMDEPTH),,$*),$(DELPLACEHOLDER),${PROVIDES_LIBMAGICKWAND_DEV_DEFAULTQ})" \
+	PROVIDES_LIBMAGICKPP_DEV="$(if $(subst $(DEFAULTQUANTUMDEPTH),,$*),$(DELPLACEHOLDER),${PROVIDES_LIBMAGICKPP_DEV_DEFAULTQ})" \
+	PROVIDES_MAGICK_PERL="$(if $(subst $(DEFAULTQUANTUMDEPTH),,$*),$(DELPLACEHOLDER),${PROVIDES_MAGICK_PERL_DEFAULTQ})" \
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/control.d/quantum.in > $(CURDIR)/debian/control.d/quantum.$*;
 	if test x$* = x$(DEFAULTQUANTUMDEPTH); then \
-		cat $(CURDIR)/debian/control.d/quantum.$* >> $(CURDIR)/debian/control.d/quantum; \
+		cat $(CURDIR)/debian/control.d/quantum.$* | sed -e '/$(DELPLACEHOLDER)/d' >> $(CURDIR)/debian/control.d/quantum; \
 	else \
-		cat $(CURDIR)/debian/control.d/quantum.$* | sed '/defaultquantum/d' >> $(CURDIR)/debian/control.d/quantum; \
+		cat $(CURDIR)/debian/control.d/quantum.$* | sed -e '/defaultquantum/d' -e '/$(DELPLACEHOLDER)/d'  >> $(CURDIR)/debian/control.d/quantum; \
 	fi;
 	# test
 	QUANTUM=$(call QUANTUM_PART,$*) \
