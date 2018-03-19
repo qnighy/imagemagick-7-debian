@@ -1,3 +1,22 @@
+imagemagick (8:6.9.9.39+dfsg-1) unstable; urgency=medium
+
+  * Fix security bugs (Closes: #890805):
+    + Fix CVE-2018-7443: The ReadTIFFImage function in coders/tiff.c
+      does not properly validate the amount of image data in a file,
+      which allows remote attackers to cause a denial of service
+      (memory allocation failure in the AcquireMagickMemory function
+      in MagickCore/memory.c). (Closes: #891291)
+    + Fix CVE-2018-7470: The IsWEBPImageLossless function in
+      coders/webp.c allows attackers to cause a denial of service
+      (segmentation violation) via a crafted file.(Closes: #891420)
+    + Fix CVE-2017-17880:  there is a stack-based buffer over-read in
+      WriteWEBPImage in coders/webp.c, related to a
+      WEBP_DECODER_ABI_VERSION check.
+  * Provide transitional packages from arch:any packages.
+    (Closes: #893030)
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 19 Mar 2018 17:03:39 +0100
+
 imagemagick (8:6.9.9.34+dfsg-3) unstable; urgency=high
 
   * Upload to unstable (urgency high due to security issues).
