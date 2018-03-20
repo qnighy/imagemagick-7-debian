@@ -38,6 +38,74 @@ Description: document files of ImageMagick -- dummy package
  This is a dummy package.  You can safely purge or remove it.
 
 # compatibility package (remove after jessie+2)
+Package: perlmagick
+Architecture: all
+Multi-Arch: foreign
+Section: oldlibs
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends}, libimage-magick-perl, imagemagick-${IMVERSION}-common
+Description: Perl interface to ImageMagick -- dummy package
+ PerlMagick is an objected-oriented Perl interface to ImageMagick.
+ Use the module to read, manipulate, or write an image or image sequence from
+ within a Perl script. This makes it very suitable for Web CGI scripts.
+ .
+ This is a transitional package to help migrate systems to the new
+ libimage-magick-perl perl library.
+ .
+ This is a dummy package.  You can safely purge or remove it.
+
+# compatibility package (remove after jessie+2)
+Package: libmagickcore-dev
+Architecture: all
+Section: oldlibs
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends},
+ libmagickcore-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev,
+ imagemagick-${IMVERSION}-common
+Description: low-level image manipulation library -- dummy package
+ This package included header files and static libraries needed to compile
+ programs using MagickCore.
+ .
+ This is a transitional package to help migrate systems to the new
+ ABI of libmagickcore-${IMVERSION} development files for default channel depth.
+ .
+ This is a dummy package.  You can safely purge or remove it.
+
+# compatibility package (remove after jessie+2)
+Package: libmagickwand-dev
+Architecture: all
+Section: oldlibs
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends},
+ libmagickwand-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev,
+ imagemagick-${IMVERSION}-common
+Description: image manipulation library -- dummy package
+ This package included the static libraries needed to compile
+ programs using MagickWand.
+ .
+ This is a transitional package to help migrate systems to the new
+ ABI of libmagickwand-${IMVERSION} development files for default channel depth.
+ .
+ This is a dummy package.  You can safely purge or remove it.
+
+# compatibility package (remove after jessie+2)
+Package: libmagick++-dev
+Architecture: all
+Section: oldlibs
+Pre-Depends: dpkg (>= 1.15.7.2)
+Depends: ${misc:Depends},
+ libmagick++-${IMVERSION}.${DEFAULTQUANTUMDEPTH}-dev,
+ imagemagick-${IMVERSION}-common
+Description: object-oriented C++ interface to ImageMagick -- dummy package
+ The Magick++ library was a set of C++ wrapper classes that provides access
+ to the ImageMagick package functionality from within a C++ application.
+ .
+ This is a transitional package to help migrate systems to the new
+ ABI of libmagick++-${IMVERSION} development files for default channel depth.
+ .
+ This is a dummy package.  You can safely purge or remove it.
+
+# compatibility package (remove after jessie+2)
 # due to bug #813455 arch:any
 Package: imagemagick
 Architecture: any
