@@ -35,9 +35,7 @@ Build-Depends: debhelper (>= 11),
 # for easy symbols of c++ lib
  pkg-kde-tools,
 # for libgomp symbols
- dpkg-dev (>= 1.17.6),
-# for test of poc
- libtool-bin
+ dpkg-dev (>= 1.17.6)
 # for documentation
 Build-Depends-Indep: doxygen, doxygen-latex, graphviz,
 		     libxml2-utils,
