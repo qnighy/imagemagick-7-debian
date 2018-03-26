@@ -1,3 +1,10 @@
+imagemagick (8:6.9.9.40+dfsg-1) unstable; urgency=medium
+
+  * Bug fix: "FTBFS on i386: testsuite failure in Magick++/tests/tests.tap
+    2", thanks to Sven Joachim (Closes: #893953).
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 26 Mar 2018 12:23:10 +0200
+
 imagemagick (8:6.9.9.39+dfsg-1) unstable; urgency=medium
 
   * Fix security bugs (Closes: #890805):
