@@ -408,6 +408,8 @@ static Image *ReadPCXImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((size_t) (pcx_info.bits_per_pixel*pcx_info.planes*image->columns) >
         (pcx_packets*8U))
       ThrowPCXException(CorruptImageError,"ImproperImageHeader");
+    if ((MagickSizeType) (pcx_packets/8) > GetBlobSize(image))
+      ThrowPCXException(CorruptImageError,"ImproperImageHeader");
     scanline=(unsigned char *) AcquireQuantumMemory(MagickMax(image->columns,
       pcx_info.bytes_per_line),MagickMax(8,pcx_info.planes)*sizeof(*scanline));
     pixel_info=AcquireVirtualMemory(pcx_packets,2*sizeof(*pixels));
@@ -998,7 +1000,11 @@ static MagickBooleanType WritePCXImage(const ImageInfo *image_info,Image *image)
     pcx_colormap=(unsigned char *) AcquireQuantumMemory(256UL,
       3*sizeof(*pcx_colormap));
     if (pcx_colormap == (unsigned char *) NULL)
-      ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+      {
+        if (page_table != (MagickOffsetType *) NULL)
+          page_table=(MagickOffsetType *) RelinquishMagickMemory(page_table);
+        ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+      }
     (void) memset(pcx_colormap,0,3*256*sizeof(*pcx_colormap));
     q=pcx_colormap;
     if ((image->storage_class == PseudoClass) && (image->colors <= 256))

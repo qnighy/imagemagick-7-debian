@@ -181,10 +181,7 @@ static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     pixels=(const unsigned char *) ReadBlobStream(image,length,
       GetQuantumPixels(quantum_info),&count);
     if (count != (ssize_t) length)
-      {
-        quantum_info=DestroyQuantumInfo(quantum_info);
-        ThrowReaderException(CorruptImageError,"UnableToReadImageData");
-      }
+      break;
     (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
       quantum_type,pixels,exception);
     (void) ReadBlobStream(image,(size_t) (-(ssize_t) length) & 0x01,
@@ -198,6 +195,8 @@ static Image *ReadARTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   }
   SetQuantumImageType(image,quantum_type);
   quantum_info=DestroyQuantumInfo(quantum_info);
+  if (y < (ssize_t) image->rows)
+    ThrowReaderException(CorruptImageError,"UnableToReadImageData");
   if (EOFBlob(image) != MagickFalse)
     ThrowFileException(exception,CorruptImageError,"UnexpectedEndOfFile",
       image->filename);
@@ -352,7 +351,7 @@ static MagickBooleanType WriteARTImage(const ImageInfo *image_info,Image *image)
       GrayQuantum,pixels,&image->exception);
     count=WriteBlob(image,length,pixels);
     if (count != (ssize_t) length)
-      ThrowWriterException(CorruptImageError,"UnableToWriteImageData");
+      break;
     (void) WriteBlob(image,(size_t) (-(ssize_t) length) & 0x01,pixels);
     status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) y,
       image->rows);
@@ -361,6 +360,8 @@ static MagickBooleanType WriteARTImage(const ImageInfo *image_info,Image *image)
   }
   quantum_info=DestroyQuantumInfo(quantum_info);
   pixels=(unsigned char *) RelinquishMagickMemory(pixels);
+  if (y < (ssize_t) image->rows)
+    ThrowWriterException(CorruptImageError,"UnableToWriteImageData");
   (void) CloseBlob(image);
   return(MagickTrue);
 }

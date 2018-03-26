@@ -1241,7 +1241,7 @@ static double FxChannelStatistics(FxInfo *fx_info,const Image *image,
 
 static double
   FxEvaluateSubexpression(FxInfo *,const ChannelType,const ssize_t,
-    const ssize_t,const char *,size_t *,double *,ExceptionInfo *);
+    const ssize_t,const char *,const size_t,double *,ExceptionInfo *);
 
 static MagickOffsetType FxGCD(MagickOffsetType alpha,MagickOffsetType beta)
 {
@@ -1313,12 +1313,10 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
     length;
 
   size_t
-    depth,
     level;
 
   p=expression;
   i=GetImageIndexInList(fx_info->images);
-  depth=0;
   level=0;
   point.x=(double) x;
   point.y=(double) y;
@@ -1357,7 +1355,7 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
               }
               *q='\0';
               alpha=FxEvaluateSubexpression(fx_info,channel,x,y,subexpression,
-                &depth,&beta,exception);
+                0,&beta,exception);
               i=(ssize_t) alpha;
               if (*p != '\0')
                 p++;
@@ -1387,7 +1385,7 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
               }
               *q='\0';
               alpha=FxEvaluateSubexpression(fx_info,channel,x,y,subexpression,
-                &depth,&beta,exception);
+                0,&beta,exception);
               point.x=alpha;
               point.y=beta;
               if (*p != '\0')
@@ -1413,7 +1411,7 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
                 }
                 *q='\0';
                 alpha=FxEvaluateSubexpression(fx_info,channel,x,y,subexpression,
-                  &depth,&beta,exception);
+                  0,&beta,exception);
                 point.x+=alpha;
                 point.y+=beta;
                 if (*p != '\0')
@@ -2117,14 +2115,15 @@ static const char *FxOperatorPrecedence(const char *expression,
 }
 
 static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
-  const ssize_t x,const ssize_t y,const char *expression,size_t *depth,
+  const ssize_t x,const ssize_t y,const char *expression,const size_t depth,
   double *beta,ExceptionInfo *exception)
 {
 #define FxMaxParenthesisDepth  58
-#define FxResult(x) \
+#define FxMaxSubexpressionDepth  600
+#define FxReturn(value) \
 { \
   subexpression=DestroyString(subexpression); \
-  return(x); \
+  return(value); \
 }
 
   char
@@ -2139,167 +2138,167 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     *p;
 
   *beta=0.0;
-  subexpression=AcquireString((const char *) NULL);
-  if (*depth > MagickMaxRecursionDepth)
+  subexpression=AcquireString(expression);
+  *subexpression='\0';
+  if (depth > FxMaxSubexpressionDepth)
     {
       (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
         "UnableToParseExpression","`%s'",expression);
-      FxResult(0.0);
+      FxReturn(0.0);
     }
   if (exception->severity >= ErrorException)
-    FxResult(0.0);
+    FxReturn(0.0);
   while (isspace((int) ((unsigned char) *expression)) != 0)
     expression++;
   if (*expression == '\0')
-    FxResult(0.0);
-  *subexpression='\0';
+    FxReturn(0.0);
   p=FxOperatorPrecedence(expression,exception);
   if (p != (const char *) NULL)
     {
       (void) CopyMagickString(subexpression,expression,(size_t)
         (p-expression+1));
-      alpha=FxEvaluateSubexpression(fx_info,channel,x,y,subexpression,depth,
+      alpha=FxEvaluateSubexpression(fx_info,channel,x,y,subexpression,depth+1,
         beta,exception);
       switch ((unsigned char) *p)
       {
         case '~':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
           *beta=(double) (~(size_t) *beta);
-          FxResult(*beta);
+          FxReturn(*beta);
         }
         case '!':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(*beta == 0.0 ? 1.0 : 0.0);
+          FxReturn(*beta == 0.0 ? 1.0 : 0.0);
         }
         case '^':
         {
           *beta=pow(alpha,FxEvaluateSubexpression(fx_info,channel,x,y,++p,
-            depth,beta,exception));
-          FxResult(*beta);
+            depth+1,beta,exception));
+          FxReturn(*beta);
         }
         case '*':
         case ExponentialNotation:
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(alpha*(*beta));
+          FxReturn(alpha*(*beta));
         }
         case '/':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
           if (*beta == 0.0)
             {
               (void) ThrowMagickException(exception,GetMagickModule(),
                 OptionError,"DivideByZero","`%s'",expression);
-              FxResult(0.0);
+              FxReturn(0.0);
             }
-          FxResult(alpha/(*beta));
+          FxReturn(alpha/(*beta));
         }
         case '%':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
           *beta=fabs(floor((*beta)+0.5));
           if (*beta == 0.0)
             {
               (void) ThrowMagickException(exception,GetMagickModule(),
                 OptionError,"DivideByZero","`%s'",expression);
-              FxResult(0.0);
+              FxReturn(0.0);
             }
-          FxResult(fmod(alpha,(double) *beta));
+          FxReturn(fmod(alpha,(double) *beta));
         }
         case '+':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(alpha+(*beta));
+          FxReturn(alpha+(*beta));
         }
         case '-':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(alpha-(*beta));
+          FxReturn(alpha-(*beta));
         }
         case LeftShiftOperator:
         {
-          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
           if ((size_t) (gamma+0.5) > (8*sizeof(size_t)))
             {
               (void) ThrowMagickException(exception,GetMagickModule(),
                 OptionError,"ShiftCountOverflow","`%s'",subexpression);
-              FxResult(0.0);
+              FxReturn(0.0);
             }
           *beta=(double) ((size_t) (alpha+0.5) << (size_t) (gamma+0.5));
-          FxResult(*beta);
+          FxReturn(*beta);
         }
         case RightShiftOperator:
         {
-          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
           if ((size_t) (gamma+0.5) > (8*sizeof(size_t)))
             {
               (void) ThrowMagickException(exception,GetMagickModule(),
                 OptionError,"ShiftCountOverflow","`%s'",subexpression);
-              FxResult(0.0);
+              FxReturn(0.0);
             }
           *beta=(double) ((size_t) (alpha+0.5) >> (size_t) (gamma+0.5));
-          FxResult(*beta);
+          FxReturn(*beta);
         }
         case '<':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(alpha < *beta ? 1.0 : 0.0);
+          FxReturn(alpha < *beta ? 1.0 : 0.0);
         }
         case LessThanEqualOperator:
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(alpha <= *beta ? 1.0 : 0.0);
+          FxReturn(alpha <= *beta ? 1.0 : 0.0);
         }
         case '>':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(alpha > *beta ? 1.0 : 0.0);
+          FxReturn(alpha > *beta ? 1.0 : 0.0);
         }
         case GreaterThanEqualOperator:
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(alpha >= *beta ? 1.0 : 0.0);
+          FxReturn(alpha >= *beta ? 1.0 : 0.0);
         }
         case EqualOperator:
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(fabs(alpha-(*beta)) < MagickEpsilon ? 1.0 : 0.0);
+          FxReturn(fabs(alpha-(*beta)) < MagickEpsilon ? 1.0 : 0.0);
         }
         case NotEqualOperator:
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(fabs(alpha-(*beta)) >= MagickEpsilon ? 1.0 : 0.0);
+          FxReturn(fabs(alpha-(*beta)) >= MagickEpsilon ? 1.0 : 0.0);
         }
         case '&':
         {
-          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
           *beta=(double) ((size_t) (alpha+0.5) & (size_t) (gamma+0.5));
-          FxResult(*beta);
+          FxReturn(*beta);
         }
         case '|':
         {
-          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
           *beta=(double) ((size_t) (alpha+0.5) | (size_t) (gamma+0.5));
-          FxResult(*beta);
+          FxReturn(*beta);
         }
         case LogicalAndOperator:
         {
@@ -2307,12 +2306,12 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
           if (alpha <= 0.0)
             {
               *beta=0.0;
-              FxResult(*beta);
+              FxReturn(*beta);
             }
-          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,p,depth,beta,
+          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,p,depth+1,beta,
             exception);
           *beta=(gamma > 0.0) ? 1.0 : 0.0;
-          FxResult(*beta);
+          FxReturn(*beta);
         }
         case LogicalOrOperator:
         {
@@ -2320,12 +2319,12 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
           if (alpha > 0.0)
             {
              *beta=1.0;
-             FxResult(*beta);
+             FxReturn(*beta);
             }
-          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,p,depth,beta,
+          gamma=FxEvaluateSubexpression(fx_info,channel,x,y,p,depth+1,beta,
             exception);
           *beta=(gamma > 0.0) ? 1.0 : 0.0;
-          FxResult(*beta);
+          FxReturn(*beta);
         }
         case '?':
         {
@@ -2339,15 +2338,15 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
             {
               (void) ThrowMagickException(exception,GetMagickModule(),
                 OptionError,"UnableToParseExpression","`%s'",subexpression);
-              FxResult(0.0);
+              FxReturn(0.0);
             }
           if (fabs(alpha) >= MagickEpsilon)
-            gamma=FxEvaluateSubexpression(fx_info,channel,x,y,p,depth,beta,
+            gamma=FxEvaluateSubexpression(fx_info,channel,x,y,p,depth+1,beta,
               exception);
           else
-            gamma=FxEvaluateSubexpression(fx_info,channel,x,y,q,depth,beta,
+            gamma=FxEvaluateSubexpression(fx_info,channel,x,y,q,depth+1,beta,
               exception);
-          FxResult(gamma);
+          FxReturn(gamma);
         }
         case '=':
         {
@@ -2361,155 +2360,153 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
             {
               (void) ThrowMagickException(exception,GetMagickModule(),
                 OptionError,"UnableToParseExpression","`%s'",subexpression);
-              FxResult(0.0);
+              FxReturn(0.0);
             }
           ClearMagickException(exception);
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
           (void) FormatLocaleString(numeric,MaxTextExtent,"%.20g",(double)
             *beta);
           (void) DeleteNodeFromSplayTree(fx_info->symbols,subexpression);
           (void) AddValueToSplayTree(fx_info->symbols,ConstantString(
             subexpression),ConstantString(numeric));
-          FxResult(*beta);
+          FxReturn(*beta);
         }
         case ',':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(alpha);
+          FxReturn(alpha);
         }
         case ';':
         {
-          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,beta,
+          *beta=FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,beta,
             exception);
-          FxResult(*beta);
+          FxReturn(*beta);
         }
         default:
         {
-          gamma=alpha*FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth,
+          gamma=alpha*FxEvaluateSubexpression(fx_info,channel,x,y,++p,depth+1,
             beta,exception);
-          FxResult(gamma);
+          FxReturn(gamma);
         }
       }
     }
   if (strchr("(",(int) *expression) != (char *) NULL)
     {
-      (*depth)++;
-      if (*depth >= FxMaxParenthesisDepth)
+      if (depth >= FxMaxParenthesisDepth)
         (void) ThrowMagickException(exception,GetMagickModule(),OptionError,
           "ParenthesisNestedTooDeeply","`%s'",expression);
       (void) CopyMagickString(subexpression,expression+1,MaxTextExtent);
       if (strlen(subexpression) != 0)
         subexpression[strlen(subexpression)-1]='\0';
-      gamma=FxEvaluateSubexpression(fx_info,channel,x,y,subexpression,depth,
+      gamma=FxEvaluateSubexpression(fx_info,channel,x,y,subexpression,depth+1,
         beta,exception);
-      (*depth)--;
-      FxResult(gamma);
+      FxReturn(gamma);
     }
   switch (*expression)
   {
     case '+':
     {
-      gamma=FxEvaluateSubexpression(fx_info,channel,x,y,expression+1,depth,beta,
-        exception);
-      FxResult(1.0*gamma);
+      gamma=FxEvaluateSubexpression(fx_info,channel,x,y,expression+1,depth+1,
+        beta,exception);
+      FxReturn(1.0*gamma);
     }
     case '-':
     {
-      gamma=FxEvaluateSubexpression(fx_info,channel,x,y,expression+1,depth,beta,
-        exception);
-      FxResult(-1.0*gamma);
+      gamma=FxEvaluateSubexpression(fx_info,channel,x,y,expression+1,depth+1,
+        beta,exception);
+      FxReturn(-1.0*gamma);
     }
     case '~':
     {
-      gamma=FxEvaluateSubexpression(fx_info,channel,x,y,expression+1,depth,beta,
-        exception);
-      FxResult((double) (~(size_t) (gamma+0.5)));
+      gamma=FxEvaluateSubexpression(fx_info,channel,x,y,expression+1,depth+1,
+        beta,exception);
+      FxReturn((double) (~(size_t) (gamma+0.5)));
     }
     case 'A':
     case 'a':
     {
       if (LocaleNCompare(expression,"abs",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(fabs(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(fabs(alpha));
         }
 #if defined(MAGICKCORE_HAVE_ACOSH)
       if (LocaleNCompare(expression,"acosh",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
-          FxResult(acosh(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
+          FxReturn(acosh(alpha));
         }
 #endif
       if (LocaleNCompare(expression,"acos",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
-          FxResult(acos(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
+          FxReturn(acos(alpha));
         }
 #if defined(MAGICKCORE_HAVE_J1)
       if (LocaleNCompare(expression,"airy",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
           if (alpha == 0.0)
-            FxResult(1.0);
+            FxReturn(1.0);
           gamma=2.0*j1((MagickPI*alpha))/(MagickPI*alpha);
-          FxResult(gamma*gamma);
+          FxReturn(gamma*gamma);
         }
 #endif
 #if defined(MAGICKCORE_HAVE_ASINH)
       if (LocaleNCompare(expression,"asinh",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
-          FxResult(asinh(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
+          FxReturn(asinh(alpha));
         }
 #endif
       if (LocaleNCompare(expression,"asin",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
-          FxResult(asin(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
+          FxReturn(asin(alpha));
         }
       if (LocaleNCompare(expression,"alt",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(((ssize_t) alpha) & 0x01 ? -1.0 : 1.0);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(((ssize_t) alpha) & 0x01 ? -1.0 : 1.0);
         }
       if (LocaleNCompare(expression,"atan2",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
-          FxResult(atan2(alpha,*beta));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
+          FxReturn(atan2(alpha,*beta));
         }
 #if defined(MAGICKCORE_HAVE_ATANH)
       if (LocaleNCompare(expression,"atanh",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
-          FxResult(atanh(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
+          FxReturn(atanh(alpha));
         }
 #endif
       if (LocaleNCompare(expression,"atan",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
-          FxResult(atan(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
+          FxReturn(atan(alpha));
         }
       if (LocaleCompare(expression,"a") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'B':
     case 'b':
     {
       if (LocaleCompare(expression,"b") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'C':
@@ -2517,33 +2514,34 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     {
       if (LocaleNCompare(expression,"ceil",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
-          FxResult(ceil(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
+          FxReturn(ceil(alpha));
         }
       if (LocaleNCompare(expression,"clamp",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
           if (alpha < 0.0)
-            FxResult(0.0);
+            FxReturn(0.0);
           if (alpha > 1.0)
-            FxResult(1.0);
-          FxResult(alpha);
+            FxReturn(1.0);
+          FxReturn(alpha);
         }
       if (LocaleNCompare(expression,"cosh",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,             beta,exception);
-          FxResult(cosh(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
+          FxReturn(cosh(alpha));
         }
       if (LocaleNCompare(expression,"cos",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(cos(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(cos(alpha));
         }
       if (LocaleCompare(expression,"c") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'D':
@@ -2554,8 +2552,8 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
           const char
             *type;
 
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
           if (fx_info->images->colorspace == CMYKColorspace)
             switch (channel)
             {
@@ -2583,13 +2581,13 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
               "%s[%.20g,%.20g].%s: %s=%.*g\n",fx_info->images->filename,
               (double) x,(double) y,type,subexpression,GetMagickPrecision(),
               (double) alpha);
-          FxResult(0.0);
+          FxReturn(0.0);
         }
       if (LocaleNCompare(expression,"drc",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult((alpha/(*beta*(alpha-1.0)+1.0)));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn((alpha/(*beta*(alpha-1.0)+1.0)));
         }
       break;
     }
@@ -2597,23 +2595,23 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     case 'e':
     {
       if (LocaleCompare(expression,"epsilon") == 0)
-        FxResult(MagickEpsilon);
+        FxReturn(MagickEpsilon);
 #if defined(MAGICKCORE_HAVE_ERF)
       if (LocaleNCompare(expression,"erp",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(erf(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(erf(alpha));
         }
 #endif
       if (LocaleNCompare(expression,"exp",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(exp(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(exp(alpha));
         }
       if (LocaleCompare(expression,"e") == 0)
-        FxResult(2.7182818284590452354);
+        FxReturn(2.7182818284590452354);
       break;
     }
     case 'F':
@@ -2621,9 +2619,9 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     {
       if (LocaleNCompare(expression,"floor",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
-          FxResult(floor(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
+          FxReturn(floor(alpha));
         }
       break;
     }
@@ -2632,38 +2630,38 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     {
       if (LocaleNCompare(expression,"gauss",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
           gamma=exp((-alpha*alpha/2.0))/sqrt(2.0*MagickPI);
-          FxResult(gamma);
+          FxReturn(gamma);
         }
       if (LocaleNCompare(expression,"gcd",3) == 0)
         {
           MagickOffsetType
             gcd;
 
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
           gcd=FxGCD((MagickOffsetType) (alpha+0.5),(MagickOffsetType)
             (*beta+0.5));
-          FxResult((double) gcd);
+          FxReturn((double) gcd);
         }
       if (LocaleCompare(expression,"g") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'H':
     case 'h':
     {
       if (LocaleCompare(expression,"h") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       if (LocaleCompare(expression,"hue") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       if (LocaleNCompare(expression,"hypot",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
-          FxResult(hypot(alpha,*beta));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
+          FxReturn(hypot(alpha,*beta));
         }
       break;
     }
@@ -2671,59 +2669,60 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     case 'k':
     {
       if (LocaleCompare(expression,"k") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'I':
     case 'i':
     {
       if (LocaleCompare(expression,"intensity") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       if (LocaleNCompare(expression,"int",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(floor(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(floor(alpha));
         }
       if (LocaleNCompare(expression,"isnan",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
-          FxResult((double) !!IsNaN(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
+          FxReturn((double) !!IsNaN(alpha));
         }
       if (LocaleCompare(expression,"i") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'J':
     case 'j':
     {
       if (LocaleCompare(expression,"j") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
 #if defined(MAGICKCORE_HAVE_J0)
       if (LocaleNCompare(expression,"j0",2) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+2,depth,
-            beta,exception);
-          FxResult(j0(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+2,
+            depth+1,beta,exception);
+          FxReturn(j0(alpha));
         }
 #endif
 #if defined(MAGICKCORE_HAVE_J1)
       if (LocaleNCompare(expression,"j1",2) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+2,depth,             beta,exception);
-          FxResult(j1(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+2,
+            depth+1,beta,exception);
+          FxReturn(j1(alpha));
         }
 #endif
 #if defined(MAGICKCORE_HAVE_J1)
       if (LocaleNCompare(expression,"jinc",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
           if (alpha == 0.0)
-            FxResult(1.0);
+            FxReturn(1.0);
           gamma=(2.0*j1((MagickPI*alpha))/(MagickPI*alpha));
-          FxResult(gamma);
+          FxReturn(gamma);
         }
 #endif
       break;
@@ -2733,56 +2732,56 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     {
       if (LocaleNCompare(expression,"ln",2) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+2,depth,
-            beta,exception);
-          FxResult(log(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+2,
+            depth+1,beta,exception);
+          FxReturn(log(alpha));
         }
       if (LocaleNCompare(expression,"logtwo",6) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+6,depth,
-            beta,exception);
-          FxResult(log10(alpha)/log10(2.0));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+6,
+            depth+1,beta,exception);
+          FxReturn(log10(alpha)/log10(2.0));
         }
       if (LocaleNCompare(expression,"log",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(log10(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(log10(alpha));
         }
       if (LocaleCompare(expression,"lightness") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'M':
     case 'm':
     {
       if (LocaleCompare(expression,"MaxRGB") == 0)
-        FxResult((double) QuantumRange);
+        FxReturn((double) QuantumRange);
       if (LocaleNCompare(expression,"maxima",6) == 0)
         break;
       if (LocaleNCompare(expression,"max",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(alpha > *beta ? alpha : *beta);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(alpha > *beta ? alpha : *beta);
         }
       if (LocaleNCompare(expression,"minima",6) == 0)
         break;
       if (LocaleNCompare(expression,"min",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(alpha < *beta ? alpha : *beta);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(alpha < *beta ? alpha : *beta);
         }
       if (LocaleNCompare(expression,"mod",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
           gamma=alpha-floor((alpha/(*beta)))*(*beta);
-          FxResult(gamma);
+          FxReturn(gamma);
         }
       if (LocaleCompare(expression,"m") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'N':
@@ -2790,47 +2789,47 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     {
       if (LocaleNCompare(expression,"not",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult((double) (alpha < MagickEpsilon));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn((double) (alpha < MagickEpsilon));
         }
       if (LocaleCompare(expression,"n") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'O':
     case 'o':
     {
       if (LocaleCompare(expression,"Opaque") == 0)
-        FxResult(1.0);
+        FxReturn(1.0);
       if (LocaleCompare(expression,"o") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'P':
     case 'p':
     {
       if (LocaleCompare(expression,"phi") == 0)
-        FxResult(MagickPHI);
+        FxReturn(MagickPHI);
       if (LocaleCompare(expression,"pi") == 0)
-        FxResult(MagickPI);
+        FxReturn(MagickPI);
       if (LocaleNCompare(expression,"pow",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(pow(alpha,*beta));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(pow(alpha,*beta));
         }
       if (LocaleCompare(expression,"p") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'Q':
     case 'q':
     {
       if (LocaleCompare(expression,"QuantumRange") == 0)
-        FxResult((double) QuantumRange);
+        FxReturn((double) QuantumRange);
       if (LocaleCompare(expression,"QuantumScale") == 0)
-        FxResult(QuantumScale);
+        FxReturn(QuantumScale);
       break;
     }
     case 'R':
@@ -2845,64 +2844,64 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
           #pragma omp critical (MagickCore_FxEvaluateSubexpression)
 #endif
           alpha=GetPseudoRandomValue(fx_info->random_info);
-          FxResult(alpha);
+          FxReturn(alpha);
         }
       if (LocaleNCompare(expression,"round",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
-          FxResult(floor(alpha+0.5));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
+          FxReturn(floor(alpha+0.5));
         }
       if (LocaleCompare(expression,"r") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'S':
     case 's':
     {
       if (LocaleCompare(expression,"saturation") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       if (LocaleNCompare(expression,"sign",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
-          FxResult(alpha < 0.0 ? -1.0 : 1.0);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
+          FxReturn(alpha < 0.0 ? -1.0 : 1.0);
         }
       if (LocaleNCompare(expression,"sinc",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
           if (alpha == 0)
-            FxResult(1.0);
+            FxReturn(1.0);
           gamma=(sin((MagickPI*alpha))/(MagickPI*alpha));
-          FxResult(gamma);
+          FxReturn(gamma);
         }
       if (LocaleNCompare(expression,"sinh",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
-          FxResult(sinh(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
+          FxReturn(sinh(alpha));
         }
       if (LocaleNCompare(expression,"sin",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(sin(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(sin(alpha));
         }
       if (LocaleNCompare(expression,"sqrt",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
-          FxResult(sqrt(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
+          FxReturn(sqrt(alpha));
         }
       if (LocaleNCompare(expression,"squish",6) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+6,depth,
-            beta,exception);
-          FxResult((1.0/(1.0+exp(-alpha))));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+6,
+            depth+1,beta,exception);
+          FxReturn((1.0/(1.0+exp(-alpha))));
         }
       if (LocaleCompare(expression,"s") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'T':
@@ -2910,42 +2909,42 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
     {
       if (LocaleNCompare(expression,"tanh",4) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,depth,
-            beta,exception);
-          FxResult(tanh(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+4,
+            depth+1,beta,exception);
+          FxReturn(tanh(alpha));
         }
       if (LocaleNCompare(expression,"tan",3) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,depth,
-            beta,exception);
-          FxResult(tan(alpha));
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+3,
+            depth+1,beta,exception);
+          FxReturn(tan(alpha));
         }
       if (LocaleCompare(expression,"Transparent") == 0)
-        FxResult(0.0);
+        FxReturn(0.0);
       if (LocaleNCompare(expression,"trunc",5) == 0)
         {
-          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,depth,
-            beta,exception);
+          alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
+            depth+1,beta,exception);
           if (alpha >= 0.0)
-            FxResult(floor(alpha));
-          FxResult(ceil(alpha));
+            FxReturn(floor(alpha));
+          FxReturn(ceil(alpha));
         }
       if (LocaleCompare(expression,"t") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'U':
     case 'u':
     {
       if (LocaleCompare(expression,"u") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'V':
     case 'v':
     {
       if (LocaleCompare(expression,"v") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'W':
@@ -2956,26 +2955,26 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
           do
           {
             alpha=FxEvaluateSubexpression(fx_info,channel,x,y,expression+5,
-              depth,beta,exception);
+              depth+1,beta,exception);
           } while (fabs(alpha) >= MagickEpsilon);
-          FxResult(*beta);
+          FxReturn(*beta);
         }
       if (LocaleCompare(expression,"w") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'Y':
     case 'y':
     {
       if (LocaleCompare(expression,"y") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     case 'Z':
     case 'z':
     {
       if (LocaleCompare(expression,"z") == 0)
-        FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+        FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
       break;
     }
     default:
@@ -2984,8 +2983,8 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
   q=(char *) expression;
   alpha=InterpretSiPrefixValue(expression,&q);
   if (q == expression)
-    FxResult(FxGetSymbol(fx_info,channel,x,y,expression,exception));
-  FxResult(alpha);
+    FxReturn(FxGetSymbol(fx_info,channel,x,y,expression,exception));
+  FxReturn(alpha);
 }
 
 MagickExport MagickBooleanType FxEvaluateExpression(FxInfo *fx_info,
@@ -3021,12 +3020,8 @@ MagickExport MagickBooleanType FxEvaluateChannelExpression(FxInfo *fx_info,
   double
     beta;
 
-  size_t
-    depth;
-
   beta=0.0;
-  depth=0;
-  *alpha=FxEvaluateSubexpression(fx_info,channel,x,y,fx_info->expression,&depth,
+  *alpha=FxEvaluateSubexpression(fx_info,channel,x,y,fx_info->expression,0,
     &beta,exception);
   return(exception->severity == OptionError ? MagickFalse : MagickTrue);
 }

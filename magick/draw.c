@@ -92,6 +92,7 @@
 */
 #define BezierQuantum  200
 #define DrawEpsilon  (1.0e-10)
+#define EllipseEpsilon  (0.0001)
 #define ThrowPointExpectedException(image,token) \
 { \
   (void) ThrowMagickException(&(image)->exception,GetMagickModule(),DrawError, \
@@ -351,6 +352,7 @@ MagickExport DrawInfo *CloneDrawInfo(const ImageInfo *image_info,
   clone_info->fill_opacity=draw_info->fill_opacity;
   clone_info->stroke_opacity=draw_info->stroke_opacity;
   clone_info->element_reference=draw_info->element_reference;
+  clone_info->clip_path=draw_info->clip_path;
   clone_info->debug=IsEventLogging();
   return(clone_info);
 }
@@ -1449,6 +1451,10 @@ MagickExport MagickBooleanType DrawClipPath(Image *image,
   (void) QueryColorDatabase("#ffffff",&clone_info->fill,&image->exception);
   if (clone_info->clip_mask != (char *) NULL)
     clone_info->clip_mask=DestroyString(clone_info->clip_mask);
+  (void) QueryColorDatabase("#000000",&clone_info->stroke,&image->exception);
+  clone_info->stroke_width=0.0;   
+  clone_info->opacity=OpaqueOpacity;
+  clone_info->clip_path=MagickTrue;
   status=DrawImage(image->clip_mask,clone_info);
   status&=NegateImage(image->clip_mask,MagickFalse);
   clone_info=DestroyDrawInfo(clone_info);
@@ -1525,7 +1531,7 @@ static MagickBooleanType DrawDashPolygon(const DrawInfo *draw_info,
   for (i=0; primitive_info[i].primitive != UndefinedPrimitive; i++) ;
   number_vertices=(size_t) i;
   dash_polygon=(PrimitiveInfo *) AcquireQuantumMemory((size_t)
-    (2UL*(number_vertices+3UL)+1UL),sizeof(*dash_polygon));
+    (2UL*(number_vertices+6UL)+6UL),sizeof(*dash_polygon));
   if (dash_polygon == (PrimitiveInfo *) NULL)
     return(MagickFalse);
   clone_info=CloneDrawInfo((ImageInfo *) NULL,draw_info);
@@ -1684,8 +1690,8 @@ static size_t EllipsePoints(const PrimitiveInfo *primitive_info,
   step=MagickPI/8.0; 
   if ((delta >= 0.0) && (delta < (MagickPI/8.0)))
     step=MagickPI/(4.0*(MagickPI*PerceptibleReciprocal(delta)/2.0));
-  if (step < 0.00001)
-    step=0.00001;
+  if (step < EllipseEpsilon)
+    step=EllipseEpsilon;
   angle.x=DegreesToRadians(degrees.x);
   y=degrees.y;
   while (y < degrees.x)
@@ -2070,6 +2076,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
         if (LocaleCompare("fill",keyword) == 0)
           {
             GetNextToken(q,&q,extent,token);
+            if (graphic_context[n]->clip_path != MagickFalse)
+              break;
             (void) FormatLocaleString(pattern,MaxTextExtent,"%s",token);
             if (GetImageArtifact(image,pattern) != (const char *) NULL)
               (void) DrawPatternPath(image,draw_info,token,
@@ -2090,6 +2098,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
               opacity;
 
             GetNextToken(q,&q,extent,token);
+            if (graphic_context[n]->clip_path != MagickFalse)
+              break;
             factor=strchr(token,'%') != (char *) NULL ? 0.01 : 1.0;
             opacity=MagickMin(MagickMax(factor*
               StringToDouble(token,&next_token),0.0),1.0);
@@ -2295,6 +2305,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
         if (LocaleCompare("opacity",keyword) == 0)
           {
             GetNextToken(q,&q,extent,token);
+            if (graphic_context[n]->clip_path != MagickFalse)
+              break;
             factor=strchr(token,'%') != (char *) NULL ? 0.01 : 1.0;
             graphic_context[n]->opacity=(Quantum) (QuantumRange-QuantumRange*
               ((1.0-QuantumScale*graphic_context[n]->opacity)*factor*
@@ -2653,6 +2665,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
         if (LocaleCompare("stroke",keyword) == 0)
           {
             GetNextToken(q,&q,extent,token);
+            if (graphic_context[n]->clip_path != MagickFalse)
+              break;
             (void) FormatLocaleString(pattern,MaxTextExtent,"%s",token);
             if (GetImageArtifact(image,pattern) != (const char *) NULL)
               (void) DrawPatternPath(image,draw_info,token,
@@ -2778,6 +2792,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
               opacity;
 
             GetNextToken(q,&q,extent,token);
+            if (graphic_context[n]->clip_path != MagickFalse)
+              break;
             factor=strchr(token,'%') != (char *) NULL ? 0.01 : 1.0;
             opacity=MagickMin(MagickMax(factor*
               StringToDouble(token,&next_token),0.0),1.0);
@@ -2789,6 +2805,8 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
         if (LocaleCompare("stroke-width",keyword) == 0)
           {
             GetNextToken(q,&q,extent,token);
+            if (graphic_context[n]->clip_path != MagickFalse)
+              break;
             graphic_context[n]->stroke_width=StringToDouble(token,&next_token);
             if (token == next_token)
               ThrowPointExpectedException(image,token);
@@ -3095,6 +3113,23 @@ MagickExport MagickBooleanType DrawImage(Image *image,const DrawInfo *draw_info)
       }
       case EllipsePrimitive:
       {
+        double
+          alpha,
+          beta,
+          coordinates,
+          radius;
+
+        alpha=bounds.x2-bounds.x1;
+        beta=bounds.y2-bounds.y1;
+        radius=hypot(alpha,beta);
+        coordinates=2.0*ceil(MagickPI*MagickPI*radius)+6*BezierQuantum+360;
+        if (coordinates > 1048576)
+          {
+            (void) ThrowMagickException(&image->exception,GetMagickModule(),
+              DrawError,"TooManyBezierCoordinates","`%s'",token);
+            status=MagickFalse;
+            break;
+          }
         points_extent=(double) EllipsePoints(primitive_info+j,
           primitive_info[j].point,primitive_info[j+1].point,
           primitive_info[j+2].point);
@@ -5029,6 +5064,7 @@ MagickExport void GetDrawInfo(const ImageInfo *image_info,DrawInfo *draw_info)
   if (clone_info->server_name != (char *) NULL)
     draw_info->server_name=AcquireString(clone_info->server_name);
   draw_info->render=MagickTrue;
+  draw_info->clip_path=MagickFalse;
   draw_info->debug=IsEventLogging();
   option=GetImageOption(clone_info,"direction");
   if (option != (const char *) NULL)
@@ -5436,8 +5472,8 @@ static void TraceEllipse(PrimitiveInfo *primitive_info,const PointInfo start,
   step=MagickPI/8.0;
   if ((delta >= 0.0) && (delta < (MagickPI/8.0)))
     step=MagickPI/(4.0*(MagickPI*PerceptibleReciprocal(delta)/2.0));
-  if (step < 0.00001)
-    step=0.00001;
+  if (step < EllipseEpsilon)
+    step=EllipseEpsilon;
   angle.x=DegreesToRadians(degrees.x);
   y=degrees.y;
   while (y < degrees.x)
