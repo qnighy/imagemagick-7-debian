@@ -315,7 +315,7 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	UCQUANTUMDEPTH=$(call UC,$*) \
-	dh-exec $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-PPSOVERSION.symbols.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).symbols.notyet
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/libmagick++-IMVERSION.QUANTUMDEPTH-PPSOVERSION.symbols.in > $(CURDIR)/debian/libmagick++-$(IMVERSION).$*-$(PPSOVERSION).symbols.notyet
 
 	# libmagickcore
 	QUANTUM=$(call QUANTUM_PART,$*) \
@@ -334,7 +334,7 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	UCQUANTUMDEPTH=$(call UC,$*) \
-	dh-exec $(CURDIR)/debian/libmagickcore-IMVERSION.QUANTUMDEPTH-CORESOVERSION.symbols.in > $(CURDIR)/debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).symbols
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/libmagickcore-IMVERSION.QUANTUMDEPTH-CORESOVERSION.symbols.in > $(CURDIR)/debian/libmagickcore-$(IMVERSION).$*-$(CORESOVERSION).symbols
 
 	# wand
 	QUANTUM=$(call QUANTUM_PART,$*) \
@@ -349,7 +349,7 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	UCQUANTUMDEPTH=$(call UC,$*) \
-	dh-exec $(CURDIR)/debian/libmagickwand-IMVERSION.QUANTUMDEPTH-WANDSOVERSION.symbols.in > $(CURDIR)/debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).symbols
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/libmagickwand-IMVERSION.QUANTUMDEPTH-WANDSOVERSION.symbols.in > $(CURDIR)/debian/libmagickwand-$(IMVERSION).$*-$(WANDSOVERSION).symbols
 
 	touch $@
 

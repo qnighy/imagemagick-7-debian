@@ -1365,4 +1365,3 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  ZeroKernelNans@Base 8:6.9.10.2
  ZoomImage@Base 8:6.9.10.2
  sRGBCompandor@Base 8:6.9.10.2
-
