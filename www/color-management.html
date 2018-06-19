@@ -61,7 +61,7 @@
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
+      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
     </form>
     </div>
@@ -119,7 +119,7 @@ convert myimage_channels_*.png -combine myimage2.png</code></pre>
 
 <p>In the above example, the separated channels are non-linear and the default for <code>-combine</code> is to assume non-linear channels. So the result is the same as the input.</p>
 
-If one desires to separate to linear grayscale channels, recombine them later back to non-linear color, perhaps after some processing, then use the same concept as above for maintaining linear grayscale:</p>
+<p>If one desires to separate to linear grayscale channels, recombine them later back to non-linear color, perhaps after some processing, then use the same concept as above for maintaining linear grayscale:</p>
 
 <pre class="highlight"><code>convert myimage.png -set colorspace RGB -separate myimage_channels_%d.png
 convert myimage_channels_*.png -set colorspace RGB -combine -colorspace sRGB myimage2.png</code></pre>
@@ -156,6 +156,6 @@ convert myimage_channels_*.png -set colorspace HSL -combine -colorspace RGB -set
 
   <!-- Javascript assets -->
   <script src="assets/magick.js" crossorigin="anonymous"></script>
-  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
 </body>
 </html>

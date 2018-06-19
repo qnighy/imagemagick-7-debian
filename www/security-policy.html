@@ -61,7 +61,7 @@
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
+      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
     </form>
     </div>
@@ -182,7 +182,7 @@ Path: ImageMagick/policy.xml
 
 Path: [built-in]
   Policy: Undefined
-    rights: None /code></pre>
+    rights: None </code></pre>
 <p>Notice the <code>Cache</code> policy is not listed due to the <code>stealth</code> property.</p>
 
 <p>As of ImageMagick 6.9.8-10, you can programmatically set the ImageMagick security policy with SetMagickSecurityPolicy() (MagickCore) or MagickSetSecurityPolicy() (MagickWand).</p>
@@ -191,7 +191,7 @@ Path: [built-in]
 
 <h2 class="magick-post-title"><a class="anchor" id="synchronize"></a>Pixel Cache Synchronize Policy</h2>
 
-<p>When writing image pixels to disk, ImageMagick firsts preallocates the disk file, which is much faster than fully populating the file with zeros.  To further increase performance, we memory-map the file on disk.  With memory-mapping, we get an increase in performance (up to 5x), however, there remains a possibility that as the disk file is populated, it may run out of free space.  The OS then throws a SIGBUS signal which prevents ImageMagick from continuing.  To prevent a SIGBUS, use this security policy:
+<p>When writing image pixels to disk, ImageMagick firsts preallocates the disk file, which is much faster than fully populating the file with zeros.  To further increase performance, we memory-map the file on disk.  With memory-mapping, we get an increase in performance (up to 5x), however, there remains a possibility that as the disk file is populated, it may run out of free space.  The OS then throws a SIGBUS signal which prevents ImageMagick from continuing.  To prevent a SIGBUS, use this security policy:</p>
 
 <pre class="highlight">
 &lt;policy domain="cache" name="synchronize" value="True"/>
@@ -244,6 +244,6 @@ ion files.  To define your security policy, you must instead edit the <code>magi
 
   <!-- Javascript assets -->
   <script src="assets/magick.js" crossorigin="anonymous"></script>
-  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
 </body>
 </html>

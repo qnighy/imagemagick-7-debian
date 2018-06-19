@@ -1,0 +1,93 @@
+From ffc050b0ee97a516075bc7fe48de4e1018f0c3f7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
+Date: Sat, 18 Mar 2017 15:47:28 +0100
+Subject: Fix remaining error in html files
+
+---
+ www/changelog.html | 12 ++++++------
+ www/download.html  |  4 ++--
+ www/index.html     |  2 --
+ 3 files changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/www/changelog.html b/www/changelog.html
+index 86de829d8..08b4be40c 100644
+--- a/www/changelog.html
++++ b/www/changelog.html
+@@ -61,7 +61,7 @@
+       </li>
+     </ul>
+     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
++      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
+     </form>
+     </div>
+@@ -478,10 +478,10 @@
+ <dt>2016-08-27  6.9.5-8 Dirk Lemstra &lt;dirk@lem.....org&gt;</dt>
+   <li> Added define 'psd:additional-info' to preserve the additional information    in a PSD file.</li>
+ <dt>2016-08-15  6.9.5-8 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+-  <li> Prevent buffer overflow in BMP &amp; SGI coders (bug report from<dt>	  pwchen&amp;rayzhong of tencent).</dt>
++  <li> Prevent buffer overflow in BMP &amp; SGI coders (bug report from    	  pwchen&amp;rayzhong of tencent).</li>
+   <li> Fix MSVG regression (reference    https://github.com/ImageMagick/ImageMagick/issues/252).</li>
+-  <li> Prevent buffer overflow and other problems in SIXEL, PDB, MAP, TIFF, and<dt>	  CALS coders (bug report from Donghai Zhu).</dt>
+-  <li><dt>2016-08-14  6.9.5-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
++  <li> Prevent buffer overflow and other problems in SIXEL, PDB, MAP, TIFF, and	  CALS coders (bug report from Donghai Zhu).</li>
++<dt>2016-08-14  6.9.5-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Release ImageMagick version 6.9.5-7, GIT revision 10993:7d2fd25:20160814.</li>
+ <dt>2016-08-14  6.9.5-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Eliminate compiler warning.</li>
+@@ -4367,7 +4367,7 @@
+   <li> Set AppendImage() matte channel only when image has matte attribute set.</li>
+   <li> The -crop with negative offsets do not modify the virtual canvas.</li>
+   <li> Caption: Given both the width and height ("-size") of the area to fill,    adjust the fonts "-pointsize" until the text just filles the whole space    without overflowing.</li>
+-  <li> Generate proper Windows icon image files (patch provided by    Robert M. Jansen).</li></dl></div>    </div>
++  <li> Generate proper Windows icon image files (patch provided by    Robert M. Jansen).</li></li></dl></div>    </div>
+   </main><!-- /.container -->
+   <footer class="magick-footer">
+     <p><a href="security-policy.html">Security</a> •
+@@ -4386,6 +4386,6 @@
+ 
+   <!-- Javascript assets -->
+   <script src="assets/magick.js" crossorigin="anonymous"></script>
+-  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
++  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js"&gt;&lt;\/script&gt;')</script>
+ </body>
+ </html>
+diff --git a/www/download.html b/www/download.html
+index 9d6a03886..04b13fdac 100644
+--- a/www/download.html
++++ b/www/download.html
+@@ -61,7 +61,7 @@
+       </li>
+     </ul>
+     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
++      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
+     </form>
+     </div>
+@@ -148,7 +148,7 @@
+ <p>ImageMagick RPM's are self-installing.  Simply type the following command and you're ready to start using ImageMagick:</p>
+ 
+ <pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-6.9.9-45.x86_64.rpm</span></pre>
+-<p>You'll need to install the requisite libraries:<?p>
++<p>You'll need to install the requisite libraries:</p>
+ 
+ <pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-libs-6.9.9-45.x86_64.rpm</span></pre>
+ <p>For other systems, create (or choose) a directory to install the package into and change to that directory, for example:</p>
+diff --git a/www/index.html b/www/index.html
+index fb4fa8c6f..b27453017 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -222,10 +222,8 @@ ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&amp;en
+         <p><small>©  1999-2016 ImageMagick Studio LLC</small></p>
+   </footer>
+ </div><!-- /.container -->
+-
+   <script src="https://localhost/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+   <script src="../js/magick.html"></script>
+ </div>
+ </body>
+ </html>
+-<!-- Magick Cache 17th January 2016 17:31 -->
+\ No newline at end of file

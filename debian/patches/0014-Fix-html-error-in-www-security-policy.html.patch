@@ -1,0 +1,23 @@
+From d2b158fcff5fb5a9289ec543e8633eb4ba71da11 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
+Date: Fri, 11 Aug 2017 10:18:19 +0200
+Subject: Fix html error in www/security-policy.html
+
+Forwarded: Yes
+---
+ www/security-policy.html | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/www/security-policy.html b/www/security-policy.html
+index 6d7882eca..09bd1cf75 100644
+--- a/www/security-policy.html
++++ b/www/security-policy.html
+@@ -182,7 +182,7 @@ Path: ImageMagick/policy.xml
+ 
+ Path: [built-in]
+   Policy: Undefined
+-    rights: None /code></pre>
++    rights: None </code></pre>
+ <p>Notice the <code>Cache</code> policy is not listed due to the <code>stealth</code> property.</p>
+ 
+ <p>As of ImageMagick 6.9.8-10, you can programmatically set the ImageMagick security policy with SetMagickSecurityPolicy() (MagickCore) or MagickSetSecurityPolicy() (MagickWand).</p>
