@@ -1,4 +1,4 @@
-imagemagick (8:6.9.9.40+dfsg-1) unstable; urgency=medium
+imagemagick (8:6.9.10.2+dfsg-1) unstable; urgency=medium
 
   * Bug fix: "FTBFS on i386: testsuite failure in Magick++/tests/tests.tap
     2", thanks to Sven Joachim (Closes: #893953).
