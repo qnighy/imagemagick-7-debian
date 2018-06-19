@@ -1,4 +1,4 @@
-From 4947f51e927eba3f16639f5067df731cc6c17162 Mon Sep 17 00:00:00 2001
+From f0e87c8a49ebca4628cb497ecb63ce02fa77b9a9 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Sat, 3 Feb 2018 23:38:58 +0100
 Subject: Fix < instead of &lt; and input form
@@ -54,7 +54,7 @@ Forwarded: Yes
  www/api/monitor.html                   | 4 ++--
  www/api/montage.html                   | 4 ++--
  www/api/morphology.html                | 4 ++--
- www/api/paint.html                     | 7 ++++++-
+ www/api/paint.html                     | 4 ++--
  www/api/pixel-iterator.html            | 4 ++--
  www/api/pixel-wand.html                | 4 ++--
  www/api/profile.html                   | 4 ++--
@@ -128,7 +128,7 @@ Forwarded: Yes
  www/stream.html                        | 4 ++--
  www/support.html                       | 4 ++--
  www/webp.html                          | 4 ++--
- 123 files changed, 252 insertions(+), 250 deletions(-)
+ 123 files changed, 248 insertions(+), 251 deletions(-)
 
 diff --git a/index.html b/index.html
 index 3cb4a51cb..4a408736b 100644
@@ -1160,24 +1160,19 @@ index 93cbdf099..3ae18bfca 100644
  </body>
  </html>
 diff --git a/www/api/paint.html b/www/api/paint.html
-index 21e016e1e..b5fe20191 100644
+index 21e016e1e..6525014ae 100644
 --- a/www/api/paint.html
 +++ b/www/api/paint.html
-@@ -61,8 +61,13 @@
+@@ -61,7 +61,7 @@
        </li>
      </ul>
      <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
-+<<<<<<< HEAD
-       <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
-       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
-+=======
+-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
 +      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
-+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-+>>>>>>> Fix < instead of &lt; and input form
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-   </nav>
-@@ -305,6 +310,6 @@ MagickBooleanType TransparentPaintImage(Image *image,
+@@ -305,6 +305,6 @@ MagickBooleanType TransparentPaintImage(Image *image,
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
