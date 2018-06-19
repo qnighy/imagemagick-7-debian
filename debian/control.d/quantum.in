@@ -64,6 +64,7 @@ Provides: libmagickcore-extra, libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-1-extr
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-2-extra,
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-3-extra,
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-4-extra,
+ libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-5-extra
 Suggests: inkscape
 Recommends: libjxr-tools
 Description: low-level image manipulation library - extra codecs (${UCQUANTUMDEPTH})
