@@ -326,6 +326,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  EnhanceImage@Base 8:6.9.10.2
  EqualizeImage@Base 8:6.9.10.2
  EqualizeImageChannel@Base 8:6.9.10.2
+ ErrorBlob@Base 8:6.9.10.2
  EscapeString@Base 8:6.9.10.2
  EvaluateImage@Base 8:6.9.10.2
  EvaluateImageChannel@Base 8:6.9.10.2
@@ -566,6 +567,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  GetMatrixColumns@Base 8:6.9.10.2
  GetMatrixElement@Base 8:6.9.10.2
  GetMatrixRows@Base 8:6.9.10.2
+ GetMaxMemoryRequest@Base 8:6.9.10.2
  GetMimeDescription@Base 8:6.9.10.2
  GetMimeInfo@Base 8:6.9.10.2
  GetMimeInfoList@Base 8:6.9.10.2
@@ -656,6 +658,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  GetStreamInfoClientData@Base 8:6.9.10.2
  GetStringInfoDatum@Base 8:6.9.10.2
  GetStringInfoLength@Base 8:6.9.10.2
+ GetStringInfoName@Base 8:6.9.10.2
  GetStringInfoPath@Base 8:6.9.10.2
  GetThresholdMap@Base 8:6.9.10.2
  GetThresholdMapFile@Base 8:6.9.10.2
@@ -1001,7 +1004,9 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  ReferenceImage@Base 8:6.9.10.2
  ReferencePixelCache@Base 8:6.9.10.2
  RegisterMagickInfo@Base 8:6.9.10.2
+ RegisterStaticModule@Base 8:6.9.10.2
  RegisterStaticModules@Base 8:6.9.10.2
+ RegisterUndefinedImage@Base 8:6.9.10.2
  RegistryComponentGenesis@Base 8:6.9.10.2
  RegistryComponentTerminus@Base 8:6.9.10.2
  RelinquishAlignedMemory@Base 8:6.9.10.2
@@ -1040,6 +1045,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  ResetImageOptionIterator@Base 8:6.9.10.2
  ResetImageOptions@Base 8:6.9.10.2
  ResetImagePage@Base 8:6.9.10.2
+ ResetImagePixels@Base 8:6.9.10.2
  ResetImageProfileIterator@Base 8:6.9.10.2
  ResetImagePropertyIterator@Base 8:6.9.10.2
  ResetImageRegistryIterator@Base 8:6.9.10.2
@@ -1163,6 +1169,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  SetStringInfo@Base 8:6.9.10.2
  SetStringInfoDatum@Base 8:6.9.10.2
  SetStringInfoLength@Base 8:6.9.10.2
+ SetStringInfoName@Base 8:6.9.10.2
  SetStringInfoPath@Base 8:6.9.10.2
  SetWarningHandler@Base 8:6.9.10.2
  SetXMLTreeAttribute@Base 8:6.9.10.2
@@ -1259,7 +1266,9 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  UnlockSemaphoreInfo@Base 8:6.9.10.2
  UnmapBlob@Base 8:6.9.10.2
  UnregisterMagickInfo@Base 8:6.9.10.2
+ UnregisterStaticModule@Base 8:6.9.10.2
  UnregisterStaticModules@Base 8:6.9.10.2
+ UnregisterUndefinedImage@Base 8:6.9.10.2
  UnsharpMaskImage@Base 8:6.9.10.2
  UnsharpMaskImageChannel@Base 8:6.9.10.2
  UnshiftImageList@Base 8:6.9.10.2
