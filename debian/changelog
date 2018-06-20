@@ -7,6 +7,26 @@ imagemagick (8:6.9.10.2+dfsg-1) experimental; urgency=medium
   * Move to git dpm
   * Move to salsa
   * SO dump
+  * Fix security bugs:
+    + CVE-2018-9133: Excessive iteration in the DecodeLabImage
+      and EncodeLabImage functions (coders/tiff.c), which results
+      in a hang (tens of minutes) with a tiny PoC file.
+      Remote attackers could leverage this vulnerability
+      to cause a denial of service via a crafted tiff file.
+      (Closes: #894848)
+    + CVE-2018-9133: SetGrayscaleImage in the quantize.c file
+      allows attackers to cause a heap-based buffer over-read
+      via a crafted file.
+    + CVE-2018-11624: the ReadMATImage function in coders/mat.c
+      allows attackers to cause a use after free via a crafted file.
+    + CVE-2018-11624: Tested (with and without valgrind) and found immune.
+      The TIFFSetProfiles function in coders/tiff.c has incorrect
+      expectations about whether LibTIFF TIFFGetField return values
+      imply that data validation has occurred, which allows remote attackers
+      to cause a denial of service (use-after-free after an invalid call
+      to TIFFSetField, and application crash) via a crafted file.
+    + CVE-2018-11624: heap-based buffer over-read in IsWEBPImageLossless
+      in coders/webp.c.
 
  -- Bastien Roucariès <rouca@debian.org>  Mon, 26 Mar 2018 16:45:56 +0200
 
