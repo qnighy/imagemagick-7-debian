@@ -18,3 +18,4 @@
 0018-Fix-missing-tr.patch
 0019-Fix-CVE-2018-12600.patch
 0020-CVE-2018-12599.patch
+0021-Fix-FTBFS-on-i386-any.patch
