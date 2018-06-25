@@ -38,8 +38,13 @@ imagemagick (8:6.9.10.2+dfsg-1) experimental; urgency=medium
       (Closes: #898218).
     + CVE-2018-10804: a memory leak in WriteTIFFImage in coders/tiff.c.
       (Closes: #898217)
+    + CVE-2018-12599: the ReadBMPImage and WriteBMPImage functions
+      in coders/bmp.c allow attackers to cause an out of bounds write
+      via a crafted file.
+    + CVE-2018-12600: the ReadDIBImage and WriteDIBImage in coders/dib.c
+      allow attackers to cause an out of bounds write via a crafted file.
 
- -- Bastien Roucariès <rouca@debian.org>  Mon, 26 Mar 2018 16:45:56 +0200
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 25 Jun 2018 14:29:02 +0200
 
 imagemagick (8:6.9.9.39+dfsg-1) unstable; urgency=medium
 
