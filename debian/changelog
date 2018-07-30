@@ -1,3 +1,22 @@
+imagemagick (8:6.9.10.8+dfsg-1) unstable; urgency=high
+
+  * New upstream version
+  * Fix security bugs:
+    + CVE-2018-14551: The ReadMATImageV4 function in coders/mat.c
+      uses an uninitialized variable, leading to memory corruption.
+      (Closes: #904713)
+    + CVE-2018-9135: A heap-based buffer over-read in IsWEBPImageLossless
+      in coders/webp.c.
+    + CVE-2018-14437: Memory leak in parse8BIM in coders/meta.c.
+    + CVE-2018-14436: Memory leak in ReadMIFFImage in coders/miff.c.
+    + CVE-2018-14435: Memory leak in DecodeImage in coders/pcd.c.
+    + CVE-2018-14434: Memory leak for a colormap in WriteMPCImage
+      in coders/mpc.c.
+    + CVE-2018-13153: Memory leak in the XMagickCommand function
+      in MagickCore/animate.c.
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 30 Jul 2018 15:14:16 +0200
+
 imagemagick (8:6.9.10.2+dfsg-3) unstable; urgency=high
 
   * Fix perlmagick (Closes: #903404)
