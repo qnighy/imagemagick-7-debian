@@ -668,16 +668,14 @@ static void TIFFGetProperties(TIFF *tiff,Image *image)
   if ((TIFFGetField(tiff,TIFFTAG_SOFTWARE,&text) == 1) &&
       (text != (char *) NULL))
     (void) SetImageProperty(image,"tiff:software",text);
-  if ((TIFFGetField(tiff,33423,&count,&text) == 1) &&
-      (text != (char *) NULL))
+  if ((TIFFGetField(tiff,33423,&count,&text) == 1) && (text != (char *) NULL))
     {
       if (count >= MaxTextExtent)
         count=MaxTextExtent-1;
       (void) CopyMagickString(message,text,count+1);
       (void) SetImageProperty(image,"tiff:kodak-33423",message);
     }
-  if ((TIFFGetField(tiff,36867,&count,&text) == 1) &&
-      (text != (char *) NULL))
+  if ((TIFFGetField(tiff,36867,&count,&text) == 1) && (text != (char *) NULL))
     {
       if (count >= MaxTextExtent)
         count=MaxTextExtent-1;
@@ -733,7 +731,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
     offset;
 
   void
-    *sans;
+    *sans[2] = { NULL, NULL };
 
   /*
     Read EXIF properties.
@@ -747,7 +745,6 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
       TIFFSetDirectory(tiff,directory);
       return;
     }
-  sans=NULL;
   for (i=0; exif_info[i].tag != 0; i++)
   {
     *value='\0';
@@ -759,7 +756,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           *ascii;
 
         ascii=(char *) NULL;
-        if ((TIFFGetField(tiff,exif_info[i].tag,&ascii,&sans,&sans,&sans) == 1) &&
+        if ((TIFFGetField(tiff,exif_info[i].tag,&ascii,sans) == 1) &&
             (ascii != (char *) NULL) && (*ascii != '\0'))
           (void) CopyMagickString(value,ascii,MaxTextExtent);
         break;
@@ -772,7 +769,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
               shorty;
 
             shorty=0;
-            if (TIFFGetField(tiff,exif_info[i].tag,&shorty,&sans,&sans,&sans) == 1)
+            if (TIFFGetField(tiff,exif_info[i].tag,&shorty,sans) == 1)
               (void) FormatLocaleString(value,MaxTextExtent,"%d",shorty);
           }
         else
@@ -787,7 +784,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
               shorty_num;
 
             tiff_status=TIFFGetField(tiff,exif_info[i].tag,&shorty_num,&shorty,
-              &sans,&sans,&sans);
+              sans);
             if (tiff_status == 1)
               (void) FormatLocaleString(value,MaxTextExtent,"%d",
                 shorty_num != 0 ? shorty[0] : 0);
@@ -800,7 +797,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           longy;
 
         longy=0;
-        if (TIFFGetField(tiff,exif_info[i].tag,&longy,&sans,&sans,&sans) == 1)
+        if (TIFFGetField(tiff,exif_info[i].tag,&longy,sans) == 1)
           (void) FormatLocaleString(value,MaxTextExtent,"%d",longy);
         break;
       }
@@ -811,7 +808,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           long8y;
 
         long8y=0;
-        if (TIFFGetField(tiff,exif_info[i].tag,&long8y,&sans,&sans,&sans) == 1)
+        if (TIFFGetField(tiff,exif_info[i].tag,&long8y,sans) == 1)
           (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
             ((MagickOffsetType) long8y));
         break;
@@ -825,7 +822,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           floaty;
 
         floaty=0.0;
-        if (TIFFGetField(tiff,exif_info[i].tag,&floaty,&sans,&sans,&sans) == 1)
+        if (TIFFGetField(tiff,exif_info[i].tag,&floaty,sans) == 1)
           (void) FormatLocaleString(value,MaxTextExtent,"%g",(double) floaty);
         break;
       }
@@ -835,7 +832,7 @@ static void TIFFGetEXIFProperties(TIFF *tiff,Image *image)
           doubley;
 
         doubley=0.0;
-        if (TIFFGetField(tiff,exif_info[i].tag,&doubley,&sans,&sans,&sans) == 1)
+        if (TIFFGetField(tiff,exif_info[i].tag,&doubley,sans) == 1)
           (void) FormatLocaleString(value,MaxTextExtent,"%g",doubley);
         break;
       }
@@ -1125,6 +1122,7 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
     tiff_status;
 
   MagickBooleanType
+    more_frames,
     status;
 
   QuantumInfo
@@ -1229,6 +1227,7 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
           }
         }
     }
+  more_frames=MagickTrue;
   do
   {
 DisableMSCWarning(4127)
@@ -2117,8 +2116,8 @@ RestoreMSCWarning
     if (image_info->number_scenes != 0)
       if (image->scene >= (image_info->scene+image_info->number_scenes-1))
         break;
-    status=TIFFReadDirectory(tiff) != 0 ? MagickTrue : MagickFalse;
-    if (status != MagickFalse)
+    more_frames=TIFFReadDirectory(tiff) != 0 ? MagickTrue : MagickFalse;
+    if (more_frames != MagickFalse)
       {
         /*
           Allocate next image structure.
@@ -2126,8 +2125,8 @@ RestoreMSCWarning
         AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
-            image=DestroyImageList(image);
-            return((Image *) NULL);
+            status=MagickFalse;
+            break;
           }
         image=SyncNextImageInList(image);
         status=SetImageProgress(image,LoadImagesTag,image->scene-1,
@@ -2135,18 +2134,14 @@ RestoreMSCWarning
         if (status == MagickFalse)
           break;
       }
-  } while (status != MagickFalse);
+  } while ((status != MagickFalse) && (more_frames != MagickFalse));
   TIFFClose(tiff);
   TIFFReadPhotoshopLayers(image,image_info,exception);
-  if (image_info->number_scenes != 0)
-  {
-    if (image_info->scene >= GetImageListLength(image))
-    {
-      /* Subimage was not found in the Photoshop layer */
-      image = DestroyImageList(image);
-      return((Image *)NULL);
-    }
-  }
+  if ((image_info->number_scenes != 0) &&
+      (image_info->scene >= GetImageListLength(image)))
+    status=MagickFalse;
+  if (status == MagickFalse)
+    return(DestroyImageList(image));
   return(GetFirstImageInList(image));
 }
 #endif

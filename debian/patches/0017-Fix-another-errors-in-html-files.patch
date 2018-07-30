@@ -1,4 +1,4 @@
-From 840cda887f85954b586001bdd6102e7871ae3dec Mon Sep 17 00:00:00 2001
+From 5311dfd43b23e98deb8ea1f52b4d097b5f449b81 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Mon, 19 Mar 2018 22:08:25 +0100
 Subject: Fix another errors in html files
@@ -7,11 +7,10 @@ Forwarded: yes
 ---
  www/api.html             | 4 ++--
  www/binary-releases.html | 6 +++---
- www/index.html           | 4 ++--
- 3 files changed, 7 insertions(+), 7 deletions(-)
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/www/api.html b/www/api.html
-index dcf834755..63e175dd7 100644
+index 9a042a6bf..bf8da5fb7 100644
 --- a/www/api.html
 +++ b/www/api.html
 @@ -61,7 +61,7 @@
@@ -32,7 +31,7 @@ index dcf834755..63e175dd7 100644
  </body>
  </html>
 diff --git a/www/binary-releases.html b/www/binary-releases.html
-index 313f956da..614b647b8 100644
+index 54bf4baf2..528ca5ead 100644
 --- a/www/binary-releases.html
 +++ b/www/binary-releases.html
 @@ -61,7 +61,7 @@
@@ -61,25 +60,3 @@ index 313f956da..614b647b8 100644
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
-diff --git a/www/index.html b/www/index.html
-index b27453017..3a9af3a4e 100644
---- a/www/index.html
-+++ b/www/index.html
-@@ -100,7 +100,7 @@ ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&amp;en
-   </tr>
-   <tr>
-     <td><a href="http://www.imagemagick.org/Usage/transform/#vision">Delineate image features</a></td>
--    <td><a href="http://www.imagemagick.org/discourse-server/viewtopic.html?f=4&t=25405">Canny edge detection</a>, <a href="http://www.imagemagick.org/discourse-server/viewtopic.html?f=4&t=25476">Hough lines</a>.</td>
-+    <td><a href="http://www.imagemagick.org/discourse-server/viewtopic.html?f=4&amp;t=25405">Canny edge detection</a>, <a href="http://www.imagemagick.org/discourse-server/viewtopic.html?f=4&amp;t=25476">Hough lines</a>.</td>
-   </tr>
-   <tr>
-     <td><a href="http://www.imagemagick.org/Usage/fourier/">Discrete Fourier transform</a></td>
-@@ -168,7 +168,7 @@ ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&amp;en
-   </tr>
-   <tr>
-     <td><a href="http://www.imagemagick.org/Usage/transform/#vision">Noise and color reduction</a></td>
--    <td><a href="http://www.imagemagick.org/discourse-server/viewtopic.html?f=4&t=26480">Kuwahara Filter</a>, <a href="http://www.imagemagick.org/discourse-server/viewtopic.html?f=4&t=25504">mean-shift</a>.</td>
-+    <td><a href="http://www.imagemagick.org/discourse-server/viewtopic.html?f=4&amp;t=26480">Kuwahara Filter</a>, <a href="http://www.imagemagick.org/discourse-server/viewtopic.html?f=4&amp;t=25504">mean-shift</a>.</td>
-   </tr>
-   <tr>
-     <td><a href="http://www.fmwconcepts.com/misc_tests/perceptual_hash_test_results_510/index.html">Perceptual hash</a></td>

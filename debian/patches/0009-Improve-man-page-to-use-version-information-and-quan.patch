@@ -1,4 +1,4 @@
-From c9dd2038a500290087c7fb17657815491b4ca82c Mon Sep 17 00:00:00 2001
+From f369ab0e2f7fe5fecdb0458c51422aab6d8bf71f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Tue, 21 Mar 2017 12:15:08 +0100
 Subject: Improve man page to use version information and quantum
@@ -24,10 +24,10 @@ Forwarded: no
  13 files changed, 50 insertions(+), 48 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 027fe9e39..085591be0 100644
+index de2c82ca7..6bba0a45e 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -813,6 +813,8 @@ if test "$enable_hdri" = 'yes'; then
+@@ -810,6 +810,8 @@ if test "$enable_hdri" = 'yes'; then
    MAGICK_ABI_SUFFIX="Q${QUANTUM_DEPTH}${MAGICK_HDRI}"
  fi
  AC_SUBST(MAGICK_ABI_SUFFIX)

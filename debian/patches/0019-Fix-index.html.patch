@@ -1,0 +1,31 @@
+From 79dd54b2267bdb0822c16fe73657f49e4afdb09a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
+Date: Mon, 30 Jul 2018 14:49:54 +0200
+Subject: Fix index.html
+
+Forwarded: yes
+---
+ www/index.html | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/www/index.html b/www/index.html
+index dcdd21844..0ba23082f 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -61,7 +61,7 @@
+       </li>
+     </ul>
+     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
++      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
+     </form>
+     </div>
+@@ -272,6 +272,6 @@ Use ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&am
+   </footer>
+   <!-- Javascript assets -->
+   <script src="assets/magick.js" crossorigin="anonymous"></script>
+-  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
++  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;/script>')</script>
+ </body>
+ </html>

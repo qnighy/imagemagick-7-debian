@@ -185,6 +185,8 @@ static Image *ReadMVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if ((image->columns == 0) || (image->rows == 0))
     ThrowReaderException(OptionError,"MustSpecifyImageSize");
   draw_info=CloneDrawInfo(image_info,(DrawInfo *) NULL);
+  if (draw_info->density != (char *) NULL)
+    draw_info->density=DestroyString(draw_info->density);
   draw_info->affine.sx=image->x_resolution == 0.0 ? 1.0 : image->x_resolution/
     96.0;
   draw_info->affine.sy=image->y_resolution == 0.0 ? 1.0 : image->y_resolution/
@@ -212,16 +214,32 @@ static Image *ReadMVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
     draw_info->primitive=FileToString(image->filename,~0UL,exception);
   else
     {
-      draw_info->primitive=(char *) AcquireMagickMemory(GetBlobSize(image)+1);
-      if (draw_info->primitive != (char *) NULL)
+      MagickSizeType
+        length;
+
+      length=GetBlobSize(image);
+      if (length == (MagickSizeType) ((size_t) length))
         {
-          memcpy(draw_info->primitive,GetBlobStreamData(image),
-            GetBlobSize(image));
-          draw_info->primitive[GetBlobSize(image)]='\0';
-        }
+          draw_info->primitive=(char *) AcquireMagickMemory((size_t) length+1);
+          if (draw_info->primitive != (char *) NULL)
+            {
+              memcpy(draw_info->primitive,GetBlobStreamData(image),(size_t)
+                length);
+              draw_info->primitive[length]='\0';
+            }
+         }
      }
   if (draw_info->primitive == (char *) NULL)
-    ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
+    {
+      draw_info=DestroyDrawInfo(draw_info);
+      InheritException(exception,&image->exception);
+      return(DestroyImageList(image));
+    }
+  if (*draw_info->primitive == '@')
+    {
+      draw_info=DestroyDrawInfo(draw_info);
+      ThrowReaderException(CorruptImageError,"ImproperImageHeader");
+    }
   (void) DrawImage(image,draw_info);
   (void) SetImageArtifact(image,"MVG",draw_info->primitive);
   draw_info=DestroyDrawInfo(draw_info);

@@ -1,4 +1,4 @@
-From d2b158fcff5fb5a9289ec543e8633eb4ba71da11 Mon Sep 17 00:00:00 2001
+From d40497fee906c3792bc9295ddfcccb7ba133e4e5 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 11 Aug 2017 10:18:19 +0200
 Subject: Fix html error in www/security-policy.html

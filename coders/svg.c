@@ -225,7 +225,11 @@ static MagickBooleanType IsSVG(const unsigned char *magick,const size_t length)
 {
   if (length < 4)
     return(MagickFalse);
-  if (LocaleNCompare((const char *) magick,"?xml",4) == 0)
+  if (LocaleNCompare((const char *) magick+1,"svg",3) == 0)
+    return(MagickTrue);
+  if (length < 5)
+    return(MagickFalse);
+  if (LocaleNCompare((const char *) magick+1,"?xml",4) == 0)
     return(MagickTrue);
   return(MagickFalse);
 }
@@ -565,17 +569,21 @@ static void SVGStripString(char *message)
   /*
     Remove comment.
   */
+  q=message;
   for (p=message; *p != '\0'; p++)
   {
     if ((*p == '/') && (*(p+1) == '*'))
       {
-        for (q=p; *q != '\0'; q++)
-          if ((*q == '*') && (*(q+1) == '/'))
+        for ( ; *p != '\0'; p++)
+          if ((*p == '*') && (*(p+1) == '/'))
             break;
-        (void) memcpy(p,q+2,strlen(message)-(q-p));
-        p=message;
+        if (*p == '\0')
+          break;
+        p+=2;
       }
+    *q++=(*p);
   }
+  *q='\0';
   /*
     Remove whitespace.
   */
@@ -813,13 +821,18 @@ static void SVGProcessStyleElement(void *context,const xmlChar *name,
         if (LocaleCompare(keyword,"font") == 0)
           {
             char
-              family[MaxTextExtent],
-              size[MaxTextExtent],
-              style[MaxTextExtent];
+              family[MagickPathExtent],
+              size[MagickPathExtent],
+              style[MagickPathExtent];
 
             if (sscanf(value,"%2048s %2048s %2048s",style,size,family) != 3)
               break;
-            (void) FormatLocaleFile(svg_info->file,"font-style \"%s\"\n",style);
+            if (GetUserSpaceCoordinateValue(svg_info,0,style) == 0)
+              (void) FormatLocaleFile(svg_info->file,"font-style \"%s\"\n",
+                style);
+            else
+              if (sscanf(value,"%2048s %2048s",size,family) != 2)
+                break;
             (void) FormatLocaleFile(svg_info->file,"font-size \"%s\"\n",size);
             (void) FormatLocaleFile(svg_info->file,"font-family \"%s\"\n",
               family);
@@ -1463,6 +1476,7 @@ static void SVGStartElement(void *context,const xmlChar *name,
       if (LocaleCompare((const char *) name,"text") == 0)
         {
           PushGraphicContext(id);
+          (void) FormatLocaleFile(svg_info->file,"class \"text\"\n");
           (void) FormatLocaleFile(svg_info->file,"translate %g,%g\n",
             svg_info->bounds.x,svg_info->bounds.y);
           svg_info->center.x=svg_info->bounds.x;
@@ -1595,13 +1609,24 @@ static void SVGStartElement(void *context,const xmlChar *name,
             }
           if (LocaleCompare(keyword,"dx") == 0)
             {
-              svg_info->bounds.x+=GetUserSpaceCoordinateValue(svg_info,1,value);
+              double
+                dx;
+
+              dx=GetUserSpaceCoordinateValue(svg_info,1,value);
+              svg_info->bounds.x+=dx;
+              if (LocaleCompare((char *) name,"text") == 0)
+                (void) FormatLocaleFile(svg_info->file,"translate %g,0.0\n",dx);
               break;
             }
           if (LocaleCompare(keyword,"dy") == 0)
             {
-              svg_info->bounds.y+=
-                GetUserSpaceCoordinateValue(svg_info,-1,value);
+              double
+                dy;
+
+              dy=GetUserSpaceCoordinateValue(svg_info,-1,value);
+              svg_info->bounds.y+=dy;
+              if (LocaleCompare((char *) name,"text") == 0)
+                (void) FormatLocaleFile(svg_info->file,"translate 0.0,%g\n",dy);
               break;
             }
           break;
@@ -2131,24 +2156,22 @@ static void SVGStartElement(void *context,const xmlChar *name,
                           y;
 
                         p=(const char *) value;
-                        GetNextToken(p,&p,MaxTextExtent,token);
+                        GetNextToken(p,&p,MagickPathExtent,token);
                         angle=StringToDouble(value,(char **) NULL);
-                        GetNextToken(p,&p,MaxTextExtent,token);
-                        if (*token == ',')
-                          GetNextToken(p,&p,MaxTextExtent,token);
-                        x=StringToDouble(token,&next_token);
-                        GetNextToken(p,&p,MaxTextExtent,token);
-                        if (*token == ',')
-                          GetNextToken(p,&p,MaxTextExtent,token);
-                        y=StringToDouble(token,&next_token);
                         affine.sx=cos(DegreesToRadians(fmod(angle,360.0)));
                         affine.rx=sin(DegreesToRadians(fmod(angle,360.0)));
                         affine.ry=(-sin(DegreesToRadians(fmod(angle,360.0))));
                         affine.sy=cos(DegreesToRadians(fmod(angle,360.0)));
-                        affine.tx=0.0;
-                        affine.ty=0.0;
-                        svg_info->center.x=x;
-                        svg_info->center.y=y;
+                        GetNextToken(p,&p,MagickPathExtent,token);
+                        if (*token == ',')
+                          GetNextToken(p,&p,MagickPathExtent,token);
+                        x=StringToDouble(token,&next_token)-svg_info->bounds.x;
+                        GetNextToken(p,&p,MagickPathExtent,token);
+                        if (*token == ',')
+                          GetNextToken(p,&p,MagickPathExtent,token);
+                        y=StringToDouble(token,&next_token)-svg_info->bounds.y;
+                        affine.tx=svg_info->bounds.x+x*cos(angle)-y*sin(angle);
+                        affine.ty=svg_info->bounds.y+x*sin(angle)+y*cos(angle);
                         break;
                       }
                     break;
@@ -2667,7 +2690,6 @@ static void SVGEndElement(void *context,const xmlChar *name)
               char
                 *text;
 
-              (void) FormatLocaleFile(svg_info->file,"class \"text\"\n");
               text=EscapeString(svg_info->text,'\'');
               (void) FormatLocaleFile(svg_info->file,"text 0,0 \"%s\"\n",text);
               text=DestroyString(text);
@@ -2685,6 +2707,7 @@ static void SVGEndElement(void *context,const xmlChar *name)
               char
                 *text;
 
+              (void) FormatLocaleFile(svg_info->file,"class \"tspan\"\n");
               text=EscapeString(svg_info->text,'\'');
               (void) FormatLocaleFile(svg_info->file,"text %g,%g \"%s\"\n",
                 svg_info->bounds.x-svg_info->center.x,svg_info->bounds.y-
@@ -3272,23 +3295,26 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         image->rows=gdk_pixbuf_get_height(pixel_buffer);
 #endif
         image->matte=MagickTrue;
-        status=SetImageExtent(image,image->columns,image->rows);
-        if (status == MagickFalse)
-          {
-#if !defined(MAGICKCORE_CAIRO_DELEGATE)
-            g_object_unref(G_OBJECT(pixel_buffer));
-#endif
-            g_object_unref(svg_handle);
-            InheritException(exception,&image->exception);
-            ThrowReaderException(MissingDelegateError,
-              "NoDecodeDelegateForThisImageFormat");
-          }
         if (image_info->ping == MagickFalse)
           {
 #if defined(MAGICKCORE_CAIRO_DELEGATE)
             size_t
               stride;
+#endif
 
+            status=SetImageExtent(image,image->columns,image->rows);
+            if (status == MagickFalse)
+              {
+#if !defined(MAGICKCORE_CAIRO_DELEGATE)
+                g_object_unref(G_OBJECT(pixel_buffer));
+#endif
+                g_object_unref(svg_handle);
+                InheritException(exception,&image->exception);
+                ThrowReaderException(MissingDelegateError,
+                  "NoDecodeDelegateForThisImageFormat");
+              }
+
+#if defined(MAGICKCORE_CAIRO_DELEGATE)
             stride=4*image->columns;
 #if defined(MAGICKCORE_PANGOCAIRO_DELEGATE)
             stride=(size_t) cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32,
@@ -3501,8 +3527,6 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
       image=(Image *) NULL;
       read_info=CloneImageInfo(image_info);
       SetImageInfoBlob(read_info,(void *) NULL,0);
-      if (read_info->density != (char *) NULL)
-        read_info->density=DestroyString(read_info->density);
       (void) FormatLocaleString(read_info->filename,MaxTextExtent,"mvg:%s",
         filename);
       image=ReadImage(read_info,exception);

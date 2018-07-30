@@ -1,0 +1,23 @@
+From 49eb632e76c9911b10390071ed6f41edcb5b1639 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
+Date: Mon, 30 Jul 2018 14:50:23 +0200
+Subject: Fix end tags
+
+Forwarded: yes
+---
+ www/advanced-windows-installation.html | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/www/advanced-windows-installation.html b/www/advanced-windows-installation.html
+index 2ff2db3e2..d0dd1cd5b 100644
+--- a/www/advanced-windows-installation.html
++++ b/www/advanced-windows-installation.html
+@@ -91,7 +91,7 @@
+ </ul>
+ 
+ <h2>Install Visual Studio dependencies</h2>
+-<p>To build ImageMagick with Visual Studio the following components should be installed:</p:
++<p>To build ImageMagick with Visual Studio the following components should be installed:</p>:
+ 
+ <ul>
+ <li>Desktop development with C++ (workload)</li>

@@ -65,6 +65,7 @@
 #include "magick/log.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/module.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
@@ -1097,6 +1098,8 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
     }
   jpeg_info.client_data=(void *) &error_manager;
   jpeg_create_decompress(&jpeg_info);
+  if (GetMaxMemoryRequest() != ~0UL)
+    jpeg_info.mem->max_memory_to_use=(long) GetMaxMemoryRequest();
   JPEGSourceManager(&jpeg_info,image);
   jpeg_set_marker_processor(&jpeg_info,JPEG_COM,ReadComment);
   option=GetImageOption(image_info,"profile:skip");

@@ -486,6 +486,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
 
   size_t
     compress_extent,
+    extent,
     length,
     packet_size;
 
@@ -1437,6 +1438,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
       if (q == (PixelPacket *) NULL)
         break;
       indexes=GetAuthenticIndexQueue(image);
+      extent=0;
       switch (image->compression)
       {
 #if defined(MAGICKCORE_BZLIB_DELEGATE)
@@ -1475,7 +1477,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
             if (code == BZ_STREAM_END)
               break;
           } while (bzip_info.avail_out != 0);
-          (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
+          extent=ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
             quantum_type,pixels,exception);
           break;
         }
@@ -1514,7 +1516,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
             if (code == LZMA_STREAM_END)
               break;
           } while (lzma_info.avail_out != 0);
-          (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
+          extent=ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
             quantum_type,pixels,exception);
           break;
         }
@@ -1556,7 +1558,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
             if (code == Z_STREAM_END)
               break;
           } while (zip_info.avail_out != 0);
-          (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
+          extent=ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
             quantum_type,pixels,exception);
           break;
         }
@@ -1582,6 +1584,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
             SetPixelOpacity(q,pixel.opacity);
             q++;
           }
+          extent=x;
           break;
         }
         default:
@@ -1589,11 +1592,13 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
           count=ReadBlob(image,packet_size*image->columns,pixels);
           if (count != (packet_size*image->columns))
             ThrowMIFFException(CorruptImageError,"UnableToReadImageData");
-          (void) ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
+          extent=ImportQuantumPixels(image,(CacheView *) NULL,quantum_info,
             quantum_type,pixels,exception);
           break;
         }
       }
+      if (extent < image->columns)
+        break;
       if (SyncAuthenticPixels(image,exception) == MagickFalse)
         break;
     }
@@ -1698,8 +1703,8 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
         AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
-            image=DestroyImageList(image);
-            return((Image *) NULL);
+            status=MagickFalse;
+            break;
           }
         image=SyncNextImageInList(image);
         status=SetImageProgress(image,LoadImagesTag,TellBlob(image),
@@ -1709,6 +1714,8 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
       }
   } while (c != EOF);
   (void) CloseBlob(image);
+  if (status == MagickFalse)
+    return(DestroyImageList(image));
   return(GetFirstImageInList(image));
 }
 
@@ -2425,7 +2432,11 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
           switch (quantum_info->depth)
           {
             default:
+            {
+              colormap=(unsigned char *) RelinquishMagickMemory(colormap);
               ThrowWriterException(CorruptImageError,"ImageDepthNotSupported");
+              break;
+            }
             case 32:
             {
               register unsigned int

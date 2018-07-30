@@ -1,0 +1,23 @@
+From 437ba66e94e8e92e9192cc55ee0abd8156d955bc Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
+Date: Mon, 30 Jul 2018 14:48:18 +0200
+Subject: Fix closing tags
+
+Forwarded: yes
+---
+ www/command-line-options.html | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/www/command-line-options.html b/www/command-line-options.html
+index b5207cbb8..a88d48418 100644
+--- a/www/command-line-options.html
++++ b/www/command-line-options.html
+@@ -3786,7 +3786,7 @@ this requires that IM be configured with HDRI enabled. In this case, you must
+ use either MIFF, TIF, PFM or MPC formats for the real and imaginary component
+ results, since they are formats that preserve both negative and fractional
+ values without clipping them or truncating the fractional part. With either
+-MIFF or TIF, one should add <code>-define quantum:format=32<.code>, to allow those image
++MIFF or TIF, one should add <code>-define quantum:format=32</code>, to allow those image
+ types to work properly in HDRI mode without clipping.</p>
+ 
+ <p>The real and imaginary component images resulting from <a

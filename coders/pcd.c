@@ -284,6 +284,9 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
           }
           default:
           {
+            for (i=0; i < (image->columns > 1536 ? 3 : 1); i++)
+              pcd_table[i]=(PCDTable *) RelinquishMagickMemory(pcd_table[i]);
+            buffer=(unsigned char *) RelinquishMagickMemory(buffer);
             ThrowBinaryException(CorruptImageError,"CorruptImage",
               image->filename);
           }
@@ -732,8 +735,8 @@ static Image *ReadPCDImage(const ImageInfo *image_info,ExceptionInfo *exception)
             AcquireNextImage(image_info,image);
             if (GetNextImageInList(image) == (Image *) NULL)
               {
-                image=DestroyImageList(image);
-                return((Image *) NULL);
+                status=MagickFalse;
+                break;
               }
             image=SyncNextImageInList(image);
           }
@@ -749,8 +752,9 @@ static Image *ReadPCDImage(const ImageInfo *image_info,ExceptionInfo *exception)
       chroma2=(unsigned char *) RelinquishMagickMemory(chroma2);
       chroma1=(unsigned char *) RelinquishMagickMemory(chroma1);
       luma=(unsigned char *) RelinquishMagickMemory(luma);
-      image=GetFirstImageInList(image);
-      return(OverviewImage(image_info,image,exception));
+      if (status == MagickFalse)
+        return(DestroyImageList(image));
+      return(OverviewImage(image_info,GetFirstImageInList(image),exception));
     }
   /*
     Read interleaved image.

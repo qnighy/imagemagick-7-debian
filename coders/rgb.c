@@ -985,8 +985,8 @@ static Image *ReadRGBImage(const ImageInfo *image_info,ExceptionInfo *exception)
         AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
-            image=DestroyImageList(image);
-            return((Image *) NULL);
+            status=MagickFalse;
+            break;
           }
         image=SyncNextImageInList(image);
         status=SetImageProgress(image,LoadImagesTag,TellBlob(image),
@@ -1001,7 +1001,7 @@ static Image *ReadRGBImage(const ImageInfo *image_info,ExceptionInfo *exception)
   canvas_image=DestroyImage(canvas_image);
   (void) CloseBlob(image);
   if (status == MagickFalse)
-      return(DestroyImageList(image));
+    return(DestroyImageList(image));
   return(GetFirstImageInList(image));
 }
 

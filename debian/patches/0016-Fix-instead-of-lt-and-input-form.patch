@@ -1,4 +1,4 @@
-From f0e87c8a49ebca4628cb497ecb63ce02fa77b9a9 Mon Sep 17 00:00:00 2001
+From e6315471707ecc0b1249e476709931f8855ef875 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Sat, 3 Feb 2018 23:38:58 +0100
 Subject: Fix < instead of &lt; and input form
@@ -131,7 +131,7 @@ Forwarded: Yes
  123 files changed, 248 insertions(+), 251 deletions(-)
 
 diff --git a/index.html b/index.html
-index 3cb4a51cb..4a408736b 100644
+index 119dc07b5..1da16281d 100644
 --- a/index.html
 +++ b/index.html
 @@ -61,7 +61,7 @@
@@ -152,7 +152,7 @@ index 3cb4a51cb..4a408736b 100644
  </body>
  </html>
 diff --git a/www/ImageMagickObject.html b/www/ImageMagickObject.html
-index d8e586897..81717ea6f 100644
+index 1f1ce94b5..97db0bced 100644
 --- a/www/ImageMagickObject.html
 +++ b/www/ImageMagickObject.html
 @@ -61,7 +61,7 @@
@@ -173,7 +173,7 @@ index d8e586897..81717ea6f 100644
  </body>
  </html>
 diff --git a/www/advanced-unix-installation.html b/www/advanced-unix-installation.html
-index 6b2c61875..6f727c4e4 100644
+index caaf2d1e7..fce52b96c 100644
 --- a/www/advanced-unix-installation.html
 +++ b/www/advanced-unix-installation.html
 @@ -61,7 +61,7 @@
@@ -194,7 +194,7 @@ index 6b2c61875..6f727c4e4 100644
  </body>
  </html>
 diff --git a/www/advanced-windows-installation.html b/www/advanced-windows-installation.html
-index b257fb2c1..413b0f3d1 100644
+index 2317918ee..2ff2db3e2 100644
 --- a/www/advanced-windows-installation.html
 +++ b/www/advanced-windows-installation.html
 @@ -61,7 +61,7 @@
@@ -206,7 +206,7 @@ index b257fb2c1..413b0f3d1 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -408,6 +408,6 @@ _MAGICKMOD_
+@@ -138,6 +138,6 @@
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -614,7 +614,7 @@ index 7bfeb2d2a..dceeffc94 100644
  </body>
  </html>
 diff --git a/www/api/draw.html b/www/api/draw.html
-index 334f1dc93..98e8f8903 100644
+index f4b43ff91..ebcb8efea 100644
 --- a/www/api/draw.html
 +++ b/www/api/draw.html
 @@ -61,7 +61,7 @@
@@ -1517,7 +1517,7 @@ index ecdb10b9a..28347e0db 100644
  </body>
  </html>
 diff --git a/www/architecture.html b/www/architecture.html
-index 98ffe1a90..0b636a86a 100644
+index 2cbc5101c..eac5d329f 100644
 --- a/www/architecture.html
 +++ b/www/architecture.html
 @@ -61,7 +61,7 @@
@@ -1538,10 +1538,10 @@ index 98ffe1a90..0b636a86a 100644
  </body>
  </html>
 diff --git a/www/changelog.html b/www/changelog.html
-index 896700e8a..1cebf26a4 100644
+index e8e0085bd..5c029c69e 100644
 --- a/www/changelog.html
 +++ b/www/changelog.html
-@@ -4367,7 +4367,7 @@
+@@ -4416,7 +4416,7 @@
    <li> Set AppendImage() matte channel only when image has matte attribute set.</li>
    <li> The -crop with negative offsets do not modify the virtual canvas.</li>
    <li> Caption: Given both the width and height ("-size") of the area to fill,    adjust the fonts "-pointsize" until the text just filles the whole space    without overflowing.</li>
@@ -1623,7 +1623,7 @@ index 2532e1743..a41216b64 100644
  </body>
  </html>
 diff --git a/www/command-line-options.html b/www/command-line-options.html
-index da4858d59..1ff8dc5c2 100644
+index 9c67a1968..b5207cbb8 100644
 --- a/www/command-line-options.html
 +++ b/www/command-line-options.html
 @@ -61,7 +61,7 @@
@@ -1635,7 +1635,7 @@ index da4858d59..1ff8dc5c2 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -7973,6 +7973,6 @@ href="command-line-options.html#colors">-colors</a> to reduce the number of colo
+@@ -7990,6 +7990,6 @@ href="command-line-options.html#colors">-colors</a> to reduce the number of colo
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -1644,7 +1644,7 @@ index da4858d59..1ff8dc5c2 100644
  </body>
  </html>
 diff --git a/www/command-line-processing.html b/www/command-line-processing.html
-index 9dfd8111b..848a3824f 100644
+index c7647b4f8..4817a7829 100644
 --- a/www/command-line-processing.html
 +++ b/www/command-line-processing.html
 @@ -61,7 +61,7 @@
@@ -1656,7 +1656,7 @@ index 9dfd8111b..848a3824f 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -635,6 +635,6 @@ image-2.jpg</pre>
+@@ -633,6 +633,6 @@ image-2.jpg</pre>
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -1686,7 +1686,7 @@ index 1fbe18ddd..40d9b6141 100644
  </body>
  </html>
 diff --git a/www/compare.html b/www/compare.html
-index f83bad864..e743224a9 100644
+index 3e457b62a..e72e88bc7 100644
 --- a/www/compare.html
 +++ b/www/compare.html
 @@ -61,7 +61,7 @@
@@ -1698,7 +1698,7 @@ index f83bad864..e743224a9 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -422,7 +422,7 @@ transparent, extract, background, or shape the alpha channel</td>
+@@ -424,7 +424,7 @@ transparent, extract, background, or shape the alpha channel</td>
      <td><a href="command-line-options.html#write-mask">-read-mask <var>filename</var></a></td>
      <td>associate a write mask with the image</td>
    </tr>
@@ -1707,7 +1707,7 @@ index f83bad864..e743224a9 100644
    </tbody>
  </table>
  </div>
-@@ -445,6 +445,6 @@ transparent, extract, background, or shape the alpha channel</td>
+@@ -447,6 +447,6 @@ transparent, extract, background, or shape the alpha channel</td>
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -1842,7 +1842,7 @@ index 7263f1f44..ec3047291 100644
  </body>
  </html>
 diff --git a/www/develop.html b/www/develop.html
-index 6b1a7c3a9..5b50c61f8 100644
+index 335b29e76..3319f49dc 100644
 --- a/www/develop.html
 +++ b/www/develop.html
 @@ -61,7 +61,7 @@
@@ -1854,7 +1854,7 @@ index 6b1a7c3a9..5b50c61f8 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -223,6 +223,6 @@
+@@ -219,6 +219,6 @@
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -1905,7 +1905,7 @@ index 3155f9045..2bb4aa616 100644
  </body>
  </html>
 diff --git a/www/download.html b/www/download.html
-index 04b13fdac..26d8c4408 100644
+index 40c6d616d..c2db6c107 100644
 --- a/www/download.html
 +++ b/www/download.html
 @@ -460,6 +460,6 @@ objShell.Exec("convert ""e:/myimages/image.png"" ""e:/myimages/image.jpg""")</co
@@ -1917,7 +1917,7 @@ index 04b13fdac..26d8c4408 100644
  </body>
  </html>
 diff --git a/www/escape.html b/www/escape.html
-index f24a052a4..4dda9ccee 100644
+index fae2a282b..8fa7b43f2 100644
 --- a/www/escape.html
 +++ b/www/escape.html
 @@ -61,7 +61,7 @@
@@ -1929,7 +1929,7 @@ index f24a052a4..4dda9ccee 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -907,6 +907,6 @@ Post ObjectData Descriptor Record
+@@ -908,6 +908,6 @@ Post ObjectData Descriptor Record
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -2022,7 +2022,7 @@ index 28cc16cab..6a0e1fb46 100644
  </body>
  </html>
 diff --git a/www/fx.html b/www/fx.html
-index a4c66d399..cd569c60e 100644
+index 6cc2e4c61..5abc6923f 100644
 --- a/www/fx.html
 +++ b/www/fx.html
 @@ -61,7 +61,7 @@
@@ -2034,7 +2034,7 @@ index a4c66d399..cd569c60e 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -432,6 +432,6 @@ Red channel of NW corner of image #1 is 0.184588
+@@ -435,6 +435,6 @@ Red channel of NW corner of image #1 is 0.184588
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -2165,7 +2165,7 @@ index 9510f6a77..5f562ad79 100644
  </body>
  </html>
 diff --git a/www/install-source.html b/www/install-source.html
-index 3f3a72047..51d7b7ae8 100644
+index c4eb48a01..580c04ba2 100644
 --- a/www/install-source.html
 +++ b/www/install-source.html
 @@ -61,7 +61,7 @@
@@ -2404,7 +2404,7 @@ index f4ef5344f..2855beaee 100644
  </body>
  </html>
 diff --git a/www/mirror.html b/www/mirror.html
-index 9f11f9241..7079fdcc3 100644
+index 2390ff176..3ddbb80af 100644
 --- a/www/mirror.html
 +++ b/www/mirror.html
 @@ -61,7 +61,7 @@
@@ -2416,7 +2416,7 @@ index 9f11f9241..7079fdcc3 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -138,6 +138,6 @@
+@@ -132,6 +132,6 @@
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -2530,7 +2530,7 @@ index 151b4ebe2..ab1ef86c1 100644
  </body>
  </html>
 diff --git a/www/perl-magick.html b/www/perl-magick.html
-index 07883c8e6..1963f5ad5 100644
+index 6cc094934..1d6fb6528 100644
 --- a/www/perl-magick.html
 +++ b/www/perl-magick.html
 @@ -61,7 +61,7 @@
@@ -2593,7 +2593,7 @@ index d982f55b6..be10dfe49 100644
  </body>
  </html>
 diff --git a/www/resources.html b/www/resources.html
-index adc02d5d9..bcf31f4d5 100644
+index bd30fb6c7..9cd6fe286 100644
 --- a/www/resources.html
 +++ b/www/resources.html
 @@ -61,7 +61,7 @@
@@ -2673,7 +2673,7 @@ index 09bd1cf75..45c2df253 100644
  </body>
  </html>
 diff --git a/www/sitemap.html b/www/sitemap.html
-index f093293d4..333727205 100644
+index 1700949f6..1356d5d56 100644
 --- a/www/sitemap.html
 +++ b/www/sitemap.html
 @@ -61,7 +61,7 @@
@@ -2685,7 +2685,7 @@ index f093293d4..333727205 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -260,6 +260,6 @@
+@@ -259,6 +259,6 @@
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
