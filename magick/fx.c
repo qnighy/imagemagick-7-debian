@@ -1626,6 +1626,17 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
         return(FxChannelStatistics(fx_info,image,channel,symbol,exception));
       break;
     }
+    case 'E':
+    case 'e':
+    {
+      if (LocaleCompare(symbol,"extent") == 0)
+        {
+          if (image->extent != 0)
+            return(image->extent);
+          return(GetBlobSize(image));
+        }
+      break;
+    }
     case 'G':
     case 'g':
     {

@@ -969,8 +969,8 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((bmp_info.compression == BI_RGB) ||
         (bmp_info.compression == BI_BITFIELDS))
       {
-        pixel_info=AcquireVirtualMemory((size_t) image->rows,
-          MagickMax(bytes_per_line,image->columns+256UL)*sizeof(*pixels));
+        pixel_info=AcquireVirtualMemory(image->rows,MagickMax(bytes_per_line,
+          image->columns+256UL)*sizeof(*pixels));
         if (pixel_info == (MemoryInfo *) NULL)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
@@ -990,8 +990,8 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Convert run-length encoded raster pixels.
         */
-        pixel_info=AcquireVirtualMemory((size_t) image->rows,
-          MagickMax(bytes_per_line,image->columns+256UL)*sizeof(*pixels));
+        pixel_info=AcquireVirtualMemory(image->rows,MagickMax(bytes_per_line,
+          image->columns+256UL)*sizeof(*pixels));
         if (pixel_info == (MemoryInfo *) NULL)
           ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
         pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
@@ -1469,8 +1469,8 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
         AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
-            image=DestroyImageList(image);
-            return((Image *) NULL);
+            status=MagickFalse;
+            break;
           }
         image=SyncNextImageInList(image);
         status=SetImageProgress(image,LoadImagesTag,TellBlob(image),
@@ -1480,6 +1480,8 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
   } while (IsBMP(magick,2) != MagickFalse);
   (void) CloseBlob(image);
+  if (status == MagickFalse)
+    return(DestroyImageList(image));
   return(GetFirstImageInList(image));
 }
 
@@ -1857,8 +1859,8 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image)
     /*
       Convert MIFF to BMP raster pixels.
     */
-    pixel_info=AcquireVirtualMemory((size_t) bmp_info.image_size,
-      sizeof(*pixels));
+    pixel_info=AcquireVirtualMemory(image->rows,MagickMax(bytes_per_line,
+      image->columns+256UL)*sizeof(*pixels));
     if (pixel_info == (MemoryInfo *) NULL)
       ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
     pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);

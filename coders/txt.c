@@ -325,8 +325,8 @@ static Image *ReadTEXTImage(const ImageInfo *image_info,
     AcquireNextImage(image_info,image);
     if (GetNextImageInList(image) == (Image *) NULL)
       {
-        image=DestroyImageList(image);
-        return((Image *) NULL);
+        status=MagickFalse;
+        break;
       }
     image->next->columns=image->columns;
     image->next->rows=image->rows;
@@ -353,6 +353,8 @@ static Image *ReadTEXTImage(const ImageInfo *image_info,
     texture=DestroyImage(texture);
   draw_info=DestroyDrawInfo(draw_info);
   (void) CloseBlob(image);
+  if (status == MagickFalse)
+    return(DestroyImageList(image));
   return(GetFirstImageInList(image));
 }
 
@@ -613,8 +615,8 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
         AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
-            image=DestroyImageList(image);
-            return((Image *) NULL);
+            status=MagickFalse;
+            break;
           }
         image=SyncNextImageInList(image);
         status=SetImageProgress(image,LoadImagesTag,TellBlob(image),
@@ -624,6 +626,8 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
   } while (LocaleNCompare((char *) text,MagickID,strlen(MagickID)) == 0);
   (void) CloseBlob(image);
+  if (status == MagickFalse)
+    return(DestroyImageList(image));
   return(GetFirstImageInList(image));
 }
 

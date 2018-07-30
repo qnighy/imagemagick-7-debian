@@ -27,7 +27,7 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [9])
 m4_define([magick_micro_version], [10])
-m4_define([magick_patchlevel_version], [2])
+m4_define([magick_patchlevel_version], [8])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_git_revision], esyscmd([sh -c "(gitversion.sh .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -306,12 +306,6 @@ AC_CANONICAL_HOST
 AC_CHECK_SIZEOF([size_t])
 
 AX_COMPILER_VENDOR
-AX_COMPILER_FLAGS
-# The AX_CFLAGS_WARN_ALL macro doesn't currently work for sunpro
-# compiler.
-if test "$ax_cv_c_compiler_vendor" != "sun"; then
-  AX_CFLAGS_WARN_ALL
-fi
 
 if test "x$GCC" = "xyes"; then
   CFLAGS="$CFLAGS -fexceptions"
@@ -346,6 +340,7 @@ AC_EXEEXT
 AC_OBJEXT
 
 GDI32_LIBS=''
+WS2_32_LIBS=''
 native_win32_build='no'
 cygwin_build='no'
 case "${host_os}" in
@@ -357,6 +352,7 @@ case "${host_os}" in
         native_win32_build='yes'
         GDI32_LIBS='-lgdi32'
         OLE_LIBS='-loleaut32'
+        WS2_32_LIBS="-lws2_32"
     ;;
 esac
 if test "${GDI32_LIBS}x" != 'x'; then
@@ -364,6 +360,7 @@ if test "${GDI32_LIBS}x" != 'x'; then
 fi
 AC_SUBST(GDI32_LIBS)
 AC_SUBST(OLE_LIBS)
+AC_SUBST(WS2_32_LIBS)
 AM_CONDITIONAL(WINGDI32_DELEGATE, test "${GDI32_LIBS}x" != 'x' )
 AM_CONDITIONAL(WIN32_NATIVE_BUILD, test "${native_win32_build}" = 'yes' )
 AM_CONDITIONAL(CYGWIN_BUILD, test "${cygwin_build}" = 'yes' )
@@ -3880,9 +3877,9 @@ fi
 #
 
 if test "$build_modules" != 'no'; then
-    MAGICK_DEP_LIBS="$USER_LIBS $LCMS_LIBS $FREETYPE_LIBS $RAQM_LIBS $LQR_LIBS $FFTW_LIBS $FLIF_LIBS $XML_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $JEMALLOC_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$USER_LIBS $LCMS_LIBS $FREETYPE_LIBS $RAQM_LIBS $LQR_LIBS $FFTW_LIBS $FLIF_LIBS $XML_LIBS $FONTCONFIG_LIBS $XEXT_LIBS $IPC_LIBS $X11_LIBS $XT_LIBS $LZMA_LIBS $BZLIB_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $WS2_32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $JEMALLOC_LIBS $THREAD_LIBS"
 else
-    MAGICK_DEP_LIBS="$USER_LIBS $JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $RAQM_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FLIF_LIBS $FPX_LIBS $FONTCONFIG_LIBS $HEIF_LIBS $WEBPMUX_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RAW_R_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $JEMALLOC_LIBS $THREAD_LIBS"
+    MAGICK_DEP_LIBS="$USER_LIBS $JBIG_LIBS $LCMS_LIBS $TIFF_LIBS $FREETYPE_LIBS $RAQM_LIBS $JPEG_LIBS $GS_LIBS $LQR_LIBS $PNG_LIBS $AUTOTRACE_LIBS $DJVU_LIBS $FFTW_LIBS $FLIF_LIBS $FPX_LIBS $FONTCONFIG_LIBS $HEIF_LIBS $WEBPMUX_LIBS $WEBP_LIBS $WMF_LIBS $DPS_LIBS $XEXT_LIBS $XT_LIBS $IPC_LIBS $X11_LIBS $LZMA_LIBS $BZLIB_LIBS $OPENEXR_LIBS $LIBOPENJP2_LIBS $PANGO_LIBS $RAW_R_LIBS $RSVG_LIBS $XML_LIBS $GVC_LIBS $ZLIB_LIBS $LTDL_LIBS $GDI32_LIBS $WS2_32_LIBS $MATH_LIBS $GOMP_LIBS $CL_LIBS $UMEM_LIBS $JEMALLOC_LIBS $THREAD_LIBS"
 fi
 AC_SUBST(MAGICK_DEP_LIBS)
 

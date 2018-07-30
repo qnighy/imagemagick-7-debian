@@ -891,9 +891,12 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
             switch (depth)
             {
               default:
+              {
                 colormap=(unsigned char *) RelinquishMagickMemory(colormap);
                 ThrowReaderException(CorruptImageError,
                   "ImageDepthNotSupported");
+                break;
+              }
               case 8:
               {
                 unsigned char
@@ -982,8 +985,8 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
         AcquireNextImage(image_info,image);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
-            image=DestroyImageList(image);
-            return((Image *) NULL);
+            status=MagickFalse;
+            break;
           }
         image=SyncNextImageInList(image);
         status=SetImageProgress(image,LoadImagesTag,TellBlob(image),
@@ -993,6 +996,8 @@ static Image *ReadMPCImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
   } while (c != EOF);
   (void) CloseBlob(image);
+  if (status == MagickFalse)
+    return(DestroyImageList(image));
   return(GetFirstImageInList(image));
 }
 

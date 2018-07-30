@@ -1667,26 +1667,42 @@ static MagickBooleanType GetICCProperty(const Image *image,const char *property)
         char
           info[MagickPathExtent];
 
-        int
-          status;
+        unsigned int
+          extent;
 
         (void) memset(info,0,sizeof(info));
-        status=cmsGetProfileInfoASCII(icc_profile,cmsInfoDescription,"en","US",
-          info,MagickPathExtent);
-        if (status != 0)
-          (void) SetImageProperty((Image *) image,"icc:description",info);
-        status=cmsGetProfileInfoASCII(icc_profile,cmsInfoManufacturer,"en","US",
-          info,MagickPathExtent);
-        if (status != 0)
-          (void) SetImageProperty((Image *) image,"icc:manufacturer",info);
-        status=cmsGetProfileInfoASCII(icc_profile,cmsInfoModel,"en","US",
-          info,MagickPathExtent);
-        if (status != 0)
-          (void) SetImageProperty((Image *) image,"icc:model",info);
-        status=cmsGetProfileInfoASCII(icc_profile,cmsInfoCopyright,"en","US",
-          info,MagickPathExtent);
-        if (status != 0)
-          (void) SetImageProperty((Image *) image,"icc:copyright",info);
+        extent=cmsGetProfileInfoASCII(icc_profile,cmsInfoDescription,"en","US",
+          NULL,0);
+        if (extent != 0)
+          {
+            extent=cmsGetProfileInfoASCII(icc_profile,cmsInfoDescription,"en",
+              "US",info,MagickMin(MagickPathExtent-1,extent));
+            (void) SetImageProperty((Image *) image,"icc:description",info);
+         }
+        extent=cmsGetProfileInfoASCII(icc_profile,cmsInfoManufacturer,"en","US",
+          NULL,0);
+        if (extent != 0)
+          {
+            extent=cmsGetProfileInfoASCII(icc_profile,cmsInfoManufacturer,"en",
+              "US",info,MagickMin(MagickPathExtent-1,extent));
+            (void) SetImageProperty((Image *) image,"icc:manufacturer",info);
+          }
+        extent=cmsGetProfileInfoASCII(icc_profile,cmsInfoModel,"en","US",
+          NULL,0);
+        if (extent != 0)
+          {
+            extent=cmsGetProfileInfoASCII(icc_profile,cmsInfoModel,"en","US",
+              info,MagickMin(MagickPathExtent-1,extent));
+            (void) SetImageProperty((Image *) image,"icc:model",info);
+          }
+        extent=cmsGetProfileInfoASCII(icc_profile,cmsInfoCopyright,"en","US",
+          NULL,0);
+        if (extent != 0)
+          {
+            extent=cmsGetProfileInfoASCII(icc_profile,cmsInfoCopyright,"en",
+              "US",info,MagickMin(MagickPathExtent-1,extent));
+            (void) SetImageProperty((Image *) image,"icc:copyright",info);
+          }
 #endif
         (void) cmsCloseProfile(icc_profile);
       }
@@ -2119,7 +2135,7 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
             break;
           }
         /*
-          Add sub-path knot
+          Add sub-path knot.
         */
         for (i=0; i < 3; i++)
         {
@@ -2154,14 +2170,14 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
               Handle special cases when Bezier curves are used to describe
               corners and straight lines.
             */
-            if ((last[1].x == last[2].x) && (last[1].y == last[2].y) &&
+            if (((last[1].x == last[2].x) || (last[1].y == last[2].y)) &&
                 (point[0].x == point[1].x) && (point[0].y == point[1].y))
               (void) FormatLocaleString(message,MaxTextExtent,
                 "L %g %g\n",point[1].x,point[1].y);
             else
               (void) FormatLocaleString(message,MaxTextExtent,
-                "C %g %g %g %g %g %g\n",last[2].x,
-                last[2].y,point[0].x,point[0].y,point[1].x,point[1].y);
+                "C %g %g %g %g %g %g\n",last[2].x,last[2].y,point[0].x,
+                point[0].y,point[1].x,point[1].y);
             for (i=0; i < 3; i++)
               last[i]=point[i];
           }
@@ -2177,7 +2193,7 @@ static char *TraceSVGClippath(const unsigned char *blob,size_t length,
               Same special handling as above except we compare to the
               first point in the path and close the path.
             */
-            if ((last[1].x == last[2].x) && (last[1].y == last[2].y) &&
+            if (((last[1].x == last[2].x) || (last[1].y == last[2].y)) &&
                 (first[0].x == first[1].x) && (first[0].y == first[1].y))
               (void) FormatLocaleString(message,MaxTextExtent,
                 "L %g %g Z\n",first[1].x,first[1].y);
@@ -2468,6 +2484,7 @@ MagickExport const char *GetImageProperty(const Image *image,
 %    %y   y resolution (density)
 %    %z   image depth (as read in unless modified, image save depth)
 %    %A   image transparency channel enabled (true/false)
+%    %B   file size of image in bytes
 %    %C   image compression type
 %    %D   image GIF dispose method
 %    %G   original image size (%wx%h; before any resizes)
@@ -2755,6 +2772,18 @@ static const char *GetMagickPropertyLetter(const ImageInfo *image_info,
       */
       (void) FormatLocaleString(value,MaxTextExtent,"%s",
          CommandOptionToMnemonic(MagickBooleanOptions,(ssize_t) image->matte));
+      break;
+    }
+    case 'B':
+    {
+      /*
+        Image size read in - in bytes.
+      */
+      (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
+        image->extent);
+      if (image->extent == 0)
+        (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
+          GetBlobSize(image));
       break;
     }
     case 'C':
