@@ -4,6 +4,8 @@ imagemagick (8:6.9.10.14+dfsg-1) unstable; urgency=medium
   * Fix new privacy breach
   * Fix duplicate files in documentation
   * Fix security bugs:
+    + CVE-2018-18544: Fix a memory leak in the function WriteMSLImage of
+      coders/msl.c
     + CVE-2018-18024: Fix an infinite loop in the ReadBMPImage function of the
       coders/bmp.c file can cause a DOS via a crafted bmp file.
     + CVE-2018-18023: A heap-based buffer over-read in the SVGStripString
