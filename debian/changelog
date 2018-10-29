@@ -1,3 +1,43 @@
+imagemagick (8:6.9.10.14+dfsg-1) unstable; urgency=medium
+
+  * New upstream version
+  * Fix security bugs:
+    + CVE-2018-18024: Fix an infinite loop in the ReadBMPImage function of the
+      coders/bmp.c file can cause a DOS via a crafted bmp file.
+    + CVE-2018-18023: A heap-based buffer over-read in the SVGStripString
+      function of coders/svg.c, which allows attackers to cause a denial
+      of service via a crafted SVG image file.
+    + CVE-2018-16645: Fix an excessive memory allocation issue in the functions
+      ReadBMPImage of coders/bmp.c and ReadDIBImage of coders/dib.c,
+      which allows remote attackers to cause a denial of service via
+      a crafted image file.
+      (Closes: #910889)
+    + CVE-2018-16644: Fix a missing check for length in the functions
+      ReadDCMImage of coders/dcm.c and ReadPICTImage of coders/pict.c,
+      which allows remote attackers to cause a denial of service via
+      a crafted image.
+      (Closes: #910888)
+    + CVE-2018-16413: Fix a heap-based buffer over-read in the
+      MagickCore/quantum-private.h PushShortPixel function when called
+      from the coders/psd.c ParseImageResourceBlocks function.
+      (Closes: #910887)
+    + CVE-2018-16323: Fix an information disclosure vulnerability that existed
+      in ImageMagick when processing XBM images. An attacker could use this
+      to expose sensitive information.
+      (Closes: #907776)
+    + CVE-2018-16412: Fix a heap-based buffer over-read in the coders/psd.c
+      ParseImageResourceBlocks function.
+    + CVE-2018-17965: Fix a memory leak vulnerability in WriteSGIImage
+      in coders/sgi.c.
+    + CVE-2018-17966: Fix a memory leak vulnerability in WritePDBImage
+      in coders/pdb.c.
+    + CVE-2018-17967: Fix a memory leak vulnerability in ReadBGRImage
+      in coders/bgr.c.
+    + CVE-2018-18016: Fix a memory leak vulnerability in WritePCXImage
+      in coders/pcx.c.
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 29 Oct 2018 13:13:38 +0100
+
 imagemagick (8:6.9.10.8+dfsg-1) unstable; urgency=high
 
   * New upstream version
