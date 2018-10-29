@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -918,7 +918,8 @@ MagickExport int EOFBlob(const Image *image)
     case ZipStream:
     {
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
-      blob_info->eof=gzeof(blob_info->file_info.gzfile);
+      blob_info->eof=gzeof(blob_info->file_info.gzfile) != 0 ? MagickTrue :
+        MagickFalse;
 #endif
       break;
     }
@@ -1090,15 +1091,17 @@ MagickExport unsigned char *FileToBlob(const char *filename,const size_t extent,
         "NotAuthorized","`%s'",filename);
       return(NULL);
     }
-  status=GetPathAttributes(filename,&attributes);
-  if ((status == MagickFalse) || (S_ISDIR(attributes.st_mode) != 0))
-    {
-      ThrowFileException(exception,BlobError,"UnableToReadBlob",filename);
-      return(NULL);
-    }
   file=fileno(stdin);
   if (LocaleCompare(filename,"-") != 0)
-    file=open_utf8(filename,O_RDONLY | O_BINARY,0);
+    {
+      status=GetPathAttributes(filename,&attributes);
+      if ((status == MagickFalse) || (S_ISDIR(attributes.st_mode) != 0))
+        {
+          ThrowFileException(exception,BlobError,"UnableToReadBlob",filename);
+          return(NULL);
+        }
+      file=open_utf8(filename,O_RDONLY | O_BINARY,0);
+    }
   if (file == -1)
     {
       ThrowFileException(exception,BlobError,"UnableToOpenFile",filename);
@@ -2698,7 +2701,7 @@ MagickExport MagickBooleanType OpenBlob(const ImageInfo *image_info,
         }
       blob_info->type=FileStream;
       blob_info->exempt=MagickTrue;
-			return(SetStreamBuffering(image_info,image));
+      return(SetStreamBuffering(image_info,image));
     }
 #endif
   GetPathComponent(image->filename,ExtensionPath,extension);
@@ -3149,7 +3152,7 @@ MagickExport ssize_t ReadBlob(Image *image,const size_t length,
             count=(ssize_t) gzread(blob_info->file_info.gzfile,q+i,
               (unsigned int) MagickMin(length-i,MagickMaxBufferExtent));
             if (count <= 0)
-              { 
+              {
                 count=0;
                 if (errno != EINTR)
                   break;
@@ -4878,9 +4881,6 @@ MagickExport ssize_t WriteBlob(Image *image,const size_t length,
     }
     case BlobStream:
     {
-      register unsigned char
-        *q;
-
       if ((blob_info->offset+(MagickOffsetType) length) >=
           (MagickOffsetType) blob_info->extent)
         {

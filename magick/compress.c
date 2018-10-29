@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -456,6 +456,7 @@ MagickExport MagickBooleanType HuffmanDecodeImage(Image *image)
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  exception=(&image->exception);
   if (image->blob == (BlobInfo *) NULL)
     ThrowBinaryException(BlobError,"UnableToOpenBlob",image->filename);
   mb_hash=(HuffmanTable **) AcquireQuantumMemory(HashSize,sizeof(*mb_hash));
@@ -502,7 +503,6 @@ MagickExport MagickBooleanType HuffmanDecodeImage(Image *image)
   image->x_resolution=204.0;
   image->y_resolution=196.0;
   image->units=PixelsPerInchResolution;
-  exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
   for (y=0; ((y < (ssize_t) image->rows) && (null_lines < 3)); )
   {
@@ -767,7 +767,7 @@ RestoreMSCWarning \
   scanline=(unsigned char *) AcquireQuantumMemory((size_t) width+1UL,
     sizeof(*scanline));
   if (scanline == (unsigned char *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       inject_image->filename);
   (void) memset(scanline,0,width*sizeof(*scanline));
   huffman_image=CloneImage(inject_image,0,0,MagickTrue,&image->exception);
@@ -975,7 +975,7 @@ MagickExport MagickBooleanType LZWEncodeImage(Image *image,const size_t length,
   assert(pixels != (unsigned char *) NULL);
   table=(TableType *) AcquireQuantumMemory(1UL << 12,sizeof(*table));
   if (table == (TableType *) NULL)
-    ThrowBinaryException(ResourceLimitWarning,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitWarning,"MemoryAllocationFailed",
       image->filename);
   /*
     Initialize variables.
@@ -1111,7 +1111,7 @@ MagickExport MagickBooleanType PackbitsEncodeImage(Image *image,
   assert(pixels != (unsigned char *) NULL);
   packbits=(unsigned char *) AcquireQuantumMemory(128UL,sizeof(*packbits));
   if (packbits == (unsigned char *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   for (i=(ssize_t) length; i != 0; )
   {
@@ -1265,7 +1265,7 @@ MagickExport MagickBooleanType ZLIBEncodeImage(Image *image,const size_t length,
   compress_pixels=(unsigned char *) AcquireQuantumMemory(compress_packets,
     sizeof(*compress_pixels));
   if (compress_pixels == (unsigned char *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   stream.next_in=pixels;
   stream.avail_in=(unsigned int) length;
@@ -1286,7 +1286,8 @@ MagickExport MagickBooleanType ZLIBEncodeImage(Image *image,const size_t length,
       compress_packets=(size_t) stream.total_out;
     }
   if (status != Z_OK)
-    ThrowBinaryException(CoderError,"UnableToZipCompressImage",image->filename)
+    ThrowBinaryImageException(CoderError,"UnableToZipCompressImage",
+      image->filename)
   for (i=0; i < (ssize_t) compress_packets; i++)
     (void) WriteBlobByte(image,compress_pixels[i]);
   compress_pixels=(unsigned char *) RelinquishMagickMemory(compress_pixels);

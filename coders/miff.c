@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -162,6 +162,7 @@ static MagickBooleanType IsMIFF(const unsigned char *magick,const size_t length)
 %
 */
 
+#if defined(MAGICKCORE_BZLIB_DELEGATE) || defined(MAGICKCORE_LZMA_DELEGATE) || defined(MAGICKCORE_ZLIB_DELEGATE)
 static void *AcquireCompressionMemory(void *context,const size_t items,
   const size_t size)
 {
@@ -176,6 +177,7 @@ static void *AcquireCompressionMemory(void *context,const size_t items,
     return((void *) NULL);
   return(AcquireMagickMemory(extent));
 }
+#endif
 
 #if defined(MAGICKCORE_BZLIB_DELEGATE)
 static void *AcquireBZIPMemory(void *context,int items,int size)

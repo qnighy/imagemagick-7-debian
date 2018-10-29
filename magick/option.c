@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -948,8 +948,8 @@ static const OptionInfo
   CompressOptions[] =
   {
     { "Undefined", UndefinedCompression, UndefinedOptionFlag, MagickTrue },
-    { "B44", B44Compression, UndefinedOptionFlag, MagickFalse },
     { "B44A", B44ACompression, UndefinedOptionFlag, MagickFalse },
+    { "B44", B44Compression, UndefinedOptionFlag, MagickFalse },
     { "BZip", BZipCompression, UndefinedOptionFlag, MagickFalse },
     { "DXT1", DXT1Compression, UndefinedOptionFlag, MagickFalse },
     { "DXT3", DXT3Compression, UndefinedOptionFlag, MagickFalse },
@@ -958,19 +958,21 @@ static const OptionInfo
     { "Group4", Group4Compression, UndefinedOptionFlag, MagickFalse },
     { "JBIG1", JBIG1Compression, UndefinedOptionFlag, MagickFalse },
     { "JBIG2", JBIG2Compression, UndefinedOptionFlag, MagickFalse },
-    { "JPEG", JPEGCompression, UndefinedOptionFlag, MagickFalse },
     { "JPEG2000", JPEG2000Compression, UndefinedOptionFlag, MagickFalse },
-    { "Lossless", LosslessJPEGCompression, UndefinedOptionFlag, MagickFalse },
+    { "JPEG", JPEGCompression, UndefinedOptionFlag, MagickFalse },
     { "LosslessJPEG", LosslessJPEGCompression, UndefinedOptionFlag, MagickFalse },
+    { "Lossless", LosslessJPEGCompression, UndefinedOptionFlag, MagickFalse },
     { "LZMA", LZMACompression, UndefinedOptionFlag, MagickFalse },
     { "LZW", LZWCompression, UndefinedOptionFlag, MagickFalse },
     { "None", NoCompression, UndefinedOptionFlag, MagickFalse },
     { "Piz", PizCompression, UndefinedOptionFlag, MagickFalse },
     { "Pxr24", Pxr24Compression, UndefinedOptionFlag, MagickFalse },
     { "RLE", RLECompression, UndefinedOptionFlag, MagickFalse },
-    { "Zip", ZipCompression, UndefinedOptionFlag, MagickFalse },
     { "RunlengthEncoded", RLECompression, UndefinedOptionFlag, MagickFalse },
+    { "WebP", WebPCompression, UndefinedOptionFlag, MagickFalse },
     { "ZipS", ZipSCompression, UndefinedOptionFlag, MagickFalse },
+    { "Zip", ZipCompression, UndefinedOptionFlag, MagickFalse },
+    { "Zstd", ZstdCompression, UndefinedOptionFlag, MagickFalse },
     { (char *) NULL, UndefinedCompression, UndefinedOptionFlag, MagickFalse }
   },
   DataTypeOptions[] =
@@ -1492,6 +1494,7 @@ static const OptionInfo
     { "Coder", CoderPolicyDomain, UndefinedOptionFlag, MagickFalse },
     { "Delegate", DelegatePolicyDomain, UndefinedOptionFlag, MagickFalse },
     { "Filter", FilterPolicyDomain, UndefinedOptionFlag, MagickFalse },
+    { "Module", ModulePolicyDomain, UndefinedOptionFlag, MagickFalse },
     { "Path", PathPolicyDomain, UndefinedOptionFlag, MagickFalse },
     { "Resource", ResourcePolicyDomain, UndefinedOptionFlag, MagickFalse },
     { "System", SystemPolicyDomain, UndefinedOptionFlag, MagickFalse },
@@ -2089,9 +2092,11 @@ MagickExport ssize_t GetCommandOptionFlags(const CommandOption option,
   ssize_t
     option_types;
 
+  if ((options == (const char *) NULL) || (*options == '\0'))
+    return(-1);
   option_info=GetOptionInfo(option);
   if (option_info == (const OptionInfo *) NULL)
-    return(-1);
+    return(UndefinedOptionFlag);
   option_types=0;
   sentinel=',';
   if (strchr(options,'|') != (char *) NULL)

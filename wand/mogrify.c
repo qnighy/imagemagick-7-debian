@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -196,7 +196,7 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
     TimerInfo
       *timer;
 
-    SetOpenMPMaximumThreads((int) n);
+    (void) SetMagickResourceLimit(ThreadResource,(MagickSizeType) n);
     timer=AcquireTimerInfo();
     if (concurrent == MagickFalse)
       {
@@ -1637,9 +1637,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             */
             (void) SyncImageSettings(mogrify_info,*image);
             (void) ParsePageGeometry(*image,argv[i+1],&geometry,exception);
-            (void) QueryColorDatabase(argv[i+2],&draw_info->fill,exception);
-            (void) GetOneVirtualMagickPixel(*image,geometry.x,geometry.y,
-              &target,exception);
+            (void) QueryMagickColor(argv[i+2],&target,exception);
             (void) FloodfillPaintImage(*image,channel,draw_info,&target,
               geometry.x,geometry.y,*option == '-' ? MagickFalse : MagickTrue);
             InheritException(exception,&(*image)->exception);
@@ -5335,7 +5333,7 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
               ThrowMogrifyException(OptionError,"UnrecognizedListType",argv[i]);
             status=MogrifyImageInfo(image_info,(int) (i-j+1),(const char **)
               argv+j,exception);
-            return(status == 0 ? MagickTrue : MagickFalse);
+            return(status == 0 ? MagickFalse : MagickTrue);
           }
         if (LocaleCompare("local-contrast",option+1) == 0)
           {

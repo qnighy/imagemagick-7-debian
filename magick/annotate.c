@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -576,7 +576,6 @@ MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
   const MagickBooleanType split,TypeMetric *metrics,char **caption)
 {
   MagickBooleanType
-    digit,
     status;
 
   register char
@@ -593,18 +592,17 @@ MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
   ssize_t
     n;
 
-  digit=MagickFalse;
-  width=0;
   q=draw_info->text;
   s=(char *) NULL;
   for (p=(*caption); GetUTFCode(p) != 0; p+=GetUTFOctets(p))
   {
-    if ((digit == MagickFalse) && (IsUTFSpace(GetUTFCode(p)) != MagickFalse))
+    if (IsUTFSpace(GetUTFCode(p)) != MagickFalse)
       s=p;
-    digit=((GetUTFCode(p) >= 0x0030) && (GetUTFCode(p) <= 0x0039)) ?
-      MagickTrue : MagickFalse;
     if (GetUTFCode(p) == '\n')
-      q=draw_info->text;
+      {
+        q=draw_info->text;
+        continue;
+      }
     for (i=0; i < (ssize_t) GetUTFOctets(p); i++)
       *q++=(*(p+i));
     *q='\0';
@@ -612,9 +610,9 @@ MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
     if (status == MagickFalse)
       break;
     width=(size_t) floor(metrics->width+draw_info->stroke_width+0.5);
-    if ((width <= image->columns) || (s == (char *) NULL))
+    if (width <= image->columns)
       continue;
-    if ((s != (char *) NULL) && (GetUTFOctets(s) == 1))
+    if (s != (char *) NULL)
       {
         *s='\n';
         p=s;
@@ -622,67 +620,16 @@ MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
     else
       if (split != MagickFalse)
         {
-          char
-            *target;
-
           /*
             No convenient line breaks-- insert newline.
           */
-          target=AcquireString(*caption);
           n=p-(*caption);
-          CopyMagickString(target,*caption,n+1);
-          ConcatenateMagickString(target,"\n",strlen(*caption)+1);
-          ConcatenateMagickString(target,p,strlen(*caption)+2);
-          (void) DestroyString(*caption);
-          *caption=target;
-          p=(*caption)+n;
-        }
-    q=draw_info->text;
-    s=(char *) NULL;
-  }
-  if (width > image->columns)
-    {
-      char
-        *text;
-
-      /*
-        No convenient break point, force one.
-      */
-      text=AcquireString(draw_info->text);
-      q=draw_info->text;
-      s=(char *) NULL;
-      for (p=(*caption); GetUTFCode(p) != 0; p+=GetUTFOctets(p))
-      {
-        if (IsUTFSpace(GetUTFCode(p)) != MagickFalse)
-          s=p;
-        if (GetUTFCode(p) == '\n')
-          q=draw_info->text;
-        for (i=0; i < (ssize_t) GetUTFOctets(p); i++)
-          *q++=(*(p+i));
-        *q='\0';
-        status=GetTypeMetrics(image,draw_info,metrics);
-        if (status == MagickFalse)
-          break;
-        width=(size_t) floor(metrics->width+draw_info->stroke_width+0.5);
-        if ((width <= image->columns) || (strcmp(text,draw_info->text) == 0))
-          continue;
-        (void) strcpy(text,draw_info->text);
-        if ((s != (char *) NULL) && (GetUTFOctets(s) == 1))
-          {
-            *s='\n';
-            p=s;
-          }
-        else
-          if ((s != (char *) NULL) || (split != MagickFalse))
+          if ((n > 0) && ((*caption)[n-1] != '\n'))
             {
               char
                 *target;
 
-              /*
-                No convenient line breaks-- insert newline.
-              */
               target=AcquireString(*caption);
-              n=p-(*caption);
               CopyMagickString(target,*caption,n+1);
               ConcatenateMagickString(target,"\n",strlen(*caption)+1);
               ConcatenateMagickString(target,p,strlen(*caption)+2);
@@ -690,11 +637,10 @@ MagickExport ssize_t FormatMagickCaption(Image *image,DrawInfo *draw_info,
               *caption=target;
               p=(*caption)+n;
             }
-        q=draw_info->text;
-        s=(char *) NULL;
-      }
-      text=DestroyString(text);
-    }
+        }
+    q=draw_info->text;
+    s=(char *) NULL;
+  }
   n=0;
   for (p=(*caption); GetUTFCode(p) != 0; p+=GetUTFOctets(p))
     if (GetUTFCode(p) == '\n')
@@ -1366,6 +1312,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
   /*
     Initialize Truetype library.
   */
+  exception=(&image->exception);
   ft_status=FT_Init_FreeType(&library);
   if (ft_status != 0)
     ThrowBinaryException(TypeError,"UnableToInitializeFreetypeLibrary",
@@ -1380,7 +1327,6 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       args.pathname=ConstantString(draw_info->font+1);
   face=(FT_Face) NULL;
   ft_status=FT_Open_Face(library,&args,(long) draw_info->face,&face);
-  exception=(&image->exception);
   if (ft_status != 0)
     {
       (void) FT_Done_FreeType(library);
@@ -1562,12 +1508,15 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
   code=0;
   for (i=0; i < (ssize_t) length; i++)
   {
+    FT_Outline
+      outline;
+
     /*
       Render UTF-8 sequence.
     */
     glyph.id=grapheme[i].index;
     if (glyph.id == 0)
-      glyph.id=FT_Get_Char_Index(face,'?');
+      glyph.id=FT_Get_Char_Index(face,' ');
     if ((glyph.id != 0) && (last_glyph.id != 0))
       origin.x+=(FT_Pos) (64.0*draw_info->kerning);
     glyph.origin=origin;
@@ -1579,8 +1528,8 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
     ft_status=FT_Get_Glyph(face->glyph,&glyph.image);
     if (ft_status != 0)
       continue;
-    ft_status=FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph.image)->outline,
-      &bounds);
+    outline=((FT_OutlineGlyph) glyph.image)->outline;
+    ft_status=FT_Outline_Get_BBox(&outline,&bounds);
     if (ft_status != 0)
       continue;
     if ((p == draw_info->text) || (bounds.xMin < metrics->bounds.x1))
@@ -1604,8 +1553,9 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
         */
         annotate_info->affine.tx=glyph.origin.x/64.0;
         annotate_info->affine.ty=(-glyph.origin.y/64.0);
-        (void) FT_Outline_Decompose(&((FT_OutlineGlyph) glyph.image)->outline,
-          &OutlineMethods,annotate_info);
+        if ((outline.n_contours > 0) && (outline.n_points > 0))
+          ft_status=FT_Outline_Decompose(&outline,&OutlineMethods,
+            annotate_info);
       }
     FT_Vector_Transform(&glyph.origin,&affine);
     (void) FT_Glyph_Transform(glyph.image,&affine,&glyph.origin);
@@ -1712,7 +1662,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
                 double
                   Sa,
                   Da;
-                
+
                 Da=1.0-(QuantumScale*(QuantumRange-q->opacity));
                 Sa=fill_opacity;
                 fill_opacity=(1.0-RoundToUnity(Sa+Da-Sa*Da))*QuantumRange;

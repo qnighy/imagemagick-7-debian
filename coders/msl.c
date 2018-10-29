@@ -25,7 +25,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -552,7 +552,8 @@ static void MSLPushImage(MSLInfo *msl_info,Image *image)
   ssize_t
     n;
 
-  (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (image != (Image *) NULL)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(msl_info != (MSLInfo *) NULL);
   msl_info->n++;
   n=msl_info->n;
@@ -8286,6 +8287,9 @@ static MagickBooleanType WriteMSLImage(const ImageInfo *image_info,Image *image)
   Image
     *msl_image;
 
+  MagickBooleanType
+    status;
+
   assert(image_info != (const ImageInfo *) NULL);
   assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
@@ -8293,6 +8297,8 @@ static MagickBooleanType WriteMSLImage(const ImageInfo *image_info,Image *image)
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   msl_image=CloneImage(image,0,0,MagickTrue,&image->exception);
-  return(ProcessMSLScript(image_info,&msl_image,&image->exception));
+  status=ProcessMSLScript(image_info,&msl_image,&image->exception);
+  msl_image=DestroyImageList(msl_image);
+  return(status);
 }
 #endif

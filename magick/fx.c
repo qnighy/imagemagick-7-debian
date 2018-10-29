@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -1632,8 +1632,8 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
       if (LocaleCompare(symbol,"extent") == 0)
         {
           if (image->extent != 0)
-            return(image->extent);
-          return(GetBlobSize(image));
+            return((double) image->extent);
+          return((double) GetBlobSize(image));
         }
       break;
     }
@@ -1778,6 +1778,10 @@ static double FxGetSymbol(FxInfo *fx_info,const ChannelType channel,
         return((double) image->page.x);
       if (LocaleCompare(symbol,"page.y") == 0)
         return((double) image->page.y);
+      if (LocaleCompare(symbol,"printsize.x") == 0)
+        return(PerceptibleReciprocal(image->x_resolution)*image->columns);
+      if (LocaleCompare(symbol,"printsize.y") == 0)
+        return(PerceptibleReciprocal(image->y_resolution)*image->rows);
       break;
     }
     case 'Q':
@@ -3165,6 +3169,8 @@ MagickExport Image *FxImageChannel(const Image *image,const ChannelType channel,
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (expression == (const char *) NULL)
+    return(CloneImage(image,0,0,MagickTrue,exception));
   fx_info=AcquireFxThreadSet(image,expression,exception);
   if (fx_info == (FxInfo **) NULL)
     return((Image *) NULL);
@@ -3968,9 +3974,9 @@ MagickExport MagickBooleanType PlasmaImage(Image *image,
   RandomInfo
     *random_info;
 
+  assert(image != (Image *) NULL);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(image != (Image *) NULL);
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
@@ -4056,20 +4062,7 @@ MagickExport Image *PolaroidImage(const Image *image,const DrawInfo *draw_info,
   if (value != (const char *) NULL)
     {
       char
-        *caption,
-        geometry[MaxTextExtent];
-
-      DrawInfo
-        *annotate_info;
-
-      MagickBooleanType
-        status;
-
-      ssize_t
-        count;
-
-      TypeMetric
-        metrics;
+        *caption;
 
       /*
         Generate caption image.
@@ -4077,31 +4070,49 @@ MagickExport Image *PolaroidImage(const Image *image,const DrawInfo *draw_info,
       caption_image=CloneImage(image,image->columns,1,MagickTrue,exception);
       if (caption_image == (Image *) NULL)
         return((Image *) NULL);
-      annotate_info=CloneDrawInfo((const ImageInfo *) NULL,draw_info);
       caption=InterpretImageProperties((ImageInfo *) NULL,(Image *) image,
         value);
-      (void) CloneString(&annotate_info->text,caption);
-      count=FormatMagickCaption(caption_image,annotate_info,MagickTrue,&metrics,
-        &caption);
-      status=SetImageExtent(caption_image,image->columns,(size_t)
-        ((count+1)*(metrics.ascent-metrics.descent)+0.5));
-      if (status == MagickFalse)
-        caption_image=DestroyImage(caption_image);
-      else
+      if (caption != (char *) NULL)
         {
-          caption_image->background_color=image->border_color;
-          (void) SetImageBackgroundColor(caption_image);
+          char
+            geometry[MaxTextExtent];
+
+          DrawInfo
+            *annotate_info;
+
+          MagickBooleanType
+            status;
+
+          ssize_t
+            count;
+
+          TypeMetric
+            metrics;
+
+          annotate_info=CloneDrawInfo((const ImageInfo *) NULL,draw_info);
           (void) CloneString(&annotate_info->text,caption);
-          (void) FormatLocaleString(geometry,MaxTextExtent,"+0+%.20g",
-            metrics.ascent);
-          if (annotate_info->gravity == UndefinedGravity)
-            (void) CloneString(&annotate_info->geometry,AcquireString(
-              geometry));
-          (void) AnnotateImage(caption_image,annotate_info);
-          height+=caption_image->rows;
+          count=FormatMagickCaption(caption_image,annotate_info,MagickTrue,
+            &metrics,&caption);
+          status=SetImageExtent(caption_image,image->columns,(size_t)
+            ((count+1)*(metrics.ascent-metrics.descent)+0.5));
+          if (status == MagickFalse)
+            caption_image=DestroyImage(caption_image);
+          else
+            {
+              caption_image->background_color=image->border_color;
+              (void) SetImageBackgroundColor(caption_image);
+              (void) CloneString(&annotate_info->text,caption);
+              (void) FormatLocaleString(geometry,MaxTextExtent,"+0+%.20g",
+                metrics.ascent);
+              if (annotate_info->gravity == UndefinedGravity)
+                (void) CloneString(&annotate_info->geometry,AcquireString(
+                  geometry));
+              (void) AnnotateImage(caption_image,annotate_info);
+              height+=caption_image->rows;
+            }
+          annotate_info=DestroyDrawInfo(annotate_info);
+          caption=DestroyString(caption);
         }
-      annotate_info=DestroyDrawInfo(annotate_info);
-      caption=DestroyString(caption);
     }
   picture_image=CloneImage(image,image->columns+2*quantum,height,MagickTrue,
     exception);
@@ -5032,7 +5043,6 @@ MagickExport Image *StereoAnaglyphImage(const Image *left_image,
   assert(right_image->signature == MagickCoreSignature);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickCoreSignature);
-  assert(right_image != (const Image *) NULL);
   image=left_image;
   if ((left_image->columns != right_image->columns) ||
       (left_image->rows != right_image->rows))

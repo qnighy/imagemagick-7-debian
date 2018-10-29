@@ -25,7 +25,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -117,7 +117,7 @@ static MagickBooleanType IsHeifSuccess(struct heif_error *error, Image *image)
   if (error->code == 0)
     return(MagickTrue);
 
-  ThrowBinaryException(CorruptImageError,error->message,image->filename);
+  ThrowBinaryImageException(CorruptImageError,error->message,image->filename);
 }
 
 static Image *ReadHEICImage(const ImageInfo *image_info,
@@ -227,16 +227,23 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
             "InsufficientImageDataInFile");
         }
       exif_buffer=AcquireMagickMemory(exif_size);
-      error=heif_image_handle_get_metadata(image_handle,exif_id,exif_buffer);
-      if (error.code == 0)
+      if (exif_buffer != NULL)
         {
-          StringInfo
-            *profile;
+          error=heif_image_handle_get_metadata(image_handle,
+            exif_id,exif_buffer);
+          if (error.code == 0)
+            {
+              StringInfo
+                *profile;
 
-          profile=BlobToStringInfo(exif_buffer,exif_size);
-          SetImageProfile(image,"exif",profile);
-          profile=DestroyStringInfo(profile);
-      }
+              profile=BlobToStringInfo(exif_buffer,exif_size);
+              if (profile != (StringInfo*) NULL)
+                {
+                  SetImageProfile(image,"exif",profile);
+                  profile=DestroyStringInfo(profile);
+                }
+            }
+        }
       exif_buffer=RelinquishMagickMemory(exif_buffer);
   }
   /*
@@ -376,7 +383,6 @@ ModuleExport size_t RegisterHEICImage(void)
   entry->module=ConstantString("GIF");
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->thread_support=MagickFalse;
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -618,10 +624,7 @@ static MagickBooleanType WriteHEICImage(const ImageInfo *image_info,Image *image
     if (status == MagickFalse)
       break;
     if (GetNextImageInList(image) == (Image *) NULL)
-      {
-        status=MagickFalse;
-        break;
-      }
+      break;
     image=SyncNextImageInList(image);
     status=SetImageProgress(image,SaveImagesTag,scene,
       GetImageListLength(image));

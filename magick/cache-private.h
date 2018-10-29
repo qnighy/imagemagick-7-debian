@@ -5,7 +5,7 @@
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
   
-    https://www.imagemagick.org/script/license.php
+    https://imagemagick.org/script/license.php
   
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
@@ -261,7 +261,7 @@ extern MagickExport const IndexPacket
   *GetVirtualIndexesFromNexus(const Cache,NexusInfo *);
 
 extern MagickExport const PixelPacket
-  *GetVirtualPixelsFromNexus(const Image *,const VirtualPixelMethod,
+  *GetVirtualPixelCacheNexus(const Image *,const VirtualPixelMethod,
     const ssize_t,const ssize_t,const size_t,const size_t,NexusInfo *,
     ExceptionInfo *) magick_hot_spot,
   *GetVirtualPixelsNexus(const Cache,NexusInfo *);

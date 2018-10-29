@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -182,6 +182,7 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
     return(MagickFalse);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
+  exception=(&image->exception);
   if (IsGrayColorspace(image->colorspace) != MagickFalse)
     (void) SetImageColorspace(image,sRGBColorspace);
   if ((image->matte == MagickFalse) &&
@@ -205,7 +206,6 @@ MagickExport MagickBooleanType FloodfillPaintImage(Image *image,
   /*
     Push initial segment on stack.
   */
-  exception=(&image->exception);
   x=x_offset;
   y=y_offset;
   start=0;
@@ -627,7 +627,7 @@ MagickExport MagickBooleanType GradientImage(Image *image,
   gradient->stops=(StopInfo *) AcquireQuantumMemory(gradient->number_stops,
     sizeof(*gradient->stops));
   if (gradient->stops == (StopInfo *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   (void) memset(gradient->stops,0,gradient->number_stops*
     sizeof(*gradient->stops));
