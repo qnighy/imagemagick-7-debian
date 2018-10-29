@@ -22,7 +22,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -4163,6 +4163,7 @@ MagickExport MagickBooleanType ImportImagePixels(Image *image,const ssize_t x,
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  exception=(&image->exception);
   length=strlen(map);
   quantum_map=(QuantumType *) AcquireQuantumMemory(length,sizeof(*quantum_map));
   if (quantum_map == (QuantumType *) NULL)
@@ -4259,7 +4260,6 @@ MagickExport MagickBooleanType ImportImagePixels(Image *image,const ssize_t x,
   /*
     Transfer the pixels from the pixel datarray to the image.
   */
-  exception=(&image->exception);
   roi.width=width;
   roi.height=height;
   roi.x=x;

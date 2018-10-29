@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -294,6 +294,7 @@ static MagickBooleanType Classify(Image *image,short **extrema,
   (void) memset(&red,0,sizeof(red));
   (void) memset(&green,0,sizeof(green));
   (void) memset(&blue,0,sizeof(blue));
+  exception=(&image->exception);
   while (DefineRegion(extrema[Red],&red) != 0)
   {
     green.index=0;
@@ -355,7 +356,6 @@ static MagickBooleanType Classify(Image *image,short **extrema,
   status=MagickTrue;
   count=0;
   progress=0;
-  exception=(&image->exception);
   image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
@@ -1827,7 +1827,7 @@ MagickExport MagickBooleanType SegmentImage(Image *image,
           extrema[i]=(short *) RelinquishMagickMemory(extrema[i]);
           histogram[i]=(ssize_t *) RelinquishMagickMemory(histogram[i]);
         }
-        ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+        ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename)
       }
   }

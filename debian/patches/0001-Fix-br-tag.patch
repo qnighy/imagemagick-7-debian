@@ -1,4 +1,4 @@
-From 697e658f7336281be739f4e29e4560235a8a6643 Mon Sep 17 00:00:00 2001
+From 5e3ca5360139b92da2b34d4500f937b05a9f9cf7 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 2 Feb 2018 22:14:03 +0100
 Subject: Fix br tag
@@ -7,11 +7,11 @@ find . -path './.git' -prune -o -type 'f' -name '*.html' -exec sed -i 's,<br>,<b
 
 Forwarded: Yes, https://github.com/ImageMagick/ImageMagick/issues/304
 ---
- www/api/Image++.html | 262 +++++++++++++++++++++----------------------
- 1 file changed, 131 insertions(+), 131 deletions(-)
+ www/api/Image++.html | 268 +++++++++++++++++++++----------------------
+ 1 file changed, 134 insertions(+), 134 deletions(-)
 
 diff --git a/www/api/Image++.html b/www/api/Image++.html
-index 169070b0a..b202d013c 100644
+index 612960690..1a1bbeb5e 100644
 --- a/www/api/Image++.html
 +++ b/www/api/Image++.html
 @@ -229,7 +229,7 @@ has been placed within a Blob, it may be read into a Magick++ Image via
@@ -32,12 +32,14 @@ index 169070b0a..b202d013c 100644
  likewise, to read an image from a Blob, you could use one of the
  following examples: </p>
  <p>[ <font color="#000000">Entry condition for the following examples
-@@ -281,8 +281,8 @@ image.read( blob);
+@@ -280,9 +280,9 @@ image.read( blob);
+ <div class="doc-section">
  Image may be constructed in a number of ways. It may be constructed
  from a file, a URL, or an encoded image (e.g. JPEG) contained in an
- in-memory <a href="http://www.imagemagick.org/Magick++/Blob.html"> BLOB</a> . The available Image
+-in-memory <a href="https://imagemagick.org/Magick++/Blob.html"> BLOB</a> . The available Image
 -constructors are shown in the following table: <br>
 -  <br>
++in-memory <a href="https://www.imagemagick.org/Magick++/Blob.html"> BLOB</a> . The available Image
 +constructors are shown in the following table: <br />
 +  <br />
   
@@ -50,11 +52,12 @@ index 169070b0a..b202d013c 100644
 -      <td><font size="-1">const size_t width_, </font> <br>
 -      <font size="-1">const size_t height_,</font> <br>
 -      <font size="-1">std::string map_,</font> <br>
+-      <font size="-1">const <a href="https://imagemagick.org/Magick++/Enumerations.html#StorageType">
+-StorageType</a> type_,</font> <br>
 +      <td><font size="-1">const size_t width_, </font> <br />
 +      <font size="-1">const size_t height_,</font> <br />
 +      <font size="-1">std::string map_,</font> <br />
-       <font size="-1">const <a href="http://www.imagemagick.org/Magick++/Enumerations.html#StorageType">
--StorageType</a> type_,</font> <br>
++      <font size="-1">const <a href="https://www.imagemagick.org/Magick++/Enumerations.html#StorageType">
 +StorageType</a> type_,</font> <br />
        <font size="-1">const void *pixels_</font></td>
        <td><font size="-1">Construct a new Image based on an array of
@@ -409,7 +412,7 @@ index 169070b0a..b202d013c 100644
  an image format is selected which is capable of supporting fewer
  colors than the original image or quantization has been requested, the
 @@ -1637,7 +1637,7 @@ original if this is a problem.</font></td>
-  href="http://www.imagemagick.org/Magick++/Blob.html"> BLOB</a> stored in <i>blob_</i>. The <i>magick</i>_
+  href="https://imagemagick.org/Magick++/Blob.html"> BLOB</a> stored in <i>blob_</i>. The <i>magick</i>_
  parameter specifies the image format to write (defaults to <a
   href="Image++.html#magick">magick</a> ). The depth_ parameter species the image
 -depth (defaults to <a href="Image++.html#depth"> depth</a> ).</font> <br>
@@ -484,7 +487,7 @@ index 169070b0a..b202d013c 100644
 +      <br />
        <font size="-1">Color</font></center>
        </td>
-       <td><font size="-1"><a href="http://www.imagemagick.org/Magick++/Color.html">Color</a> </font></td>
+       <td><font size="-1"><a href="https://imagemagick.org/Magick++/Color.html">Color</a> </font></td>
 @@ -1841,7 +1841,7 @@ similar to "EXIF:DateTime".</small><br>
      <tr>
        <td>
@@ -594,7 +597,7 @@ index 169070b0a..b202d013c 100644
 +      <br />
        <font size="-1">Type</font></center>
        </td>
-       <td><font size="-1"><a href="http://www.imagemagick.org/Magick++/Enumerations.html#CompressionType">CompressionType</a>
+       <td><font size="-1"><a href="https://imagemagick.org/Magick++/Enumerations.html#CompressionType">CompressionType</a>
 @@ -2135,16 +2135,16 @@ from ImageMagick as it executes.</font></td>
      </tr>
      <tr>
@@ -679,7 +682,7 @@ index 169070b0a..b202d013c 100644
 +      <br />
        <font size="-1">Type</font></center>
        </td>
-       <td><font size="-1"><a href="http://www.imagemagick.org/Magick++/Enumerations.html#InterlaceType">InterlaceType</a>
+       <td><font size="-1"><a href="https://imagemagick.org/Magick++/Enumerations.html#InterlaceType">InterlaceType</a>
 @@ -2472,7 +2472,7 @@ an opaque one.</font></td>
      <tr>
        <td>
@@ -727,7 +730,7 @@ index 169070b0a..b202d013c 100644
 +      <br />
        <font size="-1">Geometry</font></center>
        </td>
-       <td><font size="-1"><a href="http://www.imagemagick.org/Magick++/Geometry.html">Geometry</a> </font></td>
+       <td><font size="-1"><a href="https://imagemagick.org/Magick++/Geometry.html">Geometry</a> </font></td>
 @@ -2529,7 +2529,7 @@ Only valid for montage images.</font></td>
      <tr>
        <td>
@@ -754,12 +757,13 @@ index 169070b0a..b202d013c 100644
 + name="orientation"></a>orientation<br />
        </small></td>
        <td style="vertical-align: middle;"><small><a
-  href="http://www.imagemagick.org/Magick++/Enumerations.html#OrientationType">OrientationType</a></small></td>
+- href="https://imagemagick.org/Magick++/Enumerations.html#OrientationType">OrientationType</a></small></td>
 -      <td style="vertical-align: top;"><small>void</small><br>
++ href="https://www.imagemagick.org/Magick++/Enumerations.html#OrientationType">OrientationType</a></small></td>
 +      <td style="vertical-align: top;"><small>void</small><br />
        </td>
        <td style="vertical-align: middle;"><small><a
-  href="http://www.imagemagick.org/Magick++/Enumerations.html#OrientationType">OrientationType</a>
+  href="https://imagemagick.org/Magick++/Enumerations.html#OrientationType">OrientationType</a>
  orientation_</small></td>
        <td style="vertical-align: top;"><small>Image orientation.
   Supported by some file formats such as DPX and TIFF. Useful for
@@ -785,8 +789,8 @@ index 169070b0a..b202d013c 100644
 +      <div align="center"><a name="profile"></a> <small>profile</small><br />
        </div>
        </td>
--      <td valign="top"><a href="http://www.imagemagick.org/Magick++/Blob.html"><small> Blob</small><small><br>
-+      <td valign="top"><a href="http://www.imagemagick.org/Magick++/Blob.html"><small> Blob</small><small><br />
+-      <td valign="top"><a href="https://imagemagick.org/Magick++/Blob.html"><small> Blob</small><small><br>
++      <td valign="top"><a href="https://www.imagemagick.org/Magick++/Blob.html"><small> Blob</small><small><br />
        </small></a> </td>
 -      <td valign="top"><small>const std::string name_</small><small><br>
 +      <td valign="top"><small>const std::string name_</small><small><br />
@@ -819,7 +823,7 @@ index 169070b0a..b202d013c 100644
 +      <br />
        <font size="-1">ColorSpace</font></center>
        </td>
-       <td><font size="-1"><a href="http://www.imagemagick.org/Magick++/Enumerations.html#ColorspaceType">ColorspaceType</a>
+       <td><font size="-1"><a href="https://imagemagick.org/Magick++/Enumerations.html#ColorspaceType">ColorspaceType</a>
 @@ -2677,7 +2677,7 @@ results when color reducing an image.</font></td>
      <tr>
        <td>
@@ -846,7 +850,7 @@ index 169070b0a..b202d013c 100644
 +      <br />
        <font size="-1">Intent</font></center>
        </td>
-       <td><font size="-1"><a href="http://www.imagemagick.org/Magick++/Enumerations.html#RenderingIntent">RenderingIntent</a>
+       <td><font size="-1"><a href="https://imagemagick.org/Magick++/Enumerations.html#RenderingIntent">RenderingIntent</a>
 @@ -2723,7 +2723,7 @@ render_</font></td>
      <tr>
        <td>
@@ -855,7 +859,7 @@ index 169070b0a..b202d013c 100644
 +      <br />
        <font size="-1">Units</font></center>
        </td>
-       <td><font size="-1"><a href="http://www.imagemagick.org/Magick++/Enumerations.html#ResolutionType">ResolutionType</a>
+       <td><font size="-1"><a href="https://imagemagick.org/Magick++/Enumerations.html#ResolutionType">ResolutionType</a>
 @@ -2902,14 +2902,14 @@ stroke (outlines).</font></td>
      </tr>
      <tr>

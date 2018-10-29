@@ -7,7 +7,7 @@ display \- displays an image or image sequence on any X server.
 .SH OVERVIEW
 The \fBdisplay-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP program is a member of the ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) suite of tools.  Use it to display an image or image sequence on any X server.
 
-For more information about the display command, point your browser to file://@DOCUMENTATION_PATH@/www/display.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/display.php.
+For more information about the display command, point your browser to file://@DOCUMENTATION_PATH@/www/display.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/display.php.
 .SH DESCRIPTION
 Image Settings:
   \-alpha option        on, activate, off, deactivate, set, opaque, copy
@@ -136,5 +136,6 @@ ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 
-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/license.php\fP
+
+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 

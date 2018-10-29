@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -62,10 +62,12 @@
 #include "magick/module.h"
 #include "magick/type.h"
 #include "magick/module.h"
+#if defined(MAGICKCORE_WMF_DELEGATE)
 #include "wand/MagickWand.h"
+#endif
 
 #if defined(__CYGWIN__)
-#undef MAGICKCORE_WMF_DELEGATE
+#undef MAGICKCORE_SANS_DELEGATE
 #endif
 
 #if defined(MAGICKCORE_SANS_DELEGATE)

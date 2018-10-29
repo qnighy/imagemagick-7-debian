@@ -1,4 +1,4 @@
-From 79dd54b2267bdb0822c16fe73657f49e4afdb09a Mon Sep 17 00:00:00 2001
+From 742cc4156bb3a2322dec80aa340970ad75977129 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 30 Jul 2018 14:49:54 +0200
 Subject: Fix index.html
@@ -9,7 +9,7 @@ Forwarded: yes
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/www/index.html b/www/index.html
-index dcdd21844..0ba23082f 100644
+index 4093fd89a..ecc014dfb 100644
 --- a/www/index.html
 +++ b/www/index.html
 @@ -61,7 +61,7 @@

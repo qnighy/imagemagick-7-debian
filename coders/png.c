@@ -24,7 +24,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -51,6 +51,7 @@
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colormap.h"
+#include "magick/colormap-private.h"
 #include "magick/colorspace.h"
 #include "magick/colorspace-private.h"
 #include "magick/constitute.h"
@@ -66,6 +67,7 @@
 #include "magick/log.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/memory-private.h"
 #include "magick/module.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
@@ -1884,7 +1886,7 @@ static int read_user_chunk_callback(png_struct *ping, png_unknown_chunkp chunk)
         }
 
       /* copy chunk->data to profile */
-      for (; i<chunk->size; i++)
+      for (; i < (ssize_t) chunk->size; i++)
         *p++ = *s++;
 
       (void) SetImageProfile(image,"exif",profile);
@@ -1927,10 +1929,10 @@ static int read_user_chunk_callback(png_struct *ping, png_unknown_chunkp chunk)
 
      image=(Image *) png_get_user_chunk_ptr(ping);
 
-     image->page.width=(size_t)mng_get_long(chunk->data);
-     image->page.height=(size_t)mng_get_long(&chunk->data[4]);
-     image->page.x=(size_t)mng_get_long(&chunk->data[8]);
-     image->page.y=(size_t)mng_get_long(&chunk->data[12]);
+     image->page.width=(size_t) mng_get_long(chunk->data);
+     image->page.height=(size_t) mng_get_long(&chunk->data[4]);
+     image->page.x=(ssize_t) ((int) mng_get_long(&chunk->data[8]));
+     image->page.y=(ssize_t) ((int) mng_get_long(&chunk->data[12]));
 
      /* Return one of the following: */
         /* return(-n);  chunk had an error */
@@ -2315,8 +2317,10 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
 #if (PNG_LIBPNG_VER >= 10401)
     option=GetImageOption(image_info,"png:chunk-malloc-max");
     if (option != (const char *) NULL)
-      png_set_chunk_malloc_max(ping,(png_alloc_size_t) MagickMin(PNG_SIZE_MAX,
-        StringToLong(option)));
+      png_set_chunk_malloc_max(ping,(png_alloc_size_t) MagickMin((ssize_t)
+        PNG_SIZE_MAX,StringToLong(option)));
+    else
+      png_set_chunk_malloc_max(ping,(png_alloc_size_t) GetMaxMemoryRequest());
 #endif
   }
 #endif /* PNG_SET_USER_LIMITS_SUPPORTED */
@@ -2754,7 +2758,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
          png_set_sRGB(ping,ping_info,
             Magick_RenderingIntent_to_PNG_RenderingIntent
             (image->rendering_intent));
-         file_gamma=1.000f/2.200f;
+         file_gamma=0.45455f;
          ping_found_sRGB=MagickTrue;
          (void) LogMagickEvent(CoderEvent,GetMagickModule(),
            "    Setting sRGB as if in input");
@@ -3253,6 +3257,8 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
     }
 
   status=SetImageExtent(image,image->columns,image->rows);
+  if (status != MagickFalse)
+    status=ResetImagePixels(image,exception);
   if (status == MagickFalse)
     {
       png_destroy_read_struct(&ping,&ping_info,&end_info);
@@ -3454,7 +3460,7 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
         if (pass < num_passes-1)
           continue;
 
-        q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
+        q=GetAuthenticPixels(image,0,y,image->columns,1,exception);
 
         if (q == (PixelPacket *) NULL)
           break;
@@ -3557,7 +3563,15 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
         r=quantum_scanline;
 
         for (x=0; x < (ssize_t) image->columns; x++)
-          SetPixelIndex(indexes+x,*r++);
+        {
+          ssize_t index=ConstrainColormapIndex(image,(ssize_t) *r);
+          SetPixelRed(q,ClampToQuantum(image->colormap[index].red));
+          SetPixelGreen(q,ClampToQuantum(image->colormap[index].green));
+          SetPixelBlue(q,ClampToQuantum(image->colormap[index].blue));
+          SetPixelIndex(indexes+x,index);
+          r++;
+          q++;
+        }
 
         if (SyncAuthenticPixels(image,exception) == MagickFalse)
           break;
@@ -3598,17 +3612,6 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
             ping_color_type&=0x03;
           }
       }
-    }
-
-  if (image->storage_class == PseudoClass)
-    {
-      MagickBooleanType
-        matte;
-
-      matte=image->matte;
-      image->matte=MagickFalse;
-      (void) SyncImage(image);
-      image->matte=matte;
     }
 
   png_read_end(ping,end_info);
@@ -4456,9 +4459,9 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
 
         chunk=(unsigned char *) RelinquishMagickMemory(chunk);
 
-        if (jng_width > 65535 || jng_height > 65535 ||
-             (long) jng_width > GetMagickResourceLimit(WidthResource) ||
-             (long) jng_height > GetMagickResourceLimit(HeightResource))
+        if ((jng_width > 65535) || (jng_height > 65535) ||
+            (MagickSizeType) jng_width > GetMagickResourceLimit(WidthResource) ||
+            (MagickSizeType) jng_height > GetMagickResourceLimit(HeightResource))
           {
             (void) LogMagickEvent(CoderEvent,GetMagickModule(),
                "    JNG width or height too large: (%lu x %lu)",
@@ -4709,7 +4712,7 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
           {
             image->rendering_intent=
               Magick_RenderingIntent_from_PNG_RenderingIntent(p[0]);
-            image->gamma=1.000f/2.200f;
+            image->gamma=0.45455f;
             image->chromaticity.red_primary.x=0.6400f;
             image->chromaticity.red_primary.y=0.3300f;
             image->chromaticity.green_primary.x=0.3000f;
@@ -6032,7 +6035,7 @@ static Image *ReadOneMNGImage(MngInfo* mng_info, const ImageInfo *image_info,
 
                 else
                   {
-                    if (loop_iters > GetMagickResourceLimit(ListLengthResource))
+                    if ((MagickSizeType) loop_iters > GetMagickResourceLimit(ListLengthResource))
                       loop_iters=GetMagickResourceLimit(ListLengthResource);
                     if (loop_iters >= 2147483647L)
                       loop_iters=2147483647L;
@@ -8700,6 +8703,8 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   tried_333 = MagickFalse;
   tried_444 = MagickFalse;
 
+  if (image->depth != GetImageDepth(image,&image->exception))
+    (void) SetImageDepth(image,image->depth);
   for (j=0; j<6; j++)
   {
     /*

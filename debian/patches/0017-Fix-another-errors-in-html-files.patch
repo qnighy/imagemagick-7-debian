@@ -1,4 +1,4 @@
-From 5311dfd43b23e98deb8ea1f52b4d097b5f449b81 Mon Sep 17 00:00:00 2001
+From 8c799cf004f4d91cac8ebea0fa55fefbd5625254 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Mon, 19 Mar 2018 22:08:25 +0100
 Subject: Fix another errors in html files
@@ -10,7 +10,7 @@ Forwarded: yes
  2 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/www/api.html b/www/api.html
-index 9a042a6bf..bf8da5fb7 100644
+index e02dec384..1651ea77a 100644
 --- a/www/api.html
 +++ b/www/api.html
 @@ -61,7 +61,7 @@
@@ -31,7 +31,7 @@ index 9a042a6bf..bf8da5fb7 100644
  </body>
  </html>
 diff --git a/www/binary-releases.html b/www/binary-releases.html
-index 54bf4baf2..528ca5ead 100644
+index 70a8c73a6..7a47647c8 100644
 --- a/www/binary-releases.html
 +++ b/www/binary-releases.html
 @@ -61,7 +61,7 @@

@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -102,6 +102,9 @@
 # endif
 # if !defined(TIFFTAG_OPIIMAGEID)
 #  define TIFFTAG_OPIIMAGEID  32781
+# endif
+# if defined(COMPRESSION_ZSTD) && defined(MAGICKCORE_ZSTD_DELEGATE)
+#   include <zstd.h>
 # endif
 #include "psd-private.h"
 
@@ -191,7 +194,6 @@ static const ExifInfo
     { 0, 0, 0, (char *) NULL }
 };
 #endif
-#endif  /* MAGICKCORE_TIFF_DELEGATE */
 
 /*
   Global declarations.
@@ -212,7 +214,6 @@ static volatile MagickBooleanType
 /*
   Forward declarations.
 */
-#if defined(MAGICKCORE_TIFF_DELEGATE)
 static Image *
   ReadTIFFImage(const ImageInfo *,ExceptionInfo *);
 
@@ -530,12 +531,12 @@ static MagickBooleanType ReadProfile(Image *image,const char *name,
     return(MagickFalse);
   profile=BlobToStringInfo(datum,(size_t) length);
   if (profile == (StringInfo *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   status=SetImageProfile(image,name,profile);
   profile=DestroyStringInfo(profile);
   if (status == MagickFalse)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   return(MagickTrue);
 }
@@ -1009,7 +1010,7 @@ static void TIFFReadPhotoshopLayers(Image* image,const ImageInfo *image_info,
     *option;
 
   const StringInfo
-    *layer_info;
+    *profile;
 
   Image
     *layers;
@@ -1027,37 +1028,39 @@ static void TIFFReadPhotoshopLayers(Image* image,const ImageInfo *image_info,
   option=GetImageOption(image_info,"tiff:ignore-layers");
   if (option != (const char * ) NULL)
     return;
-  layer_info=GetImageProfile(image,"tiff:37724");
-  if (layer_info == (const StringInfo *) NULL)
+  profile=GetImageProfile(image,"tiff:37724");
+  if (profile == (const StringInfo *) NULL)
     return;
-  for (i=0; i < (ssize_t) layer_info->length-8; i++)
+  for (i=0; i < (ssize_t) profile->length-8; i++)
   {
-    if (LocaleNCompare((const char *) (layer_info->datum+i),
+    if (LocaleNCompare((const char *) (profile->datum+i),
         image->endian == MSBEndian ? "8BIM" : "MIB8",4) != 0)
       continue;
     i+=4;
-    if ((LocaleNCompare((const char *) (layer_info->datum+i),
+    if ((LocaleNCompare((const char *) (profile->datum+i),
          image->endian == MSBEndian ? "Layr" : "ryaL",4) == 0) ||
-        (LocaleNCompare((const char *) (layer_info->datum+i),
+        (LocaleNCompare((const char *) (profile->datum+i),
          image->endian == MSBEndian ? "LMsk" : "ksML",4) == 0) ||
-        (LocaleNCompare((const char *) (layer_info->datum+i),
+        (LocaleNCompare((const char *) (profile->datum+i),
          image->endian == MSBEndian ? "Lr16" : "61rL",4) == 0) ||
-        (LocaleNCompare((const char *) (layer_info->datum+i),
+        (LocaleNCompare((const char *) (profile->datum+i),
          image->endian == MSBEndian ? "Lr32" : "23rL",4) == 0))
       break;
   }
   i+=4;
-  if (i >= (ssize_t) (layer_info->length-8))
+  if (i >= (ssize_t) (profile->length-8))
     return;
   layers=CloneImage(image,0,0,MagickTrue,exception);
   (void) DeleteImageProfile(layers,"tiff:37724");
-  AttachBlob(layers->blob,layer_info->datum,layer_info->length);
+  AttachBlob(layers->blob,profile->datum,profile->length);
   SeekBlob(layers,(MagickOffsetType) i,SEEK_SET);
   info.version=1;
   info.columns=layers->columns;
   info.rows=layers->rows;
   /* Setting the mode to a value that won't change the colorspace */
   info.mode=10;
+  if (image->storage_class == PseudoClass)
+    info.mode=2; /* indexed mode */
   if (IsGrayImage(image,&image->exception) != MagickFalse)
     info.channels=(image->matte != MagickFalse ? 2UL : 1UL);
   else
@@ -1072,7 +1075,7 @@ static void TIFFReadPhotoshopLayers(Image* image,const ImageInfo *image_info,
       }
   (void) ReadPSDLayers(layers,image_info,&info,MagickFalse,exception);
   /* we need to set the datum in case a realloc happend */
-  ((StringInfo *) layer_info)->datum=GetBlobStreamData(layers);
+  ((StringInfo *) profile)->datum=GetBlobStreamData(layers);
   InheritException(exception,&layers->exception);
   DeleteImageFromList(&layers);
   if (layers != (Image *) NULL)
@@ -1452,6 +1455,12 @@ RestoreMSCWarning
       case COMPRESSION_LZW: image->compression=LZWCompression; break;
       case COMPRESSION_DEFLATE: image->compression=ZipCompression; break;
       case COMPRESSION_ADOBE_DEFLATE: image->compression=ZipCompression; break;
+#if defined(COMPRESSION_WEBP)
+      case COMPRESSION_WEBP: image->compression=WebPCompression; break;
+#endif
+#if defined(COMPRESSION_ZSTD)
+      case COMPRESSION_ZSTD: image->compression=ZstdCompression; break;
+#endif
       default: image->compression=RLECompression; break;
     }
     tiff_pixels=(unsigned char *) NULL;
@@ -1582,12 +1591,15 @@ RestoreMSCWarning
             image->matte=MagickTrue;
             if (sample_info[i] == EXTRASAMPLE_ASSOCALPHA)
               {
-                SetQuantumAlphaType(quantum_info,DisassociatedQuantumAlpha);
+                SetQuantumAlphaType(quantum_info,AssociatedQuantumAlpha);
                 (void) SetImageProperty(image,"tiff:alpha","associated");
               }
             else
               if (sample_info[i] == EXTRASAMPLE_UNASSALPHA)
-               (void) SetImageProperty(image,"tiff:alpha","unassociated");
+                {
+                  SetQuantumAlphaType(quantum_info,DisassociatedQuantumAlpha);
+                  (void) SetImageProperty(image,"tiff:alpha","unassociated");
+                }
           }
       }
     if (image->matte != MagickFalse)
@@ -1637,7 +1649,7 @@ RestoreMSCWarning
       ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
     if (((MagickSizeType) TIFFScanlineSize(tiff)) > GetBlobSize(image))
       ThrowTIFFException(CorruptImageError,"InsufficientImageDataInFile");
-    number_pixels=MagickMax(TIFFScanlineSize(tiff),MagickMax((ssize_t) 
+    number_pixels=MagickMax(TIFFScanlineSize(tiff),MagickMax((ssize_t)
       image->columns*samples_per_pixel*pow(2.0,ceil(log(bits_per_sample)/
       log(2.0))),image->columns*rows_per_strip)*sizeof(uint32));
     tiff_pixels=(unsigned char *) AcquireMagickMemory(number_pixels);
@@ -2170,6 +2182,7 @@ RestoreMSCWarning
 %
 */
 
+#if defined(MAGICKCORE_TIFF_DELEGATE)
 #if defined(MAGICKCORE_HAVE_TIFFMERGEFIELDINFO) && defined(MAGICKCORE_HAVE_TIFFSETTAGEXTENDER)
 static TIFFExtendProc
   tag_extender = (TIFFExtendProc) NULL;
@@ -2262,6 +2275,7 @@ static void TIFFTagExtender(TIFF *tiff)
   TIFFIgnoreTags(tiff);
 }
 #endif
+#endif
 
 ModuleExport size_t RegisterTIFFImage(void)
 {
@@ -2273,6 +2287,7 @@ ModuleExport size_t RegisterTIFFImage(void)
   MagickInfo
     *entry;
 
+#if defined(MAGICKCORE_TIFF_DELEGATE)
   if (tiff_semaphore == (SemaphoreInfo *) NULL)
     ActivateSemaphoreInfo(&tiff_semaphore);
   LockSemaphoreInfo(tiff_semaphore);
@@ -2289,6 +2304,7 @@ ModuleExport size_t RegisterTIFFImage(void)
       instantiate_key=MagickTrue;
     }
   UnlockSemaphoreInfo(tiff_semaphore);
+#endif
   *version='\0';
 #if defined(TIFF_VERSION)
   (void) FormatLocaleString(version,MaxTextExtent,"%d",TIFF_VERSION);
@@ -2403,6 +2419,7 @@ ModuleExport void UnregisterTIFFImage(void)
   (void) UnregisterMagickInfo("TIFF");
   (void) UnregisterMagickInfo("TIF");
   (void) UnregisterMagickInfo("PTIF");
+#if defined(MAGICKCORE_TIFF_DELEGATE)
   if (tiff_semaphore == (SemaphoreInfo *) NULL)
     ActivateSemaphoreInfo(&tiff_semaphore);
   LockSemaphoreInfo(tiff_semaphore);
@@ -2420,6 +2437,7 @@ ModuleExport void UnregisterTIFFImage(void)
     }
   UnlockSemaphoreInfo(tiff_semaphore);
   DestroySemaphoreInfo(&tiff_semaphore);
+#endif
 }
 
 #if defined(MAGICKCORE_TIFF_DELEGATE)
@@ -2523,7 +2541,6 @@ static MagickBooleanType WriteGROUP4Image(const ImageInfo *image_info,
   (void) SetImageType(image,BilevelType);
   write_info->compression=Group4Compression;
   write_info->type=BilevelType;
-  (void) SetImageOption(write_info,"quantum:polarity","min-is-white");
   status=WriteTIFFImage(write_info,huffman_image);
   (void) fflush(file);
   write_info=DestroyImageInfo(write_info);
@@ -2568,7 +2585,7 @@ static MagickBooleanType WriteGROUP4Image(const ImageInfo *image_info,
       huffman_image=DestroyImage(huffman_image);
       (void) fclose(file);
       (void) RelinquishUniqueFileResource(filename);
-      ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+      ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
         image_info->filename);
     }
   /*
@@ -2672,6 +2689,8 @@ static MagickBooleanType WritePTIFImage(const ImageInfo *image_info,
         exception);
       if (pyramid_image == (Image *) NULL)
         break;
+      DestroyBlob(pyramid_image);
+      pyramid_image->blob=ReferenceBlob(next->blob);
       pyramid_image->x_resolution=resolution.x;
       pyramid_image->y_resolution=resolution.y;
       (void) SetImageProperty(pyramid_image,"tiff:subfiletype","REDUCEDIMAGE");
@@ -3284,13 +3303,17 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
       case FaxCompression:
       {
         compress_tag=COMPRESSION_CCITTFAX3;
-        SetQuantumMinIsWhite(quantum_info,MagickTrue);
+        option=GetImageOption(image_info,"quantum:polarity");
+        if (option == (const char *) NULL)
+          SetQuantumMinIsWhite(quantum_info,MagickTrue);
         break;
       }
       case Group4Compression:
       {
         compress_tag=COMPRESSION_CCITTFAX4;
-        SetQuantumMinIsWhite(quantum_info,MagickTrue);
+        option=GetImageOption(image_info,"quantum:polarity");
+        if (option == (const char *) NULL)
+          SetQuantumMinIsWhite(quantum_info,MagickTrue);
         break;
       }
 #if defined(COMPRESSION_JBIG)
@@ -3322,11 +3345,25 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
         compress_tag=COMPRESSION_PACKBITS;
         break;
       }
+#if defined(COMPRESSION_WEBP)
+      case WebPCompression:
+      {
+        compress_tag=COMPRESSION_WEBP;
+        break;
+      }
+#endif
       case ZipCompression:
       {
         compress_tag=COMPRESSION_ADOBE_DEFLATE;
         break;
       }
+#if defined(COMPRESSION_ZSTD)
+      case ZstdCompression:
+      {
+        compress_tag=COMPRESSION_ZSTD;
+        break;
+      }
+#endif
       case NoCompression:
       default:
       {
@@ -3439,19 +3476,16 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
           }
       }
     (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_FILLORDER,&endian);
-    if ((compress_tag == COMPRESSION_CCITTFAX3) &&
-        (photometric != PHOTOMETRIC_MINISWHITE))
+    if ((compress_tag == COMPRESSION_CCITTFAX3) ||
+        (compress_tag == COMPRESSION_CCITTFAX4))
       {
-        compress_tag=COMPRESSION_NONE;
-        endian=FILLORDER_MSB2LSB;
+         if ((photometric != PHOTOMETRIC_MINISWHITE) &&
+             (photometric != PHOTOMETRIC_MINISBLACK))
+          {
+            compress_tag=COMPRESSION_NONE;
+            endian=FILLORDER_MSB2LSB;
+          }
       }
-    else
-      if ((compress_tag == COMPRESSION_CCITTFAX4) &&
-         (photometric != PHOTOMETRIC_MINISWHITE))
-       {
-         compress_tag=COMPRESSION_NONE;
-         endian=FILLORDER_MSB2LSB;
-       }
     option=GetImageOption(image_info,"tiff:fill-order");
     if (option != (const char *) NULL)
       {
@@ -3527,7 +3561,6 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
       case COMPRESSION_JPEG:
       {
 #if defined(JPEG_SUPPORT)
-
         if (image_info->quality != UndefinedCompressionQuality)
           (void) TIFFSetField(tiff,TIFFTAG_JPEGQUALITY,image_info->quality);
         (void) TIFFSetField(tiff,TIFFTAG_JPEGCOLORMODE,JPEGCOLORMODE_RAW);
@@ -3622,6 +3655,35 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
           predictor=PREDICTOR_HORIZONTAL;
         break;
       }
+#if defined(WEBP_SUPPORT) && defined(COMPRESSION_WEBP)
+      case COMPRESSION_WEBP:
+      {
+        (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_BITSPERSAMPLE,
+          &bits_per_sample);
+        if (((photometric == PHOTOMETRIC_RGB) ||
+             (photometric == PHOTOMETRIC_MINISBLACK)) &&
+            ((bits_per_sample == 8) || (bits_per_sample == 16)))
+          predictor=PREDICTOR_HORIZONTAL;
+        (void) TIFFSetField(tiff,TIFFTAG_WEBP_LEVEL,mage_info->quality);
+        if (image_info->quality >= 100)
+          (void) TIFFSetField(tiff,TIFFTAG_WEBP_LOSSLESS,1);
+        break;
+      }
+#endif
+#if defined(ZSTD_SUPPORT) && defined(COMPRESSION_ZSTD)
+      case COMPRESSION_ZSTD:
+      {
+        (void) TIFFGetFieldDefaulted(tiff,TIFFTAG_BITSPERSAMPLE,
+          &bits_per_sample);
+        if (((photometric == PHOTOMETRIC_RGB) ||
+             (photometric == PHOTOMETRIC_MINISBLACK)) &&
+            ((bits_per_sample == 8) || (bits_per_sample == 16)))
+          predictor=PREDICTOR_HORIZONTAL;
+        (void) TIFFSetField(tiff,TIFFTAG_ZSTD_LEVEL,22*image_info->quality/
+          100.0);
+        break;
+      }
+#endif
       default:
         break;
     }

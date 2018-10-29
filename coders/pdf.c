@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -270,14 +270,13 @@ static MagickBooleanType InvokePDFDelegate(const MagickBooleanType verbose,
       SetArgsStart(command,args_start);
       if (status == -101) /* quit */
         (void) FormatLocaleString(message,MaxTextExtent,
-          "[ghostscript library %.2f]%s: %s",(double)revision.revision/100.0,
+          "[ghostscript library %.2f]%s: %s",(double) revision.revision/100.0,
           args_start,errors);
       else
         {
-          (void) ThrowMagickException(exception,GetMagickModule(),
-            DelegateError,"PDFDelegateFailed",
-            "`[ghostscript library %.2f]%s': %s",(double) revision.revision/
-            100.0,args_start,errors);
+          (void) ThrowMagickException(exception,GetMagickModule(),DelegateError,
+            "PDFDelegateFailed","`[ghostscript library %.2f]%s': %s",(double)
+            revision.revision/100.0,args_start,errors);
           if (errors != (char *) NULL)
             errors=DestroyString(errors);
           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -1477,7 +1476,7 @@ RestoreMSCWarning
       if (value != (const char *) NULL)
         (void) CopyMagickString(create_date,value,MaxTextExtent);
       (void) FormatMagickTime(time((time_t *) NULL),MaxTextExtent,timestamp);
-      url=MagickAuthoritativeURL;
+      url=(char *) MagickAuthoritativeURL;
       escape=EscapeParenthesis(basename);
       i=FormatLocaleString(xmp_profile,MaxTextExtent,XMPProfile,
         XMPProfileMagick,modify_date,create_date,timestamp,url,escape,url);
@@ -2976,7 +2975,7 @@ RestoreMSCWarning
   (void) WriteBlobString(image,buffer);
   (void) FormatLocaleString(buffer,MaxTextExtent,"/ModDate (%s)\n",date);
   (void) WriteBlobString(image,buffer);
-  url=MagickAuthoritativeURL;
+  url=(char *) MagickAuthoritativeURL;
   escape=EscapeParenthesis(url);
   (void) FormatLocaleString(buffer,MaxTextExtent,"/Producer (%s)\n",escape);
   escape=DestroyString(escape);

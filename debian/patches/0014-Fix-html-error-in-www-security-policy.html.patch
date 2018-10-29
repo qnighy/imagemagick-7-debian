@@ -1,4 +1,4 @@
-From d40497fee906c3792bc9295ddfcccb7ba133e4e5 Mon Sep 17 00:00:00 2001
+From a5953c678b1d52d944411e54faa79e9285619b04 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 11 Aug 2017 10:18:19 +0200
 Subject: Fix html error in www/security-policy.html
@@ -9,10 +9,10 @@ Forwarded: Yes
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/www/security-policy.html b/www/security-policy.html
-index 6d7882eca..09bd1cf75 100644
+index 1cb5fd9b7..5be4d83d4 100644
 --- a/www/security-policy.html
 +++ b/www/security-policy.html
-@@ -182,7 +182,7 @@ Path: ImageMagick/policy.xml
+@@ -193,7 +193,7 @@ Path: ImageMagick/policy.xml
  
  Path: [built-in]
    Policy: Undefined

@@ -1,4 +1,4 @@
-From a4ab92ee554a9028a89b8f9b40b1d0ba688b08fa Mon Sep 17 00:00:00 2001
+From 21e0736d452a569a44e569c69f0995d95eac6de0 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Wed, 14 Dec 2016 15:23:11 +0100
 Subject: Fix www/api/mophologie.html
@@ -9,7 +9,7 @@ Forwarded: Yes, https://github.com/ImageMagick/ImageMagick/issues/304
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/www/api/morphology.html b/www/api/morphology.html
-index eb439d2e1..93cbdf099 100644
+index 6c7bc2387..94c01203d 100644
 --- a/www/api/morphology.html
 +++ b/www/api/morphology.html
 @@ -315,7 +315,7 @@ void ScaleGeometryKernelInfo(KernelInfo *kernel,
@@ -19,7 +19,7 @@ index eb439d2e1..93cbdf099 100644
 -<p></dd>
 +<dd></dd>
  </dl>
- <h2><a href="http://www.imagemagick.org/api/MagickCore/morphology_8c.html" id="ScaleKernelInfo">ScaleKernelInfo</a></h2>
+ <h2><a href="https://imagemagick.org/api/MagickCore/morphology_8c.html" id="ScaleKernelInfo">ScaleKernelInfo</a></h2>
  
 @@ -362,14 +362,14 @@ void ScaleKernelInfo(KernelInfo *kernel, const double scaling_factor,
         zero.  If the kernel is normalized regardless of any flags.
@@ -36,7 +36,7 @@ index eb439d2e1..93cbdf099 100644
 -<p></dd>
 +<dd></dd>
  </dl>
- <h2><a href="http://www.imagemagick.org/api/MagickCore/morphology_8c.html" id="ShowKernelInfo">ShowKernelInfo</a></h2>
+ <h2><a href="https://imagemagick.org/api/MagickCore/morphology_8c.html" id="ShowKernelInfo">ShowKernelInfo</a></h2>
  
 @@ -421,7 +421,7 @@ void UnityAdditionKernelInfo(KernelInfo *kernel, const double scale )
         the given kernel.
@@ -45,5 +45,5 @@ index eb439d2e1..93cbdf099 100644
 -<p></dd>
 +<dd></dd>
  </dl>
- <h2><a href="http://www.imagemagick.org/api/MagickCore/morphology_8c.html" id="ZeroKernelNans">ZeroKernelNans</a></h2>
+ <h2><a href="https://imagemagick.org/api/MagickCore/morphology_8c.html" id="ZeroKernelNans">ZeroKernelNans</a></h2>
  

@@ -4,7 +4,7 @@
 #  You may not use this file except in compliance with the License.  You may
 #  obtain a copy of the License at
 #
-#    http://www.imagemagick.org/script/license.php
+#    https://imagemagick.org/script/license.php
 #
 #  Unless required by applicable law or agreed to in writing, software
 #  distributed under the License is distributed on an "AS IS" BASIS,
@@ -101,7 +101,7 @@ sub AutodetectWin32gcc {
 # Please check the following prerequisites:
 #
 # 1) You need to have installed ImageMagick Windows binaries from
-#    http://www.imagemagick.org/script/binary-releases.php#windows
+#    https://imagemagick.org/script/binary-releases.php#windows
 #
 # 2) We only support dynamic (DLL) ImageMagick binaries
 #    note: it is not possible to mix 32/64-bit binaries of perl and ImageMagick
@@ -163,7 +163,7 @@ foreach my $delegate (@tested_delegates) {
 # defaults for LIBS & INC & CCFLAGS params that we later pass to Writemakefile
 my $INC_magick = '-I../ -I..   -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16  -I"' . $Config{'usrinc'} . '/ImageMagick"';
 my $LIBS_magick = '-L../magick/.libs -lMagickCore-6.Q16 -lperl -lm';
-my $CCFLAGS_magick = "$Config{'ccflags'} -I/usr/include/libxml2    -I/usr/include/libraw  -I/usr/include/libpng16   -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/fribidi -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/uuid -I/usr/include/harfbuzz  -I/usr/include/OpenEXR -pthread -I/usr/include/libdrm   -I/usr/include/openjpeg-2.3   -I/usr/include/freetype2 -I/usr/include/libpng16  -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/uuid  -pthread     -fopenmp -g -O2 -Wall -mtune=generic -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16";
+my $CCFLAGS_magick = "$Config{'ccflags'} -I/usr/include/libxml2    -I/usr/include/libraw  -I/usr/include/libpng16   -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/fribidi -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/uuid -I/usr/include/harfbuzz  -I/usr/include/OpenEXR -pthread -I/usr/include/libdrm   -I/usr/include/openjpeg-2.3   -I/usr/include/freetype2 -I/usr/include/libpng16  -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/uuid  -pthread      -fopenmp -g -O2 -Wall -mtune=generic -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16";
 my $LDFLAGS_magick   = "-L../magick/.libs -lMagickCore-6.Q16 $Config{'ldflags'}  ";
 my $LDDLFLAGS_magick = "-L../magick/.libs -lMagickCore-6.Q16 $Config{'lddlflags'}  ";
 

@@ -1,4 +1,4 @@
-From 692c845570d4b35967a21101c9d19fa437a148f1 Mon Sep 17 00:00:00 2001
+From 510f9194167825b8255c31f3f06828b79f3d372d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 11 Aug 2017 10:20:20 +0200
 Subject: Fix www/support.html
@@ -9,7 +9,7 @@ Forwarded: Yes
  1 file changed, 1 insertion(+)
 
 diff --git a/www/support.html b/www/support.html
-index 950b0ac97..8dad87d9d 100644
+index 25b36d6ca..714720fa9 100644
 --- a/www/support.html
 +++ b/www/support.html
 @@ -130,6 +130,7 @@

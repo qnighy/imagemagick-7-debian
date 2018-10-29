@@ -25,7 +25,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -2776,7 +2776,7 @@ static void WriteDDSInfo(Image *image, const size_t pixelFormat,
   if (pixelFormat == DDPF_FOURCC)
     {
       (void) WriteBlobLSBLong(image,(unsigned int) compression);
-      for(i=0;i < 5;i++) // bitcount / masks
+      for(i=0;i < 5;i++)  /* bitcount / masks */
         (void) WriteBlobLSBLong(image,0x00);
     }
   else
@@ -2801,7 +2801,7 @@ static void WriteDDSInfo(Image *image, const size_t pixelFormat,
     }
   
   (void) WriteBlobLSBLong(image,caps);
-  for(i=0;i < 4;i++) // ddscaps2 + reserved region
+  for(i=0;i < 4;i++)  /* ddscaps2 + reserved region */
     (void) WriteBlobLSBLong(image,0x00);
 }
 

@@ -1225,7 +1225,7 @@
 
 /* Define to the address where bug reports for this package should be sent. */
 #ifndef MAGICKCORE_PACKAGE_BUGREPORT
-#define MAGICKCORE_PACKAGE_BUGREPORT "https://github.com/ImageMagick/ImageMagick/issues"
+#define MAGICKCORE_PACKAGE_BUGREPORT "https://github.com/ImageMagick/ImageMagick6/issues"
 #endif
 
 /* Define to the full name of this package. */
@@ -1235,7 +1235,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.10-8"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.10-14"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1245,12 +1245,12 @@
 
 /* Define to the home page for this package. */
 #ifndef MAGICKCORE_PACKAGE_URL
-#define MAGICKCORE_PACKAGE_URL "https://www.imagemagick.org"
+#define MAGICKCORE_PACKAGE_URL "https://imagemagick.org"
 #endif
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.10-8"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.10-14"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1473,7 +1473,7 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.9.10-8"
+#define MAGICKCORE_VERSION "6.9.10-14"
 #endif
 
 /* Define if you have WEBPMUX library */
@@ -1533,6 +1533,11 @@
 /* Define if you have ZLIB library */
 #ifndef MAGICKCORE_ZLIB_DELEGATE
 #define MAGICKCORE_ZLIB_DELEGATE 1
+#endif
+
+/* Define if you have ZSTD library */
+#ifndef MAGICKCORE_ZSTD_DELEGATE
+#define MAGICKCORE_ZSTD_DELEGATE 1
 #endif
 
 /* Enable large inode numbers on Mac OS X 10.5.  */

@@ -5,7 +5,7 @@
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
   
-    https://www.imagemagick.org/script/license.php
+    https://imagemagick.org/script/license.php
   
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,7 +45,9 @@ typedef enum
   B44ACompression,
   LZMACompression,            /* Lempel-Ziv-Markov chain algorithm */
   JBIG1Compression,           /* ISO/IEC std 11544 / ITU-T rec T.82 */
-  JBIG2Compression            /* ISO/IEC std 14492 / ITU-T rec T.88 */
+  JBIG2Compression,           /* ISO/IEC std 14492 / ITU-T rec T.88 */
+  ZstdCompression,
+  WebPCompression
 } CompressionType;
 
 typedef struct _Ascii85Info

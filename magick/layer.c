@@ -22,7 +22,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -329,7 +329,8 @@ MagickExport Image *CoalesceImages(const Image *image,ExceptionInfo *exception)
       Next image is the dispose image, overlaid with next frame in sequence.
     */
     coalesce_image->next=CloneImage(dispose_image,0,0,MagickTrue,exception);
-    coalesce_image->next->previous=coalesce_image;
+    if (coalesce_image->next != NULL)
+      coalesce_image->next->previous=coalesce_image;
     previous=coalesce_image;
     coalesce_image=GetNextImageInList(coalesce_image);
     (void) CompositeImage(coalesce_image,next->matte != MagickFalse ?

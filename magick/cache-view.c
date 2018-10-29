@@ -29,7 +29,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -156,7 +156,7 @@ MagickExport CacheView *AcquireVirtualCacheView(const Image *image,
   CacheView
     *magick_restrict cache_view;
 
-  magick_unreferenced(image);
+  magick_unreferenced(exception);
   assert(image != (Image *) NULL);
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
@@ -730,7 +730,7 @@ MagickExport const PixelPacket *GetCacheViewVirtualPixels(
   assert(cache_view != (CacheView *) NULL);
   assert(cache_view->signature == MagickCoreSignature);
   assert(id < (int) cache_view->number_threads);
-  return(GetVirtualPixelsFromNexus(cache_view->image,
+  return(GetVirtualPixelCacheNexus(cache_view->image,
     cache_view->virtual_pixel_method,x,y,columns,rows,
     cache_view->nexus_info[id],exception));
 }
@@ -781,7 +781,7 @@ MagickExport MagickBooleanType GetOneCacheViewVirtualPixel(
   assert(cache_view->signature == MagickCoreSignature);
   *pixel=cache_view->image->background_color;
   assert(id < (int) cache_view->number_threads);
-  pixels=GetVirtualPixelsFromNexus(cache_view->image,
+  pixels=GetVirtualPixelCacheNexus(cache_view->image,
     cache_view->virtual_pixel_method,x,y,1,1,cache_view->nexus_info[id],
     exception);
   if (pixels == (const PixelPacket *) NULL)
@@ -840,7 +840,7 @@ MagickExport MagickBooleanType GetOneCacheViewVirtualMethodPixel(
   assert(cache_view->signature == MagickCoreSignature);
   *pixel=cache_view->image->background_color;
   assert(id < (int) cache_view->number_threads);
-  pixels=GetVirtualPixelsFromNexus(cache_view->image,virtual_pixel_method,x,y,1,
+  pixels=GetVirtualPixelCacheNexus(cache_view->image,virtual_pixel_method,x,y,1,
     1,cache_view->nexus_info[id],exception);
   if (pixels == (const PixelPacket *) NULL)
     return(MagickFalse);

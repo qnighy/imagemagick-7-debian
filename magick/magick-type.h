@@ -5,7 +5,7 @@
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
 
-    https://www.imagemagick.org/script/license.php
+    https://imagemagick.org/script/license.php
 
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,7 +46,7 @@ typedef float MagickFloatType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_DOUBLE)
 typedef double MagickFloatType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_LONG_DOUBLE)
-typedef long double MagickFloatType;
+typedef double MagickFloatType;
 #else
 #error Your MagickFloatType type is neither a float, nor a double, nor a long double
 #endif
@@ -55,7 +55,7 @@ typedef double MagickDoubleType;
 #elif (MAGICKCORE_SIZEOF_DOUBLE_T == MAGICKCORE_SIZEOF_DOUBLE)
 typedef double MagickDoubleType;
 #elif (MAGICKCORE_SIZEOF_DOUBLE_T == MAGICKCORE_SIZEOF_LONG_DOUBLE)
-typedef long double MagickDoubleType;
+typedef double MagickDoubleType;
 #else
 #error Your MagickDoubleType type is neither a float, nor a double, nor a long double
 #endif
@@ -115,6 +115,8 @@ typedef MagickDoubleType Quantum;
 #define MagickEpsilon  (1.0e-12)
 #define MagickMaximumValue  1.79769313486231570E+308
 #define MagickMinimumValue   2.22507385850720140E-308
+#define MagickStringify(macro_or_string)  MagickStringifyArg(macro_or_string)
+#define MagickStringifyArg(contents)  #contents
 #define QuantumScale  ((double) 1.0/(double) QuantumRange)
 
 /*

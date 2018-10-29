@@ -29,7 +29,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -421,7 +421,9 @@ WandExport char *MagickQueryConfigureOption(const char *option)
   exception=DestroyExceptionInfo(exception);
   if (configure_info == (const ConfigureInfo **) NULL)
     return((char *) NULL);
-  value=AcquireString(configure_info[0]->value);
+  value=(char *) NULL;
+  if (number_options != 0)
+    value=AcquireString(configure_info[0]->value);
   configure_info=(const ConfigureInfo **)
     RelinquishMagickMemory((void *) configure_info);
   return(value);

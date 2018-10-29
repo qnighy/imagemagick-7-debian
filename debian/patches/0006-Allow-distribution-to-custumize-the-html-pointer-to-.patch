@@ -1,4 +1,4 @@
-From 72c9ce3ff87c26c1812a90d3b59036359540fe9d Mon Sep 17 00:00:00 2001
+From 3f46961b6da48f453fe71cc3071a07433b0a3875 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 2 Feb 2018 22:17:26 +0100
 Subject: Allow distribution to custumize the html pointer to documentation
@@ -10,20 +10,20 @@ Bug-debian: https://bugs.debian.org/727739
 ---
  configure.ac            | 12 ++++++++++++
  utilities/conjure.1.in  |  5 +++--
- utilities/convert.1.in  |  4 ++--
- utilities/display.1.in  |  5 +++--
- utilities/identify.1.in |  4 ++--
+ utilities/convert.1.in  |  6 ++++--
+ utilities/display.1.in  |  6 ++++--
+ utilities/identify.1.in |  5 +++--
  utilities/import.1.in   |  4 ++--
  utilities/mogrify.1.in  |  4 ++--
- utilities/montage.1.in  |  4 ++--
+ utilities/montage.1.in  |  6 ++++--
  utilities/stream.1.in   |  4 ++--
- 9 files changed, 30 insertions(+), 16 deletions(-)
+ 9 files changed, 36 insertions(+), 16 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index ff14b3c0f..de2c82ca7 100644
+index 8695ca083..9bf360d70 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3058,6 +3058,18 @@ esac
+@@ -3093,6 +3093,18 @@ esac
  AC_DEFINE_UNQUOTED(DOCUMENTATION_PATH,"$DEFINE_DOCUMENTATION_PATH",[Directory where ImageMagick documents live.])
  AC_SUBST(DOCUMENTATION_PATH)
  
@@ -43,15 +43,15 @@ index ff14b3c0f..de2c82ca7 100644
  # Enable/Disable documentation
  AC_ARG_ENABLE([docs],
 diff --git a/utilities/conjure.1.in b/utilities/conjure.1.in
-index e52bfdedc..ff71cf847 100644
+index bb34d1ea1..0ddd2149d 100644
 --- a/utilities/conjure.1.in
 +++ b/utilities/conjure.1.in
 @@ -7,7 +7,7 @@ conjure \- interprets and executes scripts written in the Magick Scripting Langu
  .SH OVERVIEW
  The \fBconjure\fP program is a member of the ImageMagick(1) suite of tools.  Use it to process a Magick Scripting Language (MSL) script. The Magick scripting language (MSL) will primarily benefit those that want to accomplish custom image processing tasks but do not wish to program, or those that do not have access to a Perl interpreter or a compiler.
  
--For more information about the conjure command, point your browser to file://@DOCUMENTATION_PATH@/www/conjure.html or http://www.imagemagick.org/script/conjure.php.
-+For more information about the conjure command, point your browser to file://@DOCUMENTATION_PATH@/www/conjure.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/conjure.php.
+-For more information about the conjure command, point your browser to file://@DOCUMENTATION_PATH@/www/conjure.html or http://imagemagick.org/script/conjure.php.
++For more information about the conjure command, point your browser to file://@DOCUMENTATION_PATH@/www/conjure.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/conjure.php.
  .SH DESCRIPTION
  Image Settings:
    \-monitor             monitor progress
@@ -59,77 +59,81 @@ index e52bfdedc..ff71cf847 100644
  
  .SH COPYRIGHT
  
--\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP
-+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/license.php\fP
+-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
++\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 +
 diff --git a/utilities/convert.1.in b/utilities/convert.1.in
-index 1dcee18c7..30115945c 100644
+index b0f297c79..dc2545d5c 100644
 --- a/utilities/convert.1.in
 +++ b/utilities/convert.1.in
 @@ -7,7 +7,7 @@ convert \- convert between image formats as well as resize an image, blur, crop,
  .SH OVERVIEW
  The \fBconvert\fP program is a member of the ImageMagick(1) suite of tools.  Use it to convert between image formats as well as resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more.  
  
--For more information about the convert command, point your browser to file://@DOCUMENTATION_PATH@/www/convert.html or http://www.imagemagick.org/script/convert.php.
-+For more information about the convert command, point your browser to file://@DOCUMENTATION_PATH@/www/convert.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/convert.php.
+-For more information about the convert command, point your browser to file://@DOCUMENTATION_PATH@/www/convert.html or http://imagemagick.org/script/convert.php.
++For more information about the convert command, point your browser to file://@DOCUMENTATION_PATH@/www/convert.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/convert.php.
  .SH DESCRIPTION
  Image Settings:
    \-adjoin              join images into a single multi-image file
-@@ -320,4 +320,4 @@ By default, the image format of `file' is determined by its magic number.  To sp
+@@ -320,4 +320,6 @@ By default, the image format of `file' is determined by its magic number.  To sp
  ImageMagick(1)
  
  .SH COPYRIGHT
--\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP
-+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/license.php\fP
+-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
++
++\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
++
 diff --git a/utilities/display.1.in b/utilities/display.1.in
-index d2a87d73e..d8426194a 100644
+index a04637661..6bc6d1630 100644
 --- a/utilities/display.1.in
 +++ b/utilities/display.1.in
 @@ -7,7 +7,7 @@ display \- displays an image or image sequence on any X server.
  .SH OVERVIEW
  The \fBdisplay\fP program is a member of the ImageMagick(1) suite of tools.  Use it to display an image or image sequence on any X server.
  
--For more information about the display command, point your browser to file://@DOCUMENTATION_PATH@/www/display.html or http://www.imagemagick.org/script/display.php.
-+For more information about the display command, point your browser to file://@DOCUMENTATION_PATH@/www/display.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/display.php.
+-For more information about the display command, point your browser to file://@DOCUMENTATION_PATH@/www/display.html or http://imagemagick.org/script/display.php.
++For more information about the display command, point your browser to file://@DOCUMENTATION_PATH@/www/display.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/display.php.
  .SH DESCRIPTION
  Image Settings:
    \-alpha option        on, activate, off, deactivate, set, opaque, copy
-@@ -136,4 +136,5 @@ ImageMagick(1)
+@@ -136,4 +136,6 @@ ImageMagick(1)
  
  .SH COPYRIGHT
  
--\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP
-+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/license.php\fP
+-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
++
++\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 +
 diff --git a/utilities/identify.1.in b/utilities/identify.1.in
-index d0156b625..7420071a0 100644
+index 657550762..5a5e236a3 100644
 --- a/utilities/identify.1.in
 +++ b/utilities/identify.1.in
 @@ -7,7 +7,7 @@ identify \- describes the format and characteristics of one or more image files.
  .SH OVERVIEW
  The \fBidentify\fP program is a member of the ImageMagick(1) suite of tools.  It describes the format and characteristics of one or more image files. It also reports if an image is incomplete or corrupt. The information returned includes the image number, the file name, the width and height of the image, whether the image is colormapped or not, the number of colors in the image (by default off use \fI-define unique=true\fP option), the number of bytes in the image, the format of the image (JPEG, PNM, etc.), and finally the number of seconds it took to read and process the image. Many more attributes are available with the verbose option.
  
--For more information about the identify command, point your browser to file://@DOCUMENTATION_PATH@/www/identify.html or http://www.imagemagick.org/script/identify.php.
-+For more information about the identify command, point your browser to file://@DOCUMENTATION_PATH@/www/identify.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/identify.php.
+-For more information about the identify command, point your browser to file://@DOCUMENTATION_PATH@/www/identify.html or http://imagemagick.org/script/identify.php.
++For more information about the identify command, point your browser to file://@DOCUMENTATION_PATH@/www/identify.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/identify.php.
  .SH DESCRIPTION
  Image Settings:
    \-alpha option        on, activate, off, deactivate, set, opaque, copy
-@@ -77,4 +77,4 @@ ImageMagick(1)
+@@ -77,4 +77,5 @@ ImageMagick(1)
  
  .SH COPYRIGHT
  
--\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP
-+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/license.php\fP
+-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
++\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
++
 diff --git a/utilities/import.1.in b/utilities/import.1.in
-index d8d0b8e04..4fba3eeea 100644
+index 832b6cd9a..1a549433f 100644
 --- a/utilities/import.1.in
 +++ b/utilities/import.1.in
 @@ -7,7 +7,7 @@ import \- saves any visible window on an X server and outputs it as an image fil
  .SH OVERVIEW
  The \fBimport\fP program is a member of the ImageMagick(1) suite of tools.  Use it to capture some or all of an X server screen and save the image to a file.
  
--For more information about the import command, point your browser to file://@DOCUMENTATION_PATH@/www/import.html or http://www.imagemagick.org/script/import.php.
-+For more information about the import command, point your browser to file://@DOCUMENTATION_PATH@/www/import.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/import.php.
+-For more information about the import command, point your browser to file://@DOCUMENTATION_PATH@/www/import.html or http://imagemagick.org/script/import.php.
++For more information about the import command, point your browser to file://@DOCUMENTATION_PATH@/www/import.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/import.php.
  .SH DESCRIPTION
  Image Settings:
    \-adjoin              join images into a single multi-image file
@@ -137,18 +141,18 @@ index d8d0b8e04..4fba3eeea 100644
  
  .SH COPYRIGHT
  
--\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP
-+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/license.php\fP
+-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
++\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 diff --git a/utilities/mogrify.1.in b/utilities/mogrify.1.in
-index 9fdfd1f89..106f4bb2c 100644
+index 8463c162b..c848b066d 100644
 --- a/utilities/mogrify.1.in
 +++ b/utilities/mogrify.1.in
 @@ -7,7 +7,7 @@ mogrify \- resize an image, blur, crop, despeckle, dither, draw on, flip, join,
  .SH OVERVIEW
  The \fBmogrify\fP program is a member of the ImageMagick(1) suite of tools.  Use it to resize an image, blur, crop, despeckle, dither, draw on, flip, join, re-sample, and much more. This tool is similar to convert(1) except the original image file is overwritten with any changes you request.
  
--For more information about the mogrify command, point your browser to file://@DOCUMENTATION_PATH@/www/mogrify.html or http://www.imagemagick.org/script/mogrify.php.
-+For more information about the mogrify command, point your browser to file://@DOCUMENTATION_PATH@/www/mogrify.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/mogrify.php.
+-For more information about the mogrify command, point your browser to file://@DOCUMENTATION_PATH@/www/mogrify.html or http://imagemagick.org/script/mogrify.php.
++For more information about the mogrify command, point your browser to file://@DOCUMENTATION_PATH@/www/mogrify.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/mogrify.php.
  .SH DESCRIPTION
  Image Settings:
    \-adjoin              join images into a single multi-image file
@@ -156,37 +160,39 @@ index 9fdfd1f89..106f4bb2c 100644
  
  .SH COPYRIGHT
  
--\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP
-+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/license.php\fP
+-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
++\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 diff --git a/utilities/montage.1.in b/utilities/montage.1.in
-index 10e6cabf5..18b12481e 100644
+index c9539f7de..e755939a5 100644
 --- a/utilities/montage.1.in
 +++ b/utilities/montage.1.in
-@@ -7,7 +7,7 @@ montage \- create a composite image by combining several separate images. The im
+@@ -7,7 +7,8 @@ montage \- create a composite image by combining several separate images. The im
  .SH OVERVIEW
  The \fBmontage\fP program is a member of the ImageMagick(1) suite of tools.  Use it to create a composite image by combining several separate images. The images are tiled on the composite image optionally adorned with a border, frame, image name, and more.
  
--For more information about the montage command, point your browser to file://@DOCUMENTATION_PATH@/www/montage.html or http://www.imagemagick.org/script/montage.php.
-+For more information about the montage command, point your browser to file://@DOCUMENTATION_PATH@/www/montage.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/montage.php.
+-For more information about the montage command, point your browser to file://@DOCUMENTATION_PATH@/www/montage.html or http://imagemagick.org/script/montage.php.
++
++For more information about the montage command, point your browser to file://@DOCUMENTATION_PATH@/www/montage.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/montage.php.
  .SH DESCRIPTION
  Image Settings:
    \-adjoin              join images into a single multi-image file
-@@ -143,4 +143,4 @@ ImageMagick(1)
+@@ -143,4 +144,5 @@ ImageMagick(1)
  
  .SH COPYRIGHT
  
--\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP
-+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/license.php\fP
+-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
++\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
++
 diff --git a/utilities/stream.1.in b/utilities/stream.1.in
-index 62ca4876e..fe36cd1a6 100644
+index a990b4426..9224c63ca 100644
 --- a/utilities/stream.1.in
 +++ b/utilities/stream.1.in
 @@ -7,7 +7,7 @@ stream \- a lightweight tool to stream one or more pixel components of the image
  .SH OVERVIEW
  \fBStream\fP is a lightweight tool to stream one or more pixel components of the image or portion of the image to your choice of storage formats.  It writes the pixel components as they are read from the input image a row at a time making \fBstream\fP desirable when working with large images or when you require raw pixel components.
  
--For more information about the stream command, point your browser to file://@DOCUMENTATION_PATH@/www/stream.html or http://www.imagemagick.org/script/stream.php.
-+For more information about the stream command, point your browser to file://@DOCUMENTATION_PATH@/www/stream.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/stream.php.
+-For more information about the stream command, point your browser to file://@DOCUMENTATION_PATH@/www/stream.html or http://imagemagick.org/script/stream.php.
++For more information about the stream command, point your browser to file://@DOCUMENTATION_PATH@/www/stream.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/stream.php.
  .SH DESCRIPTION
  Image Settings:
    \-authenticate value  decrypt image with this password
@@ -194,5 +200,5 @@ index 62ca4876e..fe36cd1a6 100644
  
  .SH COPYRIGHT
  
--\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://www.imagemagick.org/script/license.php\fP
-+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://www.imagemagick.org/script/license.php\fP
+-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
++\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP

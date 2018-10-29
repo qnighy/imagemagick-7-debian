@@ -1,4 +1,4 @@
-From c968f409d3d00f54a5828fe8a0194c7b3e4e62e6 Mon Sep 17 00:00:00 2001
+From 417ace0626b2c47ef31122a41ba7934c1dfbc4b9 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Sun, 4 Jun 2017 13:40:37 +0200
 Subject: Fix changelog tag mismatch
@@ -9,10 +9,10 @@ Forwarded: no
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/www/changelog.html b/www/changelog.html
-index f8a76063c..e8e0085bd 100644
+index dc4946a7c..626bfdef2 100644
 --- a/www/changelog.html
 +++ b/www/changelog.html
-@@ -367,7 +367,7 @@
+@@ -396,7 +396,7 @@
  <dt>2017-05-26  6.9.8-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Release ImageMagick version 6.9.8-7, GIT revision 11598:07d1dee:20170526.</li>
  <dt>2017-05-23  6.9.8-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>

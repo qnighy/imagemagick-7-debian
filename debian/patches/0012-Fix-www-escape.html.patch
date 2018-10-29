@@ -1,4 +1,4 @@
-From 6a366dd8afdc02ccef5f39eb94d429831f735275 Mon Sep 17 00:00:00 2001
+From 98a353ef3625da27b4adcec7c64e6c082e27ab53 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 11 Aug 2017 10:14:36 +0200
 Subject: Fix www/escape.html
@@ -9,10 +9,10 @@ Forwarded: Yes
  1 file changed, 1 insertion(+)
 
 diff --git a/www/escape.html b/www/escape.html
-index fe1f094ce..fae2a282b 100644
+index 9f5aa49c5..613e33b46 100644
 --- a/www/escape.html
 +++ b/www/escape.html
-@@ -801,6 +801,7 @@ information contained in the file:</p>
+@@ -813,6 +813,7 @@ information contained in the file:</p>
  <p>Select <var>dataset</var> and <var>record</var> from the following:</p>
  
  <pre class="pre-scrollable:">

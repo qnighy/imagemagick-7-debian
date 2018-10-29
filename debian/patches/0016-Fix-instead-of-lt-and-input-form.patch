@@ -1,4 +1,4 @@
-From e6315471707ecc0b1249e476709931f8855ef875 Mon Sep 17 00:00:00 2001
+From 750326e4dca4636d185034b2d74c07d02350fb0a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Sat, 3 Feb 2018 23:38:58 +0100
 Subject: Fix < instead of &lt; and input form
@@ -131,7 +131,7 @@ Forwarded: Yes
  123 files changed, 248 insertions(+), 251 deletions(-)
 
 diff --git a/index.html b/index.html
-index 119dc07b5..1da16281d 100644
+index ca40447fc..330e644d7 100644
 --- a/index.html
 +++ b/index.html
 @@ -61,7 +61,7 @@
@@ -152,7 +152,7 @@ index 119dc07b5..1da16281d 100644
  </body>
  </html>
 diff --git a/www/ImageMagickObject.html b/www/ImageMagickObject.html
-index 1f1ce94b5..97db0bced 100644
+index 90242389e..daa4cb65c 100644
 --- a/www/ImageMagickObject.html
 +++ b/www/ImageMagickObject.html
 @@ -61,7 +61,7 @@
@@ -173,7 +173,7 @@ index 1f1ce94b5..97db0bced 100644
  </body>
  </html>
 diff --git a/www/advanced-unix-installation.html b/www/advanced-unix-installation.html
-index caaf2d1e7..fce52b96c 100644
+index 3e0c5aa6b..9e951a244 100644
 --- a/www/advanced-unix-installation.html
 +++ b/www/advanced-unix-installation.html
 @@ -61,7 +61,7 @@
@@ -194,7 +194,7 @@ index caaf2d1e7..fce52b96c 100644
  </body>
  </html>
 diff --git a/www/advanced-windows-installation.html b/www/advanced-windows-installation.html
-index 2317918ee..2ff2db3e2 100644
+index e89f8e8fa..881e42c7b 100644
 --- a/www/advanced-windows-installation.html
 +++ b/www/advanced-windows-installation.html
 @@ -61,7 +61,7 @@
@@ -215,7 +215,7 @@ index 2317918ee..2ff2db3e2 100644
  </body>
  </html>
 diff --git a/www/animate.html b/www/animate.html
-index 0378ae260..e0ba8481b 100644
+index ac6405625..a315926e3 100644
 --- a/www/animate.html
 +++ b/www/animate.html
 @@ -61,7 +61,7 @@
@@ -236,7 +236,7 @@ index 0378ae260..e0ba8481b 100644
  </body>
  </html>
 diff --git a/www/api/animate.html b/www/api/animate.html
-index f550d663b..860970d9a 100644
+index 8463993ab..979921dda 100644
 --- a/www/api/animate.html
 +++ b/www/api/animate.html
 @@ -61,7 +61,7 @@
@@ -257,7 +257,7 @@ index f550d663b..860970d9a 100644
  </body>
  </html>
 diff --git a/www/api/annotate.html b/www/api/annotate.html
-index 1380379dd..752312f7e 100644
+index a6223e64b..d875c90e4 100644
 --- a/www/api/annotate.html
 +++ b/www/api/annotate.html
 @@ -61,7 +61,7 @@
@@ -278,7 +278,7 @@ index 1380379dd..752312f7e 100644
  </body>
  </html>
 diff --git a/www/api/attribute.html b/www/api/attribute.html
-index 7a384ef20..012b78183 100644
+index ef057c426..815415539 100644
 --- a/www/api/attribute.html
 +++ b/www/api/attribute.html
 @@ -61,7 +61,7 @@
@@ -299,7 +299,7 @@ index 7a384ef20..012b78183 100644
  </body>
  </html>
 diff --git a/www/api/blob.html b/www/api/blob.html
-index 5aa5f99b4..6690bae5c 100644
+index be2491e47..2f92db6ce 100644
 --- a/www/api/blob.html
 +++ b/www/api/blob.html
 @@ -61,7 +61,7 @@
@@ -320,7 +320,7 @@ index 5aa5f99b4..6690bae5c 100644
  </body>
  </html>
 diff --git a/www/api/cache-view.html b/www/api/cache-view.html
-index f3971ebc4..c3d81e52a 100644
+index 60a6fa09f..03bede7e4 100644
 --- a/www/api/cache-view.html
 +++ b/www/api/cache-view.html
 @@ -61,7 +61,7 @@
@@ -341,7 +341,7 @@ index f3971ebc4..c3d81e52a 100644
  </body>
  </html>
 diff --git a/www/api/cache.html b/www/api/cache.html
-index cf9ed24e4..53df58a0d 100644
+index 33962e6fb..411dded26 100644
 --- a/www/api/cache.html
 +++ b/www/api/cache.html
 @@ -61,7 +61,7 @@
@@ -362,7 +362,7 @@ index cf9ed24e4..53df58a0d 100644
  </body>
  </html>
 diff --git a/www/api/channel.html b/www/api/channel.html
-index b865ee2bb..1b9258905 100644
+index c63ae43eb..62702bc44 100644
 --- a/www/api/channel.html
 +++ b/www/api/channel.html
 @@ -61,7 +61,7 @@
@@ -383,7 +383,7 @@ index b865ee2bb..1b9258905 100644
  </body>
  </html>
 diff --git a/www/api/cipher.html b/www/api/cipher.html
-index 93f823233..7c24b727b 100644
+index 9b8f46053..5ffdacfc9 100644
 --- a/www/api/cipher.html
 +++ b/www/api/cipher.html
 @@ -61,7 +61,7 @@
@@ -404,7 +404,7 @@ index 93f823233..7c24b727b 100644
  </body>
  </html>
 diff --git a/www/api/color.html b/www/api/color.html
-index 29f4de0a4..402df4206 100644
+index fbcf30754..4481a925b 100644
 --- a/www/api/color.html
 +++ b/www/api/color.html
 @@ -61,7 +61,7 @@
@@ -425,7 +425,7 @@ index 29f4de0a4..402df4206 100644
  </body>
  </html>
 diff --git a/www/api/colormap.html b/www/api/colormap.html
-index 278ae2f2e..52a101208 100644
+index 20743d24c..f5403d09c 100644
 --- a/www/api/colormap.html
 +++ b/www/api/colormap.html
 @@ -61,7 +61,7 @@
@@ -446,7 +446,7 @@ index 278ae2f2e..52a101208 100644
  </body>
  </html>
 diff --git a/www/api/colorspace.html b/www/api/colorspace.html
-index d1da0da94..bc5cb1f16 100644
+index d042a825a..93dad8187 100644
 --- a/www/api/colorspace.html
 +++ b/www/api/colorspace.html
 @@ -61,7 +61,7 @@
@@ -467,7 +467,7 @@ index d1da0da94..bc5cb1f16 100644
  </body>
  </html>
 diff --git a/www/api/compare.html b/www/api/compare.html
-index 67e805b24..92d09a662 100644
+index aa5344eb1..f2b2fb662 100644
 --- a/www/api/compare.html
 +++ b/www/api/compare.html
 @@ -61,7 +61,7 @@
@@ -488,7 +488,7 @@ index 67e805b24..92d09a662 100644
  </body>
  </html>
 diff --git a/www/api/composite.html b/www/api/composite.html
-index 906106fd4..8a69346f0 100644
+index 12e098c8a..d0d297478 100644
 --- a/www/api/composite.html
 +++ b/www/api/composite.html
 @@ -61,7 +61,7 @@
@@ -509,7 +509,7 @@ index 906106fd4..8a69346f0 100644
  </body>
  </html>
 diff --git a/www/api/constitute.html b/www/api/constitute.html
-index 6450499bf..4819e311a 100644
+index c1f56500d..11a547b86 100644
 --- a/www/api/constitute.html
 +++ b/www/api/constitute.html
 @@ -61,7 +61,7 @@
@@ -530,7 +530,7 @@ index 6450499bf..4819e311a 100644
  </body>
  </html>
 diff --git a/www/api/decorate.html b/www/api/decorate.html
-index 2877074d2..fd35e4671 100644
+index 833f6919b..d175b44a6 100644
 --- a/www/api/decorate.html
 +++ b/www/api/decorate.html
 @@ -61,7 +61,7 @@
@@ -551,7 +551,7 @@ index 2877074d2..fd35e4671 100644
  </body>
  </html>
 diff --git a/www/api/deprecate.html b/www/api/deprecate.html
-index c26d90d26..1db9f3389 100644
+index b40d1077f..f2c242131 100644
 --- a/www/api/deprecate.html
 +++ b/www/api/deprecate.html
 @@ -61,7 +61,7 @@
@@ -572,7 +572,7 @@ index c26d90d26..1db9f3389 100644
  </body>
  </html>
 diff --git a/www/api/display.html b/www/api/display.html
-index 77d491941..9db9833f7 100644
+index 1df6a00bf..d7499b8c2 100644
 --- a/www/api/display.html
 +++ b/www/api/display.html
 @@ -61,7 +61,7 @@
@@ -593,7 +593,7 @@ index 77d491941..9db9833f7 100644
  </body>
  </html>
 diff --git a/www/api/distort.html b/www/api/distort.html
-index 7bfeb2d2a..dceeffc94 100644
+index 14e319c3a..90be1d50d 100644
 --- a/www/api/distort.html
 +++ b/www/api/distort.html
 @@ -61,7 +61,7 @@
@@ -614,7 +614,7 @@ index 7bfeb2d2a..dceeffc94 100644
  </body>
  </html>
 diff --git a/www/api/draw.html b/www/api/draw.html
-index f4b43ff91..ebcb8efea 100644
+index 687c69618..ad92dbe15 100644
 --- a/www/api/draw.html
 +++ b/www/api/draw.html
 @@ -61,7 +61,7 @@
@@ -635,7 +635,7 @@ index f4b43ff91..ebcb8efea 100644
  </body>
  </html>
 diff --git a/www/api/drawing-wand.html b/www/api/drawing-wand.html
-index ae2cb82c1..1cb5f1432 100644
+index efadd8d9a..091a67e0f 100644
 --- a/www/api/drawing-wand.html
 +++ b/www/api/drawing-wand.html
 @@ -61,7 +61,7 @@
@@ -656,7 +656,7 @@ index ae2cb82c1..1cb5f1432 100644
  </body>
  </html>
 diff --git a/www/api/effect.html b/www/api/effect.html
-index 3fd1c1959..c2647eb27 100644
+index 1335ed33e..cbc8f82a0 100644
 --- a/www/api/effect.html
 +++ b/www/api/effect.html
 @@ -61,7 +61,7 @@
@@ -677,7 +677,7 @@ index 3fd1c1959..c2647eb27 100644
  </body>
  </html>
 diff --git a/www/api/enhance.html b/www/api/enhance.html
-index 4d45d8cae..c2252960d 100644
+index a2d16cb99..6a74971e3 100644
 --- a/www/api/enhance.html
 +++ b/www/api/enhance.html
 @@ -61,7 +61,7 @@
@@ -698,7 +698,7 @@ index 4d45d8cae..c2252960d 100644
  </body>
  </html>
 diff --git a/www/api/exception.html b/www/api/exception.html
-index d9c93fa06..3ad81e566 100644
+index 2299bb0bc..2ff908c41 100644
 --- a/www/api/exception.html
 +++ b/www/api/exception.html
 @@ -61,7 +61,7 @@
@@ -719,7 +719,7 @@ index d9c93fa06..3ad81e566 100644
  </body>
  </html>
 diff --git a/www/api/feature.html b/www/api/feature.html
-index 023ab6eef..db1781270 100644
+index 6e3fc05e2..f136baef9 100644
 --- a/www/api/feature.html
 +++ b/www/api/feature.html
 @@ -61,7 +61,7 @@
@@ -740,7 +740,7 @@ index 023ab6eef..db1781270 100644
  </body>
  </html>
 diff --git a/www/api/fourier.html b/www/api/fourier.html
-index 8ec6669e7..3a5e5dbf8 100644
+index 835ef5f1c..11651a069 100644
 --- a/www/api/fourier.html
 +++ b/www/api/fourier.html
 @@ -61,7 +61,7 @@
@@ -761,7 +761,7 @@ index 8ec6669e7..3a5e5dbf8 100644
  </body>
  </html>
 diff --git a/www/api/fx.html b/www/api/fx.html
-index 19aa08928..54e8df6f8 100644
+index ff15c9853..0cd93851d 100644
 --- a/www/api/fx.html
 +++ b/www/api/fx.html
 @@ -61,7 +61,7 @@
@@ -782,7 +782,7 @@ index 19aa08928..54e8df6f8 100644
  </body>
  </html>
 diff --git a/www/api/histogram.html b/www/api/histogram.html
-index 8859a6a65..480e39faf 100644
+index e79ea0251..a381f3177 100644
 --- a/www/api/histogram.html
 +++ b/www/api/histogram.html
 @@ -61,7 +61,7 @@
@@ -803,7 +803,7 @@ index 8859a6a65..480e39faf 100644
  </body>
  </html>
 diff --git a/www/api/image-view.html b/www/api/image-view.html
-index bfdaa64f5..e617c1e43 100644
+index f600bcd64..06e6b70db 100644
 --- a/www/api/image-view.html
 +++ b/www/api/image-view.html
 @@ -61,7 +61,7 @@
@@ -824,7 +824,7 @@ index bfdaa64f5..e617c1e43 100644
  </body>
  </html>
 diff --git a/www/api/image.html b/www/api/image.html
-index c802b5a4b..46d45280f 100644
+index f7f96856c..2957a0228 100644
 --- a/www/api/image.html
 +++ b/www/api/image.html
 @@ -61,7 +61,7 @@
@@ -845,7 +845,7 @@ index c802b5a4b..46d45280f 100644
  </body>
  </html>
 diff --git a/www/api/layer.html b/www/api/layer.html
-index 856e1ce28..40296a93c 100644
+index 454625452..8b20d206a 100644
 --- a/www/api/layer.html
 +++ b/www/api/layer.html
 @@ -61,7 +61,7 @@
@@ -866,7 +866,7 @@ index 856e1ce28..40296a93c 100644
  </body>
  </html>
 diff --git a/www/api/list.html b/www/api/list.html
-index f55212226..8d7050707 100644
+index eebcba3e7..28348b912 100644
 --- a/www/api/list.html
 +++ b/www/api/list.html
 @@ -61,7 +61,7 @@
@@ -887,7 +887,7 @@ index f55212226..8d7050707 100644
  </body>
  </html>
 diff --git a/www/api/magick++-classes.html b/www/api/magick++-classes.html
-index 4a54a6ef2..0a6a19c26 100644
+index 206bd489f..a7d76c6bf 100644
 --- a/www/api/magick++-classes.html
 +++ b/www/api/magick++-classes.html
 @@ -61,7 +61,7 @@
@@ -908,7 +908,7 @@ index 4a54a6ef2..0a6a19c26 100644
  </body>
  </html>
 diff --git a/www/api/magick-deprecate.html b/www/api/magick-deprecate.html
-index 3f060993b..44d146fae 100644
+index 51a33a847..1b9f0aa5f 100644
 --- a/www/api/magick-deprecate.html
 +++ b/www/api/magick-deprecate.html
 @@ -61,7 +61,7 @@
@@ -929,7 +929,7 @@ index 3f060993b..44d146fae 100644
  </body>
  </html>
 diff --git a/www/api/magick-image.html b/www/api/magick-image.html
-index 4c291e1e8..e7b658886 100644
+index c7da9858e..61c566d58 100644
 --- a/www/api/magick-image.html
 +++ b/www/api/magick-image.html
 @@ -61,7 +61,7 @@
@@ -950,7 +950,7 @@ index 4c291e1e8..e7b658886 100644
  </body>
  </html>
 diff --git a/www/api/magick-property.html b/www/api/magick-property.html
-index 4c5a92289..741f0ed1b 100644
+index 98b5a2c4b..4302c1474 100644
 --- a/www/api/magick-property.html
 +++ b/www/api/magick-property.html
 @@ -61,7 +61,7 @@
@@ -971,7 +971,7 @@ index 4c5a92289..741f0ed1b 100644
  </body>
  </html>
 diff --git a/www/api/magick-wand.html b/www/api/magick-wand.html
-index 7adc14d64..8a5da7a11 100644
+index ccd051ff4..8a4c37f9d 100644
 --- a/www/api/magick-wand.html
 +++ b/www/api/magick-wand.html
 @@ -61,7 +61,7 @@
@@ -992,7 +992,7 @@ index 7adc14d64..8a5da7a11 100644
  </body>
  </html>
 diff --git a/www/api/magick.html b/www/api/magick.html
-index 5a73cbff3..36cb5a7d5 100644
+index aa9d1c9fe..299f51f20 100644
 --- a/www/api/magick.html
 +++ b/www/api/magick.html
 @@ -61,7 +61,7 @@
@@ -1013,7 +1013,7 @@ index 5a73cbff3..36cb5a7d5 100644
  </body>
  </html>
 diff --git a/www/api/memory.html b/www/api/memory.html
-index c70a93995..25844c01b 100644
+index 7155704fe..c7b657f84 100644
 --- a/www/api/memory.html
 +++ b/www/api/memory.html
 @@ -61,7 +61,7 @@
@@ -1034,7 +1034,7 @@ index c70a93995..25844c01b 100644
  </body>
  </html>
 diff --git a/www/api/mime.html b/www/api/mime.html
-index 4aa562749..bdf21264b 100644
+index f5b8cdef0..85b86f0a8 100644
 --- a/www/api/mime.html
 +++ b/www/api/mime.html
 @@ -61,7 +61,7 @@
@@ -1055,7 +1055,7 @@ index 4aa562749..bdf21264b 100644
  </body>
  </html>
 diff --git a/www/api/module.html b/www/api/module.html
-index 619d5d644..b48336ec4 100644
+index b7d839996..7f37dde79 100644
 --- a/www/api/module.html
 +++ b/www/api/module.html
 @@ -61,7 +61,7 @@
@@ -1076,7 +1076,7 @@ index 619d5d644..b48336ec4 100644
  </body>
  </html>
 diff --git a/www/api/mogrify.html b/www/api/mogrify.html
-index effd1da04..fc8727df4 100644
+index 6da0dbe72..276348c20 100644
 --- a/www/api/mogrify.html
 +++ b/www/api/mogrify.html
 @@ -61,7 +61,7 @@
@@ -1097,7 +1097,7 @@ index effd1da04..fc8727df4 100644
  </body>
  </html>
 diff --git a/www/api/monitor.html b/www/api/monitor.html
-index 0b5b5b541..adab41b44 100644
+index a27e3f2da..aecd15281 100644
 --- a/www/api/monitor.html
 +++ b/www/api/monitor.html
 @@ -61,7 +61,7 @@
@@ -1118,7 +1118,7 @@ index 0b5b5b541..adab41b44 100644
  </body>
  </html>
 diff --git a/www/api/montage.html b/www/api/montage.html
-index 68d36db18..0703da66f 100644
+index b4d79af20..8a88ac968 100644
 --- a/www/api/montage.html
 +++ b/www/api/montage.html
 @@ -61,7 +61,7 @@
@@ -1139,7 +1139,7 @@ index 68d36db18..0703da66f 100644
  </body>
  </html>
 diff --git a/www/api/morphology.html b/www/api/morphology.html
-index 93cbdf099..3ae18bfca 100644
+index 94c01203d..5252448d7 100644
 --- a/www/api/morphology.html
 +++ b/www/api/morphology.html
 @@ -61,7 +61,7 @@
@@ -1160,7 +1160,7 @@ index 93cbdf099..3ae18bfca 100644
  </body>
  </html>
 diff --git a/www/api/paint.html b/www/api/paint.html
-index 21e016e1e..6525014ae 100644
+index 2f96f9b7d..6392f3658 100644
 --- a/www/api/paint.html
 +++ b/www/api/paint.html
 @@ -61,7 +61,7 @@
@@ -1181,7 +1181,7 @@ index 21e016e1e..6525014ae 100644
  </body>
  </html>
 diff --git a/www/api/pixel-iterator.html b/www/api/pixel-iterator.html
-index ebe3ff894..f4d47707f 100644
+index 7ca004539..69bc13164 100644
 --- a/www/api/pixel-iterator.html
 +++ b/www/api/pixel-iterator.html
 @@ -61,7 +61,7 @@
@@ -1202,7 +1202,7 @@ index ebe3ff894..f4d47707f 100644
  </body>
  </html>
 diff --git a/www/api/pixel-wand.html b/www/api/pixel-wand.html
-index 25b2354bd..5d3616dd9 100644
+index e7d36349e..d0f131bdb 100644
 --- a/www/api/pixel-wand.html
 +++ b/www/api/pixel-wand.html
 @@ -61,7 +61,7 @@
@@ -1223,7 +1223,7 @@ index 25b2354bd..5d3616dd9 100644
  </body>
  </html>
 diff --git a/www/api/profile.html b/www/api/profile.html
-index 1131863b6..b6dc2a514 100644
+index 1b997172a..102e764ca 100644
 --- a/www/api/profile.html
 +++ b/www/api/profile.html
 @@ -61,7 +61,7 @@
@@ -1244,7 +1244,7 @@ index 1131863b6..b6dc2a514 100644
  </body>
  </html>
 diff --git a/www/api/property.html b/www/api/property.html
-index 085dcab73..7da06f995 100644
+index 5fed83576..76aab742d 100644
 --- a/www/api/property.html
 +++ b/www/api/property.html
 @@ -61,7 +61,7 @@
@@ -1265,7 +1265,7 @@ index 085dcab73..7da06f995 100644
  </body>
  </html>
 diff --git a/www/api/quantize.html b/www/api/quantize.html
-index 2c7379d4f..5ce906c7d 100644
+index fe04d13b0..9629c4e31 100644
 --- a/www/api/quantize.html
 +++ b/www/api/quantize.html
 @@ -61,7 +61,7 @@
@@ -1286,7 +1286,7 @@ index 2c7379d4f..5ce906c7d 100644
  </body>
  </html>
 diff --git a/www/api/registry.html b/www/api/registry.html
-index 47c5d200e..51e8cfbfc 100644
+index 1a6001e23..5ab390294 100644
 --- a/www/api/registry.html
 +++ b/www/api/registry.html
 @@ -61,7 +61,7 @@
@@ -1307,7 +1307,7 @@ index 47c5d200e..51e8cfbfc 100644
  </body>
  </html>
 diff --git a/www/api/resize.html b/www/api/resize.html
-index 710f7aa8a..670bad555 100644
+index 5d3f77afd..44f4a97de 100644
 --- a/www/api/resize.html
 +++ b/www/api/resize.html
 @@ -61,7 +61,7 @@
@@ -1328,7 +1328,7 @@ index 710f7aa8a..670bad555 100644
  </body>
  </html>
 diff --git a/www/api/resource.html b/www/api/resource.html
-index 6de1fab4d..32e6afb8b 100644
+index ff0f5f58e..062dbc8d2 100644
 --- a/www/api/resource.html
 +++ b/www/api/resource.html
 @@ -61,7 +61,7 @@
@@ -1349,7 +1349,7 @@ index 6de1fab4d..32e6afb8b 100644
  </body>
  </html>
 diff --git a/www/api/segment.html b/www/api/segment.html
-index 92d8369cb..87dd3b3f3 100644
+index a6c99aae1..e78abe3e4 100644
 --- a/www/api/segment.html
 +++ b/www/api/segment.html
 @@ -61,7 +61,7 @@
@@ -1370,7 +1370,7 @@ index 92d8369cb..87dd3b3f3 100644
  </body>
  </html>
 diff --git a/www/api/shear.html b/www/api/shear.html
-index 9ad8c33c7..a0a80449d 100644
+index b11b92a5b..216880046 100644
 --- a/www/api/shear.html
 +++ b/www/api/shear.html
 @@ -61,7 +61,7 @@
@@ -1391,7 +1391,7 @@ index 9ad8c33c7..a0a80449d 100644
  </body>
  </html>
 diff --git a/www/api/signature.html b/www/api/signature.html
-index fe7a9ec48..4566cedf8 100644
+index 2a2a2b126..6888152d8 100644
 --- a/www/api/signature.html
 +++ b/www/api/signature.html
 @@ -61,7 +61,7 @@
@@ -1412,7 +1412,7 @@ index fe7a9ec48..4566cedf8 100644
  </body>
  </html>
 diff --git a/www/api/statistic.html b/www/api/statistic.html
-index ca3af311a..7846d3124 100644
+index 45a59fb90..65eb70c11 100644
 --- a/www/api/statistic.html
 +++ b/www/api/statistic.html
 @@ -61,7 +61,7 @@
@@ -1433,7 +1433,7 @@ index ca3af311a..7846d3124 100644
  </body>
  </html>
 diff --git a/www/api/stream.html b/www/api/stream.html
-index 4ed4512c2..234cb95c6 100644
+index 310c3e45b..bb53971c4 100644
 --- a/www/api/stream.html
 +++ b/www/api/stream.html
 @@ -61,7 +61,7 @@
@@ -1454,7 +1454,7 @@ index 4ed4512c2..234cb95c6 100644
  </body>
  </html>
 diff --git a/www/api/transform.html b/www/api/transform.html
-index 76fa1eaed..1ae2907a4 100644
+index 29080737c..0d583bf37 100644
 --- a/www/api/transform.html
 +++ b/www/api/transform.html
 @@ -61,7 +61,7 @@
@@ -1475,7 +1475,7 @@ index 76fa1eaed..1ae2907a4 100644
  </body>
  </html>
 diff --git a/www/api/version.html b/www/api/version.html
-index 51b33fd80..daf959d94 100644
+index e34681080..b201b4941 100644
 --- a/www/api/version.html
 +++ b/www/api/version.html
 @@ -61,7 +61,7 @@
@@ -1496,7 +1496,7 @@ index 51b33fd80..daf959d94 100644
  </body>
  </html>
 diff --git a/www/api/wand-view.html b/www/api/wand-view.html
-index ecdb10b9a..28347e0db 100644
+index d6b1381db..0decb647f 100644
 --- a/www/api/wand-view.html
 +++ b/www/api/wand-view.html
 @@ -61,7 +61,7 @@
@@ -1517,7 +1517,7 @@ index ecdb10b9a..28347e0db 100644
  </body>
  </html>
 diff --git a/www/architecture.html b/www/architecture.html
-index 2cbc5101c..eac5d329f 100644
+index 7ab6ced30..52f0c7f46 100644
 --- a/www/architecture.html
 +++ b/www/architecture.html
 @@ -61,7 +61,7 @@
@@ -1529,7 +1529,7 @@ index 2cbc5101c..eac5d329f 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -1413,6 +1413,6 @@ ModuleExport size_t analyzeImage(Image **images,const int argc,const char **argv
+@@ -1414,6 +1414,6 @@ ModuleExport size_t analyzeImage(Image **images,const int argc,const char **argv
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -1538,10 +1538,10 @@ index 2cbc5101c..eac5d329f 100644
  </body>
  </html>
 diff --git a/www/changelog.html b/www/changelog.html
-index e8e0085bd..5c029c69e 100644
+index 626bfdef2..aedad7580 100644
 --- a/www/changelog.html
 +++ b/www/changelog.html
-@@ -4416,7 +4416,7 @@
+@@ -4445,7 +4445,7 @@
    <li> Set AppendImage() matte channel only when image has matte attribute set.</li>
    <li> The -crop with negative offsets do not modify the virtual canvas.</li>
    <li> Caption: Given both the width and height ("-size") of the area to fill,    adjust the fonts "-pointsize" until the text just filles the whole space    without overflowing.</li>
@@ -1551,7 +1551,7 @@ index e8e0085bd..5c029c69e 100644
    <footer class="magick-footer">
      <p><a href="security-policy.html">Security</a> •
 diff --git a/www/cipher.html b/www/cipher.html
-index a419db2f1..d58a6979d 100644
+index 85023e198..378cc9592 100644
 --- a/www/cipher.html
 +++ b/www/cipher.html
 @@ -61,7 +61,7 @@
@@ -1563,7 +1563,7 @@ index a419db2f1..d58a6979d 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -160,6 +160,6 @@ Examples <a href="https://www.imagemagick.org/Usage/transform/#encipher"
+@@ -160,6 +160,6 @@ Examples <a href="https://imagemagick.org/Usage/transform/#encipher"
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -1572,7 +1572,7 @@ index a419db2f1..d58a6979d 100644
  </body>
  </html>
 diff --git a/www/color-management.html b/www/color-management.html
-index 11a31de11..4c0671cc9 100644
+index 3d6fc96b2..73d1303e4 100644
 --- a/www/color-management.html
 +++ b/www/color-management.html
 @@ -61,7 +61,7 @@
@@ -1602,7 +1602,7 @@ index 11a31de11..4c0671cc9 100644
  </body>
  </html>
 diff --git a/www/color.html b/www/color.html
-index 2532e1743..a41216b64 100644
+index aae743840..b01ffcedf 100644
 --- a/www/color.html
 +++ b/www/color.html
 @@ -61,7 +61,7 @@
@@ -1623,7 +1623,7 @@ index 2532e1743..a41216b64 100644
  </body>
  </html>
 diff --git a/www/command-line-options.html b/www/command-line-options.html
-index 9c67a1968..b5207cbb8 100644
+index ad38cecec..f17236808 100644
 --- a/www/command-line-options.html
 +++ b/www/command-line-options.html
 @@ -61,7 +61,7 @@
@@ -1635,7 +1635,7 @@ index 9c67a1968..b5207cbb8 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -7990,6 +7990,6 @@ href="command-line-options.html#colors">-colors</a> to reduce the number of colo
+@@ -7994,6 +7994,6 @@ href="command-line-options.html#colors">-colors</a> to reduce the number of colo
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -1644,7 +1644,7 @@ index 9c67a1968..b5207cbb8 100644
  </body>
  </html>
 diff --git a/www/command-line-processing.html b/www/command-line-processing.html
-index c7647b4f8..4817a7829 100644
+index 38e2121ac..d3e191714 100644
 --- a/www/command-line-processing.html
 +++ b/www/command-line-processing.html
 @@ -61,7 +61,7 @@
@@ -1665,7 +1665,7 @@ index c7647b4f8..4817a7829 100644
  </body>
  </html>
 diff --git a/www/command-line-tools.html b/www/command-line-tools.html
-index 1fbe18ddd..40d9b6141 100644
+index 924957da8..f9be7d299 100644
 --- a/www/command-line-tools.html
 +++ b/www/command-line-tools.html
 @@ -61,7 +61,7 @@
@@ -1686,7 +1686,7 @@ index 1fbe18ddd..40d9b6141 100644
  </body>
  </html>
 diff --git a/www/compare.html b/www/compare.html
-index 3e457b62a..e72e88bc7 100644
+index e028da98b..7387552e7 100644
 --- a/www/compare.html
 +++ b/www/compare.html
 @@ -61,7 +61,7 @@
@@ -1716,7 +1716,7 @@ index 3e457b62a..e72e88bc7 100644
  </body>
  </html>
 diff --git a/www/compose.html b/www/compose.html
-index 35f85d969..bce361b64 100644
+index bd21b98b1..69f193891 100644
 --- a/www/compose.html
 +++ b/www/compose.html
 @@ -61,7 +61,7 @@
@@ -1737,7 +1737,7 @@ index 35f85d969..bce361b64 100644
  </body>
  </html>
 diff --git a/www/composite.html b/www/composite.html
-index 3e5c3aafc..8f6cb8a21 100644
+index 76f1d8755..9cb3e2193 100644
 --- a/www/composite.html
 +++ b/www/composite.html
 @@ -61,7 +61,7 @@
@@ -1758,7 +1758,7 @@ index 3e5c3aafc..8f6cb8a21 100644
  </body>
  </html>
 diff --git a/www/conjure.html b/www/conjure.html
-index 56cd232eb..28ecb77dd 100644
+index 5b35043b6..3853f3d10 100644
 --- a/www/conjure.html
 +++ b/www/conjure.html
 @@ -61,7 +61,7 @@
@@ -1779,7 +1779,7 @@ index 56cd232eb..28ecb77dd 100644
  </body>
  </html>
 diff --git a/www/connected-components.html b/www/connected-components.html
-index 7a39341b7..48809a11f 100644
+index db2b55ee7..e0d30c40a 100644
 --- a/www/connected-components.html
 +++ b/www/connected-components.html
 @@ -61,7 +61,7 @@
@@ -1800,7 +1800,7 @@ index 7a39341b7..48809a11f 100644
  </body>
  </html>
 diff --git a/www/contact.html b/www/contact.html
-index d0268d2a8..e1168d780 100644
+index b3b7d784a..dd031685a 100644
 --- a/www/contact.html
 +++ b/www/contact.html
 @@ -61,7 +61,7 @@
@@ -1821,7 +1821,7 @@ index d0268d2a8..e1168d780 100644
  </body>
  </html>
 diff --git a/www/convert.html b/www/convert.html
-index 7263f1f44..ec3047291 100644
+index 077f0873b..b4c5a1232 100644
 --- a/www/convert.html
 +++ b/www/convert.html
 @@ -61,7 +61,7 @@
@@ -1842,7 +1842,7 @@ index 7263f1f44..ec3047291 100644
  </body>
  </html>
 diff --git a/www/develop.html b/www/develop.html
-index 335b29e76..3319f49dc 100644
+index 39851422f..01a0ac139 100644
 --- a/www/develop.html
 +++ b/www/develop.html
 @@ -61,7 +61,7 @@
@@ -1863,7 +1863,7 @@ index 335b29e76..3319f49dc 100644
  </body>
  </html>
 diff --git a/www/display.html b/www/display.html
-index fc9ac912c..1c0a68b6d 100644
+index 8160cd404..b0d0561b2 100644
 --- a/www/display.html
 +++ b/www/display.html
 @@ -61,7 +61,7 @@
@@ -1884,7 +1884,7 @@ index fc9ac912c..1c0a68b6d 100644
  </body>
  </html>
 diff --git a/www/distribute-pixel-cache.html b/www/distribute-pixel-cache.html
-index 3155f9045..2bb4aa616 100644
+index 83450d271..1522d20c8 100644
 --- a/www/distribute-pixel-cache.html
 +++ b/www/distribute-pixel-cache.html
 @@ -61,7 +61,7 @@
@@ -1905,7 +1905,7 @@ index 3155f9045..2bb4aa616 100644
  </body>
  </html>
 diff --git a/www/download.html b/www/download.html
-index 40c6d616d..c2db6c107 100644
+index 050f7e958..7d12f01eb 100644
 --- a/www/download.html
 +++ b/www/download.html
 @@ -460,6 +460,6 @@ objShell.Exec("convert ""e:/myimages/image.png"" ""e:/myimages/image.jpg""")</co
@@ -1917,7 +1917,7 @@ index 40c6d616d..c2db6c107 100644
  </body>
  </html>
 diff --git a/www/escape.html b/www/escape.html
-index fae2a282b..8fa7b43f2 100644
+index 613e33b46..7d1642a3b 100644
 --- a/www/escape.html
 +++ b/www/escape.html
 @@ -61,7 +61,7 @@
@@ -1929,7 +1929,7 @@ index fae2a282b..8fa7b43f2 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -908,6 +908,6 @@ Post ObjectData Descriptor Record
+@@ -920,6 +920,6 @@ Post ObjectData Descriptor Record
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -1938,7 +1938,7 @@ index fae2a282b..8fa7b43f2 100644
  </body>
  </html>
 diff --git a/www/examples.html b/www/examples.html
-index 877966867..b4a90cd1f 100644
+index b316b189f..a89471ad7 100644
 --- a/www/examples.html
 +++ b/www/examples.html
 @@ -61,7 +61,7 @@
@@ -1959,7 +1959,7 @@ index 877966867..b4a90cd1f 100644
  </body>
  </html>
 diff --git a/www/exception.html b/www/exception.html
-index 2dd85e94a..9ec2b0b46 100644
+index cac1f822f..53f76504f 100644
 --- a/www/exception.html
 +++ b/www/exception.html
 @@ -61,7 +61,7 @@
@@ -1980,7 +1980,7 @@ index 2dd85e94a..9ec2b0b46 100644
  </body>
  </html>
 diff --git a/www/export.html b/www/export.html
-index 7eb17399a..7d84ddbf3 100644
+index c441f3f96..29e4b00a0 100644
 --- a/www/export.html
 +++ b/www/export.html
 @@ -61,7 +61,7 @@
@@ -2001,7 +2001,7 @@ index 7eb17399a..7d84ddbf3 100644
  </body>
  </html>
 diff --git a/www/formats.html b/www/formats.html
-index 28cc16cab..6a0e1fb46 100644
+index 6f2427699..9622662b4 100644
 --- a/www/formats.html
 +++ b/www/formats.html
 @@ -61,7 +61,7 @@
@@ -2022,7 +2022,7 @@ index 28cc16cab..6a0e1fb46 100644
  </body>
  </html>
 diff --git a/www/fx.html b/www/fx.html
-index 6cc2e4c61..5abc6923f 100644
+index 43101a6b7..d74f2feed 100644
 --- a/www/fx.html
 +++ b/www/fx.html
 @@ -61,7 +61,7 @@
@@ -2034,7 +2034,7 @@ index 6cc2e4c61..5abc6923f 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -435,6 +435,6 @@ Red channel of NW corner of image #1 is 0.184588
+@@ -437,6 +437,6 @@ Red channel of NW corner of image #1 is 0.184588
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -2043,7 +2043,7 @@ index 6cc2e4c61..5abc6923f 100644
  </body>
  </html>
 diff --git a/www/gradient.html b/www/gradient.html
-index c20d58b7b..f70d78a7e 100644
+index 6ecab6fcb..b6295d551 100644
 --- a/www/gradient.html
 +++ b/www/gradient.html
 @@ -61,7 +61,7 @@
@@ -2081,7 +2081,7 @@ index c20d58b7b..f70d78a7e 100644
  </body>
  </html>
 diff --git a/www/high-dynamic-range.html b/www/high-dynamic-range.html
-index 97c229d1f..4c711e439 100644
+index 0fbe0bf7a..884230511 100644
 --- a/www/high-dynamic-range.html
 +++ b/www/high-dynamic-range.html
 @@ -61,7 +61,7 @@
@@ -2102,7 +2102,7 @@ index 97c229d1f..4c711e439 100644
  </body>
  </html>
 diff --git a/www/history.html b/www/history.html
-index 7e595f165..9d3bf8762 100644
+index b8ef1e922..ab275892b 100644
 --- a/www/history.html
 +++ b/www/history.html
 @@ -61,7 +61,7 @@
@@ -2123,7 +2123,7 @@ index 7e595f165..9d3bf8762 100644
  </body>
  </html>
 diff --git a/www/identify.html b/www/identify.html
-index e0f0c63b1..8e24b6030 100644
+index d34c6e763..33da07842 100644
 --- a/www/identify.html
 +++ b/www/identify.html
 @@ -61,7 +61,7 @@
@@ -2144,7 +2144,7 @@ index e0f0c63b1..8e24b6030 100644
  </body>
  </html>
 diff --git a/www/import.html b/www/import.html
-index 9510f6a77..5f562ad79 100644
+index 708a9b98b..d2ea09bd3 100644
 --- a/www/import.html
 +++ b/www/import.html
 @@ -61,7 +61,7 @@
@@ -2165,7 +2165,7 @@ index 9510f6a77..5f562ad79 100644
  </body>
  </html>
 diff --git a/www/install-source.html b/www/install-source.html
-index c4eb48a01..580c04ba2 100644
+index 5c8427cb2..7e30484b3 100644
 --- a/www/install-source.html
 +++ b/www/install-source.html
 @@ -61,7 +61,7 @@
@@ -2186,7 +2186,7 @@ index c4eb48a01..580c04ba2 100644
  </body>
  </html>
 diff --git a/www/jp2.html b/www/jp2.html
-index 7c6d94427..a5ec1a59c 100644
+index 3c31690b4..f49eb2c14 100644
 --- a/www/jp2.html
 +++ b/www/jp2.html
 @@ -61,7 +61,7 @@
@@ -2207,7 +2207,7 @@ index 7c6d94427..a5ec1a59c 100644
  </body>
  </html>
 diff --git a/www/license.html b/www/license.html
-index e64eab8e8..e4986349d 100644
+index f5a98137e..070b38ce7 100644
 --- a/www/license.html
 +++ b/www/license.html
 @@ -61,7 +61,7 @@
@@ -2236,7 +2236,7 @@ index e64eab8e8..e4986349d 100644
  </body>
  </html>
 diff --git a/www/links.html b/www/links.html
-index 0856d8292..96ef133f0 100644
+index 043ad2efd..5b7644520 100644
 --- a/www/links.html
 +++ b/www/links.html
 @@ -61,7 +61,7 @@
@@ -2257,7 +2257,7 @@ index 0856d8292..96ef133f0 100644
  </body>
  </html>
 diff --git a/www/magick++.html b/www/magick++.html
-index fc77c2b04..d920c0513 100644
+index db1422596..8646d6d36 100644
 --- a/www/magick++.html
 +++ b/www/magick++.html
 @@ -61,7 +61,7 @@
@@ -2278,7 +2278,7 @@ index fc77c2b04..d920c0513 100644
  </body>
  </html>
 diff --git a/www/magick-core.html b/www/magick-core.html
-index a57c690e7..f9e254e01 100644
+index 3f0000b5b..38f1f3fe7 100644
 --- a/www/magick-core.html
 +++ b/www/magick-core.html
 @@ -61,7 +61,7 @@
@@ -2299,7 +2299,7 @@ index a57c690e7..f9e254e01 100644
  </body>
  </html>
 diff --git a/www/magick-script.html b/www/magick-script.html
-index 982e0da0a..704df2ad0 100644
+index 71b9d305e..0a37ff245 100644
 --- a/www/magick-script.html
 +++ b/www/magick-script.html
 @@ -61,7 +61,7 @@
@@ -2320,7 +2320,7 @@ index 982e0da0a..704df2ad0 100644
  </body>
  </html>
 diff --git a/www/magick-vector-graphics.html b/www/magick-vector-graphics.html
-index 418a0bca0..bd1b33dec 100644
+index 5eebe5469..bd1cf0eea 100644
 --- a/www/magick-vector-graphics.html
 +++ b/www/magick-vector-graphics.html
 @@ -61,7 +61,7 @@
@@ -2341,7 +2341,7 @@ index 418a0bca0..bd1b33dec 100644
  </body>
  </html>
 diff --git a/www/magick-wand.html b/www/magick-wand.html
-index a3674a986..bea879f96 100644
+index 0c6ca0686..4ece24400 100644
 --- a/www/magick-wand.html
 +++ b/www/magick-wand.html
 @@ -61,7 +61,7 @@
@@ -2362,7 +2362,7 @@ index a3674a986..bea879f96 100644
  </body>
  </html>
 diff --git a/www/magick.html b/www/magick.html
-index 5221c2838..6b416770c 100644
+index 63ee6659c..87ca8a564 100644
 --- a/www/magick.html
 +++ b/www/magick.html
 @@ -61,7 +61,7 @@
@@ -2383,7 +2383,7 @@ index 5221c2838..6b416770c 100644
  </body>
  </html>
 diff --git a/www/miff.html b/www/miff.html
-index f4ef5344f..2855beaee 100644
+index df9ca132e..3d9fd591c 100644
 --- a/www/miff.html
 +++ b/www/miff.html
 @@ -61,7 +61,7 @@
@@ -2404,7 +2404,7 @@ index f4ef5344f..2855beaee 100644
  </body>
  </html>
 diff --git a/www/mirror.html b/www/mirror.html
-index 2390ff176..3ddbb80af 100644
+index 19ffd2899..fd340bc9a 100644
 --- a/www/mirror.html
 +++ b/www/mirror.html
 @@ -61,7 +61,7 @@
@@ -2425,7 +2425,7 @@ index 2390ff176..3ddbb80af 100644
  </body>
  </html>
 diff --git a/www/mogrify.html b/www/mogrify.html
-index d5171a563..6e1d968fa 100644
+index 384fae9f8..111d8c635 100644
 --- a/www/mogrify.html
 +++ b/www/mogrify.html
 @@ -61,7 +61,7 @@
@@ -2437,7 +2437,7 @@ index d5171a563..6e1d968fa 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -1312,6 +1312,6 @@ transparent, extract, background, or shape the alpha channel</td>
+@@ -1317,6 +1317,6 @@ transparent, extract, background, or shape the alpha channel</td>
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -2446,7 +2446,7 @@ index d5171a563..6e1d968fa 100644
  </body>
  </html>
 diff --git a/www/montage.html b/www/montage.html
-index 2ca80bac7..eb8903b1b 100644
+index cfbab0651..b255615a5 100644
 --- a/www/montage.html
 +++ b/www/montage.html
 @@ -61,7 +61,7 @@
@@ -2467,7 +2467,7 @@ index 2ca80bac7..eb8903b1b 100644
  </body>
  </html>
 diff --git a/www/motion-picture.html b/www/motion-picture.html
-index 92ed7ed2d..db984c707 100644
+index 2c372f44c..371d263d5 100644
 --- a/www/motion-picture.html
 +++ b/www/motion-picture.html
 @@ -61,7 +61,7 @@
@@ -2488,7 +2488,7 @@ index 92ed7ed2d..db984c707 100644
  </body>
  </html>
 diff --git a/www/opencl.html b/www/opencl.html
-index bd25d2c17..b657c7d37 100644
+index da864d19a..1c3d84d81 100644
 --- a/www/opencl.html
 +++ b/www/opencl.html
 @@ -61,7 +61,7 @@
@@ -2500,7 +2500,7 @@ index bd25d2c17..b657c7d37 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -137,6 +137,6 @@ InitImageMagickOpenCL(MAGICK_OPENCL_DEVICE_SELECT_USER, (void*)(myDevices+2), NU
+@@ -130,6 +130,6 @@ if (InitializeOpenCL(clEnv,exception) == MagickFalse)
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -2509,7 +2509,7 @@ index bd25d2c17..b657c7d37 100644
  </body>
  </html>
 diff --git a/www/openmp.html b/www/openmp.html
-index 151b4ebe2..ab1ef86c1 100644
+index c7a778ec5..7d9e793ab 100644
 --- a/www/openmp.html
 +++ b/www/openmp.html
 @@ -61,7 +61,7 @@
@@ -2530,7 +2530,7 @@ index 151b4ebe2..ab1ef86c1 100644
  </body>
  </html>
 diff --git a/www/perl-magick.html b/www/perl-magick.html
-index 6cc094934..1d6fb6528 100644
+index c64d5f6ad..3a9aee2af 100644
 --- a/www/perl-magick.html
 +++ b/www/perl-magick.html
 @@ -61,7 +61,7 @@
@@ -2551,7 +2551,7 @@ index 6cc094934..1d6fb6528 100644
  </body>
  </html>
 diff --git a/www/porting.html b/www/porting.html
-index 2367fb72a..8c07631e1 100644
+index 1281fa967..9733a4cae 100644
 --- a/www/porting.html
 +++ b/www/porting.html
 @@ -61,7 +61,7 @@
@@ -2572,7 +2572,7 @@ index 2367fb72a..8c07631e1 100644
  </body>
  </html>
 diff --git a/www/quantize.html b/www/quantize.html
-index d982f55b6..be10dfe49 100644
+index b18a6be46..489f307df 100644
 --- a/www/quantize.html
 +++ b/www/quantize.html
 @@ -61,7 +61,7 @@
@@ -2593,7 +2593,7 @@ index d982f55b6..be10dfe49 100644
  </body>
  </html>
 diff --git a/www/resources.html b/www/resources.html
-index bd30fb6c7..9cd6fe286 100644
+index 63147d8c4..db8ae063f 100644
 --- a/www/resources.html
 +++ b/www/resources.html
 @@ -61,7 +61,7 @@
@@ -2614,7 +2614,7 @@ index bd30fb6c7..9cd6fe286 100644
  </body>
  </html>
 diff --git a/www/search.html b/www/search.html
-index 1a4e18358..569ad2c79 100644
+index 4c4295fe5..5a2cc2d57 100644
 --- a/www/search.html
 +++ b/www/search.html
 @@ -61,7 +61,7 @@
@@ -2643,7 +2643,7 @@ index 1a4e18358..569ad2c79 100644
  </body>
  </html>
 diff --git a/www/security-policy.html b/www/security-policy.html
-index 09bd1cf75..45c2df253 100644
+index 5be4d83d4..30f3013ec 100644
 --- a/www/security-policy.html
 +++ b/www/security-policy.html
 @@ -61,7 +61,7 @@
@@ -2655,7 +2655,7 @@ index 09bd1cf75..45c2df253 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -191,7 +191,7 @@ Path: [built-in]
+@@ -205,7 +205,7 @@ Path: [built-in]
  
  <h2 class="magick-post-title"><a class="anchor" id="synchronize"></a>Pixel Cache Synchronize Policy</h2>
  
@@ -2664,7 +2664,7 @@ index 09bd1cf75..45c2df253 100644
  
  <pre class="highlight">
  &lt;policy domain="cache" name="synchronize" value="True"/>
-@@ -244,6 +244,6 @@ ion files.  To define your security policy, you must instead edit the <code>magi
+@@ -258,6 +258,6 @@ ion files.  To define your security policy, you must instead edit the <code>magi
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
@@ -2673,7 +2673,7 @@ index 09bd1cf75..45c2df253 100644
  </body>
  </html>
 diff --git a/www/sitemap.html b/www/sitemap.html
-index 1700949f6..1356d5d56 100644
+index 164948060..3465ea7c1 100644
 --- a/www/sitemap.html
 +++ b/www/sitemap.html
 @@ -61,7 +61,7 @@
@@ -2694,7 +2694,7 @@ index 1700949f6..1356d5d56 100644
  </body>
  </html>
 diff --git a/www/stream.html b/www/stream.html
-index a662e878d..3a42469f7 100644
+index 0a9f0bf1d..a616737a1 100644
 --- a/www/stream.html
 +++ b/www/stream.html
 @@ -61,7 +61,7 @@
@@ -2715,7 +2715,7 @@ index a662e878d..3a42469f7 100644
  </body>
  </html>
 diff --git a/www/support.html b/www/support.html
-index 8dad87d9d..58bf243d5 100644
+index 714720fa9..4e9249de0 100644
 --- a/www/support.html
 +++ b/www/support.html
 @@ -61,7 +61,7 @@
@@ -2736,7 +2736,7 @@ index 8dad87d9d..58bf243d5 100644
  </body>
  </html>
 diff --git a/www/webp.html b/www/webp.html
-index 6b64df1d4..676f25421 100644
+index f538d84a9..60fc4ebd8 100644
 --- a/www/webp.html
 +++ b/www/webp.html
 @@ -61,7 +61,7 @@
