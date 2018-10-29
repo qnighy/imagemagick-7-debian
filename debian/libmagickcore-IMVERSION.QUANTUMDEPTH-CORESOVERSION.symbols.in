@@ -677,8 +677,9 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  GetVirtualMemoryBlob@Base 8:6.9.10.2
  GetVirtualPixelQueue@Base 8:6.9.10.2
  GetVirtualPixels@Base 8:6.9.10.2
- GetVirtualPixelsFromNexus@Base 8:6.9.10.2
- GetVirtualPixelsNexus@Base 8:6.9.10.2
+ (optional=internalABInoAPI)GetVirtualPixelCacheNexus@Base 8:6.9.10.14
+ (optional=internalABInoAPI)GetVirtualPixelsFromNexus@Base 8:6.9.10.2
+ (optional=internalABInoAPI)GetVirtualPixelsNexus@Base 8:6.9.10.2
  GetXMLTreeAttribute@Base 8:6.9.10.2
  GetXMLTreeAttributes@Base 8:6.9.10.2
  GetXMLTreeChild@Base 8:6.9.10.2

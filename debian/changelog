@@ -1,6 +1,8 @@
 imagemagick (8:6.9.10.14+dfsg-1) unstable; urgency=medium
 
   * New upstream version
+  * Fix new privacy breach
+  * Fix duplicate files in documentation
   * Fix security bugs:
     + CVE-2018-18024: Fix an infinite loop in the ReadBMPImage function of the
       coders/bmp.c file can cause a DOS via a crafted bmp file.
