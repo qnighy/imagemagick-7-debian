@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -162,9 +162,9 @@ MagickExport MontageInfo *CloneMontageInfo(const ImageInfo *image_info,
 */
 MagickExport MontageInfo *DestroyMontageInfo(MontageInfo *montage_info)
 {
+  assert(montage_info != (MontageInfo *) NULL);
   if (montage_info->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
-  assert(montage_info != (MontageInfo *) NULL);
   assert(montage_info->signature == MagickCoreSignature);
   if (montage_info->geometry != (char *) NULL)
     montage_info->geometry=(char *)
@@ -410,10 +410,10 @@ MagickExport Image *MontageImageList(const ImageInfo *image_info,
   assert(exception->signature == MagickCoreSignature);
   number_images=GetImageListLength(images);
   master_list=ImageListToArray(images,exception);
+  if (master_list == (Image **) NULL)
+    return((Image *) NULL);
   image_list=master_list;
   image=image_list[0];
-  if (master_list == (Image **) NULL)
-    ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
   thumbnail=NewImageList();
   for (i=0; i < (ssize_t) number_images; i++)
   {

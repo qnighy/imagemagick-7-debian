@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -1748,11 +1748,8 @@ MagickPrivate DIR *NTOpenDirectory(const char *path)
         MaxTextExtent-wcslen(file_specification)-1) == (wchar_t *) NULL)
     return((DIR *) NULL);
   entry=(DIR *) AcquireCriticalMemory(sizeof(DIR));
-  if (entry != (DIR *) NULL)
-    {
-      entry->firsttime=TRUE;
-      entry->hSearch=FindFirstFileW(file_specification,&entry->Win32FindData);
-    }
+  entry->firsttime=TRUE;
+  entry->hSearch=FindFirstFileW(file_specification,&entry->Win32FindData);
   if (entry->hSearch == INVALID_HANDLE_VALUE)
     {
       if(wcsncat(file_specification,L"*.*",
@@ -2758,10 +2755,14 @@ MagickPrivate void NTWindowsGenesis(void)
         debug;
 
       debug=_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-      debug|=_CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_DELAY_FREE_MEM_DF |
-        _CRTDBG_LEAK_CHECK_DF;
+      //debug |= _CRTDBG_CHECK_ALWAYS_DF;
+      debug |= _CRTDBG_DELAY_FREE_MEM_DF;
+      debug |= _CRTDBG_LEAK_CHECK_DF;
       (void) _CrtSetDbgFlag(debug);
-      _ASSERTE(_CrtCheckMemory());
+
+      //_ASSERTE(_CrtCheckMemory());
+
+      //_CrtSetBreakAlloc(42);
     }
 #endif
 #if defined(MAGICKCORE_INSTALLED_SUPPORT)

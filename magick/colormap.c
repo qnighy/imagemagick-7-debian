@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -123,7 +123,7 @@ MagickExport MagickBooleanType AcquireImageColormap(Image *image,
     {
       image->colors=0;
       image->storage_class=DirectClass;
-      ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+      ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
         image->filename);
     }
   for (i=0; i < (ssize_t) image->colors; i++)
@@ -307,6 +307,7 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image)
   assert(image->signature == MagickCoreSignature);
   if (image->storage_class != PseudoClass)
     return(MagickTrue);
+  exception=(&image->exception);
   /*
     Allocate memory for pixel indexes.
   */
@@ -331,7 +332,6 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image)
   for (i=0; i < (ssize_t) image->colors; i++)
     pixels[(ssize_t) image->colormap[i].opacity]=(unsigned short) i;
   status=MagickTrue;
-  exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {

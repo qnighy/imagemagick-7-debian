@@ -29,7 +29,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -172,9 +172,9 @@ static int MVGPrintf(DrawingWand *wand,const char *format,...)
   size_t
     extent;
 
+  assert(wand != (DrawingWand *) NULL);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",format);
-  assert(wand != (DrawingWand *) NULL);
   assert(wand->signature == WandSignature);
   extent=20UL*MaxTextExtent;
   if (wand->mvg == (char *) NULL)
@@ -4540,9 +4540,9 @@ WandExport void DrawSetBorderColor(DrawingWand *wand,
 WandExport MagickBooleanType DrawSetClipPath(DrawingWand *wand,
   const char *clip_mask)
 {
+  assert(wand != (DrawingWand *) NULL);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",clip_mask);
-  assert(wand != (DrawingWand *) NULL);
   assert(wand->signature == WandSignature);
   assert(clip_mask != (const char *) NULL);
   if ((CurrentContext->clip_mask == (const char *) NULL) ||
@@ -4681,9 +4681,9 @@ WandExport void DrawSetClipUnits(DrawingWand *wand,
 WandExport MagickBooleanType DrawSetDensity(DrawingWand *wand,
   const char *density)
 {
+  assert(wand != (DrawingWand *) NULL);
   if (wand->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",density);
-  assert(wand != (DrawingWand *) NULL);
   assert(wand->signature == MagickCoreSignature);
   assert(density != (const char *) NULL);
   if ((CurrentContext->density == (const char *) NULL) ||

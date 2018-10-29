@@ -24,7 +24,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -438,7 +438,7 @@ MagickExport const MagickInfo *GetMagickInfo(const char *name,
       UnlockSemaphoreInfo(magick_semaphore);
     }
   if ((name == (const char *) NULL) || (LocaleCompare(name,"*") == 0))
-    magick_info=(const MagickInfo *) GetRootValueFromSplayTree(magick_list);
+    return((const MagickInfo *) GetRootValueFromSplayTree(magick_list));
   if (magick_info == (const MagickInfo *) NULL)
     magick_info=(const MagickInfo *) GetValueFromSplayTree(magick_list,name);
   return(magick_info);

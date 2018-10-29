@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -493,7 +493,7 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
   if (cube_info->quantize_info->colorspace != UndefinedColorspace)
     (void) TransformImageColorspace(image,cube_info->quantize_info->colorspace);
   if (AcquireImageColormap(image,cube_info->colors) == MagickFalse)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   image->colors=0;
   cube_info->transparent_pixels=0;
@@ -2655,7 +2655,7 @@ MagickExport MagickBooleanType QuantizeImage(const QuantizeInfo *quantize_info,
   */
   cube_info=GetCubeInfo(quantize_info,depth,maximum_colors);
   if (cube_info == (CubeInfo *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   status=ClassifyImageColors(cube_info,image,&image->exception);
   if (status != MagickFalse)
@@ -3094,7 +3094,7 @@ MagickExport MagickBooleanType RemapImage(const QuantizeInfo *quantize_info,
   cube_info=GetCubeInfo(quantize_info,MaxTreeDepth,
     quantize_info->number_colors);
   if (cube_info == (CubeInfo *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   status=ClassifyImageColors(cube_info,remap_image,&image->exception);
   if (status != MagickFalse)
@@ -3168,7 +3168,7 @@ MagickExport MagickBooleanType RemapImages(const QuantizeInfo *quantize_info,
   cube_info=GetCubeInfo(quantize_info,MaxTreeDepth,
     quantize_info->number_colors);
   if (cube_info == (CubeInfo *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   status=ClassifyImageColors(cube_info,remap_image,&image->exception);
   if (status != MagickFalse)
@@ -3259,6 +3259,7 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
 
   assert(image != (Image *) NULL);
   assert(image->signature == MagickCoreSignature);
+  exception=(&image->exception);
   if (image->type != GrayscaleType)
     (void) TransformImageColorspace(image,GRAYColorspace);
   if (image->storage_class == PseudoClass)
@@ -3272,9 +3273,6 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
       image->filename);
   if (image->storage_class != PseudoClass)
     {
-      ExceptionInfo
-        *exception;
-
       (void) memset(colormap_index,(-1),MaxColormapSize*
         sizeof(*colormap_index));
       if (AcquireImageColormap(image,MaxColormapSize) == MagickFalse)
@@ -3285,7 +3283,6 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
         }
       image->colors=0;
       status=MagickTrue;
-      exception=(&image->exception);
       image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
       #pragma omp parallel for schedule(static) shared(status) \
@@ -3367,7 +3364,6 @@ static MagickBooleanType SetGrayscaleImage(Image *image)
   image->colormap=(PixelPacket *) RelinquishMagickMemory(image->colormap);
   image->colormap=colormap;
   status=MagickTrue;
-  exception=(&image->exception);
   image_view=AcquireAuthenticCacheView(image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static) shared(status) \

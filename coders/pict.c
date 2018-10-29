@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -445,7 +445,7 @@ static unsigned char *DecodeImage(Image *blob,Image *image,
     bytes_per_line=width;
   row_bytes=(size_t) (image->columns | 0x8000);
   if (image->storage_class == DirectClass)
-    row_bytes=(size_t) ((4*image->columns) | 0x8000);
+    row_bytes=(size_t) (4*(image->columns | 0x8000));
   /*
     Allocate pixel and scanline buffer.
   */
@@ -991,6 +991,9 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
               Clipping rectangle.
             */
             length=ReadBlobMSBShort(image);
+            if (length > GetBlobSize(image))
+              ThrowPICTException(CorruptImageError,
+                "InsufficientImageDataInFile");
             if (length != 0x000a)
               {
                 for (i=0; i < (ssize_t) (length-2); i++)
@@ -1042,6 +1045,9 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             if (pattern != 1)
               ThrowPICTException(CorruptImageError,"UnknownPatternType");
             length=ReadBlobMSBShort(image);
+            if (length > GetBlobSize(image))
+              ThrowPICTException(CorruptImageError,
+                "InsufficientImageDataInFile");
             if (ReadRectangle(image,&frame) == MagickFalse)
               ThrowPICTException(CorruptImageError,"ImproperImageHeader");
             if (ReadPixmap(image,&pixmap) == MagickFalse)
@@ -1053,6 +1059,9 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             (void) ReadBlobMSBLong(image);
             flags=(ssize_t) ReadBlobMSBShort(image);
             length=ReadBlobMSBShort(image);
+            if (length > GetBlobSize(image))
+              ThrowPICTException(CorruptImageError,
+                "InsufficientImageDataInFile");
             for (i=0; i <= (ssize_t) length; i++)
               (void) ReadBlobMSBLong(image);
             width=(size_t) (frame.bottom-frame.top);
@@ -1113,6 +1122,9 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
               Skip polygon or region.
             */
             length=ReadBlobMSBShort(image);
+            if (length > GetBlobSize(image))
+              ThrowPICTException(CorruptImageError,
+                "InsufficientImageDataInFile");
             for (i=0; i < (ssize_t) (length-2); i++)
               if (ReadBlobByte(image) == EOF)
                 break;
@@ -1234,6 +1246,9 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
                   Skip region.
                 */
                 length=ReadBlobMSBShort(image);
+                if (length > GetBlobSize(image))
+                  ThrowPICTException(CorruptImageError,
+                    "InsufficientImageDataInFile");
                 for (i=0; i < (ssize_t) (length-2); i++)
                   if (ReadBlobByte(image) == EOF)
                     break;
@@ -1355,6 +1370,9 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             */
             type=ReadBlobMSBShort(image);
             length=ReadBlobMSBShort(image);
+            if (length > GetBlobSize(image))
+              ThrowPICTException(CorruptImageError,
+                "InsufficientImageDataInFile");
             if (length == 0)
               break;
             (void) ReadBlobMSBLong(image);
@@ -1464,6 +1482,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             ThrowPICTException(FileOpenError,"UnableToCreateTemporaryFile");
           }
         length=ReadBlobMSBLong(image);
+        if (length > GetBlobSize(image))
+          ThrowPICTException(CorruptImageError,"InsufficientImageDataInFile");
         if (length > 154)
           {
             for (i=0; i < 6; i++)
@@ -1515,6 +1535,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
           Skip reserved.
         */
         length=ReadBlobMSBShort(image);
+        if (length > GetBlobSize(image))
+          ThrowPICTException(CorruptImageError,"InsufficientImageDataInFile");
         for (i=0; i < (ssize_t) length; i++)
           if (ReadBlobByte(image) == EOF)
             break;
@@ -1526,6 +1548,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
           Skip reserved.
         */
         length=(size_t) ((code >> 7) & 0xff);
+        if (length > GetBlobSize(image))
+          ThrowPICTException(CorruptImageError,"InsufficientImageDataInFile");
         for (i=0; i < (ssize_t) length; i++)
           if (ReadBlobByte(image) == EOF)
             break;
@@ -1771,7 +1795,7 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
     bytes_per_line*=image->matte != MagickFalse ? 4 : 3;
   buffer=(unsigned char *) AcquireQuantumMemory(PictInfoSize,sizeof(*buffer));
   packed_scanline=(unsigned char *) AcquireQuantumMemory((size_t)
-   (row_bytes+MaxCount),sizeof(*packed_scanline));
+   (row_bytes+2*MaxCount),sizeof(*packed_scanline));
   scanline=(unsigned char *) AcquireQuantumMemory(row_bytes,sizeof(*scanline));
   if ((buffer == (unsigned char *) NULL) ||
       (packed_scanline == (unsigned char *) NULL) ||
@@ -1787,7 +1811,8 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
       ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
     }
   (void) memset(scanline,0,row_bytes);
-  (void) memset(packed_scanline,0,(size_t) (row_bytes+MaxCount));
+  (void) memset(packed_scanline,0,(size_t) (row_bytes+2*MaxCount)*
+    sizeof(*packed_scanline));
   /*
     Write header, header size, size bounding box, version, and reserved.
   */

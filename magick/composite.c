@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -2689,7 +2689,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         }
         case StereoCompositeOp:
         {
-          canvas.red=(MagickRealType) GetPixelRed(p);
+          composite.red=(MagickRealType) GetPixelRed(p);
+          composite.opacity=(composite.opacity+canvas.opacity/2);
           break;
         }
         case ThresholdCompositeOp:

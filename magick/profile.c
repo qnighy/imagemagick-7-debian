@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -853,7 +853,7 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
           GetStringInfoDatum(profile),(cmsUInt32Number)
           GetStringInfoLength(profile));
         if (source_profile == (cmsHPROFILE) NULL)
-          ThrowBinaryException(ResourceLimitError,
+          ThrowBinaryImageException(ResourceLimitError,
             "ColorspaceColorProfileMismatch",name);
         if ((cmsGetDeviceClass(source_profile) != cmsSigLinkClass) &&
             (icc_profile == (StringInfo *) NULL))

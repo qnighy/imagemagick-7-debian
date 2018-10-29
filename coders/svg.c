@@ -24,7 +24,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -333,19 +333,19 @@ static double GetUserSpaceCoordinateValue(const SVGInfo *svg_info,int type,
     }
   GetNextToken(p,&p,MaxTextExtent,token);
   if (LocaleNCompare(token,"cm",2) == 0)
-    return(96.0*svg_info->scale[0]/2.54*value);
+    return(90.0*svg_info->scale[0]/2.54*value);
   if (LocaleNCompare(token,"em",2) == 0)
     return(svg_info->pointsize*value);
   if (LocaleNCompare(token,"ex",2) == 0)
     return(svg_info->pointsize*value/2.0);
   if (LocaleNCompare(token,"in",2) == 0)
-    return(96.0*svg_info->scale[0]*value);
+    return(90.0*svg_info->scale[0]*value);
   if (LocaleNCompare(token,"mm",2) == 0)
-    return(96.0*svg_info->scale[0]/25.4*value);
+    return(90.0*svg_info->scale[0]/25.4*value);
   if (LocaleNCompare(token,"pc",2) == 0)
-    return(96.0*svg_info->scale[0]/6.0*value);
+    return(90.0*svg_info->scale[0]/6.0*value);
   if (LocaleNCompare(token,"pt",2) == 0)
-    return(1.25*svg_info->scale[0]*value);
+    return(svg_info->scale[0]*value);
   if (LocaleNCompare(token,"px",2) == 0)
     return(value);
   return(value);
@@ -554,7 +554,7 @@ static void SVGElementDeclaration(void *context,const xmlChar *name,int type,
         name,(xmlElementTypeVal) type,content);
 }
 
-static void SVGStripString(char *message)
+static void SVGStripString(const MagickBooleanType trim,char *message)
 {
   register char
     *p,
@@ -576,31 +576,36 @@ static void SVGStripString(char *message)
       {
         for ( ; *p != '\0'; p++)
           if ((*p == '*') && (*(p+1) == '/'))
-            break;
+            {
+              p+=2;
+              break;
+            }
         if (*p == '\0')
           break;
-        p+=2;
       }
     *q++=(*p);
   }
   *q='\0';
-  /*
-    Remove whitespace.
-  */
-  length=strlen(message);
-  p=message;
-  while (isspace((int) ((unsigned char) *p)) != 0)
-    p++;
-  if ((*p == '\'') || (*p == '"'))
-    p++;
-  q=message+length-1;
-  while ((isspace((int) ((unsigned char) *q)) != 0) && (q > p))
-    q--;
-  if (q > p)
-    if ((*q == '\'') || (*q == '"'))
-      q--;
-  (void) memmove(message,p,(size_t) (q-p+1));
-  message[q-p+1]='\0';
+  if (trim != MagickFalse)
+    {
+      /*
+        Remove whitespace.
+      */
+      length=strlen(message);
+      p=message;
+      while (isspace((int) ((unsigned char) *p)) != 0)
+        p++;
+      if ((*p == '\'') || (*p == '"'))
+        p++;
+      q=message+length-1;
+      while ((isspace((int) ((unsigned char) *q)) != 0) && (q > p))
+        q--;
+      if (q > p)
+        if ((*q == '\'') || (*q == '"'))
+          q--;
+      (void) memmove(message,p,(size_t) (q-p+1));
+      message[q-p+1]='\0';
+    }
   /*
     Convert newlines to a space.
   */
@@ -662,13 +667,13 @@ static char **SVGKeyValuePairs(void *context,const int key_sentinel,
       }
     tokens[i]=AcquireString(p);
     (void) CopyMagickString(tokens[i],p,(size_t) (q-p+1));
-    SVGStripString(tokens[i]);
+    SVGStripString(MagickTrue,tokens[i]);
     i++;
     p=q+1;
   }
   tokens[i]=AcquireString(p);
   (void) CopyMagickString(tokens[i],p,(size_t) (q-p+1));
-  SVGStripString(tokens[i++]);
+  SVGStripString(MagickTrue,tokens[i++]);
   tokens[i]=(char *) NULL;
   *number_tokens=(size_t) i;
   return(tokens);
@@ -866,6 +871,37 @@ static void SVGProcessStyleElement(void *context,const xmlChar *name,
           {
             (void) FormatLocaleFile(svg_info->file,"font-weight \"%s\"\n",
               value);
+            break;
+          }
+        break;
+      }
+      case 'K':
+      case 'k':
+      {
+        if (LocaleCompare(keyword,"kerning") == 0)
+          {
+            (void) FormatLocaleFile(svg_info->file,"kerning \"%s\"\n",value);
+            break;
+          }
+        break;
+      }
+      case 'L':
+      case 'l':
+      {
+        if (LocaleCompare(keyword,"letter-spacing") == 0)
+          {
+            (void) FormatLocaleFile(svg_info->file,"letter-spacing \"%s\"\n",
+              value);
+            break;
+          }
+        break;
+      }
+      case 'M':
+      case 'm':
+      {
+        if (LocaleCompare(keyword,"mask") == 0)
+          {
+            (void) FormatLocaleFile(svg_info->file,"mask \"%s\"\n",value);
             break;
           }
         break;
@@ -1833,10 +1869,10 @@ static void SVGStartElement(void *context,const xmlChar *name,
                               (*p == ','))
                             break;
                         affine.tx=GetUserSpaceCoordinateValue(svg_info,1,value);
-                        affine.ty=affine.tx;
+                        affine.ty=0.0;
                         if (*p != '\0')
-                          affine.ty=
-                            GetUserSpaceCoordinateValue(svg_info,-1,p+1);
+                          affine.ty=GetUserSpaceCoordinateValue(svg_info,-1,
+                            p+1);
                         break;
                       }
                     break;
@@ -1883,6 +1919,27 @@ static void SVGStartElement(void *context,const xmlChar *name,
           if (LocaleCompare(keyword,"href") == 0)
             {
               (void) CloneString(&svg_info->url,value);
+              break;
+            }
+          break;
+        }
+        case 'K':
+        case 'k':
+        {
+          if (LocaleCompare(keyword,"kernel") == 0)
+            {
+              (void) FormatLocaleFile(svg_info->file,"kernel \"%s\"\n",value);
+              break;
+            }
+          break;
+        }
+        case 'L':
+        case 'l':
+        {
+          if (LocaleCompare(keyword,"letter-spacing") == 0)
+            {
+              (void) FormatLocaleFile(svg_info->file,"letter-spacing \"%s\"\n",
+                value);
               break;
             }
           break;
@@ -2165,13 +2222,19 @@ static void SVGStartElement(void *context,const xmlChar *name,
                         GetNextToken(p,&p,MagickPathExtent,token);
                         if (*token == ',')
                           GetNextToken(p,&p,MagickPathExtent,token);
-                        x=StringToDouble(token,&next_token)-svg_info->bounds.x;
+                        x=StringToDouble(token,&next_token);
                         GetNextToken(p,&p,MagickPathExtent,token);
                         if (*token == ',')
                           GetNextToken(p,&p,MagickPathExtent,token);
-                        y=StringToDouble(token,&next_token)-svg_info->bounds.y;
-                        affine.tx=svg_info->bounds.x+x*cos(angle)-y*sin(angle);
-                        affine.ty=svg_info->bounds.y+x*sin(angle)+y*cos(angle);
+                        y=StringToDouble(token,&next_token);
+                        affine.tx=svg_info->bounds.x+x*
+                          cos(DegreesToRadians(fmod(angle,360.0)))+y*
+                          sin(DegreesToRadians(fmod(angle,360.0)));
+                        affine.ty=svg_info->bounds.y-x*
+                          sin(DegreesToRadians(fmod(angle,360.0)))+y*
+                          cos(DegreesToRadians(fmod(angle,360.0)));
+                        affine.tx-=x/2.0;
+                        affine.ty-=y/2.0;
                         break;
                       }
                     break;
@@ -2690,6 +2753,7 @@ static void SVGEndElement(void *context,const xmlChar *name)
               char
                 *text;
 
+              SVGStripString(MagickTrue,svg_info->text);
               text=EscapeString(svg_info->text,'\'');
               (void) FormatLocaleFile(svg_info->file,"text 0,0 \"%s\"\n",text);
               text=DestroyString(text);
@@ -2779,7 +2843,7 @@ static void SVGCharacters(void *context,const xmlChar *c,int length)
   for (i=0; i < (ssize_t) length; i++)
     *p++=c[i];
   *p='\0';
-  SVGStripString(text);
+  SVGStripString(MagickFalse,text);
   if (svg_info->text == (char *) NULL)
     svg_info->text=text;
   else
@@ -3024,7 +3088,7 @@ static void SVGExternalSubset(void *context,const xmlChar *name,
   Static declarations.
 */
 static char
-  SVGDensityGeometry[] = "96.0x96.0";
+  SVGDensityGeometry[] = "90.0x90.0";
 
 static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
@@ -3264,8 +3328,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
               (ssize_t *) NULL,&image->columns,&image->rows);
             if ((image->columns != 0) || (image->rows != 0))
               {
-                image->x_resolution=96.0*image->columns/dimension_info.width;
-                image->y_resolution=96.0*image->rows/dimension_info.height;
+                image->x_resolution=90.0*image->columns/dimension_info.width;
+                image->y_resolution=90.0*image->rows/dimension_info.height;
                 if (fabs(image->x_resolution) < MagickEpsilon)
                   image->x_resolution=image->y_resolution;
                 else
@@ -3279,8 +3343,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
           }
         if (apply_density != MagickFalse)
           {
-            image->columns=image->x_resolution*dimension_info.width/96.0;
-            image->rows=image->y_resolution*dimension_info.height/96.0;
+            image->columns=image->x_resolution*dimension_info.width/90.0;
+            image->rows=image->y_resolution*dimension_info.height/90.0;
           }
         else
           {
@@ -3349,8 +3413,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             cairo_paint(cairo_image);
             cairo_set_operator(cairo_image,CAIRO_OPERATOR_OVER);
             if (apply_density != MagickFalse)
-              cairo_scale(cairo_image,image->x_resolution/96.0,
-                image->y_resolution/96.0);
+              cairo_scale(cairo_image,image->x_resolution/90.0,
+                image->y_resolution/90.0);
             rsvg_handle_render_cairo(svg_handle,cairo_image);
             cairo_destroy(cairo_image);
             cairo_surface_destroy(cairo_surface);
@@ -4297,9 +4361,30 @@ static MagickBooleanType WriteSVGImage(const ImageInfo *image_info,Image *image)
         status=MagickFalse;
         break;
       }
+      case 'k':
+      case 'K':
+      {
+        if (LocaleCompare("kerning",keyword) == 0)
+          {
+            GetNextToken(q,&q,extent,token);
+            (void) FormatLocaleString(message,MagickPathExtent,"kerning:%s;",
+              token);
+            (void) WriteBlobString(image,message);
+            break;
+          }
+        break;
+      }
       case 'l':
       case 'L':
       {
+        if (LocaleCompare("letter-spacing",keyword) == 0)
+          {
+            GetNextToken(q,&q,extent,token);
+            (void) FormatLocaleString(message,MagickPathExtent,
+              "letter-spacing:%s;",token);
+            (void) WriteBlobString(image,message);
+            break;
+          }
         if (LocaleCompare("line",keyword) == 0)
           {
             primitive_type=LinePrimitive;

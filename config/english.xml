@@ -463,6 +463,9 @@
         <message name="URLNotFound">
           URL not found
         </message>
+        <message name="VectorGraphicsNestedTooDeeply">
+          vector graphics nested too deeply
+        </message>
       </error>
     </draw>
     <file>
@@ -931,7 +934,7 @@
     <policy>
       <error>
         <message name="NotAuthorized">
-          not authorized
+          attempt to perform an operation not allowed by the security policy
         </message>
       </error>
     </policy>

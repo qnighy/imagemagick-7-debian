@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -1256,28 +1256,22 @@ MagickExport void GetPathComponent(const char *path,PathType type,
       }
   }
   *subimage='\0';
-  p=component;
-  if (*p != '\0')
-    p=component+strlen(component)-1;
-  if ((*p == ']') && (strchr(component,'[') != (char *) NULL) &&
+  p=component+strlen(component)-1;
+  q=strrchr(component,'[');
+  if ((strlen(component) > 2) && (*p == ']') && (q != (char *) NULL) &&
+      ((q == component) || (*(q-1) != ']')) &&
       (IsPathAccessible(path) == MagickFalse))
     {
       /*
         Look for scene specification (e.g. img0001.pcd[4]).
       */
-      for (q=p-1; q > component; q--)
-        if (*q == '[')
-          break;
-      if (*q == '[')
-        {
-          (void) CopyMagickString(subimage,q+1,MaxTextExtent);
-          subimage[p-q-1]='\0';
-          if ((IsSceneGeometry(subimage,MagickFalse) == MagickFalse) &&
-              (IsGeometry(subimage) == MagickFalse))
-            *subimage='\0';
-          else
-            *q='\0';
-        }
+      (void) CopyMagickString(subimage,q+1,MaxTextExtent);
+      subimage[p-q-1]='\0';
+      if ((IsSceneGeometry(subimage,MagickFalse) == MagickFalse) &&
+          (IsGeometry(subimage) == MagickFalse))
+        *subimage='\0';
+      else
+        *q='\0';
     }
   p=component;
   if (*p != '\0')

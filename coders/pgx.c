@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -365,8 +365,8 @@ static MagickBooleanType WritePGXImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
   if (status == MagickFalse)
     return(status);
-  (void) FormatLocaleString(buffer,MaxTextExtent,"PG ML + %ld %lu %lu\n",
-    image->depth,image->columns,image->rows);
+  (void) FormatLocaleString(buffer,MaxTextExtent,"PG ML + %g %g %g\n",
+    (double) image->depth,(double) image->columns,(double) image->rows);
   (void) WriteBlob(image,strlen(buffer),(unsigned char *) buffer);
   (void) TransformImageColorspace(image,sRGBColorspace);
   quantum_info=AcquireQuantumInfo(image_info,image);

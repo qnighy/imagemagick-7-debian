@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -1333,6 +1333,7 @@ static MagickBooleanType StreamImagePixels(const StreamInfo *stream_info,
         ResourceLimitError,"MemoryAllocationFailed","`%s'",image->filename);
       return(MagickFalse);
     }
+  (void) memset(quantum_map,0,length*sizeof(*quantum_map));
   for (i=0; i < (ssize_t) length; i++)
   {
     switch (stream_info->map[i])

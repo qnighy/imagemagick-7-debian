@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -421,6 +421,7 @@ static MagickBooleanType DecodeImage(Image *image,const ssize_t opacity)
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  exception=(&image->exception);
   data_size=(unsigned char) ReadBlobByte(image);
   if (data_size > MaximumLZWBits)
     ThrowBinaryException(CorruptImageError,"CorruptImage",image->filename);
@@ -428,7 +429,6 @@ static MagickBooleanType DecodeImage(Image *image,const ssize_t opacity)
   if (lzw_info == (LZWInfo *) NULL)
     ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
-  exception=(&image->exception);
   pass=0;
   offset=0;
   for (y=0; y < (ssize_t) image->rows; y++)
@@ -948,17 +948,22 @@ static MagickBooleanType PingGIFImage(Image *image)
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (ReadBlob(image,1,&data_size) != 1)
-    ThrowBinaryException(CorruptImageError,"CorruptImage",image->filename);
+    ThrowBinaryImageException(CorruptImageError,"CorruptImage",
+      image->filename);
   if (data_size > MaximumLZWBits)
-    ThrowBinaryException(CorruptImageError,"CorruptImage",image->filename);
+    ThrowBinaryImageException(CorruptImageError,"CorruptImage",
+      image->filename);
   if (ReadBlob(image,1,&length) != 1)
-    ThrowBinaryException(CorruptImageError,"CorruptImage",image->filename);
+    ThrowBinaryImageException(CorruptImageError,"CorruptImage",
+      image->filename);
   while (length != 0)
   {
     if (ReadBlob(image,length,buffer) != (ssize_t) length)
-      ThrowBinaryException(CorruptImageError,"CorruptImage",image->filename);
+      ThrowBinaryImageException(CorruptImageError,"CorruptImage",
+        image->filename);
     if (ReadBlob(image,1,&length) != 1)
-      ThrowBinaryException(CorruptImageError,"CorruptImage",image->filename);
+      ThrowBinaryImageException(CorruptImageError,"CorruptImage",
+        image->filename);
   }
   return(MagickTrue);
 }

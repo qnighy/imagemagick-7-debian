@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -44,6 +44,7 @@
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/image.h"
+#include "magick/image-private.h"
 #include "magick/memory_.h"
 #include "magick/string_.h"
 #include "magick/string-private.h"
@@ -174,6 +175,9 @@ MagickExport void GetNextToken(const char *start,const char **end,
   double
     value;
 
+  register char
+    *q;
+
   register const char
     *p;
 
@@ -300,20 +304,11 @@ MagickExport void GetNextToken(const char *start,const char **end,
     }
   }
   token[i]='\0';
-  if ((LocaleNCompare(token,"url(",4) == 0) && (strlen(token) > 5))
+  q=strrchr(token,')');
+  if ((LocaleNCompare(token,"url(#",5) == 0) && (q != (char *) NULL))
     {
-      ssize_t
-        offset;
-
-      offset=4;
-      if (token[offset] == '#')
-        offset++;
-      i=(ssize_t) strlen(token);
-      if (i > offset)
-        {
-          (void) CopyMagickString(token,token+offset,MaxTextExtent);
-          token[i-offset-1]='\0';
-        }
+      *q='\0';
+      (void) memmove(token,token+5,(size_t) (q-token-4));
     }
   while (isspace((int) ((unsigned char) *p)) != 0)
     p++;
@@ -504,65 +499,36 @@ MagickExport MagickBooleanType GlobExpression(const char *expression,
       }
       case '{':
       {
-        register const char
+        char
+          *target;
+
+        register char
           *p;
 
-        pattern+=GetUTFOctets(pattern);
+        target=AcquireString(pattern);
+        p=target;
+        pattern++;
         while ((GetUTFCode(pattern) != '}') && (GetUTFCode(pattern) != 0))
         {
-          p=expression;
-          match=MagickTrue;
-          while ((GetUTFCode(p) != 0) && (GetUTFCode(pattern) != 0) &&
-                 (GetUTFCode(pattern) != ',') && (GetUTFCode(pattern) != '}') &&
-                 (match != MagickFalse))
-          {
-            if (GetUTFCode(pattern) == '\\')
+          *p++=(*pattern++);
+          if ((GetUTFCode(pattern) == ',') || (GetUTFCode(pattern) == '}'))
+            {
+              *p='\0';
+              match=GlobExpression(expression,target,case_insensitive);
+              if (match != MagickFalse)
+                {
+                  expression+=MagickMin(strlen(expression),strlen(target));
+                  break;
+                }
+              p=target;
               pattern+=GetUTFOctets(pattern);
-            match=(GetUTFCode(pattern) == GetUTFCode(p)) ? MagickTrue :
-              MagickFalse;
-            p+=GetUTFOctets(p);
-            pattern+=GetUTFOctets(pattern);
-          }
-          if (GetUTFCode(pattern) == 0)
-            {
-              match=MagickFalse;
-              done=MagickTrue;
-              break;
             }
-          if (match != MagickFalse)
-            {
-              expression=p;
-              while ((GetUTFCode(pattern) != '}') &&
-                     (GetUTFCode(pattern) != 0))
-              {
-                pattern+=GetUTFOctets(pattern);
-                if (GetUTFCode(pattern) == '\\')
-                  {
-                    pattern+=GetUTFOctets(pattern);
-                    if (GetUTFCode(pattern) == '}')
-                      pattern+=GetUTFOctets(pattern);
-                  }
-              }
-            }
-          else
-            {
-              while ((GetUTFCode(pattern) != '}') &&
-                     (GetUTFCode(pattern) != ',') &&
-                     (GetUTFCode(pattern) != 0))
-              {
-                pattern+=GetUTFOctets(pattern);
-                if (GetUTFCode(pattern) == '\\')
-                  {
-                    pattern+=GetUTFOctets(pattern);
-                    if ((GetUTFCode(pattern) == '}') ||
-                        (GetUTFCode(pattern) == ','))
-                      pattern+=GetUTFOctets(pattern);
-                  }
-              }
-            }
-            if (GetUTFCode(pattern) != 0)
-              pattern+=GetUTFOctets(pattern);
-          }
+        }
+        while ((GetUTFCode(pattern) != '}') && (GetUTFCode(pattern) != 0))
+          pattern+=GetUTFOctets(pattern);
+        if (GetUTFCode(pattern) != 0)
+          pattern+=GetUTFOctets(pattern);
+        target=DestroyString(target);
         break;
       }
       case '\\':

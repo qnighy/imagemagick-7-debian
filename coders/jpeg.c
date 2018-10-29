@@ -23,7 +23,7 @@
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://www.imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -103,6 +103,7 @@
 #define IPTC_MARKER  (JPEG_APP0+13)
 #define XML_MARKER  (JPEG_APP0+1)
 #define MaxBufferExtent  16384
+#define MaxJPEGScans  1024
 
 /*
   Typedef declarations.
@@ -306,22 +307,49 @@ static void JPEGErrorHandler(j_common_ptr jpeg_info)
   ErrorManager
     *error_manager;
 
+  ExceptionInfo
+    *exception;
+
   Image
     *image;
 
   *message='\0';
   error_manager=(ErrorManager *) jpeg_info->client_data;
   image=error_manager->image;
+  exception=(&image->exception);
   (jpeg_info->err->format_message)(jpeg_info,message);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
       "[%s] JPEG Trace: \"%s\"",image->filename,message);
   if (error_manager->finished != MagickFalse)
-    (void) ThrowMagickException(&image->exception,GetMagickModule(),
-      CorruptImageWarning,(char *) message,"`%s'",image->filename);
+    (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageWarning,
+      (char *) message,"`%s'",image->filename);
   else
-    (void) ThrowMagickException(&image->exception,GetMagickModule(),
-      CorruptImageError,(char *) message,"`%s'",image->filename);
+    (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageError,
+      (char *) message,"`%s'",image->filename);
+  longjmp(error_manager->error_recovery,1);
+}
+
+static void JPEGProgressHandler(j_common_ptr jpeg_info)
+{
+  ErrorManager
+    *error_manager;
+
+  ExceptionInfo
+    *exception;
+
+  Image
+    *image;
+
+  error_manager=(ErrorManager *) jpeg_info->client_data;
+  image=error_manager->image;
+  exception=(&image->exception);
+  if (jpeg_info->is_decompressor == 0)
+    return;
+  if (((j_decompress_ptr) jpeg_info)->input_scan_number < MaxJPEGScans)
+    return;
+  (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageError,
+    "too many scans","`%s'",image->filename);
   longjmp(error_manager->error_recovery,1);
 }
 
@@ -348,7 +376,7 @@ static MagickBooleanType JPEGWarningHandler(j_common_ptr jpeg_info,int level)
       */
       (jpeg_info->err->format_message)(jpeg_info,message);
       if (jpeg_info->err->num_warnings++ < JPEGExcessiveWarnings)
-        ThrowBinaryException(CorruptImageWarning,(char *) message,
+        ThrowBinaryImageException(CorruptImageWarning,(char *) message,
           image->filename);
     }
   else
@@ -1040,6 +1068,9 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   struct jpeg_error_mgr
     jpeg_error;
 
+  struct jpeg_progress_mgr
+    jpeg_progress;
+
   register JSAMPLE
     *p;
 
@@ -1079,6 +1110,7 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   (void) memset(&error_manager,0,sizeof(error_manager));
   (void) memset(&jpeg_info,0,sizeof(jpeg_info));
   (void) memset(&jpeg_error,0,sizeof(jpeg_error));
+  (void) memset(&jpeg_progress,0,sizeof(jpeg_progress));
   jpeg_info.err=jpeg_std_error(&jpeg_error);
   jpeg_info.err->emit_message=(void (*)(j_common_ptr,int)) JPEGWarningHandler;
   jpeg_info.err->error_exit=(void (*)(j_common_ptr)) JPEGErrorHandler;
@@ -1100,6 +1132,8 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   jpeg_create_decompress(&jpeg_info);
   if (GetMaxMemoryRequest() != ~0UL)
     jpeg_info.mem->max_memory_to_use=(long) GetMaxMemoryRequest();
+  jpeg_progress.progress_monitor=(void (*)(j_common_ptr)) JPEGProgressHandler;
+  jpeg_info.progress=(&jpeg_progress);
   JPEGSourceManager(&jpeg_info,image);
   jpeg_set_marker_processor(&jpeg_info,JPEG_COM,ReadComment);
   option=GetImageOption(image_info,"profile:skip");
@@ -1535,18 +1569,23 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
 */
 ModuleExport size_t RegisterJPEGImage(void)
 {
+#define JPEGDescription "Joint Photographic Experts Group JFIF format"
+#define JPEGStringify(macro_or_string)  JPEGStringifyArg(macro_or_string)
+#define JPEGStringifyArg(contents)  #contents
+
   char
     version[MaxTextExtent];
 
   MagickInfo
     *entry;
 
-  static const char
-    description[] = "Joint Photographic Experts Group JFIF format";
-
   *version='\0';
-#if defined(JPEG_LIB_VERSION)
-  (void) FormatLocaleString(version,MaxTextExtent,"%d",JPEG_LIB_VERSION);
+#if defined(LIBJPEG_TURBO_VERSION)
+  (void) CopyMagickString(version,"libjpeg-turbo " JPEGStringify(
+    LIBJPEG_TURBO_VERSION),MagickPathExtent);
+#elif defined(JPEG_LIB_VERSION)
+  (void) FormatLocaleString(version,MagickPathExtent,"libjpeg %d",
+    JPEG_LIB_VERSION);
 #endif
   entry=SetMagickInfo("JPE");
 #if (JPEG_LIB_VERSION < 80) && !defined(LIBJPEG_TURBO_VERSION)
@@ -1559,7 +1598,7 @@ ModuleExport size_t RegisterJPEGImage(void)
   entry->magick=(IsImageFormatHandler *) IsJPEG;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->description=ConstantString(description);
+  entry->description=ConstantString(JPEGDescription);
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jpeg");
@@ -1576,7 +1615,7 @@ ModuleExport size_t RegisterJPEGImage(void)
   entry->magick=(IsImageFormatHandler *) IsJPEG;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->description=ConstantString(description);
+  entry->description=ConstantString(JPEGDescription);
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jpeg");
@@ -1592,7 +1631,7 @@ ModuleExport size_t RegisterJPEGImage(void)
 #endif
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->description=ConstantString(description);
+  entry->description=ConstantString(JPEGDescription);
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jpeg");
@@ -1608,7 +1647,7 @@ ModuleExport size_t RegisterJPEGImage(void)
 #endif
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->description=ConstantString(description);
+  entry->description=ConstantString(JPEGDescription);
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jpeg");
@@ -1624,7 +1663,7 @@ ModuleExport size_t RegisterJPEGImage(void)
 #endif
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
-  entry->description=ConstantString(description);
+  entry->description=ConstantString(JPEGDescription);
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jpeg");
@@ -2487,7 +2526,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
   if (value != (char *) NULL)
     colorspace=StringToInteger(value);
   sampling_factor=(const char *) NULL;
-  if (colorspace == jpeg_info.in_color_space)
+  if ((J_COLOR_SPACE) colorspace == jpeg_info.in_color_space)
     {
       value=GetImageOption(image_info,"jpeg:sampling-factor");
       if (value == (char *) NULL)
