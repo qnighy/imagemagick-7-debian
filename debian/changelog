@@ -1,3 +1,9 @@
+imagemagick (8:6.9.10.14+dfsg-3) unstable; urgency=medium
+
+  * Fix FTBFS due to == in control.
+
+ -- Bastien Roucariès <rouca@debian.org>  Tue, 30 Oct 2018 14:56:27 +0100
+
 imagemagick (8:6.9.10.14+dfsg-2) unstable; urgency=medium
 
   * Bug fix: "imagemagick binary-all FTBFS: rdfind: Command not found",
