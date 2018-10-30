@@ -2,6 +2,8 @@ imagemagick (8:6.9.10.14+dfsg-2) unstable; urgency=medium
 
   * Bug fix: "imagemagick binary-all FTBFS: rdfind: Command not found",
     thanks to Adrian Bunk (Closes: #912309).
+  * Use ${binary:Version} instead of hard coded version for compat dev
+    packages.
 
  -- Bastien Roucariès <rouca@debian.org>  Tue, 30 Oct 2018 10:00:51 +0100
 
