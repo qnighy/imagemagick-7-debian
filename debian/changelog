@@ -1,3 +1,12 @@
+imagemagick (8:6.9.10.14+dfsg-4) unstable; urgency=medium
+
+  * Use salsa in control
+  * Add Pre-depends on dpkg for versionned provides
+  * Bug fix: "make foreign dependencies on transitional -dev packages
+    satisfiable", thanks to Helmut Grohne (Closes: #893030).
+
+ -- Bastien Roucariès <rouca@debian.org>  Wed, 31 Oct 2018 07:27:50 +0100
+
 imagemagick (8:6.9.10.14+dfsg-3) unstable; urgency=medium
 
   * Fix FTBFS due to == in control.

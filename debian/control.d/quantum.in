@@ -78,6 +78,7 @@ Package: libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
+Pre-Depends: dpkg (>= 1.17.11)
 Depends: libmagickcore-${IMVERSION}-headers (= ${source:Version}),
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION} (= ${binary:Version}),
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra (= ${binary:Version}),
@@ -129,6 +130,7 @@ Package: libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
+Pre-Depends: dpkg (>= 1.17.11)
 Depends: libmagickwand-${IMVERSION}-headers (= ${source:Version}),
  libmagickwand-${IMVERSION}.${QUANTUMDEPTH}-${WANDSOVERSION} (= ${binary:Version}),
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-${CORESOVERSION}-extra (= ${binary:Version}),
@@ -147,7 +149,7 @@ Description: image manipulation library - development files (${UCQUANTUMDEPTH})
  This package the static libraries needed to compile
  programs using MagickWand.
  .
- This version of libmagickwand-dev is compiled for a channe
+ This version of libmagickwand-dev is compiled for a channel
  depth of ${DESC_QUANTUM} (${UCQUANTUMDEPTH}).
 
 Package: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-${PPSOVERSION}
@@ -170,6 +172,7 @@ Package: libmagick++-${IMVERSION}.${QUANTUMDEPTH}-dev
 Architecture: any
 Multi-Arch: same
 Section: libdevel
+Pre-Depends: dpkg (>= 1.17.11)
 Depends: libmagick++-${IMVERSION}-headers (= ${source:Version}),
  libmagick++-${IMVERSION}.${QUANTUMDEPTH}-${PPSOVERSION} (= ${binary:Version}),
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-dev (= ${binary:Version}),
@@ -193,6 +196,7 @@ Package: libimage-magick-${QUANTUMDEPTH}-perl
 Architecture: any
 Multi-Arch: allowed
 Section: perl
+Pre-Depends: dpkg (>= 1.17.11)
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: imagemagick-doc
 ${PROVIDES_MAGICK_PERL}
