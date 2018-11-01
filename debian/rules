@@ -715,7 +715,7 @@ override_dh_install-indep:
 	# fix doxygen problem
 	./debian/scripts/dh_doxygen --indep --package=imagemagick-$(IMVERSION)-doc
 	# fix duplicate files
-	rdfind -makesymlinks true debian/imagemagick-$(IMVERSION)-doc/usr/share/doc/imagemagick-$(IMVERSION)-common/html
+	jdupes -rl debian/imagemagick-$(IMVERSION)-doc/usr/share/doc/imagemagick-$(IMVERSION)-common/html
 
 override_dh_compress:
 	# fix #611125

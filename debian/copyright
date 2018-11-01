@@ -109,12 +109,6 @@ Copyright: 2007-2018, ImageMagick Studio LLC
 License: ImageMagick
 Comment: use a delegate libopenexr under BSD-3
 
-Files: coders/fd.c
-Copyright: 2000, Bill Radcliffe
-	   2000, John Cristy
-	   2000-2018, ImageMagick Studio LLC
-License: ImageMagick
-
 Files: coders/flif.c
 Copyright: 2016, Jon Sneyers
 	   1999-2018, ImageMagick Studio LLC

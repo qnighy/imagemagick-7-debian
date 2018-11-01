@@ -1,7 +1,16 @@
+imagemagick (8:6.9.10.14+dfsg-5) unstable; urgency=high
+
+  * Use jdupes instead of rdfind in order to avoid link to build dir
+  * Bug fix: "Please remove me from uploaders", thanks to Vincent Fourmond
+    (Closes: #897293).
+  * Bump policy (no changes)
+
+ -- Bastien Roucariès <rouca@debian.org>  Thu, 01 Nov 2018 22:07:12 +0100
+
 imagemagick (8:6.9.10.14+dfsg-4) unstable; urgency=medium
 
   * Use salsa in control
-  * Add Pre-depends on dpkg for versionned provides
+  * Add Pre-depends on dpkg for versioned provides
   * Bug fix: "make foreign dependencies on transitional -dev packages
     satisfiable", thanks to Helmut Grohne (Closes: #893030).
 
