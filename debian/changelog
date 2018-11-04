@@ -1,3 +1,11 @@
+imagemagick (8:6.9.10.14+dfsg-7) unstable; urgency=medium
+
+  * Bug fix: "wrong Provides: libmagickcore-6.defaultquantum-dev,
+    libmagickcore-dev (= 8:6.9.10.14+dfsg-5)", thanks to Helmut Grohne
+    (Closes: #912833).
+
+ -- Bastien Roucariès <bastien@portable-bastien-2018.roucaries.eu>  Sun, 04 Nov 2018 21:09:08 +0100
+
 imagemagick (8:6.9.10.14+dfsg-6) unstable; urgency=high
 
   * Bug fix: "libmagickcore-6.q16-dev missing Depends:

@@ -138,7 +138,7 @@ Depends: libmagickwand-${IMVERSION}-headers (= ${source:Version}),
  libmagickcore-${IMVERSION}.${QUANTUMDEPTH}-dev (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
-${PROVIDES_LIBMAGICKCORE_DEV}
+${PROVIDES_LIBMAGICKWAND_DEV}
 Replaces: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Description: image manipulation library - development files (${UCQUANTUMDEPTH})
