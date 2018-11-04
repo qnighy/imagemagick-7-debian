@@ -1,3 +1,11 @@
+imagemagick (8:6.9.10.14+dfsg-6) unstable; urgency=high
+
+  * Bug fix: "libmagickcore-6.q16-dev missing Depends:
+    libmagickcore-6-arch-config", thanks to Helmut Grohne (Closes:
+    #912679).
+
+ -- Bastien Roucariès <rouca@debian.org>  Sun, 04 Nov 2018 14:52:27 +0100
+
 imagemagick (8:6.9.10.14+dfsg-5) unstable; urgency=high
 
   * Use jdupes instead of rdfind in order to avoid link to build dir
