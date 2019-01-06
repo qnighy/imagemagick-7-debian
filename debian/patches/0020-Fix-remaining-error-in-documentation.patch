@@ -1,0 +1,80 @@
+From 11fb2ca81111b1d7c7338783b38b08d5e37eaeaf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
+Date: Mon, 29 Oct 2018 12:50:02 +0100
+Subject: Fix remaining error in documentation
+
+Forwarded: yes
+---
+ www/changelog.html               |  3 ++-
+ www/command-line-processing.html | 12 ++++++------
+ 2 files changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/www/changelog.html b/www/changelog.html
+index a4578d0d7..545f1fd8c 100644
+--- a/www/changelog.html
++++ b/www/changelog.html
+@@ -124,7 +124,8 @@
+   <li> Release ImageMagick version 6.9.10-8, GIT revision 13693:88aeaf9d9:20180723.</li>
+ <dt>2018-07-20  6.9.10-8 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Non-HDRI ScaleLongToQuantum() private method no longer adds a half interval.</li>
+-  <li> Fixed memset() negative-size-param (reference    https://github.com/ImageMagick/ImageMagick/issues/1217).  <dt>2018-07-16  6.9.10-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
++  <li> Fixed memset() negative-size-param (reference    https://github.com/ImageMagick/ImageMagick/issues/1217).</li>
++<dt>2018-07-16  6.9.10-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Release ImageMagick version 6.9.10-7, GIT revision 13676:dab6babe2:20180716.</li>
+ <dt>2018-07-15  6.9.10-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Fixed numerous use of uninitialized values, integer overflow, memory    exceeded, and timeouts (credit to OSS Fuzz).</li>
+diff --git a/www/command-line-processing.html b/www/command-line-processing.html
+index e3e9f36d7..17e8329f0 100644
+--- a/www/command-line-processing.html
++++ b/www/command-line-processing.html
+@@ -340,7 +340,7 @@ image-5.jpg</pre>
+ <li><a href="command-line-processing.html#stack">Image Stack</a></li>
+ </ul>
+ 
+-<h4 class="magick-header"><a class="anchor" id="setting"></a>Image Setting</h5>
++<h4 class="magick-header"><a class="anchor" id="setting"></a>Image Setting</h4>
+ 
+ <p>An image setting persists as it appears on the command-line and may affect
+ subsequent processing such as reading an image, an image operator, or when
+@@ -355,7 +355,7 @@ is reset or the command-line terminates.  The image settings include:</p>
+ 
+ <pre class="highlight"><code>convert -channel RGB wand.png wizard.png images.png</code></pre>
+ 
+-<h4 class="magick-header"><a class="anchor" id="operator"></a>Image Operator</h5>
++<h4 class="magick-header"><a class="anchor" id="operator"></a>Image Operator</h4>
+ 
+ <p>An image operator differs from a setting in that it affects the image
+ immediately as it appears on the command-line.  An operator is
+@@ -372,12 +372,12 @@ an operator is applied to the current image set and forgotten.  The image operat
+ 
+ <pre class="highlight"><code>convert wand.png -negate wizard.png images.png</code></pre>
+ 
+-<h4 class="magick-header"><a class="anchor" id="channel"></a>Image Channel Operator</h5>
++<h4 class="magick-header"><a class="anchor" id="channel"></a>Image Channel Operator</h4>
+ <p>Operate directly on image channels:</p>
+ <ul>
+ <a href="command-line-options.html#channel-fx">&#x2011;channel&#x2011;fx</a>  • <a href="command-line-options.html#separate">&#x2011;separate</a> </ul>
+ 
+-<h4 class="magick-header"><a class="anchor" id="sequence"></a>Image Sequence Operator</h5>
++<h4 class="magick-header"><a class="anchor" id="sequence"></a>Image Sequence Operator</h4>
+ 
+ <p>An image sequence operator differs from a setting in that it affects an
+ image sequence immediately as it appears on the command-line.  Choose from
+@@ -389,7 +389,7 @@ these image sequence operators:</p>
+ 
+ <pre class="highlight"><code>convert mikayla.png picnic.png beach.png -append vacation.png</code></pre>
+ 
+-<h4 class="magick-header"><a class="anchor" id="geometry"></a>Image Geometry</h5>
++<h4 class="magick-header"><a class="anchor" id="geometry"></a>Image Geometry</h4>
+ 
+ <p>Many command-line <a href="command-line-options.html">options</a> take a <var>geometry</var> argument
+ to specify such things as the desired width and height of an image and other
+@@ -537,7 +537,7 @@ magick logo: -gravity center -region '100x200-10+20' -negate wizNeg3.png</code><
+ </p>
+ 
+ 
+-<h4 class="magick-header"><a class="anchor" id="stack"></a>Image Stack</h5>
++<h4 class="magick-header"><a class="anchor" id="stack"></a>Image Stack</h4>
+ 
+ <p>In school, your teacher probably permitted you to work on problems on a scrap of paper and then copy the results to your test paper.  An image stack is similar.  It permits you to work on an image or image sequence in isolation and subsequently introduce the results back into the command-line.  The image stack is delineated with parenthesis.  Image operators only affect images in the current stack.  For example, we can limit the image rotation to just the wizard image like this:</p>
+ 

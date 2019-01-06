@@ -1,0 +1,62 @@
+From f1e912a80b383dd5a88766e09be71f3ef8bf9177 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
+Date: Mon, 19 Mar 2018 22:08:25 +0100
+Subject: Fix another errors in html files
+
+Forwarded: yes
+---
+ www/api.html             | 4 ++--
+ www/binary-releases.html | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/www/api.html b/www/api.html
+index 269b54788..9fb7e3eda 100644
+--- a/www/api.html
++++ b/www/api.html
+@@ -61,7 +61,7 @@
+       </li>
+     </ul>
+     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
++      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
+     </form>
+     </div>
+@@ -208,6 +208,6 @@
+ 
+   <!-- Javascript assets -->
+   <script src="assets/magick.js" crossorigin="anonymous"></script>
+-  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
++  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
+ </body>
+ </html>
+diff --git a/www/binary-releases.html b/www/binary-releases.html
+index bf2256f3e..4c53f9cd5 100644
+--- a/www/binary-releases.html
++++ b/www/binary-releases.html
+@@ -61,7 +61,7 @@
+       </li>
+     </ul>
+     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
++      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
+     </form>
+     </div>
+@@ -146,7 +146,7 @@
+ <p>ImageMagick RPM's are self-installing.  Simply type the following command and you're ready to start using ImageMagick:</p>
+ 
+ <pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-6.9.9-45.x86_64.rpm</span></pre>
+-<p>You'll need to install the requisite libraries:<?p>
++<p>You'll need to install the requisite libraries:</p>
+ 
+ <pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-libs-6.9.9-45.x86_64.rpm</span></pre>
+ <p>For other systems, create (or choose) a directory to install the package into and change to that directory, for example:</p>
+@@ -489,6 +489,6 @@ objShell.Exec("convert ""e:/myimages/image.png"" ""e:/myimages/image.jpg""")
+ 
+   <!-- Javascript assets -->
+   <script src="assets/magick.js" crossorigin="anonymous"></script>
+-  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
++  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
+ </body>
+ </html>

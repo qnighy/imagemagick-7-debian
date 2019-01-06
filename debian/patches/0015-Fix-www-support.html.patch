@@ -1,0 +1,22 @@
+From 22c3d22129e715d3c24f2330b24a01a24f41c87e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
+Date: Fri, 11 Aug 2017 10:20:20 +0200
+Subject: Fix www/support.html
+
+Forwarded: Yes
+---
+ www/support.html | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/www/support.html b/www/support.html
+index f614a2476..85dcd5333 100644
+--- a/www/support.html
++++ b/www/support.html
+@@ -130,6 +130,7 @@
+ </form>
+ </ul>
+ 
++
+ <h3>Litecoin</h3>
+ <p>Our Litecoin Address is: <kbd>LcZLAmym4EMvUPc9koagkccRLYQbsgGwmj</kbd>.  Or you can reference the below QR code:</p>
+ <ul>
