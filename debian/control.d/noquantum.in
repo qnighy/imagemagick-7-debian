@@ -28,7 +28,7 @@ Build-Depends: debhelper (>= 11),
  ghostscript, libdjvulibre-dev, libexif-dev,
  libjpeg-dev, libopenjp2-7-dev,
  libopenexr-dev, libperl-dev, libpng-dev, libtiff-dev,
- libwmf-dev,
+ libwmf-dev, libheif-dev, libwebp-dev,
 # libgraphviz-dev, incompatible license against fftw
 # for converting svg
  libpango1.0-dev, librsvg2-bin, librsvg2-dev, libxml2-dev,

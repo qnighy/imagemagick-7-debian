@@ -1,10 +1,21 @@
+imagemagick (8:6.9.10.23+dfsg-1) unstable; urgency=high
+
+  * Bug fix: "Silent ABI break in 6.9.10-11 on i386", thanks to Balint
+    Reczey (Closes: #916839).
+  * Fix CVE-2018-20467: infinite loop for malformed BMP file
+    (Closes: #917326).
+  * Enable HEIF/HEIC image format support (Closes: #914120).
+  * Enable WEBP image format (Closes: #806425, #912777)
+
+ -- Bastien Roucariès <rouca@debian.org>  Sun, 06 Jan 2019 21:11:34 +0100
+
 imagemagick (8:6.9.10.14+dfsg-7) unstable; urgency=medium
 
   * Bug fix: "wrong Provides: libmagickcore-6.defaultquantum-dev,
     libmagickcore-dev (= 8:6.9.10.14+dfsg-5)", thanks to Helmut Grohne
     (Closes: #912833).
 
- -- Bastien Roucariès <bastien@portable-bastien-2018.roucaries.eu>  Sun, 04 Nov 2018 21:09:08 +0100
+ -- Bastien Roucariès <rouca@debian.org>  Sun, 04 Nov 2018 21:09:08 +0100
 
 imagemagick (8:6.9.10.14+dfsg-6) unstable; urgency=high
 

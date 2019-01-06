@@ -81,7 +81,9 @@ STATIC_CONFIGURE_OPTIONS := \
 	--with-gs-font-dir=/usr/share/fonts/type1/gsfonts \
 	--with-magick-plus-plus \
 	--with-djvu \
+        --with-heic \
 	--with-openjp2 \
+        --with-webp \
 	--with-wmf \
 	--without-gvc \
 	--enable-shared \
