@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1209,12 +1209,15 @@ MagickExport void GetPathComponent(const char *path,PathType type,
   char *component)
 {
   char
-    magick[MaxTextExtent],
-    *q,
-    subimage[MaxTextExtent];
+    *q;
 
   register char
     *p;
+
+  size_t
+    magick_length,
+    subimage_offset,
+    subimage_length;
 
   assert(path != (const char *) NULL);
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",path);
@@ -1224,8 +1227,33 @@ MagickExport void GetPathComponent(const char *path,PathType type,
       *component='\0';
       return;
     }
-  (void) CopyMagickString(component,path,MaxTextExtent);
-  *magick='\0';
+  (void) CopyMagickString(component,path,MagickPathExtent);
+  subimage_length=0;
+  subimage_offset=0;
+  if (type != SubcanonicalPath)
+    {
+      p=component+strlen(component)-1;
+      q=strrchr(component,'[');
+      if ((strlen(component) > 2) && (*p == ']') && (q != (char *) NULL) &&
+          ((q == component) || (*(q-1) != ']')) &&
+          (IsPathAccessible(path) == MagickFalse))
+        {
+          /*
+            Look for scene specification (e.g. img0001.pcd[4]).
+          */
+          *p='\0';
+          if ((IsSceneGeometry(q+1,MagickFalse) == MagickFalse) &&
+              (IsGeometry(q+1) == MagickFalse))
+            *p=']';
+          else
+            {
+              subimage_length=(size_t) (p-q);
+              subimage_offset=(size_t) (q-component+1);
+              *q='\0';
+            }
+        }
+    }
+  magick_length=0;
 #if defined(__OS2__)
   if (path[1] != ":")
 #endif
@@ -1240,39 +1268,25 @@ MagickExport void GetPathComponent(const char *path,PathType type,
         if (*p == '\0')
           break;
       }
-    if ((p != component) && (*p == ':') && (IsPathDirectory(path) < 0) &&
-        (IsPathAccessible(path) == MagickFalse))
+    if ((p != component) && (*p == ':') && (IsPathDirectory(component) < 0) &&
+        (IsPathAccessible(component) == MagickFalse))
       {
         /*
           Look for image format specification (e.g. ps3:image).
         */
-        (void) CopyMagickString(magick,component,(size_t) (p-component+1));
-        if (IsMagickConflict(magick) != MagickFalse)
-          *magick='\0';
+        *p='\0';
+        if (IsMagickConflict(component) != MagickFalse)
+          *p=':';
         else
-          for (q=component; *q != '\0'; q++)
-            *q=(*++p);
+          {
+            magick_length=(size_t) (p-component+1);
+            for (q=component; *(++p) != '\0'; q++)
+              *q=(*p);
+            *q='\0';
+          }
         break;
       }
   }
-  *subimage='\0';
-  p=component+strlen(component)-1;
-  q=strrchr(component,'[');
-  if ((strlen(component) > 2) && (*p == ']') && (q != (char *) NULL) &&
-      ((q == component) || (*(q-1) != ']')) &&
-      (IsPathAccessible(path) == MagickFalse))
-    {
-      /*
-        Look for scene specification (e.g. img0001.pcd[4]).
-      */
-      (void) CopyMagickString(subimage,q+1,MaxTextExtent);
-      subimage[p-q-1]='\0';
-      if ((IsSceneGeometry(subimage,MagickFalse) == MagickFalse) &&
-          (IsGeometry(subimage) == MagickFalse))
-        *subimage='\0';
-      else
-        *q='\0';
-    }
   p=component;
   if (*p != '\0')
     for (p=component+strlen(component)-1; p > component; p--)
@@ -1282,7 +1296,10 @@ MagickExport void GetPathComponent(const char *path,PathType type,
   {
     case MagickPath:
     {
-      (void) CopyMagickString(component,magick,MaxTextExtent);
+      if (magick_length != 0)
+        (void) CopyMagickString(component,path,magick_length);
+      else
+        *component='\0';
       break;
     }
     case RootPath:
@@ -1315,7 +1332,7 @@ MagickExport void GetPathComponent(const char *path,PathType type,
     case BasePath:
     {
       if (IsBasenameSeparator(*p) != MagickFalse)
-        (void) CopyMagickString(component,p+1,MaxTextExtent);
+        (void) CopyMagickString(component,p+1,MagickPathExtent);
       if (*component != '\0')
         for (p=component+(strlen(component)-1); p > component; p--)
           if (*p == '.')
@@ -1328,21 +1345,24 @@ MagickExport void GetPathComponent(const char *path,PathType type,
     case ExtensionPath:
     {
       if (IsBasenameSeparator(*p) != MagickFalse)
-        (void) CopyMagickString(component,p+1,MaxTextExtent);
+        (void) CopyMagickString(component,p+1,MagickPathExtent);
       if (*component != '\0')
         for (p=component+strlen(component)-1; p > component; p--)
           if (*p == '.')
             break;
       *component='\0';
       if (*p == '.')
-        (void) CopyMagickString(component,p+1,MaxTextExtent);
+        (void) CopyMagickString(component,p+1,MagickPathExtent);
       break;
     }
     case SubimagePath:
     {
-      (void) CopyMagickString(component,subimage,MaxTextExtent);
+      *component='\0';
+      if ((subimage_length != 0) && (magick_length < subimage_offset))
+        (void) CopyMagickString(component,path+subimage_offset,subimage_length);
       break;
     }
+    case SubcanonicalPath:
     case CanonicalPath:
     case UndefinedPath:
       break;

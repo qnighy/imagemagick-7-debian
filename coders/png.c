@@ -18,7 +18,7 @@
 %                               November 1997                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -100,8 +100,8 @@
 /* PNG_PTR_NORETURN does not work on some platforms, in libpng-1.5.x */
 #define PNG_PTR_NORETURN
 
-#include "png.h"
-#include "zlib.h"
+#include <png.h>
+#include <zlib.h>
 
 /* ImageMagick differences */
 #define first_scene scene
@@ -6080,7 +6080,7 @@ static Image *ReadOneMNGImage(MngInfo* mng_info, const ImageInfo *image_info,
                             (double) loop_level,(double)
                             mng_info->loop_count[loop_level]);
 
-                        if (mng_info->loop_count[loop_level] != 0)
+                        if (mng_info->loop_count[loop_level] > 0)
                           {
                             offset=SeekBlob(image,
                               mng_info->loop_jump[loop_level], SEEK_SET);
@@ -8512,6 +8512,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
     Sometimes we get PseudoClass images whose RGB values don't match
     the colors in the colormap.  This code syncs the RGB values.
   */
+  image->depth=GetImageQuantumDepth(image,MagickFalse);
   if (image->depth <= 8 && image->taint && image->storage_class == PseudoClass)
      (void) SyncImage(image);
 
@@ -10095,6 +10096,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
          ping_bit_depth = mng_info->write_png_depth;
     }
 
+  (void) old_bit_depth;
   image_depth=ping_bit_depth;
 
   if (logging != MagickFalse)
@@ -11164,6 +11166,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   if (pixel_info == (MemoryInfo *) NULL)
     png_error(ping,"Allocation of memory for pixels failed");
   ping_pixels=(unsigned char *) GetVirtualMemoryBlob(pixel_info);
+  (void) memset(ping_pixels,0,rowbytes*sizeof(*ping_pixels));
   /*
     Initialize image scanlines.
   */
@@ -11184,9 +11187,19 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
        ping_have_non_bw == MagickFalse)
     {
       /* Palette, Bilevel, or Opaque Monochrome */
+      QuantumType
+        quantum_type;
+
       register const PixelPacket
         *p;
 
+      quantum_type=RedQuantum;
+      if (mng_info->IsPalette)
+        {
+          quantum_type=GrayQuantum;
+          if (mng_info->write_png_colortype-1 == PNG_COLOR_TYPE_PALETTE)
+            quantum_type=IndexQuantum;
+        }
       SetQuantumDepth(image,quantum_info,8);
       for (pass=0; pass < num_passes; pass++)
       {
@@ -11204,27 +11217,8 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
           if (p == (const PixelPacket *) NULL)
             break;
 
-          if (mng_info->IsPalette)
-            {
-              (void) ExportQuantumPixels(image,(const CacheView *) NULL,
-                quantum_info,GrayQuantum,ping_pixels,&image->exception);
-              if (mng_info->write_png_colortype-1 == PNG_COLOR_TYPE_PALETTE &&
-                  mng_info->write_png_depth &&
-                  mng_info->write_png_depth != old_bit_depth)
-                {
-                  /* Undo pixel scaling */
-                  for (i=0; i < (ssize_t) image->columns; i++)
-                     *(ping_pixels+i)=(unsigned char) (*(ping_pixels+i)
-                     >> (8-old_bit_depth));
-                }
-            }
-
-          else
-            {
-              (void) ExportQuantumPixels(image,(const CacheView *) NULL,
-                quantum_info,RedQuantum,ping_pixels,&image->exception);
-            }
-
+          (void) ExportQuantumPixels(image,(const CacheView *) NULL,
+            quantum_info,quantum_type,ping_pixels,&image->exception);
           if (mng_info->write_png_colortype-1 != PNG_COLOR_TYPE_PALETTE)
             for (i=0; i < (ssize_t) image->columns; i++)
                *(ping_pixels+i)=(unsigned char) ((*(ping_pixels+i) > 127) ?

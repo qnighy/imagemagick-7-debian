@@ -1,3 +1,49 @@
+2019-01-01  6.9.10-23 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-23, GIT revision 14106:df6887c14:20190101
+
+2019-01-01  6.9.10-23 Cristy  <quetzlzacatenango@image...>
+  * CacheInfo destructor must be aligned in DestroyPixelStream().
+
+2018-12-30  6.9.10-22 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-22, GIT revision 14098:7054d2569:20181230
+
+2018-12-29  6.9.10-22 Cristy  <quetzlzacatenango@image...>
+  * Support negative rotations in a geometry (e.g. -10x-10+10+10).
+  * Return expected canvas offset after a crop with gravity.
+  * Fix HEIC coder compile exception.
+
+2018-12-27  6.9.10-21 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-21, GIT revision 14088:1961662c1:20181227
+
+2018-12-27  6.9.10-21 Cristy  <quetzlzacatenango@image...>
+  * Check to ensure SeekBlob() offset can be represented in an off_t.
+
+2018-12-23  6.9.10-20 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-20, GIT revision 14079:0ce665411:20181223
+
+2018-12-19  6.9.10-19 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-19, GIT revision 14069:0ca60eda0:20181219
+
+2018-12-18  6.9.10-18 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-18, GIT revision 14061:2f9ab1cea:20181218
+
+2018-12-18  6.9.10-18 Cristy  <quetzlzacatenango@image...>
+  * Revert MagickDoubleType patch to avoid i386 ABI break (reference
+    https://github.com/ImageMagick/ImageMagick6/issues/31);
+
+2018-12-17  6.9.10-17 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-17, GIT revision 14057:667544c39:20181217
+
+2018-12-10  6.9.10-16 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-16, GIT revision 14039:096b7210f:20181210
+
+2018-12-02  6.9.10-16 Cristy  <quetzlzacatenango@image...>
+  * Check for modulo underflow.
+  * Change SVG default DPI to 86 from 90 to meet recommendation of SVG2 & CSS.
+
+2018-12-01  6.9.10-15 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-15, GIT revision 14011:ddd5bd95d:20181201
+
 2018-10-23  6.9.10-14 Cristy  <quetzlzacatenango@image...>
   * Release ImageMagick version 6.9.10-14, GIT revision 13943:5f6f9f0be:20181023
 

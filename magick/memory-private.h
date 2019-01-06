@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ extern "C" {
 #include "magick/exception-private.h"
 
 #if defined(__powerpc__)
-#  define CACHE_LINE_SIZE 128
+#  define CACHE_LINE_SIZE  (16*sizeof(void *))
 #else
-#  define CACHE_LINE_SIZE 64
+#  define CACHE_LINE_SIZE  (8*sizeof(void *))
 #endif
 
 #define CacheAlign(size)  ((size) < CACHE_LINE_SIZE ? CACHE_LINE_SIZE : (size))

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -677,10 +677,11 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_ColorDecisionListImageChannel)
+        #pragma omp atomic
 #endif
+        progress++;
         proceed=SetImageProgress(image,ColorDecisionListCorrectImageTag,
-          progress++,image->rows);
+          progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -870,9 +871,10 @@ MagickExport MagickBooleanType ClutImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_ClutImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ClutImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,ClutImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -1034,9 +1036,10 @@ MagickExport MagickBooleanType ContrastImage(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_ContrastImage)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ContrastImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,ContrastImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -1535,9 +1538,10 @@ MagickExport MagickBooleanType ContrastStretchImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_ContrastStretchImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ContrastStretchImageTag,progress++,
+        progress++;
+        proceed=SetImageProgress(image,ContrastStretchImageTag,progress,
           image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
@@ -1732,9 +1736,10 @@ MagickExport Image *EnhanceImage(const Image *image,ExceptionInfo *exception)
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_EnhanceImage)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,EnhanceImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,EnhanceImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -2062,9 +2067,10 @@ MagickExport MagickBooleanType EqualizeImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_EqualizeImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,EqualizeImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,EqualizeImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -2356,9 +2362,10 @@ MagickExport MagickBooleanType GammaImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_GammaImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,GammaCorrectImageTag,progress++,
+        progress++;
+        proceed=SetImageProgress(image,GammaCorrectImageTag,progress,
           image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
@@ -2567,10 +2574,10 @@ MagickExport MagickBooleanType GrayscaleImage(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_GrayscaleImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,GrayscaleImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,GrayscaleImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -2789,9 +2796,10 @@ MagickExport MagickBooleanType HaldClutImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_HaldClutImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,HaldClutImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,HaldClutImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -3054,9 +3062,10 @@ MagickExport MagickBooleanType LevelImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_LevelImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,LevelImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,LevelImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -3224,9 +3233,10 @@ MagickExport MagickBooleanType LevelizeImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_LevelizeImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,LevelizeImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,LevelizeImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -3910,9 +3920,10 @@ MagickExport MagickBooleanType ModulateImage(Image *image,const char *modulate)
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_ModulateImage)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ModulateImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,ModulateImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -4075,10 +4086,10 @@ MagickExport MagickBooleanType NegateImageChannel(Image *image,
               proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp critical (MagickCore_NegateImageChannel)
+            #pragma omp atomic
 #endif
-            proceed=SetImageProgress(image,NegateImageTag,progress++,
-              image->rows);
+            progress++;
+            proceed=SetImageProgress(image,NegateImageTag,progress,image->rows);
             if (proceed == MagickFalse)
               status=MagickFalse;
           }
@@ -4144,9 +4155,10 @@ MagickExport MagickBooleanType NegateImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_NegateImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,NegateImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,NegateImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -4488,9 +4500,10 @@ MagickExport MagickBooleanType SigmoidalContrastImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_SigmoidalContrastImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,SigmoidalContrastImageTag,progress++,
+        progress++;
+        proceed=SetImageProgress(image,SigmoidalContrastImageTag,progress,
           image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;

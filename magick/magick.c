@@ -18,7 +18,7 @@
 %                             November 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -61,6 +61,7 @@
 #include "magick/memory_.h"
 #include "magick/mime.h"
 #include "magick/module.h"
+#include "magick/monitor-private.h"
 #include "magick/nt-base-private.h"
 #include "magick/nt-feature.h"
 #include "magick/opencl-private.h"
@@ -1338,6 +1339,7 @@ MagickExport void MagickCoreGenesis(const char *path,
   (void) XComponentGenesis();
 #endif
   (void) RegistryComponentGenesis();
+  (void) MonitorComponentGenesis();
   instantiate_magickcore=MagickTrue;
   UnlockMagickMutex();
 }
@@ -1369,6 +1371,7 @@ MagickExport void MagickCoreTerminus(void)
       UnlockMagickMutex();
       return;
     }
+  MonitorComponentTerminus();
   RegistryComponentTerminus();
 #if defined(MAGICKCORE_X11_DELEGATE)
   XComponentTerminus();

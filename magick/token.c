@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -184,13 +184,9 @@ MagickExport void GetNextToken(const char *start,const char **end,
   register ssize_t
     i;
 
-  size_t
-    length;
-
   assert(start != (const char *) NULL);
   assert(token != (char *) NULL);
   i=0;
-  length=strlen(start);
   p=start;
   while ((isspace((int) ((unsigned char) *p)) != 0) && (*p != '\0'))
     p++;
@@ -226,7 +222,7 @@ MagickExport void GetNextToken(const char *start,const char **end,
             }
         if (i < (ssize_t) (extent-1))
           token[i++]=(*p);
-        if ((size_t) (p-start) >= length)
+        if ((size_t) (p-start) >= (extent-1))
           break;
       }
       break;
@@ -257,7 +253,7 @@ MagickExport void GetNextToken(const char *start,const char **end,
           {
             if (i < (ssize_t) (extent-1))
               token[i++]=(*p);
-            if ((size_t) (p-start) >= length)
+            if ((size_t) (p-start) >= (extent-1))
               break;
           }
           if (*p == '%')
@@ -288,16 +284,20 @@ MagickExport void GetNextToken(const char *start,const char **end,
         if (*p == '>')
           break;
         if (*p == '(')
-          for (p++; *p != '\0'; p++)
           {
-            if (i < (ssize_t) (extent-1))
-              token[i++]=(*p);
-            if ((*p == ')') && (*(p-1) != '\\'))
-              break;
-            if ((size_t) (p-start) >= length)
+            for (p++; *p != '\0'; p++)
+            {
+              if (i < (ssize_t) (extent-1))
+                token[i++]=(*p);
+              if ((*p == ')') && (*(p-1) != '\\'))
+                break;
+              if ((size_t) (p-start) >= (extent-1))
+                break;
+            }
+            if (*p == '\0')
               break;
           }
-        if ((size_t) (p-start) >= length)
+        if ((size_t) (p-start) >= (extent-1))
           break;
       }
       break;

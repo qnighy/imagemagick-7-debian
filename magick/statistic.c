@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -620,10 +620,11 @@ MagickExport Image *EvaluateImages(const Image *images,
             MagickBooleanType
               proceed;
 
-#if   defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp critical (MagickCore_EvaluateImages)
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+            #pragma omp atomic
 #endif
-            proceed=SetImageProgress(images,EvaluateImageTag,progress++,
+            progress++;
+            proceed=SetImageProgress(images,EvaluateImageTag,progress,
               image->rows);
             if (proceed == MagickFalse)
               status=MagickFalse;
@@ -771,9 +772,6 @@ MagickExport Image *EvaluateImages(const Image *images,
             MagickBooleanType
               proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp critical (MagickCore_EvaluateImages)
-#endif
             proceed=SetImageProgress(images,EvaluateImageTag,progress++,
               image->rows);
             if (proceed == MagickFalse)
@@ -920,9 +918,6 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
         MagickBooleanType
           proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_EvaluateImageChannel)
-#endif
         proceed=SetImageProgress(image,EvaluateImageTag,progress++,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
@@ -1162,9 +1157,6 @@ MagickExport MagickBooleanType FunctionImageChannel(Image *image,
         MagickBooleanType
           proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_FunctionImageChannel)
-#endif
         proceed=SetImageProgress(image,FunctionImageTag,progress++,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
@@ -2911,9 +2903,6 @@ MagickExport Image *PolynomialImageChannel(const Image *images,
         MagickBooleanType
           proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_PolynomialImages)
-#endif
         proceed=SetImageProgress(images,PolynomialImageTag,progress++,
           image->rows);
         if (proceed == MagickFalse)
@@ -3797,9 +3786,6 @@ MagickExport Image *StatisticImageChannel(const Image *image,
         MagickBooleanType
           proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_StatisticImage)
-#endif
         proceed=SetImageProgress(image,StatisticImageTag,progress++,
           image->rows);
         if (proceed == MagickFalse)

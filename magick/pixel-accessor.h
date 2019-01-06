@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -171,6 +171,8 @@ static inline MagickBooleanType IsPixelAtDepth(const Quantum pixel,
   Quantum
     quantum;
 
+  if (range == 0)
+    return(MagickTrue);
 #if !defined(MAGICKCORE_HDRI_SUPPORT)
   quantum=(Quantum) (((MagickRealType) QuantumRange*((QuantumAny)
     (((MagickRealType) range*pixel)/QuantumRange+0.5)))/range+0.5);

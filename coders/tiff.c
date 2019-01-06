@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -221,6 +221,36 @@ static MagickBooleanType
   WriteGROUP4Image(const ImageInfo *,Image *),
   WritePTIFImage(const ImageInfo *,Image *),
   WriteTIFFImage(const ImageInfo *,Image *);
+
+static void InitPSDInfo(Image *image, Image *layer, PSDInfo *info)
+{
+  info->version=1;
+  info->columns=layer->columns;
+  info->rows=layer->rows;
+  /* Setting the mode to a value that won't change the colorspace */
+  info->mode=10;
+  /* Assume that image has matte */
+  if (IsGrayImage(image,&image->exception) != MagickFalse)
+    info->channels=2U;
+  else
+    if (image->storage_class == PseudoClass)
+      {
+        info->mode=2;
+        info->channels=2U;
+      }
+    else
+      {
+        if (image->colorspace != CMYKColorspace)
+          info->channels=4U;
+        else
+          info->channels=5U;
+      }
+  if (image->matte == MagickFalse)
+    info->channels--;
+  info->min_channels=info->channels;
+  if (image->matte != MagickFalse)
+    info->min_channels--;
+}
 #endif
 
 /*
@@ -551,6 +581,9 @@ static int TIFFCloseBlob(thandle_t image)
   return(0);
 }
 
+static void TIFFErrors(const char *,const char *,va_list)
+  magick_attribute((__format__ (__printf__,2,0)));
+
 static void TIFFErrors(const char *module,const char *format,va_list error)
 {
   char
@@ -560,10 +593,11 @@ static void TIFFErrors(const char *module,const char *format,va_list error)
     *exception;
 
 #if defined(MAGICKCORE_HAVE_VSNPRINTF)
-  (void) vsnprintf(message,MaxTextExtent,format,error);
+  (void) vsnprintf(message,MaxTextExtent-2,format,error);
 #else
   (void) vsprintf(message,format,error);
 #endif
+  message[MaxTextExtent-2]='\0';
   (void) ConcatenateMagickString(message,".",MaxTextExtent);
   exception=(ExceptionInfo *) GetMagickThreadValue(tiff_exception);
   if (exception != (ExceptionInfo *) NULL)
@@ -892,6 +926,9 @@ static void TIFFUnmapBlob(thandle_t image,tdata_t base,toff_t size)
   (void) size;
 }
 
+static void TIFFWarnings(const char *,const char *,va_list)
+  magick_attribute((__format__ (__printf__,2,0)));
+
 static void TIFFWarnings(const char *module,const char *format,va_list warning)
 {
   char
@@ -905,6 +942,7 @@ static void TIFFWarnings(const char *module,const char *format,va_list warning)
 #else
   (void) vsprintf(message,format,warning);
 #endif
+  message[MaxTextExtent-2]='\0';
   (void) ConcatenateMagickString(message,".",MaxTextExtent);
   exception=(ExceptionInfo *) GetMagickThreadValue(tiff_exception);
   if (exception != (ExceptionInfo *) NULL)
@@ -1054,25 +1092,7 @@ static void TIFFReadPhotoshopLayers(Image* image,const ImageInfo *image_info,
   (void) DeleteImageProfile(layers,"tiff:37724");
   AttachBlob(layers->blob,profile->datum,profile->length);
   SeekBlob(layers,(MagickOffsetType) i,SEEK_SET);
-  info.version=1;
-  info.columns=layers->columns;
-  info.rows=layers->rows;
-  /* Setting the mode to a value that won't change the colorspace */
-  info.mode=10;
-  if (image->storage_class == PseudoClass)
-    info.mode=2; /* indexed mode */
-  if (IsGrayImage(image,&image->exception) != MagickFalse)
-    info.channels=(image->matte != MagickFalse ? 2UL : 1UL);
-  else
-    if (image->storage_class == PseudoClass)
-      info.channels=(image->matte != MagickFalse ? 2UL : 1UL);
-    else
-      {
-        if (image->colorspace != CMYKColorspace)
-          info.channels=(image->matte != MagickFalse ? 4UL : 3UL);
-        else
-          info.channels=(image->matte != MagickFalse ? 5UL : 4UL);
-      }
+  InitPSDInfo(image, layers, &info);
   (void) ReadPSDLayers(layers,image_info,&info,MagickFalse,exception);
   /* we need to set the datum in case a realloc happend */
   ((StringInfo *) profile)->datum=GetBlobStreamData(layers);
@@ -1647,7 +1667,7 @@ RestoreMSCWarning
     quantum_type=RGBQuantum;
     if (TIFFScanlineSize(tiff) <= 0)
       ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
-    if (((MagickSizeType) TIFFScanlineSize(tiff)) > GetBlobSize(image))
+    if (((MagickSizeType) TIFFScanlineSize(tiff)) > (2*GetBlobSize(image)))
       ThrowTIFFException(CorruptImageError,"InsufficientImageDataInFile");
     number_pixels=MagickMax(TIFFScanlineSize(tiff),MagickMax((ssize_t)
       image->columns*samples_per_pixel*pow(2.0,ceil(log(bits_per_sample)/

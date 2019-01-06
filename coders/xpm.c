@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -173,6 +173,9 @@ static char *NextXPMLine(char *p)
     p++;
   return(p);
 }
+
+static char *ParseXPMColor(char *,MagickBooleanType)
+  magick_attribute((__pure__));
 
 static char *ParseXPMColor(char *color,MagickBooleanType search_start)
 {
@@ -780,6 +783,10 @@ static MagickBooleanType WritePICONImage(const ImageInfo *image_info,
         picon->colormap,(size_t) colors,sizeof(*picon->colormap));
       if (picon->colormap == (PixelPacket *) NULL)
         ThrowWriterException(ResourceLimitError,"MemoryAllocationError");
+      picon->colormap[colors-1].red=0;
+      picon->colormap[colors-1].green=0;
+      picon->colormap[colors-1].blue=0;
+      picon->colormap[colors-1].opacity=TransparentOpacity;
       for (y=0; y < (ssize_t) picon->rows; y++)
       {
         q=GetAuthenticPixels(picon,0,y,picon->columns,1,exception);

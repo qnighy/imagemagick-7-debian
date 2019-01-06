@@ -17,7 +17,7 @@
 %                                 July 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -244,6 +244,7 @@ MagickExport void *AcquireAlignedMemory(const size_t count,const size_t quantum)
 {
 #define AlignedExtent(size,alignment) \
   (((size)+((alignment)-1)) & ~((alignment)-1))
+#define AlignedPowerOf2(x)  ((((x) - 1) & (x)) == 0)
 
   size_t
     alignment,
@@ -258,9 +259,7 @@ MagickExport void *AcquireAlignedMemory(const size_t count,const size_t quantum)
   memory=NULL;
   size=count*quantum;
   alignment=CACHE_LINE_SIZE;
-  if (size > (size_t) (GetMagickPageSize() >> 1))
-    alignment=GetMagickPageSize();
-  extent=AlignedExtent(size,CACHE_LINE_SIZE);
+  extent=AlignedExtent(size,alignment);
   if ((size == 0) || (extent < size))
     return((void *) NULL);
 #if defined(MAGICKCORE_HAVE_POSIX_MEMALIGN)
@@ -273,6 +272,17 @@ MagickExport void *AcquireAlignedMemory(const size_t count,const size_t quantum)
     void
       *p;
 
+    if ((alignment == 0) || (alignment % sizeof(void *) != 0) ||
+        (AlignedPowerOf2(alignment/sizeof (void *)) == 0))
+      {
+        errno=EINVAL;
+        return((void *) NULL);
+      }
+    if (size > (SIZE_MAX-alignment-sizeof(void *)-1))
+      {
+        errno=ENOMEM;
+        return((void *) NULL);
+      }
     extent=(size+alignment-1)+sizeof(void *);
     if (extent > size)
       {
