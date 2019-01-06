@@ -1,4 +1,4 @@
-From 0cc2376d744ae54372272654c352ae15729e4d16 Mon Sep 17 00:00:00 2001
+From 0456bb649c21d49683f3d75139ee65ea1eb2083c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Sat, 3 Feb 2018 23:38:58 +0100
 Subject: Fix < instead of &lt; and input form
@@ -8,7 +8,7 @@ Forwarded: Yes
  index.html                             | 4 ++--
  www/ImageMagickObject.html             | 4 ++--
  www/advanced-unix-installation.html    | 4 ++--
- www/advanced-windows-installation.html | 6 +++++-
+ www/advanced-windows-installation.html | 4 ++--
  www/animate.html                       | 4 ++--
  www/api/animate.html                   | 4 ++--
  www/api/annotate.html                  | 6 +++++-
@@ -128,7 +128,7 @@ Forwarded: Yes
  www/stream.html                        | 4 ++--
  www/support.html                       | 4 ++--
  www/webp.html                          | 4 ++--
- 123 files changed, 254 insertions(+), 249 deletions(-)
+ 123 files changed, 251 insertions(+), 250 deletions(-)
 
 diff --git a/index.html b/index.html
 index 26c9d5485..1aeb4bc80 100644
@@ -194,7 +194,7 @@ index a8b4aecf0..522e983e4 100644
  </body>
  </html>
 diff --git a/www/advanced-windows-installation.html b/www/advanced-windows-installation.html
-index f46640813..9145f9bce 100644
+index f46640813..112369363 100644
 --- a/www/advanced-windows-installation.html
 +++ b/www/advanced-windows-installation.html
 @@ -61,7 +61,7 @@
@@ -206,15 +206,12 @@ index f46640813..9145f9bce 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -138,6 +138,10 @@
+@@ -138,6 +138,6 @@
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
-+<<<<<<< HEAD
-   <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
-+=======
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
-+>>>>>>> Fix < instead of &lt; and input form
  </body>
  </html>
 diff --git a/www/animate.html b/www/animate.html

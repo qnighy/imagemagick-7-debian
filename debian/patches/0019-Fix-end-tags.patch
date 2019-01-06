@@ -1,4 +1,4 @@
-From fa47f04f36056628ed48244e2b0e34077cb7ae0d Mon Sep 17 00:00:00 2001
+From c4437d2654c6c65f62e654e4fd9ca302408953ff Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 30 Jul 2018 14:50:23 +0200
 Subject: Fix end tags
@@ -9,7 +9,7 @@ Forwarded: yes
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/www/advanced-windows-installation.html b/www/advanced-windows-installation.html
-index 9145f9bce..9a2310eec 100644
+index 112369363..febfb270b 100644
 --- a/www/advanced-windows-installation.html
 +++ b/www/advanced-windows-installation.html
 @@ -91,7 +91,7 @@
