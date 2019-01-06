@@ -1,4 +1,4 @@
-From 5212a8be38032dc739251d520a41f8138e1805c3 Mon Sep 17 00:00:00 2001
+From 9e279c24e36d6416991be9c96353e0cbfc903375 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 2 Feb 2018 22:17:26 +0100
 Subject: Allow distribution to custumize the html pointer to documentation
@@ -10,14 +10,14 @@ Bug-debian: https://bugs.debian.org/727739
 ---
  configure.ac            | 12 ++++++++++++
  utilities/conjure.1.in  |  4 ++--
- utilities/convert.1.in  |  8 +++++++-
- utilities/display.1.in  |  8 +++++++-
+ utilities/convert.1.in  |  5 +++--
+ utilities/display.1.in  |  4 ++--
  utilities/identify.1.in |  4 ++--
  utilities/import.1.in   |  4 ++--
  utilities/mogrify.1.in  |  4 ++--
  utilities/montage.1.in  |  5 +++--
  utilities/stream.1.in   |  4 ++--
- 9 files changed, 39 insertions(+), 14 deletions(-)
+ 9 files changed, 30 insertions(+), 16 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
 index 50f37684b..698846529 100644
@@ -62,7 +62,7 @@ index 438c394d0..48cfde5b0 100644
 -\fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
 +\fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 diff --git a/utilities/convert.1.in b/utilities/convert.1.in
-index 0260305f5..aacf2e8fb 100644
+index 0260305f5..7271e2be6 100644
 --- a/utilities/convert.1.in
 +++ b/utilities/convert.1.in
 @@ -7,7 +7,7 @@ convert \- convert between image formats as well as resize an image, blur, crop,
@@ -74,19 +74,15 @@ index 0260305f5..aacf2e8fb 100644
  .SH DESCRIPTION
  Image Settings:
    \-adjoin              join images into a single multi-image file
-@@ -320,4 +320,10 @@ By default, the image format of `file' is determined by its magic number.  To sp
+@@ -320,4 +320,5 @@ By default, the image format of `file' is determined by its magic number.  To sp
  ImageMagick(1)
  
  .SH COPYRIGHT
-+<<<<<<< 0a04a1f53ac1d3cbdf36971605550d140bcf8b71
- \fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
-+=======
+-\fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
 +
-+\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
-+
-+>>>>>>> HEAD~16
++\fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 diff --git a/utilities/display.1.in b/utilities/display.1.in
-index 3e2608179..e392476c1 100644
+index 3e2608179..07d8c1559 100644
 --- a/utilities/display.1.in
 +++ b/utilities/display.1.in
 @@ -7,7 +7,7 @@ display \- displays an image or image sequence on any X server.
@@ -98,17 +94,12 @@ index 3e2608179..e392476c1 100644
  .SH DESCRIPTION
  Image Settings:
    \-alpha option        on, activate, off, deactivate, set, opaque, copy
-@@ -136,4 +136,10 @@ ImageMagick(1)
+@@ -136,4 +136,4 @@ ImageMagick(1)
  
  .SH COPYRIGHT
  
-+<<<<<<< 0a04a1f53ac1d3cbdf36971605550d140bcf8b71
- \fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
-+=======
-+
+-\fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
 +\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
-+
-+>>>>>>> HEAD~16
 diff --git a/utilities/identify.1.in b/utilities/identify.1.in
 index e62e77992..7e99c9d8b 100644
 --- a/utilities/identify.1.in

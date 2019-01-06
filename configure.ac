@@ -810,8 +810,6 @@ if test "$enable_hdri" = 'yes'; then
   MAGICK_ABI_SUFFIX="Q${QUANTUM_DEPTH}${MAGICK_HDRI}"
 fi
 AC_SUBST(MAGICK_ABI_SUFFIX)
-MAGICK_ABI_SUFFIX_LC=`echo "$MAGICK_ABI_SUFFIX" | sed 's/./\L&/g'`
-AC_SUBST(MAGICK_ABI_SUFFIX_LC)
 
 # Set pixel cache threshold
 AC_ARG_WITH([cache],

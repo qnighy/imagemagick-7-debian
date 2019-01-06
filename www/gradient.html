@@ -61,7 +61,7 @@
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
     </form>
     </div>
@@ -116,7 +116,7 @@ convert -size 256x256 radial-gradient:white-black radial_gradient.png
 <p><img src="../images/gradients/radial_gradient.png" width="256" height="256" /></p>
 
 <p>If you want non-linear grayscale gradients, then add -colorspace RGB -colorspace gray 
-before saving the output. For example:</p>
+before saving the output. For example:<p>
 
 <pre class="highlight"><code>convert -size 256x256 gradient: linear_gradient.png
 convert -size 256x256 gradient:white-black -colorspace RGB -colorspace gray linear_linear_gradient.png
@@ -125,6 +125,7 @@ convert -size 256x256 gradient:white-black -colorspace RGB -colorspace gray line
 <pre class="highlight"><code>convert -size 256x256 radial-gradient: radial_gradient.png
 convert -size 256x256 radial-gradient:white-black -colorspace RGB -colorspace gray linea_radial_gradient.png
 </code></pre>
+
 
 <p>As of IM 6.9.2.5, gradients have been enhanced through the use of several -defines.</p>
 
@@ -263,6 +264,6 @@ convert -size 256x128 -define gradient:radii=128,64 radial-gradient:black-white 
 
   <!-- Javascript assets -->
   <script src="assets/magick.js" crossorigin="anonymous"></script>
-  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
+  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 </body>
 </html>

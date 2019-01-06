@@ -61,7 +61,7 @@
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
     </form>
     </div>
@@ -340,7 +340,7 @@ image-5.jpg</pre>
 <li><a href="command-line-processing.html#stack">Image Stack</a></li>
 </ul>
 
-<h4 class="magick-header"><a class="anchor" id="setting"></a>Image Setting</h4>
+<h4 class="magick-header"><a class="anchor" id="setting"></a>Image Setting</h5>
 
 <p>An image setting persists as it appears on the command-line and may affect
 subsequent processing such as reading an image, an image operator, or when
@@ -355,7 +355,7 @@ is reset or the command-line terminates.  The image settings include:</p>
 
 <pre class="highlight"><code>convert -channel RGB wand.png wizard.png images.png</code></pre>
 
-<h4 class="magick-header"><a class="anchor" id="operator"></a>Image Operator</h4>
+<h4 class="magick-header"><a class="anchor" id="operator"></a>Image Operator</h5>
 
 <p>An image operator differs from a setting in that it affects the image
 immediately as it appears on the command-line.  An operator is
@@ -372,12 +372,12 @@ an operator is applied to the current image set and forgotten.  The image operat
 
 <pre class="highlight"><code>convert wand.png -negate wizard.png images.png</code></pre>
 
-<h4 class="magick-header"><a class="anchor" id="channel"></a>Image Channel Operator</h4>
+<h4 class="magick-header"><a class="anchor" id="channel"></a>Image Channel Operator</h5>
 <p>Operate directly on image channels:</p>
 <ul>
 <a href="command-line-options.html#channel-fx">&#x2011;channel&#x2011;fx</a>  • <a href="command-line-options.html#separate">&#x2011;separate</a> </ul>
 
-<h4 class="magick-header"><a class="anchor" id="sequence"></a>Image Sequence Operator</h4>
+<h4 class="magick-header"><a class="anchor" id="sequence"></a>Image Sequence Operator</h5>
 
 <p>An image sequence operator differs from a setting in that it affects an
 image sequence immediately as it appears on the command-line.  Choose from
@@ -389,7 +389,7 @@ these image sequence operators:</p>
 
 <pre class="highlight"><code>convert mikayla.png picnic.png beach.png -append vacation.png</code></pre>
 
-<h4 class="magick-header"><a class="anchor" id="geometry"></a>Image Geometry</h4>
+<h4 class="magick-header"><a class="anchor" id="geometry"></a>Image Geometry</h5>
 
 <p>Many command-line <a href="command-line-options.html">options</a> take a <var>geometry</var> argument
 to specify such things as the desired width and height of an image and other
@@ -537,7 +537,7 @@ magick logo: -gravity center -region '100x200-10+20' -negate wizNeg3.png</code><
 </p>
 
 
-<h4 class="magick-header"><a class="anchor" id="stack"></a>Image Stack</h4>
+<h4 class="magick-header"><a class="anchor" id="stack"></a>Image Stack</h5>
 
 <p>In school, your teacher probably permitted you to work on problems on a scrap of paper and then copy the results to your test paper.  An image stack is similar.  It permits you to work on an image or image sequence in isolation and subsequently introduce the results back into the command-line.  The image stack is delineated with parenthesis.  Image operators only affect images in the current stack.  For example, we can limit the image rotation to just the wizard image like this:</p>
 
@@ -633,6 +633,6 @@ image-2.jpg</pre>
 
   <!-- Javascript assets -->
   <script src="assets/magick.js" crossorigin="anonymous"></script>
-  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
+  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 </body>
 </html>
