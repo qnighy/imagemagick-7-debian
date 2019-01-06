@@ -22,6 +22,9 @@
 %                                                                             %
 %                      Copyright 2017-2018 YANDEX LLC.                        %
 %                                                                             %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  dedicated to making software imaging solutions freely available.           %
+%                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
@@ -215,7 +218,7 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
       size_t
         exif_size;
 
-      void
+      unsigned char
         *exif_buffer;
 
       exif_size=heif_image_handle_get_metadata_size(image_handle,exif_id);
@@ -226,8 +229,8 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
           ThrowReaderException(CorruptImageError,
             "InsufficientImageDataInFile");
         }
-      exif_buffer=AcquireMagickMemory(exif_size);
-      if (exif_buffer != NULL)
+      exif_buffer=(unsigned char*) AcquireMagickMemory(exif_size);
+      if (exif_buffer != (unsigned char*) NULL)
         {
           error=heif_image_handle_get_metadata(image_handle,
             exif_id,exif_buffer);
@@ -236,7 +239,11 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
               StringInfo
                 *profile;
 
-              profile=BlobToStringInfo(exif_buffer,exif_size);
+              // The first 4 byte should be skipped since they indicate the
+              // offset to the start of the TIFF header of the Exif data.
+              profile=(StringInfo*) NULL;
+              if (exif_size > 8)
+                profile=BlobToStringInfo(exif_buffer+4,exif_size-4);
               if (profile != (StringInfo*) NULL)
                 {
                   SetImageProfile(image,"exif",profile);
@@ -305,6 +312,12 @@ static Image *ReadHEICImage(const ImageInfo *image_info,
   heif_image_release(heif_image);
   heif_image_handle_release(image_handle);
   heif_context_free(heif_context);
+  /*
+    There is a discrepancy between EXIF data and the actual orientation of
+    image pixels. ReadImage processes "exif:Orientation" expecting pixels to be
+    oriented accordingly. However, in HEIF the pixels are NOT rotated.
+   */
+  SetImageProperty(image, "exif:Orientation", "1");
   return(GetFirstImageInList(image));
 }
 #endif
@@ -556,7 +569,7 @@ static MagickBooleanType WriteHEICImage(const ImageInfo *image_info,Image *image
     for (y=0; y < (long) image->rows; y++)
     {
       p=GetVirtualPixels(image,0,y,image->columns,1,exception);
-      if (p == (const Quantum *) NULL)
+      if (p == (const PixelPacket *) NULL)
         {
           status=MagickFalse;
           break;

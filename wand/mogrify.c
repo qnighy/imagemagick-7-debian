@@ -17,7 +17,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -270,7 +270,7 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
       e=((1.0/(1.0/((serial/(serial+parallel))+(1.0-(serial/(serial+parallel)))/
         (double) n)))-(1.0/(double) n))/(1.0-1.0/(double) n);
     (void) FormatLocaleFile(stderr,
-      "Performance[%.20g]: %.20gi %0.3fips %0.3fe %0.3fu %lu:%02lu.%03lu\n",
+      "Performance[%.20g]: %.20gi %0.3fips %0.6fe %0.6fu %lu:%02lu.%03lu\n",
       (double) n,(double) iterations,(double) iterations/parallel,e,user_time,
       (unsigned long) (parallel/60.0),(unsigned long) floor(fmod(parallel,
       60.0)),(unsigned long) (1000.0*(parallel-floor(parallel))+0.5));

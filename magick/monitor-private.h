@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,23 +18,15 @@
 #ifndef MAGICKCORE_MONITOR_PRIVATE_H
 #define MAGICKCORE_MONITOR_PRIVATE_H
 
-#include "magick/image.h"
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-static inline MagickBooleanType SetImageProgress(const Image *image,
-  const char *tag,const MagickOffsetType offset,const MagickSizeType extent)
-{
-  char
-    message[MaxTextExtent];
+extern MagickPrivate MagickBooleanType
+  MonitorComponentGenesis(void);
 
-  if (image->progress_monitor == (MagickProgressMonitor) NULL)
-    return(MagickTrue);
-  (void) FormatLocaleString(message,MaxTextExtent,"%s/%s",tag,image->filename);
-  return(image->progress_monitor(message,offset,extent,image->client_data));
-}
+extern MagickPrivate void
+  MonitorComponentTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

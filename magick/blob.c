@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -273,7 +273,8 @@ MagickExport MagickBooleanType BlobToFile(char *filename,const void *blob,
     }
   for (i=0; i < length; i+=count)
   {
-    count=write(file,(const char *) blob+i,MagickMin(length-i,SSIZE_MAX));
+    count=write(file,(const char *) blob+i,MagickMin(length-i,(size_t)
+      SSIZE_MAX));
     if (count <= 0)
       {
         count=0;
@@ -1187,7 +1188,7 @@ MagickExport unsigned char *FileToBlob(const char *filename,const size_t extent,
       (void) lseek(file,0,SEEK_SET);
       for (i=0; i < *length; i+=count)
       {
-        count=read(file,blob+i,MagickMin(*length-i,SSIZE_MAX));
+        count=read(file,blob+i,MagickMin(*length-i,(size_t) SSIZE_MAX));
         if (count <= 0)
           {
             count=0;
@@ -1442,7 +1443,7 @@ MagickExport void GetBlobInfo(BlobInfo *blob_info)
   blob_info->type=UndefinedStream;
   blob_info->quantum=(size_t) MagickMaxBlobExtent;
   blob_info->properties.st_mtime=time((time_t *) NULL);
-  blob_info->properties.st_ctime=time((time_t *) NULL);
+  blob_info->properties.st_ctime=blob_info->properties.st_mtime;
   blob_info->debug=IsEventLogging();
   blob_info->reference_count=1;
   blob_info->semaphore=AllocateSemaphoreInfo();
@@ -2259,13 +2260,13 @@ MagickExport MagickBooleanType IsBlobSeekable(const Image *image)
     case ZipStream:
     {
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
-      int
-        status;
+      MagickOffsetType
+        offset;
 
       if (blob_info->file_info.gzfile == (gzFile) NULL)
         return(MagickFalse);
-      status=gzseek(blob_info->file_info.gzfile,0,SEEK_CUR);
-      return(status == -1 ? MagickFalse : MagickTrue);
+      offset=gzseek(blob_info->file_info.gzfile,0,SEEK_CUR);
+      return(offset < 0 ? MagickFalse : MagickTrue);
 #else
       break;
 #endif
@@ -2386,14 +2387,13 @@ MagickExport unsigned char *MapBlob(int file,const MapMode mode,
     }
   }
 #if !defined(MAGICKCORE_HAVE_HUGEPAGES) || !defined(MAP_HUGETLB)
-  map=(unsigned char *) mmap((char *) NULL,length,protection,flags,file,
-    (off_t) offset);
+  map=(unsigned char *) mmap((char *) NULL,length,protection,flags,file,offset);
 #else
   map=(unsigned char *) mmap((char *) NULL,length,protection,flags |
-    MAP_HUGETLB,file,(off_t) offset);
+    MAP_HUGETLB,file,offset);
   if (map == (unsigned char *) MAP_FAILED)
     map=(unsigned char *) mmap((char *) NULL,length,protection,flags,file,
-      (off_t) offset);
+      offset);
 #endif
   if (map == (unsigned char *) MAP_FAILED)
     return((unsigned char *) NULL);
@@ -4295,6 +4295,12 @@ MagickExport MagickOffsetType SeekBlob(Image *image,
         }
         case SEEK_CUR:
         {
+          if (((offset > 0) && (blob_info->offset > (SSIZE_MAX-offset))) ||
+              ((offset < 0) && (blob_info->offset < (-SSIZE_MAX-offset))))
+            {
+              errno=EOVERFLOW;
+              return(-1);
+            }
           if ((blob_info->offset+offset) < 0)
             return(-1);
           blob_info->offset+=offset;

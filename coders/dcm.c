@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2891,10 +2891,10 @@ static MagickBooleanType ReadDCMPixels(Image *image,DCMInfo *info,
             else
               {
                 if ((i & 0x01) != 0)
-                  { 
+                  {
                     pixel_value=byte;
                     byte=ReadDCMByte(stream_info,image);
-                    if (byte >= 0)  
+                    if (byte >= 0)
                       pixel_value|=(byte << 8);
                   }
                 else
@@ -3202,10 +3202,12 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             Assume explicit type.
           */
           quantum=2;
-          if ((strncmp(explicit_vr,"OB",2) == 0) ||
-              (strncmp(explicit_vr,"UN",2) == 0) ||
-              (strncmp(explicit_vr,"OW",2) == 0) ||
-              (strncmp(explicit_vr,"SQ",2) == 0))
+          if ((strcmp(explicit_vr,"OB") == 0) ||
+              (strcmp(explicit_vr,"OW") == 0) ||
+              (strcmp(explicit_vr,"OF") == 0) ||
+              (strcmp(explicit_vr,"SQ") == 0) ||
+              (strcmp(explicit_vr,"UN") == 0) ||
+              (strcmp(explicit_vr,"UT") == 0))
             {
               (void) ReadBlobLSBShort(image);
               quantum=4;
@@ -3959,7 +3961,7 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         length=(size_t) (GetQuantumRange(info.depth)+1);
         if (length > (size_t) GetBlobSize(image))
           ThrowDCMException(CorruptImageError,"InsufficientImageDataInFile");
-        if (info.scale != (Quantum *) NULL) 
+        if (info.scale != (Quantum *) NULL)
           info.scale=(Quantum *) RelinquishMagickMemory(info.scale);
         info.scale=(Quantum *) AcquireQuantumMemory(MagickMax(length,MaxMap)+1,
           sizeof(*info.scale));
@@ -4012,7 +4014,14 @@ static Image *ReadDCMImage(const ImageInfo *image_info,ExceptionInfo *exception)
               ThrowDCMException(ResourceLimitError,"MemoryAllocationFailed");
             for (i=0; i < (ssize_t) stream_info->offset_count; i++)
             {
-              stream_info->offsets[i]=(ssize_t) ReadBlobLSBSignedLong(image);
+              MagickOffsetType
+                offset;
+
+              offset=(MagickOffsetType) ReadBlobLSBSignedLong(image);
+              if (offset > (MagickOffsetType) GetBlobSize(image))
+                ThrowDCMException(CorruptImageError,
+                  "InsufficientImageDataInFile");
+              stream_info->offsets[i]=(ssize_t) offset;
               if (EOFBlob(image) != MagickFalse)
                 break;
             }

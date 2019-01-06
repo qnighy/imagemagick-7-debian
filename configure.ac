@@ -1,4 +1,4 @@
-#  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -27,7 +27,7 @@ AC_PREREQ(2.69)
 m4_define([magick_major_version], [6])
 m4_define([magick_minor_version], [9])
 m4_define([magick_micro_version], [10])
-m4_define([magick_patchlevel_version], [14])
+m4_define([magick_patchlevel_version], [23])
 m4_define([magick_version],
           [magick_major_version.magick_minor_version.magick_micro_version-magick_patchlevel_version])
 m4_define([magick_git_revision], esyscmd([sh -c "(gitversion.sh .) | awk '{ print \$1 }' | tr -d '\n'"]))
@@ -487,7 +487,7 @@ if test "$with_threads" != 'no'; then
         DEF_THREAD="$PTHREAD_CFLAGS"
         CFLAGS="$CFLAGS $DEF_THREAD"
         CXXFLAGS="$CXXFLAGS $DEF_THREAD"
-	THREAD_LIBS="$PTHREAD_LIBS"
+        THREAD_LIBS="$PTHREAD_LIBS"
         if test "$CC" != "$PTHREAD_CC"; then
             AC_MSG_WARN([Replacing compiler $CC with compiler $PTHREAD_CC to support pthreads.])
             CC="$PTHREAD_CC"
@@ -3388,7 +3388,7 @@ windows_font_dir=''
 if test "${with_windows_font_dir}" != 'default'; then
   windows_font_dir="${with_windows_font_dir}/"
 else
-  for font_dir in '/usr/X11R6/lib/X11/fonts/truetype/' '/usr/X11R7/lib/X11/fonts/truetype/' '/usr/share/fonts/msttcore/'; do
+  for font_dir in '/usr/X11R6/lib/X11/fonts/truetype/' '/usr/X11R7/lib/X11/fonts/truetype/' '/usr/share/fonts/msttcore/' '/usr/share/fonts/microsoft/' '/usr/share/fonts/truetype/msttcorefonts/'; do
     if test -f "${font_dir}arial.ttf"; then
       windows_font_dir="${font_dir}"
       break 1
@@ -3938,7 +3938,7 @@ MAGICK_CXXFLAGS="$CXXFLAGS"
 MAGICK_CPPFLAGS=`echo $MAGICK_CPPFLAGS | sed -e 's/  */ /g'`
 MAGICK_PCFLAGS=`echo $MAGICK_PCFLAGS | sed -e 's/  */ /g'`
 MAGICK_LDFLAGS="-L$LIB_DIR $LDFLAGS"
-MAGICK_LIBS="$MAGICK_DEP_LIBS MAGICK_EXTRA_DEP_LIBS"
+MAGICK_LIBS="$MAGICK_DEP_LIBS $MAGICK_EXTRA_DEP_LIBS"
 
 AC_SUBST(MAGICK_CFLAGS)
 AC_SUBST(MAGICK_CXXFLAGS)

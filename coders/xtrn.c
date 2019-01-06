@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -58,6 +58,7 @@
 #include "magick/magick.h"
 #include "magick/memory_.h"
 #include "magick/module.h"
+#include "magick/static.h"
 #include "magick/string_.h"
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
 #define WIN32_LEAN_AND_MEAN

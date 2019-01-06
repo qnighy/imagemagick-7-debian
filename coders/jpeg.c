@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -169,6 +169,13 @@ typedef struct _QuantizationTable
     *levels;
 } QuantizationTable;
 
+/*
+  Const declarations.
+*/
+static const char
+  *xmp_namespace = "http://ns.adobe.com/xap/1.0/ ";
+#define XmpNamespaceExtent 28
+
 /*
   Forward declarations.
 */
@@ -642,6 +649,7 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
     *p++=(unsigned char) c;
   }
   error_manager->profile=NULL;
+  /* The IPTC profile is actually an 8bim */
   iptc_profile=(StringInfo *) GetImageProfile(image,"8bim");
   if (iptc_profile != (StringInfo *) NULL)
     {
@@ -734,7 +742,8 @@ static boolean ReadProfile(j_decompress_ptr jpeg_info)
       p=GetStringInfoDatum(profile);
       if ((length > 4) && (LocaleNCompare((char *) p,"exif",4) == 0))
         (void) CopyMagickString(name,"exif",MaxTextExtent);
-      if ((length > 5) && (LocaleNCompare((char *) p,"http:",5) == 0))
+      else if ((length > XmpNamespaceExtent) &&
+          (LocaleNCompare((char *) p,xmp_namespace,XmpNamespaceExtent-1) == 0))
         {
           ssize_t
             j;
@@ -742,8 +751,8 @@ static boolean ReadProfile(j_decompress_ptr jpeg_info)
           /*
             Extract namespace from XMP profile.
           */
-          p=GetStringInfoDatum(profile);
-          for (j=0; j < (ssize_t) GetStringInfoLength(profile); j++)
+          p=GetStringInfoDatum(profile)+XmpNamespaceExtent;
+          for (j=XmpNamespaceExtent; j < (ssize_t) GetStringInfoLength(profile); j++)
           {
             if (*p == '\0')
               break;
@@ -755,7 +764,8 @@ static boolean ReadProfile(j_decompress_ptr jpeg_info)
         }
     }
   previous_profile=GetImageProfile(image,name);
-  if (previous_profile != (const StringInfo *) NULL)
+  if ((previous_profile != (const StringInfo *) NULL) &&
+      (CompareStringInfo(previous_profile,profile) != 0))
     {
       size_t
         length;
@@ -1032,6 +1042,7 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
     value[MaxTextExtent];
 
   const char
+    *dct_method,
     *option;
 
   ErrorManager
@@ -1235,33 +1246,32 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   if (option != (const char *) NULL)
     jpeg_info.do_block_smoothing=IsStringTrue(option) != MagickFalse ? TRUE :
       FALSE;
-  jpeg_info.dct_method=JDCT_FLOAT;
-  option=GetImageOption(image_info,"jpeg:dct-method");
-  if (option != (const char *) NULL)
-    switch (*option)
+  dct_method=GetImageOption(image_info,"jpeg:dct-method");
+  if (dct_method != (const char *) NULL)
+    switch (*dct_method)
     {
       case 'D':
       case 'd':
       {
-        if (LocaleCompare(option,"default") == 0)
+        if (LocaleCompare(dct_method,"default") == 0)
           jpeg_info.dct_method=JDCT_DEFAULT;
         break;
       }
       case 'F':
       case 'f':
       {
-        if (LocaleCompare(option,"fastest") == 0)
+        if (LocaleCompare(dct_method,"fastest") == 0)
           jpeg_info.dct_method=JDCT_FASTEST;
-        if (LocaleCompare(option,"float") == 0)
+        if (LocaleCompare(dct_method,"float") == 0)
           jpeg_info.dct_method=JDCT_FLOAT;
         break;
       }
       case 'I':
       case 'i':
       {
-        if (LocaleCompare(option,"ifast") == 0)
+        if (LocaleCompare(dct_method,"ifast") == 0)
           jpeg_info.dct_method=JDCT_IFAST;
-        if (LocaleCompare(option,"islow") == 0)
+        if (LocaleCompare(dct_method,"islow") == 0)
           jpeg_info.dct_method=JDCT_ISLOW;
         break;
       }
@@ -1342,6 +1352,9 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
   (void) FormatLocaleString(value,MaxTextExtent,"%.20g",(double)
     jpeg_info.out_color_space);
   (void) SetImageProperty(image,"jpeg:colorspace",value);
+  if ((dct_method == (const char *) NULL) && (image->quality > 0) &&
+      (image->quality <= 90))
+    jpeg_info.dct_method=JDCT_IFAST;
   if (image_info->ping != MagickFalse)
     {
       jpeg_destroy_decompress(&jpeg_info);
@@ -1370,8 +1383,8 @@ static Image *ReadJPEGImage(const ImageInfo *image_info,
       ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
     }
   jpeg_pixels=(JSAMPLE *) GetVirtualMemoryBlob(memory_info);
-  (void) memset(jpeg_pixels,0,image->columns* 
-    jpeg_info.output_components*sizeof(*jpeg_pixels));
+  (void) memset(jpeg_pixels,0,image->columns*jpeg_info.output_components*
+    sizeof(*jpeg_pixels));
   /*
     Convert JPEG pixels to pixel packets.
   */
@@ -2020,6 +2033,17 @@ static void WriteProfile(j_compress_ptr jpeg_info,Image *image)
 
     profile=GetImageProfile(image,name);
     p=GetStringInfoDatum(custom_profile);
+    length=GetStringInfoLength(profile);
+    if (LocaleNCompare(name,"APP",3) == 0)
+      {
+        int
+          id;
+
+        id=JPEG_APP0+StringToInteger(name+3);
+        for (i=0; i < (ssize_t) length; i+=65533L)
+           jpeg_write_marker(jpeg_info,id,GetStringInfoDatum(profile)+i,
+             MagickMin(length-i,65533));
+      }
     if (LocaleCompare(name,"EXIF") == 0)
       {
         length=GetStringInfoLength(profile);
@@ -2092,12 +2116,12 @@ static void WriteProfile(j_compress_ptr jpeg_info,Image *image)
         /*
           Add namespace to XMP profile.
         */
-        xmp_profile=StringToStringInfo("http://ns.adobe.com/xap/1.0/ ");
+        xmp_profile=StringToStringInfo(xmp_namespace);
         if (xmp_profile != (StringInfo *) NULL)
           {
             if (profile != (StringInfo *) NULL)
               ConcatenateStringInfo(xmp_profile,profile);
-            GetStringInfoDatum(xmp_profile)[28]='\0';
+            GetStringInfoDatum(xmp_profile)[XmpNamespaceExtent]='\0';
             for (i=0; i < (ssize_t) GetStringInfoLength(xmp_profile); i+=65533L)
             {
               length=MagickMin(GetStringInfoLength(xmp_profile)-i,65533L);
@@ -2177,6 +2201,7 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
   Image *image)
 {
   const char
+    *dct_method,
     *option,
     *sampling_factor,
     *value;
@@ -2335,33 +2360,32 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
       if (image->units == PixelsPerCentimeterResolution)
         jpeg_info.density_unit=(UINT8) 2;
     }
-  jpeg_info.dct_method=JDCT_FLOAT;
-  option=GetImageOption(image_info,"jpeg:dct-method");
-  if (option != (const char *) NULL)
-    switch (*option)
+  dct_method=GetImageOption(image_info,"jpeg:dct-method");
+  if (dct_method != (const char *) NULL)
+    switch (*dct_method)
     {
       case 'D':
       case 'd':
       {
-        if (LocaleCompare(option,"default") == 0)
+        if (LocaleCompare(dct_method,"default") == 0)
           jpeg_info.dct_method=JDCT_DEFAULT;
         break;
       }
       case 'F':
       case 'f':
       {
-        if (LocaleCompare(option,"fastest") == 0)
+        if (LocaleCompare(dct_method,"fastest") == 0)
           jpeg_info.dct_method=JDCT_FASTEST;
-        if (LocaleCompare(option,"float") == 0)
+        if (LocaleCompare(dct_method,"float") == 0)
           jpeg_info.dct_method=JDCT_FLOAT;
         break;
       }
       case 'I':
       case 'i':
       {
-        if (LocaleCompare(option,"ifast") == 0)
+        if (LocaleCompare(dct_method,"ifast") == 0)
           jpeg_info.dct_method=JDCT_IFAST;
-        if (LocaleCompare(option,"islow") == 0)
+        if (LocaleCompare(dct_method,"islow") == 0)
           jpeg_info.dct_method=JDCT_ISLOW;
         break;
       }
@@ -2495,6 +2519,8 @@ static MagickBooleanType WriteJPEGImage(const ImageInfo *image_info,
       jpeg_info=DestroyImageInfo(jpeg_info);
     }
   jpeg_set_quality(&jpeg_info,quality,TRUE);
+  if ((dct_method == (const char *) NULL) && (quality <= 90))
+    jpeg_info.dct_method=JDCT_IFAST;
 #if (JPEG_LIB_VERSION >= 70)
   option=GetImageOption(image_info,"quality");
   if (option != (const char *) NULL)

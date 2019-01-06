@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -523,10 +523,10 @@ MagickExport Image *CannyEdgeImage(const Image *image,const double radius,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_CannyEdgeImage)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,CannyEdgeImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,CannyEdgeImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -1967,10 +1967,10 @@ MagickExport Image *HoughLineImage(const Image *image,const size_t width,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_HoughLineImage)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,HoughLineImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,HoughLineImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -2348,10 +2348,10 @@ MagickExport Image *MeanShiftImage(const Image *image,const size_t width,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_MeanShiftImage)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,MeanShiftImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,MeanShiftImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }

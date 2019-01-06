@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -883,6 +883,9 @@ static Image *ReadPCDImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image->colorspace=YCCColorspace;
   if (LocaleCompare(image_info->magick,"PCDS") == 0)
     (void) SetImageColorspace(image,sRGBColorspace);
+  if (image_info->scene != 0)
+    for (i=0; i < (ssize_t) image_info->scene; i++)
+      AppendImageToList(&image,CloneImage(image,0,0,MagickTrue,exception));
   return(GetFirstImageInList(image));
 }
 

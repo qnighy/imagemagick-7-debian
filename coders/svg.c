@@ -18,7 +18,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -101,6 +101,11 @@
 #include "librsvg/librsvg-features.h"
 #endif
 #endif
+
+/*
+  Define declarations.
+*/
+#define DefaultSVGDensity  96.0
 
 /*
   Typedef declarations.
@@ -333,17 +338,17 @@ static double GetUserSpaceCoordinateValue(const SVGInfo *svg_info,int type,
     }
   GetNextToken(p,&p,MaxTextExtent,token);
   if (LocaleNCompare(token,"cm",2) == 0)
-    return(90.0*svg_info->scale[0]/2.54*value);
+    return(DefaultSVGDensity*svg_info->scale[0]/2.54*value);
   if (LocaleNCompare(token,"em",2) == 0)
     return(svg_info->pointsize*value);
   if (LocaleNCompare(token,"ex",2) == 0)
     return(svg_info->pointsize*value/2.0);
   if (LocaleNCompare(token,"in",2) == 0)
-    return(90.0*svg_info->scale[0]*value);
+    return(DefaultSVGDensity*svg_info->scale[0]*value);
   if (LocaleNCompare(token,"mm",2) == 0)
-    return(90.0*svg_info->scale[0]/25.4*value);
+    return(DefaultSVGDensity*svg_info->scale[0]/25.4*value);
   if (LocaleNCompare(token,"pc",2) == 0)
-    return(90.0*svg_info->scale[0]/6.0*value);
+    return(DefaultSVGDensity*svg_info->scale[0]/6.0*value);
   if (LocaleNCompare(token,"pt",2) == 0)
     return(svg_info->scale[0]*value);
   if (LocaleNCompare(token,"px",2) == 0)
@@ -2923,6 +2928,9 @@ static void SVGComment(void *context,const xmlChar *value)
   (void) ConcatenateString(&svg_info->comment,(const char *) value);
 }
 
+static void SVGWarning(void *,const char *,...)
+  magick_attribute((__format__ (__printf__,2,3)));
+
 static void SVGWarning(void *context,const char *format,...)
 {
   char
@@ -2954,6 +2962,9 @@ static void SVGWarning(void *context,const char *format,...)
   message=DestroyString(message);
   va_end(operands);
 }
+
+static void SVGError(void *,const char *,...)
+  magick_attribute((__format__ (__printf__,2,3)));
 
 static void SVGError(void *context,const char *format,...)
 {
@@ -3088,7 +3099,7 @@ static void SVGExternalSubset(void *context,const xmlChar *name,
   Static declarations.
 */
 static char
-  SVGDensityGeometry[] = "90.0x90.0";
+  SVGDensityGeometry[] = "96.0x96.0";
 
 static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
@@ -3328,8 +3339,10 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
               (ssize_t *) NULL,&image->columns,&image->rows);
             if ((image->columns != 0) || (image->rows != 0))
               {
-                image->x_resolution=90.0*image->columns/dimension_info.width;
-                image->y_resolution=90.0*image->rows/dimension_info.height;
+                image->x_resolution=DefaultSVGDensity*image->columns/
+                  dimension_info.width;
+                image->y_resolution=DefaultSVGDensity*image->rows/
+                  dimension_info.height;
                 if (fabs(image->x_resolution) < MagickEpsilon)
                   image->x_resolution=image->y_resolution;
                 else
@@ -3343,8 +3356,10 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
           }
         if (apply_density != MagickFalse)
           {
-            image->columns=image->x_resolution*dimension_info.width/90.0;
-            image->rows=image->y_resolution*dimension_info.height/90.0;
+            image->columns=image->x_resolution*dimension_info.width/
+              DefaultSVGDensity;
+            image->rows=image->y_resolution*dimension_info.height/
+              DefaultSVGDensity;
           }
         else
           {
@@ -3413,8 +3428,8 @@ static Image *ReadSVGImage(const ImageInfo *image_info,ExceptionInfo *exception)
             cairo_paint(cairo_image);
             cairo_set_operator(cairo_image,CAIRO_OPERATOR_OVER);
             if (apply_density != MagickFalse)
-              cairo_scale(cairo_image,image->x_resolution/90.0,
-                image->y_resolution/90.0);
+              cairo_scale(cairo_image,image->x_resolution/DefaultSVGDensity,
+                image->y_resolution/DefaultSVGDensity);
             rsvg_handle_render_cairo(svg_handle,cairo_image);
             cairo_destroy(cairo_image);
             cairo_surface_destroy(cairo_surface);

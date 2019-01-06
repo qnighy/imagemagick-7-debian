@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1754,11 +1754,8 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
             MagickBooleanType
               proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp critical (MagickCore_CompositeImage)
-#endif
-            proceed=SetImageProgress(image,CompositeImageTag,
-              (MagickOffsetType) y,image->rows);
+            proceed=SetImageProgress(image,CompositeImageTag,(MagickOffsetType)
+              y,image->rows);
             if (proceed == MagickFalse)
               status=MagickFalse;
           }
@@ -2866,10 +2863,10 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_CompositeImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,CompositeImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,CompositeImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -3056,9 +3053,6 @@ MagickExport MagickBooleanType TextureImage(Image *image,const Image *texture)
         MagickBooleanType
           proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_TextureImage)
-#endif
         proceed=SetImageProgress(image,TextureImageTag,(MagickOffsetType) y,
           image->rows);
         if (proceed == MagickFalse)

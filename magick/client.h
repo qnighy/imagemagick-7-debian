@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ extern "C" {
 #endif
 
 extern MagickExport const char
-  *GetClientPath(void),
-  *GetClientName(void),
+  *GetClientPath(void) magick_attribute((__const__)),
+  *GetClientName(void) magick_attribute((__const__)),
   *SetClientName(const char *),
   *SetClientPath(const char *);
 
