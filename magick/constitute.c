@@ -17,7 +17,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -632,10 +632,7 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
       "notify the developers",image->magick,exception->severity);
   if (IsBlobTemporary(image) != MagickFalse)
     (void) RelinquishUniqueFileResource(read_info->filename);
-  if ((IsSceneGeometry(read_info->scenes,MagickFalse) != MagickFalse) &&
-      ((GetNextImageInList(image) != (Image *) NULL) ||
-       ((read_info->scenes != (char *) NULL) &&
-        (strchr(read_info->scenes,',') != (char *) NULL))))
+  if (IsSceneGeometry(read_info->scenes,MagickFalse) != MagickFalse)
     {
       Image
         *clones;

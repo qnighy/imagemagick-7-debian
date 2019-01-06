@@ -17,7 +17,7 @@
 %                              July 1992                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -609,9 +609,6 @@ static MagickBooleanType AssignImageColors(Image *image,CubeInfo *cube_info)
             MagickBooleanType
               proceed;
 
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp critical (MagickCore_AssignImageColors)
-#endif
             proceed=SetImageProgress(image,AssignImageTag,(MagickOffsetType) y,
               image->rows);
             if (proceed == MagickFalse)
@@ -2402,10 +2399,10 @@ MagickExport MagickBooleanType PosterizeImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_PosterizeImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,PosterizeImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,PosterizeImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }

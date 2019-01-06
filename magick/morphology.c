@@ -17,7 +17,7 @@
 %                               January 2010                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2829,9 +2829,10 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
             proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-          #pragma omp critical (MagickCore_MorphologyPrimitive)
+          #pragma omp atomic
 #endif
-          proceed=SetImageProgress(image,MorphologyTag,progress++,image->rows);
+          progress++;
+          proceed=SetImageProgress(image,MorphologyTag,progress,image->rows);
           if (proceed == MagickFalse)
             status=MagickFalse;
         }
@@ -3354,9 +3355,10 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_MorphologyPrimitive)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,MorphologyTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,MorphologyTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -3623,9 +3625,14 @@ static ssize_t MorphologyPrimitiveDirect(Image *image,
     if ( SyncCacheViewAuthenticPixels(auth_view,exception) == MagickFalse)
       status=MagickFalse;
     if (image->progress_monitor != (MagickProgressMonitor) NULL)
-      if ( SetImageProgress(image,MorphologyTag,progress++,image->rows)
-                == MagickFalse )
-        status=MagickFalse;
+      {
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+        #pragma omp atomic
+#endif
+        progress++;
+        if (SetImageProgress(image,MorphologyTag,progress,image->rows) == MagickFalse )
+          status=MagickFalse;
+      }
 
   } /* y */
 
@@ -3813,9 +3820,14 @@ static ssize_t MorphologyPrimitiveDirect(Image *image,
     if ( SyncCacheViewAuthenticPixels(auth_view,exception) == MagickFalse)
       status=MagickFalse;
     if (image->progress_monitor != (MagickProgressMonitor) NULL)
-      if ( SetImageProgress(image,MorphologyTag,progress++,image->rows)
-                == MagickFalse )
-        status=MagickFalse;
+      {
+#if defined(MAGICKCORE_OPENMP_SUPPORT)
+        #pragma omp atomic
+#endif
+        progress++;
+        if ( SetImageProgress(image,MorphologyTag,progress,image->rows) == MagickFalse )
+          status=MagickFalse;
+      }
 
   } /* y */
 

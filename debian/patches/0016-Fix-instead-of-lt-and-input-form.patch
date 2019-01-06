@@ -1,4 +1,4 @@
-From 750326e4dca4636d185034b2d74c07d02350fb0a Mon Sep 17 00:00:00 2001
+From 6d42a80726d49e76c7ed6600a5f5a94da117c7ae Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Sat, 3 Feb 2018 23:38:58 +0100
 Subject: Fix < instead of &lt; and input form
@@ -8,10 +8,10 @@ Forwarded: Yes
  index.html                             | 4 ++--
  www/ImageMagickObject.html             | 4 ++--
  www/advanced-unix-installation.html    | 4 ++--
- www/advanced-windows-installation.html | 4 ++--
+ www/advanced-windows-installation.html | 6 +++++-
  www/animate.html                       | 4 ++--
  www/api/animate.html                   | 4 ++--
- www/api/annotate.html                  | 4 ++--
+ www/api/annotate.html                  | 6 +++++-
  www/api/attribute.html                 | 4 ++--
  www/api/blob.html                      | 4 ++--
  www/api/cache-view.html                | 4 ++--
@@ -128,10 +128,10 @@ Forwarded: Yes
  www/stream.html                        | 4 ++--
  www/support.html                       | 4 ++--
  www/webp.html                          | 4 ++--
- 123 files changed, 248 insertions(+), 251 deletions(-)
+ 123 files changed, 254 insertions(+), 249 deletions(-)
 
 diff --git a/index.html b/index.html
-index ca40447fc..330e644d7 100644
+index 26c9d5485..1aeb4bc80 100644
 --- a/index.html
 +++ b/index.html
 @@ -61,7 +61,7 @@
@@ -147,12 +147,12 @@ index ca40447fc..330e644d7 100644
  
    <!-- Javascript assets -->
    <script src="www/assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="www/assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="www/assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/ImageMagickObject.html b/www/ImageMagickObject.html
-index 90242389e..daa4cb65c 100644
+index a1e470faf..cdfb8bc8a 100644
 --- a/www/ImageMagickObject.html
 +++ b/www/ImageMagickObject.html
 @@ -61,7 +61,7 @@
@@ -168,12 +168,12 @@ index 90242389e..daa4cb65c 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/advanced-unix-installation.html b/www/advanced-unix-installation.html
-index 3e0c5aa6b..9e951a244 100644
+index a8b4aecf0..522e983e4 100644
 --- a/www/advanced-unix-installation.html
 +++ b/www/advanced-unix-installation.html
 @@ -61,7 +61,7 @@
@@ -189,12 +189,12 @@ index 3e0c5aa6b..9e951a244 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/advanced-windows-installation.html b/www/advanced-windows-installation.html
-index e89f8e8fa..881e42c7b 100644
+index f46640813..9145f9bce 100644
 --- a/www/advanced-windows-installation.html
 +++ b/www/advanced-windows-installation.html
 @@ -61,7 +61,7 @@
@@ -206,16 +206,19 @@ index e89f8e8fa..881e42c7b 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -138,6 +138,6 @@
+@@ -138,6 +138,10 @@
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
++<<<<<<< HEAD
+   <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
++=======
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
++>>>>>>> Fix < instead of &lt; and input form
  </body>
  </html>
 diff --git a/www/animate.html b/www/animate.html
-index ac6405625..a315926e3 100644
+index 9ad55ab6b..b84a5f2c0 100644
 --- a/www/animate.html
 +++ b/www/animate.html
 @@ -61,7 +61,7 @@
@@ -231,12 +234,12 @@ index ac6405625..a315926e3 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/animate.html b/www/api/animate.html
-index 8463993ab..979921dda 100644
+index 7bfc668b9..695fd82ae 100644
 --- a/www/api/animate.html
 +++ b/www/api/animate.html
 @@ -61,7 +61,7 @@
@@ -252,12 +255,12 @@ index 8463993ab..979921dda 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/annotate.html b/www/api/annotate.html
-index a6223e64b..d875c90e4 100644
+index 5ef0fb18c..4d59ab75c 100644
 --- a/www/api/annotate.html
 +++ b/www/api/annotate.html
 @@ -61,7 +61,7 @@
@@ -269,16 +272,19 @@ index a6223e64b..d875c90e4 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -306,6 +306,6 @@ MagickBooleanType GetTypeMetrics(Image *image,const DrawInfo *draw_info,
+@@ -306,6 +306,10 @@ MagickBooleanType GetTypeMetrics(Image *image,const DrawInfo *draw_info,
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
++<<<<<<< HEAD
+   <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
++=======
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
++>>>>>>> Fix < instead of &lt; and input form
  </body>
  </html>
 diff --git a/www/api/attribute.html b/www/api/attribute.html
-index ef057c426..815415539 100644
+index 8692f4510..5a211d5cc 100644
 --- a/www/api/attribute.html
 +++ b/www/api/attribute.html
 @@ -61,7 +61,7 @@
@@ -294,12 +300,12 @@ index ef057c426..815415539 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/blob.html b/www/api/blob.html
-index be2491e47..2f92db6ce 100644
+index 7937bfe99..645a0b82f 100644
 --- a/www/api/blob.html
 +++ b/www/api/blob.html
 @@ -61,7 +61,7 @@
@@ -315,12 +321,12 @@ index be2491e47..2f92db6ce 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/cache-view.html b/www/api/cache-view.html
-index 60a6fa09f..03bede7e4 100644
+index 0aa99419a..f8a2399f7 100644
 --- a/www/api/cache-view.html
 +++ b/www/api/cache-view.html
 @@ -61,7 +61,7 @@
@@ -336,12 +342,12 @@ index 60a6fa09f..03bede7e4 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/cache.html b/www/api/cache.html
-index 33962e6fb..411dded26 100644
+index 772644c83..d7281ba2a 100644
 --- a/www/api/cache.html
 +++ b/www/api/cache.html
 @@ -61,7 +61,7 @@
@@ -353,16 +359,16 @@ index 33962e6fb..411dded26 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -558,6 +558,6 @@ MagickBooleanType SyncAuthenticPixels(Image *image,
+@@ -555,6 +555,6 @@ MagickBooleanType SyncAuthenticPixels(Image *image,
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/channel.html b/www/api/channel.html
-index c63ae43eb..62702bc44 100644
+index 3fdd9c718..6c5bf4c8d 100644
 --- a/www/api/channel.html
 +++ b/www/api/channel.html
 @@ -61,7 +61,7 @@
@@ -378,12 +384,12 @@ index c63ae43eb..62702bc44 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/cipher.html b/www/api/cipher.html
-index 9b8f46053..5ffdacfc9 100644
+index 856802e09..960cfc460 100644
 --- a/www/api/cipher.html
 +++ b/www/api/cipher.html
 @@ -61,7 +61,7 @@
@@ -399,12 +405,12 @@ index 9b8f46053..5ffdacfc9 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/color.html b/www/api/color.html
-index fbcf30754..4481a925b 100644
+index c7d477ebf..ee637f772 100644
 --- a/www/api/color.html
 +++ b/www/api/color.html
 @@ -61,7 +61,7 @@
@@ -420,12 +426,12 @@ index fbcf30754..4481a925b 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/colormap.html b/www/api/colormap.html
-index 20743d24c..f5403d09c 100644
+index d83575485..b654c896f 100644
 --- a/www/api/colormap.html
 +++ b/www/api/colormap.html
 @@ -61,7 +61,7 @@
@@ -441,12 +447,12 @@ index 20743d24c..f5403d09c 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/colorspace.html b/www/api/colorspace.html
-index d042a825a..93dad8187 100644
+index 74eb1c862..89fab8d57 100644
 --- a/www/api/colorspace.html
 +++ b/www/api/colorspace.html
 @@ -61,7 +61,7 @@
@@ -462,12 +468,12 @@ index d042a825a..93dad8187 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/compare.html b/www/api/compare.html
-index aa5344eb1..f2b2fb662 100644
+index 1658af7a2..9921204bf 100644
 --- a/www/api/compare.html
 +++ b/www/api/compare.html
 @@ -61,7 +61,7 @@
@@ -483,12 +489,12 @@ index aa5344eb1..f2b2fb662 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/composite.html b/www/api/composite.html
-index 12e098c8a..d0d297478 100644
+index 1fc9d0b1e..1cc169185 100644
 --- a/www/api/composite.html
 +++ b/www/api/composite.html
 @@ -61,7 +61,7 @@
@@ -504,12 +510,12 @@ index 12e098c8a..d0d297478 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/constitute.html b/www/api/constitute.html
-index c1f56500d..11a547b86 100644
+index 5f8a7d22f..b9411a07f 100644
 --- a/www/api/constitute.html
 +++ b/www/api/constitute.html
 @@ -61,7 +61,7 @@
@@ -525,12 +531,12 @@ index c1f56500d..11a547b86 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/decorate.html b/www/api/decorate.html
-index 833f6919b..d175b44a6 100644
+index 0cf6b6f55..9690371b3 100644
 --- a/www/api/decorate.html
 +++ b/www/api/decorate.html
 @@ -61,7 +61,7 @@
@@ -546,12 +552,12 @@ index 833f6919b..d175b44a6 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/deprecate.html b/www/api/deprecate.html
-index b40d1077f..f2c242131 100644
+index 4dd3f53b2..430e20714 100644
 --- a/www/api/deprecate.html
 +++ b/www/api/deprecate.html
 @@ -61,7 +61,7 @@
@@ -567,12 +573,12 @@ index b40d1077f..f2c242131 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/display.html b/www/api/display.html
-index 1df6a00bf..d7499b8c2 100644
+index 18d9aa423..5c3cf3d4e 100644
 --- a/www/api/display.html
 +++ b/www/api/display.html
 @@ -61,7 +61,7 @@
@@ -588,12 +594,12 @@ index 1df6a00bf..d7499b8c2 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/distort.html b/www/api/distort.html
-index 14e319c3a..90be1d50d 100644
+index fb598651b..f6a594991 100644
 --- a/www/api/distort.html
 +++ b/www/api/distort.html
 @@ -61,7 +61,7 @@
@@ -609,12 +615,12 @@ index 14e319c3a..90be1d50d 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/draw.html b/www/api/draw.html
-index 687c69618..ad92dbe15 100644
+index ad9efadc8..404554be0 100644
 --- a/www/api/draw.html
 +++ b/www/api/draw.html
 @@ -61,7 +61,7 @@
@@ -630,12 +636,12 @@ index 687c69618..ad92dbe15 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/drawing-wand.html b/www/api/drawing-wand.html
-index efadd8d9a..091a67e0f 100644
+index 2167a12e0..d7ef74db7 100644
 --- a/www/api/drawing-wand.html
 +++ b/www/api/drawing-wand.html
 @@ -61,7 +61,7 @@
@@ -651,12 +657,12 @@ index efadd8d9a..091a67e0f 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/effect.html b/www/api/effect.html
-index 1335ed33e..cbc8f82a0 100644
+index f2373c495..a312122f6 100644
 --- a/www/api/effect.html
 +++ b/www/api/effect.html
 @@ -61,7 +61,7 @@
@@ -672,12 +678,12 @@ index 1335ed33e..cbc8f82a0 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/enhance.html b/www/api/enhance.html
-index a2d16cb99..6a74971e3 100644
+index 2893ab3ad..17096259a 100644
 --- a/www/api/enhance.html
 +++ b/www/api/enhance.html
 @@ -61,7 +61,7 @@
@@ -693,12 +699,12 @@ index a2d16cb99..6a74971e3 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/exception.html b/www/api/exception.html
-index 2299bb0bc..2ff908c41 100644
+index 251cb72c4..e9da2683c 100644
 --- a/www/api/exception.html
 +++ b/www/api/exception.html
 @@ -61,7 +61,7 @@
@@ -714,12 +720,12 @@ index 2299bb0bc..2ff908c41 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/feature.html b/www/api/feature.html
-index 6e3fc05e2..f136baef9 100644
+index 7fb9700fe..d9a4c0671 100644
 --- a/www/api/feature.html
 +++ b/www/api/feature.html
 @@ -61,7 +61,7 @@
@@ -735,12 +741,12 @@ index 6e3fc05e2..f136baef9 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/fourier.html b/www/api/fourier.html
-index 835ef5f1c..11651a069 100644
+index b6e2a5720..e546b6f73 100644
 --- a/www/api/fourier.html
 +++ b/www/api/fourier.html
 @@ -61,7 +61,7 @@
@@ -756,12 +762,12 @@ index 835ef5f1c..11651a069 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/fx.html b/www/api/fx.html
-index ff15c9853..0cd93851d 100644
+index 8192fccac..eea3957ef 100644
 --- a/www/api/fx.html
 +++ b/www/api/fx.html
 @@ -61,7 +61,7 @@
@@ -777,12 +783,12 @@ index ff15c9853..0cd93851d 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/histogram.html b/www/api/histogram.html
-index e79ea0251..a381f3177 100644
+index a069275fa..125853996 100644
 --- a/www/api/histogram.html
 +++ b/www/api/histogram.html
 @@ -61,7 +61,7 @@
@@ -798,12 +804,12 @@ index e79ea0251..a381f3177 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/image-view.html b/www/api/image-view.html
-index f600bcd64..06e6b70db 100644
+index 4cc4194be..9c733ec48 100644
 --- a/www/api/image-view.html
 +++ b/www/api/image-view.html
 @@ -61,7 +61,7 @@
@@ -819,12 +825,12 @@ index f600bcd64..06e6b70db 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/image.html b/www/api/image.html
-index f7f96856c..2957a0228 100644
+index 79591a596..21764b695 100644
 --- a/www/api/image.html
 +++ b/www/api/image.html
 @@ -61,7 +61,7 @@
@@ -840,12 +846,12 @@ index f7f96856c..2957a0228 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/layer.html b/www/api/layer.html
-index 454625452..8b20d206a 100644
+index d37a40d5a..e4dbfa8da 100644
 --- a/www/api/layer.html
 +++ b/www/api/layer.html
 @@ -61,7 +61,7 @@
@@ -861,12 +867,12 @@ index 454625452..8b20d206a 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/list.html b/www/api/list.html
-index eebcba3e7..28348b912 100644
+index 40041b389..134e18e20 100644
 --- a/www/api/list.html
 +++ b/www/api/list.html
 @@ -61,7 +61,7 @@
@@ -882,12 +888,12 @@ index eebcba3e7..28348b912 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/magick++-classes.html b/www/api/magick++-classes.html
-index 206bd489f..a7d76c6bf 100644
+index 0193f12da..cb1ab93c4 100644
 --- a/www/api/magick++-classes.html
 +++ b/www/api/magick++-classes.html
 @@ -61,7 +61,7 @@
@@ -903,12 +909,12 @@ index 206bd489f..a7d76c6bf 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/magick-deprecate.html b/www/api/magick-deprecate.html
-index 51a33a847..1b9f0aa5f 100644
+index efe6d0a2c..d56bbdb85 100644
 --- a/www/api/magick-deprecate.html
 +++ b/www/api/magick-deprecate.html
 @@ -61,7 +61,7 @@
@@ -924,12 +930,12 @@ index 51a33a847..1b9f0aa5f 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/magick-image.html b/www/api/magick-image.html
-index c7da9858e..61c566d58 100644
+index 5165f8bed..7bbd4ac07 100644
 --- a/www/api/magick-image.html
 +++ b/www/api/magick-image.html
 @@ -61,7 +61,7 @@
@@ -945,12 +951,12 @@ index c7da9858e..61c566d58 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/magick-property.html b/www/api/magick-property.html
-index 98b5a2c4b..4302c1474 100644
+index de43d0fcb..6a7c7137e 100644
 --- a/www/api/magick-property.html
 +++ b/www/api/magick-property.html
 @@ -61,7 +61,7 @@
@@ -966,12 +972,12 @@ index 98b5a2c4b..4302c1474 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/magick-wand.html b/www/api/magick-wand.html
-index ccd051ff4..8a4c37f9d 100644
+index 7ecd3b024..940484cc2 100644
 --- a/www/api/magick-wand.html
 +++ b/www/api/magick-wand.html
 @@ -61,7 +61,7 @@
@@ -987,12 +993,12 @@ index ccd051ff4..8a4c37f9d 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/magick.html b/www/api/magick.html
-index aa9d1c9fe..299f51f20 100644
+index 4a3ed8df3..663ddb113 100644
 --- a/www/api/magick.html
 +++ b/www/api/magick.html
 @@ -61,7 +61,7 @@
@@ -1008,12 +1014,12 @@ index aa9d1c9fe..299f51f20 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/memory.html b/www/api/memory.html
-index 7155704fe..c7b657f84 100644
+index 2a72c9f58..c7d3bd4b8 100644
 --- a/www/api/memory.html
 +++ b/www/api/memory.html
 @@ -61,7 +61,7 @@
@@ -1029,12 +1035,12 @@ index 7155704fe..c7b657f84 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/mime.html b/www/api/mime.html
-index f5b8cdef0..85b86f0a8 100644
+index 110a05683..6a2ad7f66 100644
 --- a/www/api/mime.html
 +++ b/www/api/mime.html
 @@ -61,7 +61,7 @@
@@ -1050,12 +1056,12 @@ index f5b8cdef0..85b86f0a8 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/module.html b/www/api/module.html
-index b7d839996..7f37dde79 100644
+index 1a5b68bad..6ef41878f 100644
 --- a/www/api/module.html
 +++ b/www/api/module.html
 @@ -61,7 +61,7 @@
@@ -1071,12 +1077,12 @@ index b7d839996..7f37dde79 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/mogrify.html b/www/api/mogrify.html
-index 6da0dbe72..276348c20 100644
+index f53b59d74..7377011ab 100644
 --- a/www/api/mogrify.html
 +++ b/www/api/mogrify.html
 @@ -61,7 +61,7 @@
@@ -1092,12 +1098,12 @@ index 6da0dbe72..276348c20 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/monitor.html b/www/api/monitor.html
-index a27e3f2da..aecd15281 100644
+index 23eda7a2f..36a1dcb4f 100644
 --- a/www/api/monitor.html
 +++ b/www/api/monitor.html
 @@ -61,7 +61,7 @@
@@ -1109,16 +1115,16 @@ index a27e3f2da..aecd15281 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -180,6 +180,6 @@ MagickProgressMonitor SetImageInfoProgressMonitor(ImageInfo *image_info,
+@@ -215,6 +215,6 @@ MagickProgressMonitor SetImageInfoProgressMonitor(ImageInfo *image_info,
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/montage.html b/www/api/montage.html
-index b4d79af20..8a88ac968 100644
+index 621ba9878..fec0bfda9 100644
 --- a/www/api/montage.html
 +++ b/www/api/montage.html
 @@ -61,7 +61,7 @@
@@ -1134,12 +1140,12 @@ index b4d79af20..8a88ac968 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/morphology.html b/www/api/morphology.html
-index 94c01203d..5252448d7 100644
+index 980d377a0..9021e24b0 100644
 --- a/www/api/morphology.html
 +++ b/www/api/morphology.html
 @@ -61,7 +61,7 @@
@@ -1155,12 +1161,12 @@ index 94c01203d..5252448d7 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/paint.html b/www/api/paint.html
-index 2f96f9b7d..6392f3658 100644
+index 780fedff3..75533f21f 100644
 --- a/www/api/paint.html
 +++ b/www/api/paint.html
 @@ -61,7 +61,7 @@
@@ -1176,12 +1182,12 @@ index 2f96f9b7d..6392f3658 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/pixel-iterator.html b/www/api/pixel-iterator.html
-index 7ca004539..69bc13164 100644
+index 9954d654a..f10dd9251 100644
 --- a/www/api/pixel-iterator.html
 +++ b/www/api/pixel-iterator.html
 @@ -61,7 +61,7 @@
@@ -1197,12 +1203,12 @@ index 7ca004539..69bc13164 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/pixel-wand.html b/www/api/pixel-wand.html
-index e7d36349e..d0f131bdb 100644
+index 165e9d35d..1c9c37e9f 100644
 --- a/www/api/pixel-wand.html
 +++ b/www/api/pixel-wand.html
 @@ -61,7 +61,7 @@
@@ -1218,12 +1224,12 @@ index e7d36349e..d0f131bdb 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/profile.html b/www/api/profile.html
-index 1b997172a..102e764ca 100644
+index 036d4aef0..c243aec65 100644
 --- a/www/api/profile.html
 +++ b/www/api/profile.html
 @@ -61,7 +61,7 @@
@@ -1239,12 +1245,12 @@ index 1b997172a..102e764ca 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/property.html b/www/api/property.html
-index 5fed83576..76aab742d 100644
+index d8c5ada4e..fe4393b9c 100644
 --- a/www/api/property.html
 +++ b/www/api/property.html
 @@ -61,7 +61,7 @@
@@ -1260,12 +1266,12 @@ index 5fed83576..76aab742d 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/quantize.html b/www/api/quantize.html
-index fe04d13b0..9629c4e31 100644
+index 63fb70eb0..66fe8e90f 100644
 --- a/www/api/quantize.html
 +++ b/www/api/quantize.html
 @@ -61,7 +61,7 @@
@@ -1281,12 +1287,12 @@ index fe04d13b0..9629c4e31 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/registry.html b/www/api/registry.html
-index 1a6001e23..5ab390294 100644
+index 6b9edbeb8..480a38341 100644
 --- a/www/api/registry.html
 +++ b/www/api/registry.html
 @@ -61,7 +61,7 @@
@@ -1302,12 +1308,12 @@ index 1a6001e23..5ab390294 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/resize.html b/www/api/resize.html
-index 5d3f77afd..44f4a97de 100644
+index c45ca6c82..8386c161b 100644
 --- a/www/api/resize.html
 +++ b/www/api/resize.html
 @@ -61,7 +61,7 @@
@@ -1323,12 +1329,12 @@ index 5d3f77afd..44f4a97de 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/resource.html b/www/api/resource.html
-index ff0f5f58e..062dbc8d2 100644
+index 3d06891d8..56e8631e2 100644
 --- a/www/api/resource.html
 +++ b/www/api/resource.html
 @@ -61,7 +61,7 @@
@@ -1344,12 +1350,12 @@ index ff0f5f58e..062dbc8d2 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/segment.html b/www/api/segment.html
-index a6c99aae1..e78abe3e4 100644
+index 0b1ed7d6f..d2e30fbd0 100644
 --- a/www/api/segment.html
 +++ b/www/api/segment.html
 @@ -61,7 +61,7 @@
@@ -1365,12 +1371,12 @@ index a6c99aae1..e78abe3e4 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/shear.html b/www/api/shear.html
-index b11b92a5b..216880046 100644
+index d3bbf64fa..e1f2acf78 100644
 --- a/www/api/shear.html
 +++ b/www/api/shear.html
 @@ -61,7 +61,7 @@
@@ -1386,12 +1392,12 @@ index b11b92a5b..216880046 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/signature.html b/www/api/signature.html
-index 2a2a2b126..6888152d8 100644
+index e52a86014..2497c8701 100644
 --- a/www/api/signature.html
 +++ b/www/api/signature.html
 @@ -61,7 +61,7 @@
@@ -1407,12 +1413,12 @@ index 2a2a2b126..6888152d8 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/statistic.html b/www/api/statistic.html
-index 45a59fb90..65eb70c11 100644
+index e8f10d957..8e7d87cec 100644
 --- a/www/api/statistic.html
 +++ b/www/api/statistic.html
 @@ -61,7 +61,7 @@
@@ -1428,12 +1434,12 @@ index 45a59fb90..65eb70c11 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/stream.html b/www/api/stream.html
-index 310c3e45b..bb53971c4 100644
+index 8e3759313..69c2e2735 100644
 --- a/www/api/stream.html
 +++ b/www/api/stream.html
 @@ -61,7 +61,7 @@
@@ -1449,12 +1455,12 @@ index 310c3e45b..bb53971c4 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/transform.html b/www/api/transform.html
-index 29080737c..0d583bf37 100644
+index 5fccbb666..f69d2a934 100644
 --- a/www/api/transform.html
 +++ b/www/api/transform.html
 @@ -61,7 +61,7 @@
@@ -1470,12 +1476,12 @@ index 29080737c..0d583bf37 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/version.html b/www/api/version.html
-index e34681080..b201b4941 100644
+index 63699fa5f..6187263ef 100644
 --- a/www/api/version.html
 +++ b/www/api/version.html
 @@ -61,7 +61,7 @@
@@ -1491,12 +1497,12 @@ index e34681080..b201b4941 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/api/wand-view.html b/www/api/wand-view.html
-index d6b1381db..0decb647f 100644
+index 4dea001e4..1109e57cf 100644
 --- a/www/api/wand-view.html
 +++ b/www/api/wand-view.html
 @@ -61,7 +61,7 @@
@@ -1512,12 +1518,12 @@ index d6b1381db..0decb647f 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/architecture.html b/www/architecture.html
-index 7ab6ced30..52f0c7f46 100644
+index 0abae7b26..1d209e408 100644
 --- a/www/architecture.html
 +++ b/www/architecture.html
 @@ -61,7 +61,7 @@
@@ -1533,15 +1539,15 @@ index 7ab6ced30..52f0c7f46 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/changelog.html b/www/changelog.html
-index 626bfdef2..aedad7580 100644
+index 325488a63..a4578d0d7 100644
 --- a/www/changelog.html
 +++ b/www/changelog.html
-@@ -4445,7 +4445,7 @@
+@@ -4470,7 +4470,7 @@
    <li> Set AppendImage() matte channel only when image has matte attribute set.</li>
    <li> The -crop with negative offsets do not modify the virtual canvas.</li>
    <li> Caption: Given both the width and height ("-size") of the area to fill,    adjust the fonts "-pointsize" until the text just filles the whole space    without overflowing.</li>
@@ -1551,7 +1557,7 @@ index 626bfdef2..aedad7580 100644
    <footer class="magick-footer">
      <p><a href="security-policy.html">Security</a> •
 diff --git a/www/cipher.html b/www/cipher.html
-index 85023e198..378cc9592 100644
+index 5c05b4a58..4ea38e5de 100644
 --- a/www/cipher.html
 +++ b/www/cipher.html
 @@ -61,7 +61,7 @@
@@ -1567,12 +1573,12 @@ index 85023e198..378cc9592 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/color-management.html b/www/color-management.html
-index 3d6fc96b2..73d1303e4 100644
+index 8c7b4c32d..5c2f43c42 100644
 --- a/www/color-management.html
 +++ b/www/color-management.html
 @@ -61,7 +61,7 @@
@@ -1597,12 +1603,12 @@ index 3d6fc96b2..73d1303e4 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/color.html b/www/color.html
-index aae743840..b01ffcedf 100644
+index 267a3c2c7..f7b3198b3 100644
 --- a/www/color.html
 +++ b/www/color.html
 @@ -61,7 +61,7 @@
@@ -1618,12 +1624,12 @@ index aae743840..b01ffcedf 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/command-line-options.html b/www/command-line-options.html
-index ad38cecec..f17236808 100644
+index 04795ed5d..d93a93d61 100644
 --- a/www/command-line-options.html
 +++ b/www/command-line-options.html
 @@ -61,7 +61,7 @@
@@ -1639,12 +1645,12 @@ index ad38cecec..f17236808 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/command-line-processing.html b/www/command-line-processing.html
-index 38e2121ac..d3e191714 100644
+index e88b41f75..e3e9f36d7 100644
 --- a/www/command-line-processing.html
 +++ b/www/command-line-processing.html
 @@ -61,7 +61,7 @@
@@ -1660,12 +1666,12 @@ index 38e2121ac..d3e191714 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/command-line-tools.html b/www/command-line-tools.html
-index 924957da8..f9be7d299 100644
+index e5041108d..5ef6d0433 100644
 --- a/www/command-line-tools.html
 +++ b/www/command-line-tools.html
 @@ -61,7 +61,7 @@
@@ -1681,12 +1687,12 @@ index 924957da8..f9be7d299 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/compare.html b/www/compare.html
-index e028da98b..7387552e7 100644
+index eb8524e8b..37c9618be 100644
 --- a/www/compare.html
 +++ b/www/compare.html
 @@ -61,7 +61,7 @@
@@ -1711,12 +1717,12 @@ index e028da98b..7387552e7 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/compose.html b/www/compose.html
-index bd21b98b1..69f193891 100644
+index 27a897113..1aa46186c 100644
 --- a/www/compose.html
 +++ b/www/compose.html
 @@ -61,7 +61,7 @@
@@ -1732,12 +1738,12 @@ index bd21b98b1..69f193891 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/composite.html b/www/composite.html
-index 76f1d8755..9cb3e2193 100644
+index 7f8af86b4..6857ba1fe 100644
 --- a/www/composite.html
 +++ b/www/composite.html
 @@ -61,7 +61,7 @@
@@ -1753,12 +1759,12 @@ index 76f1d8755..9cb3e2193 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/conjure.html b/www/conjure.html
-index 5b35043b6..3853f3d10 100644
+index 3eb21513e..bcf3e23bb 100644
 --- a/www/conjure.html
 +++ b/www/conjure.html
 @@ -61,7 +61,7 @@
@@ -1774,12 +1780,12 @@ index 5b35043b6..3853f3d10 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/connected-components.html b/www/connected-components.html
-index db2b55ee7..e0d30c40a 100644
+index 565a86a19..348c9eea5 100644
 --- a/www/connected-components.html
 +++ b/www/connected-components.html
 @@ -61,7 +61,7 @@
@@ -1795,12 +1801,12 @@ index db2b55ee7..e0d30c40a 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/contact.html b/www/contact.html
-index b3b7d784a..dd031685a 100644
+index 5937628e7..021ac43c2 100644
 --- a/www/contact.html
 +++ b/www/contact.html
 @@ -61,7 +61,7 @@
@@ -1816,12 +1822,12 @@ index b3b7d784a..dd031685a 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/convert.html b/www/convert.html
-index 077f0873b..b4c5a1232 100644
+index 6ec0e93f1..82ba9e662 100644
 --- a/www/convert.html
 +++ b/www/convert.html
 @@ -61,7 +61,7 @@
@@ -1837,12 +1843,12 @@ index 077f0873b..b4c5a1232 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/develop.html b/www/develop.html
-index 39851422f..01a0ac139 100644
+index ddac41928..cac1aa276 100644
 --- a/www/develop.html
 +++ b/www/develop.html
 @@ -61,7 +61,7 @@
@@ -1858,12 +1864,12 @@ index 39851422f..01a0ac139 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/display.html b/www/display.html
-index 8160cd404..b0d0561b2 100644
+index b75e2ba52..fbd63a5a6 100644
 --- a/www/display.html
 +++ b/www/display.html
 @@ -61,7 +61,7 @@
@@ -1879,12 +1885,12 @@ index 8160cd404..b0d0561b2 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/distribute-pixel-cache.html b/www/distribute-pixel-cache.html
-index 83450d271..1522d20c8 100644
+index e1c5e5ebb..39cc13e86 100644
 --- a/www/distribute-pixel-cache.html
 +++ b/www/distribute-pixel-cache.html
 @@ -61,7 +61,7 @@
@@ -1900,24 +1906,24 @@ index 83450d271..1522d20c8 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/download.html b/www/download.html
-index 050f7e958..7d12f01eb 100644
+index 9d9b5c84f..4352aad76 100644
 --- a/www/download.html
 +++ b/www/download.html
 @@ -460,6 +460,6 @@ objShell.Exec("convert ""e:/myimages/image.png"" ""e:/myimages/image.jpg""")</co
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/escape.html b/www/escape.html
-index 613e33b46..7d1642a3b 100644
+index 43a5fb3d3..1a18fe59b 100644
 --- a/www/escape.html
 +++ b/www/escape.html
 @@ -61,7 +61,7 @@
@@ -1933,12 +1939,12 @@ index 613e33b46..7d1642a3b 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/examples.html b/www/examples.html
-index b316b189f..a89471ad7 100644
+index 34c6ce243..84f1a3d3b 100644
 --- a/www/examples.html
 +++ b/www/examples.html
 @@ -61,7 +61,7 @@
@@ -1954,12 +1960,12 @@ index b316b189f..a89471ad7 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/exception.html b/www/exception.html
-index cac1f822f..53f76504f 100644
+index 20459ac52..36109190e 100644
 --- a/www/exception.html
 +++ b/www/exception.html
 @@ -61,7 +61,7 @@
@@ -1975,12 +1981,12 @@ index cac1f822f..53f76504f 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/export.html b/www/export.html
-index c441f3f96..29e4b00a0 100644
+index 4ac05a231..785d66620 100644
 --- a/www/export.html
 +++ b/www/export.html
 @@ -61,7 +61,7 @@
@@ -1996,12 +2002,12 @@ index c441f3f96..29e4b00a0 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/formats.html b/www/formats.html
-index 6f2427699..9622662b4 100644
+index c73153b25..b8ac7d1bc 100644
 --- a/www/formats.html
 +++ b/www/formats.html
 @@ -61,7 +61,7 @@
@@ -2017,12 +2023,12 @@ index 6f2427699..9622662b4 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/fx.html b/www/fx.html
-index 43101a6b7..d74f2feed 100644
+index cf6af27a6..64011ca3b 100644
 --- a/www/fx.html
 +++ b/www/fx.html
 @@ -61,7 +61,7 @@
@@ -2038,12 +2044,12 @@ index 43101a6b7..d74f2feed 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/gradient.html b/www/gradient.html
-index 6ecab6fcb..b6295d551 100644
+index 6003876e2..9bfbe8cc8 100644
 --- a/www/gradient.html
 +++ b/www/gradient.html
 @@ -61,7 +61,7 @@
@@ -2076,12 +2082,12 @@ index 6ecab6fcb..b6295d551 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/high-dynamic-range.html b/www/high-dynamic-range.html
-index 0fbe0bf7a..884230511 100644
+index 0961b927c..e9393edab 100644
 --- a/www/high-dynamic-range.html
 +++ b/www/high-dynamic-range.html
 @@ -61,7 +61,7 @@
@@ -2097,12 +2103,12 @@ index 0fbe0bf7a..884230511 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/history.html b/www/history.html
-index b8ef1e922..ab275892b 100644
+index 6017c4ad4..5432c4cae 100644
 --- a/www/history.html
 +++ b/www/history.html
 @@ -61,7 +61,7 @@
@@ -2118,12 +2124,12 @@ index b8ef1e922..ab275892b 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/identify.html b/www/identify.html
-index d34c6e763..33da07842 100644
+index 578a39cdd..b09e3a6c7 100644
 --- a/www/identify.html
 +++ b/www/identify.html
 @@ -61,7 +61,7 @@
@@ -2139,12 +2145,12 @@ index d34c6e763..33da07842 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/import.html b/www/import.html
-index 708a9b98b..d2ea09bd3 100644
+index 311dfcdbf..8ce09bb71 100644
 --- a/www/import.html
 +++ b/www/import.html
 @@ -61,7 +61,7 @@
@@ -2160,12 +2166,12 @@ index 708a9b98b..d2ea09bd3 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/install-source.html b/www/install-source.html
-index 5c8427cb2..7e30484b3 100644
+index baa7278e7..e690c4329 100644
 --- a/www/install-source.html
 +++ b/www/install-source.html
 @@ -61,7 +61,7 @@
@@ -2181,12 +2187,12 @@ index 5c8427cb2..7e30484b3 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/jp2.html b/www/jp2.html
-index 3c31690b4..f49eb2c14 100644
+index e50d37eb5..9a8756223 100644
 --- a/www/jp2.html
 +++ b/www/jp2.html
 @@ -61,7 +61,7 @@
@@ -2202,12 +2208,12 @@ index 3c31690b4..f49eb2c14 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/license.html b/www/license.html
-index f5a98137e..070b38ce7 100644
+index 5b8efe8a6..988b02753 100644
 --- a/www/license.html
 +++ b/www/license.html
 @@ -61,7 +61,7 @@
@@ -2231,12 +2237,12 @@ index f5a98137e..070b38ce7 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/links.html b/www/links.html
-index 043ad2efd..5b7644520 100644
+index cfeaf1c57..82f694160 100644
 --- a/www/links.html
 +++ b/www/links.html
 @@ -61,7 +61,7 @@
@@ -2248,16 +2254,16 @@ index 043ad2efd..5b7644520 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -185,6 +185,6 @@
+@@ -184,6 +184,6 @@
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/magick++.html b/www/magick++.html
-index db1422596..8646d6d36 100644
+index ef265bd13..0c76c5325 100644
 --- a/www/magick++.html
 +++ b/www/magick++.html
 @@ -61,7 +61,7 @@
@@ -2273,12 +2279,12 @@ index db1422596..8646d6d36 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/magick-core.html b/www/magick-core.html
-index 3f0000b5b..38f1f3fe7 100644
+index d6df5fb90..4b4b53e88 100644
 --- a/www/magick-core.html
 +++ b/www/magick-core.html
 @@ -61,7 +61,7 @@
@@ -2294,12 +2300,12 @@ index 3f0000b5b..38f1f3fe7 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/magick-script.html b/www/magick-script.html
-index 71b9d305e..0a37ff245 100644
+index 809c746ed..930bdc752 100644
 --- a/www/magick-script.html
 +++ b/www/magick-script.html
 @@ -61,7 +61,7 @@
@@ -2315,12 +2321,12 @@ index 71b9d305e..0a37ff245 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/magick-vector-graphics.html b/www/magick-vector-graphics.html
-index 5eebe5469..bd1cf0eea 100644
+index 8a9cb2607..c6ab07425 100644
 --- a/www/magick-vector-graphics.html
 +++ b/www/magick-vector-graphics.html
 @@ -61,7 +61,7 @@
@@ -2336,12 +2342,12 @@ index 5eebe5469..bd1cf0eea 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/magick-wand.html b/www/magick-wand.html
-index 0c6ca0686..4ece24400 100644
+index 6d99b7a3b..c1e82dc44 100644
 --- a/www/magick-wand.html
 +++ b/www/magick-wand.html
 @@ -61,7 +61,7 @@
@@ -2357,12 +2363,12 @@ index 0c6ca0686..4ece24400 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/magick.html b/www/magick.html
-index 63ee6659c..87ca8a564 100644
+index 73e08b3a5..42b807a6b 100644
 --- a/www/magick.html
 +++ b/www/magick.html
 @@ -61,7 +61,7 @@
@@ -2378,12 +2384,12 @@ index 63ee6659c..87ca8a564 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/miff.html b/www/miff.html
-index df9ca132e..3d9fd591c 100644
+index 9cc6a0ccc..2b29495dd 100644
 --- a/www/miff.html
 +++ b/www/miff.html
 @@ -61,7 +61,7 @@
@@ -2399,12 +2405,12 @@ index df9ca132e..3d9fd591c 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/mirror.html b/www/mirror.html
-index 19ffd2899..fd340bc9a 100644
+index e0902e922..84f6129b4 100644
 --- a/www/mirror.html
 +++ b/www/mirror.html
 @@ -61,7 +61,7 @@
@@ -2416,16 +2422,16 @@ index 19ffd2899..fd340bc9a 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -132,6 +132,6 @@
+@@ -131,6 +131,6 @@
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/mogrify.html b/www/mogrify.html
-index 384fae9f8..111d8c635 100644
+index c880e2346..099e70241 100644
 --- a/www/mogrify.html
 +++ b/www/mogrify.html
 @@ -61,7 +61,7 @@
@@ -2441,12 +2447,12 @@ index 384fae9f8..111d8c635 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/montage.html b/www/montage.html
-index cfbab0651..b255615a5 100644
+index f8b9fe0f7..91c98caa3 100644
 --- a/www/montage.html
 +++ b/www/montage.html
 @@ -61,7 +61,7 @@
@@ -2462,12 +2468,12 @@ index cfbab0651..b255615a5 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/motion-picture.html b/www/motion-picture.html
-index 2c372f44c..371d263d5 100644
+index a04df308b..147ba1427 100644
 --- a/www/motion-picture.html
 +++ b/www/motion-picture.html
 @@ -61,7 +61,7 @@
@@ -2483,12 +2489,12 @@ index 2c372f44c..371d263d5 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/opencl.html b/www/opencl.html
-index da864d19a..1c3d84d81 100644
+index 5665f5629..5c0d97e48 100644
 --- a/www/opencl.html
 +++ b/www/opencl.html
 @@ -61,7 +61,7 @@
@@ -2504,12 +2510,12 @@ index da864d19a..1c3d84d81 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/openmp.html b/www/openmp.html
-index c7a778ec5..7d9e793ab 100644
+index ee33e139c..dbea8c73b 100644
 --- a/www/openmp.html
 +++ b/www/openmp.html
 @@ -61,7 +61,7 @@
@@ -2525,12 +2531,12 @@ index c7a778ec5..7d9e793ab 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/perl-magick.html b/www/perl-magick.html
-index c64d5f6ad..3a9aee2af 100644
+index 722c25499..8d32d469c 100644
 --- a/www/perl-magick.html
 +++ b/www/perl-magick.html
 @@ -61,7 +61,7 @@
@@ -2546,12 +2552,12 @@ index c64d5f6ad..3a9aee2af 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/porting.html b/www/porting.html
-index 1281fa967..9733a4cae 100644
+index 13f75955b..9770c412d 100644
 --- a/www/porting.html
 +++ b/www/porting.html
 @@ -61,7 +61,7 @@
@@ -2567,12 +2573,12 @@ index 1281fa967..9733a4cae 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/quantize.html b/www/quantize.html
-index b18a6be46..489f307df 100644
+index da2bf27eb..dad478389 100644
 --- a/www/quantize.html
 +++ b/www/quantize.html
 @@ -61,7 +61,7 @@
@@ -2588,12 +2594,12 @@ index b18a6be46..489f307df 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/resources.html b/www/resources.html
-index 63147d8c4..db8ae063f 100644
+index fca96148c..4e34d66d1 100644
 --- a/www/resources.html
 +++ b/www/resources.html
 @@ -61,7 +61,7 @@
@@ -2609,12 +2615,12 @@ index 63147d8c4..db8ae063f 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/search.html b/www/search.html
-index 4c4295fe5..5a2cc2d57 100644
+index 303c18208..443309b68 100644
 --- a/www/search.html
 +++ b/www/search.html
 @@ -61,7 +61,7 @@
@@ -2638,12 +2644,12 @@ index 4c4295fe5..5a2cc2d57 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/security-policy.html b/www/security-policy.html
-index 5be4d83d4..30f3013ec 100644
+index 3c3ab33e9..0fc0ad02f 100644
 --- a/www/security-policy.html
 +++ b/www/security-policy.html
 @@ -61,7 +61,7 @@
@@ -2657,7 +2663,7 @@ index 5be4d83d4..30f3013ec 100644
      </div>
 @@ -205,7 +205,7 @@ Path: [built-in]
  
- <h2 class="magick-post-title"><a class="anchor" id="synchronize"></a>Pixel Cache Synchronize Policy</h2>
+ <h2><a class="anchor" id="synchronize"></a>Pixel Cache Synchronize Policy</h2>
  
 -<p>When writing image pixels to disk, ImageMagick firsts preallocates the disk file, which is much faster than fully populating the file with zeros.  To further increase performance, we memory-map the file on disk.  With memory-mapping, we get an increase in performance (up to 5x), however, there remains a possibility that as the disk file is populated, it may run out of free space.  The OS then throws a SIGBUS signal which prevents ImageMagick from continuing.  To prevent a SIGBUS, use this security policy:
 +<p>When writing image pixels to disk, ImageMagick firsts preallocates the disk file, which is much faster than fully populating the file with zeros.  To further increase performance, we memory-map the file on disk.  With memory-mapping, we get an increase in performance (up to 5x), however, there remains a possibility that as the disk file is populated, it may run out of free space.  The OS then throws a SIGBUS signal which prevents ImageMagick from continuing.  To prevent a SIGBUS, use this security policy:</p>
@@ -2668,12 +2674,12 @@ index 5be4d83d4..30f3013ec 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/sitemap.html b/www/sitemap.html
-index 164948060..3465ea7c1 100644
+index 60c8f3965..f4fa87b56 100644
 --- a/www/sitemap.html
 +++ b/www/sitemap.html
 @@ -61,7 +61,7 @@
@@ -2689,12 +2695,12 @@ index 164948060..3465ea7c1 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/stream.html b/www/stream.html
-index 0a9f0bf1d..a616737a1 100644
+index 65e94afe8..fa862f09c 100644
 --- a/www/stream.html
 +++ b/www/stream.html
 @@ -61,7 +61,7 @@
@@ -2710,12 +2716,12 @@ index 0a9f0bf1d..a616737a1 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/support.html b/www/support.html
-index 714720fa9..4e9249de0 100644
+index 85dcd5333..bf9a486dc 100644
 --- a/www/support.html
 +++ b/www/support.html
 @@ -61,7 +61,7 @@
@@ -2731,12 +2737,12 @@ index 714720fa9..4e9249de0 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 diff --git a/www/webp.html b/www/webp.html
-index f538d84a9..60fc4ebd8 100644
+index fd9ac71b3..1a4a54247 100644
 --- a/www/webp.html
 +++ b/www/webp.html
 @@ -61,7 +61,7 @@
@@ -2752,7 +2758,7 @@ index f538d84a9..60fc4ebd8 100644
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>

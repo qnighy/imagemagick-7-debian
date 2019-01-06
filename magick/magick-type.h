@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ typedef float MagickFloatType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_DOUBLE)
 typedef double MagickFloatType;
 #elif (MAGICKCORE_SIZEOF_FLOAT_T == MAGICKCORE_SIZEOF_LONG_DOUBLE)
-typedef double MagickFloatType;
+typedef long double MagickFloatType;
 #else
 #error Your MagickFloatType type is neither a float, nor a double, nor a long double
 #endif
@@ -55,7 +55,7 @@ typedef double MagickDoubleType;
 #elif (MAGICKCORE_SIZEOF_DOUBLE_T == MAGICKCORE_SIZEOF_DOUBLE)
 typedef double MagickDoubleType;
 #elif (MAGICKCORE_SIZEOF_DOUBLE_T == MAGICKCORE_SIZEOF_LONG_DOUBLE)
-typedef double MagickDoubleType;
+typedef long double MagickDoubleType;
 #else
 #error Your MagickDoubleType type is neither a float, nor a double, nor a long double
 #endif

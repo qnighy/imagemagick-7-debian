@@ -1,4 +1,4 @@
-From a84aa65d5c4e4effa79d5e7eaa089b13cc3f1cf2 Mon Sep 17 00:00:00 2001
+From 046cae859e1d3d6aa5eff667e180f3654dbfbac1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 29 Oct 2018 12:50:02 +0100
 Subject: Fix remaining error in documentation
@@ -10,10 +10,10 @@ Forwarded: yes
  2 files changed, 8 insertions(+), 7 deletions(-)
 
 diff --git a/www/changelog.html b/www/changelog.html
-index aedad7580..fb5712beb 100644
+index a4578d0d7..545f1fd8c 100644
 --- a/www/changelog.html
 +++ b/www/changelog.html
-@@ -99,7 +99,8 @@
+@@ -124,7 +124,8 @@
    <li> Release ImageMagick version 6.9.10-8, GIT revision 13693:88aeaf9d9:20180723.</li>
  <dt>2018-07-20  6.9.10-8 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Non-HDRI ScaleLongToQuantum() private method no longer adds a half interval.</li>
@@ -24,7 +24,7 @@ index aedad7580..fb5712beb 100644
  <dt>2018-07-15  6.9.10-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Fixed numerous use of uninitialized values, integer overflow, memory    exceeded, and timeouts (credit to OSS Fuzz).</li>
 diff --git a/www/command-line-processing.html b/www/command-line-processing.html
-index d3e191714..3007f28ca 100644
+index e3e9f36d7..17e8329f0 100644
 --- a/www/command-line-processing.html
 +++ b/www/command-line-processing.html
 @@ -340,7 +340,7 @@ image-5.jpg</pre>

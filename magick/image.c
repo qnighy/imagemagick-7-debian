@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -829,6 +829,7 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
   InheritException(&clone_image->exception,&image->exception);
   if (image->ascii85 != (void *) NULL)
     Ascii85Initialize(clone_image);
+  clone_image->extent=image->extent;
   clone_image->magick_columns=image->magick_columns;
   clone_image->magick_rows=image->magick_rows;
   clone_image->type=image->type;
@@ -1146,9 +1147,10 @@ MagickExport MagickBooleanType CopyImagePixels(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_CopyImagePixels)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,CopyImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,CopyImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -2932,7 +2934,10 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
     {
       (void) CopyMagickString(magic,image_info->magick,MaxTextExtent);
       magick_info=GetMagickInfo(magic,sans_exception);
-      GetPathComponent(image_info->filename,CanonicalPath,filename);
+      if (frames == 0)
+        GetPathComponent(image_info->filename,CanonicalPath,filename);
+      else
+        GetPathComponent(image_info->filename,SubcanonicalPath,filename);
       (void) CopyMagickString(image_info->filename,filename,MaxTextExtent);
     }
   else
@@ -3980,41 +3985,12 @@ MagickExport MagickBooleanType SyncImageSettings(const ImageInfo *image_info,
     image->type=(ImageType) ParseCommandOption(MagickTypeOptions,MagickFalse,
       option);
   option=GetImageOption(image_info,"units");
+  units=image_info->units;
   if (option != (const char *) NULL)
     units=(ResolutionType) ParseCommandOption(MagickResolutionOptions,
       MagickFalse,option);
-  else
-    units = image_info->units;
   if (units != UndefinedResolution)
-    {
-      if (image->units != units)
-        switch (image->units)
-        {
-          case PixelsPerInchResolution:
-          {
-            if (units == PixelsPerCentimeterResolution)
-              {
-                image->x_resolution/=2.54;
-                image->y_resolution/=2.54;
-              }
-            break;
-          }
-          case PixelsPerCentimeterResolution:
-          {
-            if (units == PixelsPerInchResolution)
-              {
-                image->x_resolution=(double) ((size_t) (100.0*2.54*
-                  image->x_resolution+0.5))/100.0;
-                image->y_resolution=(double) ((size_t) (100.0*2.54*
-                  image->y_resolution+0.5))/100.0;
-              }
-            break;
-          }
-          default:
-            break;
-        }
-      image->units=units;
-    }
+    image->units=units;
   option=GetImageOption(image_info,"white-point");
   if (option != (const char *) NULL)
     {

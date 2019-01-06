@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1106,9 +1106,10 @@ MagickExport MagickBooleanType RGBTransformImage(Image *image,
               proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp critical (MagickCore_RGBTransformImage)
+            #pragma omp atomic
 #endif
-            proceed=SetImageProgress(image,RGBTransformImageTag,progress++,
+            progress++;
+            proceed=SetImageProgress(image,RGBTransformImageTag,progress,
               image->rows);
             if (proceed == MagickFalse)
               status=MagickFalse;
@@ -1458,10 +1459,6 @@ MagickExport MagickBooleanType TransformImageColorspace(Image *image,
     return(MagickTrue);
   (void) DeleteImageProfile(image,"icc");
   (void) DeleteImageProfile(image,"icm");
-  if (colorspace == LinearGRAYColorspace)
-    return(GrayscaleImage(image,Rec709LuminancePixelIntensityMethod));
-  if (colorspace == GRAYColorspace)
-    return(GrayscaleImage(image,Rec709LumaPixelIntensityMethod));
   if (colorspace == UndefinedColorspace)
     return(SetImageColorspace(image,colorspace));
   /*
@@ -2663,9 +2660,10 @@ MagickExport MagickBooleanType TransformRGBImage(Image *image,
               proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp critical (MagickCore_TransformRGBImage)
+            #pragma omp atomic
 #endif
-            proceed=SetImageProgress(image,TransformRGBImageTag,progress++,
+            progress++;
+            proceed=SetImageProgress(image,TransformRGBImageTag,progress,
               image->rows);
             if (proceed == MagickFalse)
               status=MagickFalse;

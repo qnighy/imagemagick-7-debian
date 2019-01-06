@@ -1,4 +1,4 @@
-From 742cc4156bb3a2322dec80aa340970ad75977129 Mon Sep 17 00:00:00 2001
+From 11744c55c3a9cd91c9aa414a52dd972a9ad70766 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 30 Jul 2018 14:49:54 +0200
 Subject: Fix index.html
@@ -9,7 +9,7 @@ Forwarded: yes
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/www/index.html b/www/index.html
-index 4093fd89a..ecc014dfb 100644
+index a49254967..5eeda72b1 100644
 --- a/www/index.html
 +++ b/www/index.html
 @@ -61,7 +61,7 @@
@@ -25,7 +25,7 @@ index 4093fd89a..ecc014dfb 100644
    </footer>
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;/script>')</script>
  </body>
  </html>

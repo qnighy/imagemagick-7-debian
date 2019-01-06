@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -727,7 +727,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   CopyFitsRecord(fits_info,header,offset);
   offset+=80;
   (void) FormatLocaleString(header,FITSBlocksize,"BZERO   =         %E",
-    image->depth > 8 ? GetFITSPixelRange(image->depth)/2.0 : 0.0);
+    image->depth > 8 ? (GetFITSPixelRange(image->depth)+1)/2.0 : 0.0);
   CopyFitsRecord(fits_info,header,offset);
   offset+=80;
   (void) FormatLocaleString(header,FITSBlocksize,"DATAMAX =         %E",

@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -348,10 +348,10 @@ MagickExport Image *AdaptiveThresholdImage(const Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_AdaptiveThresholdImage)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ThresholdImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,ThresholdImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -922,10 +922,10 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_BilevelImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ThresholdImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,ThresholdImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -1096,10 +1096,10 @@ MagickExport MagickBooleanType BlackThresholdImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_BlackThresholdImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ThresholdImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,ThresholdImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -1244,9 +1244,10 @@ MagickExport MagickBooleanType ClampImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_ClampImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ClampImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,ClampImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -2051,9 +2052,10 @@ printf("DEBUG levels  r=%u g=%u b=%u a=%u i=%u\n",
             proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-          #pragma omp critical (MagickCore_OrderedPosterizeImageChannel)
+          #pragma omp atomic
 #endif
-          proceed=SetImageProgress(image,DitherImageTag,progress++,image->rows);
+          progress++;
+          proceed=SetImageProgress(image,DitherImageTag,progress,image->rows);
           if (proceed == MagickFalse)
             status=MagickFalse;
         }
@@ -2215,9 +2217,11 @@ MagickExport MagickBooleanType PerceptibleImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_PerceptibleImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,PerceptibleImageTag,progress++,image->rows);
+        progress++;
+        proceed=SetImageProgress(image,PerceptibleImageTag,progress,
+          image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -2417,9 +2421,10 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
               proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-            #pragma omp critical (MagickCore_RandomThresholdImageChannel)
+            #pragma omp atomic
 #endif
-            proceed=SetImageProgress(image,ThresholdImageTag,progress++,
+            progress++;
+            proceed=SetImageProgress(image,ThresholdImageTag,progress,
               image->rows);
             if (proceed == MagickFalse)
               status=MagickFalse;
@@ -2548,10 +2553,10 @@ MagickExport MagickBooleanType RandomThresholdImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_RandomThresholdImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ThresholdImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,ThresholdImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -2723,10 +2728,10 @@ MagickExport MagickBooleanType WhiteThresholdImageChannel(Image *image,
           proceed;
 
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
-        #pragma omp critical (MagickCore_WhiteThresholdImageChannel)
+        #pragma omp atomic
 #endif
-        proceed=SetImageProgress(image,ThresholdImageTag,progress++,
-          image->rows);
+        progress++;
+        proceed=SetImageProgress(image,ThresholdImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }

@@ -80,4 +80,4 @@ For more information about the ImageMagick, point your browser to file://@DOCUME
 convert-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), identify-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), composite-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), montage-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), compare-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), display-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), animate-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), import-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), conjure-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), quantize(5), miff(4)
 
 .SH COPYRIGHT
-\fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://imagemagick.org/script/license.php\fP
+\fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://imagemagick.org/script/license.php\fP

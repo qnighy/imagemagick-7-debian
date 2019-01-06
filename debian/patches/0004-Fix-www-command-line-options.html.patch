@@ -1,4 +1,4 @@
-From a7cdfd877d0a7ef831e71fa5cc3019022fd3ee52 Mon Sep 17 00:00:00 2001
+From f7cdaac529f6ab9d331cc5e7dfccc3797efa2a40 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Wed, 14 Dec 2016 15:26:15 +0100
 Subject: Fix www/command-line-options.html
@@ -9,7 +9,7 @@ Forwarded: Yes, https://github.com/ImageMagick/ImageMagick/issues/304
  1 file changed, 1 insertion(+)
 
 diff --git a/www/command-line-options.html b/www/command-line-options.html
-index 5a72ce507..ad38cecec 100644
+index 9df2d5243..04795ed5d 100644
 --- a/www/command-line-options.html
 +++ b/www/command-line-options.html
 @@ -2215,6 +2215,7 @@ available:</p>

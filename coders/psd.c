@@ -20,7 +20,7 @@
 %                                December 2013                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -2130,7 +2130,6 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     {
       psd_info.min_channels=4;
       (void) SetImageColorspace(image,CMYKColorspace);
-      image->matte=psd_info.channels > 4 ? MagickTrue : MagickFalse;
     }
   else if ((psd_info.mode == BitmapMode) || (psd_info.mode == GrayscaleMode) ||
            (psd_info.mode == DuotoneMode))
@@ -2144,10 +2143,7 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
           "  Image colormap allocated");
       psd_info.min_channels=1;
       (void) SetImageColorspace(image,GRAYColorspace);
-      image->matte=psd_info.channels > 1 ? MagickTrue : MagickFalse;
     }
-  else
-    image->matte=psd_info.channels > 3 ? MagickTrue : MagickFalse;
   if (psd_info.channels < psd_info.min_channels)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   /*
@@ -2332,7 +2328,15 @@ static Image *ReadPSDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     }
   if (profile != (StringInfo *) NULL)
     {
-      (void) SetImageProfile(image,GetStringInfoName(profile),profile);
+      Image
+        *next;
+
+      next=image;
+      while (next != (Image *) NULL)
+      {
+        (void) SetImageProfile(next,GetStringInfoName(profile),profile);
+        next=next->next;
+      }
       profile=DestroyStringInfo(profile);
     }
   (void) CloseBlob(image);

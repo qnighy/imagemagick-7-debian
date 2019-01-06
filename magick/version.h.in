@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2018 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ extern "C" {
   Define declarations.
 */
 #define MagickPackageName "@PACKAGE_NAME@"
-#define MagickCopyright  "© 1999-2018 ImageMagick Studio LLC"
+#define MagickCopyright  "© 1999-2019 ImageMagick Studio LLC"
 #define MagickLibVersion  @PACKAGE_LIB_VERSION@
 #define MagickLibVersionText  "@MAGICK_LIB_VERSION_TEXT@"
 #define MagickLibVersionNumber  @MAGICK_LIB_VERSION_NUMBER@
@@ -77,14 +77,14 @@ extern MagickExport char
   *GetMagickHomeURL(void);
 
 extern MagickExport const char
-  *GetMagickCopyright(void),
-  *GetMagickDelegates(void),
-  *GetMagickFeatures(void),
-  *GetMagickLicense(void),
-  *GetMagickPackageName(void),
+  *GetMagickCopyright(void) magick_attribute((__const__)),
+  *GetMagickDelegates(void) magick_attribute((__const__)),
+  *GetMagickFeatures(void) magick_attribute((__const__)),
+  *GetMagickLicense(void) magick_attribute((__const__)),
+  *GetMagickPackageName(void) magick_attribute((__const__)),
   *GetMagickQuantumDepth(size_t *),
   *GetMagickQuantumRange(size_t *),
-  *GetMagickReleaseDate(void),
+  *GetMagickReleaseDate(void) magick_attribute((__const__)),
   *GetMagickVersion(size_t *);
 
 extern MagickExport void

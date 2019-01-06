@@ -1,4 +1,4 @@
-From 31745643f992d056f4fd3553253362fb58c6c115 Mon Sep 17 00:00:00 2001
+From 4eb3519fde14d7416cc338a9607d11460b33f679 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Tue, 21 Mar 2017 12:15:08 +0100
 Subject: Improve man page to use version information and quantum
@@ -24,7 +24,7 @@ Forwarded: no
  13 files changed, 50 insertions(+), 48 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 9bf360d70..58cd43b36 100644
+index 698846529..fc7220c6f 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -810,6 +810,8 @@ if test "$enable_hdri" = 'yes'; then
@@ -37,7 +37,7 @@ index 9bf360d70..58cd43b36 100644
  # Set pixel cache threshold
  AC_ARG_WITH([cache],
 diff --git a/utilities/ImageMagick.1.in b/utilities/ImageMagick.1.in
-index b4272f5c2..aca290520 100644
+index bdf779177..8b46e6a83 100644
 --- a/utilities/ImageMagick.1.in
 +++ b/utilities/ImageMagick.1.in
 @@ -1,8 +1,8 @@
@@ -59,9 +59,9 @@ index b4272f5c2..aca290520 100644
 +convert-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), identify-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), composite-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), montage-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), compare-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), display-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), animate-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), import-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), conjure-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), quantize(5), miff(4)
  
  .SH COPYRIGHT
- \fBCopyright (C) 1999-2018 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://imagemagick.org/script/license.php\fP
+ \fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://imagemagick.org/script/license.php\fP
 diff --git a/utilities/animate.1.in b/utilities/animate.1.in
-index fe5f749e4..77c70d329 100644
+index f11479dc9..5eb339060 100644
 --- a/utilities/animate.1.in
 +++ b/utilities/animate.1.in
 @@ -1,11 +1,11 @@
@@ -89,7 +89,7 @@ index fe5f749e4..77c70d329 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/compare.1.in b/utilities/compare.1.in
-index 94ff55812..d395b2196 100644
+index b6a6552e1..c0ddb848f 100644
 --- a/utilities/compare.1.in
 +++ b/utilities/compare.1.in
 @@ -1,11 +1,11 @@
@@ -117,7 +117,7 @@ index 94ff55812..d395b2196 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/composite.1.in b/utilities/composite.1.in
-index 5577ab424..3208c84ca 100644
+index 68e9ace36..f30f1b23c 100644
 --- a/utilities/composite.1.in
 +++ b/utilities/composite.1.in
 @@ -1,11 +1,11 @@
@@ -145,7 +145,7 @@ index 5577ab424..3208c84ca 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/conjure.1.in b/utilities/conjure.1.in
-index 0ddd2149d..e75a32ca6 100644
+index 48cfde5b0..3d1256a23 100644
 --- a/utilities/conjure.1.in
 +++ b/utilities/conjure.1.in
 @@ -1,11 +1,11 @@
@@ -173,7 +173,7 @@ index 0ddd2149d..e75a32ca6 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/convert.1.in b/utilities/convert.1.in
-index dc2545d5c..64226feb7 100644
+index aacf2e8fb..30118474a 100644
 --- a/utilities/convert.1.in
 +++ b/utilities/convert.1.in
 @@ -1,11 +1,11 @@
@@ -199,9 +199,9 @@ index dc2545d5c..64226feb7 100644
 +ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
  
  .SH COPYRIGHT
- 
+ <<<<<<< 0a04a1f53ac1d3cbdf36971605550d140bcf8b71
 diff --git a/utilities/display.1.in b/utilities/display.1.in
-index 6bc6d1630..c4c20464f 100644
+index e392476c1..f037e4470 100644
 --- a/utilities/display.1.in
 +++ b/utilities/display.1.in
 @@ -1,11 +1,11 @@
@@ -229,7 +229,7 @@ index 6bc6d1630..c4c20464f 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/identify.1.in b/utilities/identify.1.in
-index 5a5e236a3..515b47235 100644
+index 7e99c9d8b..048f996d0 100644
 --- a/utilities/identify.1.in
 +++ b/utilities/identify.1.in
 @@ -1,11 +1,11 @@
@@ -257,7 +257,7 @@ index 5a5e236a3..515b47235 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/import.1.in b/utilities/import.1.in
-index 1a549433f..72f6b1eb5 100644
+index 7069973c2..e9211cb95 100644
 --- a/utilities/import.1.in
 +++ b/utilities/import.1.in
 @@ -1,11 +1,11 @@
@@ -285,7 +285,7 @@ index 1a549433f..72f6b1eb5 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/mogrify.1.in b/utilities/mogrify.1.in
-index c848b066d..5e19e9d4c 100644
+index 40431faf6..7040f7d23 100644
 --- a/utilities/mogrify.1.in
 +++ b/utilities/mogrify.1.in
 @@ -1,11 +1,11 @@
@@ -314,7 +314,7 @@ index c848b066d..5e19e9d4c 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/montage.1.in b/utilities/montage.1.in
-index e755939a5..dc7b2b44f 100644
+index 6595fc584..c47e3651b 100644
 --- a/utilities/montage.1.in
 +++ b/utilities/montage.1.in
 @@ -1,11 +1,11 @@
@@ -342,7 +342,7 @@ index e755939a5..dc7b2b44f 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/stream.1.in b/utilities/stream.1.in
-index 9224c63ca..549192ac0 100644
+index 4a89ae91c..d19b77df1 100644
 --- a/utilities/stream.1.in
 +++ b/utilities/stream.1.in
 @@ -1,11 +1,11 @@

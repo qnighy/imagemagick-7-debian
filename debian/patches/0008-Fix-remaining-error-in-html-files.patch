@@ -1,4 +1,4 @@
-From d1fdf2e819806a8c4b314cebae5d526cf2271c43 Mon Sep 17 00:00:00 2001
+From 81603691548ca07e489b96419a270b15412a8984 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Sat, 18 Mar 2017 15:47:28 +0100
 Subject: Fix remaining error in html files
@@ -10,7 +10,7 @@ Subject: Fix remaining error in html files
  3 files changed, 8 insertions(+), 9 deletions(-)
 
 diff --git a/www/changelog.html b/www/changelog.html
-index e9e5a8f99..dc4946a7c 100644
+index 7757ea76a..348c73d04 100644
 --- a/www/changelog.html
 +++ b/www/changelog.html
 @@ -61,7 +61,7 @@
@@ -22,7 +22,7 @@ index e9e5a8f99..dc4946a7c 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
      </div>
-@@ -556,10 +556,10 @@
+@@ -581,10 +581,10 @@
  <dt>2016-08-27  6.9.5-8 Dirk Lemstra &lt;dirk@lem.....org&gt;</dt>
    <li> Added define 'psd:additional-info' to preserve the additional information    in a PSD file.</li>
  <dt>2016-08-15  6.9.5-8 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
@@ -36,7 +36,7 @@ index e9e5a8f99..dc4946a7c 100644
    <li> Release ImageMagick version 6.9.5-7, GIT revision 10993:7d2fd25:20160814.</li>
  <dt>2016-08-14  6.9.5-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Eliminate compiler warning.</li>
-@@ -4445,7 +4445,7 @@
+@@ -4470,7 +4470,7 @@
    <li> Set AppendImage() matte channel only when image has matte attribute set.</li>
    <li> The -crop with negative offsets do not modify the virtual canvas.</li>
    <li> Caption: Given both the width and height ("-size") of the area to fill,    adjust the fonts "-pointsize" until the text just filles the whole space    without overflowing.</li>
@@ -45,16 +45,16 @@ index e9e5a8f99..dc4946a7c 100644
    </main><!-- /.container -->
    <footer class="magick-footer">
      <p><a href="security-policy.html">Security</a> •
-@@ -4464,6 +4464,6 @@
+@@ -4489,6 +4489,6 @@
  
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js"&gt;&lt;\/script&gt;')</script>
  </body>
  </html>
 diff --git a/www/download.html b/www/download.html
-index f4d7832ef..050f7e958 100644
+index 97b9ab91c..9d9b5c84f 100644
 --- a/www/download.html
 +++ b/www/download.html
 @@ -61,7 +61,7 @@
@@ -69,21 +69,21 @@ index f4d7832ef..050f7e958 100644
 @@ -148,7 +148,7 @@
  <p>ImageMagick RPM's are self-installing.  Simply type the following command and you're ready to start using ImageMagick:</p>
  
- <pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-6.9.10-11.x86_64.rpm</span></pre>
+ <pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-6.9.10-20.x86_64.rpm</span></pre>
 -<p>You'll need to install the requisite libraries:<?p>
 +<p>You'll need to install the requisite libraries:</p>
  
- <pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-libs-6.9.10-11.x86_64.rpm</span></pre>
+ <pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-libs-6.9.10-20.x86_64.rpm</span></pre>
  <p>For other systems, create (or choose) a directory to install the package into and change to that directory, for example:</p>
 diff --git a/www/index.html b/www/index.html
-index 55d6799e0..4093fd89a 100644
+index 612457989..a49254967 100644
 --- a/www/index.html
 +++ b/www/index.html
 @@ -270,7 +270,6 @@ Use ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&am
      <br/>
-         <small>© 1999-2018 ImageMagick Studio LLC</small></p>
+     <small>© 1999-2019 ImageMagick Studio LLC</small></p>
    </footer>
 -
    <!-- Javascript assets -->
    <script src="assets/magick.js" crossorigin="anonymous"></script>
-   <script>window.jQuery || document.write('<script src="assets/jquery.min.js"><\/script>')</script>
+   <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.3.1/jquery.min.js"><\/script>')</script>
