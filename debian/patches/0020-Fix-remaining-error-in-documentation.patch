@@ -1,4 +1,4 @@
-From 5e78b2b5d1808110fa70b9c030ad954a256dfa07 Mon Sep 17 00:00:00 2001
+From 6d1970bf0f09513c7d1fa545b4cc421292ffb3ee Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 29 Oct 2018 12:50:02 +0100
 Subject: Fix remaining error in documentation
