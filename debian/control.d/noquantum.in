@@ -5,7 +5,7 @@ Maintainer: ImageMagick Packaging Team <pkg-gmagick-im-team@lists.alioth.debian.
 Uploaders: Luciano Bello <luciano@debian.org>,
  Nelson A. de Oliveira <naoliv@debian.org>,
  Bastien Roucariès <rouca@debian.org>,
-Standards-Version: 4.2.1
+Standards-Version: 4.3.0
 # for dbg-sym
 Build-Depends: debhelper (>= 11),
 # for improving build
