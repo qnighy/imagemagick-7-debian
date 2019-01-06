@@ -1122,6 +1122,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  SetImageOption@Base 8:6.9.10.2
  SetImagePixels@Base 8:6.9.10.2
  SetImageProfile@Base 8:6.9.10.2
+ SetImageProgress@Base 8:6.9.10.23
  SetImageProgressMonitor@Base 8:6.9.10.2
  SetImageProperty@Base 8:6.9.10.2
  SetImageRegistry@Base 8:6.9.10.2
