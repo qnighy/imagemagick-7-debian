@@ -1,3 +1,10 @@
+imagemagick (8:6.9.10.23+dfsg-2) unstable; urgency=medium
+
+  * Bug fix: "identify 6.9.10-23 does not convert units (pixels per
+    cm/in)", thanks to Cédric Boutillier (Closes: #918642).
+
+ -- Bastien Roucariès <rouca@debian.org>  Tue, 08 Jan 2019 15:08:25 +0100
+
 imagemagick (8:6.9.10.23+dfsg-1) unstable; urgency=high
 
   * Bug fix: "Silent ABI break in 6.9.10-11 on i386", thanks to Balint
