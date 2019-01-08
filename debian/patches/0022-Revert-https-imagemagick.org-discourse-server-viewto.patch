@@ -1,0 +1,74 @@
+From afb48b69b48379d6ef48ea8efd89c839d68f5db1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
+Date: Tue, 8 Jan 2019 14:37:39 +0100
+Subject: Revert
+ "https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=35185"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This reverts commit 8c7648a1adf7bba35594074f191affd3ff3263bb.
+
+After the upgrade from 6.9.10.14 to 6.9.10.23, I noticed that the
+autopkgtests for the package ruby-mini-magick is failing due to one test
+about checking units to show the size of the image in cm and inches.
+
+I could isolate the problem by running the `identify` command on a test
+image (rgb.png in the spec/fixtures directory of the ruby-mini-magick
+source package).
+
+bug-debian: https://bugs.debian.org/918642
+
+Signed-off-by: Bastien Roucariès <rouca@debian.org>
+---
+ magick/image.c | 33 +++++++++++++++++++++++++++++++--
+ 1 file changed, 31 insertions(+), 2 deletions(-)
+
+diff --git a/magick/image.c b/magick/image.c
+index 7eec107d0..da989abde 100644
+--- a/magick/image.c
++++ b/magick/image.c
+@@ -3985,12 +3985,41 @@ MagickExport MagickBooleanType SyncImageSettings(const ImageInfo *image_info,
+     image->type=(ImageType) ParseCommandOption(MagickTypeOptions,MagickFalse,
+       option);
+   option=GetImageOption(image_info,"units");
+-  units=image_info->units;
+   if (option != (const char *) NULL)
+     units=(ResolutionType) ParseCommandOption(MagickResolutionOptions,
+       MagickFalse,option);
++  else
++    units = image_info->units;
+   if (units != UndefinedResolution)
+-    image->units=units;
++    {
++      if (image->units != units)
++        switch (image->units)
++        {
++          case PixelsPerInchResolution:
++          {
++            if (units == PixelsPerCentimeterResolution)
++              {
++                image->x_resolution/=2.54;
++                image->y_resolution/=2.54;
++              }
++            break;
++          }
++          case PixelsPerCentimeterResolution:
++          {
++            if (units == PixelsPerInchResolution)
++              {
++                image->x_resolution=(double) ((size_t) (100.0*2.54*
++                  image->x_resolution+0.5))/100.0;
++                image->y_resolution=(double) ((size_t) (100.0*2.54*
++                  image->y_resolution+0.5))/100.0;
++              }
++            break;
++          }
++          default:
++            break;
++        }
++      image->units=units;
++    }
+   option=GetImageOption(image_info,"white-point");
+   if (option != (const char *) NULL)
+     {

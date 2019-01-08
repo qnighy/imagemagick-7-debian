@@ -19,3 +19,4 @@
 0019-Fix-end-tags.patch
 0020-Fix-remaining-error-in-documentation.patch
 0021-Fix-privacy-breach.patch
+0022-Revert-https-imagemagick.org-discourse-server-viewto.patch
