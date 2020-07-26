@@ -1,4 +1,4 @@
-From 0942a302e53855a782f38dc093e628141be54c65 Mon Sep 17 00:00:00 2001
+From f37c4e635d0bea74a510a9af229ab8adfd069052 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Sun, 26 Jul 2020 22:26:36 +0200
 Subject: Fix a few html error
@@ -8,11 +8,11 @@ Forwarded: yes
  www/binary-releases.html      |  1 -
  www/changelog.html            | 10 ++++++----
  www/command-line-options.html |  2 +-
- www/defines.html              |  5 +++--
+ www/defines.html              |  9 +++++----
  www/index.html                |  1 -
  www/search.html               |  1 +
  www/security-policy.html      |  1 +
- 7 files changed, 12 insertions(+), 9 deletions(-)
+ 7 files changed, 14 insertions(+), 11 deletions(-)
 
 diff --git a/www/binary-releases.html b/www/binary-releases.html
 index b6e959a7ea..49a8f2aac9 100644
@@ -80,7 +80,7 @@ index cedb73fc57..d984edfb7a 100644
  
  
 diff --git a/www/defines.html b/www/defines.html
-index c1638546c1..722242ef31 100644
+index c1638546c1..0549897e06 100644
 --- a/www/defines.html
 +++ b/www/defines.html
 @@ -67,7 +67,7 @@
@@ -100,8 +100,14 @@ index c1638546c1..722242ef31 100644
    Envelope Record
    1:00  Model Version
    1:05  Destination
-@@ -932,4 +933,4 @@ Post ObjectData Descriptor Record
-   <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.4.1/jquery.min.js"><\/script>')</script>
+@@ -928,8 +929,8 @@ Post ObjectData Descriptor Record
+   </footer>
+ 
+   <!-- Javascript assets -->
+-  <script src="../www/assets/magick-js.html" crossorigin="anonymous"></script>
+-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.4.1/jquery.min.js"><\/script>')</script>
++  <script src="assets/magick.js" crossorigin="anonymous"></script>
++  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
  </body>
  </html>
 -<!-- Magick Cache 19th March 2020 16:27 -->
