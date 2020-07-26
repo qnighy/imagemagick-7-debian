@@ -1,0 +1,35 @@
+From: Cristy <mikayla-grace@urban-warrior.org>
+Date: Fri, 22 Mar 2019 07:39:18 -0400
+Subject: https://github.com/ImageMagick/ImageMagick/issues/1523
+Origin: https://github.com/ImageMagick/ImageMagick6/commit/90401e430840c5ff31ad870f4370bbda1318ac94
+Bug-Debian-Security: https://security-tracker.debian.org/tracker/CVE-2019-9956
+Bug-Debian: https://bugs.debian.org/925395
+Bug: https://github.com/ImageMagick/ImageMagick/issues/1523
+
+---
+ coders/ps.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/coders/ps.c b/coders/ps.c
+index cf8e4bdfccc9..828f6cfcbbcd 100644
+--- a/coders/ps.c
++++ b/coders/ps.c
+@@ -2272,8 +2272,13 @@ RestoreMSCWarning
+                   p++;
+                 }
+                 q=PopHexPixel(hex_digits,(size_t) index,q);
+-                q=PopHexPixel(hex_digits,(size_t)
+-                  MagickMin(length,0xff),q);
++                q=PopHexPixel(hex_digits,(size_t) MagickMin(length,0xff),q);
++                if ((q-pixels+6) >= 80)
++                  {
++                    *q++='\n';
++                    (void) WriteBlob(image,q-pixels,pixels);
++                    q=pixels;
++                  }
+                 if (image->previous == (Image *) NULL)
+                   {
+                     status=SetImageProgress(image,SaveImageTag,
+-- 
+2.11.0
+

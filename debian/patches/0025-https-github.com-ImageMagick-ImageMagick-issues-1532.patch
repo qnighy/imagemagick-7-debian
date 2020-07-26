@@ -1,0 +1,28 @@
+From: Cristy <mikayla-grace@urban-warrior.org>
+Date: Sat, 30 Mar 2019 07:10:45 -0400
+Subject: https://github.com/ImageMagick/ImageMagick/issues/1532
+Origin: https://github.com/ImageMagick/ImageMagick6/commit/d8d844c6f23f4d90d8fe893fe9225dd78fc1e6ef
+Bug-Debian-Security: https://security-tracker.debian.org/tracker/CVE-2019-10650
+Bug-Debian: https://bugs.debian.org/926091
+Bug: https://github.com/ImageMagick/ImageMagick/issues/1532
+
+---
+ coders/tiff.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/coders/tiff.c b/coders/tiff.c
+index 31f39d2f73b9..00040a214e16 100644
+--- a/coders/tiff.c
++++ b/coders/tiff.c
+@@ -3280,7 +3280,7 @@ static MagickBooleanType WriteTIFFImage(const ImageInfo *image_info,
+     TIFFUnmapBlob);
+   if (tiff == (TIFF *) NULL)
+     return(MagickFalse);
+-  if (exception->severity > ErrorException)
++  if (image->exception.severity > ErrorException)
+     {
+       TIFFClose(tiff);
+       return(MagickFalse);
+-- 
+2.11.0
+

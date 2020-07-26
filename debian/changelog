@@ -1,3 +1,13 @@
+imagemagick (8:6.9.10.23+dfsg-2.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Stack-based buffer overflow in function PopHexPixel in coders/ps.c
+    (CVE-2019-9956) (Closes: #925395)
+  * Heap-buffer-overflow in WriteTIFFImage of coders/tiff.c (CVE-2019-10650)
+    (Closes: #926091)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Fri, 03 May 2019 16:34:26 +0200
+
 imagemagick (8:6.9.10.23+dfsg-2) unstable; urgency=medium
 
   * Bug fix: "identify 6.9.10-23 does not convert units (pixels per
