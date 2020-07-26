@@ -6,6 +6,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  AcquireCacheView@Base 8:6.9.10.2
  AcquireCacheViewIndexes@Base 8:6.9.10.2
  AcquireCacheViewPixels@Base 8:6.9.10.2
+ AcquireCriticalMemory@Base 8:6.9.11.24
  AcquireDrawInfo@Base 8:6.9.10.2
  AcquireExceptionInfo@Base 8:6.9.10.2
  AcquireFxInfo@Base 8:6.9.10.2
@@ -90,7 +91,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  AutoOrientImage@Base 8:6.9.10.2
  AutoThresholdImage@Base 8:6.9.10.2
  AverageImages@Base 8:6.9.10.2
- BackgroundColor@Base 8:6.9.10.2
+ (optional=internalABInoAPI)BackgroundColor@Base 8:6.9.10.2
  Base64Decode@Base 8:6.9.10.2
  Base64Encode@Base 8:6.9.10.2
  BilevelImage@Base 8:6.9.10.2
@@ -103,7 +104,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  BlueShiftImage@Base 8:6.9.10.2
  BlurImage@Base 8:6.9.10.2
  BlurImageChannel@Base 8:6.9.10.2
- BorderColor@Base 8:6.9.10.2
+ (optional=internalABInoAPI)BorderColor@Base 8:6.9.10.2
  BorderImage@Base 8:6.9.10.2
  BrightnessContrastImage@Base 8:6.9.10.2
  BrightnessContrastImageChannel@Base 8:6.9.10.2
@@ -226,10 +227,10 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  DecipherImage@Base 8:6.9.10.2
  DecodePixelGamma@Base 8:6.9.10.2
  DeconstructImages@Base 8:6.9.10.2
- DefaultResolution@Base 8:6.9.10.2
- DefaultTileFrame@Base 8:6.9.10.2
- DefaultTileGeometry@Base 8:6.9.10.2
- DefaultTileLabel@Base 8:6.9.10.2
+ (optional=internalABInoAPI)DefaultResolution@Base 8:6.9.10.2
+ (optional=internalABInoAPI)DefaultTileFrame@Base 8:6.9.10.2
+ (optional=internalABInoAPI)DefaultTileGeometry@Base 8:6.9.10.2
+ (optional=internalABInoAPI)DefaultTileLabel@Base 8:6.9.10.2
  DefineImageArtifact@Base 8:6.9.10.2
  DefineImageOption@Base 8:6.9.10.2
  DefineImageProperty@Base 8:6.9.10.2
@@ -351,7 +352,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  FlipImage@Base 8:6.9.10.2
  FloodfillPaintImage@Base 8:6.9.10.2
  FlopImage@Base 8:6.9.10.2
- ForegroundColor@Base 8:6.9.10.2
+ (optional=internalABInoAPI)ForegroundColor@Base 8:6.9.10.2
  FormatImageAttribute@Base 8:6.9.10.2
  FormatImageAttributeList@Base 8:6.9.10.2
  FormatImageProperty@Base 8:6.9.10.2
@@ -562,6 +563,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  GetMagickSeekableStream@Base 8:6.9.10.2
  GetMagickThreadSupport@Base 8:6.9.10.2
  GetMagickThreadValue@Base 8:6.9.10.2
+ GetMagickTime@Base 8:6.9.11.24
  GetMagickToken@Base 8:6.9.10.2
  GetMagickVersion@Base 8:6.9.10.2
  GetMatrixColumns@Base 8:6.9.10.2
@@ -699,7 +701,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  HashPointerType@Base 8:6.9.10.2
  HashStringInfoType@Base 8:6.9.10.2
  HashStringType@Base 8:6.9.10.2
- HeapOverflowSanityCheck@Base 8:6.9.10.2
+ (optional=internalABInoAPI)HeapOverflowSanityCheck@Base 8:6.9.10.2
  HoughLineImage@Base 8:6.9.10.2
  HuffmanDecodeImage@Base 8:6.9.10.2
  HuffmanEncodeImage@Base 8:6.9.10.2
@@ -810,16 +812,18 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  ListThresholdMaps@Base 8:6.9.10.2
  ListTypeInfo@Base 8:6.9.10.2
  LoadFontConfigFonts@Base 8:6.9.10.2
- LoadImageTag@Base 8:6.9.10.2
- LoadImagesTag@Base 8:6.9.10.2
+ (optional=internalABInoAPI)LoadImageTag@Base 8:6.9.10.2
+ (optional=internalABInoAPI)LoadImagesTag@Base 8:6.9.10.2
  (optional=InternalABInoAPI)LoadMimeLists@Base 8:6.9.10.2
  LocalContrastImage@Base 8:6.9.10.2
  LocaleCompare@Base 8:6.9.10.2
  LocaleComponentGenesis@Base 8:6.9.10.2
  LocaleComponentTerminus@Base 8:6.9.10.2
  LocaleLower@Base 8:6.9.10.2
+ LocaleLowercase@Base 8:6.9.11.24
  LocaleNCompare@Base 8:6.9.10.2
  LocaleUpper@Base 8:6.9.10.2
+ LocaleUppercase@Base 8:6.9.11.24
  LockSemaphoreInfo@Base 8:6.9.10.2
  LogComponentGenesis@Base 8:6.9.10.2
  LogComponentTerminus@Base 8:6.9.10.2
@@ -849,7 +853,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  MapImage@Base 8:6.9.10.2
  MapImages@Base 8:6.9.10.2
  MatrixToImage@Base 8:6.9.10.2
- MatteColor@Base 8:6.9.10.2
+ (optional=internalABInoAPI)MatteColor@Base 8:6.9.10.2
  MatteFloodfillImage@Base 8:6.9.10.2
  MaximumImages@Base 8:6.9.10.2
  MeanShiftImage@Base 8:6.9.10.2
@@ -906,8 +910,8 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  OrderedDitherImageChannel@Base 8:6.9.10.2
  OrderedPosterizeImage@Base 8:6.9.10.2
  OrderedPosterizeImageChannel@Base 8:6.9.10.2
- PSDensityGeometry@Base 8:6.9.10.2
- PSPageGeometry@Base 8:6.9.10.2
+ (optional=internalABInoAPI)PSDensityGeometry@Base 8:6.9.10.2
+ (optional=internalABInoAPI)PSPageGeometry@Base 8:6.9.10.2
  PackbitsEncodeImage@Base 8:6.9.10.2
  PaintFloodfillImage@Base 8:6.9.10.2
  PaintOpaqueImage@Base 8:6.9.10.2
@@ -1068,8 +1072,8 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  RotationalBlurImageChannel@Base 8:6.9.10.2
  SampleImage@Base 8:6.9.10.2
  SanitizeString@Base 8:6.9.10.2
- SaveImageTag@Base 8:6.9.10.2
- SaveImagesTag@Base 8:6.9.10.2
+ (optional=internalABInoAPI)SaveImageTag@Base 8:6.9.10.2
+ (optional=internalABInoAPI)SaveImagesTag@Base 8:6.9.10.2
  ScaleGeometryKernelInfo@Base 8:6.9.10.2
  ScaleImage@Base 8:6.9.10.2
  ScaleKernelInfo@Base 8:6.9.10.2
@@ -1136,6 +1140,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  SetLogFormat@Base 8:6.9.10.2
  SetLogMethod@Base 8:6.9.10.2
  SetLogName@Base 8:6.9.10.2
+ SetMagickAlignedMemoryMethods@Base 8:6.9.11.24
  SetMagickInfo@Base 8:6.9.10.2
  SetMagickMemoryMethods@Base 8:6.9.10.2
  SetMagickOpenCLEnvParam@Base 8:6.9.10.2
@@ -1216,6 +1221,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  StringToArrayOfDoubles@Base 8:6.9.10.2
  StringToList@Base 8:6.9.10.2
  StringToStringInfo@Base 8:6.9.10.2
+ StringToStrings@Base 8:6.9.11.24
  StringToken@Base 8:6.9.10.2
  Strip@Base 8:6.9.10.2
  StripImage@Base 8:6.9.10.2
@@ -1254,7 +1260,7 @@ libMagickCore-${IMVERSION}.${UCQUANTUMDEPTH}.so.${CORESOVERSION} libmagickcore-$
  TransformImages@Base 8:6.9.10.2
  TransformRGBImage@Base 8:6.9.10.2
  TranslateText@Base 8:6.9.10.2
- TransparentColor@Base 8:6.9.10.2
+ (optional=internalABInoAPI)TransparentColor@Base 8:6.9.10.2
  TransparentImage@Base 8:6.9.10.2
  TransparentPaintImage@Base 8:6.9.10.2
  TransparentPaintImageChroma@Base 8:6.9.10.2

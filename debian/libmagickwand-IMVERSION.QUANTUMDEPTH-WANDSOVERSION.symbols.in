@@ -404,6 +404,10 @@ libMagickWand-${IMVERSION}.${UCQUANTUMDEPTH}.so.${WANDSOVERSION} libmagickwand-$
  MagickLabelImage@Base 8:6.9.10.2
  MagickLevelImage@Base 8:6.9.10.2
  MagickLevelImageChannel@Base 8:6.9.10.2
+ MagickLevelImageColors@Base 8:6.9.11.24
+ MagickLevelImageColorsChannel@Base 8:6.9.11.24
+ MagickLevelizeImage@Base 8:6.9.11.24
+ MagickLevelizeImageChannel@Base 8:6.9.11.24
  MagickLinearStretchImage@Base 8:6.9.10.2
  MagickLiquidRescaleImage@Base 8:6.9.10.2
  MagickLocalContrastImage@Base 8:6.9.10.2
@@ -537,6 +541,7 @@ libMagickWand-${IMVERSION}.${UCQUANTUMDEPTH}.so.${WANDSOVERSION} libmagickwand-$
  MagickSetImageOption@Base 8:6.9.10.2
  MagickSetImageOrientation@Base 8:6.9.10.2
  MagickSetImagePage@Base 8:6.9.10.2
+ MagickSetImagePixelColor@Base 8:6.9.11.24
  MagickSetImagePixels@Base 8:6.9.10.2
  MagickSetImageProfile@Base 8:6.9.10.2
  MagickSetImageProgressMonitor@Base 8:6.9.10.2
