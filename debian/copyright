@@ -553,7 +553,7 @@ License: ImageMagick
 
 Files: m4/ac_func_fseeko.m4
 Copyright:  2000-2006 Free Software Foundation, Inc.
-license: GPL3+-with-Autoconf-Macros-exception-GNU
+License: GPL3+-with-Autoconf-Macros-exception-GNU
 
 Files: m4/ax_append_flag.m4
 Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
