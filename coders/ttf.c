@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -52,6 +52,7 @@
 #include "magick/memory_.h"
 #include "magick/pixel-accessor.h"
 #include "magick/quantum-private.h"
+#include "magick/resource_.h"
 #include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/module.h"
@@ -171,12 +172,6 @@ static Image *ReadTTFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     buffer[MaxTextExtent],
     *text;
 
-  const char
-    *Text = (char *)
-      "abcdefghijklmnopqrstuvwxyz\n"
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZ\n"
-      "0123456789.:,;(*!?}^)#${%^&-+@\n";
-
   const TypeInfo
     *type_info;
 
@@ -201,6 +196,12 @@ static Image *ReadTTFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   ssize_t
     y;
+
+  static const char
+    Text[] =
+      "abcdefghijklmnopqrstuvwxyz\n"
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ\n"
+      "0123456789.:,;(*!?}^)#${%^&-+@\n";
 
   /*
     Open image file.
@@ -252,7 +253,8 @@ static Image *ReadTTFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   y=20;
   draw_info=CloneDrawInfo(image_info,(DrawInfo *) NULL);
-  draw_info->font=AcquireString(image->filename);
+  draw_info->font=AcquireString("");
+  (void) ImageToFile(image,draw_info->font,exception);
   ConcatenateString(&draw_info->primitive,"push graphic-context\n");
   (void) FormatLocaleString(buffer,MaxTextExtent," viewbox 0 0 %.20g %.20g\n",
     (double) image->columns,(double) image->rows);
@@ -287,6 +289,7 @@ static Image *ReadTTFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Relinquish resources.
   */
+  (void) RelinquishUniqueFileResource(draw_info->font);
   draw_info=DestroyDrawInfo(draw_info);
   (void) CloseBlob(image);
   return(GetFirstImageInList(image));
@@ -338,7 +341,7 @@ ModuleExport size_t RegisterTTFImage(void)
   entry->description=ConstantString("Multi-face font package");
   if (*version != '\0')
     entry->version=ConstantString(version);
-  entry->module=ConstantString("TTF");
+  entry->magick_module=ConstantString("TTF");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("PFA");
 #if defined(MAGICKCORE_FREETYPE_DELEGATE)
@@ -349,7 +352,7 @@ ModuleExport size_t RegisterTTFImage(void)
   entry->description=ConstantString("Postscript Type 1 font (ASCII)");
   if (*version != '\0')
     entry->version=ConstantString(version);
-  entry->module=ConstantString("TTF");
+  entry->magick_module=ConstantString("TTF");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("PFB");
 #if defined(MAGICKCORE_FREETYPE_DELEGATE)
@@ -360,7 +363,7 @@ ModuleExport size_t RegisterTTFImage(void)
   entry->description=ConstantString("Postscript Type 1 font (binary)");
   if (*version != '\0')
     entry->version=ConstantString(version);
-  entry->module=ConstantString("TTF");
+  entry->magick_module=ConstantString("TTF");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("OTF");
 #if defined(MAGICKCORE_FREETYPE_DELEGATE)
@@ -371,7 +374,7 @@ ModuleExport size_t RegisterTTFImage(void)
   entry->description=ConstantString("Open Type font");
   if (*version != '\0')
     entry->version=ConstantString(version);
-  entry->module=ConstantString("TTF");
+  entry->magick_module=ConstantString("TTF");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("TTC");
 #if defined(MAGICKCORE_FREETYPE_DELEGATE)
@@ -382,7 +385,7 @@ ModuleExport size_t RegisterTTFImage(void)
   entry->description=ConstantString("TrueType font collection");
   if (*version != '\0')
     entry->version=ConstantString(version);
-  entry->module=ConstantString("TTF");
+  entry->magick_module=ConstantString("TTF");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("TTF");
 #if defined(MAGICKCORE_FREETYPE_DELEGATE)
@@ -393,7 +396,7 @@ ModuleExport size_t RegisterTTFImage(void)
   entry->description=ConstantString("TrueType font");
   if (*version != '\0')
     entry->version=ConstantString(version);
-  entry->module=ConstantString("TTF");
+  entry->magick_module=ConstantString("TTF");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

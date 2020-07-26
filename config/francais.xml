@@ -318,14 +318,14 @@
           <message name="UnknownPatternType">
             Type de motif inconnu
           </message>
-          <message name="UnrecognizedBitsPerPixel">
-            bits par pixel non reconnus
-          </message>
           <message name="UnrecognizedImageCompression">
             compression non reconnue
           </message>
           <message name="UnrecognizedNumberOfColors">
             nombre de couleurs non reconnu
+          </message>
+          <message name="UnsupportedBitsPerPixel">
+            bits par pixel non supporté
           </message>
         </error>
         <fatalerror>
@@ -545,6 +545,9 @@
         <message name="AssociateProfile">
           associate profile with image, a source and destination color profile required for transform
         </message>
+        <message name="UnableToTransformColorspace">
+          impossible de colorimétrique la transformation
+        </message>
       </warning>
     </image>
     <missing>
@@ -618,6 +621,9 @@
         </message>
         <message name="ImagePagesAreNotCoalesced">
           image pages are not coalesced
+        </message>
+        <message name="ImageSequenceRequired">
+          une séquence d'images est requise
         </message>
         <message name="ImageSizeMustExceedBevelWidth">
           la taille doit être supérieure à la largeur de la facette
@@ -714,6 +720,9 @@
         </message>
         <message name="UnbalancedParenthesis">
           parenthèse non fermée
+        </message>
+        <message name="UndefinedVariable">
+          undefined variable
         </message>
         <message name="UnrecognizedAttribute">
           attribut non reconnu

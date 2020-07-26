@@ -1,8 +1,8 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
-  You may not use this file except in compliance with the License.
+  You may not use this file except in compliance with the License.  You may
   obtain a copy of the License at
 
     https://imagemagick.org/script/license.php
@@ -52,7 +52,7 @@ extern "C" {
 #define R_OK 4
 #define W_OK 2
 #define RW_OK 6
-#define _SC_PAGESIZE 1
+#define _SC_PAGE_SIZE 1
 #define _SC_PHYS_PAGES 2
 #define _SC_OPEN_MAX 3
 #if !defined(SSIZE_MAX)
@@ -100,6 +100,9 @@ extern "C" {
 #endif
 #if !defined(fileno)
 #  define fileno  _fileno
+#endif
+#if !defined(freelocale)
+#  define freelocale  _free_locale
 #endif
 #if !defined(fseek) && !defined(__MINGW32__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
@@ -189,9 +192,6 @@ extern "C" {
 #  define mmap(address,length,protection,access,file,offset) \
   NTMapMemory(address,length,protection,access,file,offset)
 #endif
-#if !defined(msync)
-#  define msync(address,length,flags)  NTSyncMemory(address,length,flags)
-#endif
 #if !defined(munmap)
 #  define munmap(address,length)  NTUnmapMemory(address,length)
 #endif
@@ -215,9 +215,6 @@ extern "C" {
 #endif
 #if !defined(readdir)
 #  define readdir(directory)  NTReadDirectory(directory)
-#endif
-#if !defined(seekdir)
-#  define seekdir(directory,offset)  NTSeekDirectory(directory,offset)
 #endif
 #if !defined(setmode)
 #  define setmode  _setmode
@@ -253,11 +250,14 @@ extern "C" {
 #else
 #  define tell  _tell
 #endif
-#if !defined(telldir)
-#  define telldir(directory)  NTTellDirectory(directory)
-#endif
 #if !defined(tempnam)
 #  define tempnam  _tempnam_s
+#endif
+#if !defined(tolower_l)
+#define tolower_l  _tolower_l
+#endif
+#if !defined(toupper_l)
+#define toupper_l  _toupper_l
 #endif
 #if !defined(umask)
 #  define umask  _umask
@@ -320,6 +320,7 @@ extern MagickExport int
 extern MagickExport void
   NTErrorHandler(const ExceptionType,const char *,const char *),
   NTWarningHandler(const ExceptionType,const char *,const char *);
+
 #endif
 
 #if defined(__cplusplus) || defined(c_plusplus)

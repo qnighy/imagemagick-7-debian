@@ -17,7 +17,7 @@
 %                               January 2008                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -380,7 +380,7 @@ ModuleExport size_t RegisterXPSImage(void)
   entry->seekable_stream=MagickTrue;
   entry->thread_support=EncoderThreadSupport;
   entry->description=ConstantString("Microsoft XML Paper Specification");
-  entry->module=ConstantString("XPS");
+  entry->magick_module=ConstantString("XPS");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

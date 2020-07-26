@@ -17,7 +17,7 @@
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -869,7 +869,7 @@ WandExport ssize_t GetPixelViewY(const PixelView *pixel_view)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  IsPixelView() returns MagickTrue if the the parameter is verified as a pixel
+%  IsPixelView() returns MagickTrue if the parameter is verified as a pixel
 %  view container.
 %
 %  The format of the IsPixelView method is:

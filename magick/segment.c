@@ -17,7 +17,7 @@
 %                                April 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -246,6 +246,21 @@ static MagickBooleanType Classify(Image *image,short **extrema,
   const MagickRealType weighting_exponent,const MagickBooleanType verbose)
 {
 #define SegmentImageTag  "Segment/Image"
+#define ThrowClassifyException(severity,tag,label) \
+{\
+  for (cluster=head; cluster != (Cluster *) NULL; cluster=next_cluster) \
+  { \
+    next_cluster=cluster->next; \
+    cluster=(Cluster *) RelinquishMagickMemory(cluster); \
+  } \
+  if (squares != (double *) NULL) \
+    { \
+      squares-=255; \
+      free_squares=squares; \
+      free_squares=(double *) RelinquishMagickMemory(free_squares); \
+    } \
+  ThrowBinaryException(severity,tag,label); \
+}
 
   CacheView
     *image_view;
@@ -291,6 +306,7 @@ static MagickBooleanType Classify(Image *image,short **extrema,
   */
   cluster=(Cluster *) NULL;
   head=(Cluster *) NULL;
+  squares=(double *) NULL;
   (void) memset(&red,0,sizeof(red));
   (void) memset(&green,0,sizeof(green));
   (void) memset(&blue,0,sizeof(blue));
@@ -318,7 +334,7 @@ static MagickBooleanType Classify(Image *image,short **extrema,
             head=cluster;
           }
         if (cluster == (Cluster *) NULL)
-          ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+          ThrowClassifyException(ResourceLimitError,"MemoryAllocationFailed",
             image->filename);
         /*
           Initialize a new class.
@@ -338,7 +354,7 @@ static MagickBooleanType Classify(Image *image,short **extrema,
       */
       cluster=(Cluster *) AcquireMagickMemory(sizeof(*cluster));
       if (cluster == (Cluster *) NULL)
-        ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+        ThrowClassifyException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename);
       /*
         Initialize a new class.
@@ -499,13 +515,13 @@ static MagickBooleanType Classify(Image *image,short **extrema,
       (void) FormatLocaleFile(stdout,"\n");
     }
   if (number_clusters > 256)
-    ThrowBinaryException(ImageError,"TooManyClusters",image->filename);
+    ThrowClassifyException(ImageError,"TooManyClusters",image->filename);
   /*
     Speed up distance calculations.
   */
   squares=(MagickRealType *) AcquireQuantumMemory(513UL,sizeof(*squares));
   if (squares == (MagickRealType *) NULL)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowClassifyException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   squares+=255;
   for (i=(-255); i <= 255; i++)
@@ -514,7 +530,7 @@ static MagickBooleanType Classify(Image *image,short **extrema,
     Allocate image colormap.
   */
   if (AcquireImageColormap(image,number_clusters) == MagickFalse)
-    ThrowBinaryException(ResourceLimitError,"MemoryAllocationFailed",
+    ThrowClassifyException(ResourceLimitError,"MemoryAllocationFailed",
       image->filename);
   i=0;
   for (cluster=head; cluster != (Cluster *) NULL; cluster=cluster->next)
@@ -1680,7 +1696,7 @@ static MagickRealType OptimalTau(const ssize_t *histogram,const double max_tau,
   average_tau=0.0;
   for (i=0; i < number_nodes; i++)
     average_tau+=list[i]->tau;
-  average_tau/=(MagickRealType) number_nodes;
+  average_tau*=PerceptibleReciprocal((MagickRealType) number_nodes);
   /*
     Relinquish resources.
   */

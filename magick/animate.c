@@ -17,7 +17,7 @@
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -66,6 +66,7 @@
 #include "magick/resource_.h"
 #include "magick/string_.h"
 #include "magick/string-private.h"
+#include "magick/timer-private.h"
 #include "magick/transform.h"
 #include "magick/utility.h"
 #include "magick/version.h"
@@ -87,78 +88,77 @@
   Static declarations.
 */
 static const char
-  *AnimateHelp[]=
+  AnimateHelp[] =
   {
-    "BUTTONS",
-    "",
-    "  Press any button to map or unmap the Command widget.",
-    "",
-    "COMMAND WIDGET",
-    "  The Command widget lists a number of sub-menus and commands.",
-    "  They are",
-    "",
-    "    Animate",
-    "      Open...",
-    "      Save...",
-    "      Play",
-    "      Step",
-    "      Repeat",
-    "      Auto Reverse",
-    "    Speed",
-    "      Slower",
-    "      Faster",
-    "    Direction",
-    "      Forward",
-    "      Reverse",
-    "      Help",
-    "        Overview",
-    "        Browse Documentation",
-    "        About Animate",
-    "    Image Info",
-    "    Quit",
-    "",
-    "  Menu items with a indented triangle have a sub-menu.  They",
-    "  are represented above as the indented items.  To access a",
-    "  sub-menu item, move the pointer to the appropriate menu and",
-    "  press a button and drag.  When you find the desired sub-menu",
-    "  item, release the button and the command is executed.  Move",
-    "  the pointer away from the sub-menu if you decide not to",
-    "  execute a particular command.",
-    "",
-    "KEYBOARD ACCELERATORS",
-    "  Accelerators are one or two key presses that effect a",
-    "  particular command.  The keyboard accelerators that",
-    "  animate(1) understands is:",
-    "",
-    "  Ctl+O  Press to open an image from a file.",
-    "",
-    "  space  Press to display the next image in the sequence.",
-    "",
-    "  <      Press to speed-up the display of the images.  Refer to",
-    "         -delay for more information.",
-    "",
-    "  >      Press to slow the display of the images.  Refer to",
-    "         -delay for more information.",
-    "",
-    "  F1     Press to display helpful information about animate(1).",
-    "",
-    "  Find   Press to browse documentation about ImageMagick.",
-    "",
-    "  ?      Press to display information about the image.  Press",
-    "         any key or button to erase the information.",
-    "",
-    "         This information is printed: image name;  image size;",
-    "         and the total number of unique colors in the image.",
-    "",
-    "  Ctl-q  Press to discard all images and exit program.",
-    (char *) NULL
+    "BUTTONS\n"
+    "\n"
+    "  Press any button to map or unmap the Command widget.\n"
+    "\n"
+    "COMMAND WIDGET\n"
+    "  The Command widget lists a number of sub-menus and commands.\n"
+    "  They are\n"
+    "\n"
+    "    Animate\n"
+    "      Open...\n"
+    "      Save...\n"
+    "      Play\n"
+    "      Step\n"
+    "      Repeat\n"
+    "      Auto Reverse\n"
+    "    Speed\n"
+    "      Slower\n"
+    "      Faster\n"
+    "    Direction\n"
+    "      Forward\n"
+    "      Reverse\n"
+    "      Help\n"
+    "        Overview\n"
+    "        Browse Documentation\n"
+    "        About Animate\n"
+    "    Image Info\n"
+    "    Quit\n"
+    "\n"
+    "  Menu items with a indented triangle have a sub-menu.  They\n"
+    "  are represented above as the indented items.  To access a\n"
+    "  sub-menu item, move the pointer to the appropriate menu and\n"
+    "  press a button and drag.  When you find the desired sub-menu\n"
+    "  item, release the button and the command is executed.  Move\n"
+    "  the pointer away from the sub-menu if you decide not to\n"
+    "  execute a particular command.\n"
+    "\n"
+    "KEYBOARD ACCELERATORS\n"
+    "  Accelerators are one or two key presses that effect a\n"
+    "  particular command.  The keyboard accelerators that\n"
+    "  animate(1) understands is:\n"
+    "\n"
+    "  Ctl+O  Press to open an image from a file.\n"
+    "\n"
+    "  space  Press to display the next image in the sequence.\n"
+    "\n"
+    "  <      Press to speed-up the display of the images.  Refer to\n"
+    "         -delay for more information.\n"
+    "\n"
+    "  >      Press to slow the display of the images.  Refer to\n"
+    "         -delay for more information.\n"
+    "\n"
+    "  F1     Press to display helpful information about animate(1).\n"
+    "\n"
+    "  Find   Press to browse documentation about ImageMagick.\n"
+    "\n"
+    "  ?      Press to display information about the image.  Press\n"
+    "         any key or button to erase the information.\n"
+    "\n"
+    "         This information is printed: image name;  image size;\n"
+    "         and the total number of unique colors in the image.\n"
+    "\n"
+    "  Ctl-q  Press to discard all images and exit program.\n"
   };
 
 /*
   Constant declarations.
 */
 static const char
-  *PageSizes[]=
+  *PageSizes[] =
   {
     "Letter",
     "Tabloid",
@@ -479,7 +479,8 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
     case PlayCommand:
     {
       char
-        basename[MaxTextExtent];
+        basename[MaxTextExtent],
+        name[MaxTextExtent];
 
       int
         status;
@@ -490,8 +491,9 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       *state|=PlayAnimationState;
       *state&=(~AutoReverseAnimationState);
       GetPathComponent((*image)->magick_filename,BasePath,basename);
-      (void) FormatLocaleString(windows->image.name,MaxTextExtent,
-        "%s: %s",MagickPackageName,basename);
+      (void) FormatLocaleString(name,MaxTextExtent,"%s: %s", MagickPackageName,
+        basename);
+      (void) CloneString(&windows->image.name,name);
       if (resource_info->title != (char *) NULL)
         {
           char
@@ -499,7 +501,7 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
 
           title=InterpretImageProperties(resource_info->image_info,*image,
             resource_info->title);
-          (void) CopyMagickString(windows->image.name,title,MaxTextExtent);
+          (void) CloneString(&windows->image.name,title);
           title=DestroyString(title);
         }
       status=XStringListToTextProperty(&windows->image.name,1,&window_name);
@@ -592,7 +594,7 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       /*
         User requested help.
       */
-      XTextViewWidget(display,resource_info,windows,MagickFalse,
+      XTextViewHelp(display,resource_info,windows,MagickFalse,
         "Help Viewer - Animate",AnimateHelp);
       break;
     }
@@ -1207,8 +1209,8 @@ MagickExport Image *XAnimateImages(Display *display,
 #define MaXWindows  8
 #define MagickTitle  "Commands"
 
-  static const char
-    *CommandMenu[]=
+  const char
+    *const CommandMenu[]=
     {
       "Animate",
       "Speed",
@@ -1218,7 +1220,7 @@ MagickExport Image *XAnimateImages(Display *display,
       "Quit",
       (char *) NULL
     },
-    *AnimateMenu[]=
+    *const AnimateMenu[]=
     {
       "Open...",
       "Play",
@@ -1228,19 +1230,19 @@ MagickExport Image *XAnimateImages(Display *display,
       "Save...",
       (char *) NULL
     },
-    *SpeedMenu[]=
+    *const SpeedMenu[]=
     {
       "Faster",
       "Slower",
       (char *) NULL
     },
-    *DirectionMenu[]=
+    *const DirectionMenu[]=
     {
       "Forward",
       "Reverse",
       (char *) NULL
     },
-    *HelpMenu[]=
+    *const HelpMenu[]=
     {
       "Overview",
       "Browse Documentation",
@@ -1248,8 +1250,8 @@ MagickExport Image *XAnimateImages(Display *display,
       (char *) NULL
     };
 
-  static const char
-    **Menus[MagickMenus]=
+  const char
+    *const *Menus[MagickMenus]=
     {
       AnimateMenu,
       SpeedMenu,
@@ -1568,7 +1570,8 @@ MagickExport Image *XAnimateImages(Display *display,
     resource_info,&windows->context);
   (void) CloneString(&class_hints->res_name,resource_info->client_name);
   (void) CloneString(&class_hints->res_class,resource_info->client_name);
-  class_hints->res_class[0]=(char) toupper((int) class_hints->res_class[0]);
+  class_hints->res_class[0]=(char) LocaleUppercase((int)
+    class_hints->res_class[0]);
   manager_hints->flags=InputHint | StateHint;
   manager_hints->input=MagickFalse;
   manager_hints->initial_state=WithdrawnState;
@@ -1656,23 +1659,25 @@ MagickExport Image *XAnimateImages(Display *display,
 
       title=InterpretImageProperties(resource_info->image_info,display_image,
         resource_info->title);
-      (void) CopyMagickString(windows->image.name,title,MaxTextExtent);
-      (void) CopyMagickString(windows->image.icon_name,title,MaxTextExtent);
+      (void) CloneString(&windows->image.name,title);
+      (void) CloneString(&windows->image.icon_name,title);
       title=DestroyString(title);
     }
   else
     {
       char
-        filename[MaxTextExtent];
+        filename[MaxTextExtent],
+        window_name[MaxTextExtent];
 
       /*
         Window name is the base of the filename.
       */
       GetPathComponent(display_image->magick_filename,TailPath,filename);
-      (void) FormatLocaleString(windows->image.name,MaxTextExtent,
+      (void) FormatLocaleString(window_name,MaxTextExtent,
         "%s: %s[scene: %.20g frames: %.20g]",MagickPackageName,filename,(double)
         display_image->scene,(double) number_scenes);
-      (void) CopyMagickString(windows->image.icon_name,filename,MaxTextExtent);
+      (void) CloneString(&windows->image.name,window_name);
+      (void) CloneString(&windows->image.icon_name,filename);
     }
   if (resource_info->immutable != MagickFalse)
     windows->image.immutable=MagickTrue;
@@ -1966,18 +1971,22 @@ MagickExport Image *XAnimateImages(Display *display,
 
         title=InterpretImageProperties(resource_info->image_info,
           image_list[scene],resource_info->title);
-        (void) CopyMagickString(windows->image.name,title,MaxTextExtent);
+        (void) CloneString(&windows->image.name,title);
         title=DestroyString(title);
       }
     else
       {
+        char
+          window_name[MaxTextExtent];
+
         p=image_list[scene]->magick_filename+
           strlen(image_list[scene]->magick_filename)-1;
         while ((p > image_list[scene]->magick_filename) && (*(p-1) != '/'))
           p--;
-        (void) FormatLocaleString(windows->image.name,MaxTextExtent,
+        (void) FormatLocaleString(window_name,MaxTextExtent,
           "%s: %s[%.20g of %.20g]",MagickPackageName,p,(double) scene+1,
           (double) number_scenes);
+        (void) CloneString(&windows->image.name,window_name);
       }
     status=XStringListToTextProperty(&windows->image.name,1,&window_name);
     if (status != Success)
@@ -2087,6 +2096,9 @@ MagickExport Image *XAnimateImages(Display *display,
           if ((state & StepAnimationState) ||
               (resource_info->title != (char *) NULL))
             {
+              char
+                name[MaxTextExtent];
+
               /*
                 Update window title.
               */
@@ -2094,9 +2106,10 @@ MagickExport Image *XAnimateImages(Display *display,
                 strlen(image_list[scene]->filename)-1;
               while ((p > image_list[scene]->filename) && (*(p-1) != '/'))
                 p--;
-              (void) FormatLocaleString(windows->image.name,MaxTextExtent,
-                "%s: %s[%.20g of %.20g]",MagickPackageName,p,(double)
-                scene+1,(double) number_scenes);
+              (void) FormatLocaleString(name,MaxTextExtent,
+                "%s: %s[%.20g of %.20g]",MagickPackageName,p,(double) scene+1,
+                (double) number_scenes);
+              (void) CloneString(&windows->image.name,name);
               if (resource_info->title != (char *) NULL)
                 {
                   char
@@ -2104,8 +2117,7 @@ MagickExport Image *XAnimateImages(Display *display,
 
                   title=InterpretImageProperties(resource_info->image_info,
                     image,resource_info->title);
-                  (void) CopyMagickString(windows->image.name,title,
-                    MaxTextExtent);
+                  (void) CloneString(&windows->image.name,title);
                   title=DestroyString(title);
                 }
               status=XStringListToTextProperty(&windows->image.name,1,
@@ -2165,10 +2177,10 @@ MagickExport Image *XAnimateImages(Display *display,
     /*
       Handle a window event.
     */
-    timestamp=time((time_t *) NULL);
+    timestamp=GetMagickTime();
     (void) XNextEvent(display,&event);
     if (windows->image.stasis == MagickFalse)
-      windows->image.stasis=(time((time_t *) NULL)-timestamp) > 0 ?
+      windows->image.stasis=(GetMagickTime()-timestamp) > 0 ?
         MagickTrue : MagickFalse;
     if (event.xany.window == windows->command.id)
       {

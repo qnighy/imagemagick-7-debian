@@ -23,7 +23,7 @@
 %                                 August 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -6855,7 +6855,7 @@ WandExport MagickBooleanType MagickLabelImage(MagickWand *wand,
 %
 %    o wand: the magick wand.
 %
-%    o channel: Identify which channel to level: RedChannel, GreenChannel,
+%    o channel: Identify which channel to level: RedChannel, GreenChannel, etc.
 %
 %    o black_point: the black point.
 %
@@ -6890,6 +6890,151 @@ WandExport MagickBooleanType MagickLevelImageChannel(MagickWand *wand,
   if (wand->images == (Image *) NULL)
     ThrowWandException(WandError,"ContainsNoImages",wand->name);
   status=LevelImageChannel(wand->images,channel,black_point,white_point,gamma);
+  if (status == MagickFalse)
+    InheritException(wand->exception,&wand->images->exception);
+  return(status);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   M a g i c k L e v e l I m a g e C o l o r s                               %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  MagickLevelImageColors() maps the given color to "black" and "white" values,
+%  linearly spreading out the colors, and level values on a channel by channel
+%  bases, as per LevelImage().  The given colors allows you to specify
+%  different level ranges for each of the color channels separately.
+%
+%  The format of the MagickLevelImageColors method is:
+%
+%      MagickBooleanType MagickLevelImageColors(MagickWand *wand,
+%        const PixelWand *black_color,const PixelWand *white_color,
+%        const MagickBooleanType invert)
+%      MagickBooleanType MagickLevelImageColorsChannel(MagickWand *wand,
+%        const ChannelType channel,const PixelWand *black_color,
+%        const PixelWand *white_color,const MagickBooleanType invert)
+%
+%  A description of each parameter follows:
+%
+%    o wand: the magick wand.
+%
+%    o channel: Identify which channel to level: RedChannel, GreenChannel, etc.
+%
+%    o black_color: the black color.
+%
+%    o white_color: the white color.
+%
+%    o invert: if true map the colors (levelize), rather than from (level)
+%
+*/
+
+WandExport MagickBooleanType MagickLevelImageColors(MagickWand *wand,
+  const PixelWand *black_color,const PixelWand *white_color,
+  const MagickBooleanType invert)
+{
+  MagickBooleanType
+    status;
+
+  status=MagickLevelImageColorsChannel(wand,DefaultChannels,black_color,
+    white_color,invert);
+  return(status);
+}
+
+WandExport MagickBooleanType MagickLevelImageColorsChannel(MagickWand *wand,
+  const ChannelType channel,const PixelWand *black_color,
+  const PixelWand *white_color,const MagickBooleanType invert)
+{
+  MagickBooleanType
+    status;
+
+  MagickPixelPacket
+    black,
+    white;
+
+  assert(wand != (MagickWand *) NULL);
+  assert(wand->signature == WandSignature);
+  if (wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  if (wand->images == (Image *) NULL)
+    ThrowWandException(WandError,"ContainsNoImages",wand->name);
+  PixelGetMagickColor(black_color,&black);
+  PixelGetMagickColor(white_color,&white);
+  status=LevelColorsImageChannel(wand->images,channel,&black,&white,invert);
+  if (status == MagickFalse)
+    InheritException(wand->exception,&wand->images->exception);
+  return(status);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   M a g i c k L e v e l i z e I m a g e                                     %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  MagickLevelizeImage() applies the reversed MagickLevelImage(). It compresses
+%  the full range of color values, so that they lie between the given black and
+%  white points.  Gamma is applied before the values are mapped.  It can be
+%  used to de-contrast a greyscale image to the exact levels specified.
+%
+%  The format of the MagickLevelizeImage method is:
+%
+%      MagickBooleanType MagickLevelizeImage(MagickWand *wand,
+%        const double black_point,const double gamma,const double white_point)
+%      MagickBooleanType MagickLevelizeImageChannel(MagickWand *wand,
+%        const ChannelType channel,const double black_point,const double gamma,
+%        const double white_point)
+%
+%  A description of each parameter follows:
+%
+%    o wand: the magick wand.
+%
+%    o channel: Identify which channel to level: RedChannel, GreenChannel, etc.
+%
+%    o black_point: The level to map zero (black) to.
+%
+%    o gamma: adjust gamma by this factor before mapping values.
+%
+%    o white_point: The level to map QuantumRange (white) to.
+%
+*/
+
+WandExport MagickBooleanType MagickLevelizeImage(MagickWand *wand,
+  const double black_point,const double gamma,const double white_point)
+{
+  MagickBooleanType
+    status;
+
+  status=MagickLevelizeImageChannel(wand,DefaultChannels,black_point,gamma,
+    white_point);
+  return(status);
+}
+
+WandExport MagickBooleanType MagickLevelizeImageChannel(MagickWand *wand,
+  const ChannelType channel,const double black_point,const double gamma,
+  const double white_point)
+{
+  MagickBooleanType
+    status;
+
+  assert(wand != (MagickWand *) NULL);
+  assert(wand->signature == WandSignature);
+  if (wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  if (wand->images == (Image *) NULL)
+    ThrowWandException(WandError,"ContainsNoImages",wand->name);
+  status=LevelizeImageChannel(wand->images,channel,black_point,white_point,
+    gamma);
   if (status == MagickFalse)
     InheritException(wand->exception,&wand->images->exception);
   return(status);
@@ -7420,10 +7565,11 @@ WandExport MagickWand *MagickMorphImages(MagickWand *wand,
 %  The format of the MagickMorphologyImage method is:
 %
 %      MagickBooleanType MagickMorphologyImage(MagickWand *wand,
-%        MorphologyMethod method,const ssize_t iterations,KernelInfo *kernel)
+%        const MorphologyMethod method,const ssize_t iterations,
+%        const KernelInfo *kernel)
 %      MagickBooleanType MagickMorphologyImageChannel(MagickWand *wand,
-%        ChannelType channel,MorphologyMethod method,const ssize_t iterations,
-%        KernelInfo *kernel)
+%        ChannelType channel,const MorphologyMethod method,
+%        const ssize_t iterations,const KernelInfo *kernel)
 %
 %  A description of each parameter follows:
 %
@@ -7442,7 +7588,8 @@ WandExport MagickWand *MagickMorphImages(MagickWand *wand,
 */
 
 WandExport MagickBooleanType MagickMorphologyImage(MagickWand *wand,
-  MorphologyMethod method,const ssize_t iterations,KernelInfo *kernel)
+  const MorphologyMethod method,const ssize_t iterations,
+  const KernelInfo *kernel)
 {
   MagickBooleanType
     status;
@@ -7453,8 +7600,8 @@ WandExport MagickBooleanType MagickMorphologyImage(MagickWand *wand,
 }
 
 WandExport MagickBooleanType MagickMorphologyImageChannel(MagickWand *wand,
-  const ChannelType channel,MorphologyMethod method,const ssize_t iterations,
-  KernelInfo *kernel)
+  const ChannelType channel,const MorphologyMethod method,
+  const ssize_t iterations,const KernelInfo *kernel)
 {
   Image
     *morphology_image;
@@ -10376,8 +10523,9 @@ WandExport MagickBooleanType MagickSetImageFilename(MagickWand *wand,
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
   if (wand->images == (Image *) NULL)
     ThrowWandException(WandError,"ContainsNoImages",wand->name);
-  if (filename != (const char *) NULL)
-    (void) CopyMagickString(wand->images->filename,filename,MaxTextExtent);
+  if (filename == (const char *) NULL)
+    return(MagickFalse);
+  (void) CopyMagickString(wand->images->filename,filename,MaxTextExtent);
   return(MagickTrue);
 }
 
@@ -10913,6 +11061,69 @@ WandExport MagickBooleanType MagickSetImagePage(MagickWand *wand,
   wand->images->page.height=height;
   wand->images->page.x=x;
   wand->images->page.y=y;
+  return(MagickTrue);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%   M a g i c k S e t I m a g e P i x e l C o l o r                           %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  MagickSetImagePixelColor() sets the color of the specified pixel.
+%
+%  The format of the MagickSetImagePixelColor method is:
+%
+%      MagickBooleanType MagickSetImagePixelColor(MagickWand *wand,
+%        const ssize_t x,const ssize_t y,const PixelWand *color)
+%
+%  A description of each parameter follows:
+%
+%    o wand: the magick wand.
+%
+%    o x,y: the pixel offset into the image.
+%
+%    o color: Return the colormap color in this wand.
+%
+*/
+WandExport MagickBooleanType MagickSetImagePixelColor(MagickWand *wand,
+  const ssize_t x,const ssize_t y,const PixelWand *color)
+{
+  IndexPacket
+    *indexes;
+
+  register PixelPacket
+    *q;
+
+  CacheView
+    *image_view;
+
+  assert(wand != (MagickWand *) NULL);
+  assert(wand->signature == WandSignature);
+  if (wand->debug != MagickFalse)
+    (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand->name);
+  if (wand->images == (Image *) NULL)
+    ThrowWandException(WandError,"ContainsNoImages",wand->name);
+  image_view=AcquireVirtualCacheView(wand->images,wand->exception);
+  q=GetCacheViewAuthenticPixels(image_view,x,y,1,1,wand->exception);
+  if (q == (PixelPacket *) NULL)
+    {
+      image_view=DestroyCacheView(image_view);
+      return(MagickFalse);
+    }
+  indexes=GetCacheViewAuthenticIndexQueue(image_view);
+  PixelGetQuantumColor(color,q);
+  if (GetCacheViewColorspace(image_view) == CMYKColorspace)
+    *indexes=PixelGetBlackQuantum(color);
+  else
+    if (GetCacheViewStorageClass(image_view) == PseudoClass)
+      *indexes=PixelGetIndex(color);
+  image_view=DestroyCacheView(image_view);
   return(MagickTrue);
 }
 
@@ -12998,7 +13209,8 @@ WandExport MagickBooleanType MagickUnsharpMaskImageChannel(MagickWand *wand,
 %
 */
 WandExport MagickBooleanType MagickVignetteImage(MagickWand *wand,
-  const double black_point,const double white_point,const ssize_t x,const ssize_t y)
+  const double black_point,const double white_point,const ssize_t x,
+  const ssize_t y)
 {
   Image
     *vignette_image;
@@ -13034,8 +13246,8 @@ WandExport MagickBooleanType MagickVignetteImage(MagickWand *wand,
 %
 %  The format of the MagickWaveImage method is:
 %
-%      MagickBooleanType MagickWaveImage(MagickWand *wand,const double amplitude,
-%        const double wave_length)
+%      MagickBooleanType MagickWaveImage(MagickWand *wand,
+%        const double amplitude,const double wave_length)
 %
 %  A description of each parameter follows:
 %

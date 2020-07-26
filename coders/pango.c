@@ -17,7 +17,7 @@
 %                                 March 2012                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -185,6 +185,8 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
   assert(exception->signature == MagickCoreSignature);
   image=AcquireImage(image_info);
   (void) ResetImagePage(image,"0x0+0+0");
+  if ((image->columns != 0) && (image->rows != 0))
+    (void) SetImageBackgroundColor(image);
   /*
     Format caption.
   */
@@ -196,8 +198,11 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
       property=InterpretImageProperties(image_info,image,option+6);
     else
       property=InterpretImageProperties(image_info,image,option);
-  (void) SetImageProperty(image,"caption",property);
-  property=DestroyString(property);
+  if (property != (char *) NULL)
+    {
+      (void) SetImageProperty(image,"caption",property);
+      property=DestroyString(property);
+    }
   caption=ConstantString(GetImageProperty(image,"caption"));
   /*
     Get context.
@@ -325,6 +330,16 @@ static Image *ReadPANGOImage(const ImageInfo *image_info,
   if ((align != PANGO_ALIGN_CENTER) &&
       (draw_info->direction == RightToLeftDirection))
     align=(PangoAlignment) (PANGO_ALIGN_LEFT+PANGO_ALIGN_RIGHT-align);
+  option=GetImageOption(image_info,"pango:align");
+  if (option != (const char *) NULL) 
+    {
+      if (LocaleCompare(option,"center") == 0)
+        align=PANGO_ALIGN_CENTER;
+      if (LocaleCompare(option,"left") == 0)
+        align=PANGO_ALIGN_LEFT;
+      if (LocaleCompare(option,"right") == 0)
+        align=PANGO_ALIGN_RIGHT;
+    }
   pango_layout_set_alignment(layout,align);
   if (draw_info->font == (char *) NULL)
     description=pango_font_description_new();
@@ -513,7 +528,7 @@ ModuleExport size_t RegisterPANGOImage(void)
     entry->version=ConstantString(version);
   entry->adjoin=MagickFalse;
   entry->thread_support=MagickFalse;
-  entry->module=ConstantString("PANGO");
+  entry->magick_module=ConstantString("PANGO");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

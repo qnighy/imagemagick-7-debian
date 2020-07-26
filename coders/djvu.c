@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -186,8 +186,7 @@ pump_data_until_message(LoadContext *lc,Image *image) /* ddjvu_context_t *contex
 #define DEBUG 0
 
 #if DEBUG
-static const char*
-message_tag_name(ddjvu_message_tag_t tag)
+static const char *message_tag_name(ddjvu_message_tag_t tag)
 {
    static char* names[] =
       {
@@ -963,7 +962,7 @@ ModuleExport size_t RegisterDJVUImage(void)
   entry->adjoin=MagickFalse;
   entry->thread_support=NoThreadSupport;
   entry->description=AcquireString("Deja vu");
-  entry->module=AcquireString("DJVU");
+  entry->magick_module=AcquireString("DJVU");
   if (*version != '\0')
     entry->version=AcquireString(version);
   entry->note=AcquireString(DJVUNote);

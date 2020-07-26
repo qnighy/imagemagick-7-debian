@@ -1,3 +1,780 @@
+2020-07-18  6.9.11-24  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-24 GIT revision 15789:349d7ff34:20200718
+
+2020-07-13  6.9.11-24  <quetzlzacatenango@image...>
+  * Discover hidden files when globbing (e.g. *.jpg) (reference
+    https://github.com/ImageMagick/ImageMagick/discussions/2239).
+
+2020-07-03  6.9.11-23  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-23 GIT revision 15762:9b6e0e045:20200704 
+
+2020-06-28  6.9.11-23  <quetzlzacatenango@image...>
+  * Ensure that float is valid in ClampToQuantum() (reference
+    https://github.com/ImageMagick/ImageMagick/pull/2219).
+
+2020-06-26  6.9.11-22  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-22 GIT revision 15744:b14dc552e:20200626
+
+2020-06-24  6.9.11-22  <quetzlzacatenango@image...>
+  * fix wrapping of caption (reference
+    https://github.com/ImageMagick/ImageMagick/issues/2178).
+  * sanity check of affine matrix when drawing.
+
+2020-06-22  6.9.11-21  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-21 GIT revision 15731:0eff8c6b7:20200622
+
+2020-06-21  6.9.11-21  <quetzlzacatenango@image...>
+  * new image property, %N, only report the # of frames in an image sequence,
+    just once rather than on a per frame basis
+  * problems converting CMYK to RGB regression (reference
+    https://github.com/ImageMagick/ImageMagick6/issues/83)
+
+2020-06-20  6.9.11-20  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-20 GIT revision 15709:77849ee5a:20200620
+
+2020-06-14  6.9.11-20  <quetzlzacatenango@image...>
+  * Fix out-of-bounds vulnerability when reading sixel images (reference
+    https://github.com/ImageMagick/ImageMagick/issues/2143).
+  * Fix incorrect parsing of font family list (reference
+    https://github.com/ImageMagick/ImageMagick/issues/2153).
+
+2020-06-12  6.9.11-19 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-19, GIT revision 15677:b26bd57:20200612
+
+2020-06-09  6.9.11-19 Cristy  <quetzlzacatenango@image...>
+  * Improve checking for write failures (reference
+    https://github.com/ImageMagick/ImageMagick/pull/2081).
+
+2020-06-08  6.9.11-18 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-18, GIT revision 15667:842c9ade8:20200608
+
+2020-06-08  6.9.11-18 Cristy  <quetzlzacatenango@image...>
+  * Colorspace change will remove ICC profile (reference
+    https://github.com/ImageMagick/ImageMagick6/issues/82).
+
+2020-06-07  6.9.11-17 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-17, GIT revision 15651:ff95d16:20200607
+
+2020-06-03  6.9.11-17 Cristy  <quetzlzacatenango@image...>
+  * Free up memory after a ICC profile is removed.
+
+2020-05-31  6.9.11-16 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-16, GIT revision 15639:38d3390:20200531
+
+2020-05-31  6.9.11-16 Cristy  <quetzlzacatenango@image...>
+  * Fix PDF XREF directory for image sequences with and without ICC profiles.
+
+2020-05-26  6.9.11-15 Cristy  <quetzlzacatenango@image...>
+  * CCL area threshold not working correctly.
+  * Don't write a ICC profile to PDF if the image is gray (reference
+    https://github.com/ImageMagick/ImageMagick/issues/2070).
+
+2020-05-22  6.9.11-14 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-14, GIT revision 15618:471a07315:20200522
+
+2020-05-22  6.9.11-14 Cristy  <quetzlzacatenango@image...>
+  * Errant warning when reading a profile file (reference
+    https://github.com/ImageMagick/ImageMagick/issues/2030).
+  * Fix one off error on PDF object for images with ICC profile.
+
+2020-05-17  6.9.11-13 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-13, GIT revision 15610:9445760:20200517.
+
+2020-05-17  6.9.11-13 Cristy  <quetzlzacatenango@image...>
+  * Remove errant debugging statement in SVG coder.
+
+2020-05-15  6.9.11-12 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-12, GIT revision 15602:96db62d:20200515.
+
+2020-05-12  6.9.11-12 Cristy  <quetzlzacatenango@image...>
+  * Black artefacts during quantization (reference
+    https://github.com/ImageMagick/ImageMagick/discussions/2007#discussioncomment-13546).
+
+2020-04-08  6.9.11-11 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-11, GIT revision 15592:6c1c1a9:20200508
+
+2020-04-28  6.9.11-11 Cristy  <quetzlzacatenango@image...>
+  * Disable "random" OpenCL kernel.  Previously the work load was distributed
+    but each started with the same random seed.
+  * Enable threaded PNG coder.
+
+2020-04-27  6.9.11-10 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-10, GIT revision 15574:867252a:20200427
+
+2020-04-27  6.9.11-10 Cristy  <quetzlzacatenango@image...>
+  * Correction to allocate a colormap of the maximum colors when color
+    reducing an image sequence.
+  * Write to stdout for mp4:-.
+
+2020-04-26  6.9.11-9 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-9, GIT revision 15563:7e4286f:20200426.
+
+2020-04-25  6.9.11-9 Cristy  <quetzlzacatenango@image...>
+  * Allocate a colormap of the maximum colors when color reducing an image
+    sequence.
+  * Label was not centered properly (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1879).
+
+2020-04-24  6.9.11-8 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-8, GIT revision 15554:1ab590d:20200424.
+
+2020-04-23  6.9.11-8 Cristy  <quetzlzacatenango@image...>
+  * Some configure --with-method-prefix methods were missing (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1912).
+
+2020-04-20  6.9.11-7 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-7, GIT revision 15549:7b11069:20200420.
+
+2020-04-07  6.9.11-7 Cristy  <quetzlzacatenango@image...>
+  * Fix erroneous "insufficient image data" exception (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1883).
+  * Fix an unconditional jump for the XPM coder (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1895).
+
+2020-04-06  6.9.11-6 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-6, GIT revision 15539:e9e105c:20200406.
+
+2020-04-06  6.9.11-6 Cristy  <quetzlzacatenango@image...>
+  * Fix incomplete patch for EPT coder (reference
+    https://github.com/ImageMagick/ImageMagick6/issues/80).
+
+2020-04-05  6.9.11-5 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-5, GIT revision 15536:3689bed3a:20200405
+
+2020-04-05  6.9.11-5 Cristy  <quetzlzacatenango@image...>
+  * Default inkscape delegate to version 0.92 (reference
+    https://github.com/ImageMagick/ImageMagick/discussions/1880).
+  * Set monochrome image depth to 1 for Group4 compression.
+
+2020-04-05  6.9.11-4 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-4, GIT revision 15531:5fc7a9f:20200405.
+
+2020-03-27  6.9.11-4 Cristy  <quetzlzacatenango@image...>
+  * The X max attribute for certain fonts is zero (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=1&t=37723).
+  * Fix possible null pointer dereference in magick/property.c (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1225).
+  * Multi-value of jp2:quality does not work (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1873).
+  * Return EPS & TIFF images from the EPT image format (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=37781).
+
+2020-03-27  6.9.11-3 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-3, GIT revision 15511:23bb003:20200327.
+
+2020-03-22  6.9.11-3 Cristy  <quetzlzacatenango@image...>
+  * Fix numerical instability issue when drawing lines.
+  * Fix off by one exception when calling QuantumImages() (reference
+    https://github.com/ImageMagick/ImageMagick6/issues/77).
+  * Improve mono font rendering (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=1&t=37723).
+
+2020-03-21  6.9.11-2 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-2, GIT revision 15500:698c610:20200321
+
+2020-03-16  6.9.11-2 Cristy  <quetzlzacatenango@image...>
+  * Fixed another sizing issue with the label coder when pointsize is set.
+  * Respect explicit image filename modified (e.g. png24:im.png) (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1835).
+  * Stroked dash array render properly again.
+
+2020-03-15  6.9.11-1 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-1, GIT revision 15487:ffac3c4:20200315.
+
+2020-03-07  6.9.11-1 Cristy  <quetzlzacatenango@image...>
+  * Do not throw exception on empty draw path (reference
+    https://github.com/ImageMagick/ImageMagick/issues/974).
+  * Fix possible buffer overflow in ComplexImages().
+
+2020-03-06  6.9.11-0 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-0, GIT revision 15465:f7c926d:20200306.
+
+2020-03-01  6.9.11-0 Cristy  <quetzlzacatenango@image...>
+  * Label text no longer gets cut-off (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=1&t=37621).
+  * Prevent heap overflow (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1857).
+
+2020-02-29  6.9.10-97 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-97, GIT revision 15453:0537c847b:20200229
+
+2020-02-24  6.9.10-97 Cristy  <quetzlzacatenango@image...>
+  * Make sure we can grok this Fx expression: 1- -2.
+  * Do not advance when substituting a NULL string.
+  * Correct alpha for named colors in the Q32 non-HDRI build.
+  * Write Group4 compressed image as a single strip.
+
+2020-02-23  6.9.10-96 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-96, GIT revision 15438:2ef65d48e:20200223
+
+2020-02-22  6.9.10-96 Cristy  <quetzlzacatenango@image...>
+  * Adapt to a change in command-line options in the SVG inkscape delegate.
+
+2020-02-21  6.9.10-95 Cristy  <quetzlzacatenango@image...>
+  * No percent sign in lab() color.
+
+2020-02-18  6.9.10-95 Cristy  <quetzlzacatenango@image...>
+  * Adapt to a change in command-line options in the SVG inkscape delegate.
+
+2020-02-16  6.9.10-94 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-94, GIT revision 15405:56d9955fc:20200217
+
+2020-02-16  6.9.10-94 Cristy  <quetzlzacatenango@image...>
+  * Corrected ellipse orientation when computing image moments.
+
+2020-02-14  6.9.10-93 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-93, GIT revision 15386:2d96228:20200214
+
+2020-02-08  6.9.10-93 Cristy  <quetzlzacatenango@image...>
+  * Report gray(127.5) as gray(50%).
+
+2020-02-07  6.9.10-92 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-92, GIT revision 15374:d468797:20200207
+
+2020-02-03  6.9.10-92 Cristy  <quetzlzacatenango@image...>
+  * More work on connect components, e.g. keep-colors, remove-colors,
+    keep-topids 
+  * Initialize mutex before locking if its not already initialized
+  * Support 24-bit TIFF images.
+
+2020-02-01  6.9.10-91 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-91, GIT revision 15346:4691fe1:20200201.
+
+2020-01-27  6.9.10-91 Cristy  <quetzlzacatenango@image...>
+  * Support additional connected component defines.
+  * Refresh cache morphology when writing MPC images.
+
+2020-01-26  6.9.10-89 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-89, GIT revision 15318:2b12203:20200126
+
+2020-01-26  6.9.10-89 Cristy  <quetzlzacatenango@image...>
+  * Make png creation reproducible (reference
+    https://github.com/ImageMagick/ImageMagick/pull/1270).
+  * Refactor uninitialize variable for -fx "while(,)" expression.
+
+2020-01-25  6.9.10-88 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-88, GIT revision 15309:a3d1b6f:20200125
+
+2020-01-20  6.9.10-88 Cristy  <quetzlzacatenango@image...>
+  * Support 32-bit tiles TIFF images.
+  * New -connected-component options (reference
+    https://legacy.imagemagick.org/script/connected-components.php).
+
+2020-01-18  6.9.10-87 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-87, GIT revision 15285:f6ba467:20200118
+
+2020-01-12  6.9.10-87 Cristy  <quetzlzacatenango@image...>
+  * Conditional compile for huge xml pages for RSVG delegate library.
+  * Put "width" property in the PNG namespace (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1833).
+ * -combine -colorspace sRGB no longer returns grayscale output (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1835).
+
+2020-01-12  6.9.10-86 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-86, GIT revision 15260:0667659:20200112.
+
+2020-01-12  6.9.10-86 Cristy  <quetzlzacatenango@image...>
+  * Fixed three failing Magick.NET unit tests.
+
+2020-01-11  6.9.10-85 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-85, GIT revision 15253:1fdc999:20200111.
+
+2020-01-11  6.9.10-85 Dirk Lemstra <dirk@lem.....org>
+  * Also support svg:xml-parse-huge when using librsvg.
+
+2020-01-07  6.9.10-85 Cristy  <quetzlzacatenango@image...>
+  * Support Fx do() iterator.
+  * `magick -size 100x100 xc:black black.pnm` no longer creates a white image
+    (reference https://github.com/ImageMagick/ImageMagick/issues/1817).
+  * setjmp/longjmp in jpeg.c no longer trigger undefind behavior (reference
+		https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=37379).
+  * Permit compositing in the CMYK colorspace (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=37368).
+
+2020-01-04  6.9.10-84 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-84, GIT revision 15212:a45335c:20200104.
+
+2020-01-01  6.9.10-84 Cristy  <quetzlzacatenango@image...>
+  * Support extended Fx assignment operators (e.g. *=, /=, ++, --, etc.)
+  * Support Fx for() iterator.
+	* Optimize Fx performance.
+	* Ensure circle.rb renders the same for IMv6 and IMv7 (reference
+    https://github.com/rmagick/rmagick/issues/905).
+
+2019-12-30  6.9.10-83 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-83, GIT revision 15184:9f64323:20191230.
+
+2019-12-28  6.9.10-83 Cristy  <quetzlzacatenango@image...>
+  * PSD: only set the alpha channel when type is not 0.
+  * Fix Lab to custom profile (CMYK or RGB) conversion bug (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=37318).
+
+2019-12-27  6.9.10-82 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-82, GIT revision 15167:12b7f07:20191226.
+
+2019-12-26  6.9.10-82 Cristy  <quetzlzacatenango@image...>
+  * Fix Build failure with MinGW-w64 (reference
+    https://github.com/ImageMagick/ImageMagick6/issues/67).
+  * Inject image profile properties immediately after the image is read.
+
+2019-12-24  6.9.10-81 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-81, GIT revision 15151:1444366:20191224.
+
+2019-12-18  6.9.10-81 Cristy  <quetzlzacatenango@image...>
+  * Replace pseudo-random number generator with a Xoshiro generator.
+  * Define MagickAddressType (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=3729).
+
+2019-12-22  6.9.10-80 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-80, GIT revision 15135:8aa94ec27:20191222
+
+2019-12-18  6.9.10-80 Cristy  <quetzlzacatenango@image...>
+  * Some clang releases do not support _aligned_alloc().
+
+2019-12-07  6.9.10-79 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-79, GIT revision 15127:fa10678:20191215.
+
+2019-12-07  6.9.10-79 Cristy  <quetzlzacatenango@image...>
+  * Build file clean-up (reference
+    https://github.com/ImageMagick/ImageMagick/pull/1798).
+  * Improve semaphore handling @
+    https://github.com/ImageMagick/ImageMagick/pull/1798).
+  * Introduce HeapOverflowSanityCheckGetExtent() method (reference
+    https://github.com/ImageMagick/ImageMagick/pull/1798).
+
+2019-12-01  6.9.10-78 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-78, GIT revision 15097:0136438:20191207.
+
+2019-12-01  6.9.10-78 Cristy  <quetzlzacatenango@image...>
+  * -type bilevel behavior restored, it creates a black and white image.
+
+2019-11-29  6.9.10-77 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-77, GIT revision 15087:5e6be1a:20191129.
+
+2019-11-26  6.9.10-77 Cristy  <quetzlzacatenango@image...>
+  * Support Pocketmod image format, e.g.
+    convert -density 300 pages?.pdf pocketmod:organize.pdf
+  * Fixed numerous issues  posted to GitHub (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+  * Update documentation.
+
+    https://github.com/ImageMagick/ImageMagick/issues/1784).
+2019-11-26  6.9.10-75 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-75, GIT revision 15062:f23c75e:20191126.
+
+2019-11-19  6.9.10-75 Cristy  <quetzlzacatenango@image...>
+  * Increase the maximum number of bezier coordinates (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1784).
+  * Santize "'" from SHOW and WIN delegates under Linux, '"\' for Windows
+    (thanks to Enzo Puig).
+  * Correct for TGA orientation (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=34757).
+  * The result for -compose Copy -extent on a CMYK image is CMYK (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=37118).
+  * Fix potential buffer overflow when reading a fax image (alert from
+    Justin).
+  * Support dng:use-camera-wb option.
+
+2019-11-17  6.9.10-74 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-74, GIT revision 15030:6efa1b6:20191117.
+
+2019-11-16  6.9.10-74 Cristy  <quetzlzacatenango@image...>
+  * Ensure Ascii85 compression is thread safe.
+  * Fixed numerous issues  posted to GitHub (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-11-14  6.9.10-73 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-73, GIT revision 15014:bcb2b51:20191114.
+
+2019-11-14  6.9.10-73 Cristy  <quetzlzacatenango@image...>
+  * HP's ANSI C/C++ compiler does not support strcasestr().
+
+2019-11-13  6.9.10-72 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-72, GIT revision 15011:4cf3857:20191113.
+
+2019-11-10  6.9.10-72 Cristy  <quetzlzacatenango@image...>
+  * Output exception there is an attempt to perform an operation not allowed by
+    the security policy
+  * Fixed numerous issues  posted to GitHub (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-10-30  6.9.10-71 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-71, GIT revision 14989:8da75bd:20191030.
+
+2019-10-29  6.9.10-71 Cristy  <quetzlzacatenango@image...>
+  * JPEG and JPG are aliases in coder security policy.
+  * Fixed numerous issues  posted to GitHub (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-10-27  6.9.10-70 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-70, GIT revision 14970:4200095:20191027.
+
+2019-10-27  6.9.10-70 Cristy  <quetzlzacatenango@image...>
+  * Fixed numerous issues  posted to GitHub (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+2019-10-27  6.9.10-70 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-70, GIT revision 14970:4200095:20191027.
+
+2019-10-27  6.9.10-70 Cristy  <quetzlzacatenango@image...>
+  * Fixed numerous issues  posted to GitHub (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-10-24  6.9.10-69 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-69, GIT revision 14962:03a9bac:20191024
+
+2019-10-06  6.9.10-69 Cristy  <quetzlzacatenango@image...>
+  * Fixed numerous issues  posted to GitHub (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+  * Support trim:background-color define for -trim option
+
+2019-10-05  6.9.10-68 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-68, GIT revision 14874:eb58b7e:20191005.
+
+2019-09-30  6.9.10-68 Cristy  <quetzlzacatenango@image...>
+  * Support animated WebP encoding/decoding (reference
+    https://github.com/ImageMagick/ImageMagick/pull/1708).
+  * Text stroke cut off (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=1&t=36829).
+
+2019-09-29  6.9.10-67 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-67, GIT revision 14844:2a2c1b1:20190929.
+
+2019-09-28  6.9.10-67 Cristy  <quetzlzacatenango@image...>
+  * line endings renedered as empty boxes (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1704).
+
+2019-09-21  6.9.10-66 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-66, GIT revision 14834:9b20f2e:20190921.
+
+2019-09-20  6.9.10-66 Cristy  <quetzlzacatenango@image...>
+  * Support compound statements in the FX while() expression (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1701).
+
+2019-09-14  6.9.10-65 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-65, GIT revision 14829:1a6dc73:20190915/
+
+2019-09-09  6.9.10-65 Cristy  <quetzlzacatenango@image...>
+  * Eliminate fault when trace delegate is not available.
+  * Properly distinquish linear and non-linear gray colorspaces (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1680).
+
+2019-09-07  6.9.10-64 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-64, GIT revision 14812:b27c543:20190907.
+
+2019-09-02  6.9.10-64 Cristy  <quetzlzacatenango@image...>
+  * Support XPM symbolic (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1684).
+
+2019-08-31  6.9.10-63 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-63, GIT revision 14796:9b9fba4:20190831.
+
+2019-08-24  6.9.10-63 Cristy  <quetzlzacatenango@image...>
+  * Properly identify the DNG and AI image format (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=36581).
+
+2019-08-23  6.9.10-62 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-62, GIT revision 14779:2da539a:20190823.
+
+2019-08-19  6.9.10-62 Cristy  <quetzlzacatenango@image...>
+  * Conditionally compile call to AcquireCLocale() (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1669).
+  * More robust support for converting bitmap to vector.
+
+2019-08-16  6.9.10-61 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-61, GIT revision 14757:36133aa:20190816.
+
+2019-08-12  6.9.10-61 Cristy  <quetzlzacatenango@image...>
+  * Fixed bug when writing MPC to PNG (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=36518).
+
+2019-08-10  6.9.10-60 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-60, GIT revision 14745:ce6bac3:20190810.
+
+2019-08-07  6.9.10-60 Cristy  <quetzlzacatenango@image...>
+  * Enable reading EXR image file from stdin.
+
+2019-08-03  6.9.10-59 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-59, GIT revision 14730:b2d457b:20190803.
+
+2019-08-01  6.9.10-59 Cristy  <quetzlzacatenango@image...>
+  * Module is a reserved keyword for C++ 20 (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1650).
+
+2019-07-29  6.9.10-58 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-58, GIT revision 14723:fffbce8:20190729.
+
+2019-07-27  6.9.10-58 Cristy  <quetzlzacatenango@image...>
+  * Improve GetNextToken() performance.
+
+2019-07-26  6.9.10-57 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-57, GIT revision 14712:94d15b7:20190726.
+
+2019-07-22  6.9.10-57 Cristy  <quetzlzacatenango@image...>
+  * Heap-buffer-overflow in Postscript coder (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1644).
+  * Correction to the ModulusAdd and ModulusSubtract composite op (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=2&t=36413).
+
+2019-07-20  6.9.10-56 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-56, GIT revision 14704:d0be203:20190720.
+
+2019-07-20  6.9.10-56 Cristy  <quetzlzacatenango@image...>
+  * Converting from PDF to PBM inverts the image (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1643).
+
+2019-07-18  6.9.10-55 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-55, GIT revision 14700:faac202:20190718.
+
+2019-07-08  6.9.10-55 Cristy  <quetzlzacatenango@image...>
+  * Heap-buffer overflow (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1641).
+  * PerlMagick test suite passes again (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1640).
+
+2019-07-16  6.9.10-54 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-54, GIT revision 14684:41399a3:20190716
+
+2019-07-08  6.9.10-54 Cristy  <quetzlzacatenango@image...>
+  * Avoid divide by zero (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1629).
+  * introducing MagickLevelImageColors() MagickWand method.
+  * Transient problem with text placement with gravity (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1633).
+
+2019-07-05  6.9.10-53 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-53, GIT revision 14625:70fb1c6:20190705.
+
+2019-07-05  6.9.10-53 Cristy  <quetzlzacatenango@image...>
+  * Coder heic.c build failure  (reference
+    https://github.com/ImageMagick/ImageMagick6/issues/50).
+
+2019-07-05  6.9.10-52 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-52, GIT revision 14623:672ff6a:20190705.
+
+2019-07-01  6.9.10-52 Cristy  <quetzlzacatenango@image...>
+  * Eliminate buffer overflow in TranslateEvent() (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1621).
+  * Fix -fx parsing issue (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=36314).
+
+2019-06-30  6.9.10-51 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-51, GIT revision 14607:cec35fb:20190630.
+
+2019-06-24  6.9.10-51 Cristy  <quetzlzacatenango@image...>
+  * Clone rather than copy X window name/icon.
+  * Optimize PDF reader.
+
+2019-06-23  6.9.10-50 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-50, GIT revision 14583:598f03b:20190623
+
+2019-06-16  6.9.10-50 Cristy  <quetzlzacatenango@image...>
+  * Heap-buffer-overflow in MagickCore/fourier.c (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1588).
+  * Fixed a number of issues (reference
+    https://imagemagick.org/discourse-server/viewforum.php?f=3).
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-06-08  6.9.10-49 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-49, GIT revision 14530:19dcf6f:20190608
+
+2019-06-04  6.9.10-49 Cristy  <quetzlzacatenango@image...>
+  * Use user defined allocator instead of `malloc` (reference
+    https://github.com/ImageMagick/ImageMagick6/pull/49/).
+  * Add static decorator to accelerator kernels (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1366).
+
+2019-05-26  6.9.10-47 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-47, GIT revision 14507:321f99ca6:20190526
+
+2019-05-19  6.9.10-47 Cristy  <quetzlzacatenango@image...>
+  * Support 16 and 32 bit tiled float TIFF images.
+  * Text improvements to the internal SVG renderer.
+
+2019-05-14  6.9.10-46 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-46, GIT revision 14492:fb2f64950:20190518
+
+2019-05-14  6.9.10-46 Cristy  <quetzlzacatenango@image...>
+  * Builds under MacOS X and FreeBSD works again.
+  * Return HEIC images in the sRGB colorspace.
+
+2019-05-12  6.9.10-45 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-45, GIT revision 14473:2116be83b:20190512
+
+2019-05-06  6.9.10-45 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://imagemagick.org/discourse-server/viewforum.php?f=3).
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-05-03  6.9.10-44 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-44, GIT revision 14449:d077c2e58:20190503
+
+2019-05-03  6.9.10-44 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://imagemagick.org/discourse-server/viewforum.php?f=3).
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-05-01  6.9.10-43 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-43, GIT revision 14444:1580c66ba:20190502
+
+2019-05-01  6.9.10-43 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://imagemagick.org/discourse-server/viewforum.php?f=3).
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-04-29  6.9.10-42 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-42, GIT revision 14417:929367bd1:20190424
+
+2019-04-20  6.9.10-42 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://imagemagick.org/discourse-server/viewforum.php?f=3).
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-04-19  6.9.10-41 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-41, GIT revision 14390:6d46f0a04:20190420
+
+2019-04-14  6.9.10-41 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://imagemagick.org/discourse-server/viewforum.php?f=3).
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+  * Honor SOURCE_DATE_EPOCH environment variable (reference
+    https://github.com/ImageMagick/ImageMagick/pull/1496/).
+  * Standardize on UTC time for any image format timestamp.
+
+2019-04-12  6.9.10-40 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-40, GIT revision 14362:7e503e231:20190412
+
+2019-04-10  6.9.10-40 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://imagemagick.org/discourse-server/viewforum.php?f=3).
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-04-07  6.9.10-39 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-39, GIT revision 14346:6b5a9cc87:20190406
+
+2019-04-06  6.9.10-39 Cristy  <quetzlzacatenango@image...>
+  * The -preview raise option now returns expected results.
+  * Initialise ghostscript instances with NULL (reference
+    https://github.com/ImageMagick/ImageMagick/pull/1538).
+
+2019-04-06  6.9.10-38 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-38, GIT revision 14341:09f7569e8:20190406
+
+2019-04-06  6.0.10-38 Cristy  <quetzlzacatenango@image...>
+  * Modulo off by one patch for -virtual-pixel option (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=35789)
+
+2019-04-03  6.9.10-37 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-37, GIT revision 14329:0dc57c67b:20190403
+
+2019-04-03  6.0.10-37 Cristy  <quetzlzacatenango@image...>
+  * Fixed -virtual-pixel option (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=35789)
+
+2019-03-31  6.9.10-36 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-36, GIT revision 14321:3b6ba12f4:20190331
+
+2019-03-27  6.9.10-36 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-03-24  6.9.10-35 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-35, GIT revision 14298:633d5a989:20190324
+
+2019-03-23  6.9.10-35 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-03-15  6.9.10-34 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-34, GIT revision 14276:b0b2799a2:20190315
+
+2019-03-11  6.9.10-34 Cristy  <quetzlzacatenango@image...>
+  * Associate one lock with each resource.
+  * Report exception if opening TIFF did not work ou.
+  * Fixed numerous use of uninitialized values, integer overflow, memory
+    exceeded, and timeouts (credit to OSS Fuzz).
+
+2019-03-10  6.9.10-33 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-33, GIT revision 14266:fb9c848b1:20190310
+
+2019-03-06  6.9.10-33 Cristy  <quetzlzacatenango@image...>
+  * Fix SVG conversion infinite loop (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=3&t=35591).
+  * Initialize primitive drawing structure after resizing.
+
+2019-03-05  6.9.10-32 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-32, GIT revision 14250:4d956d2ac:20190305
+
+2019-03-05  6.9.10-32 Cristy  <quetzlzacatenango@image...>
+  * Fix out-of-boundary LocaleLowerCase() @
+    https://github.com/ImageMagick/ImageMagick/issues/1495
+
+2019-03-04  6.9.10-31 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-31, GIT revision 14246:6de0b115c:20190304
+
+2019-03-04  6.9.10-31 Cristy  <quetzlzacatenango@image...>
+  * -trim is no longer sensitive to the image virtual canvas.
+
+2019-03-03  6.9.10-30 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-30, GIT revision 14240:d62e5fd8b:20190303
+
+2019-03-03  6.9.10-30 Cristy  <quetzlzacatenango@image...>
+  * Support define to remove additional background from an image during a
+    trim, e.g. -fuzz 5% -define trim:percent-background=0% -trim.
+
+2019-02-28  6.9.10-29 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-29, GIT revision 14235:eee85cacc:20190228
+
+2019-02-28  6.9.10-29 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+  * Fixed numerous use of uninitialized values, integer overflow, memory
+    exceeded, and timeouts (credit to OSS Fuzz).
+
+2019-02-18  6.9.10-28 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-28, GIT revision 14227:580d9f9a6:20190218
+
+2019-02-12  6.9.10-28 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-02-09  6.9.10-27 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-27, GIT revision 14197:4e00248f4:20190209
+
+2019-02-09  6.9.10-27 Cristy  <quetzlzacatenango@image...>
+  * Mod patch to properly handle subimage ranges (e.g. image.gif[2-3]).
+
+2019-02-03  6.9.10-27 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-27, GIT revision 14180:153da6bd6:20190203
+
+2019-02-02  6.9.10-26 Cristy  <quetzlzacatenango@image...>
+  * Fixed a number of issues (reference
+    https://github.com/ImageMagick/ImageMagick/issues).
+
+2019-01-27  6.9.10-25 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-25, GIT revision 14167:183ec9d88:20190127
+
+2019-01-19  6.9.10-25 Cristy  <quetzlzacatenango@image...>
+  * Eliminate spurious font warning (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1458).
+  * Support HEIC EXIF & XMP profiles.
+
+2019-01-12  6.9.10-24 Cristy  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.10-24, GIT revision 14130:70079ed45:20190112
+
+2019-01-08  6.9.10-24 Cristy  <quetzlzacatenango@image...>
+  * Support -clahe option real clip limit (reference
+    https://imagemagick.org/discourse-server/viewtopic.php?f=2&t=35292).
+  * ShadeImage() can return negative pixels, clamp to range (reference
+    https://github.com/ImageMagick/ImageMagick/issues/1319).
+  * Annotate with negative offsets no longer renders slanted text.
+
 2019-01-01  6.9.10-23 Cristy  <quetzlzacatenango@image...>
   * Release ImageMagick version 6.9.10-23, GIT revision 14106:df6887c14:20190101
 
@@ -90,7 +867,7 @@
   * Non-HDRI ScaleLongToQuantum() private method no longer adds a half interval.
   * Fixed memset() negative-size-param (reference
     https://github.com/ImageMagick/ImageMagick/issues/1217).
-  
+
 2018-07-16  6.9.10-7 Cristy  <quetzlzacatenango@image...>
   * Release ImageMagick version 6.9.10-7, GIT revision 13676:dab6babe2:20180716.
 

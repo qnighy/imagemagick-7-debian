@@ -16,7 +16,7 @@
 %                                April 2004                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -102,7 +102,7 @@ ModuleExport size_t RegisterCIPImage(void)
   entry->encoder=(EncodeImageHandler *) WriteCIPImage;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Cisco IP phone image format");
-  entry->module=ConstantString("CIP");
+  entry->magick_module=ConstantString("CIP");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

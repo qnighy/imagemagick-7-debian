@@ -17,7 +17,7 @@
 %                               January 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -250,7 +250,7 @@ ModuleExport size_t RegisterOTBImage(void)
   entry->encoder=(EncodeImageHandler *) WriteOTBImage;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("On-the-air bitmap");
-  entry->module=ConstantString("OTB");
+  entry->magick_module=ConstantString("OTB");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

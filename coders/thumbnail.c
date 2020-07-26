@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -96,7 +96,7 @@ ModuleExport size_t RegisterTHUMBNAILImage(void)
   entry=SetMagickInfo("THUMBNAIL");
   entry->encoder=(EncodeImageHandler *) WriteTHUMBNAILImage;
   entry->description=ConstantString("EXIF Profile Thumbnail");
-  entry->module=ConstantString("THUMBNAIL");
+  entry->magick_module=ConstantString("THUMBNAIL");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

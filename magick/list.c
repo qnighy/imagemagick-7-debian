@@ -17,7 +17,7 @@
 %                               December 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -41,6 +41,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
+#include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/exception.h"
@@ -49,6 +50,7 @@
 #include "magick/list.h"
 #include "magick/memory_.h"
 #include "magick/string_.h"
+#include "magick/string-private.h"
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -207,6 +209,9 @@ MagickExport Image *CloneImages(const Image *images,const char *scenes,
   char
     *p;
 
+  const char
+    *artifact;
+
   const Image
     *next;
 
@@ -234,6 +239,7 @@ MagickExport Image *CloneImages(const Image *images,const char *scenes,
   assert(exception->signature == MagickCoreSignature);
   clone_images=NewImageList();
   images=GetFirstImageInList(images);
+  artifact=GetImageArtifact(images,"frames:step");
   length=GetImageListLength(images);
   for (p=(char *) scenes; *p != '\0';)
   {
@@ -261,8 +267,15 @@ MagickExport Image *CloneImages(const Image *images,const char *scenes,
             last=(ssize_t) length;
       }
     match=MagickFalse;
-    step=(ssize_t) (first > last ? -1 : 1);
-    for ( ; first != (last+step); first+=step)
+    step=1;
+    if (artifact != (const char *) NULL)
+      {
+        step=(ssize_t) StringToDouble(artifact,(char **) NULL);
+        if (step == 0)
+          step=1;
+      }
+    step=(ssize_t) (first > last ? -step : step);
+    for ( ; (first > -(last+step)) && (first < (last+step)); first+=step)
     {
       i=0;
       for (next=images; next != (Image *) NULL; next=GetNextImageInList(next))

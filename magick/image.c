@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -96,33 +96,12 @@
 #include "magick/thread-private.h"
 #include "magick/threshold.h"
 #include "magick/timer.h"
+#include "magick/timer-private.h"
 #include "magick/token.h"
 #include "magick/token-private.h"
 #include "magick/utility.h"
 #include "magick/version.h"
 #include "magick/xwindow-private.h"
-
-/*
-  Constant declaration.
-*/
-const char
-  BackgroundColor[] = "#ffffff",  /* white */
-  BorderColor[] = "#dfdfdf",  /* gray */
-  DefaultTileFrame[] = "15x15+3+3",
-  DefaultTileGeometry[] = "120x120+4+3>",
-  DefaultTileLabel[] = "%f\n%G\n%b",
-  ForegroundColor[] = "#000",  /* black */
-  LoadImageTag[] = "Load/Image",
-  LoadImagesTag[] = "Load/Images",
-  MatteColor[] = "#bdbdbd",  /* gray */
-  PSDensityGeometry[] = "72.0x72.0",
-  PSPageGeometry[] = "612x792",
-  SaveImageTag[] = "Save/Image",
-  SaveImagesTag[] = "Save/Images",
-  TransparentColor[] = "#00000000";  /* transparent black */
-
-const double
-  DefaultResolution = 72.0;
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -202,7 +181,7 @@ MagickExport Image *AcquireImage(const ImageInfo *image_info)
   image->ping=MagickFalse;
   image->cache=AcquirePixelCache(0);
   image->blob=CloneBlobInfo((BlobInfo *) NULL);
-  image->timestamp=time((time_t *) NULL);
+  image->timestamp=GetMagickTime();
   image->debug=IsEventLogging();
   image->reference_count=1;
   image->semaphore=AllocateSemaphoreInfo();
@@ -252,10 +231,11 @@ MagickExport Image *AcquireImage(const ImageInfo *image_info)
         geometry_info;
 
       flags=ParseGeometry(image_info->density,&geometry_info);
-      image->x_resolution=geometry_info.rho;
-      image->y_resolution=geometry_info.sigma;
-      if ((flags & SigmaValue) == 0)
-        image->y_resolution=image->x_resolution;
+      if ((flags & RhoValue) != 0)
+        image->x_resolution=geometry_info.rho;
+      image->y_resolution=image->x_resolution;
+      if ((flags & SigmaValue) != 0)
+        image->y_resolution=geometry_info.sigma;
     }
   if (image_info->page != (char *) NULL)
     {
@@ -1773,7 +1753,7 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
         *q='\0';
         (void) CopyMagickString(filename+(p-format-offset),value,(size_t)
           (MaxTextExtent-(p-format-offset)));
-        offset+=strlen(pattern)-4;
+        offset+=strlen(pattern)-strlen(value)+3;
         *q=c;
         (void) ConcatenateMagickString(filename,r+1,MaxTextExtent);
         canonical=MagickTrue;
@@ -1786,14 +1766,12 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
         break;
     }
   }
-  for (q=filename; *q != '\0'; q++)
-    if ((*q == '%') && (*(q+1) == '%'))
-      {
-        (void) CopyMagickString(q,q+1,(size_t) (MaxTextExtent-(q-filename)));
-        canonical=MagickTrue;
-      }
   if (canonical == MagickFalse)
     (void) CopyMagickString(filename,format,MaxTextExtent);
+  else
+    for (q=filename; *q != '\0'; q++)
+      if ((*q == '%') && (*(q+1) == '%'))
+        (void) CopyMagickString(q,q+1,(size_t) (MaxTextExtent-(q-filename)));
   return(strlen(filename));
 }
 
@@ -2703,9 +2681,18 @@ MagickExport MagickBooleanType SetImageExtent(Image *image,const size_t columns,
       image->filename);
   image->columns=columns;
   image->rows=rows;
-  if ((image->depth == 0) || (image->depth > (8*sizeof(MagickSizeType))))
-    ThrowBinaryImageException(ImageError,"ImageDepthNotSupported",
-      image->filename);
+  if (image->depth == 0)
+    {
+      image->depth=8;
+      (void) ThrowMagickException(&image->exception,GetMagickModule(),
+        ImageError,"ImageDepthNotSupported","`%s'",image->filename);
+    }
+  if (image->depth > (8*sizeof(MagickSizeType)))
+    {
+      image->depth=8*sizeof(MagickSizeType);
+      (void) ThrowMagickException(&image->exception,GetMagickModule(),
+        ImageError,"ImageDepthNotSupported","`%s'",image->filename);
+    }
   return(SyncImagePixelCache(image,&image->exception));
 }
 
@@ -3015,6 +3002,7 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
           (void) CloseBlob(image);
           if (status == MagickFalse)
             {
+              (void) RelinquishUniqueFileResource(filename);
               image=DestroyImage(image);
               return(MagickFalse);
             }
@@ -3023,6 +3011,7 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
           status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
           if (status == MagickFalse)
             {
+              (void) RelinquishUniqueFileResource(filename);
               image=DestroyImage(image);
               return(MagickFalse);
             }
@@ -3990,7 +3979,44 @@ MagickExport MagickBooleanType SyncImageSettings(const ImageInfo *image_info,
     units=(ResolutionType) ParseCommandOption(MagickResolutionOptions,
       MagickFalse,option);
   if (units != UndefinedResolution)
-    image->units=units;
+    {
+      if (image->units != units)
+        switch (image->units)
+        {
+          case PixelsPerInchResolution:
+          {
+            if (units == PixelsPerCentimeterResolution)
+              {
+                image->x_resolution/=2.54;
+                image->y_resolution/=2.54;
+              }
+            break;
+          }
+          case PixelsPerCentimeterResolution:
+          {
+            if (units == PixelsPerInchResolution)
+              {
+                image->x_resolution=(double) ((size_t) (100.0*2.54*
+                  image->x_resolution+0.5))/100.0;
+                image->y_resolution=(double) ((size_t) (100.0*2.54*
+                  image->y_resolution+0.5))/100.0;
+              }
+            break;
+          }
+          default:
+            break;
+        }
+      image->units=units;
+      option=GetImageOption(image_info,"density");
+      if (option != (const char *) NULL)
+        {
+          flags=ParseGeometry(option,&geometry_info);
+          image->x_resolution=geometry_info.rho;
+          image->y_resolution=geometry_info.sigma;
+          if ((flags & SigmaValue) == 0)
+            image->y_resolution=image->x_resolution;
+        }
+    }
   option=GetImageOption(image_info,"white-point");
   if (option != (const char *) NULL)
     {

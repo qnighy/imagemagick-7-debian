@@ -17,7 +17,7 @@
 %                                 July 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -68,13 +68,13 @@
 typedef struct _MagicMapInfo
 {
   const char
-    *name;
+    name[10];
 
   const MagickOffsetType
     offset;
 
   const unsigned char
-    *magic;
+    *const magic;
 
   const size_t
     length;
@@ -124,7 +124,10 @@ static const MagicMapInfo
     { "HDF", 1, MagicPattern("HDF") },
     { "HDR", 0, MagicPattern("#?RADIANCE") },
     { "HDR", 0, MagicPattern("#?RGBE") },
-    { "HEIC", 8, MagicPattern("heic") },
+    { "HEIC", 4, MagicPattern("ftypavif") },
+    { "HEIC", 4, MagicPattern("ftypheic") },
+    { "HEIC", 4, MagicPattern("ftypheix") },
+    { "HEIC", 4, MagicPattern("ftypmif1") },
     { "HPGL", 0, MagicPattern("IN;") },
     { "HTML", 1, MagicPattern("HTML") },
     { "HTML", 1, MagicPattern("html") },
@@ -212,9 +215,13 @@ static SemaphoreInfo
   Forward declarations.
 */
 static MagickBooleanType
-  IsMagicCacheInstantiated(ExceptionInfo *),
+  IsMagicCacheInstantiated(ExceptionInfo *);
+
+#if !MAGICKCORE_ZERO_CONFIGURATION_SUPPORT
+static MagickBooleanType
   LoadMagicCache(LinkedListInfo *,const char *,const char *,const size_t,
     ExceptionInfo *);
+#endif
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -274,7 +281,7 @@ static LinkedListInfo *AcquireMagicCache(const char *filename,
     Load external magic map.
   */
   status=MagickTrue;
-#if !defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
+#if !MAGICKCORE_ZERO_CONFIGURATION_SUPPORT
   {
     char
       path[MaxTextExtent];
@@ -741,6 +748,7 @@ MagickExport MagickBooleanType ListMagicInfo(FILE *file,
   return(MagickTrue);
 }
 
+#if !MAGICKCORE_ZERO_CONFIGURATION_SUPPORT
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -806,7 +814,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
     /*
       Interpret XML.
     */
-    GetNextToken(q,&q,extent,token);
+    (void) GetNextToken(q,&q,extent,token);
     if (*token == '\0')
       break;
     (void) CopyMagickString(keyword,token,MaxTextExtent);
@@ -816,7 +824,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
           Doctype element.
         */
         while ((LocaleNCompare(q,"]>",2) != 0) && (*q != '\0'))
-          GetNextToken(q,&q,extent,token);
+          (void) GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleNCompare(keyword,"<!--",4) == 0)
@@ -825,7 +833,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
           Comment element.
         */
         while ((LocaleNCompare(q,"->",2) != 0) && (*q != '\0'))
-          GetNextToken(q,&q,extent,token);
+          (void) GetNextToken(q,&q,extent,token);
         continue;
       }
     if (LocaleCompare(keyword,"<include") == 0)
@@ -836,10 +844,10 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
         while (((*token != '/') && (*(token+1) != '>')) && (*q != '\0'))
         {
           (void) CopyMagickString(keyword,token,MaxTextExtent);
-          GetNextToken(q,&q,extent,token);
+          (void) GetNextToken(q,&q,extent,token);
           if (*token != '=')
             continue;
-          GetNextToken(q,&q,extent,token);
+          (void) GetNextToken(q,&q,extent,token);
           if (LocaleCompare(keyword,"file") == 0)
             {
               if (depth > MagickMaxRecursionDepth)
@@ -898,11 +906,11 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
         magic_info=(MagicInfo *) NULL;
         continue;
       }
-    GetNextToken(q,(const char **) NULL,extent,token);
+    (void) GetNextToken(q,(const char **) NULL,extent,token);
     if (*token != '=')
       continue;
-    GetNextToken(q,&q,extent,token);
-    GetNextToken(q,&q,extent,token);
+    (void) GetNextToken(q,&q,extent,token);
+    (void) GetNextToken(q,&q,extent,token);
     switch (*keyword)
     {
       case 'N':
@@ -1002,6 +1010,7 @@ static MagickBooleanType LoadMagicCache(LinkedListInfo *cache,const char *xml,
   token=(char *) RelinquishMagickMemory(token);
   return(status != 0 ? MagickTrue : MagickFalse);
 }
+#endif
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

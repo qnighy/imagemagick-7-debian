@@ -23,7 +23,7 @@
 %                               December 2004                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -695,7 +695,7 @@ MagickPrivate char *FileToXML(const char *filename,const size_t extent)
       (void) lseek(file,0,SEEK_SET);
       for (i=0; i < length; i+=count)
       {
-        count=read(file,xml+i,(size_t) MagickMin(length-i,SSIZE_MAX));
+        count=read(file,xml+i,(size_t) MagickMin(length-i,(size_t) SSIZE_MAX));
         if (count <= 0)
           {
             count=0;
@@ -1482,19 +1482,24 @@ static char *ParseEntities(char *xml,char **entities,int state)
                     offset=(ssize_t) (xml-p);
                     extent=(size_t) (offset+length+strlen(entity));
                     if (p != q)
-                      p=(char *) ResizeQuantumMemory(p,extent,sizeof(*p));
+                      {
+                        p=(char *) ResizeQuantumMemory(p,extent+1,sizeof(*p));
+                        p[extent]='\0';
+                      }
                     else
                       {
                         char
-                          *xml;
+                          *extent_xml;
 
-                        xml=(char *) AcquireQuantumMemory(extent,sizeof(*xml));
-                        if (xml != (char *) NULL)
+                        extent_xml=(char *) AcquireQuantumMemory(extent+1,
+                          sizeof(*extent_xml));
+                        if (extent_xml != (char *) NULL)
                           {
-                            memset(xml,0,extent*sizeof(*xml));
-                            (void) CopyMagickString(xml,p,extent*sizeof(*xml));
+                            memset(extent_xml,0,extent*sizeof(*extent_xml));
+                            (void) CopyMagickString(extent_xml,p,extent*
+                              sizeof(*extent_xml));
                           }
-                        p=xml;
+                        p=extent_xml;
                       }
                     if (p == (char *) NULL)
                       ThrowFatalException(ResourceLimitFatalError,
@@ -1504,7 +1509,7 @@ static char *ParseEntities(char *xml,char **entities,int state)
                   }
                 if (entity != (char *) NULL)
                   (void) memmove(xml+length,entity+1,strlen(entity));
-                (void) strncpy(xml,entities[i],length);
+                (void) memcpy(xml,entities[i],length);
               }
         }
       else
@@ -1727,6 +1732,8 @@ static MagickBooleanType ParseInternalDoctype(XMLTreeRoot *root,char *xml,
         if ((isalpha((int) ((unsigned char) *n)) == 0) && (*n != '_'))
           break;
         xml=n+strcspn(n,XMLWhitespace);
+        if (*xml == '\0')
+          break;
         *xml=';';
         v=xml+strspn(xml+1,XMLWhitespace)+1;
         q=(*v);
@@ -2135,7 +2142,9 @@ MagickExport XMLTreeInfo *NewXMLTree(const char *xml,ExceptionInfo *exception)
                 utf8=DestroyString(utf8);
                 return(&root->root);
               }
-            if ((ignore_depth == 0) && (IsSkipTag(tag) == MagickFalse))
+            if ((ignore_depth != 0) || (IsSkipTag(tag) != MagickFalse))
+              (void) DestroyXMLTreeAttributes(attributes);
+            else
               {
                 ParseOpenTag(root,tag,attributes);
                 (void) ParseCloseTag(root,tag,exception);
@@ -2375,8 +2384,7 @@ MagickExport XMLTreeInfo *NewXMLTreeTag(const char *tag)
   root->entities=(char **) AcquireMagickMemory(sizeof(predefined_entities));
   if (root->entities == (char **) NULL)
     return((XMLTreeInfo *) NULL);
-  (void) memcpy(root->entities,predefined_entities,
-    sizeof(predefined_entities));
+  (void) memcpy(root->entities,predefined_entities,sizeof(predefined_entities));
   root->root.attributes=sentinel;
   root->attributes=(char ***) root->root.attributes;
   root->processing_instructions=(char ***) root->root.attributes;

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -322,7 +322,7 @@ ModuleExport size_t RegisterPWPImage(void)
   entry->decoder=(DecodeImageHandler *) ReadPWPImage;
   entry->magick=(IsImageFormatHandler *) IsPWP;
   entry->description=ConstantString("Seattle Film Works");
-  entry->module=ConstantString("PWP");
+  entry->magick_module=ConstantString("PWP");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

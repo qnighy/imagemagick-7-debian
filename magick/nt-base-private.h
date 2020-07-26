@@ -1,8 +1,8 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
-  You may not use this file except in compliance with the License.
+  You may not use this file except in compliance with the License.  You may
   obtain a copy of the License at
 
     https://imagemagick.org/script/license.php
@@ -54,22 +54,6 @@ typedef struct _DIR
     file_info;
 } DIR;
 
-typedef struct _NTMEMORYSTATUSEX
-{
-  DWORD
-    dwLength,
-    dwMemoryLoad;
-
-  DWORDLONG
-    ullTotalPhys,
-    ullAvailPhys,
-    ullTotalPageFile,
-    ullAvailPageFile,
-    ullTotalVirtual,
-    ullAvailVirtual,
-    ullAvailExtendedVirtual;
-} NTMEMORYSTATUSEX;
-
 #if !defined(__MINGW32__)
 struct timezone
 {
@@ -78,12 +62,6 @@ struct timezone
     tz_dsttime;
 };
 #endif
-
-typedef UINT
-  (CALLBACK *LPFNDLLFUNC1)(DWORD,UINT);
-
-typedef UINT
-  (CALLBACK *LPFNDLLFUNC2)(NTMEMORYSTATUSEX *);
 
 #endif
 
@@ -129,20 +107,20 @@ extern MagickPrivate int
   NTGhostscriptLoadDLL(void),
   NTInitializeLibrary(void),
   NTSetSearchPath(const char *),
-  NTSyncMemory(void *,size_t,int),
   NTUnmapMemory(void *,size_t),
   NTSystemCommand(const char *,char *);
 
 extern MagickPrivate ssize_t
-  NTGetPageSize(void),
-  NTSystemConfiguration(int),
-  NTTellDirectory(DIR *);
+  NTSystemConfiguration(int);
 
 extern MagickPrivate MagickBooleanType
   NTGatherRandomData(const size_t,unsigned char *),
   NTGetExecutionPath(char *,const size_t),
   NTGetModulePath(const char *,char *),
   NTReportEvent(const char *,const MagickBooleanType);
+
+extern MagickExport MagickBooleanType
+  NTLongPathsEnabled();
 
 extern MagickPrivate struct dirent
   *NTReadDirectory(DIR *);
@@ -156,7 +134,6 @@ extern MagickPrivate void
   NTInitializeWinsock(MagickBooleanType),
   *NTMapMemory(char *,size_t,int,int,int,MagickOffsetType),
   *NTOpenLibrary(const char *),
-  NTSeekDirectory(DIR *,ssize_t),
   NTWindowsGenesis(void),
   NTWindowsTerminus(void);
 

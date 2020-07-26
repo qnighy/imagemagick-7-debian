@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -966,7 +966,7 @@ static void Hull(const Image *image,const ssize_t x_offset,
   assert(g != (Quantum *) NULL);
   p=f+(columns+2);
   q=g+(columns+2);
-  r=p+(y_offset*(columns+2)+x_offset);
+  r=p+(y_offset*((ssize_t) columns+2)+x_offset);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static) \
     magick_number_threads(image,image,rows,1)
@@ -1003,8 +1003,8 @@ static void Hull(const Image *image,const ssize_t x_offset,
 
   p=f+(columns+2);
   q=g+(columns+2);
-  r=q+(y_offset*(columns+2)+x_offset);
-  s=q-(y_offset*(columns+2)+x_offset);
+  r=q+(y_offset*((ssize_t) columns+2)+x_offset);
+  s=q-(y_offset*((ssize_t) columns+2)+x_offset);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(static) \
     magick_number_threads(image,image,rows,1)
@@ -2515,7 +2515,7 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
 
   float
     *interImage,
-    *scanLinePixels,
+    *scanline,
     totalWeight;
 
   Image
@@ -2525,8 +2525,8 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
     status;
 
   MemoryInfo
-    *scanLinePixels_info,
-    *interImage_info;
+    *interImage_info,
+    *scanline_info;
 
   ssize_t
     scanLineSize,
@@ -2560,16 +2560,16 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
   scanLineSize=(ssize_t) MagickMax(image->columns,image->rows);
   width=(ssize_t) scanLineSize*0.002f*fabs(radius);
   scanLineSize+=(2*width);
-  scanLinePixels_info=AcquireVirtualMemory(GetOpenMPMaximumThreads()*
-    scanLineSize,sizeof(*scanLinePixels));
-  if (scanLinePixels_info == (MemoryInfo *) NULL)
+  scanline_info=AcquireVirtualMemory(GetOpenMPMaximumThreads()*
+    scanLineSize,sizeof(*scanline));
+  if (scanline_info == (MemoryInfo *) NULL)
     {
       contrast_view=DestroyCacheView(contrast_view);
       image_view=DestroyCacheView(image_view);
       contrast_image=DestroyImage(contrast_image);
       ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
     }
-  scanLinePixels=(float *) GetVirtualMemoryBlob(scanLinePixels_info);
+  scanline=(float *) GetVirtualMemoryBlob(scanline_info);
   /*
     Create intermediate buffer.
   */
@@ -2577,7 +2577,7 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
     sizeof(*interImage));
   if (interImage_info == (MemoryInfo *) NULL)
     {
-      scanLinePixels_info=RelinquishVirtualMemory(scanLinePixels_info);
+      scanline_info=RelinquishVirtualMemory(scanline_info);
       contrast_view=DestroyCacheView(contrast_view);
       image_view=DestroyCacheView(image_view);
       contrast_image=DestroyImage(contrast_image);
@@ -2618,7 +2618,7 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
 
       if (status == MagickFalse)
         continue;
-      pixels=scanLinePixels;
+      pixels=scanline;
       pixels+=id*scanLineSize;
       pix=pixels;
       p=GetCacheViewVirtualPixels(image_view,x,-width,1,image->rows+(2*width),
@@ -2699,7 +2699,7 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
 
       if (status == MagickFalse)
         continue;
-      pixels=scanLinePixels;
+      pixels=scanline;
       pixels+=id*scanLineSize;
       p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,
         exception);
@@ -2737,9 +2737,9 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
         srcVal=(float) GetPixelLuma(image,p);
         mult=(srcVal-(sum/totalWeight))*(strength/100.0f);
         mult=(srcVal+mult)/srcVal;
-        SetPixelRed(q,ClampToQuantum(GetPixelRed(p)*mult));
-        SetPixelGreen(q,ClampToQuantum(GetPixelGreen(p)*mult));
-        SetPixelBlue(q,ClampToQuantum(GetPixelBlue(p)*mult));
+        SetPixelRed(q,ClampToQuantum((MagickRealType) GetPixelRed(p)*mult));
+        SetPixelGreen(q,ClampToQuantum((MagickRealType) GetPixelGreen(p)*mult));
+        SetPixelBlue(q,ClampToQuantum((MagickRealType) GetPixelBlue(p)*mult));
         p++;
         q++;
       }
@@ -2747,7 +2747,7 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
         status=MagickFalse;
     }
   }
-  scanLinePixels_info=RelinquishVirtualMemory(scanLinePixels_info);
+  scanline_info=RelinquishVirtualMemory(scanline_info);
   interImage_info=RelinquishVirtualMemory(interImage_info);
   contrast_view=DestroyCacheView(contrast_view);
   image_view=DestroyCacheView(image_view);
@@ -3115,17 +3115,20 @@ MagickExport Image *PreviewImage(const Image *image,const PreviewType preview,
       }
       case RaisePreview:
       {
+        RectangleInfo
+          raise;
+
         preview_image=CloneImage(thumbnail,0,0,MagickTrue,exception);
         if (preview_image == (Image *) NULL)
           break;
-        geometry.width=(size_t) (2*i+2);
-        geometry.height=(size_t) (2*i+2);
-        geometry.x=(i-1)/2;
-        geometry.y=(i-1)/2;
-        (void) RaiseImage(preview_image,&geometry,MagickTrue);
+        raise.width=(size_t) (2*i+2);
+        raise.height=(size_t) (2*i+2);
+        raise.x=(i-1)/2;
+        raise.y=(i-1)/2;
+        (void) RaiseImage(preview_image,&raise,MagickTrue);
         (void) FormatLocaleString(label,MaxTextExtent,
-          "raise %.20gx%.20g%+.20g%+.20g",(double) geometry.width,(double)
-          geometry.height,(double) geometry.x,(double) geometry.y);
+          "raise %.20gx%.20g%+.20g%+.20g",(double) raise.width,(double)
+          raise.height,(double) raise.x,(double) raise.y);
         break;
       }
       case SegmentPreview:
@@ -3394,10 +3397,10 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
   if ((cos_theta == (MagickRealType *) NULL) ||
       (sin_theta == (MagickRealType *) NULL))
     {
-      if (cos_theta != (double *) NULL)
-        cos_theta=(double *) RelinquishMagickMemory(cos_theta);
-      if (sin_theta != (double *) NULL)
-        sin_theta=(double *) RelinquishMagickMemory(sin_theta);
+      if (cos_theta != (MagickRealType *) NULL)
+        cos_theta=(MagickRealType *) RelinquishMagickMemory(cos_theta);
+      if (sin_theta != (MagickRealType *) NULL)
+        sin_theta=(MagickRealType *) RelinquishMagickMemory(sin_theta);
       blur_image=DestroyImage(blur_image);
       ThrowImageException(ResourceLimitError,"MemoryAllocationFailed");
     }
@@ -4054,6 +4057,8 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
 MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
   const double azimuth,const double elevation,ExceptionInfo *exception)
 {
+#define GetShadeIntensity(image,pixel) \
+  ClampPixel(GetPixelIntensity((image),(pixel)))
 #define ShadeImageTag  "Shade/Image"
 
   CacheView
@@ -4166,18 +4171,18 @@ MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
       s0=p+1;
       s1=s0+image->columns+2;
       s2=s1+image->columns+2;
-      normal.x=(double) (GetPixelIntensity(linear_image,s0-1)+
-        GetPixelIntensity(linear_image,s1-1)+
-        GetPixelIntensity(linear_image,s2-1)-
-        GetPixelIntensity(linear_image,s0+1)-
-        GetPixelIntensity(linear_image,s1+1)-
-        GetPixelIntensity(linear_image,s2+1));
-      normal.y=(double) (GetPixelIntensity(linear_image,s2-1)+
-        GetPixelIntensity(linear_image,s2)+
-        GetPixelIntensity(linear_image,s2+1)-
-        GetPixelIntensity(linear_image,s0-1)-
-        GetPixelIntensity(linear_image,s0)-
-        GetPixelIntensity(linear_image,s0+1));
+      normal.x=(double) (GetShadeIntensity(linear_image,s0-1)+
+        GetShadeIntensity(linear_image,s1-1)+
+        GetShadeIntensity(linear_image,s2-1)-
+        GetShadeIntensity(linear_image,s0+1)-
+        GetShadeIntensity(linear_image,s1+1)-
+        GetShadeIntensity(linear_image,s2+1));
+      normal.y=(double) (GetShadeIntensity(linear_image,s2-1)+
+        GetShadeIntensity(linear_image,s2)+
+        GetShadeIntensity(linear_image,s2+1)-
+        GetShadeIntensity(linear_image,s0-1)-
+        GetShadeIntensity(linear_image,s0)-
+        GetShadeIntensity(linear_image,s0+1));
       if ((fabs(normal.x) <= MagickEpsilon) &&
           (fabs(normal.y) <= MagickEpsilon))
         shade=light.z;
@@ -4615,12 +4620,14 @@ MagickExport Image *UnsharpMaskImageChannel(const Image *image,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   assert(exception != (ExceptionInfo *) NULL);
+/* This kernel appears to be broken.
 #if defined(MAGICKCORE_OPENCL_SUPPORT)
   unsharp_image=AccelerateUnsharpMaskImage(image,channel,radius,sigma,gain,
     threshold,exception);
   if (unsharp_image != (Image *) NULL)
     return(unsharp_image);
 #endif
+*/
   unsharp_image=BlurImageChannel(image,(ChannelType) (channel &~ SyncChannels),
     radius,sigma,exception);
   if (unsharp_image == (Image *) NULL)

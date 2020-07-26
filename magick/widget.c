@@ -18,7 +18,7 @@
 %                              September 1993                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -49,6 +49,7 @@
 #include "magick/magick.h"
 #include "magick/memory_.h"
 #include "magick/string_.h"
+#include "magick/timer-private.h"
 #include "magick/token.h"
 #include "magick/utility.h"
 #include "magick/xwindow-private.h"
@@ -1105,7 +1106,8 @@ static void XEditText(Display *display,XWidgetInfo *text_info,
       if (text_info->cursor != text_info->text)
         {
           text_info->cursor--;
-          (void) memmove(text_info->cursor,text_info->cursor+1,MaxTextExtent);
+          (void) memmove(text_info->cursor,text_info->cursor+1,
+            strlen(text_info->cursor+1)+1);
           text_info->highlight=MagickFalse;
           break;
         }
@@ -1361,7 +1363,8 @@ static int XScreenEvent(Display *display,XEvent *event,char *data)
       if (event->xexpose.window == windows->command.id)
         if (event->xexpose.count == 0)
           {
-            (void) XCommandWidget(display,windows,(const char **) NULL,event);
+            (void) XCommandWidget(display,windows,(const char *const *) NULL,
+              event);
             break;
           }
       break;
@@ -2026,7 +2029,7 @@ MagickExport void XColorBrowserWidget(Display *display,XWindows *windows,
           slider_info.id=0;
         slider_info.y=slider_info.min_y;
         if (colors != 0)
-          slider_info.y+=(int) (slider_info.id*(slider_info.max_y-
+          slider_info.y+=((ssize_t) slider_info.id*(slider_info.max_y-
             slider_info.min_y+1)/colors);
         if (slider_info.id != selection_info.id)
           {
@@ -2769,7 +2772,7 @@ MagickExport void XColorBrowserWidget(Display *display,XWindows *windows,
 %  The format of the XCommandWidget method is:
 %
 %      int XCommandWidget(Display *display,XWindows *windows,
-%        const char **selections,XEvent *event)
+%        const char *const *selections,XEvent *event)
 %
 %  A description of each parameter follows:
 %
@@ -2788,7 +2791,7 @@ MagickExport void XColorBrowserWidget(Display *display,XWindows *windows,
 %
 */
 MagickExport int XCommandWidget(Display *display,XWindows *windows,
-  const char **selections,XEvent *event)
+  const char *const *selections,XEvent *event)
 {
 #define tile_width 112
 #define tile_height 70
@@ -4632,7 +4635,7 @@ MagickExport void XFileBrowserWidget(Display *display,XWindows *windows,
           slider_info.id=0;
         slider_info.y=slider_info.min_y;
         if (files > 0)
-          slider_info.y+=(int) (slider_info.id*(slider_info.max_y-
+          slider_info.y+=((ssize_t) slider_info.id*(slider_info.max_y-
             slider_info.min_y+1)/files);
         if (slider_info.id != selection_info.id)
           {
@@ -6713,7 +6716,7 @@ MagickExport void XInfoWidget(Display *display,XWindows *windows,
 %  The format of the XListBrowserWidget method is:
 %
 %      void XListBrowserWidget(Display *display,XWindows *windows,
-%        XWindowInfo *window_info,const char **list,const char *action,
+%        XWindowInfo *window_info,const char *const *list,const char *action,
 %        const char *query,char *reply)
 %
 %  A description of each parameter follows:
@@ -6734,7 +6737,7 @@ MagickExport void XInfoWidget(Display *display,XWindows *windows,
 %
 */
 MagickExport void XListBrowserWidget(Display *display,XWindows *windows,
-  XWindowInfo *window_info,const char **list,const char *action,
+  XWindowInfo *window_info,const char *const *list,const char *action,
   const char *query,char *reply)
 {
 #define CancelButtonText  "Cancel"
@@ -7624,7 +7627,7 @@ MagickExport void XListBrowserWidget(Display *display,XWindows *windows,
 %  The format of the XMenuWidget method is:
 %
 %      int XMenuWidget(Display *display,XWindows *windows,const char *title,
-%        const char **selections,char *item)
+%        const char *const *selections,char *item)
 %
 %  A description of each parameter follows:
 %
@@ -7646,7 +7649,7 @@ MagickExport void XListBrowserWidget(Display *display,XWindows *windows,
 %
 */
 MagickExport int XMenuWidget(Display *display,XWindows *windows,
-  const char *title,const char **selections,char *item)
+  const char *title,const char *const *selections,char *item)
 {
   Cursor
     cursor;
@@ -8175,11 +8178,11 @@ MagickExport void XNoticeWidget(Display *display,XWindows *windows,
   /*
     Respond to X events.
   */
-  timer=time((time_t *) NULL)+Timeout;
+  timer=GetMagickTime()+Timeout;
   state=UpdateConfigurationState;
   do
   {
-    if (time((time_t *) NULL) > timer)
+    if (GetMagickTime() > timer)
       break;
     if (state & UpdateConfigurationState)
       {
@@ -8881,7 +8884,7 @@ MagickExport void XProgressMonitorWidget(Display *display,XWindows *windows,
     Update image windows if there is a pending expose event.
   */
   while (XCheckTypedWindowEvent(display,windows->command.id,Expose,&event))
-    (void) XCommandWidget(display,windows,(const char **) NULL,&event);
+    (void) XCommandWidget(display,windows,(const char *const *) NULL,&event);
   while (XCheckTypedWindowEvent(display,windows->image.id,Expose,&event))
     XRefreshWindow(display,&windows->image,&event);
   while (XCheckTypedWindowEvent(display,windows->info.id,Expose,&event))

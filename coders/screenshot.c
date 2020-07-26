@@ -17,7 +17,7 @@
 %                                 April 2014                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -285,7 +285,7 @@ ModuleExport size_t RegisterSCREENSHOTImage(void)
   entry->decoder=(DecodeImageHandler *) ReadSCREENSHOTImage;
   entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Screen shot");
-  entry->module=ConstantString("SCREENSHOT");
+  entry->magick_module=ConstantString("SCREENSHOT");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

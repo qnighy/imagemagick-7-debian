@@ -23,7 +23,7 @@
 %                             February 1997                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -75,7 +75,7 @@ extern "C" {
 #define DegreesToRadians(x)  (MagickPI*(x)/180.0)
 #define EndOf(array)  (&array[NumberOf(array)])
 #define MagickPI  3.14159265358979323846264338327950288419716939937510
-#define MaxArguments  33
+#define MaxArguments  34
 #ifndef na
 #define na  PL_na
 #endif
@@ -288,7 +288,8 @@ static struct
       {"tile", ImageReference}, {"kerning", RealReference},
       {"interline-spacing", RealReference},
       {"interword-spacing", RealReference},
-      {"direction", MagickDirectionOptions} } },
+      {"direction", MagickDirectionOptions},
+      {"decorate", MagickDecorateOptions} } },
     { "ColorFloodfill", { {"geometry", StringReference},
       {"x", IntegerReference}, {"y", IntegerReference},
       {"fill", StringReference}, {"bordercolor", StringReference},
@@ -438,7 +439,7 @@ static struct
       {"sigma", RealReference}, {"x", IntegerReference},
       {"y", IntegerReference} } },
     { "Identify", { {"file", FileReference}, {"features", StringReference},
-      {"unique", MagickBooleanOptions} } },
+      {"moments", MagickBooleanOptions}, {"unique", MagickBooleanOptions} } },
     { "SepiaTone", { {"threshold", RealReference} } },
     { "SigmoidalContrast", { {"geometry", StringReference},
       {"contrast", RealReference}, {"mid-point", RealReference},
@@ -1925,6 +1926,11 @@ static void SetAttribute(pTHX_ struct PackageInfo *info,Image *image,
               (void) ParseGeometry(SvPV(sval,na),&geometry_info);
               info->image_info->pointsize=geometry_info.rho;
             }
+          break;
+        }
+      if (LocaleCompare(attribute,"precision") == 0)
+        {
+          (void) SetMagickPrecision(SvIV(sval));
           break;
         }
       if (LocaleCompare(attribute,"preview") == 0)
@@ -5409,6 +5415,12 @@ Get(ref,...)
               PUSHs(s ? sv_2mortal(s) : &sv_undef);
               continue;
             }
+          if (LocaleCompare(attribute,"precision") == 0)
+            {
+              s=newSViv((ssize_t) GetMagickPrecision());
+              PUSHs(s ? sv_2mortal(s) : &sv_undef);
+              continue;
+            }
           if (LocaleCompare(attribute,"preview") == 0)
             {
               s=newSViv(info->image_info->preview_type);
@@ -8479,6 +8491,9 @@ Mogrify(ref,...)
           if (attribute_flag[32] != 0)
             draw_info->direction=(DirectionType)
               argument_list[32].integer_reference;
+          if (attribute_flag[33] != 0)
+            draw_info->decorate=(DecorationType)
+              argument_list[33].integer_reference;
           (void) AnnotateImage(image,draw_info);
           draw_info=DestroyDrawInfo(draw_info);
           break;
@@ -9889,9 +9904,6 @@ Mogrify(ref,...)
         {
           if (attribute_flag[0] == 0)
             argument_list[0].file_reference=(FILE *) NULL;
-          if (attribute_flag[1] != 0)
-            (void) SetImageArtifact(image,"identify:features",
-              argument_list[1].string_reference);
           (void) IdentifyImage(image,argument_list[0].file_reference,
             MagickTrue);
           break;
@@ -10041,6 +10053,9 @@ Mogrify(ref,...)
               argument_list[1].string_reference);
           if ((attribute_flag[2] != 0) &&
               (argument_list[2].integer_reference != 0))
+            (void) SetImageArtifact(image,"identify:moments","true");
+          if ((attribute_flag[3] != 0) &&
+              (argument_list[3].integer_reference != 0))
             (void) SetImageArtifact(image,"identify:unique","true");
           (void) IdentifyImage(image,argument_list[0].file_reference,
             MagickTrue);
@@ -13292,10 +13307,10 @@ QueryFormat(ref,...)
         PUSHs(&sv_undef);
       else
         PUSHs(sv_2mortal(newSVpv(magick_info->description,0)));
-      if (magick_info->module == (char *) NULL)
+      if (magick_info->magick_module == (char *) NULL)
         PUSHs(&sv_undef);
       else
-        PUSHs(sv_2mortal(newSVpv(magick_info->module,0)));
+        PUSHs(sv_2mortal(newSVpv(magick_info->magick_module,0)));
     }
 
   PerlException:

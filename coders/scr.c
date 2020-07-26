@@ -17,7 +17,7 @@
 %                               October 2003                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -284,7 +284,7 @@ ModuleExport size_t RegisterSCRImage(void)
   entry->decoder=(DecodeImageHandler *) ReadSCRImage;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("ZX-Spectrum SCREEN$");
-  entry->module=ConstantString("SCR");
+  entry->magick_module=ConstantString("SCR");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

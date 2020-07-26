@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -459,9 +459,9 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
           p=(const char *) content;
           for (i=0; (*p != '\0') && (i < 3); i++)
           {
-            GetNextToken(p,&p,MaxTextExtent,token);
+            (void) GetNextToken(p,&p,MaxTextExtent,token);
             if (*token == ',')
-              GetNextToken(p,&p,MaxTextExtent,token);
+              (void) GetNextToken(p,&p,MaxTextExtent,token);
             switch (i)
             {
               case 0:
@@ -491,9 +491,9 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
           p=(const char *) content;
           for (i=0; (*p != '\0') && (i < 3); i++)
           {
-            GetNextToken(p,&p,MaxTextExtent,token);
+            (void) GetNextToken(p,&p,MaxTextExtent,token);
             if (*token == ',')
-              GetNextToken(p,&p,MaxTextExtent,token);
+              (void) GetNextToken(p,&p,MaxTextExtent,token);
             switch (i)
             {
               case 0:
@@ -524,9 +524,9 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
           p=(const char *) content;
           for (i=0; (*p != '\0') && (i < 3); i++)
           {
-            GetNextToken(p,&p,MaxTextExtent,token);
+            (void) GetNextToken(p,&p,MaxTextExtent,token);
             if (*token == ',')
-              GetNextToken(p,&p,MaxTextExtent,token);
+              (void) GetNextToken(p,&p,MaxTextExtent,token);
             switch (i)
             {
               case 0:
@@ -561,7 +561,7 @@ MagickExport MagickBooleanType ColorDecisionListImage(Image *image,
         {
           content=GetXMLTreeContent(saturation);
           p=(const char *) content;
-          GetNextToken(p,&p,MaxTextExtent,token);
+          (void) GetNextToken(p,&p,MaxTextExtent,token);
           color_correction.saturation=StringToDouble(token,(char **) NULL);
         }
     }
@@ -2166,7 +2166,7 @@ MagickExport MagickBooleanType GammaImage(Image *image,const char *level)
 MagickExport MagickBooleanType GammaImageChannel(Image *image,
   const ChannelType channel,const double gamma)
 {
-#define GammaCorrectImageTag  "GammaCorrect/Image"
+#define GammaImageTag  "Gamma/Image"
 
   CacheView
     *image_view;
@@ -2207,7 +2207,8 @@ MagickExport MagickBooleanType GammaImageChannel(Image *image,
   if (gamma != 0.0)
     for (i=0; i <= (ssize_t) MaxMap; i++)
       gamma_map[i]=ClampToQuantum((MagickRealType) ScaleMapToQuantum((
-        MagickRealType) (MaxMap*pow((double) i/MaxMap,1.0/gamma))));
+        MagickRealType) (MaxMap*pow((double) i/MaxMap,
+        PerceptibleReciprocal(gamma)))));
   if (image->storage_class == PseudoClass)
     {
       /*
@@ -2238,18 +2239,18 @@ MagickExport MagickBooleanType GammaImageChannel(Image *image,
 #else
         if ((channel & RedChannel) != 0)
           image->colormap[i].red=QuantumRange*gamma_pow(QuantumScale*
-            image->colormap[i].red,1.0/gamma);
+            image->colormap[i].red,PerceptibleReciprocal(gamma));
         if ((channel & GreenChannel) != 0)
           image->colormap[i].green=QuantumRange*gamma_pow(QuantumScale*
-            image->colormap[i].green,1.0/gamma);
+            image->colormap[i].green,PerceptibleReciprocal(gamma));
         if ((channel & BlueChannel) != 0)
           image->colormap[i].blue=QuantumRange*gamma_pow(QuantumScale*
-            image->colormap[i].blue,1.0/gamma);
+            image->colormap[i].blue,PerceptibleReciprocal(gamma));
         if ((channel & OpacityChannel) != 0)
           {
             if (image->matte == MagickFalse)
               image->colormap[i].opacity=QuantumRange*gamma_pow(QuantumScale*
-                image->colormap[i].opacity,1.0/gamma);
+                image->colormap[i].opacity,PerceptibleReciprocal(gamma));
             else
               image->colormap[i].opacity=QuantumRange-QuantumRange*gamma_pow(
                 QuantumScale*(QuantumRange-image->colormap[i].opacity),1.0/
@@ -2319,31 +2320,31 @@ MagickExport MagickBooleanType GammaImageChannel(Image *image,
       if ((channel & SyncChannels) != 0)
         {
           SetPixelRed(q,QuantumRange*gamma_pow(QuantumScale*GetPixelRed(q),
-            1.0/gamma));
+            PerceptibleReciprocal(gamma)));
           SetPixelGreen(q,QuantumRange*gamma_pow(QuantumScale*GetPixelGreen(q),
-            1.0/gamma));
+            PerceptibleReciprocal(gamma)));
           SetPixelBlue(q,QuantumRange*gamma_pow(QuantumScale*GetPixelBlue(q),
-            1.0/gamma));
+            PerceptibleReciprocal(gamma)));
         }
       else
         {
           if ((channel & RedChannel) != 0)
             SetPixelRed(q,QuantumRange*gamma_pow(QuantumScale*GetPixelRed(q),
-            1.0/gamma));
+            PerceptibleReciprocal(gamma)));
           if ((channel & GreenChannel) != 0)
             SetPixelGreen(q,QuantumRange*gamma_pow(QuantumScale*
-              GetPixelGreen(q),1.0/gamma));
+              GetPixelGreen(q),PerceptibleReciprocal(gamma)));
           if ((channel & BlueChannel) != 0)
             SetPixelBlue(q,QuantumRange*gamma_pow(QuantumScale*GetPixelBlue(q),
-              1.0/gamma));
+              PerceptibleReciprocal(gamma)));
           if ((channel & OpacityChannel) != 0)
             {
               if (image->matte == MagickFalse)
                 SetPixelOpacity(q,QuantumRange*gamma_pow(QuantumScale*
-                  GetPixelOpacity(q),1.0/gamma));
+                  GetPixelOpacity(q),PerceptibleReciprocal(gamma)));
               else
                 SetPixelAlpha(q,QuantumRange*gamma_pow(QuantumScale*
-                  GetPixelAlpha(q),1.0/gamma));
+                  GetPixelAlpha(q),PerceptibleReciprocal(gamma)));
             }
         }
 #endif
@@ -2365,8 +2366,7 @@ MagickExport MagickBooleanType GammaImageChannel(Image *image,
         #pragma omp atomic
 #endif
         progress++;
-        proceed=SetImageProgress(image,GammaCorrectImageTag,progress,
-          image->rows);
+        proceed=SetImageProgress(image,GammaImageTag,progress,image->rows);
         if (proceed == MagickFalse)
           status=MagickFalse;
       }
@@ -2704,6 +2704,7 @@ MagickExport MagickBooleanType HaldClutImageChannel(Image *image,
   for (y=0; y < (ssize_t) image->rows; y++)
   {
     double
+      area,
       offset;
 
     HaldInfo
@@ -2758,8 +2759,11 @@ MagickExport MagickBooleanType HaldClutImageChannel(Image *image,
         width),&pixel2,exception);
       if (status == MagickFalse)
         break;
+      area=point.y;
+      if (hald_image->interpolate == NearestNeighborInterpolatePixel)
+        area=(point.y < 0.5) ? 0.0 : 1.0;
       MagickPixelCompositeAreaBlend(&pixel1,pixel1.opacity,&pixel2,
-        pixel2.opacity,point.y,&pixel3);
+        pixel2.opacity,area,&pixel3);
       offset+=cube_size;
       status=InterpolateMagickPixelPacket(image,hald_view,
         UndefinedInterpolatePixel,fmod(offset,width),floor(offset/width),
@@ -2772,9 +2776,12 @@ MagickExport MagickBooleanType HaldClutImageChannel(Image *image,
       if (status == MagickFalse)
         break;
       MagickPixelCompositeAreaBlend(&pixel1,pixel1.opacity,&pixel2,
-        pixel2.opacity,point.y,&pixel4);
+        pixel2.opacity,area,&pixel4);
+      area=point.z;
+      if (hald_image->interpolate == NearestNeighborInterpolatePixel)
+        area=(point.z < 0.5)? 0.0 : 1.0;
       MagickPixelCompositeAreaBlend(&pixel3,pixel3.opacity,&pixel4,
-        pixel4.opacity,point.z,&pixel);
+        pixel4.opacity,area,&pixel);
       if ((channel & RedChannel) != 0)
         SetPixelRed(q,ClampToQuantum(pixel.red));
       if ((channel & GreenChannel) != 0)
@@ -2945,8 +2952,8 @@ static inline double LevelPixel(const double black_point,
     scale;
 
   scale=PerceptibleReciprocal(white_point-black_point);
-  level_pixel=QuantumRange*gamma_pow(scale*((double) pixel-black_point),1.0/
-    gamma);
+  level_pixel=QuantumRange*gamma_pow(scale*((double) pixel-black_point),
+    PerceptibleReciprocal(gamma));
   return(level_pixel);
 }
 
@@ -4269,7 +4276,7 @@ MagickExport MagickBooleanType NormalizeImageChannel(Image *image,
   constant" set to a.
 
   The first version, based on the hyperbolic tangent tanh, when combined with
-  the scaling step, is an exact arithmetic clone of the the sigmoid function
+  the scaling step, is an exact arithmetic clone of the sigmoid function
   based on the logistic curve. The equivalence is based on the identity
 
     1/(1+exp(-t)) = (1+tanh(t/2))/2

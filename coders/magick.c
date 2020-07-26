@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -13108,7 +13108,7 @@ ModuleExport size_t RegisterMAGICKImage(void)
   entry->adjoin=MagickFalse;
   entry->stealth=MagickTrue;
   entry->description=ConstantString("Granite texture");
-  entry->module=ConstantString("MAGICK");
+  entry->magick_module=ConstantString("MAGICK");
   (void) RegisterMagickInfo(entry);
 
   entry=SetMagickInfo("H");
@@ -13116,7 +13116,7 @@ ModuleExport size_t RegisterMAGICKImage(void)
   entry->adjoin=MagickFalse;
   entry->stealth=MagickFalse;
   entry->description=ConstantString("Image expressed as a 'C/C++' char array");
-  entry->module=ConstantString("MAGICK");
+  entry->magick_module=ConstantString("MAGICK");
   (void) RegisterMagickInfo(entry);
 
   entry=SetMagickInfo("LOGO");
@@ -13124,7 +13124,7 @@ ModuleExport size_t RegisterMAGICKImage(void)
   entry->adjoin=MagickFalse;
   entry->stealth=MagickTrue;
   entry->description=ConstantString("ImageMagick Logo");
-  entry->module=ConstantString("MAGICK");
+  entry->magick_module=ConstantString("MAGICK");
   (void) RegisterMagickInfo(entry);
 
   entry=SetMagickInfo("MAGICK");
@@ -13134,7 +13134,7 @@ ModuleExport size_t RegisterMAGICKImage(void)
   entry->stealth=MagickFalse;
   entry->description=ConstantString(
     "Predefined Magick Image (LOGO, ROSE, etc.); output same as 'H'");
-  entry->module=ConstantString("MAGICK");
+  entry->magick_module=ConstantString("MAGICK");
   (void) RegisterMagickInfo(entry);
 
   entry=SetMagickInfo("NETSCAPE");
@@ -13142,7 +13142,7 @@ ModuleExport size_t RegisterMAGICKImage(void)
   entry->adjoin=MagickFalse;
   entry->stealth=MagickTrue;
   entry->description=ConstantString("Netscape 216 color cube");
-  entry->module=ConstantString("MAGICK");
+  entry->magick_module=ConstantString("MAGICK");
   (void) RegisterMagickInfo(entry);
 
   entry=SetMagickInfo("ROSE");
@@ -13150,7 +13150,7 @@ ModuleExport size_t RegisterMAGICKImage(void)
   entry->adjoin=MagickFalse;
   entry->stealth=MagickTrue;
   entry->description=ConstantString("70x46 Truecolor rose");
-  entry->module=ConstantString("MAGICK");
+  entry->magick_module=ConstantString("MAGICK");
   (void) RegisterMagickInfo(entry);
 
   entry=SetMagickInfo("WIZARD");
@@ -13158,7 +13158,7 @@ ModuleExport size_t RegisterMAGICKImage(void)
   entry->adjoin=MagickFalse;
   entry->stealth=MagickTrue;
   entry->description=ConstantString("ImageMagick Wizard");
-  entry->module=ConstantString("MAGICK");
+  entry->magick_module=ConstantString("MAGICK");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -13264,8 +13264,9 @@ static MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
   if (magick_image == (Image *) NULL)
     ThrowWriterException(ResourceLimitError,image->exception.reason);
   write_info=CloneImageInfo(image_info);
-
-  /* Set output format */
+  /*
+    Set output format.
+  */
   *write_info->filename='\0';
   value=GetImageOption(image_info,"h:format");
   if (value == (char *) NULL)
@@ -13273,15 +13274,17 @@ static MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
 
   if ((value == (char *) NULL) || (IsOptionMember("H",value) != MagickFalse) ||
       (IsOptionMember("MAGICK",value) != MagickFalse))
-    { /* Use default GIF or PNM */
+    {
+      /*
+        Use default GIF or PNM.
+      */
       if (magick_image->storage_class == DirectClass)
         (void) CopyMagickString(write_info->magick,"PNM",MaxTextExtent);
       else
         (void) CopyMagickString(write_info->magick,"GIF",MaxTextExtent);
     }
-  else /* Use the requested format */
-    (void) CopyMagickString(write_info->magick,value,MaxTextExtent);
-
+  else
+    (void) CopyMagickString(write_info->magick,value,MaxTextExtent);  /* use the requested format */
   blob=ImageToBlob(write_info,magick_image,&length,&image->exception);
   magick_image=DestroyImage(magick_image);
   if (blob == (void *) NULL)
@@ -13298,7 +13301,7 @@ static MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
     }
   (void) WriteBlobString(image,"/*\n");
   (void) FormatLocaleString(buffer,MaxTextExtent,"  %s (%s).\n",
-    image->filename, write_info->magick);
+    image->filename,write_info->magick);
   (void) DestroyImageInfo(write_info);
   (void) WriteBlobString(image,buffer);
   (void) WriteBlobString(image,"*/\n");
@@ -13309,7 +13312,8 @@ static MagickBooleanType WriteMAGICKImage(const ImageInfo *image_info,
   p=(char *) blob;
   for (i=0; i < (ssize_t) length ; i++)
   {
-    (void) FormatLocaleString(buffer,MaxTextExtent,"0x%02X, ",*p & 0xff);
+    (void) FormatLocaleString(buffer,MaxTextExtent,"0x%02X%s",*p & 0xff,
+      (i+1) < (ssize_t) length ? ", " : "");
     (void) WriteBlobString(image,buffer);
     if (((i+1) % 12) == 0)
       {

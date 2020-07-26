@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -57,6 +57,7 @@
 #include "magick/list.h"
 #include "magick/magick.h"
 #include "magick/memory_.h"
+#include "magick/module.h"
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/monitor-private.h"
@@ -67,7 +68,7 @@
 #include "magick/resource_.h"
 #include "magick/static.h"
 #include "magick/string_.h"
-#include "magick/module.h"
+#include "magick/timer-private.h"
 #include "magick/utility.h"
 
 /*
@@ -120,7 +121,7 @@ ModuleExport size_t RegisterPS2Image(void)
   entry->blob_support=MagickFalse;
   entry->description=ConstantString("Level II Encapsulated PostScript");
   entry->mime_type=ConstantString("application/postscript");
-  entry->module=ConstantString("PS2");
+  entry->magick_module=ConstantString("PS2");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("PS2");
   entry->encoder=(EncodeImageHandler *) WritePS2Image;
@@ -128,7 +129,7 @@ ModuleExport size_t RegisterPS2Image(void)
   entry->blob_support=MagickFalse;
   entry->description=ConstantString("Level II PostScript");
   entry->mime_type=ConstantString("application/postscript");
-  entry->module=ConstantString("PS2");
+  entry->magick_module=ConstantString("PS2");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -204,19 +205,19 @@ static MagickBooleanType Huffman2DEncodeImage(const ImageInfo *image_info,
   unsigned char
     *group4;
 
-  status=MagickTrue;
-  write_info=CloneImageInfo(image_info);
-  (void) CopyMagickString(write_info->filename,"GROUP4:",MaxTextExtent);
-  (void) CopyMagickString(write_info->magick,"GROUP4",MaxTextExtent);
   group4_image=CloneImage(inject_image,0,0,MagickTrue,&image->exception);
   if (group4_image == (Image *) NULL)
     return(MagickFalse);
+  write_info=CloneImageInfo(image_info);
+  (void) CopyMagickString(write_info->filename,"GROUP4:",MaxTextExtent);
+  (void) CopyMagickString(write_info->magick,"GROUP4",MaxTextExtent);
   group4=(unsigned char *) ImageToBlob(write_info,group4_image,&length,
     &image->exception);
+  write_info=DestroyImageInfo(write_info);
   group4_image=DestroyImage(group4_image);
   if (group4 == (unsigned char *) NULL)
     return(MagickFalse);
-  write_info=DestroyImageInfo(write_info);
+  status=MagickTrue;
   if (WriteBlob(image,length,group4) != (ssize_t) length)
     status=MagickFalse;
   group4=(unsigned char *) RelinquishMagickMemory(group4);
@@ -226,157 +227,151 @@ static MagickBooleanType Huffman2DEncodeImage(const ImageInfo *image_info,
 static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
 {
   static const char
-    *const PostscriptProlog[]=
-    {
-      "%%%%BeginProlog",
-      "%%",
-      "%% Display a color image.  The image is displayed in color on",
-      "%% Postscript viewers or printers that support color, otherwise",
-      "%% it is displayed as grayscale.",
-      "%%",
-      "/DirectClassImage",
-      "{",
-      "  %%",
-      "  %% Display a DirectClass image.",
-      "  %%",
-      "  colorspace 0 eq",
-      "  {",
-      "    /DeviceRGB setcolorspace",
-      "    <<",
-      "      /ImageType 1",
-      "      /Width columns",
-      "      /Height rows",
-      "      /BitsPerComponent 8",
-      "      /Decode [0 1 0 1 0 1]",
-      "      /ImageMatrix [columns 0 0 rows neg 0 rows]",
-      "      compression 0 gt",
-      "      { /DataSource pixel_stream %s }",
-      "      { /DataSource pixel_stream %s } ifelse",
-      "    >> image",
-      "  }",
-      "  {",
-      "    /DeviceCMYK setcolorspace",
-      "    <<",
-      "      /ImageType 1",
-      "      /Width columns",
-      "      /Height rows",
-      "      /BitsPerComponent 8",
-      "      /Decode [1 0 1 0 1 0 1 0]",
-      "      /ImageMatrix [columns 0 0 rows neg 0 rows]",
-      "      compression 0 gt",
-      "      { /DataSource pixel_stream %s }",
-      "      { /DataSource pixel_stream %s } ifelse",
-      "    >> image",
-      "  } ifelse",
-      "} bind def",
-      "",
-      "/PseudoClassImage",
-      "{",
-      "  %%",
-      "  %% Display a PseudoClass image.",
-      "  %%",
-      "  %% Parameters:",
-      "  %%   colors: number of colors in the colormap.",
-      "  %%",
-      "  currentfile buffer readline pop",
-      "  token pop /colors exch def pop",
-      "  colors 0 eq",
-      "  {",
-      "    %%",
-      "    %% Image is grayscale.",
-      "    %%",
-      "    currentfile buffer readline pop",
-      "    token pop /bits exch def pop",
-      "    /DeviceGray setcolorspace",
-      "    <<",
-      "      /ImageType 1",
-      "      /Width columns",
-      "      /Height rows",
-      "      /BitsPerComponent bits",
-      "      /Decode [0 1]",
-      "      /ImageMatrix [columns 0 0 rows neg 0 rows]",
-      "      compression 0 gt",
-      "      { /DataSource pixel_stream %s }",
-      "      {",
-      "        /DataSource pixel_stream %s",
-      "        <<",
-      "           /K " CCITTParam,
-      "           /Columns columns",
-      "           /Rows rows",
-      "        >> /CCITTFaxDecode filter",
-      "      } ifelse",
-      "    >> image",
-      "  }",
-      "  {",
-      "    %%",
-      "    %% Parameters:",
-      "    %%   colormap: red, green, blue color packets.",
-      "    %%",
-      "    /colormap colors 3 mul string def",
-      "    currentfile colormap readhexstring pop pop",
-      "    currentfile buffer readline pop",
-      "    [ /Indexed /DeviceRGB colors 1 sub colormap ] setcolorspace",
-      "    <<",
-      "      /ImageType 1",
-      "      /Width columns",
-      "      /Height rows",
-      "      /BitsPerComponent 8",
-      "      /Decode [0 255]",
-      "      /ImageMatrix [columns 0 0 rows neg 0 rows]",
-      "      compression 0 gt",
-      "      { /DataSource pixel_stream %s }",
-      "      { /DataSource pixel_stream %s } ifelse",
-      "    >> image",
-      "  } ifelse",
-      "} bind def",
-      "",
-      "/DisplayImage",
-      "{",
-      "  %%",
-      "  %% Display a DirectClass or PseudoClass image.",
-      "  %%",
-      "  %% Parameters:",
-      "  %%   x & y translation.",
-      "  %%   x & y scale.",
-      "  %%   label pointsize.",
-      "  %%   image label.",
-      "  %%   image columns & rows.",
-      "  %%   class: 0-DirectClass or 1-PseudoClass.",
-      "  %%   colorspace: 0-RGB or 1-CMYK.",
-      "  %%   compression: 0-RLECompression or 1-NoCompression.",
-      "  %%   hex color packets.",
-      "  %%",
-      "  gsave",
-      "  /buffer 512 string def",
-      "  /pixel_stream currentfile def",
-      "",
-      "  currentfile buffer readline pop",
-      "  token pop /x exch def",
-      "  token pop /y exch def pop",
-      "  x y translate",
-      "  currentfile buffer readline pop",
-      "  token pop /x exch def",
-      "  token pop /y exch def pop",
-      "  currentfile buffer readline pop",
-      "  token pop /pointsize exch def pop",
-      (const char *) NULL
-    },
-    *const PostscriptEpilog[]=
-    {
-      "  x y scale",
-      "  currentfile buffer readline pop",
-      "  token pop /columns exch def",
-      "  token pop /rows exch def pop",
-      "  currentfile buffer readline pop",
-      "  token pop /class exch def pop",
-      "  currentfile buffer readline pop",
-      "  token pop /colorspace exch def pop",
-      "  currentfile buffer readline pop",
-      "  token pop /compression exch def pop",
-      "  class 0 gt { PseudoClassImage } { DirectClassImage } ifelse",
-      "  grestore",
-      (const char *) NULL
-    };
+    PostscriptProlog[] =
+      "%%%%BeginProlog\n"
+      "%%\n"
+      "%% Display a color image.  The image is displayed in color on\n"
+      "%% Postscript viewers or printers that support color, otherwise\n"
+      "%% it is displayed as grayscale.\n"
+      "%%\n"
+      "/DirectClassImage\n"
+      "{\n"
+      "  %%\n"
+      "  %% Display a DirectClass image.\n"
+      "  %%\n"
+      "  colorspace 0 eq\n"
+      "  {\n"
+      "    /DeviceRGB setcolorspace\n"
+      "    <<\n"
+      "      /ImageType 1\n"
+      "      /Width columns\n"
+      "      /Height rows\n"
+      "      /BitsPerComponent 8\n"
+      "      /Decode [0 1 0 1 0 1]\n"
+      "      /ImageMatrix [columns 0 0 rows neg 0 rows]\n"
+      "      compression 0 gt\n"
+      "      { /DataSource pixel_stream %s }\n"
+      "      { /DataSource pixel_stream %s } ifelse\n"
+      "    >> image\n"
+      "  }\n"
+      "  {\n"
+      "    /DeviceCMYK setcolorspace\n"
+      "    <<\n"
+      "      /ImageType 1\n"
+      "      /Width columns\n"
+      "      /Height rows\n"
+      "      /BitsPerComponent 8\n"
+      "      /Decode [1 0 1 0 1 0 1 0]\n"
+      "      /ImageMatrix [columns 0 0 rows neg 0 rows]\n"
+      "      compression 0 gt\n"
+      "      { /DataSource pixel_stream %s }\n"
+      "      { /DataSource pixel_stream %s } ifelse\n"
+      "    >> image\n"
+      "  } ifelse\n"
+      "} bind def\n"
+      "\n"
+      "/PseudoClassImage\n"
+      "{\n"
+      "  %%\n"
+      "  %% Display a PseudoClass image.\n"
+      "  %%\n"
+      "  %% Parameters:\n"
+      "  %%   colors: number of colors in the colormap.\n"
+      "  %%\n"
+      "  currentfile buffer readline pop\n"
+      "  token pop /colors exch def pop\n"
+      "  colors 0 eq\n"
+      "  {\n"
+      "    %%\n"
+      "    %% Image is grayscale.\n"
+      "    %%\n"
+      "    currentfile buffer readline pop\n"
+      "    token pop /bits exch def pop\n"
+      "    /DeviceGray setcolorspace\n"
+      "    <<\n"
+      "      /ImageType 1\n"
+      "      /Width columns\n"
+      "      /Height rows\n"
+      "      /BitsPerComponent bits\n"
+      "      /Decode [0 1]\n"
+      "      /ImageMatrix [columns 0 0 rows neg 0 rows]\n"
+      "      compression 0 gt\n"
+      "      { /DataSource pixel_stream %s }\n"
+      "      {\n"
+      "        /DataSource pixel_stream %s\n"
+      "        <<\n"
+      "           /K " CCITTParam "\n"
+      "           /Columns columns\n"
+      "           /Rows rows\n"
+      "        >> /CCITTFaxDecode filter\n"
+      "      } ifelse\n"
+      "    >> image\n"
+      "  }\n"
+      "  {\n"
+      "    %%\n"
+      "    %% Parameters:\n"
+      "    %%   colormap: red, green, blue color packets.\n"
+      "    %%\n"
+      "    /colormap colors 3 mul string def\n"
+      "    currentfile colormap readhexstring pop pop\n"
+      "    currentfile buffer readline pop\n"
+      "    [ /Indexed /DeviceRGB colors 1 sub colormap ] setcolorspace\n"
+      "    <<\n"
+      "      /ImageType 1\n"
+      "      /Width columns\n"
+      "      /Height rows\n"
+      "      /BitsPerComponent 8\n"
+      "      /Decode [0 255]\n"
+      "      /ImageMatrix [columns 0 0 rows neg 0 rows]\n"
+      "      compression 0 gt\n"
+      "      { /DataSource pixel_stream %s }\n"
+      "      { /DataSource pixel_stream %s } ifelse\n"
+      "    >> image\n"
+      "  } ifelse\n"
+      "} bind def\n"
+      "\n"
+      "/DisplayImage\n"
+      "{\n"
+      "  %%\n"
+      "  %% Display a DirectClass or PseudoClass image.\n"
+      "  %%\n"
+      "  %% Parameters:\n"
+      "  %%   x & y translation.\n"
+      "  %%   x & y scale.\n"
+      "  %%   label pointsize.\n"
+      "  %%   image label.\n"
+      "  %%   image columns & rows.\n"
+      "  %%   class: 0-DirectClass or 1-PseudoClass.\n"
+      "  %%   colorspace: 0-RGB or 1-CMYK.\n"
+      "  %%   compression: 0-RLECompression or 1-NoCompression.\n"
+      "  %%   hex color packets.\n"
+      "  %%\n"
+      "  gsave\n"
+      "  /buffer 512 string def\n"
+      "  /pixel_stream currentfile def\n"
+      "\n"
+      "  currentfile buffer readline pop\n"
+      "  token pop /x exch def\n"
+      "  token pop /y exch def pop\n"
+      "  x y translate\n"
+      "  currentfile buffer readline pop\n"
+      "  token pop /x exch def\n"
+      "  token pop /y exch def pop\n"
+      "  currentfile buffer readline pop\n"
+      "  token pop /pointsize exch def pop\n",
+    PostscriptEpilog[] =
+      "  x y scale\n"
+      "  currentfile buffer readline pop\n"
+      "  token pop /columns exch def\n"
+      "  token pop /rows exch def pop\n"
+      "  currentfile buffer readline pop\n"
+      "  token pop /class exch def pop\n"
+      "  currentfile buffer readline pop\n"
+      "  token pop /colorspace exch def pop\n"
+      "  currentfile buffer readline pop\n"
+      "  token pop /compression exch def pop\n"
+      "  class 0 gt { PseudoClassImage } { DirectClassImage } ifelse\n"
+      "  grestore\n";
 
   char
     buffer[MaxTextExtent],
@@ -388,7 +383,7 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
     compression;
 
   const char
-    *const *q,
+    *filter,
     *value;
 
   double
@@ -517,8 +512,8 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
       }
     if (image->units == PixelsPerCentimeterResolution)
       {
-        resolution.x=(size_t) (100.0*2.54*resolution.x+0.5)/100.0;
-        resolution.y=(size_t) (100.0*2.54*resolution.y+0.5)/100.0;
+        resolution.x=(100.0*2.54*resolution.x+0.5)/100.0;
+        resolution.y=(100.0*2.54*resolution.y+0.5)/100.0;
       }
     SetGeometry(image,&geometry);
     (void) FormatLocaleString(page_geometry,MaxTextExtent,"%.20gx%.20g",
@@ -537,9 +532,9 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
     (void) ConcatenateMagickString(page_geometry,">",MaxTextExtent);
     (void) ParseMetaGeometry(page_geometry,&geometry.x,&geometry.y,
       &geometry.width,&geometry.height);
-    scale.x=(double) (geometry.width*delta.x)/resolution.x;
+    scale.x=PerceptibleReciprocal(resolution.x)*geometry.width*delta.x;
     geometry.width=(size_t) floor(scale.x+0.5);
-    scale.y=(double) (geometry.height*delta.y)/resolution.y;
+    scale.y=PerceptibleReciprocal(resolution.y)*geometry.height*delta.y;
     geometry.height=(size_t) floor(scale.y+0.5);
     (void) ParseAbsoluteGeometry(page_geometry,&media_info);
     (void) ParseGravityGeometry(image,page_geometry,&page_info,
@@ -571,7 +566,7 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
         (void) FormatLocaleString(buffer,MaxTextExtent,"%%%%Title: (%s)\n",
           image->filename);
         (void) WriteBlobString(image,buffer);
-        timer=time((time_t *) NULL);
+        timer=GetMagickTime();
         (void) FormatMagickTime(timer,MaxTextExtent,date);
         (void) FormatLocaleString(buffer,MaxTextExtent,
           "%%%%CreationDate: (%s)\n",date);
@@ -622,44 +617,38 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
         /*
           Output Postscript commands.
         */
-        for (q=PostscriptProlog; *q; q++)
+        switch (compression)
         {
-          switch (compression)
+          case NoCompression:
           {
-            case NoCompression:
-            {
-              (void) FormatLocaleString(buffer,MaxTextExtent,*q,
-                "/ASCII85Decode filter");
-              break;
-            }
-            case JPEGCompression:
-            {
-              (void) FormatLocaleString(buffer,MaxTextExtent,*q,
-                "/DCTDecode filter");
-              break;
-            }
-            case LZWCompression:
-            {
-              (void) FormatLocaleString(buffer,MaxTextExtent,*q,
-                "/LZWDecode filter");
-              break;
-            }
-            case FaxCompression:
-            case Group4Compression:
-            {
-              (void) FormatLocaleString(buffer,MaxTextExtent,*q," ");
-              break;
-            }
-            default:
-            {
-              (void) FormatLocaleString(buffer,MaxTextExtent,*q,
-                "/RunLengthDecode filter");
-              break;
-            }
+            filter="/ASCII85Decode filter";
+            break;
           }
-          (void) WriteBlobString(image,buffer);
-          (void) WriteBlobByte(image,'\n');
+          case JPEGCompression:
+          {
+            filter="/DCTDecode filter";
+            break;
+          }
+          case LZWCompression:
+          {
+            filter="/LZWDecode filter";
+            break;
+          }
+          case FaxCompression:
+          case Group4Compression:
+          {
+            filter=" ";
+            break;
+          }
+          default:
+          {
+            filter="/RunLengthDecode filter";
+            break;
+          }
         }
+        (void) FormatLocaleString(buffer,MagickPathExtent,PostscriptProlog,
+          filter,filter,filter,filter,filter,filter,filter,filter);
+        (void) WriteBlob(image,strlen(buffer),(const unsigned char *) buffer);
         value=GetImageProperty(image,"label");
         if (value != (const char *) NULL)
           {
@@ -675,11 +664,8 @@ static MagickBooleanType WritePS2Image(const ImageInfo *image_info,Image *image)
               (void) WriteBlobString(image,buffer);
             }
           }
-        for (q=PostscriptEpilog; *q; q++)
-        {
-          (void) FormatLocaleString(buffer,MaxTextExtent,"%s\n",*q);
-          (void) WriteBlobString(image,buffer);
-        }
+        (void) WriteBlob(image,sizeof(PostscriptEpilog)-1,
+          (const unsigned char *) PostscriptEpilog);
         if (LocaleCompare(image_info->magick,"PS2") == 0)
           (void) WriteBlobString(image,"  showpage\n");
         (void) WriteBlobString(image,"} bind def\n");

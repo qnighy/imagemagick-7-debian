@@ -16,7 +16,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -142,31 +142,22 @@ MagickExport void ConformMagickPixelPacket(Image *image,
   assert(image != (Image *) NULL);
   assert(image->signature == MagickCoreSignature);
   assert(destination != (const MagickPixelPacket *) NULL);
-
   (void) exception;
-
   *destination=(*source);
   if (image->colorspace == CMYKColorspace)
     {
-      if (IssRGBCompatibleColorspace(destination->colorspace))
+      if (IssRGBCompatibleColorspace(destination->colorspace) != MagickFalse)
         ConvertRGBToCMYK(destination);
     }
   else
     if (destination->colorspace == CMYKColorspace)
       {
-        if (IssRGBCompatibleColorspace(image->colorspace))
+        if (IssRGBCompatibleColorspace(image->colorspace) != MagickFalse)
           ConvertCMYKToRGB(destination);
       }
-#if 0
-  if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
-      (IsMagickGray(destination) == MagickFalse))
-    /* TODO: Add this method. */
-    SetMagickPixelPacketGray(destination);
-#else
   if ((IsGrayColorspace(image->colorspace) != MagickFalse) &&
       (IsMagickGray(destination) == MagickFalse))
     (void) TransformImageColorspace(image,sRGBColorspace);
-#endif
   if ((destination->matte != MagickFalse) && (image->matte == MagickFalse))
     (void) SetImageOpacity(image,OpaqueOpacity);
 }
@@ -2336,7 +2327,8 @@ MagickExport MagickRealType GetPixelIntensity(const Image *image,
     }
     case Rec601LumaPixelIntensityMethod:
     {
-      if (image->colorspace == RGBColorspace)
+      if ((image->colorspace == RGBColorspace) ||
+          (image->colorspace == LinearGRAYColorspace))
         {
           red=EncodePixelGamma(red);
           green=EncodePixelGamma(green);
@@ -2347,7 +2339,8 @@ MagickExport MagickRealType GetPixelIntensity(const Image *image,
     }
     case Rec601LuminancePixelIntensityMethod:
     {
-      if (image->colorspace == sRGBColorspace)
+      if ((image->colorspace == sRGBColorspace) ||
+          (image->colorspace == GRAYColorspace))
         {
           red=DecodePixelGamma(red);
           green=DecodePixelGamma(green);
@@ -2359,7 +2352,8 @@ MagickExport MagickRealType GetPixelIntensity(const Image *image,
     case Rec709LumaPixelIntensityMethod:
     default:
     {
-      if (image->colorspace == RGBColorspace)
+      if ((image->colorspace == RGBColorspace) ||
+          (image->colorspace == LinearGRAYColorspace))
         {
           red=EncodePixelGamma(red);
           green=EncodePixelGamma(green);
@@ -2370,7 +2364,8 @@ MagickExport MagickRealType GetPixelIntensity(const Image *image,
     }
     case Rec709LuminancePixelIntensityMethod:
     {
-      if (image->colorspace == sRGBColorspace)
+      if ((image->colorspace == sRGBColorspace) ||
+          (image->colorspace == GRAYColorspace))
         {
           red=DecodePixelGamma(red);
           green=DecodePixelGamma(green);
@@ -4330,10 +4325,10 @@ MagickExport MagickBooleanType ImportImagePixels(Image *image,const ssize_t x,
 %
 %  The format of the InterpolateMagickPixelPacket method is:
 %
-%      MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
-%        const CacheView *image_view,const InterpolatePixelMethod method,
-%        const double x,const double y,MagickPixelPacket *pixel,
-%        ExceptionInfo *exception)
+%      MagickBooleanType InterpolateMagickPixelPacket(
+%        const Image *magick_restict image,const CacheView *image_view,
+%        const InterpolatePixelMethod method,const double x,const double y,
+%        MagickPixelPacket *pixel,ExceptionInfo *exception)
 %
 %  A description of each parameter follows:
 %
@@ -4351,15 +4346,14 @@ MagickExport MagickBooleanType ImportImagePixels(Image *image,const ssize_t x,
 %
 */
 
-/*
-  Prepare pixels for weighted alpha blending.
-  Save PixelPacket/IndexPacket 'color'/'index' into 'pixel'/'alpha'
-  after multiplying colors by alpha.
-*/
 static inline void AlphaBlendMagickPixelPacket(const Image *image,
   const PixelPacket *color,const IndexPacket *indexes,MagickPixelPacket *pixel,
   MagickRealType *alpha)
 {
+  /*
+    Prepare pixels for weighted alpha blending.  Save PixelPacket/IndexPacket
+    'color'/'index' into 'pixel'/'alpha' after multiplying colors by alpha.
+  */
   if (image->matte == MagickFalse)
     {
       *alpha=1.0;
@@ -4415,6 +4409,15 @@ static inline void CatromWeights(const MagickRealType x,
   (*weights)[2]=x-(*weights)[3]-gamma;
 }
 
+static inline double ConstrainPixelOffset(double x)
+{
+  if (x < (double) -(SSIZE_MAX-512))
+    return((double) -(SSIZE_MAX-512));
+  if (x > (double) (SSIZE_MAX-512))
+    return((double) (SSIZE_MAX-512));
+  return(x);
+}
+
 static inline void SplineWeights(const MagickRealType x,
   MagickRealType (*weights)[4])
 {
@@ -4443,10 +4446,10 @@ static inline double MeshInterpolate(const PointInfo *delta,const double p,
   return(delta->x*x+delta->y*y+(1.0-delta->x-delta->y)*p);
 }
 
-MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
-  const CacheView *image_view,const InterpolatePixelMethod method,
-  const double x,const double y,MagickPixelPacket *pixel,
-  ExceptionInfo *exception)
+MagickExport MagickBooleanType InterpolateMagickPixelPacket(
+  const Image *magick_restrict image,const CacheView *image_view,
+  const InterpolatePixelMethod method,const double x,const double y,
+  MagickPixelPacket *pixel,ExceptionInfo *exception)
 {
   double
     gamma;
@@ -4464,7 +4467,7 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
     *indexes;
 
   register const PixelPacket
-    *p;
+    *magick_restrict p;
 
   register ssize_t
     i;
@@ -4480,8 +4483,8 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
   assert(image->signature == MagickCoreSignature);
   assert(image_view != (CacheView *) NULL);
   status=MagickTrue;
-  x_offset=(ssize_t) floor(x);
-  y_offset=(ssize_t) floor(y);
+  x_offset=(ssize_t) floor(ConstrainPixelOffset(x));
+  y_offset=(ssize_t) floor(ConstrainPixelOffset(y));
   interpolate = method;
   if (interpolate == UndefinedInterpolatePixel)
     interpolate=image->interpolate;
@@ -4499,8 +4502,8 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
       if (interpolate == Average9InterpolatePixel)
         {
           count=3;
-          x_offset=(ssize_t) (floor(x+0.5)-1);
-          y_offset=(ssize_t) (floor(y+0.5)-1);
+          x_offset=(ssize_t) (floor(ConstrainPixelOffset(x)+0.5)-1);
+          y_offset=(ssize_t) (floor(ConstrainPixelOffset(y)+0.5)-1);
         }
       else
         if (interpolate == Average16InterpolatePixel)
@@ -4547,7 +4550,7 @@ MagickExport MagickBooleanType InterpolateMagickPixelPacket(const Image *image,
       IndexPacket
         index;
 
-      index=0;  /* CMYK index -- What should we do?  -- This is a HACK */
+      index=(IndexPacket) 0;
       SetMagickPixelPacket(image,&image->background_color,&index,pixel);
       break;
     }

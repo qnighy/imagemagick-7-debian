@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -271,7 +271,7 @@ ModuleExport size_t RegisterAAIImage(void)
   entry->decoder=(DecodeImageHandler *) ReadAAIImage;
   entry->encoder=(EncodeImageHandler *) WriteAAIImage;
   entry->description=ConstantString("AAI Dune image");
-  entry->module=ConstantString("AAI");
+  entry->magick_module=ConstantString("AAI");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

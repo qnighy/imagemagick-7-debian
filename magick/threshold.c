@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -41,7 +41,7 @@
   Include declarations.
 */
 #include "magick/studio.h"
-#include "magick/property.h"
+#include "magick/artifact.h"
 #include "magick/blob.h"
 #include "magick/cache-view.h"
 #include "magick/color.h"
@@ -69,6 +69,7 @@
 #include "magick/montage.h"
 #include "magick/option.h"
 #include "magick/pixel-private.h"
+#include "magick/property.h"
 #include "magick/quantize.h"
 #include "magick/quantum.h"
 #include "magick/random_.h"
@@ -202,6 +203,8 @@ MagickExport Image *AdaptiveThresholdImage(const Image *image,
   threshold_image=CloneImage(image,0,0,MagickTrue,exception);
   if (threshold_image == (Image *) NULL)
     return((Image *) NULL);
+  if ((width == 0) || (height == 0))
+    return(threshold_image);
   if (SetImageStorageClass(threshold_image,DirectClass) == MagickFalse)
     {
       InheritException(exception,&threshold_image->exception);
@@ -374,9 +377,8 @@ MagickExport Image *AdaptiveThresholdImage(const Image *image,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  AutoThresholdImage() automatically selects a threshold and replaces each
-%  pixel in the image with a black pixel if the image intentsity is less than
-%  the selected threshold otherwise white.
+%  AutoThresholdImage() automatically performs image thresholding
+%  dependent on which method you specify.
 %
 %  The format of the AutoThresholdImage method is:
 %
@@ -571,8 +573,7 @@ static double OTSUThreshold(const Image *image,const double *histogram,
   return(100.0*threshold/MaxIntensity);
 }
 
-static double TriangleThreshold(const Image *image,const double *histogram,
-  ExceptionInfo *exception)
+static double TriangleThreshold(const Image *image,const double *histogram)
 {
   double
     a,
@@ -600,7 +601,7 @@ static double TriangleThreshold(const Image *image,const double *histogram,
   /*
     Compute optimal threshold with triangle algorithm.
   */
-  (void) exception;
+  magick_unreferenced(image);
   start=0;  /* find start bin, first bin not zero count */
   for (i=0; i <= (ssize_t) MaxIntensity; i++)
     if (histogram[i] > 0.0)
@@ -671,6 +672,9 @@ MagickExport MagickBooleanType AutoThresholdImage(Image *image,
 
   char
     property[MagickPathExtent];
+
+  const char
+    *artifact;
 
   double
     gamma,
@@ -748,7 +752,7 @@ MagickExport MagickBooleanType AutoThresholdImage(Image *image,
     }
     case TriangleThresholdMethod:
     {
-      threshold=TriangleThreshold(image,histogram,exception);
+      threshold=TriangleThreshold(image,histogram);
       break;
     }
   }
@@ -762,6 +766,9 @@ MagickExport MagickBooleanType AutoThresholdImage(Image *image,
   */
   (void) FormatLocaleString(property,MagickPathExtent,"%g%%",threshold);
   (void) SetImageProperty(image,"auto-threshold:threshold",property);
+  artifact=GetImageArtifact(image,"threshold:verbose");
+  if (IsStringTrue(artifact) != MagickFalse)
+    (void) FormatLocaleFile(stdout,"%.*g%%\n",GetMagickPrecision(),threshold);
   return(BilevelImage(image,QuantumRange*threshold/100.0));
 }
 
@@ -843,7 +850,7 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if (SetImageStorageClass(image,DirectClass) == MagickFalse)
     return(MagickFalse);
-  if (IsGrayColorspace(image->colorspace) != MagickFalse)
+  if (IsGrayColorspace(image->colorspace) == MagickFalse)
     (void) SetImageColorspace(image,sRGBColorspace);
   /*
     Bilevel threshold image.
@@ -905,7 +912,7 @@ MagickExport MagickBooleanType BilevelImageChannel(Image *image,
               SetPixelOpacity(q,(MagickRealType) GetPixelOpacity(q) <=
                 threshold ? 0 : QuantumRange);
             else
-              SetPixelAlpha(q,(MagickRealType) GetPixelAlpha(q) <= threshold ? 
+              SetPixelAlpha(q,(MagickRealType) GetPixelAlpha(q) <= threshold ?
                 OpaqueOpacity : TransparentOpacity);
           }
         if (((channel & IndexChannel) != 0) &&

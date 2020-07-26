@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -176,8 +176,11 @@ static Image *ReadVIDImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if (next_image == (Image *) NULL)
       break;
     label=InterpretImageProperties(image_info,next_image,DefaultTileLabel);
-    (void) SetImageProperty(next_image,"label",label);
-    label=DestroyString(label);
+    if (label != (char *) NULL)
+      {
+        (void) SetImageProperty(next_image,"label",label);
+        label=DestroyString(label);
+      }
     if (image_info->debug != MagickFalse)
       (void) LogMagickEvent(CoderEvent,GetMagickModule(),
         "geometry: %.20gx%.20g",(double) next_image->columns,(double)
@@ -252,7 +255,7 @@ ModuleExport size_t RegisterVIDImage(void)
   entry->encoder=(EncodeImageHandler *) WriteVIDImage;
   entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Visual Image Directory");
-  entry->module=ConstantString("VID");
+  entry->magick_module=ConstantString("VID");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
