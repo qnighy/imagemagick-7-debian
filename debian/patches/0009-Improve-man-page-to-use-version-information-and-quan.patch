@@ -1,4 +1,4 @@
-From 76c83e744e5dafb848c7e63c138590e859102676 Mon Sep 17 00:00:00 2001
+From ee4b473e927b9b09c4711cfa301d3b27ac3e753e Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Tue, 21 Mar 2017 12:15:08 +0100
 Subject: Improve man page to use version information and quantum
@@ -24,10 +24,10 @@ Forwarded: no
  13 files changed, 50 insertions(+), 48 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 698846529..fc7220c6f 100644
+index abe48a9fbb..5a03b3751e 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -810,6 +810,8 @@ if test "$enable_hdri" = 'yes'; then
+@@ -821,6 +821,8 @@ if test "$enable_hdri" = 'yes'; then
    MAGICK_ABI_SUFFIX="Q${QUANTUM_DEPTH}${MAGICK_HDRI}"
  fi
  AC_SUBST(MAGICK_ABI_SUFFIX)
@@ -37,7 +37,7 @@ index 698846529..fc7220c6f 100644
  # Set pixel cache threshold
  AC_ARG_WITH([cache],
 diff --git a/utilities/ImageMagick.1.in b/utilities/ImageMagick.1.in
-index bdf779177..8b46e6a83 100644
+index 20c23b3396..a29ab7bd9d 100644
 --- a/utilities/ImageMagick.1.in
 +++ b/utilities/ImageMagick.1.in
 @@ -1,8 +1,8 @@
@@ -59,9 +59,9 @@ index bdf779177..8b46e6a83 100644
 +convert-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), identify-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), composite-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), montage-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), compare-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), display-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), animate-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), import-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), conjure-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1), quantize(5), miff(4)
  
  .SH COPYRIGHT
- \fBCopyright (C) 1999-2019 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://imagemagick.org/script/license.php\fP
+ \fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://imagemagick.org/script/license.php\fP
 diff --git a/utilities/animate.1.in b/utilities/animate.1.in
-index f11479dc9..5eb339060 100644
+index b0fb3c9534..58742f3e9c 100644
 --- a/utilities/animate.1.in
 +++ b/utilities/animate.1.in
 @@ -1,11 +1,11 @@
@@ -89,7 +89,7 @@ index f11479dc9..5eb339060 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/compare.1.in b/utilities/compare.1.in
-index b6a6552e1..c0ddb848f 100644
+index fd8714d965..286dac302e 100644
 --- a/utilities/compare.1.in
 +++ b/utilities/compare.1.in
 @@ -1,11 +1,11 @@
@@ -117,7 +117,7 @@ index b6a6552e1..c0ddb848f 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/composite.1.in b/utilities/composite.1.in
-index 68e9ace36..f30f1b23c 100644
+index 7361f616f2..4212b23b0b 100644
 --- a/utilities/composite.1.in
 +++ b/utilities/composite.1.in
 @@ -1,11 +1,11 @@
@@ -145,7 +145,7 @@ index 68e9ace36..f30f1b23c 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/conjure.1.in b/utilities/conjure.1.in
-index 48cfde5b0..3d1256a23 100644
+index a10c077c86..1416f5545d 100644
 --- a/utilities/conjure.1.in
 +++ b/utilities/conjure.1.in
 @@ -1,11 +1,11 @@
@@ -173,7 +173,7 @@ index 48cfde5b0..3d1256a23 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/convert.1.in b/utilities/convert.1.in
-index 7271e2be6..256c22d8a 100644
+index bb13d1601d..7ee5e7f42b 100644
 --- a/utilities/convert.1.in
 +++ b/utilities/convert.1.in
 @@ -1,11 +1,11 @@
@@ -201,7 +201,7 @@ index 7271e2be6..256c22d8a 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/display.1.in b/utilities/display.1.in
-index 07d8c1559..6afa7f4fd 100644
+index 7b7f63b241..bc85a9f3be 100644
 --- a/utilities/display.1.in
 +++ b/utilities/display.1.in
 @@ -1,11 +1,11 @@
@@ -229,7 +229,7 @@ index 07d8c1559..6afa7f4fd 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/identify.1.in b/utilities/identify.1.in
-index 7e99c9d8b..048f996d0 100644
+index 6ba20ef736..392806fc93 100644
 --- a/utilities/identify.1.in
 +++ b/utilities/identify.1.in
 @@ -1,11 +1,11 @@
@@ -257,7 +257,7 @@ index 7e99c9d8b..048f996d0 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/import.1.in b/utilities/import.1.in
-index 7069973c2..e9211cb95 100644
+index b0e534f533..45634d3878 100644
 --- a/utilities/import.1.in
 +++ b/utilities/import.1.in
 @@ -1,11 +1,11 @@
@@ -285,7 +285,7 @@ index 7069973c2..e9211cb95 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/mogrify.1.in b/utilities/mogrify.1.in
-index 40431faf6..7040f7d23 100644
+index fbda2da64c..373e648de8 100644
 --- a/utilities/mogrify.1.in
 +++ b/utilities/mogrify.1.in
 @@ -1,11 +1,11 @@
@@ -314,7 +314,7 @@ index 40431faf6..7040f7d23 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/montage.1.in b/utilities/montage.1.in
-index 6595fc584..c47e3651b 100644
+index cea874d7c7..90fe05e360 100644
 --- a/utilities/montage.1.in
 +++ b/utilities/montage.1.in
 @@ -1,11 +1,11 @@
@@ -332,7 +332,7 @@ index 6595fc584..c47e3651b 100644
  
  
  For more information about the montage command, point your browser to file://@DOCUMENTATION_PATH@/www/montage.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/montage.php.
-@@ -140,7 +140,7 @@ In addition to those listed above, you can specify these standard X resources as
+@@ -142,7 +142,7 @@ In addition to those listed above, you can specify these standard X resources as
  
  By default, the image format of `file' is determined by its magic number.  To specify a particular image format, precede the filename with an image format name and a colon (i.e. ps:image) or specify the image type as the filename suffix (i.e. image.ps).  Specify 'file' as '-' for standard input or output.
  .SH SEE ALSO
@@ -342,7 +342,7 @@ index 6595fc584..c47e3651b 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/stream.1.in b/utilities/stream.1.in
-index 4a89ae91c..d19b77df1 100644
+index d3002d95bb..6cba1d3009 100644
 --- a/utilities/stream.1.in
 +++ b/utilities/stream.1.in
 @@ -1,11 +1,11 @@
