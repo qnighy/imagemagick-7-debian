@@ -1,0 +1,145 @@
+From 0942a302e53855a782f38dc093e628141be54c65 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
+Date: Sun, 26 Jul 2020 22:26:36 +0200
+Subject: Fix a few html error
+
+Forwarded: yes
+---
+ www/binary-releases.html      |  1 -
+ www/changelog.html            | 10 ++++++----
+ www/command-line-options.html |  2 +-
+ www/defines.html              |  5 +++--
+ www/index.html                |  1 -
+ www/search.html               |  1 +
+ www/security-policy.html      |  1 +
+ 7 files changed, 12 insertions(+), 9 deletions(-)
+
+diff --git a/www/binary-releases.html b/www/binary-releases.html
+index b6e959a7ea..49a8f2aac9 100644
+--- a/www/binary-releases.html
++++ b/www/binary-releases.html
+@@ -65,7 +65,6 @@
+       <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
+     </form>
+-    </div>
+   </nav>
+   <div class="container">
+    <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
+diff --git a/www/changelog.html b/www/changelog.html
+index 0dd115fb64..e25264d7d4 100644
+--- a/www/changelog.html
++++ b/www/changelog.html
+@@ -156,13 +156,14 @@
+ <dt>2020-01-07  6.9.10-85 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Support Fx do() iterator.</li>
+   <li> `magick -size 100x100 xc:black black.pnm` no longer creates a white image    (reference https://github.com/ImageMagick/ImageMagick/issues/1817).</li>
+-  <li> setjmp/longjmp in jpeg.c no longer trigger undefind behavior (reference<dt>		https://imagemagick.org/discourse-server/viewtopic.html?f=3&amp;t=37379).</dt>
++  <li> setjmp/longjmp in jpeg.c no longer trigger undefind behavior (reference		https://imagemagick.org/discourse-server/viewtopic.html?f=3&amp;t=37379).</li>
+   <li> Permit compositing in the CMYK colorspace (reference    https://imagemagick.org/discourse-server/viewtopic.html?f=3&amp;t=37368).</li>
+ <dt>2020-01-04  6.9.10-84 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Release ImageMagick version 6.9.10-84, GIT revision 15212:a45335c:20200104.</li>
+ <dt>2020-01-01  6.9.10-84 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Support extended Fx assignment operators (e.g. *=, /=, ++, --, etc.)</li>
+-  <li> Support Fx for() iterator.<dt>	* Optimize Fx performance.</dt>
++  <li> Support Fx for() iterator. </li>
++  <li> * Optimize Fx performance.</li>
+   <li>	* Ensure circle.rb renders the same for IMv6 and IMv7 (reference    https://github.com/rmagick/rmagick/issues/905).</li>
+ <dt>2019-12-30  6.9.10-83 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Release ImageMagick version 6.9.10-83, GIT revision 15184:9f64323:20191230.</li>
+@@ -230,7 +231,8 @@
+ <dt>2019-10-27  6.9.10-70 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Release ImageMagick version 6.9.10-70, GIT revision 14970:4200095:20191027.</li>
+ <dt>2019-10-27  6.9.10-70 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+-  <li> Fixed numerous issues  posted to GitHub (reference    https://github.com/ImageMagick/ImageMagick/issues).<dt>2019-10-27  6.9.10-70 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
++<li> Fixed numerous issues  posted to GitHub (reference    https://github.com/ImageMagick/ImageMagick/issues).</li>
++<dt>2019-10-27  6.9.10-70 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Release ImageMagick version 6.9.10-70, GIT revision 14970:4200095:20191027.</li>
+ <dt>2019-10-27  6.9.10-70 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Fixed numerous issues  posted to GitHub (reference    https://github.com/ImageMagick/ImageMagick/issues).</li>
+@@ -532,7 +534,7 @@
+   <li> Release ImageMagick version 6.9.10-1, GIT revision 13595:dafb03062:20180616.</li>
+ <dt>2018-06-16  6.9.10-1 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Fixed numerous use of uninitialized values, integer overflow, memory    exceeded, and timeouts (credit to OSS Fuzz).</li>
+-  <li> Fixed an issue with stroke and label: (reference</li>
++  <li> Fixed an issue with stroke and label</li>
+ <dt>2018-06-12  6.9.10-0 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+   <li> Release ImageMagick version 6.9.10-0, GIT revision 13585:82d7dbe0b:20180612.</li>
+ <dt>2018-06-11  6.9.10-0 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
+diff --git a/www/command-line-options.html b/www/command-line-options.html
+index cedb73fc57..d984edfb7a 100644
+--- a/www/command-line-options.html
++++ b/www/command-line-options.html
+@@ -3451,7 +3451,7 @@ image sequence.</p>
+ 
+ <p>Get the passphrase from the file specified by <var>filename</var>.</p>
+ 
+-<p>For more information, see the webpage, <<a href="cipher.html">ImageMagick: Encipher or
++<p>For more information, see the webpage, <a href="cipher.html">ImageMagick: Encipher or
+ Decipher an Image</a>.</p>
+ 
+ 
+diff --git a/www/defines.html b/www/defines.html
+index c1638546c1..722242ef31 100644
+--- a/www/defines.html
++++ b/www/defines.html
+@@ -67,7 +67,7 @@
+     </ul>
+     </div>
+     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/https://www.imagemagick.org/script/https://www.imagemagick.org/script/search.php">
+-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
++      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
+     </form>
+   </nav>
+@@ -818,6 +818,7 @@ information contained in the file:</p>
+ <p>Select <var>dataset</var> and <var>record</var> from the following:</p>
+ 
+ <pre class="pre-scrollable:">
++<code>
+   Envelope Record
+   1:00  Model Version
+   1:05  Destination
+@@ -932,4 +933,4 @@ Post ObjectData Descriptor Record
+   <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.4.1/jquery.min.js"><\/script>')</script>
+ </body>
+ </html>
+-<!-- Magick Cache 19th March 2020 16:27 -->
+\ No newline at end of file
++<!-- Magick Cache 19th March 2020 16:27 -->
+diff --git a/www/index.html b/www/index.html
+index 51b94fb48f..769c8a0ac3 100644
+--- a/www/index.html
++++ b/www/index.html
+@@ -241,7 +241,6 @@ Use ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&am
+ <h2><a class="anchor" id="news"></a>News</h2>
+ 
+ <p>ImageMagick <a href="https://imagemagick.org">version 7</a> has been released. We encourage you to migrate your workstreams to version 7.  However, we recognize a significant version 6 user community.  As such, the ImageMagick development team is committed to maintain, but not enhance, version 6 at least until 2028 and possibly beyond.</p>
+-</p>
+ 
+ <p>We discovered a bug in the pseudo-random generator prior to ImageMagick 6.9.10-81, the first 3 values repeated because the random state was not initialized properly.  As a consequence of the fix, expect a different numerical sequence when seeding (-seed).</p>
+ 
+diff --git a/www/search.html b/www/search.html
+index b93f36e3b6..5daf93f510 100644
+--- a/www/search.html
++++ b/www/search.html
+@@ -65,6 +65,7 @@
+         <a class="nav-link" target="_blank" href="https://imagemagick.org/discourse-server/">Community</a>
+       </li>
+     </ul>
++    </div>
+     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+       <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
+diff --git a/www/security-policy.html b/www/security-policy.html
+index 2132e229ef..fa2d721b34 100644
+--- a/www/security-policy.html
++++ b/www/security-policy.html
+@@ -65,6 +65,7 @@
+         <a class="nav-link" target="_blank" href="https://github.com/ImageMagick/ImageMagick6/discussions">Community</a>
+       </li>
+     </ul>
++    </div>
+     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
+       <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
