@@ -17,7 +17,7 @@
 %                                January 2014                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -131,7 +131,7 @@ ModuleExport size_t RegisterJSONImage(void)
   entry->blob_support=MagickFalse;
   entry->description=ConstantString("The image format and characteristics");
   entry->mime_type=ConstantString("application/json");
-  entry->module=ConstantString("JSON");
+  entry->magick_module=ConstantString("JSON");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -1076,7 +1076,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
   if (image->type != UndefinedType)
     JSONFormatLocaleFile(file,"    \"baseType\": %s,\n",
       CommandOptionToMnemonic(MagickTypeOptions,(ssize_t) image->type));
-  JSONFormatLocaleFile(file,"    \"endianess\": %s,\n",
+  JSONFormatLocaleFile(file,"    \"endianness\": %s,\n",
     CommandOptionToMnemonic(MagickEndianOptions,(ssize_t) image->endian));
   locate=GetImageArtifact(image,"identify:locate");
   if (locate == (const char *) NULL)
@@ -1110,7 +1110,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
       if (channel_statistics == (ChannelStatistics *) NULL)
         return(MagickFalse);
       (void) CopyMagickString(target,locate,MaxTextExtent);
-      *target=(char) toupper((int) ((unsigned char) *target));
+      *target=(char) LocaleUppercase((int) ((unsigned char) *target));
       (void) FormatLocaleFile(file,"    \"channel%s\": {\n",target);
       if (image->matte != MagickFalse)
         (void) PrintChannelLocations(file,image,AlphaChannel,"alpha",
@@ -1593,10 +1593,6 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
       (void) FormatLocaleFile(file,"],\n");
       image_info=DestroyImageInfo(image_info);
     }
-  (void) GetImageProperty(image,"exif:*");
-  (void) GetImageProperty(image,"icc:*");
-  (void) GetImageProperty(image,"iptc:*");
-  (void) GetImageProperty(image,"xmp:*");
   ResetImagePropertyIterator(image);
   property=GetNextImageProperty(image);
   if (property != (const char *) NULL)

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -276,7 +276,7 @@ ModuleExport size_t RegisterAVSImage(void)
   entry->decoder=(DecodeImageHandler *) ReadAVSImage;
   entry->encoder=(EncodeImageHandler *) WriteAVSImage;
   entry->description=ConstantString("AVS X image");
-  entry->module=ConstantString("AVS");
+  entry->magick_module=ConstantString("AVS");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

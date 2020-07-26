@@ -17,7 +17,7 @@
 %                               November 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -639,8 +639,14 @@ static MagickBooleanType load_level(Image *image,XCFDocInfo *inDocInfo,
     and we can simply return.
   */
   offset=(MagickOffsetType) ReadBlobMSBLong(image);
+  if (EOFBlob(image) != MagickFalse)
+    ThrowBinaryException(CorruptImageError,"UnexpectedEndOfFile", 
+      image->filename);
   if (offset == 0)
-    return(MagickTrue);
+    {
+      (void) SetImageBackgroundColor(image);
+      return(MagickTrue);
+    }
   /*
     Initialize the reference for the in-memory tile-compression.
   */
@@ -667,7 +673,7 @@ static MagickBooleanType load_level(Image *image,XCFDocInfo *inDocInfo,
     if (offset2 == 0)
       offset2=(MagickOffsetType) (offset + TILE_WIDTH * TILE_WIDTH * 4* 1.5);
     /* seek to the tile offset */
-    if (SeekBlob(image, offset, SEEK_SET) != offset)
+    if ((offset > offset2) || ( SeekBlob(image, offset, SEEK_SET) != offset))
       ThrowBinaryException(CorruptImageError,"InsufficientImageDataInFile",
         image->filename);
 
@@ -955,7 +961,10 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
   outLayer->image->background_color.opacity=
     ScaleCharToQuantum((unsigned char) (255-outLayer->alpha));
   if (outLayer->alpha != 255U)
-    outLayer->image->matte=MagickTrue;
+    {
+      outLayer->image->matte=MagickTrue;
+      (void) SetImageBackgroundColor(outLayer->image);
+    }
 
   InitXCFImage(outLayer);
 
@@ -974,8 +983,8 @@ static MagickBooleanType ReadOneLayer(const ImageInfo *image_info,Image* image,
   /* read in the hierarchy */
   offset=SeekBlob(image, (MagickOffsetType) hierarchy_offset, SEEK_SET);
   if (offset != (MagickOffsetType) hierarchy_offset)
-    (void) ThrowMagickException(&image->exception,GetMagickModule(),
-      CorruptImageError,"InvalidImageHeader","`%s'",image->filename);
+    ThrowBinaryImageException(CorruptImageError,"InvalidImageHeader",
+      image->filename);
   if (load_hierarchy (image, inDocInfo, outLayer) == 0)
     return(MagickFalse);
 
@@ -1513,7 +1522,7 @@ ModuleExport size_t RegisterXCFImage(void)
   entry->decoder=(DecodeImageHandler *) ReadXCFImage;
   entry->magick=(IsImageFormatHandler *) IsXCF;
   entry->description=ConstantString("GIMP image");
-  entry->module=ConstantString("XCF");
+  entry->magick_module=ConstantString("XCF");
   entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);

@@ -1,4 +1,4 @@
-#  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -103,6 +103,7 @@ MAGICK_CODER_SRCS = \
 	coders/bgr.c \
 	coders/bmp.c \
 	coders/braille.c \
+  coders/bytebuffer-private.h \
 	coders/cals.c \
 	coders/caption.c \
 	coders/cin.c \
@@ -119,6 +120,7 @@ MAGICK_CODER_SRCS = \
 	coders/dpx.c \
 	coders/fax.c \
 	coders/fits.c \
+  coders/ghostscript-private.h \
 	coders/gif.c \
 	coders/gradient.c \
 	coders/gray.c \
@@ -224,6 +226,10 @@ MAGICK_CODER_SRCS = \
   $(MAGICK_WEBP_SRCS) \
   $(MAGICK_WMF_SRCS) \
   $(MAGICK_X11_SRCS)
+
+CODERS_NOINST_HDRS = \
+  coders/bytebuffer-private.h \
+  coders/ghostscript-private.h
 
 if WITH_MODULES
 coders_LTLIBRARIES = \

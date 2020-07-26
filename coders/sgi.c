@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -798,7 +798,7 @@ ModuleExport size_t RegisterSGIImage(void)
   entry->encoder=(EncodeImageHandler *) WriteSGIImage;
   entry->magick=(IsImageFormatHandler *) IsSGI;
   entry->description=ConstantString("Irix RGB image");
-  entry->module=ConstantString("SGI");
+  entry->magick_module=ConstantString("SGI");
   entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
@@ -959,8 +959,6 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  if ((image->columns > 65535UL) || (image->rows > 65535UL))
-    ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
@@ -971,6 +969,8 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
     /*
       Initialize SGI raster file header.
     */
+    if ((image->columns > 65535UL) || (image->rows > 65535UL))
+      ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
     (void) TransformImageColorspace(image,sRGBColorspace);
     (void) memset(&iris_info,0,sizeof(iris_info));
     iris_info.magic=0x01DA;

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -170,7 +170,6 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
     base,
     flag,
     offset,
-    real,
     skip;
 
   ssize_t
@@ -242,9 +241,13 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   image->columns=tga_info.width;
   image->rows=tga_info.height;
-  alpha_bits=(tga_info.attributes & 0x0FU);
-  image->matte=(alpha_bits > 0) || (tga_info.bits_per_pixel == 32) ||
-    (tga_info.colormap_size == 32) ?  MagickTrue : MagickFalse;
+  if ((tga_info.image_type != TGAMonochrome) &&
+      (tga_info.image_type != TGARLEMonochrome))
+    {
+      alpha_bits=(tga_info.attributes & 0x0FU);
+      image->matte=(alpha_bits > 0) || (tga_info.bits_per_pixel == 32) ||
+        (tga_info.colormap_size == 32) ?  MagickTrue : MagickFalse;
+    }
   if ((tga_info.image_type != TGAColormap) &&
       (tga_info.image_type != TGARLEColormap))
     image->depth=(size_t) ((tga_info.bits_per_pixel <= 8) ? 8 :
@@ -253,10 +256,14 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->depth=(size_t) ((tga_info.colormap_size <= 8) ? 8 :
       (tga_info.colormap_size <= 16) ? 5 : 8);
   if ((tga_info.image_type == TGAColormap) ||
-      (tga_info.image_type == TGAMonochrome) ||
-      (tga_info.image_type == TGARLEColormap) ||
-      (tga_info.image_type == TGARLEMonochrome))
+      (tga_info.image_type == TGARLEColormap))
     image->storage_class=PseudoClass;
+  if ((tga_info.image_type == TGAMonochrome) ||
+      (tga_info.image_type == TGARLEMonochrome))
+    {
+      image->type=GrayscaleType;
+      image->colorspace=GRAYColorspace;
+    }
   image->compression=NoCompression;
   if ((tga_info.image_type == TGARLEColormap) ||
       (tga_info.image_type == TGARLEMonochrome) ||
@@ -306,19 +313,19 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
         }
       comment=DestroyString(comment);
     }
-  if (tga_info.attributes & (1UL << 4))
+  if ((tga_info.attributes & (1UL << 4)) == 0)
     {
-      if (tga_info.attributes & (1UL << 5))
-        image->orientation=TopRightOrientation;
+      if ((tga_info.attributes & (1UL << 5)) == 0)
+        image->orientation=BottomLeftOrientation;
       else
-        image->orientation=BottomRightOrientation;
+        image->orientation=TopLeftOrientation;
     }
   else
     {
-      if (tga_info.attributes & (1UL << 5))
-        image->orientation=TopLeftOrientation;
+      if ((tga_info.attributes & (1UL << 5)) == 0)
+        image->orientation=BottomRightOrientation;
       else
-        image->orientation=BottomLeftOrientation;
+        image->orientation=TopRightOrientation;
     }
   if (image_info->ping != MagickFalse)
     {
@@ -409,16 +416,12 @@ static Image *ReadTGAImage(const ImageInfo *image_info,ExceptionInfo *exception)
   base=0;
   flag=0;
   skip=MagickFalse;
-  real=0;
   index=(IndexPacket) 0;
   runlength=0;
   offset=0;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    real=offset;
-    if (((unsigned char) (tga_info.attributes & 0x20) >> 5) == 0)
-      real=image->rows-real-1;
-    q=QueueAuthenticPixels(image,0,(ssize_t) real,image->columns,1,exception);
+    q=QueueAuthenticPixels(image,0,offset,image->columns,1,exception);
     if (q == (PixelPacket *) NULL)
       break;
     indexes=GetAuthenticIndexQueue(image);
@@ -594,7 +597,7 @@ ModuleExport size_t RegisterTGAImage(void)
   entry->encoder=(EncodeImageHandler *) WriteTGAImage;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Truevision Targa image");
-  entry->module=ConstantString("TGA");
+  entry->magick_module=ConstantString("TGA");
   entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("TGA");
@@ -602,7 +605,7 @@ ModuleExport size_t RegisterTGAImage(void)
   entry->encoder=(EncodeImageHandler *) WriteTGAImage;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Truevision Targa image");
-  entry->module=ConstantString("TGA");
+  entry->magick_module=ConstantString("TGA");
   entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("VDA");
@@ -610,7 +613,7 @@ ModuleExport size_t RegisterTGAImage(void)
   entry->encoder=(EncodeImageHandler *) WriteTGAImage;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Truevision Targa image");
-  entry->module=ConstantString("TGA");
+  entry->magick_module=ConstantString("TGA");
   entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("VST");
@@ -618,7 +621,7 @@ ModuleExport size_t RegisterTGAImage(void)
   entry->encoder=(EncodeImageHandler *) WriteTGAImage;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Truevision Targa image");
-  entry->module=ConstantString("TGA");
+  entry->magick_module=ConstantString("TGA");
   entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
@@ -676,6 +679,7 @@ ModuleExport void UnregisterTGAImage(void)
 %    o image:  The image.
 %
 */
+
 static inline void WriteTGAPixel(Image *image,TGAImageType image_type,
   const IndexPacket *indexes,const PixelPacket *p,const QuantumAny range,
   const double midpoint)
@@ -749,7 +753,9 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
     *q;
 
   ssize_t
+    base,
     count,
+    offset,
     y;
 
   TGAInfo
@@ -915,9 +921,11 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
   /*
     Convert MIFF to TGA raster pixels.
   */
-  for (y=(ssize_t) (image->rows-1); y >= 0; y--)
+  base=0;
+  offset=0;
+  for (y=0; y < (ssize_t) image->rows; y++)
   {
-    p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
+    p=GetVirtualPixels(image,0,offset,image->columns,1,&image->exception);
     if (p == (const PixelPacket *) NULL)
       break;
     indexes=GetVirtualIndexQueue(image);
@@ -986,9 +994,16 @@ static MagickBooleanType WriteTGAImage(const ImageInfo *image_info,Image *image)
         }
       }
     else
+      for (x=0; x < (ssize_t) image->columns; x++)
+        WriteTGAPixel(image,tga_info.image_type,indexes+x,p++,range,midpoint);
+    if (((unsigned char) (tga_info.attributes & 0xc0) >> 6) == 2)
+      offset+=2;
+    else
+      offset++;
+    if (offset >= (ssize_t) image->rows)
       {
-        for (x=0; x < (ssize_t) image->columns; x++)
-          WriteTGAPixel(image,tga_info.image_type,indexes+x,p++,range,midpoint);
+        base++;
+        offset=base;
       }
     if (image->previous == (Image *) NULL)
       {

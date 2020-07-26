@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -204,7 +204,7 @@ ModuleExport size_t RegisterXCImage(void)
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
   entry->description=ConstantString("Constant image uniform color");
-  entry->module=ConstantString("XC");
+  entry->magick_module=ConstantString("XC");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("CANVAS");
   entry->decoder=(DecodeImageHandler *) ReadXCImage;
@@ -213,7 +213,7 @@ ModuleExport size_t RegisterXCImage(void)
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
   entry->description=ConstantString("Constant image uniform color");
-  entry->module=ConstantString("XC");
+  entry->magick_module=ConstantString("XC");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

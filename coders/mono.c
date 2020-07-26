@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -234,7 +234,7 @@ ModuleExport size_t RegisterMONOImage(void)
   entry->endian_support=MagickTrue;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Raw bi-level bitmap");
-  entry->module=ConstantString("MONO");
+  entry->magick_module=ConstantString("MONO");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -130,7 +130,7 @@ static Image *ReadDOTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   image=AcquireImage(image_info);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
-    return((Image *) NULL);
+    return(DestroyImageList(image));
   read_info=CloneImageInfo(image_info);
   SetImageInfoBlob(read_info,(void *) NULL,0);
   (void) CopyMagickString(read_info->magick,"SVG",MaxTextExtent);
@@ -145,7 +145,7 @@ static Image *ReadDOTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if (graph == (graph_t *) NULL)
     {
       (void) RelinquishUniqueFileResource(read_info->filename);
-      return ((Image *) NULL);
+      return(DestroyImageList(image));
     }
   option=GetImageOption(image_info,"dot:layout-engine");
   if (option == (const char *) NULL)
@@ -155,6 +155,7 @@ static Image *ReadDOTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   gvRenderFilename(graphic_context,graph,(char *) "svg",read_info->filename);
   gvFreeLayout(graphic_context,graph);
   agclose(graph);
+  image=DestroyImageList(image);
   /*
     Read SVG graph.
   */
@@ -202,7 +203,7 @@ ModuleExport size_t RegisterDOTImage(void)
 #endif
   entry->blob_support=MagickFalse;
   entry->description=ConstantString("Graphviz");
-  entry->module=ConstantString("DOT");
+  entry->magick_module=ConstantString("DOT");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("GV");
 #if defined(MAGICKCORE_GVC_DELEGATE)
@@ -210,7 +211,7 @@ ModuleExport size_t RegisterDOTImage(void)
 #endif
   entry->blob_support=MagickFalse;
   entry->description=ConstantString("Graphviz");
-  entry->module=ConstantString("DOT");
+  entry->magick_module=ConstantString("DOT");
   (void) RegisterMagickInfo(entry);
 #if defined(MAGICKCORE_GVC_DELEGATE)
   graphic_context=gvContext();

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -253,7 +253,7 @@ static MagickRealType ColorBurn(const MagickRealType Sca,
     return(Sa*Da+Dca*(1.0-Sa));
   if (Sca < MagickEpsilon)
     return(Dca*(1.0-Sa));
-  SaSca=Sa*PerceptibleReciprocal(Sca);    
+  SaSca=Sa*PerceptibleReciprocal(Sca);
   return(Sa*Da-Sa*MagickMin(Da,(Da-Dca)*SaSca)+Sca*(1.0-Da)+Dca*(1.0-Sa));
 }
 
@@ -1127,18 +1127,12 @@ static inline void CompositeMinus(const MagickPixelPacket *p,
   }
 }
 
-static inline MagickRealType ModulusAdd(const MagickRealType p,
-  const MagickRealType Sa,const MagickRealType q,const MagickRealType Da)
+static inline MagickRealType ModulusAdd(const MagickRealType Sc,
+  const MagickRealType Sa,const MagickRealType Dc,const MagickRealType Da)
 {
-  MagickRealType
-    pixel;
-
-  pixel=p+q;
-  while (pixel > QuantumRange)
-    pixel-=QuantumRange;
-  while (pixel < 0.0)
-    pixel+=QuantumRange;
-  return(pixel*Sa*Da+p*Sa*(1.0-Da)+q*Da*(1.0-Sa));
+  if (((Sc*Sa)+(Dc*Da)) <= QuantumRange)
+    return((Sc*Sa)+Dc*Da);
+  return(((Sc*Sa)+Dc*Da)-QuantumRange);
 }
 
 static inline void CompositeModulusAdd(const MagickPixelPacket *p,
@@ -1179,18 +1173,12 @@ static inline void CompositeModulusAdd(const MagickPixelPacket *p,
   }
 }
 
-static inline MagickRealType ModulusSubtract(const MagickRealType p,
-  const MagickRealType Sa,const MagickRealType q,const MagickRealType Da)
+static inline MagickRealType ModulusSubtract(const MagickRealType Sc,
+  const MagickRealType Sa,const MagickRealType Dc,const MagickRealType Da)
 {
-  MagickRealType
-    pixel;
-
-  pixel=p-q;
-  while (pixel > QuantumRange)
-    pixel-=QuantumRange;
-  while (pixel < 0.0)
-    pixel+=QuantumRange;
-  return(pixel*Sa*Da+p*Sa*(1.0-Da)+q*Da*(1.0-Sa));
+  if (((Sc*Sa)-(Dc*Da)) <= 0.0)
+    return((Sc*Sa)-Dc*Da);
+  return(((Sc*Sa)-Dc*Da)+QuantumRange);
 }
 
 static inline void CompositeModulusSubtract(const MagickPixelPacket *p,
@@ -1660,8 +1648,6 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
   source_image=CloneImage(composite,0,0,MagickTrue,exception);
   if (source_image == (const Image *) NULL)
     return(MagickFalse);
-  if (IsGrayColorspace(image->colorspace) != MagickFalse)
-    (void) SetImageColorspace(image,sRGBColorspace);
   (void) SetImageColorspace(source_image,image->colorspace);
   GetMagickPixelPacket(image,&zero);
   canvas_image=(Image *) NULL;
@@ -2818,7 +2804,7 @@ MagickExport MagickBooleanType CompositeImageChannel(Image *image,
         {
           if (source.colorspace != CMYKColorspace)
             ConvertRGBToCMYK(&source);
-          composite.index=QuantumRange-source.index;
+          composite.index=source.index;
           break;
         }
         /* compose methods that are already handled */

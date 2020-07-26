@@ -17,7 +17,7 @@
 %                               March 2003                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -41,6 +41,7 @@
 */
 #include "magick/studio.h"
 #include "magick/client.h"
+#include "magick/log.h"
 #include "magick/string_.h"
 
 /*
@@ -114,11 +115,14 @@ MagickExport const char *GetClientPath(void)
 MagickExport const char *SetClientName(const char *name)
 {
   static char
-    client_name[MaxTextExtent] = "Magick";
+    client_name[256] = "";
 
   if ((name != (char *) NULL) && (*name != '\0'))
-    (void) CopyMagickString(client_name,name,MaxTextExtent);
-  return(client_name);
+    {
+      (void) CopyMagickString(client_name,name,sizeof(client_name));
+      (void) LogMagickEvent(ConfigureEvent,GetMagickModule(),"%s",client_name);
+    }
+  return(*client_name == '\0' ? "Magick" : client_name);
 }
 
 /*
@@ -151,6 +155,9 @@ MagickExport const char *SetClientPath(const char *path)
     client_path[MaxTextExtent] = "";
 
   if ((path != (char *) NULL) && (*path != '\0'))
-    (void) CopyMagickString(client_path,path,MaxTextExtent);
+    {
+      (void) CopyMagickString(client_path,path,MaxTextExtent);
+      (void) LogMagickEvent(ConfigureEvent,GetMagickModule(),"%s",path);
+    }
   return(client_path);
 }

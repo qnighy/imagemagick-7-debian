@@ -1,8 +1,8 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
-  You may not use this file except in compliance with the License.
+  You may not use this file except in compliance with the License.  You may
   obtain a copy of the License at
   
     https://imagemagick.org/script/license.php
@@ -44,7 +44,7 @@ typedef enum
   ItalicStyle,
   ObliqueStyle,
   AnyStyle,
-  BoldStyle
+  BoldStyle  /* deprecated */
 } StyleType;
 
 typedef struct _TypeInfo
@@ -98,7 +98,7 @@ extern MagickExport const TypeInfo
     const size_t,ExceptionInfo *),
   **GetTypeInfoList(const char *,size_t *,ExceptionInfo *);
 
-MagickExport void
+extern MagickExport void
   TypeComponentTerminus(void);
 
 #if defined(__cplusplus) || defined(c_plusplus)

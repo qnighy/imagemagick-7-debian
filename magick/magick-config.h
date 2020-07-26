@@ -2,7 +2,7 @@
   Copyright 2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
-  You may not use this file except in compliance with the License.
+  You may not use this file except in compliance with the License.  You may
   obtain a copy of the License at
 
     https://imagemagick.org/script/license.php
@@ -156,6 +156,42 @@ extern "C" {
 #ifndef MAGICKCORE_SHAREARCH_RELATIVE_PATH
 #define MAGICKCORE_SHAREARCH_RELATIVE_PATH MAGICKCORE_LIBRARY_RELATIVE_PATH MAGICKCORE_DIR_SEPARATOR MAGICKCORE_SHAREARCH_DIRNAME
 #endif
+
+/* for Clang compatibility */
+#ifndef __has_builtin
+#  define __has_builtin(x) 0
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+# define MAGICKCORE_DIAGNOSTIC_PUSH() \
+   _Pragma("GCC diagnostic push")
+# define MAGICKCORE_DIAGNOSTIC_IGNORE_MAYBE_UNINITIALIZED() \
+   _Pragma("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+# define MAGICKCORE_DIAGNOSTIC_POP() \
+   _Pragma("GCC diagnostic pop")
+#else
+# define MAGICKCORE_DIAGNOSTIC_PUSH()
+# define MAGICKCORE_DIAGNOSTIC_IGNORE_MAYBE_UNINITIALIZED()
+# define MAGICKCORE_DIAGNOSTIC_POP()
+#endif
+
+#define MAGICKCORE_BITS_BELOW(power_of_2) \
+  ((power_of_2)-1)
+
+#define MAGICKCORE_MAX_ALIGNMENT_PADDING(power_of_2) \
+  MAGICKCORE_BITS_BELOW(power_of_2)
+
+#define MAGICKCORE_IS_NOT_ALIGNED(n, power_of_2) \
+  ((n) & MAGICKCORE_BITS_BELOW(power_of_2))
+
+#define MAGICKCORE_IS_NOT_POWER_OF_2(n) \
+  MAGICKCORE_IS_NOT_ALIGNED((n), (n))
+
+#define MAGICKCORE_ALIGN_DOWN(n, power_of_2) \
+  ((n) & ~MAGICKCORE_BITS_BELOW(power_of_2))
+
+#define MAGICKCORE_ALIGN_UP(n, power_of_2) \
+  MAGICKCORE_ALIGN_DOWN((n) + MAGICKCORE_MAX_ALIGNMENT_PADDING(power_of_2),power_of_2)
 
 #endif
  

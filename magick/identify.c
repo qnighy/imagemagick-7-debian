@@ -17,7 +17,7 @@
 %                            September 1994                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -687,7 +687,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
   ping=pixels == (const PixelPacket *) NULL ? MagickTrue : MagickFalse;
   exception=(&image->exception);
   (void) SignatureImage(image);
-  (void) FormatLocaleFile(file,"Image: %s\n",image->filename);
+  (void) FormatLocaleFile(file,"Image:\n  Filename: %s\n",image->filename);
   if (*image->magick_filename != '\0')
     if (LocaleCompare(image->magick_filename,image->filename) != 0)
       {
@@ -736,7 +736,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
   if (image->type != type)
     (void) FormatLocaleFile(file,"  Base type: %s\n",CommandOptionToMnemonic(
       MagickTypeOptions,(ssize_t) image->type));
-  (void) FormatLocaleFile(file,"  Endianess: %s\n",CommandOptionToMnemonic(
+  (void) FormatLocaleFile(file,"  Endianness: %s\n",CommandOptionToMnemonic(
     MagickEndianOptions,(ssize_t) image->endian));
   /*
     Detail channel depth and extrema.
@@ -1045,6 +1045,7 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
         {
           char
             color[MaxTextExtent],
+            index[MaxTextExtent],
             hex[MaxTextExtent],
             tuple[MaxTextExtent];
 
@@ -1081,8 +1082,9 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
             (void) QueryMagickColorname(image,&pixel,SVGCompliance,color,
               exception);
             GetColorTuple(&pixel,MagickTrue,hex);
-            (void) FormatLocaleFile(file,"  %8ld: %s %s %s\n",(long) i,tuple,
-              hex,color);
+            (void) sprintf(index,"%g:",(double) i);
+            (void) FormatLocaleFile(file,"    %s %s %s %s\n",index,tuple,hex,
+              color);
             p++;
           }
         }
@@ -1229,27 +1231,6 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
         tile=DestroyImage(tile);
       }
       image_info=DestroyImageInfo(image_info);
-    }
-  (void) GetImageProperty(image,"exif:*");
-  (void) GetImageProperty(image,"icc:*");
-  (void) GetImageProperty(image,"iptc:*");
-  (void) GetImageProperty(image,"xmp:*");
-  ResetImagePropertyIterator(image);
-  property=GetNextImageProperty(image);
-  if (property != (const char *) NULL)
-    {
-      /*
-        Display image properties.
-      */
-      (void) FormatLocaleFile(file,"  Properties:\n");
-      while (property != (const char *) NULL)
-      {
-        (void) FormatLocaleFile(file,"    %s: ",property);
-        value=GetImageProperty(image,property);
-        if (value != (const char *) NULL)
-          (void) FormatLocaleFile(file,"%s\n",value);
-        property=GetNextImageProperty(image);
-      }
     }
   (void) FormatLocaleString(key,MaxTextExtent,"8BIM:1999,2998:#1");
   value=GetImageProperty(image,key);
@@ -1401,6 +1382,23 @@ MagickExport MagickBooleanType IdentifyImage(Image *image,FILE *file,
         if (image->debug != MagickFalse)
           PrintStringInfo(file,name,profile);
         name=GetNextImageProfile(image);
+      }
+    }
+  ResetImagePropertyIterator(image);
+  property=GetNextImageProperty(image);
+  if (property != (const char *) NULL)
+    {
+      /*
+        Display image properties.
+      */
+      (void) FormatLocaleFile(file,"  Properties:\n");
+      while (property != (const char *) NULL)
+      {
+        (void) FormatLocaleFile(file,"    %s: ",property);
+        value=GetImageProperty(image,property);
+        if (value != (const char *) NULL)
+          (void) FormatLocaleFile(file,"%s\n",value);
+        property=GetNextImageProperty(image);
       }
     }
   ResetImageArtifactIterator(image);

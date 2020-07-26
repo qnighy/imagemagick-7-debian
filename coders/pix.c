@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -300,7 +300,7 @@ ModuleExport size_t RegisterPIXImage(void)
   entry=SetMagickInfo("PIX");
   entry->decoder=(DecodeImageHandler *) ReadPIXImage;
   entry->description=ConstantString("Alias/Wavefront RLE image format");
-  entry->module=ConstantString("PIX");
+  entry->magick_module=ConstantString("PIX");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

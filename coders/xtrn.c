@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -209,7 +209,7 @@ ModuleExport size_t RegisterXTRNImage(void)
   entry->stealth=MagickTrue;
   entry->description=ConstantString(
     "External transfer via a smart array interface");
-  entry->module=ConstantString("XTRN");
+  entry->magick_module=ConstantString("XTRN");
   RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

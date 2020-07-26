@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -644,6 +644,9 @@ MagickExport void ExpandFilename(char *path)
     {
 #if defined(MAGICKCORE_POSIX_SUPPORT) && !defined(__OS2__)
       char
+#if defined(MAGICKCORE_HAVE_GETPWNAM_R)
+        buffer[MagickPathExtent],
+#endif
         username[MaxTextExtent];
 
       register char
@@ -659,7 +662,16 @@ MagickExport void ExpandFilename(char *path)
       p=strchr(username,'/');
       if (p != (char *) NULL)
         *p='\0';
+#if !defined(MAGICKCORE_HAVE_GETPWNAM_R)
       entry=getpwnam(username);
+#else
+      struct passwd
+        pwd;
+
+      entry=(struct passwd *) NULL;
+      if (getpwnam_r(username,&pwd,buffer,sizeof(buffer),&entry) < 0)
+        return;
+#endif
       if (entry == (struct passwd *) NULL)
         return;
       (void) CopyMagickString(expand_path,entry->pw_dir,MaxTextExtent);
@@ -810,7 +822,7 @@ MagickExport MagickBooleanType ExpandFilenames(int *number_arguments,
       continue;
     if ((IsGlob(filename) == MagickFalse) && (*option != '@'))
       continue;
-    if (*option != '@')
+    if ((*option != '@') && (IsPathAccessible(option) == MagickFalse))
       {
         /*
           Generate file list from wildcard filename (e.g. *.jpg).
@@ -1125,8 +1137,6 @@ MagickExport ssize_t GetMagickPageSize(void)
   page_size=(ssize_t) sysconf(_SC_PAGE_SIZE);
 #elif defined(MAGICKCORE_HAVE_GETPAGESIZE)
   page_size=(ssize_t) getpagesize();
-#elif defined(MAGICKCORE_WINDOWS_SUPPORT)
-  page_size=NTGetPageSize();
 #endif
   if (page_size <= 0)
     page_size=4096;
@@ -1233,23 +1243,25 @@ MagickExport void GetPathComponent(const char *path,PathType type,
   if (type != SubcanonicalPath)
     {
       p=component+strlen(component)-1;
-      q=strrchr(component,'[');
-      if ((strlen(component) > 2) && (*p == ']') && (q != (char *) NULL) &&
-          ((q == component) || (*(q-1) != ']')) &&
-          (IsPathAccessible(path) == MagickFalse))
+      if ((strlen(component) > 2) && (*p == ']'))
         {
-          /*
-            Look for scene specification (e.g. img0001.pcd[4]).
-          */
-          *p='\0';
-          if ((IsSceneGeometry(q+1,MagickFalse) == MagickFalse) &&
-              (IsGeometry(q+1) == MagickFalse))
-            *p=']';
-          else
+          q=strrchr(component,'[');
+          if ((q != (char *) NULL) && ((q == component) || (*(q-1) != ']')) &&
+              (IsPathAccessible(path) == MagickFalse))
             {
-              subimage_length=(size_t) (p-q);
-              subimage_offset=(size_t) (q-component+1);
-              *q='\0';
+              /*
+                Look for scene specification (e.g. img0001.pcd[4]).
+              */
+              *p='\0';
+                if ((IsSceneGeometry(q+1,MagickFalse) == MagickFalse) &&
+                  (IsGeometry(q+1) == MagickFalse))
+                *p=']';
+              else
+                {
+                  subimage_length=(size_t) (p-q);
+                  subimage_offset=(size_t) (q-component+1);
+                  *q='\0';
+                }
             }
         }
     }
@@ -1621,7 +1633,8 @@ MagickExport char **ListFiles(const char *directory,const char *pattern,
   while ((MagickReadDirectory(current_directory,buffer,&entry) == 0) &&
          (entry != (struct dirent *) NULL))
   {
-    if (*entry->d_name == '.')
+    if ((LocaleCompare(entry->d_name,".") == 0) ||
+        (LocaleCompare(entry->d_name,"..") == 0))
       continue;
     if ((IsPathDirectory(entry->d_name) > 0) ||
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
@@ -1733,7 +1746,15 @@ MagickExport void MagickDelay(const MagickSizeType milliseconds)
 #elif defined(__BEOS__)
   snooze(1000*milliseconds);
 #else
-# error "Time delay method not defined."
+  {
+    clock_t
+      time_end;
+
+    time_end=clock()+milliseconds*CLOCKS_PER_SEC/1000;
+    while (clock() < time_end)
+    {
+    }
+  }
 #endif
 }
 

@@ -23,7 +23,7 @@
 %                                 August 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1026,7 +1026,7 @@ WandExport void MagickWandGenesis(void)
 %
 %  MagickWandTerminus() terminates the MagickWand environment.
 %
-%  The format of the MaickWandTerminus method is:
+%  The format of the MagickWandTerminus method is:
 %
 %      void MagickWandTerminus(void)
 %

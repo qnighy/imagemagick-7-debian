@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -112,13 +112,20 @@ MagickExport MagickBooleanType AcquireImageColormap(Image *image,
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (colors > MaxColormapSize)
+    {
+      image->colors=0;
+      image->storage_class=DirectClass;
+      ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
+        image->filename);
+    }
   image->colors=MagickMax(colors,1);
   if (image->colormap == (PixelPacket *) NULL)
-    image->colormap=(PixelPacket *) AcquireQuantumMemory(image->colors+1,
+    image->colormap=(PixelPacket *) AcquireQuantumMemory(image->colors+256,
       sizeof(*image->colormap));
   else
     image->colormap=(PixelPacket *) ResizeQuantumMemory(image->colormap,
-      image->colors+1,sizeof(*image->colormap));
+      image->colors+256,sizeof(*image->colormap));
   if (image->colormap == (PixelPacket *) NULL)
     {
       image->colors=0;

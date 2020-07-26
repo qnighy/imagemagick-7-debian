@@ -16,7 +16,7 @@
 %                              December 2001                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -52,9 +52,10 @@
 #include "magick/exception-private.h"
 #include "magick/image-private.h"
 #include "magick/memory_.h"
-#include "magick/semaphore.h"
+#include "magick/memory-private.h"
 #include "magick/random_.h"
 #include "magick/resource_.h"
+#include "magick/semaphore.h"
 #include "magick/signature-private.h"
 #include "magick/string_.h"
 #include "magick/thread_.h"
@@ -85,7 +86,7 @@ struct _RandomInfo
   size_t
     i;
 
-  unsigned long
+  MagickSizeType
     seed[4];
 
   double
@@ -170,9 +171,7 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
     *key,
     *nonce;
 
-  random_info=(RandomInfo *) AcquireMagickMemory(sizeof(*random_info));
-  if (random_info == (RandomInfo *) NULL)
-    ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
+  random_info=(RandomInfo *) AcquireCriticalMemory(sizeof(*random_info));
   (void) memset(random_info,0,sizeof(*random_info));
   random_info->signature_info=AcquireSignatureInfo();
   random_info->nonce=AcquireStringInfo(2*GetSignatureDigestsize(
@@ -181,7 +180,11 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
   random_info->reservoir=AcquireStringInfo(GetSignatureDigestsize(
     random_info->signature_info));
   ResetStringInfo(random_info->reservoir);
-  random_info->normalize=1.0/(~0UL);
+  random_info->normalize=(double) (1.0/(MagickULLConstant(~0) >> 11));
+  random_info->seed[0]=MagickULLConstant(0x76e15d3efefdcbbf);
+  random_info->seed[1]=MagickULLConstant(0xc5004e441c522fb3);
+  random_info->seed[2]=MagickULLConstant(0x77710069854ee241);
+  random_info->seed[3]=MagickULLConstant(0x39109bb02acbe635);
   random_info->secret_key=secret_key;
   random_info->protocol_major=RandomProtocolMajorVersion;
   random_info->protocol_minor=RandomProtocolMinorVersion;
@@ -218,9 +221,9 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
   */
   if (random_info->secret_key == ~0UL)
     {
-      key=GetRandomKey(random_info,sizeof(random_info->secret_key));
+      key=GetRandomKey(random_info,sizeof(random_info->seed));
       (void) memcpy(random_info->seed,GetStringInfoDatum(key),
-        GetStringInfoLength(key));
+        sizeof(random_info->seed));
       key=DestroyStringInfo(key);
     }
   else
@@ -236,13 +239,10 @@ MagickExport RandomInfo *AcquireRandomInfo(void)
       FinalizeSignature(signature_info);
       digest=GetSignatureDigest(signature_info);
       (void) memcpy(random_info->seed,GetStringInfoDatum(digest),
-        MagickMin(GetSignatureDigestsize(signature_info),
-        sizeof(*random_info->seed)));
+        MagickMin((size_t) GetSignatureDigestsize(signature_info),
+        sizeof(random_info->seed)));
       signature_info=DestroySignatureInfo(signature_info);
     }
-  random_info->seed[1]=0x50a7f451UL;
-  random_info->seed[2]=0x5365417eUL;
-  random_info->seed[3]=0xc3a4171aUL;
   return(random_info);
 }
 
@@ -410,8 +410,8 @@ static StringInfo *GenerateEntropicChaos(RandomInfo *random_info)
 
     if (gettimeofday(&timer,(struct timezone *) NULL) == 0)
       {
-        seconds=timer.tv_sec;
-        nanoseconds=1000UL*timer.tv_usec;
+        seconds=(size_t) timer.tv_sec;
+        nanoseconds=(size_t) (1000UL*timer.tv_usec);
       }
   }
 #endif
@@ -483,9 +483,6 @@ static StringInfo *GenerateEntropicChaos(RandomInfo *random_info)
     LARGE_INTEGER
       nanoseconds;
 
-    MagickBooleanType
-      status;
-
     /*
       Not crytographically strong but better than nothing.
     */
@@ -503,8 +500,7 @@ static StringInfo *GenerateEntropicChaos(RandomInfo *random_info)
       Our best hope for true entropy.
     */
     SetStringInfoLength(chaos,MaxEntropyExtent);
-    status=NTGatherRandomData(MaxEntropyExtent,GetStringInfoDatum(chaos));
-    (void) status;
+    (void) NTGatherRandomData(MaxEntropyExtent,GetStringInfoDatum(chaos));
     ConcatenateStringInfo(entropy,chaos);
   }
 #else
@@ -596,9 +592,9 @@ static StringInfo *GenerateEntropicChaos(RandomInfo *random_info)
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  GetPseudoRandomValue() return a non-negative double-precision floating-point
-%  value uniformly distributed over the interval [0.0, 1.0) with a 2 to the
-%  128th-1 period.
+%  GetPseudoRandomValue() is a Xoshiro generator that returns a non-negative
+%  double-precision floating-point value uniformly distributed over the
+%  interval [0.0, 1.0) with a 2 to the 256th-1 period.
 %
 %  The format of the GetPseudoRandomValue method is:
 %
@@ -609,24 +605,22 @@ static StringInfo *GenerateEntropicChaos(RandomInfo *random_info)
 %    o random_info: the random info.
 %
 */
-MagickExport double GetPseudoRandomValue(RandomInfo *random_info)
+MagickExport double GetPseudoRandomValue(
+  RandomInfo *magick_restrict random_info)
 {
-  register unsigned long
-    *seed;
+#define RandomROTL(x,k) (((x) << (k)) | ((x) >> (64-(k))))
 
-  unsigned long
-    alpha;
+  const MagickSizeType
+    alpha = (random_info->seed[1] << 17),
+    value = (random_info->seed[0]+random_info->seed[3]);
 
-  seed=random_info->seed;
-  do
-  {
-    alpha=(unsigned long) (seed[1] ^ (seed[1] << 11));
-    seed[1]=seed[2];
-    seed[2]=seed[3];
-    seed[3]=seed[0];
-    seed[0]=(seed[0] ^ (seed[0] >> 19)) ^ (alpha ^ (alpha >> 8));
-  } while (seed[0] == ~0UL);
-  return(random_info->normalize*seed[0]);
+  random_info->seed[2]^=random_info->seed[0];
+  random_info->seed[3]^=random_info->seed[1];
+  random_info->seed[1]^=random_info->seed[2];
+  random_info->seed[0]^=random_info->seed[3];
+  random_info->seed[2]^=alpha;
+  random_info->seed[3]=RandomROTL(random_info->seed[3],45);
+  return((double) ((value >> 11)*random_info->normalize));
 }
 
 /*
@@ -682,7 +676,7 @@ MagickPrivate double GetRandomInfoNormalize(const RandomInfo *random_info)
 MagickPrivate unsigned long *GetRandomInfoSeed(RandomInfo *random_info)
 {
   assert(random_info != (RandomInfo *) NULL);
-  return(random_info->seed);
+  return((unsigned long *) random_info->seed);
 }
 
 /*

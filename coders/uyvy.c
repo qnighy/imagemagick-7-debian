@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -224,7 +224,7 @@ ModuleExport size_t RegisterUYVYImage(void)
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
   entry->description=ConstantString("16bit/pixel interleaved YUV");
-  entry->module=ConstantString("UYVY");
+  entry->magick_module=ConstantString("UYVY");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("UYVY");
   entry->decoder=(DecodeImageHandler *) ReadUYVYImage;
@@ -233,7 +233,7 @@ ModuleExport size_t RegisterUYVYImage(void)
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
   entry->description=ConstantString("16bit/pixel interleaved YUV");
-  entry->module=ConstantString("UYVY");
+  entry->magick_module=ConstantString("UYVY");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

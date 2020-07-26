@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -284,7 +284,7 @@ ModuleExport size_t RegisterFAXImage(void)
   entry->magick=(IsImageFormatHandler *) IsFAX;
   entry->description=ConstantString("Group 3 FAX");
   entry->note=ConstantString(Note);
-  entry->module=ConstantString("FAX");
+  entry->magick_module=ConstantString("FAX");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("G3");
   entry->decoder=(DecodeImageHandler *) ReadFAXImage;
@@ -292,7 +292,7 @@ ModuleExport size_t RegisterFAXImage(void)
   entry->magick=(IsImageFormatHandler *) IsFAX;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Group 3 FAX");
-  entry->module=ConstantString("FAX");
+  entry->magick_module=ConstantString("FAX");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("G4");
   entry->decoder=(DecodeImageHandler *) ReadFAXImage;
@@ -300,7 +300,7 @@ ModuleExport size_t RegisterFAXImage(void)
   entry->magick=(IsImageFormatHandler *) IsFAX;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Group 4 FAX");
-  entry->module=ConstantString("FAX");
+  entry->magick_module=ConstantString("FAX");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

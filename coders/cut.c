@@ -568,6 +568,7 @@ static Image *ReadCUTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   BImgBuff=(unsigned char *) AcquireQuantumMemory((size_t) ldblk,
     sizeof(*BImgBuff));  /*Ldblk was set in the check phase*/
   if(BImgBuff==NULL) goto NoMemory;
+  (void) memset(BImgBuff,0,(size_t) ldblk*sizeof(*BImgBuff));
 
   offset=SeekBlob(image,6 /*sizeof(Header)*/,SEEK_SET);
   if (offset < 0)
@@ -710,7 +711,7 @@ ModuleExport size_t RegisterCUTImage(void)
   entry->decoder=(DecodeImageHandler *) ReadCUTImage;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("DR Halo");
-  entry->module=ConstantString("CUT");
+  entry->magick_module=ConstantString("CUT");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

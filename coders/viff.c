@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -824,14 +824,14 @@ ModuleExport size_t RegisterVIFFImage(void)
   entry->magick=(IsImageFormatHandler *) IsVIFF;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Khoros Visualization image");
-  entry->module=ConstantString("VIFF");
+  entry->magick_module=ConstantString("VIFF");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("XV");
   entry->decoder=(DecodeImageHandler *) ReadVIFFImage;
   entry->encoder=(EncodeImageHandler *) WriteVIFFImage;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Khoros Visualization image");
-  entry->module=ConstantString("VIFF");
+  entry->magick_module=ConstantString("VIFF");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -1004,9 +1004,7 @@ static MagickBooleanType WriteVIFFImage(const ImageInfo *image_info,
       Initialize VIFF image structure.
     */
     (void) TransformImageColorspace(image,sRGBColorspace);
-DisableMSCWarning(4310)
-    viff_info.identifier=(char) 0xab;
-RestoreMSCWarning
+    viff_info.identifier=(char) -85;
     viff_info.file_type=1;
     viff_info.release=1;
     viff_info.version=3;

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -107,7 +107,7 @@ ModuleExport size_t RegisterHISTOGRAMImage(void)
   entry->adjoin=MagickFalse;
   entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Histogram of the image");
-  entry->module=ConstantString("HISTOGRAM");
+  entry->magick_module=ConstantString("HISTOGRAM");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

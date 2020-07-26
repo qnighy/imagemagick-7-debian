@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -126,7 +126,7 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
         count=ReadBlob(image,0x800,buffer); \
         p=buffer; \
       } \
-    sum|=((unsigned int) (*p) << (24-bits)); \
+    sum|=(((unsigned int) (*p)) << (24-bits)); \
     bits+=8; \
     p++; \
   } \
@@ -205,6 +205,8 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
     if (pcd_table[i] == (PCDTable *) NULL)
       {
         buffer=(unsigned char *) RelinquishMagickMemory(buffer);
+        for (j=0; j < i; j++)
+          pcd_table[j]=(PCDTable *) RelinquishMagickMemory(pcd_table[j]);
         ThrowBinaryImageException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename);
       }
@@ -216,6 +218,8 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
       if (r->length > 16)
         {
           buffer=(unsigned char *) RelinquishMagickMemory(buffer);
+          for (j=0; j <= i; j++)
+            pcd_table[j]=(PCDTable *) RelinquishMagickMemory(pcd_table[j]);
           return(MagickFalse);
         }
       PCDGetBits(16);
@@ -227,17 +231,20 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
     }
     pcd_length[i]=(size_t) length;
   }
-  /*
-    Search for Sync byte.
-  */
-  for (i=0; i < 1; i++)
-    PCDGetBits(16);
-  for (i=0; i < 1; i++)
-    PCDGetBits(16);
-  while ((sum & 0x00fff000UL) != 0x00fff000UL)
-    PCDGetBits(8);
-  while (IsSync(sum) == 0)
-    PCDGetBits(1);
+  if (EOFBlob(image) == MagickFalse)
+    {
+      /*
+        Search for Sync byte.
+      */
+      for (i=0; i < 1; i++)
+        PCDGetBits(16);
+      for (i=0; i < 1; i++)
+        PCDGetBits(16);
+      while ((sum & 0x00fff000UL) != 0x00fff000UL)
+        PCDGetBits(8);
+      while (IsSync(sum) == 0)
+        PCDGetBits(1);
+    }
   /*
     Recover the Huffman encoded luminance and chrominance deltas.
   */
@@ -245,8 +252,7 @@ static MagickBooleanType DecodeImage(Image *image,unsigned char *luma,
   length=0;
   plane=0;
   row=0;
-  q=luma;
-  for ( ; ; )
+  for (q=luma; EOFBlob(image) == MagickFalse; )
   {
     if (IsSync(sum) != 0)
       {
@@ -924,7 +930,7 @@ ModuleExport size_t RegisterPCDImage(void)
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Photo CD");
-  entry->module=ConstantString("PCD");
+  entry->magick_module=ConstantString("PCD");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("PCDS");
   entry->decoder=(DecodeImageHandler *) ReadPCDImage;
@@ -932,7 +938,7 @@ ModuleExport size_t RegisterPCDImage(void)
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Photo CD");
-  entry->module=ConstantString("PCD");
+  entry->magick_module=ConstantString("PCD");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

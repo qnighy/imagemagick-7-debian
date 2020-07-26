@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -793,7 +793,7 @@ MagickExport
       *((char **) data),NULL);
     status = MagickTrue;
     break;
-  
+
   default:
     goto cleanup;
   };
@@ -867,9 +867,11 @@ static void saveBinaryCLProgram(MagickCLEnv clEnv,MagickOpenCLProgram prog,
   char
     *filename;
 
-  cl_uint
-    num_devices,
+  cl_int
     status;
+
+  cl_uint
+    num_devices;
 
   size_t
     i,
@@ -1001,7 +1003,7 @@ cleanup:
   if (fileHandle != NULL)
     fclose(fileHandle);
   if (binaryFileName != NULL)
-    free(binaryFileName);
+    RelinquishMagickMemory(binaryFileName);
   if (binaryProgram != NULL)
     RelinquishMagickMemory(binaryProgram);
 
@@ -1211,18 +1213,11 @@ static MagickBooleanType InitOpenCLPlatformDevice(MagickCLEnv clEnv, ExceptionIn
   if (MAGICK_OCL_DEVICE != NULL)
   {
     if (strcmp(MAGICK_OCL_DEVICE, "CPU") == 0)
-    {
       clEnv->deviceType = CL_DEVICE_TYPE_CPU;
-    }
     else if (strcmp(MAGICK_OCL_DEVICE, "GPU") == 0)
-    {
       clEnv->deviceType = CL_DEVICE_TYPE_GPU;
-    }
-    else if (strcmp(MAGICK_OCL_DEVICE, "OFF") == 0)
-    {
-      /* OpenCL disabled */
+    else if (IsStringNotFalse(MAGICK_OCL_DEVICE) == MagickFalse)
       goto cleanup;
-    }
   }
   else if (clEnv->deviceType == 0) {
     clEnv->deviceType = CL_DEVICE_TYPE_ALL;
@@ -1771,8 +1766,8 @@ typedef ds_status (*ds_score_release)(void* score);
 static ds_status releaseDeviceResource(ds_device* device, ds_score_release sr) {
   ds_status status = DS_SUCCESS;
   if (device) {
-    if (device->oclDeviceName)      free(device->oclDeviceName);
-    if (device->oclDriverVersion)   free(device->oclDriverVersion);
+    if (device->oclDeviceName)      RelinquishMagickMemory(device->oclDeviceName);
+    if (device->oclDriverVersion)   RelinquishMagickMemory(device->oclDriverVersion);
     if (device->score)              status = sr(device->score);
   }
   return status;
@@ -1788,9 +1783,9 @@ static ds_status releaseDSProfile(ds_profile* profile, ds_score_release sr) {
         if (status != DS_SUCCESS)
           break;
       }
-      free(profile->devices);
+      RelinquishMagickMemory(profile->devices);
     }
-    free(profile);
+    RelinquishMagickMemory(profile);
   }
   return status;
 }
@@ -1809,7 +1804,7 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
   if (p == NULL)
     return DS_INVALID_PROFILE;
 
-  profile = (ds_profile*)malloc(sizeof(ds_profile));
+  profile = (ds_profile*) AcquireMagickMemory(sizeof(ds_profile));
   if (profile == NULL)
     return DS_MEMORY_ERROR;
 
@@ -1817,7 +1812,7 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
 
   OpenCLLib->clGetPlatformIDs(0, NULL, &numPlatforms);
   if (numPlatforms > 0) {
-    platforms = (cl_platform_id*)malloc(numPlatforms*sizeof(cl_platform_id));
+    platforms = (cl_platform_id*) AcquireQuantumMemory(numPlatforms,sizeof(cl_platform_id));
     if (platforms == NULL) {
       status = DS_MEMORY_ERROR;
       goto cleanup;
@@ -1832,7 +1827,7 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
 
   profile->numDevices = numDevices+1;     /* +1 to numDevices to include the native CPU */
 
-  profile->devices = (ds_device*)malloc(profile->numDevices*sizeof(ds_device));
+  profile->devices = (ds_device*) AcquireQuantumMemory(profile->numDevices,sizeof(ds_device));
   if (profile->devices == NULL) {
     profile->numDevices = 0;
     status = DS_MEMORY_ERROR;
@@ -1841,7 +1836,7 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
   memset(profile->devices, 0, profile->numDevices*sizeof(ds_device));
 
   if (numDevices > 0) {
-    devices = (cl_device_id*)malloc(numDevices*sizeof(cl_device_id));
+    devices = (cl_device_id*) AcquireQuantumMemory(numDevices,sizeof(cl_device_id));
     if (devices == NULL) {
       status = DS_MEMORY_ERROR;
       goto cleanup;
@@ -1874,13 +1869,13 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
 
           OpenCLLib->clGetDeviceInfo(profile->devices[next].oclDeviceID, CL_DEVICE_NAME
             , 0, NULL, &length);
-          profile->devices[next].oclDeviceName = (char*)malloc(sizeof(char)*length);
+          profile->devices[next].oclDeviceName = (char*) AcquireQuantumMemory(length,sizeof(char));
           OpenCLLib->clGetDeviceInfo(profile->devices[next].oclDeviceID, CL_DEVICE_NAME
             , length, profile->devices[next].oclDeviceName, NULL);
 
           OpenCLLib->clGetDeviceInfo(profile->devices[next].oclDeviceID, CL_DRIVER_VERSION
             , 0, NULL, &length);
-          profile->devices[next].oclDriverVersion = (char*)malloc(sizeof(char)*length);
+          profile->devices[next].oclDriverVersion = (char*) AcquireQuantumMemory(length,sizeof(char));
           OpenCLLib->clGetDeviceInfo(profile->devices[next].oclDeviceID, CL_DRIVER_VERSION
             , length, profile->devices[next].oclDriverVersion, NULL);
 
@@ -1901,16 +1896,16 @@ static ds_status initDSProfile(ds_profile** p, const char* version) {
   profile->version = version;
 
 cleanup:
-  if (platforms)  free(platforms);
-  if (devices)    free(devices);
+  if (platforms)  RelinquishMagickMemory(platforms);
+  if (devices)    RelinquishMagickMemory(devices);
   if (status == DS_SUCCESS) {
     *p = profile;
   }
   else {
     if (profile) {
       if (profile->devices)
-        free(profile->devices);
-      free(profile);
+        RelinquishMagickMemory(profile->devices);
+      RelinquishMagickMemory(profile);
     }
   }
   return status;
@@ -2063,7 +2058,7 @@ static ds_status writeProfileToFile(ds_profile* profile, ds_score_serializer ser
       status = serializer(profile->devices+i, &serializedScore, &serializedScoreSize);
       if (status == DS_SUCCESS && serializedScore!=NULL && serializedScoreSize > 0) {
         fwrite(serializedScore, sizeof(char), serializedScoreSize, profileFile);
-        free(serializedScore);
+        RelinquishMagickMemory(serializedScore);
       }
       fwrite(DS_TAG_SCORE_END, sizeof(char), strlen(DS_TAG_SCORE_END), profileFile);
       fwrite(DS_TAG_DEVICE_END, sizeof(char), strlen(DS_TAG_DEVICE_END), profileFile);
@@ -2093,7 +2088,7 @@ static ds_status readProFile(const char* fileName, char** content, size_t* conte
   fseek(input, 0L, SEEK_END);
   size = ftell(input);
   rewind(input);
-  binary = (char*)malloc(size);
+  binary = (char*) AcquireMagickMemory(size);
   if(binary == NULL) {
     status = DS_FILE_ERROR;
     goto cleanup;
@@ -2111,7 +2106,7 @@ cleanup:
   if (input != NULL) fclose(input);
   if (status != DS_SUCCESS
       && binary != NULL) {
-      free(binary);
+      RelinquishMagickMemory(binary);
       *content = NULL;
       *contentSize = 0;
   }
@@ -2353,7 +2348,7 @@ RestoreMSCWarning
     }
   }
 cleanup:
-  if (contentStart!=NULL) free(contentStart);
+  if (contentStart!=NULL) RelinquishMagickMemory(contentStart);
   return status;
 }
 
@@ -2484,7 +2479,7 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
       resizedImage=ResizeImage(unsharpedImage,640,480,LanczosFilter,1.0,
         exception);
 
-      /* 
+      /*
         We need this to get a proper performance benchmark, the operations
         are executed asynchronous.
       */
@@ -2515,12 +2510,12 @@ static ds_status AcceleratePerfEvaluator(ds_device *device,
   /* end of microbenchmark */
 
   if (device->score == NULL)
-    device->score=malloc(sizeof(AccelerateScoreType));
+    device->score= AcquireMagickMemory(sizeof(AccelerateScoreType));
 
   if (status != MagickFalse)
-    *(AccelerateScoreType*)device->score=readAccelerateTimer(&timer);
+    *(AccelerateScoreType*) device->score=readAccelerateTimer(&timer);
   else
-    *(AccelerateScoreType*)device->score=42;
+    *(AccelerateScoreType*) device->score=42;
 
   ReturnStatus(DS_SUCCESS);
 }
@@ -2529,7 +2524,7 @@ ds_status AccelerateScoreSerializer(ds_device* device, void** serializedScore, u
   if (device
      && device->score) {
     /* generate a string from the score */
-    char* s = (char*)malloc(sizeof(char)*256);
+    char* s = (char*) AcquireQuantumMemory(256,sizeof(char));
     sprintf(s,"%.4f",*((AccelerateScoreType*)device->score));
     *serializedScore = (void*)s;
     *serializedScoreSize = (unsigned int) strlen(s);
@@ -2543,13 +2538,13 @@ ds_status AccelerateScoreSerializer(ds_device* device, void** serializedScore, u
 ds_status AccelerateScoreDeserializer(ds_device* device, const unsigned char* serializedScore, unsigned int serializedScoreSize) {
   if (device) {
     /* convert the string back to an int */
-    char* s = (char*)malloc(serializedScoreSize+1);
+    char* s = (char*) AcquireMagickMemory(serializedScoreSize+1);
     memcpy(s, serializedScore, serializedScoreSize);
     s[serializedScoreSize] = (char)'\0';
-    device->score = malloc(sizeof(AccelerateScoreType));
+    device->score = AcquireMagickMemory(sizeof(AccelerateScoreType));
     *((AccelerateScoreType*)device->score) = (AccelerateScoreType)
       strtod(s, (char **) NULL);
-    free(s);
+    RelinquishMagickMemory(s);
     return DS_SUCCESS;
   }
   else {
@@ -2559,7 +2554,7 @@ ds_status AccelerateScoreDeserializer(ds_device* device, const unsigned char* se
 
 ds_status AccelerateScoreRelease(void* score) {
   if (score!=NULL) {
-    free(score);
+    RelinquishMagickMemory(score);
   }
   return DS_SUCCESS;
 }
@@ -2877,12 +2872,14 @@ const char* GetOpenCLCachedFilesDirectory() {
       if (home == (char *) NULL)
       {
         home=GetEnvironmentValue("XDG_CACHE_HOME");
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__MINGW32__)
         if (home == (char *) NULL)
           home=GetEnvironmentValue("LOCALAPPDATA");
         if (home == (char *) NULL)
           home=GetEnvironmentValue("APPDATA");
         if (home == (char *) NULL)
           home=GetEnvironmentValue("USERPROFILE");
+#endif
       }
 
       if (home != (char *) NULL)
@@ -3002,6 +2999,8 @@ void OpenCLLog(const char* message) {
 
 
       log = fopen(path, "ab");
+      if (log == (FILE *) NULL)
+        return;
       fwrite(message, sizeof(char), strlen(message), log);
       fwrite("\n", sizeof(char), 1, log);
 

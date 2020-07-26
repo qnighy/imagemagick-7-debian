@@ -23,7 +23,7 @@
 %                                March 2002                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -6383,14 +6383,14 @@ WandExport MagickBooleanType DrawSetVectorGraphics(DrawingWand *wand,
                 *p;
 
               p=q;
-              GetNextToken(p,&p,MaxTextExtent,token);
+              (void) GetNextToken(p,&p,MaxTextExtent,token);
               if (*token == ',')
-                GetNextToken(p,&p,MaxTextExtent,token);
+                (void) GetNextToken(p,&p,MaxTextExtent,token);
               for (x=0; IsPoint(token) != MagickFalse; x++)
               {
-                GetNextToken(p,&p,MaxTextExtent,token);
+                (void) GetNextToken(p,&p,MaxTextExtent,token);
                 if (*token == ',')
-                  GetNextToken(p,&p,MaxTextExtent,token);
+                  (void) GetNextToken(p,&p,MaxTextExtent,token);
               }
               CurrentContext->dash_pattern=(double *) AcquireQuantumMemory(
                 (size_t) (2UL*x)+1UL,sizeof(*CurrentContext->dash_pattern));
@@ -6399,9 +6399,9 @@ WandExport MagickBooleanType DrawSetVectorGraphics(DrawingWand *wand,
                   "MemoryAllocationFailed",wand->name);
               for (j=0; j < x; j++)
               {
-                GetNextToken(q,&q,MaxTextExtent,token);
+                (void) GetNextToken(q,&q,MaxTextExtent,token);
                 if (*token == ',')
-                  GetNextToken(q,&q,MaxTextExtent,token);
+                  (void) GetNextToken(q,&q,MaxTextExtent,token);
                 CurrentContext->dash_pattern[j]=StringToDouble(token,
                   (char **) NULL);
               }

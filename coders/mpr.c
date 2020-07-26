@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -140,7 +140,7 @@ ModuleExport size_t RegisterMPRImage(void)
   entry->format_type=ImplicitFormatType;
   entry->stealth=MagickTrue;
   entry->description=ConstantString("Magick Persistent Registry");
-  entry->module=ConstantString("MPR");
+  entry->magick_module=ConstantString("MPR");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("MPRI");
   entry->decoder=(DecodeImageHandler *) ReadMPRImage;
@@ -149,7 +149,7 @@ ModuleExport size_t RegisterMPRImage(void)
   entry->format_type=ImplicitFormatType;
   entry->stealth=MagickTrue;
   entry->description=ConstantString("Magick Persistent Registry");
-  entry->module=ConstantString("MPR");
+  entry->magick_module=ConstantString("MPR");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
