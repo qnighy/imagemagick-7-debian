@@ -17,7 +17,7 @@
 %                              January 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -43,10 +43,13 @@
 #include "magick/studio.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
+#include "magick/locale_.h"
 #include "magick/log.h"
 #include "magick/memory_.h"
 #include "magick/nt-base-private.h"
+#include "magick/string-private.h"
 #include "magick/timer.h"
+#include "magick/timer-private.h"
 
 /*
   Define declarations.
@@ -188,7 +191,7 @@ MagickExport TimerInfo *DestroyTimerInfo(TimerInfo *timer_info)
 */
 static double ElapsedTime(void)
 {
-#if defined(HAVE_CLOCK_GETTIME)
+#if defined(MAGICKCORE_HAVE_CLOCK_GETTIME)
 #define NANOSECONDS_PER_SECOND  1000000000.0
 #if defined(CLOCK_HIGHRES)
 #  define CLOCK_ID CLOCK_HIGHRES
@@ -226,6 +229,53 @@ static double ElapsedTime(void)
 %                                                                             %
 %                                                                             %
 %                                                                             %
+%  F o r m a t M a g i c k T i m e                                            %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  FormatMagickTime() returns the specified time in the Internet date/time
+%  format and the length of the timestamp.
+%
+%  The format of the FormatMagickTime method is:
+%
+%      ssize_t FormatMagickTime(const time_t time,const size_t length,
+%        char *timestamp)
+%
+%  A description of each parameter follows.
+%
+%   o time:  the time since the Epoch (00:00:00 UTC, January 1, 1970),
+%     measured in seconds.
+%
+%   o length: the maximum length of the string.
+%
+%   o timestamp:  Return the Internet date/time here.
+%
+*/
+MagickExport ssize_t FormatMagickTime(const time_t time,const size_t length,
+  char *timestamp)
+{
+  ssize_t
+    count;
+
+  struct tm
+    utc_time;
+
+  assert(timestamp != (char *) NULL);
+  GetMagickUTCtime(&time,&utc_time);
+  count=FormatLocaleString(timestamp,length,
+    "%04d-%02d-%02dT%02d:%02d:%02d%+03d:00",utc_time.tm_year+1900,
+    utc_time.tm_mon+1,utc_time.tm_mday,utc_time.tm_hour,utc_time.tm_min,
+    utc_time.tm_sec,0);
+  return(count);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
 %   G e t E l a p s e d T i m e                                               %
 %                                                                             %
 %                                                                             %
@@ -254,6 +304,49 @@ MagickExport double GetElapsedTime(TimerInfo *time_info)
   if (time_info->state == RunningTimerState)
     StopTimer(time_info);
   return(time_info->elapsed.total);
+}
+
+/*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                                                             %
+%                                                                             %
++   G e t M a g i c k T i m e                                                 %
+%                                                                             %
+%                                                                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  GetMagickTime() returns the time as the number of seconds since the Epoch.
+%
+%  The format of the GetElapsedTime method is:
+%
+%      time_t GetElapsedTime(void)
+%
+*/
+MagickExport time_t GetMagickTime(void)
+{
+  static const char
+    *source_date_epoch = (const char *) NULL;
+
+  static MagickBooleanType
+    epoch_initalized = MagickFalse;
+
+  if (epoch_initalized == MagickFalse)
+    {
+      source_date_epoch=getenv("SOURCE_DATE_EPOCH");
+      epoch_initalized=MagickTrue;
+    }
+  if (source_date_epoch != (const char *) NULL)
+    {
+      time_t
+        epoch;
+
+      epoch=(time_t) StringToDouble(source_date_epoch,(char **) NULL);
+      if ((epoch > 0) && (epoch <= time((time_t *) NULL)))
+        return(epoch);
+    }
+  return(time((time_t *) NULL));
 }
 
 /*

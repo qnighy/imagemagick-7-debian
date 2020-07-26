@@ -17,7 +17,7 @@
 %                                 June 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -348,17 +348,21 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
       opj_destroy_codec(jp2_codec);
       ThrowReaderException(DelegateError,"UnableToDecodeImageFile");
     }
-  jp2_status=1;
-  if ((image->columns != 0) && (image->rows != 0))
+  jp2_status=OPJ_TRUE;
+  if (image->ping == MagickFalse)
     {
-      /*
-        Extract an area from the image.
-      */
-      jp2_status=opj_set_decode_area(jp2_codec,jp2_image,
-        (OPJ_INT32) image->extract_info.x,(OPJ_INT32) image->extract_info.y,
-        (OPJ_INT32) image->extract_info.x+(ssize_t) image->columns,
-        (OPJ_INT32) image->extract_info.y+(ssize_t) image->rows);
-      if (jp2_status == 0)
+      if ((image->columns != 0) && (image->rows != 0))
+        /*
+          Extract an area from the image.
+        */
+        jp2_status=opj_set_decode_area(jp2_codec,jp2_image,
+          (OPJ_INT32) image->extract_info.x,(OPJ_INT32) image->extract_info.y,
+          (OPJ_INT32) image->extract_info.x+(ssize_t) image->columns,
+          (OPJ_INT32) image->extract_info.y+(ssize_t) image->rows);
+      else
+        jp2_status=opj_set_decode_area(jp2_codec,jp2_image,0,0,
+          jp2_image->comps[0].w,jp2_image->comps[0].h);
+      if (jp2_status == OPJ_FALSE)
         {
           opj_stream_destroy(jp2_stream);
           opj_destroy_codec(jp2_codec);
@@ -381,10 +385,10 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     if (image->ping == MagickFalse)
       {
         jp2_status=opj_decode(jp2_codec,jp2_stream,jp2_image);
-        if (jp2_status != 0)
+        if (jp2_status != OPJ_FALSE)
           jp2_status=opj_end_decompress(jp2_codec,jp2_stream);
       }
-  if (jp2_status == 0)
+  if (jp2_status == OPJ_FALSE)
     {
       opj_stream_destroy(jp2_stream);
       opj_destroy_codec(jp2_codec);
@@ -474,10 +478,21 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
           pixel,
           scale;
 
+        ssize_t data_index = y/jp2_image->comps[i].dy*
+                             image->columns/jp2_image->comps[i].dx+
+                             x/jp2_image->comps[i].dx;
+        if(data_index < 0 ||
+           data_index >= (jp2_image->comps[i].h * jp2_image->comps[i].w))
+        {
+          opj_destroy_codec(jp2_codec);
+          opj_image_destroy(jp2_image);
+          ThrowReaderException(CoderError,
+                               "IrregularChannelGeometryNotSupported")
+        }
         scale=QuantumRange/(double) ((1UL << jp2_image->comps[i].prec)-1);
-        pixel=scale*(jp2_image->comps[i].data[y/jp2_image->comps[i].dy*
-          image->columns/jp2_image->comps[i].dx+x/jp2_image->comps[i].dx]+
-          (jp2_image->comps[i].sgnd ? 1UL << (jp2_image->comps[i].prec-1) : 0));
+        pixel=scale*(jp2_image->comps[i].data[data_index] +
+              (jp2_image->comps[i].sgnd ?
+               1UL << (jp2_image->comps[i].prec-1) : 0));
         switch (i)
         {
            case 0:
@@ -576,7 +591,7 @@ ModuleExport size_t RegisterJP2Image(void)
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jp2");
-  entry->module=ConstantString("JP2");
+  entry->magick_module=ConstantString("JP2");
   entry->magick=(IsImageFormatHandler *) IsJP2;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
@@ -590,7 +605,7 @@ ModuleExport size_t RegisterJP2Image(void)
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jp2");
-  entry->module=ConstantString("JP2");
+  entry->magick_module=ConstantString("JP2");
   entry->magick=(IsImageFormatHandler *) IsJ2K;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
@@ -604,7 +619,7 @@ ModuleExport size_t RegisterJP2Image(void)
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jp2");
-  entry->module=ConstantString("JP2");
+  entry->magick_module=ConstantString("JP2");
   entry->magick=(IsImageFormatHandler *) IsJ2K;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
@@ -618,7 +633,7 @@ ModuleExport size_t RegisterJP2Image(void)
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jp2");
-  entry->module=ConstantString("JP2");
+  entry->magick_module=ConstantString("JP2");
   entry->magick=(IsImageFormatHandler *) IsJP2;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
@@ -632,7 +647,7 @@ ModuleExport size_t RegisterJP2Image(void)
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jp2");
-  entry->module=ConstantString("JP2");
+  entry->magick_module=ConstantString("JP2");
   entry->magick=(IsImageFormatHandler *) IsJP2;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
@@ -646,7 +661,7 @@ ModuleExport size_t RegisterJP2Image(void)
   if (*version != '\0')
     entry->version=ConstantString(version);
   entry->mime_type=ConstantString("image/jp2");
-  entry->module=ConstantString("JP2");
+  entry->magick_module=ConstantString("JP2");
   entry->magick=(IsImageFormatHandler *) IsJP2;
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
@@ -784,6 +799,17 @@ static void CinemaProfileCompliance(const opj_image_t *jp2_image,
   parameters->cp_disto_alloc=1;
 }
 
+static inline int CalculateNumResolutions(size_t width,size_t height)
+{
+  int
+    i;
+
+  for (i=1; i < 6; i++)
+    if ((width < ((size_t) 1UL << i)) || (height < ((size_t) 1UL << i)))
+      break;
+  return(i);
+}
+
 static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
 {
   const char
@@ -803,7 +829,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
     jp2_colorspace;
 
   opj_cparameters_t
-    parameters;
+    *parameters;
 
   opj_image_cmptparm_t
     jp2_info[5];
@@ -838,22 +864,24 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   /*
     Initialize JPEG 2000 encoder parameters.
   */
-  opj_set_default_encoder_parameters(&parameters);
-  for (i=1; i < 6; i++)
-    if (((size_t) (1 << (i+2)) > image->columns) &&
-        ((size_t) (1 << (i+2)) > image->rows))
-      break;
-  parameters.numresolution=i;
+  parameters=(opj_cparameters_t *) AcquireMagickMemory(sizeof(*parameters));
+  if (parameters == (opj_cparameters_t *) NULL)
+    ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+  opj_set_default_encoder_parameters(parameters);
   option=GetImageOption(image_info,"jp2:number-resolutions");
   if (option != (const char *) NULL)
-    parameters.numresolution=StringToInteger(option);
-  parameters.tcp_numlayers=1;
-  parameters.tcp_rates[0]=0;  /* lossless */
-  parameters.cp_disto_alloc=1;
+    parameters->numresolution=StringToInteger(option);
+  else
+    parameters->numresolution=CalculateNumResolutions(image->columns,
+      image->rows);
+  parameters->tcp_numlayers=1;
+  parameters->tcp_rates[0]=0;  /* lossless */
+  parameters->cp_disto_alloc=1;
   if ((image_info->quality != 0) && (image_info->quality != 100))
     {
-      parameters.tcp_distoratio[0]=(double) image_info->quality;
-      parameters.cp_fixed_quality=OPJ_TRUE;
+      parameters->tcp_distoratio[0]=(double) image_info->quality;
+      parameters->cp_fixed_quality=OPJ_TRUE;
+      parameters->cp_disto_alloc=0;
     }
   if (image_info->extract != (char *) NULL)
     {
@@ -866,16 +894,19 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
       /*
         Set tile size.
       */
+      (void) memset(&geometry,0,sizeof(geometry));
       flags=ParseAbsoluteGeometry(image_info->extract,&geometry);
-      parameters.cp_tdx=(int) geometry.width;
-      parameters.cp_tdy=(int) geometry.width;
+      parameters->cp_tdx=(int) geometry.width;
+      parameters->cp_tdy=(int) geometry.width;
       if ((flags & HeightValue) != 0)
-        parameters.cp_tdy=(int) geometry.height;
+        parameters->cp_tdy=(int) geometry.height;
       if ((flags & XValue) != 0)
-        parameters.cp_tx0=geometry.x;
+        parameters->cp_tx0=geometry.x;
       if ((flags & YValue) != 0)
-        parameters.cp_ty0=geometry.y;
-      parameters.tile_size_on=OPJ_TRUE;
+        parameters->cp_ty0=geometry.y;
+      parameters->tile_size_on=OPJ_TRUE;
+      parameters->numresolution=CalculateNumResolutions(parameters->cp_tdx,
+        parameters->cp_tdy);
     }
   option=GetImageOption(image_info,"jp2:quality");
   if (option != (const char *) NULL)
@@ -887,7 +918,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
         Set quality PSNR.
       */
       p=option;
-      for (i=0; sscanf(p,"%f",&parameters.tcp_distoratio[i]) == 1; i++)
+      for (i=0; sscanf(p,"%f",&parameters->tcp_distoratio[i]) == 1; i++)
       {
         if (i >= 100)
           break;
@@ -897,22 +928,23 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
           break;
         p++;
       }
-      parameters.tcp_numlayers=i+1;
-      parameters.cp_fixed_quality=OPJ_TRUE;
+      parameters->tcp_numlayers=i+1;
+      parameters->cp_fixed_quality=OPJ_TRUE;
+      parameters->cp_disto_alloc=0;
     }
   option=GetImageOption(image_info,"jp2:progression-order");
   if (option != (const char *) NULL)
     {
       if (LocaleCompare(option,"LRCP") == 0)
-        parameters.prog_order=OPJ_LRCP;
+        parameters->prog_order=OPJ_LRCP;
       if (LocaleCompare(option,"RLCP") == 0)
-        parameters.prog_order=OPJ_RLCP;
+        parameters->prog_order=OPJ_RLCP;
       if (LocaleCompare(option,"RPCL") == 0)
-        parameters.prog_order=OPJ_RPCL;
+        parameters->prog_order=OPJ_RPCL;
       if (LocaleCompare(option,"PCRL") == 0)
-        parameters.prog_order=OPJ_PCRL;
+        parameters->prog_order=OPJ_PCRL;
       if (LocaleCompare(option,"CPRL") == 0)
-        parameters.prog_order=OPJ_CPRL;
+        parameters->prog_order=OPJ_CPRL;
     }
   option=GetImageOption(image_info,"jp2:rate");
   if (option != (const char *) NULL)
@@ -924,7 +956,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
         Set compression rate.
       */
       p=option;
-      for (i=0; sscanf(p,"%f",&parameters.tcp_rates[i]) == 1; i++)
+      for (i=0; sscanf(p,"%f",&parameters->tcp_rates[i]) == 1; i++)
       {
         if (i > 100)
           break;
@@ -934,21 +966,21 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
           break;
         p++;
       }
-      parameters.tcp_numlayers=i+1;
-      parameters.cp_disto_alloc=OPJ_TRUE;
+      parameters->tcp_numlayers=i+1;
+      parameters->cp_disto_alloc=OPJ_TRUE;
     }
   if (image_info->sampling_factor != (const char *) NULL)
     (void) sscanf(image_info->sampling_factor,"%d,%d",
-      &parameters.subsampling_dx,&parameters.subsampling_dy);
+      &parameters->subsampling_dx,&parameters->subsampling_dy);
   property=GetImageProperty(image,"comment");
   if (property != (const char *) NULL)
-    parameters.cp_comment=(char *) property;
+    parameters->cp_comment=(char *) property;
   channels=3;
   jp2_colorspace=OPJ_CLRSPC_SRGB;
   if (image->colorspace == YUVColorspace)
     {
       jp2_colorspace=OPJ_CLRSPC_SYCC;
-      parameters.subsampling_dx=2;
+      parameters->subsampling_dx=2;
     }
   else
     {
@@ -962,7 +994,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
       if (image->matte != MagickFalse)
         channels++;
     }
-  parameters.tcp_mct=channels == 3 ? 1 : 0;
+  parameters->tcp_mct=channels == 3 ? 1 : 0;
   memset(jp2_info,0,sizeof(jp2_info));
   for (i=0; i < (ssize_t) channels; i++)
   {
@@ -976,24 +1008,27 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
         jp2_info[i].bpp++;
       }
     jp2_info[i].sgnd=0;
-    jp2_info[i].dx=parameters.subsampling_dx;
-    jp2_info[i].dy=parameters.subsampling_dy;
+    jp2_info[i].dx=parameters->subsampling_dx;
+    jp2_info[i].dy=parameters->subsampling_dy;
     jp2_info[i].w=(unsigned int) image->columns;
     jp2_info[i].h=(unsigned int) image->rows;
   }
   jp2_image=opj_image_create(channels,jp2_info,jp2_colorspace);
   if (jp2_image == (opj_image_t *) NULL)
-    ThrowWriterException(DelegateError,"UnableToEncodeImageFile");
-  jp2_image->x0=parameters.image_offset_x0;
-  jp2_image->y0=parameters.image_offset_y0;
-  jp2_image->x1=(unsigned int) (2*parameters.image_offset_x0+(image->columns-1)*
-    parameters.subsampling_dx+1);
-  jp2_image->y1=(unsigned int) (2*parameters.image_offset_y0+(image->rows-1)*
-    parameters.subsampling_dx+1);
+    {
+      parameters=(opj_cparameters_t *) RelinquishMagickMemory(parameters);
+      ThrowWriterException(DelegateError,"UnableToEncodeImageFile");
+    }
+  jp2_image->x0=parameters->image_offset_x0;
+  jp2_image->y0=parameters->image_offset_y0;
+  jp2_image->x1=(unsigned int) (2*parameters->image_offset_x0+
+    (image->columns-1)*parameters->subsampling_dx+1);
+  jp2_image->y1=(unsigned int) (2*parameters->image_offset_y0+
+    (image->rows-1)*parameters->subsampling_dx+1);
   if ((image->depth == 12) &&
       ((image->columns == 2048) || (image->rows == 1080) ||
        (image->columns == 4096) || (image->rows == 2160)))
-    CinemaProfileCompliance(jp2_image,&parameters);
+    CinemaProfileCompliance(jp2_image,parameters);
   if (channels == 4)
     jp2_image->comps[3].alpha=1;
   else
@@ -1023,7 +1058,8 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
         register int
           *q;
 
-        scale=(double) ((1UL << jp2_image->comps[i].prec)-1)/QuantumRange;
+        scale=(double) (((size_t) 1UL << jp2_image->comps[i].prec)-1)/
+          QuantumRange;
         q=jp2_image->comps[i].data+(y/jp2_image->comps[i].dy*
           image->columns/jp2_image->comps[i].dx+x/jp2_image->comps[i].dx);
         switch (i)
@@ -1076,12 +1112,13 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
       jp2_codec=opj_create_compress(OPJ_CODEC_JP2);
   opj_set_warning_handler(jp2_codec,JP2WarningHandler,&image->exception);
   opj_set_error_handler(jp2_codec,JP2ErrorHandler,&image->exception);
-  opj_setup_encoder(jp2_codec,&parameters,jp2_image);
+  opj_setup_encoder(jp2_codec,parameters,jp2_image);
   jp2_stream=opj_stream_create(OPJ_J2K_STREAM_CHUNK_SIZE,OPJ_FALSE);
   if (jp2_stream == (opj_stream_t *) NULL)
     {
       opj_destroy_codec(jp2_codec);
       opj_image_destroy(jp2_image);
+      parameters=(opj_cparameters_t *) RelinquishMagickMemory(parameters);
       ThrowWriterException(DelegateError,"UnableToEncodeImageFile");
     }
   opj_stream_set_read_function(jp2_stream,JP2ReadHandler);
@@ -1096,6 +1133,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
       opj_stream_destroy(jp2_stream);
       opj_destroy_codec(jp2_codec);
       opj_image_destroy(jp2_image);
+      parameters=(opj_cparameters_t *) RelinquishMagickMemory(parameters);
       ThrowWriterException(DelegateError,"UnableToEncodeImageFile");
     }
   /*
@@ -1104,6 +1142,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   opj_stream_destroy(jp2_stream);
   opj_destroy_codec(jp2_codec);
   opj_image_destroy(jp2_image);
+  parameters=(opj_cparameters_t *) RelinquishMagickMemory(parameters);
   (void) CloseBlob(image);
   return(MagickTrue);
 }

@@ -17,7 +17,7 @@
 %                                 July 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -140,17 +140,16 @@ static MagickBooleanType IsMETA(const unsigned char *magick,const size_t length)
 %    o exception: return any errors or warnings in this structure.
 %
 */
-typedef struct _html_code
+
+static const struct
 {
-  const short
+  const unsigned char
     len;
 
   const char
-    *code,
+    code[7],
     val;
-} html_code;
-
-static const html_code html_codes[] = {
+} html_codes[] = {
 #ifdef HANDLE_GT_LT
   { 4,"&lt;",'<' },
   { 4,"&gt;",'>' },
@@ -178,10 +177,10 @@ static int stringnicmp(const char *p,const char *q,size_t n)
       break;
     i=(*p);
     if (islower(i))
-      i=toupper(i);
+      i=LocaleUppercase(i);
     j=(*q);
     if (islower(j))
-      j=toupper(j);
+      j=LocaleUppercase(j);
     if (i != j)
       break;
     n--;
@@ -190,7 +189,7 @@ static int stringnicmp(const char *p,const char *q,size_t n)
     p++;
     q++;
   }
-  return(toupper((int) *p)-toupper((int) *q));
+  return(LocaleUppercase((int) *p)-LocaleUppercase((int) *q));
 }
 
 static size_t convertHTMLcodes(char *s)
@@ -230,7 +229,7 @@ static size_t convertHTMLcodes(char *s)
       *s=value;
       return(o);
     }
-  for (i=0; i < (ssize_t) (sizeof(html_codes)/sizeof(html_code)); i++)
+  for (i=0; i < (ssize_t) (sizeof(html_codes)/sizeof(html_codes[0])); i++)
   {
     if (html_codes[i].len <= (ssize_t) length)
       if (stringnicmp(s,html_codes[i].code,(size_t) (html_codes[i].len)) == 0)
@@ -1147,6 +1146,7 @@ static void CopyBlob(Image *source,Image *destination)
     sizeof(*buffer));
   if (buffer != (unsigned char *) NULL)
     {
+      (void) memset(buffer,0,MagickMaxBufferExtent*sizeof(*buffer));
       i=0;
       while ((length=ReadBlob(source,MagickMaxBufferExtent,buffer)) != 0)
       {
@@ -1460,7 +1460,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Photoshop resource format");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("8BIMTEXT");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1469,7 +1469,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Photoshop resource text format");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("8BIMWTEXT");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1478,7 +1478,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Photoshop resource wide text format");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("APP1");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1487,7 +1487,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Raw application information");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("APP1JPEG");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1496,7 +1496,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Raw JPEG binary data");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("EXIF");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1505,7 +1505,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Exif digital camera binary data");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("XMP");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1514,7 +1514,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Adobe XML metadata");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ICM");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1523,7 +1523,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("ICC Color Profile");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ICC");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1532,7 +1532,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("ICC Color Profile");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("IPTC");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1541,7 +1541,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("IPTC Newsphoto");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("IPTCTEXT");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1550,7 +1550,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("IPTC Newsphoto text format");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("IPTCWTEXT");
   entry->decoder=(DecodeImageHandler *) ReadMETAImage;
@@ -1559,7 +1559,7 @@ ModuleExport size_t RegisterMETAImage(void)
   entry->stealth=MagickTrue;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("IPTC Newsphoto text format");
-  entry->module=ConstantString("META");
+  entry->magick_module=ConstantString("META");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -1927,7 +1927,7 @@ static int formatIPTC(Image *ifile, Image *ofile)
 
   int
     i,
-    tagcount = (int) (sizeof(tags) / sizeof(tag_spec));
+    tagcount = (int) (sizeof(tags) / sizeof(tags[0]));
 
   int
     c;
@@ -2070,7 +2070,7 @@ static int formatIPTCfromBuffer(Image *ofile, char *s, ssize_t len)
 
   int
     i,
-    tagcount = (int) (sizeof(tags) / sizeof(tag_spec));
+    tagcount = (int) (sizeof(tags) / sizeof(tags[0]));
 
   int
     c;

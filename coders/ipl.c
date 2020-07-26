@@ -19,7 +19,7 @@
 %                                  2008.05.07                                 %
 %                                     v 0.9                                   %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -407,7 +407,7 @@ static Image *ReadIPLImage(const ImageInfo *image_info,ExceptionInfo *exception)
                  image->filename);
       break;
     }
-   if (t_count < ipl_info.z * ipl_info.time)
+   if (t_count < (size_t) (ipl_info.z*ipl_info.time))
      {
       /*
        Proceed to next image.
@@ -424,13 +424,13 @@ static Image *ReadIPLImage(const ImageInfo *image_info,ExceptionInfo *exception)
       if (status == MagickFalse)
         break;
     }
-  } while (t_count < ipl_info.z*ipl_info.time);
+  } while (t_count < (size_t) (ipl_info.z*ipl_info.time));
   CloseBlob(image);
   if (status == MagickFalse)
     return(DestroyImageList(image));
   return(GetFirstImageInList(image));
 }
-
+
 /*
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %                                                                             %
@@ -458,7 +458,7 @@ ModuleExport size_t RegisterIPLImage(void)
   entry->magick=(IsImageFormatHandler *) IsIPL;
   entry->adjoin=MagickTrue;
   entry->description=ConstantString("IPL Image Sequence");
-  entry->module=ConstantString("IPL");
+  entry->magick_module=ConstantString("IPL");
   entry->endian_support=MagickTrue;
   entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
@@ -689,7 +689,6 @@ static MagickBooleanType WriteIPLImage(const ImageInfo *image_info,Image *image)
         }
     }
   }
-  quantum_info=DestroyQuantumInfo(quantum_info);
   if (GetNextImageInList(image) == (Image *) NULL)
     break;
       image=SyncNextImageInList(image);
@@ -698,6 +697,7 @@ static MagickBooleanType WriteIPLImage(const ImageInfo *image_info,Image *image)
         break;
     }while (image_info->adjoin != MagickFalse);
 
+  quantum_info=DestroyQuantumInfo(quantum_info);
   (void) WriteBlob(image, 4, (const unsigned char *) "fini");
   (void) WriteBlobLong(image, 0);
 

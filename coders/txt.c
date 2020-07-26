@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -391,6 +391,7 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     text[MaxTextExtent];
 
   double
+    max_value,
     x_offset,
     y_offset;
 
@@ -424,7 +425,6 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   unsigned long
     depth,
     height,
-    max_value,
     width;
 
   /*
@@ -450,21 +450,22 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   x_offset=(-1.0);
   y_offset=(-1.0);
+  q=(PixelPacket *) NULL;
   do
   {
     width=0;
     height=0;
-    max_value=0;
+    max_value=0.0;
     *colorspace='\0';
-    count=(ssize_t) sscanf(text+32,"%lu,%lu,%lu,%32s",&width,&height,&max_value,
+    count=(ssize_t) sscanf(text+32,"%lu,%lu,%lf,%32s",&width,&height,&max_value,
       colorspace);
-    if ((count != 4) || (width == 0) || (height == 0) || (max_value == 0))
+    if ((count != 4) || (width == 0) || (height == 0) || (max_value == 0.0))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     image->columns=width;
     image->rows=height;
-    if ((max_value == 0) || (max_value > 4294967295U))
+    if ((max_value == 0.0) || (max_value > 18446744073709551615.0))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
-    for (depth=1; (GetQuantumRange(depth)+1) < max_value; depth++) ;
+    for (depth=1; (GetQuantumRange(depth)+1.0) < max_value; depth++) ;
     image->depth=depth;
     status=SetImageExtent(image,image->columns,image->rows);
     if (status != MagickFalse)
@@ -572,20 +573,23 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
             green+=(range+1)/2.0;
             blue+=(range+1)/2.0;
           }
-        pixel.red=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (red+0.5),
-          range);
-        pixel.green=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (green+0.5),
-          range);
-        pixel.blue=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (blue+0.5),
-          range);
-        pixel.index=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (index+0.5),
-          range);
-        pixel.opacity=(MagickRealType) ScaleAnyToQuantum((QuantumAny) (opacity+
-          0.5),range);
+        pixel.red=(MagickRealType) ScaleAnyToQuantum((QuantumAny)
+          MagickMax(red+0.5,0.0),range);
+        pixel.green=(MagickRealType) ScaleAnyToQuantum((QuantumAny)
+          MagickMax(green+0.5,0.0),range);
+        pixel.blue=(MagickRealType) ScaleAnyToQuantum((QuantumAny)
+          MagickMax(blue+0.5,0.0),range);
+        pixel.index=(MagickRealType) ScaleAnyToQuantum((QuantumAny)
+          MagickMax(index+0.5,0.0),range);
+        pixel.opacity=(MagickRealType) ScaleAnyToQuantum((QuantumAny)
+          MagickMax(opacity+0.5,0.0),range);
         q=GetAuthenticPixels(image,(ssize_t) x_offset,(ssize_t) y_offset,1,1,
           exception);
         if (q == (PixelPacket *) NULL)
-          continue;
+          {
+            status=MagickFalse;
+            break;
+          }
         SetPixelRed(q,pixel.red);
         SetPixelGreen(q,pixel.green);
         SetPixelBlue(q,pixel.blue);
@@ -626,8 +630,8 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
   } while (LocaleNCompare((char *) text,MagickID,strlen(MagickID)) == 0);
   (void) CloseBlob(image);
-  if (status == MagickFalse)
-    return(DestroyImageList(image));
+  if (q == (PixelPacket *) NULL)
+    return(DestroyImage(image));
   return(GetFirstImageInList(image));
 }
 
@@ -664,7 +668,7 @@ ModuleExport size_t RegisterTXTImage(void)
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
   entry->description=ConstantString("Sparse Color");
-  entry->module=ConstantString("TXT");
+  entry->magick_module=ConstantString("TXT");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("TEXT");
   entry->decoder=(DecodeImageHandler *) ReadTEXTImage;
@@ -673,14 +677,14 @@ ModuleExport size_t RegisterTXTImage(void)
   entry->endian_support=MagickTrue;
   entry->format_type=ImplicitFormatType;
   entry->description=ConstantString("Text");
-  entry->module=ConstantString("TXT");
+  entry->magick_module=ConstantString("TXT");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("TXT");
   entry->decoder=(DecodeImageHandler *) ReadTXTImage;
   entry->encoder=(EncodeImageHandler *) WriteTXTImage;
   entry->description=ConstantString("Text");
   entry->magick=(IsImageFormatHandler *) IsTXT;
-  entry->module=ConstantString("TXT");
+  entry->magick_module=ConstantString("TXT");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -807,8 +811,8 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
           MAGICKCORE_QUANTUM_DEPTH;
         (void) FormatLocaleString(buffer,MaxTextExtent,
           "# ImageMagick pixel enumeration: %.20g,%.20g,%.20g,%s\n",(double)
-          image->columns,(double) image->rows,(double) ((MagickOffsetType)
-          GetQuantumRange(depth)),colorspace);
+          image->columns,(double) image->rows,(double) GetQuantumRange(depth),
+          colorspace);
         (void) WriteBlobString(image,buffer);
       }
     GetMagickPixelPacket(image,&pixel);
@@ -821,11 +825,6 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
       for (x=0; x < (ssize_t) image->columns; x++)
       {
         SetMagickPixelPacket(image,p,indexes+x,&pixel);
-        if (pixel.colorspace == LabColorspace)
-          {
-            pixel.green-=(QuantumRange+1)/2.0;
-            pixel.blue-=(QuantumRange+1)/2.0;
-          }
         if (LocaleCompare(image_info->magick,"SPARSE-COLOR") == 0)
           {
             /*

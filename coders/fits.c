@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -331,7 +331,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
       {
         if (isspace((int) ((unsigned char) keyword[i])) != 0)
           break;
-        keyword[i]=tolower((int) ((unsigned char) keyword[i]));
+        keyword[i]=LocaleLowercase((int) ((unsigned char) keyword[i]));
       }
       keyword[i]='\0';
       count=ReadBlob(image,72,(unsigned char *) value);
@@ -556,7 +556,7 @@ ModuleExport size_t RegisterFITSImage(void)
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Flexible Image Transport System");
-  entry->module=ConstantString("FITS");
+  entry->magick_module=ConstantString("FITS");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("FTS");
   entry->decoder=(DecodeImageHandler *) ReadFITSImage;
@@ -565,7 +565,7 @@ ModuleExport size_t RegisterFITSImage(void)
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Flexible Image Transport System");
-  entry->module=ConstantString("FITS");
+  entry->magick_module=ConstantString("FITS");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

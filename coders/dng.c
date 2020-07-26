@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -56,6 +56,7 @@
 #include "magick/monitor.h"
 #include "magick/monitor-private.h"
 #include "magick/opencl.h"
+#include "magick/option.h"
 #include "magick/pixel-accessor.h"
 #include "magick/profile.h"
 #include "magick/property.h"
@@ -171,11 +172,8 @@ static void SetDNGProperties(Image *image,const libraw_data_t *raw_info)
   if (*raw_info->shootinginfo.BodySerial != '\0')
     (void) SetImageProperty(image,"dng:serial.number",
       raw_info->shootinginfo.BodySerial);
-  (void) FormatLocaleString(property,MagickPathExtent,"%0.2f",
-    raw_info->other.FlashEC);
-  (void) SetImageProperty(image,"dng:flash.exposure.compensation",property);
   (void) FormatLocaleString(property,MagickPathExtent,"1/%0.1f",
-    1.0/raw_info->other.shutter);
+    PerceptibleReciprocal(raw_info->other.shutter));
   (void) SetImageProperty(image,"dng:exposure.time",property);
   (void) FormatLocaleString(property,MagickPathExtent,"%0.1f",
     raw_info->other.aperture);
@@ -270,6 +268,8 @@ static Image *ReadDNGImage(const ImageInfo *image_info,ExceptionInfo *exception)
         libraw_close(raw_info);
         return(DestroyImageList(image));
       }
+    raw_info->params.use_camera_wb=IsStringTrue(GetImageOption(image_info,
+      "dng:use-camera-wb"));
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && defined(_MSC_VER) && (_MSC_VER > 1310)
     {
       wchar_t
@@ -548,7 +548,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Hasselblad CFV/H3D39II");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ARW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -557,7 +557,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Sony Alpha Raw Image Format");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("DNG");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -566,7 +566,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Digital Negative");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("CR2");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -575,7 +575,16 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Canon Digital Camera Raw Image Format");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
+  (void) RegisterMagickInfo(entry);
+  entry=SetMagickInfo("CR3");
+  entry->decoder=(DecodeImageHandler *) ReadDNGImage;
+  entry->seekable_stream=MagickTrue;
+  entry->blob_support=MagickFalse;
+  entry->seekable_stream=MagickTrue;
+  entry->format_type=ExplicitFormatType;
+  entry->description=ConstantString("Canon Digital Camera Raw Image Format");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("CRW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -584,7 +593,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Canon Digital Camera Raw Image Format");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("DCR");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -593,7 +602,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Kodak Digital Camera Raw Image File");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ERF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -602,7 +611,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Epson Raw Format");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("IIQ");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -611,7 +620,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Phase One Raw Image Format");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("KDC");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -620,7 +629,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Kodak Digital Camera Raw Image Format");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("K25");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -629,7 +638,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Kodak Digital Camera Raw Image Format");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("MEF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -638,7 +647,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Mamiya Raw Image File");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("MRW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -647,7 +656,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Sony (Minolta) Raw Image File");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("NEF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -656,7 +665,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Nikon Digital SLR Camera Raw Image File");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("NRW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -665,7 +674,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Nikon Digital SLR Camera Raw Image File");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ORF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -674,7 +683,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Olympus Digital Camera Raw Image File");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("PEF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -683,7 +692,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Pentax Electronic File");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("RAF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -692,7 +701,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Fuji CCD-RAW Graphic File");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("RAW");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -701,7 +710,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Raw");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("RMF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -710,7 +719,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Raw Media Format");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("RW2");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -719,7 +728,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Panasonic Lumix Raw Image");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("SRF");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -728,7 +737,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Sony Raw Format");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("SR2");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -737,7 +746,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->seekable_stream=MagickTrue;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Sony Raw Format 2");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("X3F");
   entry->decoder=(DecodeImageHandler *) ReadDNGImage;
@@ -745,7 +754,7 @@ ModuleExport size_t RegisterDNGImage(void)
   entry->blob_support=MagickFalse;
   entry->format_type=ExplicitFormatType;
   entry->description=ConstantString("Sigma Camera RAW Picture File");
-  entry->module=ConstantString("DNG");
+  entry->magick_module=ConstantString("DNG");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -790,6 +799,7 @@ ModuleExport void UnregisterDNGImage(void)
   (void) UnregisterMagickInfo("ERF");
   (void) UnregisterMagickInfo("DCR");
   (void) UnregisterMagickInfo("CRW");
+  (void) UnregisterMagickInfo("CR3");
   (void) UnregisterMagickInfo("CR2");
   (void) UnregisterMagickInfo("DNG");
   (void) UnregisterMagickInfo("ARW");

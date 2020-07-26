@@ -17,7 +17,7 @@
 %                               January 2010                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -297,9 +297,9 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
         p++;  /* ignore "'" chars for convolve filter usage - Cristy */
       for (i=0; p < end; i++)
       {
-        GetNextToken(p,&p,MaxTextExtent,token);
+        (void) GetNextToken(p,&p,MaxTextExtent,token);
         if (*token == ',')
-          GetNextToken(p,&p,MaxTextExtent,token);
+          (void) GetNextToken(p,&p,MaxTextExtent,token);
       }
       /* set the size of the kernel - old sized square */
       kernel->width = kernel->height= (size_t) sqrt((double) i+1.0);
@@ -319,9 +319,9 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
   kernel->negative_range = kernel->positive_range = 0.0;
   for (i=0; (i < (ssize_t) (kernel->width*kernel->height)) && (p < end); i++)
   {
-    GetNextToken(p,&p,MaxTextExtent,token);
+    (void) GetNextToken(p,&p,MaxTextExtent,token);
     if (*token == ',')
-      GetNextToken(p,&p,MaxTextExtent,token);
+      (void) GetNextToken(p,&p,MaxTextExtent,token);
     if (    LocaleCompare("nan",token) == 0
         || LocaleCompare("-",token) == 0 ) {
       kernel->values[i] = nan; /* this value is not part of neighbourhood */
@@ -337,7 +337,7 @@ static KernelInfo *ParseKernelArray(const char *kernel_string)
   }
 
   /* sanity check -- no more values in kernel definition */
-  GetNextToken(p,&p,MaxTextExtent,token);
+  (void) GetNextToken(p,&p,MaxTextExtent,token);
   if ( *token != '\0' && *token != ';' && *token != '\'' )
     return(DestroyKernelInfo(kernel));
 
@@ -391,7 +391,7 @@ static KernelInfo *ParseKernelName(const char *kernel_string)
     type;
 
   /* Parse special 'named' kernel */
-  GetNextToken(kernel_string,&p,MaxTextExtent,token);
+  (void) GetNextToken(kernel_string,&p,MaxTextExtent,token);
   type=ParseCommandOption(MagickKernelOptions,MagickFalse,token);
   if ( type < 0 || type == UserDefinedKernel )
     return((KernelInfo *) NULL);  /* not a valid named kernel */
@@ -2360,7 +2360,7 @@ static void ExpandMirrorKernelInfo(KernelInfo *kernel)
 %
 %  The format of the ExpandRotateKernelInfo method is:
 %
-%      void ExpandRotateKernelInfo(KernelInfo *kernel, double angle)
+%      void ExpandRotateKernelInfo(KernelInfo *kernel,double angle)
 %
 %  A description of each parameter follows:
 %
@@ -2375,7 +2375,7 @@ static void ExpandMirrorKernelInfo(KernelInfo *kernel)
 
 /* Internal Routine - Return true if two kernels are the same */
 static MagickBooleanType SameKernelInfo(const KernelInfo *kernel1,
-     const KernelInfo *kernel2)
+  const KernelInfo *kernel2)
 {
   register size_t
     i;
@@ -2402,12 +2402,13 @@ static MagickBooleanType SameKernelInfo(const KernelInfo *kernel1,
   return MagickTrue;
 }
 
-static void ExpandRotateKernelInfo(KernelInfo *kernel, const double angle)
+static void ExpandRotateKernelInfo(KernelInfo *kernel,const double angle)
 {
   KernelInfo
     *clone_info,
     *last;
 
+  clone_info=(KernelInfo *) NULL;
   last=kernel;
 DisableMSCWarning(4127)
   while (1) {
@@ -3237,7 +3238,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
             ** shape.  Essentually white values are decreased to the smallest
             ** 'distance from edge' it can find.
             **
-            ** It works by adding kernel values to the neighbourhood, and and
+            ** It works by adding kernel values to the neighbourhood, and
             ** select the minimum value found. The kernel is rotated before
             ** use, so kernel distances match resulting distances, when a user
             ** provided asymmetric kernel is applied.
@@ -3252,7 +3253,7 @@ static ssize_t MorphologyPrimitive(const Image *image, Image *result_image,
             ** GrayErode:  Kernel values subtracted and minimum value found No
             ** kernel rotation used.
             **
-            ** Note the the Iterative Distance method is essentially a
+            ** Note the Iterative Distance method is essentially a
             ** GrayErode, but with negative kernel values, and kernel
             ** rotation applied.
             */

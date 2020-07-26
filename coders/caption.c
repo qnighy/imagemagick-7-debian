@@ -17,7 +17,7 @@
 %                               February 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -98,6 +98,7 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
   char
     *caption,
     geometry[MaxTextExtent],
+    lines[MaxTextExtent],
     *text;
 
   const char
@@ -179,8 +180,7 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
       if (draw_info->gravity == UndefinedGravity)
         (void) CloneString(&draw_info->geometry,geometry);
       status=GetMultilineTypeMetrics(image,draw_info,&metrics);
-      width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
-      image->columns=width;
+      image->columns=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
     }
   if (image->rows == 0)
     {
@@ -240,7 +240,8 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
         if (status == MagickFalse)
           break;
         width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
-        height=(size_t) floor(metrics.height+draw_info->stroke_width+0.5);
+        height=(size_t) floor(metrics.height+draw_info->interline_spacing+
+          draw_info->stroke_width+0.5);
         if ((image->columns != 0) && (image->rows != 0))
           {
             if ((width >= image->columns) && (height >= image->rows))
@@ -267,7 +268,8 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
         if (status == MagickFalse)
           break;
         width=(size_t) floor(metrics.width+draw_info->stroke_width+0.5);
-        height=(size_t) floor(metrics.height+draw_info->stroke_width+0.5);
+        height=(size_t) floor(metrics.height+draw_info->interline_spacing+
+          draw_info->stroke_width+0.5);
         if ((image->columns != 0) && (image->rows != 0))
           {
             if ((width < image->columns) && (height < image->rows))
@@ -292,8 +294,8 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
   caption=DestroyString(caption);
   (void) FormatLocaleString(geometry,MaxTextExtent,"%+g%+g",MagickMax(
     draw_info->direction == RightToLeftDirection ? (double) image->columns-
-    metrics.bounds.x2 : -metrics.bounds.x1,0.0),draw_info->gravity ==
-    UndefinedGravity ? MagickMax(metrics.ascent,metrics.bounds.y2) : 0.0);
+    metrics.bounds.x2 : -metrics.bounds.x1,0.0),(draw_info->gravity ==
+    UndefinedGravity ? MagickMax(metrics.ascent,metrics.bounds.y2) : 0.0));
   (void) CloneString(&draw_info->geometry,geometry);
   status=AnnotateImage(image,draw_info);
   if (image_info->pointsize == 0.0)
@@ -305,6 +307,8 @@ static Image *ReadCAPTIONImage(const ImageInfo *image_info,
         draw_info->pointsize);
       (void) SetImageProperty(image,"caption:pointsize",pointsize);
     }
+  (void) FormatLocaleString(lines,MaxTextExtent,"%.20g",(double) (i+1));
+  (void) SetImageProperty(image,"caption:lines",lines);
   draw_info=DestroyDrawInfo(draw_info);
   if (status == MagickFalse)
     {
@@ -346,7 +350,7 @@ ModuleExport size_t RegisterCAPTIONImage(void)
   entry->decoder=(DecodeImageHandler *) ReadCAPTIONImage;
   entry->description=ConstantString("Caption");
   entry->adjoin=MagickFalse;
-  entry->module=ConstantString("CAPTION");
+  entry->magick_module=ConstantString("CAPTION");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

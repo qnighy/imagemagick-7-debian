@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -214,7 +214,7 @@ ModuleExport size_t RegisterHALDImage(void)
   entry->raw=MagickTrue;
   entry->endian_support=MagickTrue;
   entry->description=ConstantString("Identity Hald color lookup table image");
-  entry->module=ConstantString("HALD");
+  entry->magick_module=ConstantString("HALD");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

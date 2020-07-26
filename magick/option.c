@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -52,7 +52,6 @@
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/fourier.h"
-#include "magick/fx.h"
 #include "magick/gem.h"
 #include "magick/geometry.h"
 #include "magick/image.h"
@@ -77,6 +76,7 @@
 #include "magick/threshold.h"
 #include "magick/token.h"
 #include "magick/utility.h"
+#include "magick/visual-effects.h"
 
 /*
   ImageMagick options.
@@ -1203,11 +1203,11 @@ static const OptionInfo
     { "Bicubic", CatromInterpolatePixel, UndefinedOptionFlag, MagickTrue },
     { "Bilinear", BilinearInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Blend", BlendInterpolatePixel, UndefinedOptionFlag, MagickFalse },
-    { "Catrom", CatromInterpolatePixel, UndefinedOptionFlag, MagickTrue },
+    { "Catrom", CatromInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Integer", IntegerInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Mesh", MeshInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     { "Nearest", NearestNeighborInterpolatePixel, UndefinedOptionFlag, MagickFalse },
-    { "NearestNeighbor", NearestNeighborInterpolatePixel, UndefinedOptionFlag, MagickFalse },
+    { "NearestNeighbor", NearestNeighborInterpolatePixel, UndefinedOptionFlag, MagickTrue },
     { "Spline", SplineInterpolatePixel, UndefinedOptionFlag, MagickFalse },
     /* depreciation of slow and useless interpolation method */
     { "Filter", FilterInterpolatePixel, UndefinedOptionFlag, MagickTrue },
@@ -1670,7 +1670,6 @@ static const OptionInfo
   {
     { "Undefined", UndefinedStyle, UndefinedOptionFlag, MagickTrue },
     { "Any", AnyStyle, UndefinedOptionFlag, MagickFalse },
-    { "Bold", BoldStyle, UndefinedOptionFlag, MagickFalse },
     { "Italic", ItalicStyle, UndefinedOptionFlag, MagickFalse },
     { "Normal", NormalStyle, UndefinedOptionFlag, MagickFalse },
     { "Oblique", ObliqueStyle, UndefinedOptionFlag, MagickFalse },

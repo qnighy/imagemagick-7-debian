@@ -1,8 +1,8 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
-  You may not use this file except in compliance with the License.
+  You may not use this file except in compliance with the License.  You may
   obtain a copy of the License at
 
     https://imagemagick.org/script/license.php
@@ -144,6 +144,13 @@ typedef unsigned __int64 MagickSizeType;
 #define MagickSizeFormat  "I64u"
 #endif
 
+#if MAGICKCORE_HAVE_UINTPTR_T || defined(uintptr_t)
+typedef uintptr_t MagickAddressType;
+#else
+/* Hope for the best, I guess. */
+typedef size_t MagickAddressType;
+#endif
+
 #if defined(_MSC_VER) && (_MSC_VER == 1200)
 typedef MagickOffsetType QuantumAny;
 #else
@@ -214,7 +221,7 @@ typedef enum
 #  define IsNaN(a) ((a) != (a))
 #endif
 #if !defined(INFINITY)
-#  define INFINITY (-logf(0f))
+#  define INFINITY ((double) -logf(0f))
 #endif
 
 typedef struct _BlobInfo BlobInfo;

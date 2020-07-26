@@ -19,7 +19,7 @@
 %                              September 2013                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1812,6 +1812,8 @@ static Image *ReadDDSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if ((decoder)(image, &dds_info, exception) != MagickTrue)
       {
         (void) CloseBlob(image);
+        if (n == 0)
+          return(DestroyImageList(image));
         return(GetFirstImageInList(image));
       }
   }
@@ -2327,7 +2329,7 @@ ModuleExport size_t RegisterDDSImage(void)
   entry->magick = (IsImageFormatHandler *) IsDDS;
   entry->seekable_stream=MagickTrue;
   entry->description = ConstantString("Microsoft DirectDraw Surface");
-  entry->module = ConstantString("DDS");
+  entry->magick_module = ConstantString("DDS");
   (void) RegisterMagickInfo(entry);
   entry = SetMagickInfo("DXT1");
   entry->decoder = (DecodeImageHandler *) ReadDDSImage;
@@ -2335,7 +2337,7 @@ ModuleExport size_t RegisterDDSImage(void)
   entry->magick = (IsImageFormatHandler *) IsDDS;
   entry->seekable_stream=MagickTrue;
   entry->description = ConstantString("Microsoft DirectDraw Surface");
-  entry->module = ConstantString("DDS");
+  entry->magick_module = ConstantString("DDS");
   (void) RegisterMagickInfo(entry);
   entry = SetMagickInfo("DXT5");
   entry->decoder = (DecodeImageHandler *) ReadDDSImage;
@@ -2343,7 +2345,7 @@ ModuleExport size_t RegisterDDSImage(void)
   entry->magick = (IsImageFormatHandler *) IsDDS;
   entry->seekable_stream=MagickTrue;
   entry->description = ConstantString("Microsoft DirectDraw Surface");
-  entry->module = ConstantString("DDS");
+  entry->magick_module = ConstantString("DDS");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -2637,13 +2639,14 @@ static MagickBooleanType WriteDDSImage(const ImageInfo *image_info,
   (void) TransformImageColorspace(image,sRGBColorspace);
   pixelFormat=DDPF_FOURCC;
   compression=FOURCC_DXT5;
-
   if (!image->matte)
     compression=FOURCC_DXT1;
-
   if (LocaleCompare(image_info->magick,"dxt1") == 0)
     compression=FOURCC_DXT1;
-
+  if (image_info->compression == DXT1Compression)
+    compression=FOURCC_DXT1;
+  else if (image_info->compression == NoCompression)
+    pixelFormat=DDPF_RGB;
   option=GetImageOption(image_info,"dds:compression");
   if (option != (char *) NULL)
     {
@@ -2652,10 +2655,8 @@ static MagickBooleanType WriteDDSImage(const ImageInfo *image_info,
        if (LocaleCompare(option,"none") == 0)
          pixelFormat=DDPF_RGB;
     }
-
   clusterFit=MagickFalse;
   weightByAlpha=MagickFalse;
-
   if (pixelFormat == DDPF_FOURCC)
     {
       option=GetImageOption(image_info,"dds:cluster-fit");
@@ -2670,7 +2671,6 @@ static MagickBooleanType WriteDDSImage(const ImageInfo *image_info,
             }
         }
     }
-
   maxMipmaps=SIZE_MAX;
   mipmaps=0;
   if ((image->columns & (image->columns - 1)) == 0 &&
@@ -2692,16 +2692,12 @@ static MagickBooleanType WriteDDSImage(const ImageInfo *image_info,
           }
         }
     }
-
   WriteDDSInfo(image,pixelFormat,compression,mipmaps);
-
   WriteImageData(image,pixelFormat,compression,clusterFit,weightByAlpha,
     &image->exception);
-
   if (mipmaps > 0 && WriteMipmaps(image,pixelFormat,compression,mipmaps,
         clusterFit,weightByAlpha,&image->exception) == MagickFalse)
     return(MagickFalse);
-
   (void) CloseBlob(image);
   return(MagickTrue);
 }

@@ -1,8 +1,8 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
-  You may not use this file except in compliance with the License.
+  You may not use this file except in compliance with the License.  You may
   obtain a copy of the License at
   
     https://imagemagick.org/script/license.php
@@ -18,11 +18,11 @@
 #ifndef MAGICKCORE_ACCELERATE_PRIVATE_H
 #define MAGICKCORE_ACCELERATE_PRIVATE_H
 
-#include "magick/fx.h"
 #include "magick/morphology.h"
 #include "magick/resample.h"
 #include "magick/resize.h"
 #include "magick/statistic.h"
+#include "magick/visual-effects.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

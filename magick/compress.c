@@ -17,7 +17,7 @@
 %                              May  1993                                      %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -36,8 +36,7 @@
 %
 %
 */
-
-
+
 /*
   Include declarations.
 */
@@ -63,8 +62,7 @@
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
 #include "zlib.h"
 #endif
-
-
+
 /*
   Typedef declarations.
 */
@@ -73,6 +71,9 @@ struct _Ascii85Info
   ssize_t
     offset,
     line_break;
+
+  char
+    tuple[6];
 
   unsigned char
     buffer[10];
@@ -86,16 +87,15 @@ typedef struct HuffmanTable
     length,
     count;
 } HuffmanTable;
-
-
+
 /*
   Huffman coding declarations.
 */
-#define TWId  23
-#define MWId  24
-#define TBId  25
-#define MBId  26
-#define EXId  27
+#define TWId  23L
+#define MWId  24L
+#define TBId  25L
+#define MBId  26L
+#define EXId  27L
 
 static const HuffmanTable
   MBTable[]=
@@ -200,8 +200,7 @@ static const HuffmanTable
     { TWId, 0x4b, 8, 60 }, { TWId, 0x32, 8, 61 }, { TWId, 0x33, 8, 62 },
     { TWId, 0x34, 8, 63 }, { TWId, 0x00, 0, 0 }
   };
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -229,12 +228,10 @@ static const HuffmanTable
 %
 %
 */
-#define MaxLineExtent  36
-
-static char *Ascii85Tuple(unsigned char *data)
+static inline void Ascii85Tuple(Ascii85Info *ascii85_info,
+  const unsigned char *magick_restrict data)
 {
-  static char
-    tuple[6];
+#define MaxLineExtent  36L
 
   register ssize_t
     i,
@@ -248,21 +245,21 @@ static char *Ascii85Tuple(unsigned char *data)
     ((size_t) data[2] << 8) | (size_t) data[3];
   if (code == 0L)
     {
-      tuple[0]='z';
-      tuple[1]='\0';
-      return(tuple);
+      ascii85_info->tuple[0]='z';
+      ascii85_info->tuple[1]='\0';
+      return;
     }
   quantum=85UL*85UL*85UL*85UL;
   for (i=0; i < 4; i++)
   {
     x=(ssize_t) (code/quantum);
     code-=quantum*x;
-    tuple[i]=(char) (x+(int) '!');
+    ascii85_info->tuple[i]=(char) (x+(int) '!');
     quantum/=85L;
   }
-  tuple[4]=(char) ((code % 85L)+(int) '!');
-  tuple[5]='\0';
-  return(tuple);
+  ascii85_info->tuple[4]=(char) ((code % 85L)+(int) '!');
+  ascii85_info->tuple[5]='\0';
+  return;
 }
 
 MagickExport void Ascii85Initialize(Image *image)
@@ -275,15 +272,12 @@ MagickExport void Ascii85Initialize(Image *image)
   if (image->ascii85 == (Ascii85Info *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
   (void) memset(image->ascii85,0,sizeof(*image->ascii85));
-  image->ascii85->line_break=MaxLineExtent << 1;
+  image->ascii85->line_break=(ssize_t) (MaxLineExtent << 1);
   image->ascii85->offset=0;
 }
 
 MagickExport void Ascii85Flush(Image *image)
 {
-  register char
-    *tuple;
-
   assert(image != (Image *) NULL);
   assert(image->signature == MagickCoreSignature);
   if (image->debug != MagickFalse)
@@ -294,9 +288,10 @@ MagickExport void Ascii85Flush(Image *image)
       image->ascii85->buffer[image->ascii85->offset]='\0';
       image->ascii85->buffer[image->ascii85->offset+1]='\0';
       image->ascii85->buffer[image->ascii85->offset+2]='\0';
-      tuple=Ascii85Tuple(image->ascii85->buffer);
+      Ascii85Tuple(image->ascii85,image->ascii85->buffer);
       (void) WriteBlob(image,(size_t) image->ascii85->offset+1,
-        (const unsigned char *) (*tuple == 'z' ? "!!!!" : tuple));
+        (const unsigned char *) (*image->ascii85->tuple == 'z' ? "!!!!" :
+        image->ascii85->tuple));
     }
   (void) WriteBlobByte(image,'~');
   (void) WriteBlobByte(image,'>');
@@ -324,7 +319,8 @@ MagickExport void Ascii85Encode(Image *image,const unsigned char code)
   p=image->ascii85->buffer;
   for (n=image->ascii85->offset; n >= 4; n-=4)
   {
-    for (q=Ascii85Tuple(p); *q != '\0'; q++)
+    Ascii85Tuple(image->ascii85,p);
+    for (q=image->ascii85->tuple; *q != '\0'; q++)
     {
       image->ascii85->line_break--;
       if ((image->ascii85->line_break < 0) && (*q != '%'))
@@ -341,8 +337,7 @@ MagickExport void Ascii85Encode(Image *image,const unsigned char code)
   for (n=0; n < 4; n++)
     image->ascii85->buffer[n]=(*p++);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -367,11 +362,11 @@ MagickExport void Ascii85Encode(Image *image,const unsigned char code)
 */
 MagickExport MagickBooleanType HuffmanDecodeImage(Image *image)
 {
-#define HashSize  1021
-#define MBHashA  293
-#define MBHashB  2695
-#define MWHashA  3510
-#define MWHashB  1178
+#define HashSize  1021L
+#define MBHashA  293L
+#define MBHashB  2695L
+#define MWHashA  3510L
+#define MWHashB  1178L
 
 #define InitializeHashTable(hash,table,a,b) \
 { \
@@ -561,7 +556,7 @@ MagickExport MagickBooleanType HuffmanDecodeImage(Image *image)
       if (length > 13)
         {
           while (runlength < 11)
-           InputBit(bit);
+            InputBit(bit);
           do { InputBit(bit); } while ((int) bit == 0);
           break;
         }
@@ -598,7 +593,8 @@ MagickExport MagickBooleanType HuffmanDecodeImage(Image *image)
                 }
               else
                 for ( ; count > 0; count--)
-                  scanline[x++]=(unsigned char) 1;
+                  if ((x >= 0) && (x < (ssize_t) image->columns))
+                    scanline[x++]=(unsigned char) 1;
             }
           color=(unsigned int)
             ((color == MagickFalse) ? MagickTrue : MagickFalse);
@@ -630,10 +626,12 @@ MagickExport MagickBooleanType HuffmanDecodeImage(Image *image)
       index=(IndexPacket) (*p++);
       SetPixelIndex(indexes+x,index);
       SetPixelRGBO(q,image->colormap+(ssize_t) index);
+      q++;
     }
     if (SyncCacheViewAuthenticPixels(image_view,exception) == MagickFalse)
       break;
-    proceed=SetImageProgress(image,LoadImageTag,y,image->rows);
+    proceed=SetImageProgress(image,LoadImageTag,(MagickOffsetType) y,
+      image->rows);
     if (proceed == MagickFalse)
       break;
     y++;
@@ -649,8 +647,7 @@ MagickExport MagickBooleanType HuffmanDecodeImage(Image *image)
   scanline=(unsigned char *) RelinquishMagickMemory(scanline);
   return(MagickTrue);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -862,8 +859,8 @@ RestoreMSCWarning \
     q=scanline;
     if (GetPreviousImageInList(huffman_image) == (Image *) NULL)
       {
-        proceed=SetImageProgress(huffman_image,LoadImageTag,y,
-          huffman_image->rows);
+        proceed=SetImageProgress(huffman_image,LoadImageTag,(MagickOffsetType)
+          y,huffman_image->rows);
         if (proceed == MagickFalse)
           break;
       }
@@ -893,8 +890,7 @@ RestoreMSCWarning \
   scanline=(unsigned char *) RelinquishMagickMemory(scanline);
   return(MagickTrue);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -988,7 +984,7 @@ MagickExport MagickBooleanType LZWEncodeImage(Image *image,const size_t length,
   for (index=0; index < 256; index++)
   {
     table[index].prefix=(-1);
-    table[index].suffix=(short) index;
+    table[index].suffix=(ssize_t) index;
     table[index].next=(-1);
   }
   next_index=LZWEod+1;
@@ -1016,7 +1012,7 @@ MagickExport MagickBooleanType LZWEncodeImage(Image *image,const size_t length,
         */
         OutputCode(last_code);
         table[next_index].prefix=(ssize_t) last_code;
-        table[next_index].suffix=(short) pixels[i];
+        table[next_index].suffix=(ssize_t) pixels[i];
         table[next_index].next=table[last_code].next;
         table[last_code].next=(ssize_t) next_index;
         next_index++;
@@ -1056,8 +1052,7 @@ MagickExport MagickBooleanType LZWEncodeImage(Image *image,const size_t length,
   table=(TableType *) RelinquishMagickMemory(table);
   return(MagickTrue);
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1192,8 +1187,7 @@ MagickExport MagickBooleanType PackbitsEncodeImage(Image *image,
   packbits=(unsigned char *) RelinquishMagickMemory(packbits);
   return(MagickTrue);
 }
-
-
+
 #if defined(MAGICKCORE_ZLIB_DELEGATE)
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

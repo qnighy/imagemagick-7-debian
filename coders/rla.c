@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -320,8 +320,8 @@ static Image *ReadRLAImage(const ImageInfo *image_info,ExceptionInfo *exception)
           {
             while (runlength < 0)
             {
-              q=GetAuthenticPixels(image,(ssize_t) (x % image->columns),
-                (ssize_t) (y % image->rows),1,1,exception);
+              q=GetAuthenticPixels(image,(ssize_t) (x % image->columns),y,1,1,
+                exception);
               if (q == (PixelPacket *) NULL)
                 break;
               byte=(unsigned char) ReadBlobByte(image);
@@ -362,8 +362,8 @@ static Image *ReadRLAImage(const ImageInfo *image_info,ExceptionInfo *exception)
         runlength++;
         do
         {
-          q=GetAuthenticPixels(image,(ssize_t) (x % image->columns),
-            (ssize_t) (y % image->rows),1,1,exception);
+          q=GetAuthenticPixels(image,(ssize_t) (x % image->columns),y,1,1,
+            exception);
           if (q == (PixelPacket *) NULL)
             break;
           switch (channel)
@@ -398,6 +398,11 @@ static Image *ReadRLAImage(const ImageInfo *image_info,ExceptionInfo *exception)
         while (runlength > 0);
       }
     }
+    if ((x/(ssize_t) rla_info.number_channels) > (ssize_t) image->columns)
+      {
+        scanlines=(MagickOffsetType *) RelinquishMagickMemory(scanlines);
+        ThrowReaderException(CorruptImageError,"CorruptImage");
+      }
     if (EOFBlob(image) != MagickFalse)
       break;
     status=SetImageProgress(image,LoadImageTag,(MagickOffsetType) y,
@@ -446,7 +451,7 @@ ModuleExport size_t RegisterRLAImage(void)
   entry->adjoin=MagickFalse;
   entry->seekable_stream=MagickTrue;
   entry->description=ConstantString("Alias/Wavefront image");
-  entry->module=ConstantString("RLA");
+  entry->magick_module=ConstantString("RLA");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

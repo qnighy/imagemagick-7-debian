@@ -18,7 +18,7 @@
 %                             November 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -62,6 +62,7 @@
 #include "magick/mime.h"
 #include "magick/module.h"
 #include "magick/monitor-private.h"
+#include "magick/mutex.h"
 #include "magick/nt-base-private.h"
 #include "magick/nt-feature.h"
 #include "magick/opencl-private.h"
@@ -81,6 +82,14 @@
 #include "magick/token.h"
 #include "magick/utility.h"
 #include "magick/xwindow-private.h"
+#if defined(MAGICKCORE_XML_DELEGATE)
+#  if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#    if !defined(__MINGW32__)
+#      include <win32config.h>
+#    endif
+#  endif
+#  include <libxml/parser.h>
+#endif
 
 /*
   Define declarations.
@@ -808,8 +817,8 @@ static void *DestroyMagickNode(void *magick_info)
     *p;
 
   p=(MagickInfo *) magick_info;
-  if (p->module != (char *) NULL)
-    p->module=DestroyString(p->module);
+  if (p->magick_module != (char *) NULL)
+    p->magick_module=DestroyString(p->magick_module);
   if (p->note != (char *) NULL)
     p->note=DestroyString(p->note);
   if (p->mime_type != (char *) NULL)
@@ -961,14 +970,15 @@ MagickExport MagickBooleanType ListMagickInfo(FILE *file,
 #if defined(MAGICKCORE_MODULES_SUPPORT)
     {
       char
-        module[MaxTextExtent];
+        magick_module[MaxTextExtent];
 
-      *module='\0';
-      if (magick_info[i]->module != (char *) NULL)
-        (void) CopyMagickString(module,magick_info[i]->module,MaxTextExtent);
-      (void) ConcatenateMagickString(module,"          ",MaxTextExtent);
-      module[9]='\0';
-      (void) FormatLocaleFile(file,"%9s ",module);
+      *magick_module='\0';
+      if (magick_info[i]->magick_module != (char *) NULL)
+        (void) CopyMagickString(magick_module,magick_info[i]->magick_module,
+          MaxTextExtent);
+      (void) ConcatenateMagickString(magick_module,"          ",MaxTextExtent);
+      magick_module[9]='\0';
+      (void) FormatLocaleFile(file,"%9s ",magick_module);
     }
 #endif
     (void) FormatLocaleFile(file,"%c%c%c ",magick_info[i]->decoder ? 'r' : '-',
@@ -1173,14 +1183,6 @@ static void MagickSignalHandler(int signal_number)
   if (signal_number == SIGFPE)
     abort();
 #endif
-#if defined(SIGXCPU)
-  if (signal_number == SIGXCPU)
-    abort();
-#endif
-#if defined(SIGXFSZ)
-  if (signal_number == SIGXFSZ)
-    abort();
-#endif
 #if defined(SIGSEGV)
   if (signal_number == SIGSEGV)
     abort();
@@ -1243,6 +1245,7 @@ MagickExport void MagickCoreGenesis(const char *path,
       return;
     }
   (void) SemaphoreComponentGenesis();
+  (void) ExceptionComponentGenesis();
   (void) LogComponentGenesis();
   (void) LocaleComponentGenesis();
   (void) RandomComponentGenesis();
@@ -1376,6 +1379,9 @@ MagickExport void MagickCoreTerminus(void)
 #if defined(MAGICKCORE_X11_DELEGATE)
   XComponentTerminus();
 #endif
+#if defined(MAGICKCORE_XML_DELEGATE)
+  xmlCleanupParser();
+#endif
   AnnotateComponentTerminus();
   MimeComponentTerminus();
   TypeComponentTerminus();
@@ -1404,6 +1410,7 @@ MagickExport void MagickCoreTerminus(void)
   RandomComponentTerminus();
   LocaleComponentTerminus();
   LogComponentTerminus();
+  ExceptionComponentTerminus();
   instantiate_magickcore=MagickFalse;
   UnlockMagickMutex();
   SemaphoreComponentTerminus();
@@ -1535,7 +1542,7 @@ MagickExport MagickInfo *SetMagickInfo(const char *name)
 */
 MagickExport int SetMagickPrecision(const int precision)
 {
-#define MagickPrecision  6
+#define MagickPrecision  (4+MAGICKCORE_QUANTUM_DEPTH/8)
 
   static int
     magick_precision = 0;

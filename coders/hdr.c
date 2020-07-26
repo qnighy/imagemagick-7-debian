@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -263,7 +263,7 @@ static Image *ReadHDRImage(const ImageInfo *image_info,ExceptionInfo *exception)
           } while (isalnum(c) || (c == '_'));
           *p='\0';
           value_expected=MagickFalse;
-          while ((isspace((int) ((unsigned char) c)) != 0) || (c == '='))
+          while ((isspace(c) != 0) || (c == '='))
           {
             if (c == '=')
               value_expected=MagickTrue;
@@ -375,7 +375,7 @@ static Image *ReadHDRImage(const ImageInfo *image_info,ExceptionInfo *exception)
           }
         }
     if ((image->columns == 0) && (image->rows == 0))
-      while (isspace((int) ((unsigned char) c)) != 0)
+      while (isspace(c) != 0)
         c=ReadBlobByte(image);
   }
   if ((LocaleCompare(format,"32-bit_rle_rgbe") != 0) &&
@@ -541,7 +541,7 @@ ModuleExport size_t RegisterHDRImage(void)
   entry->decoder=(DecodeImageHandler *) ReadHDRImage;
   entry->encoder=(EncodeImageHandler *) WriteHDRImage;
   entry->description=ConstantString("Radiance RGBE image format");
-  entry->module=ConstantString("HDR");
+  entry->magick_module=ConstantString("HDR");
   entry->magick=(IsImageFormatHandler *) IsHDR;
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
@@ -786,9 +786,12 @@ static MagickBooleanType WriteHDRImage(const ImageInfo *image_info,Image *image)
             exponent;
 
           gamma=frexp(gamma,&exponent)*256.0/gamma;
-          pixel[0]=(unsigned char) (gamma*QuantumScale*GetPixelRed(p));
-          pixel[1]=(unsigned char) (gamma*QuantumScale*GetPixelGreen(p));
-          pixel[2]=(unsigned char) (gamma*QuantumScale*GetPixelBlue(p));
+          if (GetPixelRed(p) > 0)
+            pixel[0]=(unsigned char) (gamma*QuantumScale*GetPixelRed(p));
+          if (GetPixelGreen(p) > 0)
+            pixel[1]=(unsigned char) (gamma*QuantumScale*GetPixelGreen(p));
+          if (GetPixelBlue(p) > 0)
+            pixel[2]=(unsigned char) (gamma*QuantumScale*GetPixelBlue(p));
           pixel[3]=(unsigned char) (exponent+128);
         }
       if ((image->columns >= 8) && (image->columns <= 0x7ffff))

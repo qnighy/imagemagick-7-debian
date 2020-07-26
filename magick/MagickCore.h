@@ -1,8 +1,8 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
-  You may not use this file except in compliance with the License.
+  You may not use this file except in compliance with the License.  You may
   obtain a copy of the License at
   
     https://imagemagick.org/script/license.php
@@ -59,6 +59,8 @@ extern "C" {
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <math.h>
 #include <sys/types.h>
 #include <time.h>
 
@@ -158,6 +160,7 @@ extern "C" {
 #include "magick/utility.h"
 #include "magick/version.h"
 #include "magick/vision.h"
+#include "magick/visual-effects.h"
 #include "magick/xml-tree.h"
 #include "magick/xwindow.h"
 

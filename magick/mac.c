@@ -17,7 +17,7 @@
 %                                September 1996                               %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1428,7 +1428,7 @@ static Boolean SearchForFile(OSType creator_type,OSType file_type,FSSpec *file,
     serial_number;
 
   ssize_t
-    buffer_size = 16384;
+    buffer_size = MagickMinBufferExtent;
 
   serial_number.lowLongOfPSN=kCurrentProcess;
   serial_number.highLongOfPSN=0;

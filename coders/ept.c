@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -157,6 +157,10 @@ static MagickBooleanType IsEPT(const unsigned char *magick,const size_t length)
 */
 static Image *ReadEPTImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
+  const void
+    *postscript_data,
+    *tiff_data;
+
   EPTInfo
     ept_info;
 
@@ -197,13 +201,13 @@ static Image *ReadEPTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     ThrowReaderException(CorruptImageError,"ImproperImageHeader");
   ept_info.postscript_offset=(MagickOffsetType) ReadBlobLSBLong(image);
   ept_info.postscript_length=ReadBlobLSBLong(image);
-  if (ept_info.postscript_length > GetBlobSize(image))
+  if ((MagickSizeType) ept_info.postscript_length > GetBlobSize(image))
     ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
   (void) ReadBlobLSBLong(image);
   (void) ReadBlobLSBLong(image);
   ept_info.tiff_offset=(MagickOffsetType) ReadBlobLSBLong(image);
   ept_info.tiff_length=ReadBlobLSBLong(image);
-  if (ept_info.tiff_length > GetBlobSize(image))
+  if ((MagickSizeType) ept_info.tiff_length > GetBlobSize(image))
     ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
   (void) ReadBlobLSBShort(image);
   ept_info.postscript=(unsigned char *) AcquireQuantumMemory(
@@ -230,7 +234,7 @@ static Image *ReadEPTImage(const ImageInfo *image_info,ExceptionInfo *exception)
         ept_info.postscript);
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     }
-  count=ReadBlob(image,ept_info.tiff_length,ept_info.tiff);
+  tiff_data=ReadBlobStream(image,ept_info.tiff_length,ept_info.tiff,&count);
   if (count != (ssize_t) (ept_info.tiff_length))
     (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageWarning,
       "InsufficientImageDataInFile","`%s'",image->filename);
@@ -242,27 +246,27 @@ static Image *ReadEPTImage(const ImageInfo *image_info,ExceptionInfo *exception)
         ept_info.postscript);
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     }
-  count=ReadBlob(image,ept_info.postscript_length,ept_info.postscript);
+  postscript_data=ReadBlobStream(image,ept_info.postscript_length,
+    ept_info.postscript,&count);
   if (count != (ssize_t) (ept_info.postscript_length))
-    (void) ThrowMagickException(exception,GetMagickModule(),CorruptImageWarning,
-      "InsufficientImageDataInFile","`%s'",image->filename);
+    ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
   (void) CloseBlob(image);
   image=DestroyImage(image);
   read_info=CloneImageInfo(image_info);
-  (void) CopyMagickString(read_info->magick,"EPS",MaxTextExtent);
-  image=BlobToImage(read_info,ept_info.postscript,ept_info.postscript_length,
+  (void) CopyMagickString(read_info->magick,"EPS",MagickPathExtent);
+  image=BlobToImage(read_info,postscript_data,ept_info.postscript_length,
     exception);
   if (image == (Image *) NULL)
     {
-      (void) CopyMagickString(read_info->magick,"TIFF",MaxTextExtent);
-      image=BlobToImage(read_info,ept_info.tiff,ept_info.tiff_length,exception);
+      (void) CopyMagickString(read_info->magick,"TIFF",MagickPathExtent);
+      image=BlobToImage(read_info,tiff_data,ept_info.tiff_length,exception);
     }
   read_info=DestroyImageInfo(read_info);
   if (image != (Image *) NULL)
     {
       (void) CopyMagickString(image->filename,image_info->filename,
-        MaxTextExtent);
-      (void) CopyMagickString(image->magick,"EPT",MaxTextExtent);
+        MagickPathExtent);
+      (void) CopyMagickString(image->magick,"EPT",MagickPathExtent);
     }
   ept_info.tiff=(unsigned char *) RelinquishMagickMemory(ept_info.tiff);
   ept_info.postscript=(unsigned char *) RelinquishMagickMemory(
@@ -307,7 +311,7 @@ ModuleExport size_t RegisterEPTImage(void)
   entry->blob_support=MagickFalse;
   entry->description=ConstantString(
     "Encapsulated PostScript with TIFF preview");
-  entry->module=ConstantString("EPT");
+  entry->magick_module=ConstantString("EPT");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("EPT2");
   entry->decoder=(DecodeImageHandler *) ReadEPTImage;
@@ -318,7 +322,7 @@ ModuleExport size_t RegisterEPTImage(void)
   entry->blob_support=MagickFalse;
   entry->description=ConstantString(
     "Encapsulated PostScript Level II with TIFF preview");
-  entry->module=ConstantString("EPT");
+  entry->magick_module=ConstantString("EPT");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("EPT3");
   entry->decoder=(DecodeImageHandler *) ReadEPTImage;
@@ -328,7 +332,7 @@ ModuleExport size_t RegisterEPTImage(void)
   entry->blob_support=MagickFalse;
   entry->description=ConstantString(
     "Encapsulated PostScript Level III with TIFF preview");
-  entry->module=ConstantString("EPT");
+  entry->magick_module=ConstantString("EPT");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

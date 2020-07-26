@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -320,7 +320,7 @@ static Image *ReadRLEImage(const ImageInfo *image_info,ExceptionInfo *exception)
             comment=(char *) AcquireQuantumMemory(length,sizeof(*comment));
             if (comment == (char *) NULL)
               ThrowRLEException(ResourceLimitError,"MemoryAllocationFailed");
-            (void) ReadBlob(image,length-1,(unsigned char *) comment);
+            count=ReadBlob(image,length-1,(unsigned char *) comment);
             if (count != (ssize_t) (length-1))
               {
                 comment=DestroyString(comment);
@@ -754,7 +754,7 @@ ModuleExport size_t RegisterRLEImage(void)
   entry->seekable_stream=MagickTrue;
   entry->adjoin=MagickFalse;
   entry->description=ConstantString("Utah Run length encoded image");
-  entry->module=ConstantString("RLE");
+  entry->magick_module=ConstantString("RLE");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

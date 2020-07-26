@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -561,16 +561,16 @@ static Image *ReadDIBImage(const ImageInfo *image_info,ExceptionInfo *exception)
   if ((dib_info.bits_per_pixel != 1) && (dib_info.bits_per_pixel != 4) &&
       (dib_info.bits_per_pixel != 8) && (dib_info.bits_per_pixel != 16) &&
       (dib_info.bits_per_pixel != 24) && (dib_info.bits_per_pixel != 32))
-    ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
+    ThrowReaderException(CorruptImageError,"UnsupportedBitsPerPixel");
   if ((dib_info.bits_per_pixel < 16) &&
       (dib_info.number_colors > (unsigned int) (1UL << dib_info.bits_per_pixel)))
     ThrowReaderException(CorruptImageError,"UnrecognizedNumberOfColors");
   if ((dib_info.compression == 1) && (dib_info.bits_per_pixel != 8))
-    ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
+    ThrowReaderException(CorruptImageError,"UnsupportedBitsPerPixel");
   if ((dib_info.compression == 2) && (dib_info.bits_per_pixel != 4))
-    ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
+    ThrowReaderException(CorruptImageError,"UnsupportedBitsPerPixel");
   if ((dib_info.compression == 3) && (dib_info.bits_per_pixel < 16))
-    ThrowReaderException(CorruptImageError,"UnrecognizedBitsPerPixel");
+    ThrowReaderException(CorruptImageError,"UnsupportedBitsPerPixel");
   switch (dib_info.compression)
   {
     case BI_RGB:
@@ -932,8 +932,6 @@ static Image *ReadDIBImage(const ImageInfo *image_info,ExceptionInfo *exception)
       /*
         Handle ICO mask.
       */
-      image->storage_class=DirectClass;
-      image->matte=MagickTrue;
       for (y=0; y < (ssize_t) image->rows; y++)
       {
         register ssize_t
@@ -948,16 +946,24 @@ static Image *ReadDIBImage(const ImageInfo *image_info,ExceptionInfo *exception)
         for (x=0; x < ((ssize_t) image->columns-7); x+=8)
         {
           c=ReadBlobByte(image);
-          for (bit=0; bit < 8; bit++)
+					for (bit=0; bit < 8; bit++)
+          {
             SetPixelOpacity(q+x+bit,c & (0x80 >> bit) ? TransparentOpacity :
               OpaqueOpacity);
+            if (c & (0x80 >> bit))
+              image->matte=MagickTrue;
+          }
         }
         if ((image->columns % 8) != 0)
           {
             c=ReadBlobByte(image);
             for (bit=0; bit < (ssize_t) (image->columns % 8); bit++)
+            {
               SetPixelOpacity(q+x+bit,c & (0x80 >> bit) ? TransparentOpacity :
                 OpaqueOpacity);
+              if (c & (0x80 >> bit))
+                image->matte=MagickTrue;
+            }
           }
         if (image->columns % 32)
           for (x=0; x < (ssize_t) ((32-(image->columns % 32))/8); x++)
@@ -965,6 +971,8 @@ static Image *ReadDIBImage(const ImageInfo *image_info,ExceptionInfo *exception)
         if (SyncAuthenticPixels(image,exception) == MagickFalse)
           break;
       }
+      if ((image->storage_class == PseudoClass) && (image->matte == MagickTrue))
+        image->storage_class=DirectClass;
     }
   if (dib_info.height < 0)
     {
@@ -1026,7 +1034,7 @@ ModuleExport size_t RegisterDIBImage(void)
   entry->stealth=MagickTrue;
   entry->description=ConstantString(
     "Microsoft Windows 3.X Packed Device-Independent Bitmap");
-  entry->module=ConstantString("DIB");
+  entry->magick_module=ConstantString("DIB");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("ICODIB");
   entry->decoder=(DecodeImageHandler *) ReadDIBImage;
@@ -1036,7 +1044,7 @@ ModuleExport size_t RegisterDIBImage(void)
   entry->stealth=MagickTrue;
   entry->description=ConstantString(
     "Microsoft Windows 3.X Packed Device-Independent Bitmap");
-  entry->module=ConstantString("DIB");
+  entry->magick_module=ConstantString("DIB");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -1134,6 +1142,9 @@ static MagickBooleanType WriteDIBImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
+  if (((image->columns << 3) != (int) (image->columns << 3)) ||
+      ((image->rows << 3) != (int) (image->rows << 3)))
+    ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
   /*
     Initialize DIB raster file header.
   */
@@ -1380,7 +1391,10 @@ static MagickBooleanType WriteDIBImage(const ImageInfo *image_info,Image *image)
           dib_colormap=(unsigned char *) AcquireQuantumMemory((size_t)
             (1UL << dib_info.bits_per_pixel),4*sizeof(*dib_colormap));
           if (dib_colormap == (unsigned char *) NULL)
-            ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+            {
+              pixels=(unsigned char *) RelinquishMagickMemory(pixels);
+              ThrowWriterException(ResourceLimitError,"MemoryAllocationFailed");
+            }
           q=dib_colormap;
           for (i=0; i < (ssize_t) MagickMin(image->colors,dib_info.number_colors); i++)
           {

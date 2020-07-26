@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -45,7 +45,7 @@ testReadCompare('input.dib', 'reference/read/input_dib.miff', q//, 0.0, 0.0);
 
 print("Flexible Image Transport System ...\n");
 ++$test;
-testReadCompare('input.fits', 'reference/read/input_fits.miff', q//, 0.06, 0.6);
+testReadCompare('input.fits', 'reference/read/input_fits.miff', q//, 0.17, 0.7);
 
 print("CompuServe graphics interchange format ...\n");
 ++$test;

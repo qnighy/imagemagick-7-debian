@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -327,7 +327,7 @@ ModuleExport size_t RegisterJBIGImage(void)
   entry->description=ConstantString(JBIGDescription);
   if (*version != '\0')
     entry->version=ConstantString(version);
-  entry->module=ConstantString("JBIG");
+  entry->magick_module=ConstantString("JBIG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("JBG");
 #if defined(MAGICKCORE_JBIG_DELEGATE)
@@ -337,7 +337,7 @@ ModuleExport size_t RegisterJBIGImage(void)
   entry->description=ConstantString(JBIGDescription);
   if (*version != '\0')
     entry->version=ConstantString(version);
-  entry->module=ConstantString("JBIG");
+  entry->magick_module=ConstantString("JBIG");
   (void) RegisterMagickInfo(entry);
   entry=SetMagickInfo("JBIG");
 #if defined(MAGICKCORE_JBIG_DELEGATE)
@@ -347,7 +347,7 @@ ModuleExport size_t RegisterJBIGImage(void)
   entry->description=ConstantString(JBIGDescription);
   if (*version != '\0')
     entry->version=ConstantString(version);
-  entry->module=ConstantString("JBIG");
+  entry->magick_module=ConstantString("JBIG");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

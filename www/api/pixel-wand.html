@@ -7,82 +7,88 @@
 <head>
   <meta charset="utf-8"  />
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1,shrink-to-fit=no"  />
-  <title>MagickWand, C API: Pixel Wand Methods @ ImageMagick</title>
+  <title>ImageMagick - MagickWand, C API: Pixel Wand Methods</title>
   <meta name="application-name" content="ImageMagick" />
-  <meta name="description" content="Use ImageMagick® to create, edit, compose, or convert bitmap images. You can resize your image, crop it, change its shades and colors, add captions, among other operations." />
+  <meta name="description" content="Use ImageMagick® to create, edit, compose, and convert bitmap images. Resize an image, crop it, change its shades and colors, add captions, and more." />
   <meta name="application-url" content="https://imagemagick.org" />
   <meta name="generator" content="PHP" />
-  <meta name="keywords" content="magickwc, api:, pixel, wmethods, ImageMagick, PerlMagick, image processing, image, photo, software, Magick++, OpenMP, convert" />
+  <meta name="keywords" content="magickwc, api:, pixel, wmethods, image converter, image resizer, image editor, photo editor, jpg converter, png converter, tiff converter, vector images, online, free, swiss army" />
   <meta name="rating" content="GENERAL" />
   <meta name="robots" content="INDEX, FOLLOW" />
   <meta name="generator" content="ImageMagick Studio LLC" />
   <meta name="author" content="ImageMagick Studio LLC" />
   <meta name="revisit-after" content="2 DAYS" />
   <meta name="resource-type" content="document" />
-  <meta name="copyright" content="Copyright (c) 1999-2017 ImageMagick Studio LLC" />
+  <meta name="copyright" content="Copyright (c) 1999-2020 ImageMagick Studio LLC" />
   <meta name="distribution" content="Global" />
   <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1" />
+  <meta property='og:url' content='https://imagemagick.org/' />
+  <meta property='og:title' content='ImageMagick' />
+  <meta property='og:image' content='https://imagemagick.org/images/logo.png' />
+  <meta property='og:type' content='website' />
+  <meta property='og:site_name' content='ImageMagick' />
+  <meta property='og:description' content="Create, Edit, Compose, or Convert Bitmap Images" />
   <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
   <link href="https://imagemagick.org/api/pixel-wand.html" rel="canonical" />
   <link href="../images/wand.png" rel="icon" />
   <link href="../images/wand.ico" rel="shortcut icon" />
-  <link href="assets/magick.css" rel="stylesheet" />
+  <link href="../assets/magick-css.html" rel="stylesheet" />
 </head>
 <body>
-  <header>
-  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
     <a class="navbar-brand" href="../index.html"><img class="d-block" id="wand" alt="ImageMagick" width="32" height="32" src="../images/wand.ico"/></a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsMagick" aria-controls="navbarsMagick" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="navbar-collapse collapse" id="navbarsExampleDefault" style="">
+    <div class="navbar-collapse collapse" id="navbarsMagick" style="">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item ">
         <a class="nav-link" href="../index.html">Home <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item ">
-        <a class="nav-link" href="../www/download.html">Download</a>
+        <a class="nav-link" href="../download.html">Download</a>
       </li>
       <li class="nav-item ">
-        <a class="nav-link" href="../www/command-line-tools.html">Tools</a>
+        <a class="nav-link" href="../command-line-tools.html">Tools</a>
       </li>
       <li class="nav-item ">
-        <a class="nav-link" href="../www/command-line-processing.html">Command-line</a>
+        <a class="nav-link" href="../command-line-processing.html">Command-line</a>
       </li>
       <li class="nav-item ">
-        <a class="nav-link" href="../www/resources.html">Resources</a>
+        <a class="nav-link" href="../resources.html">Resources</a>
       </li>
       <li class="nav-item ">
-        <a class="nav-link" href="../www/develop.html">Develop</a>
+        <a class="nav-link" href="../develop.html">Develop</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" target="_blank" href="https://imagemagick.org/discourse-server/">Community</a>
       </li>
     </ul>
+    </div>
     <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
       <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
     </form>
-    </div>
   </nav>
   <div class="container">
    <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
          style="display:block"
          data-ad-client="ca-pub-3129977114552745"
          data-ad-slot="6345125851"
-         data-ad-format="auto"></ins>
+         data-full-width-responsive="true"
+         data-ad-format="horizontal"></ins>
     <script>
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
   </div>
-  </header>
+
   <main class="container">
     <div class="magick-template">
 <div class="magick-header">
 <p class="text-center"><a href="pixel-wand.html#ClearPixelWand">ClearPixelWand</a> &#8226; <a href="pixel-wand.html#ClonePixelWand">ClonePixelWand</a> &#8226; <a href="pixel-wand.html#ClonePixelWands">ClonePixelWands</a> &#8226; <a href="pixel-wand.html#DestroyPixelWand">DestroyPixelWand</a> &#8226; <a href="pixel-wand.html#DestroyPixelWands">DestroyPixelWands</a> &#8226; <a href="pixel-wand.html#IsPixelWandSimilar">IsPixelWandSimilar</a> &#8226; <a href="pixel-wand.html#IsPixelWand">IsPixelWand</a> &#8226; <a href="pixel-wand.html#NewPixelWand">NewPixelWand</a> &#8226; <a href="pixel-wand.html#NewPixelWands">NewPixelWands</a> &#8226; <a href="pixel-wand.html#PixelClearException">PixelClearException</a> &#8226; <a href="pixel-wand.html#PixelGetAlpha">PixelGetAlpha</a> &#8226; <a href="pixel-wand.html#PixelGetAlphaQuantum">PixelGetAlphaQuantum</a> &#8226; <a href="pixel-wand.html#PixelGetBlack">PixelGetBlack</a> &#8226; <a href="pixel-wand.html#PixelGetBlackQuantum">PixelGetBlackQuantum</a> &#8226; <a href="pixel-wand.html#PixelGetBlue">PixelGetBlue</a> &#8226; <a href="pixel-wand.html#PixelGetBlueQuantum">PixelGetBlueQuantum</a> &#8226; <a href="pixel-wand.html#PixelGetColorAsString">PixelGetColorAsString</a> &#8226; <a href="pixel-wand.html#PixelGetColorAsNormalizedString">PixelGetColorAsNormalizedString</a> &#8226; <a href="pixel-wand.html#PixelGetColorCount">PixelGetColorCount</a> &#8226; <a href="pixel-wand.html#PixelGetCyan">PixelGetCyan</a> &#8226; <a href="pixel-wand.html#PixelGetCyanQuantum">PixelGetCyanQuantum</a> &#8226; <a href="pixel-wand.html#PixelGetException">PixelGetException</a> &#8226; <a href="pixel-wand.html#PixelGetExceptionType">PixelGetExceptionType</a> &#8226; <a href="pixel-wand.html#PixelGetFuzz">PixelGetFuzz</a> &#8226; <a href="pixel-wand.html#PixelGetGreen">PixelGetGreen</a> &#8226; <a href="pixel-wand.html#PixelGetGreenQuantum">PixelGetGreenQuantum</a> &#8226; <a href="pixel-wand.html#PixelGetHSL">PixelGetHSL</a> &#8226; <a href="pixel-wand.html#PixelGetIndex">PixelGetIndex</a> &#8226; <a href="pixel-wand.html#PixelGetMagenta">PixelGetMagenta</a> &#8226; <a href="pixel-wand.html#PixelGetMagentaQuantum">PixelGetMagentaQuantum</a> &#8226; <a href="pixel-wand.html#PixelGetMagickColor">PixelGetMagickColor</a> &#8226; <a href="pixel-wand.html#PixelGetOpacity">PixelGetOpacity</a> &#8226; <a href="pixel-wand.html#PixelGetOpacityQuantum">PixelGetOpacityQuantum</a> &#8226; <a href="pixel-wand.html#PixelGetQuantumColor">PixelGetQuantumColor</a> &#8226; <a href="pixel-wand.html#PixelGetRed">PixelGetRed</a> &#8226; <a href="pixel-wand.html#PixelGetRedQuantum">PixelGetRedQuantum</a> &#8226; <a href="pixel-wand.html#PixelGetYellow">PixelGetYellow</a> &#8226; <a href="pixel-wand.html#PixelGetYellowQuantum">PixelGetYellowQuantum</a> &#8226; <a href="pixel-wand.html#PixelSetAlpha">PixelSetAlpha</a> &#8226; <a href="pixel-wand.html#PixelSetAlphaQuantum">PixelSetAlphaQuantum</a> &#8226; <a href="pixel-wand.html#PixelSetBlack">PixelSetBlack</a> &#8226; <a href="pixel-wand.html#PixelSetBlackQuantum">PixelSetBlackQuantum</a> &#8226; <a href="pixel-wand.html#PixelSetBlue">PixelSetBlue</a> &#8226; <a href="pixel-wand.html#PixelSetBlueQuantum">PixelSetBlueQuantum</a> &#8226; <a href="pixel-wand.html#PixelSetColor">PixelSetColor</a> &#8226; <a href="pixel-wand.html#PixelSetColorCount">PixelSetColorCount</a> &#8226; <a href="pixel-wand.html#PixelSetColorFromWand">PixelSetColorFromWand</a> &#8226; <a href="pixel-wand.html#PixelSetCyan">PixelSetCyan</a> &#8226; <a href="pixel-wand.html#PixelSetCyanQuantum">PixelSetCyanQuantum</a> &#8226; <a href="pixel-wand.html#PixelSetFuzz">PixelSetFuzz</a> &#8226; <a href="pixel-wand.html#PixelSetGreen">PixelSetGreen</a> &#8226; <a href="pixel-wand.html#PixelSetGreenQuantum">PixelSetGreenQuantum</a> &#8226; <a href="pixel-wand.html#PixelSetHSL">PixelSetHSL</a> &#8226; <a href="pixel-wand.html#PixelSetIndex">PixelSetIndex</a> &#8226; <a href="pixel-wand.html#PixelSetMagenta">PixelSetMagenta</a> &#8226; <a href="pixel-wand.html#PixelSetMagentaQuantum">PixelSetMagentaQuantum</a> &#8226; <a href="pixel-wand.html#PixelSetMagickColor">PixelSetMagickColor</a> &#8226; <a href="pixel-wand.html#PixelSetOpacity">PixelSetOpacity</a> &#8226; <a href="pixel-wand.html#PixelSetOpacityQuantum">PixelSetOpacityQuantum</a> &#8226; <a href="pixel-wand.html#PixelSetQuantumColor">PixelSetQuantumColor</a> &#8226; <a href="pixel-wand.html#PixelSetRed">PixelSetRed</a> &#8226; <a href="pixel-wand.html#PixelSetRedQuantum">PixelSetRedQuantum</a> &#8226; <a href="pixel-wand.html#PixelSetYellow">PixelSetYellow</a> &#8226; <a href="pixel-wand.html#PixelSetYellowQuantum">PixelSetYellowQuantum</a></p>
 
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="ClearPixelWand">ClearPixelWand</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="ClearPixelWand">ClearPixelWand</a></h2>
 
 <p>ClearPixelWand() clears resources associated with the wand.</p>
 
@@ -104,7 +110,7 @@ void ClearPixelWand(PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="ClonePixelWand">ClonePixelWand</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="ClonePixelWand">ClonePixelWand</a></h2>
 
 <p>ClonePixelWand() makes an exact copy of the specified wand.</p>
 
@@ -126,7 +132,7 @@ PixelWand *ClonePixelWand(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="ClonePixelWands">ClonePixelWands</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="ClonePixelWands">ClonePixelWands</a></h2>
 
 <p>ClonePixelWands() makes an exact copy of the specified wands.</p>
 
@@ -153,7 +159,7 @@ PixelWand **ClonePixelWands(const PixelWand **wands,
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="DestroyPixelWand">DestroyPixelWand</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="DestroyPixelWand">DestroyPixelWand</a></h2>
 
 <p>DestroyPixelWand() deallocates resources associated with a PixelWand.</p>
 
@@ -175,7 +181,7 @@ PixelWand *DestroyPixelWand(PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="DestroyPixelWands">DestroyPixelWands</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="DestroyPixelWands">DestroyPixelWands</a></h2>
 
 <p>DestroyPixelWands() deallocates resources associated with an array of pixel wands.</p>
 
@@ -202,7 +208,7 @@ PixelWand **DestroyPixelWands(PixelWand **wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="IsPixelWandSimilar">IsPixelWandSimilar</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="IsPixelWandSimilar">IsPixelWandSimilar</a></h2>
 
 <p>IsPixelWandSimilar() returns MagickTrue if the distance between two colors is less than the specified distance.</p>
 
@@ -233,7 +239,7 @@ MagickBooleanType IsPixelWandSimilar(PixelWand *p,PixelWand *q,
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="IsPixelWand">IsPixelWand</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="IsPixelWand">IsPixelWand</a></h2>
 
 <p>IsPixelWand() returns MagickTrue if the wand is verified as a pixel wand.</p>
 
@@ -255,7 +261,7 @@ MagickBooleanType IsPixelWand(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="NewPixelWand">NewPixelWand</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="NewPixelWand">NewPixelWand</a></h2>
 
 <p>NewPixelWand() returns a new pixel wand.</p>
 
@@ -265,7 +271,7 @@ MagickBooleanType IsPixelWand(const PixelWand *wand)
 PixelWand *NewPixelWand(void)
 </pre>
 
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="NewPixelWands">NewPixelWands</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="NewPixelWands">NewPixelWands</a></h2>
 
 <p>NewPixelWands() returns an array of pixel wands.</p>
 
@@ -287,7 +293,7 @@ PixelWand **NewPixelWands(const size_t number_wands)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelClearException">PixelClearException</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelClearException">PixelClearException</a></h2>
 
 <p>PixelClearException() clear any exceptions associated with the iterator.</p>
 
@@ -309,7 +315,7 @@ MagickBooleanType PixelClearException(PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetAlpha">PixelGetAlpha</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetAlpha">PixelGetAlpha</a></h2>
 
 <p>PixelGetAlpha() returns the normalized alpha value of the pixel wand.</p>
 
@@ -331,7 +337,7 @@ double PixelGetAlpha(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetAlphaQuantum">PixelGetAlphaQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetAlphaQuantum">PixelGetAlphaQuantum</a></h2>
 
 <p>PixelGetAlphaQuantum() returns the alpha value of the pixel wand.</p>
 
@@ -353,7 +359,7 @@ Quantum PixelGetAlphaQuantum(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetBlack">PixelGetBlack</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetBlack">PixelGetBlack</a></h2>
 
 <p>PixelGetBlack() returns the normalized black color of the pixel wand.</p>
 
@@ -375,7 +381,7 @@ double PixelGetBlack(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetBlackQuantum">PixelGetBlackQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetBlackQuantum">PixelGetBlackQuantum</a></h2>
 
 <p>PixelGetBlackQuantum() returns the black color of the pixel wand.</p>
 
@@ -397,7 +403,7 @@ Quantum PixelGetBlackQuantum(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetBlue">PixelGetBlue</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetBlue">PixelGetBlue</a></h2>
 
 <p>PixelGetBlue() returns the normalized blue color of the pixel wand.</p>
 
@@ -419,7 +425,7 @@ double PixelGetBlue(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetBlueQuantum">PixelGetBlueQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetBlueQuantum">PixelGetBlueQuantum</a></h2>
 
 <p>PixelGetBlueQuantum() returns the blue color of the pixel wand.</p>
 
@@ -441,7 +447,7 @@ Quantum PixelGetBlueQuantum(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetColorAsString">PixelGetColorAsString</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetColorAsString">PixelGetColorAsString</a></h2>
 
 <p>PixelGetColorAsString() returnsd the color of the pixel wand as a string.</p>
 
@@ -463,7 +469,7 @@ char *PixelGetColorAsString(PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetColorAsNormalizedString">PixelGetColorAsNormalizedString</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetColorAsNormalizedString">PixelGetColorAsNormalizedString</a></h2>
 
 <p>PixelGetColorAsNormalizedString() returns the normalized color of the pixel wand as a string.</p>
 
@@ -485,7 +491,7 @@ char *PixelGetColorAsNormalizedString(PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetColorCount">PixelGetColorCount</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetColorCount">PixelGetColorCount</a></h2>
 
 <p>PixelGetColorCount() returns the color count associated with this color.</p>
 
@@ -507,7 +513,7 @@ size_t PixelGetColorCount(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetCyan">PixelGetCyan</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetCyan">PixelGetCyan</a></h2>
 
 <p>PixelGetCyan() returns the normalized cyan color of the pixel wand.</p>
 
@@ -529,7 +535,7 @@ double PixelGetCyan(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetCyanQuantum">PixelGetCyanQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetCyanQuantum">PixelGetCyanQuantum</a></h2>
 
 <p>PixelGetCyanQuantum() returns the cyan color of the pixel wand.</p>
 
@@ -551,7 +557,7 @@ Quantum PixelGetCyanQuantum(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetException">PixelGetException</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetException">PixelGetException</a></h2>
 
 <p>PixelGetException() returns the severity, reason, and description of any error that occurs when using other methods in this API.</p>
 
@@ -577,7 +583,7 @@ char *PixelGetException(const PixelWand *wand,ExceptionType *severity)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetExceptionType">PixelGetExceptionType</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetExceptionType">PixelGetExceptionType</a></h2>
 
 <p>PixelGetExceptionType() the exception type associated with the wand.  If no exception has occurred, UndefinedExceptionType is returned.</p>
 
@@ -599,7 +605,7 @@ ExceptionType PixelGetExceptionType(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetFuzz">PixelGetFuzz</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetFuzz">PixelGetFuzz</a></h2>
 
 <p>PixelGetFuzz() returns the normalized fuzz value of the pixel wand.</p>
 
@@ -621,7 +627,7 @@ double PixelGetFuzz(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetGreen">PixelGetGreen</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetGreen">PixelGetGreen</a></h2>
 
 <p>PixelGetGreen() returns the normalized green color of the pixel wand.</p>
 
@@ -643,7 +649,7 @@ double PixelGetGreen(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetGreenQuantum">PixelGetGreenQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetGreenQuantum">PixelGetGreenQuantum</a></h2>
 
 <p>PixelGetGreenQuantum() returns the green color of the pixel wand.</p>
 
@@ -665,7 +671,7 @@ Quantum PixelGetGreenQuantum(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetHSL">PixelGetHSL</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetHSL">PixelGetHSL</a></h2>
 
 <p>PixelGetHSL() returns the normalized HSL color of the pixel wand.</p>
 
@@ -692,7 +698,7 @@ void PixelGetHSL(const PixelWand *wand,double *hue,double *saturation,
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetIndex">PixelGetIndex</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetIndex">PixelGetIndex</a></h2>
 
 <p>PixelGetIndex() returns the colormap index from the pixel wand.</p>
 
@@ -714,7 +720,7 @@ IndexPacket PixelGetIndex(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetMagenta">PixelGetMagenta</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetMagenta">PixelGetMagenta</a></h2>
 
 <p>PixelGetMagenta() returns the normalized magenta color of the pixel wand.</p>
 
@@ -736,7 +742,7 @@ double PixelGetMagenta(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetMagentaQuantum">PixelGetMagentaQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetMagentaQuantum">PixelGetMagentaQuantum</a></h2>
 
 <p>PixelGetMagentaQuantum() returns the magenta color of the pixel wand.</p>
 
@@ -758,7 +764,7 @@ Quantum PixelGetMagentaQuantum(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetMagickColor">PixelGetMagickColor</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetMagickColor">PixelGetMagickColor</a></h2>
 
 <p>PixelGetMagickColor() gets the magick color of the pixel wand.</p>
 
@@ -784,7 +790,7 @@ void PixelGetMagickColor(PixelWand *wand,MagickPixelPacket *color)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetOpacity">PixelGetOpacity</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetOpacity">PixelGetOpacity</a></h2>
 
 <p>PixelGetOpacity() returns the normalized opacity value of the pixel wand.</p>
 
@@ -806,7 +812,7 @@ double PixelGetOpacity(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetOpacityQuantum">PixelGetOpacityQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetOpacityQuantum">PixelGetOpacityQuantum</a></h2>
 
 <p>PixelGetOpacityQuantum() returns the opacity value of the pixel wand.</p>
 
@@ -828,7 +834,7 @@ Quantum PixelGetOpacityQuantum(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetQuantumColor">PixelGetQuantumColor</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetQuantumColor">PixelGetQuantumColor</a></h2>
 
 <p>PixelGetQuantumColor() gets the color of the pixel wand as a PixelPacket.</p>
 
@@ -854,7 +860,7 @@ void PixelGetQuantumColor(PixelWand *wand,PixelPacket *color)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetRed">PixelGetRed</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetRed">PixelGetRed</a></h2>
 
 <p>PixelGetRed() returns the normalized red color of the pixel wand.</p>
 
@@ -876,7 +882,7 @@ double PixelGetRed(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetRedQuantum">PixelGetRedQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetRedQuantum">PixelGetRedQuantum</a></h2>
 
 <p>PixelGetRedQuantum() returns the red color of the pixel wand.</p>
 
@@ -898,7 +904,7 @@ Quantum PixelGetRedQuantum(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetYellow">PixelGetYellow</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetYellow">PixelGetYellow</a></h2>
 
 <p>PixelGetYellow() returns the normalized yellow color of the pixel wand.</p>
 
@@ -920,7 +926,7 @@ double PixelGetYellow(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetYellowQuantum">PixelGetYellowQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelGetYellowQuantum">PixelGetYellowQuantum</a></h2>
 
 <p>PixelGetYellowQuantum() returns the yellow color of the pixel wand.</p>
 
@@ -942,7 +948,7 @@ Quantum PixelGetYellowQuantum(const PixelWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetAlpha">PixelSetAlpha</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetAlpha">PixelSetAlpha</a></h2>
 
 <p>PixelSetAlpha() sets the normalized alpha value of the pixel wand.</p>
 
@@ -968,7 +974,7 @@ void PixelSetAlpha(PixelWand *wand,const double alpha)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetAlphaQuantum">PixelSetAlphaQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetAlphaQuantum">PixelSetAlphaQuantum</a></h2>
 
 <p>PixelSetAlphaQuantum() sets the alpha value of the pixel wand.</p>
 
@@ -995,7 +1001,7 @@ void PixelSetAlphaQuantum(PixelWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetBlack">PixelSetBlack</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetBlack">PixelSetBlack</a></h2>
 
 <p>PixelSetBlack() sets the normalized black color of the pixel wand.</p>
 
@@ -1021,7 +1027,7 @@ void PixelSetBlack(PixelWand *wand,const double black)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetBlackQuantum">PixelSetBlackQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetBlackQuantum">PixelSetBlackQuantum</a></h2>
 
 <p>PixelSetBlackQuantum() sets the black color of the pixel wand.</p>
 
@@ -1047,7 +1053,7 @@ void PixelSetBlackQuantum(PixelWand *wand,const Quantum black)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetBlue">PixelSetBlue</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetBlue">PixelSetBlue</a></h2>
 
 <p>PixelSetBlue() sets the normalized blue color of the pixel wand.</p>
 
@@ -1073,7 +1079,7 @@ void PixelSetBlue(PixelWand *wand,const double blue)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetBlueQuantum">PixelSetBlueQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetBlueQuantum">PixelSetBlueQuantum</a></h2>
 
 <p>PixelSetBlueQuantum() sets the blue color of the pixel wand.</p>
 
@@ -1099,7 +1105,7 @@ void PixelSetBlueQuantum(PixelWand *wand,const Quantum blue)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetColor">PixelSetColor</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetColor">PixelSetColor</a></h2>
 
 <p>PixelSetColor() sets the color of the pixel wand with a string (e.g. "blue", "#0000ff", "rgb(0,0,255)", "cmyk(100,100,100,10)", etc.).</p>
 
@@ -1125,7 +1131,7 @@ MagickBooleanType PixelSetColor(PixelWand *wand,const char *color)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetColorCount">PixelSetColorCount</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetColorCount">PixelSetColorCount</a></h2>
 
 <p>PixelSetColorCount() sets the color count of the pixel wand.</p>
 
@@ -1151,7 +1157,7 @@ void PixelSetColorCount(PixelWand *wand,const size_t count)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetColorFromWand">PixelSetColorFromWand</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetColorFromWand">PixelSetColorFromWand</a></h2>
 
 <p>PixelSetColorFromWand() sets the color of the pixel wand.</p>
 
@@ -1177,7 +1183,7 @@ void PixelSetColorFromWand(PixelWand *wand,const PixelWand *color)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetCyan">PixelSetCyan</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetCyan">PixelSetCyan</a></h2>
 
 <p>PixelSetCyan() sets the normalized cyan color of the pixel wand.</p>
 
@@ -1203,7 +1209,7 @@ void PixelSetCyan(PixelWand *wand,const double cyan)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetCyanQuantum">PixelSetCyanQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetCyanQuantum">PixelSetCyanQuantum</a></h2>
 
 <p>PixelSetCyanQuantum() sets the cyan color of the pixel wand.</p>
 
@@ -1229,7 +1235,7 @@ void PixelSetCyanQuantum(PixelWand *wand,const Quantum cyan)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetFuzz">PixelSetFuzz</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetFuzz">PixelSetFuzz</a></h2>
 
 <p>PixelSetFuzz() sets the fuzz value of the pixel wand.</p>
 
@@ -1255,7 +1261,7 @@ void PixelSetFuzz(PixelWand *wand,const double fuzz)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetGreen">PixelSetGreen</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetGreen">PixelSetGreen</a></h2>
 
 <p>PixelSetGreen() sets the normalized green color of the pixel wand.</p>
 
@@ -1281,7 +1287,7 @@ void PixelSetGreen(PixelWand *wand,const double green)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetGreenQuantum">PixelSetGreenQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetGreenQuantum">PixelSetGreenQuantum</a></h2>
 
 <p>PixelSetGreenQuantum() sets the green color of the pixel wand.</p>
 
@@ -1307,7 +1313,7 @@ void PixelSetGreenQuantum(PixelWand *wand,const Quantum green)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetHSL">PixelSetHSL</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetHSL">PixelSetHSL</a></h2>
 
 <p>PixelSetHSL() sets the normalized HSL color of the pixel wand.</p>
 
@@ -1334,7 +1340,7 @@ void PixelSetHSL(PixelWand *wand,const double hue,
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetIndex">PixelSetIndex</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetIndex">PixelSetIndex</a></h2>
 
 <p>PixelSetIndex() sets the colormap index of the pixel wand.</p>
 
@@ -1360,7 +1366,7 @@ void PixelSetIndex(PixelWand *wand,const IndexPacket index)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetMagenta">PixelSetMagenta</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetMagenta">PixelSetMagenta</a></h2>
 
 <p>PixelSetMagenta() sets the normalized magenta color of the pixel wand.</p>
 
@@ -1386,7 +1392,7 @@ void PixelSetMagenta(PixelWand *wand,const double magenta)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetMagentaQuantum">PixelSetMagentaQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetMagentaQuantum">PixelSetMagentaQuantum</a></h2>
 
 <p>PixelSetMagentaQuantum() sets the magenta color of the pixel wand.</p>
 
@@ -1413,7 +1419,7 @@ void PixelSetMagentaQuantum(PixelWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetMagickColor">PixelSetMagickColor</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetMagickColor">PixelSetMagickColor</a></h2>
 
 <p>PixelSetMagickColor() sets the color of the pixel wand.</p>
 
@@ -1439,7 +1445,7 @@ void PixelSetMagickColor(PixelWand *wand,const MagickPixelPacket *color)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetOpacity">PixelSetOpacity</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetOpacity">PixelSetOpacity</a></h2>
 
 <p>PixelSetOpacity() sets the normalized opacity value of the pixel wand.</p>
 
@@ -1465,7 +1471,7 @@ void PixelSetOpacity(PixelWand *wand,const double opacity)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetOpacityQuantum">PixelSetOpacityQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetOpacityQuantum">PixelSetOpacityQuantum</a></h2>
 
 <p>PixelSetOpacityQuantum() sets the opacity value of the pixel wand.</p>
 
@@ -1492,7 +1498,7 @@ void PixelSetOpacityQuantum(PixelWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetQuantumColor">PixelSetQuantumColor</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetQuantumColor">PixelSetQuantumColor</a></h2>
 
 <p>PixelSetQuantumColor() sets the color of the pixel wand.</p>
 
@@ -1518,7 +1524,7 @@ void PixelSetQuantumColor(PixelWand *wand,const PixelPacket *color)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetRed">PixelSetRed</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetRed">PixelSetRed</a></h2>
 
 <p>PixelSetRed() sets the normalized red color of the pixel wand.</p>
 
@@ -1544,7 +1550,7 @@ void PixelSetRed(PixelWand *wand,const double red)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetRedQuantum">PixelSetRedQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetRedQuantum">PixelSetRedQuantum</a></h2>
 
 <p>PixelSetRedQuantum() sets the red color of the pixel wand.</p>
 
@@ -1570,7 +1576,7 @@ void PixelSetRedQuantum(PixelWand *wand,const Quantum red)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetYellow">PixelSetYellow</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetYellow">PixelSetYellow</a></h2>
 
 <p>PixelSetYellow() sets the normalized yellow color of the pixel wand.</p>
 
@@ -1596,7 +1602,7 @@ void PixelSetYellow(PixelWand *wand,const double yellow)
 
 <dd>  </dd>
 </dl>
-<h2><a href="http://imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetYellowQuantum">PixelSetYellowQuantum</a></h2>
+<h2><a href="https://legacy.imagemagick.org/api/MagickWand/pixel-wand_8c.html" id="PixelSetYellowQuantum">PixelSetYellowQuantum</a></h2>
 
 <p>PixelSetYellowQuantum() sets the yellow color of the pixel wand.</p>
 
@@ -1626,18 +1632,23 @@ void PixelSetYellowQuantum(PixelWand *wand,const Quantum yellow)
     </div>
   </main><!-- /.container -->
   <footer class="magick-footer">
-    <p><a href="../www/security-policy.html">Security</a> •
-    <a href="../www/architecture.html">Architecture</a> •
-    <a href="../www/links.html">Related</a> •
-     <a href="../www/sitemap.html">Sitemap</a>
-       
+    <p><a href="../security-policy.html">Security</a> •
+    <a href="../architecture.html">Architecture</a>
+     
     <a href="pixel-wand.html#"><img class="d-inline" id="wand" alt="And Now a Touch of Magick" width="16" height="16" src="../images/wand.ico"/></a>
-       
-    <a href="http://pgp.mit.edu/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
-    <a href="../www/support.html">Donate</a> •
-    <a href="../www/contact.html">Contact Us</a>
+     
+    <a href="../links.html">Related</a> •
+     <a href="../sitemap.html">Sitemap</a>
     <br/>
-    <small>© 1999-2019 ImageMagick Studio LLC</small></p>
+       
+    <a href="../support.html">Donate</a> •
+    <a href="http://pgp.mit.edu/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
+    <a href="https://www.imagemagick.org/script/contact.html">Contact Us</a> 
+    <br/>
+    <a href="https://github.com/imagemagick/imagemagick6" target="_blank" rel="noopener" aria-label="GitHub"><svg xmlns="http://www.w3.org/2000/svg" class="navbar-nav-svg" viewBox="0 0 512 499.36" width="2%" height="2%" role="img" focusable="false"><title>GitHub</title><path fill="currentColor" fill-rule="evenodd" d="M256 0C114.64 0 0 114.61 0 256c0 113.09 73.34 209 175.08 242.9 12.8 2.35 17.47-5.56 17.47-12.34 0-6.08-.22-22.18-.35-43.54-71.2 15.49-86.2-34.34-86.2-34.34-11.64-29.57-28.42-37.45-28.42-37.45-23.27-15.84 1.73-15.55 1.73-15.55 25.69 1.81 39.21 26.38 39.21 26.38 22.84 39.12 59.92 27.82 74.5 21.27 2.33-16.54 8.94-27.82 16.25-34.22-56.84-6.43-116.6-28.43-116.6-126.49 0-27.95 10-50.8 26.35-68.69-2.63-6.48-11.42-32.5 2.51-67.75 0 0 21.49-6.88 70.4 26.24a242.65 242.65 0 0 1 128.18 0c48.87-33.13 70.33-26.24 70.33-26.24 14 35.25 5.18 61.27 2.55 67.75 16.41 17.9 26.31 40.75 26.31 68.69 0 98.35-59.85 120-116.88 126.32 9.19 7.9 17.38 23.53 17.38 47.41 0 34.22-.31 61.83-.31 70.23 0 6.85 4.61 14.81 17.6 12.31C438.72 464.97 512 369.08 512 256.02 512 114.62 397.37 0 256 0z"/></svg></a> •
+        <a href="https://twitter.com/imagemagick" target="_blank" rel="noopener" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="navbar-nav-svg" viewBox="0 0 512 416.32" width="2%" height="2%" role="img" focusable="false"><title>Twitter</title><path fill="currentColor" d="M160.83 416.32c193.2 0 298.92-160.22 298.92-298.92 0-4.51 0-9-.2-13.52A214 214 0 0 0 512 49.38a212.93 212.93 0 0 1-60.44 16.6 105.7 105.7 0 0 0 46.3-58.19 209 209 0 0 1-66.79 25.37 105.09 105.09 0 0 0-181.73 71.91 116.12 116.12 0 0 0 2.66 24c-87.28-4.3-164.73-46.3-216.56-109.82A105.48 105.48 0 0 0 68 159.6a106.27 106.27 0 0 1-47.53-13.11v1.43a105.28 105.28 0 0 0 84.21 103.06 105.67 105.67 0 0 1-47.33 1.84 105.06 105.06 0 0 0 98.14 72.94A210.72 210.72 0 0 1 25 370.84a202.17 202.17 0 0 1-25-1.43 298.85 298.85 0 0 0 160.83 46.92"/></svg></a>
+    <br/>
+    <small>© 1999-2020 ImageMagick Studio LLC</small></p>
   </footer>
 
   <!-- Javascript assets -->
