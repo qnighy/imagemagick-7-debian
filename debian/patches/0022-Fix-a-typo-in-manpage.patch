@@ -1,0 +1,23 @@
+From dde27855a80126667138cabf145d359a0050bf46 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
+Date: Mon, 27 Jul 2020 10:44:26 +0200
+Subject: Fix a typo in manpage
+
+debian-bug: 953279
+---
+ utilities/convert.1.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/utilities/convert.1.in b/utilities/convert.1.in
+index 7ee5e7f42b..abcae7beb6 100644
+--- a/utilities/convert.1.in
++++ b/utilities/convert.1.in
+@@ -317,7 +317,7 @@ Use any setting or operator as an \fIoutput-option\fP.  Only a limited number of
+ 
+ By default, the image format of `file' is determined by its magic number.  To specify a particular image format, precede the filename with an image format name and a colon (i.e. ps:image) or specify the image type as the filename suffix (i.e. image.ps).  Specify 'file' as '-' for standard input or output.
+ .SH SEE ALSO
+-ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
++ImageMagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
+ 
+ .SH COPYRIGHT
+ 
