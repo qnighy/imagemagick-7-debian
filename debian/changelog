@@ -51,6 +51,7 @@ imagemagick (8:6.9.11.24+dfsg-1) unstable; urgency=medium
   * Bug fix: "Updating the imagemagick Uploaders list", thanks to Tobias
     Frost (Closes: #962110). Thanks  Nelson A. de Oliveira
   * Add link in api doc dir to assets javascript library
+  * Fix a typo in convert man page (Closes: #953279)
 
  -- Bastien Roucariès <rouca@debian.org>  Mon, 27 Jul 2020 03:13:36 +0200
 
