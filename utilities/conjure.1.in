@@ -27,7 +27,7 @@ In addition, define any key value pairs required by your script.  For example,
 
     conjure \-size 100x100 \-color blue \-foo bar script.msl
 .SH SEE ALSO
-ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
+ImageMagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 
