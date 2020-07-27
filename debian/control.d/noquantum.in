@@ -3,7 +3,6 @@ Section: graphics
 Priority: optional
 Maintainer: ImageMagick Packaging Team <pkg-gmagick-im-team@lists.alioth.debian.org>
 Uploaders: Luciano Bello <luciano@debian.org>,
- Nelson A. de Oliveira <naoliv@debian.org>,
  Bastien Roucariès <rouca@debian.org>,
 Standards-Version: 4.3.0
 # for dbg-sym

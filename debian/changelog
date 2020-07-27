@@ -1,9 +1,58 @@
 imagemagick (8:6.9.11.24+dfsg-1) unstable; urgency=medium
 
   * Acknowledge NMU
-  * New upstream version
+  * New upstream version:
+    - Fix CVE-2019-11470: Cineon image parsing DOS (Closes: #927830).
+    - Fix CVE-2019-11472: XWD image parsing DOS (Closes: #927828).
+    - Fix CVE-2020-13902: Heap based overflow in TIFF image decoding.
+      (Closes: #928207).
+    - Fix CVE-2019-11598: Heap-based buffer over-read in PNM image
+      decoding (Closes: #928206).
+    - Fix CVE-2019-12974: NULL pointer dereference in pango coder.
+      (Closes: #931196).
+    - Fix CVE-2019-12977: use of uninitialized value" vulnerability
+      in the WriteJP2Image of jp2 coder (Closes: #931191).
+    - Fix CVE-2019-12978: use of uninitialized value" vulnerability
+      in the pango coder. (Closes: #931190).
+    - Fix CVE-2019-12979: use of uninitialized value" vulnerability
+      in MagickCore/image.c (Closes: #931189).
+    - Fix CVE-2019-13135: use of uninitialized value" vulnerability
+      in the cut coder (Closes: #932079).
+    - Fix CVE-2019-13295: Heap-based buffer over-read in
+      MagickCore/threshold.c (Closes: #931457).
+    - Fix CVE-2019-13297: Heap-based buffer over-read in
+      MagickCore/threshold.c (Closes: #931455).
+    - Fix CVE-2019-13300: heap-based buffer overflow in
+      MagickCore/statistic.c (Closes: #931454).
+    - Fix CVE-2019-13304: stack-based buffer overflow for
+      PNM image (Closes: #931453).
+    - Fix CVE-2019-13305: stack-based buffer overflow for
+      PNM image (Closes: #931452).
+    - Fix CVE-2019-13306: stack-based buffer overflow for
+      PNM image (Closes: #931449).
+    - Fix CVE-2019-13307: heap-based buffer overflow in
+      MagickCore/statistic.c (Closes: #931448).
+    - Fix CVE-2019-13308: heap-based buffer overflow in
+      MagickCore/fourier.c (Closes: #931447).
+    - Fix CVE-2019-13391: heap-based buffer over-read (Closes: #931633).
+    - Fix CVE-2019-13454:  Division by Zero in MagickCore/layer.c
+      (Closes: #931740).
+    - Fix CVE-2019-14981: divide-by-zero in MeanShiftImage
+      (Closes: #955025).
+    - Fix CVE-2019-15139: DOS for XWD images (Closes: #941670).
+    - Fix CVE-2019-15140: DOS for mat images (Closes: #941671).
+    - Fix CVE-2019-19948: Heap-based buffer overflow in SGI coder
+      (Closes: #947308).
+    - Fix CVE-2019-19949: Heap buffer over-read in PNG coder
+      (Closes: #947309).
+    - Fix CVE-2020-10251: out-of-bounds read vulnerability for HEIC
+      coder (Closes: #953741).
+    - Fix CVE-2020-13902: heap-based buffer over-read for TIFF coder.
+  * Bug fix: "Updating the imagemagick Uploaders list", thanks to Tobias
+    Frost (Closes: #962110). Thanks  Nelson A. de Oliveira
+  * Add link in api doc dir to assets javascript library
 
- -- Bastien Roucariès <rouca@debian.org>  Sun, 26 Jul 2020 17:48:36 +0200
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 27 Jul 2020 03:13:36 +0200
 
 imagemagick (8:6.9.10.23+dfsg-2.1) unstable; urgency=medium
 

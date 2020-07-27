@@ -664,6 +664,9 @@ override_dh_auto_install-indep:
 	     -type f -and -name '*.html' -and -not -empty -print0 \
 	     | xargs -r -0 -n 1 "$(CURDIR)/debian/scripts/removeprivacybreach" "$(CURDIR)/debian/scripts/removeprivacybreach.xslt"
 
+	# add link
+	ln -s ../assets $(CURDIR)/debian/tmp-indep/$(DOC_PKG_PATH)/www/api/assets
+
 # install quantum package
 override_dh_install-arch_quantum.%:
 	set -e; for PKG in $(call REPLACE_QUANTUM, $(MAGICK_ANY_QUANTUM_PACKAGES),$*); do \
