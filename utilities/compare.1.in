@@ -102,7 +102,7 @@ Two images are considered similar if their difference according to the specified
 
 The compare program returns 2 on error, 0 if the images are similar, or a value between 0 and 1 if they are not similar.
 .SH SEE ALSO
-ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
+ImageMagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 

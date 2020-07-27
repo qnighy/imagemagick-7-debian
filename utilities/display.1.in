@@ -133,7 +133,7 @@ The display program defaults to the X screen resolution.  To display vector form
 
   display -density 72 drawing.svg
 .SH SEE ALSO
-ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
+ImageMagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 

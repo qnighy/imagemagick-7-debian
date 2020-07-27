@@ -95,7 +95,7 @@ By default, the image format of `file' is determined by its magic number.  To sp
 Buttons: 
   1    press to map or unmap the Command widget
 .SH SEE ALSO
-ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
+ImageMagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
 
 .SH COPYRIGHT
 
