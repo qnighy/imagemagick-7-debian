@@ -527,7 +527,8 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 	   $(CURDIR)/debian/tmp-$*/usr/share/applications/display-im$(IMVERSION).$*.desktop
 
 	# move pc file to quantum one c++
-	mv "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++.pc" \
+	# Beware of bug #950282
+	mv "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++.pc" \
 	   "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/ImageMagick++-im$(IMVERSION).$*.pc"
 
 	-rm -f "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/Magick++-$(IMVERSION).$(call UC,$*).pc"
