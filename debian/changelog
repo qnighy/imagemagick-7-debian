@@ -1,3 +1,19 @@
+imagemagick (8:6.9.11.57+dfsg-1) unstable; urgency=medium
+
+  * New upstream version:
+    - Bug fix: "CVE-2020-29599", imagemagick mishandles the
+      -authenticate option, which allows setting a password
+      for password-protected PDF files. The user-controlled
+      password was not properly escaped/sanitized and it
+      was therefore possible to inject additional shell commands
+      via coders/pdf.c. Thanks to Salvatore Bonaccorso
+      (Closes: #977205).
+    - Bug fix: "CVE-2020-27560: Division by Zero in function
+      OptimizeLayerFrames", thanks to Salvatore Bonaccorso
+      (Closes: #972797).
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 11 Jan 2021 22:14:26 +0000
+
 imagemagick (8:6.9.11.24+dfsg-1) unstable; urgency=medium
 
   * Acknowledge NMU
