@@ -80,7 +80,7 @@ extern "C" {
 #define na  PL_na
 #endif
 #define NumberOf(array)  (sizeof(array)/sizeof(*array))
-#define PackageName   "Image::Magick"
+#define PackageName   "Image::Magick::Q16"
 #if PERL_VERSION <= 6
 #define PerlIO  FILE
 #define PerlIO_importFILE(f, fl)  (f)
@@ -191,7 +191,7 @@ struct PackageInfo
 };
 
 typedef void
-  *Image__Magick;  /* data type for the Image::Magick package */
+  *Image__Magick__Q16;  /* data type for the Image::Magick::Q16 package */
 
 /*
   Static declarations.
@@ -561,12 +561,12 @@ static struct
     { "CopyPixels", { {"image", ImageReference}, {"geometry", StringReference},
       {"width", IntegerReference}, {"height", IntegerReference},
       {"x", IntegerReference}, {"y", IntegerReference},
-      {"gravity", MagickGravityOptions}, {"offset", StringReference},
+      {"gravity", MagickGravityOptions}, {"offset", StringReference}, 
       {"dx", IntegerReference}, {"dy", IntegerReference} } },
     { "WaveletDenoise", {  {"geometry", StringReference},
       {"threshold", RealReference}, {"softness", RealReference} } },
     { "Colorspace", { {"colorspace", MagickColorspaceOptions} } },
-    { "AutoThreshold", { {"method", MagickAutoThresholdOptions} } } 
+    { "AutoThreshold", { {"method", MagickAutoThresholdOptions} } }
   };
 
 static SplayTreeInfo
@@ -2465,7 +2465,7 @@ static ssize_t strEQcase(const char *p,const char *q)
 %
 %
 */
-MODULE = Image::Magick PACKAGE = Image::Magick
+MODULE = Image::Magick::Q16 PACKAGE = Image::Magick::Q16
 
 PROTOTYPES: ENABLE
 
@@ -2504,7 +2504,7 @@ constant(name,argument)
 #
 void
 Animate(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     AnimateImage  = 1
     animate       = 2
@@ -2584,7 +2584,7 @@ Animate(ref,...)
 #
 void
 Append(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     AppendImage  = 1
     append       = 2
@@ -2722,7 +2722,7 @@ Append(ref,...)
 #
 void
 Average(ref)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     AverageImage   = 1
     average        = 2
@@ -2820,7 +2820,7 @@ Average(ref)
 #
 void
 BlobToImage(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     BlobToImage  = 1
     blobtoimage  = 2
@@ -2976,7 +2976,7 @@ BlobToImage(ref,...)
 #
 void
 Clone(ref)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     CopyImage   = 1
     copy        = 2
@@ -3105,7 +3105,7 @@ CLONE(ref,...)
 #
 void
 Coalesce(ref)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     CoalesceImage   = 1
     coalesce        = 2
@@ -3195,7 +3195,7 @@ Coalesce(ref)
 #
 void
 Compare(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     CompareImage = 1
     compare      = 2
@@ -3393,8 +3393,8 @@ Compare(ref,...)
 #
 #
 void
-CompareLayers(ref)
-  Image::Magick ref = NO_INIT
+CompareLayers(ref,...)
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     CompareImageLayers   = 1
     comparelayers        = 2
@@ -3529,8 +3529,8 @@ CompareLayers(ref)
 #
 #
 void
-ComplexImages(ref)
-  Image::Magick ref = NO_INIT
+ComplexImages(ref,...)
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     ComplexImages   = 1
     compleximages   = 2
@@ -3687,7 +3687,7 @@ ComplexImages(ref)
 #
 void
 DESTROY(ref)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   PPCODE:
   {
     SV
@@ -3772,7 +3772,7 @@ DESTROY(ref)
 #
 void
 Display(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     DisplayImage  = 1
     display       = 2
@@ -3851,8 +3851,8 @@ Display(ref,...)
 #
 #
 void
-EvaluateImages(ref)
-  Image::Magick ref = NO_INIT
+EvaluateImages(ref,...)
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     EvaluateImages   = 1
     evaluateimages   = 2
@@ -4009,7 +4009,7 @@ EvaluateImages(ref)
 #
 void
 Features(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     FeaturesImage = 1
     features      = 2
@@ -4183,8 +4183,8 @@ Features(ref,...)
 #
 #
 void
-Flatten(ref)
-  Image::Magick ref = NO_INIT
+Flatten(ref,...)
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     FlattenImage   = 1
     flatten        = 2
@@ -4321,7 +4321,7 @@ Flatten(ref)
 #
 void
 Fx(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     FxImage  = 1
     fx       = 2
@@ -4480,7 +4480,7 @@ Fx(ref,...)
 #
 void
 Get(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     GetAttributes = 1
     GetAttribute  = 2
@@ -4643,7 +4643,7 @@ Get(ref,...)
             {
               if (image == (Image *) NULL)
                 break;
-              (void) FormatLocaleString(color,MaxTextExtent,"%.20g,%.20g",
+              (void) FormatLocaleString(color,MaxTextExtent,"%.20g,%.15g",
                 image->chromaticity.blue_primary.x,
                 image->chromaticity.blue_primary.y);
               s=newSVpv(color,0);
@@ -4826,7 +4826,7 @@ Get(ref,...)
 
               if (image == (Image *) NULL)
                 break;
-              (void) FormatLocaleString(geometry,MaxTextExtent,"%.20gx%.20g",
+              (void) FormatLocaleString(geometry,MaxTextExtent,"%.20gx%.15g",
                 image->x_resolution,image->y_resolution);
               s=newSVpv(geometry,0);
               PUSHs(s ? sv_2mortal(s) : &sv_undef);
@@ -4933,10 +4933,11 @@ Get(ref,...)
             }
           if (LocaleCompare(attribute,"filename") == 0)
             {
-              if (info && *info->image_info->filename)
-                s=newSVpv(info->image_info->filename,0);
               if (image != (Image *) NULL)
                 s=newSVpv(image->filename,0);
+              else
+                if (info && *info->image_info->filename)
+                  s=newSVpv(info->image_info->filename,0);
               PUSHs(s ? sv_2mortal(s) : &sv_undef);
               continue;
             }
@@ -5017,7 +5018,7 @@ Get(ref,...)
             {
               if (image == (Image *) NULL)
                 break;
-              (void) FormatLocaleString(color,MaxTextExtent,"%.20g,%.20g",
+              (void) FormatLocaleString(color,MaxTextExtent,"%.20g,%.15g",
                 image->chromaticity.green_primary.x,
                 image->chromaticity.green_primary.y);
               s=newSVpv(color,0);
@@ -5321,8 +5322,8 @@ Get(ref,...)
               j=info ? info->image_info->orientation : image ?
                 image->orientation : UndefinedOrientation;
               s=newSViv(j);
-              (void) sv_setpv(s,CommandOptionToMnemonic(
-                MagickOrientationOptions,j));
+              (void) sv_setpv(s,CommandOptionToMnemonic(MagickOrientationOptions,
+                j));
               SvIOK_on(s);
               PUSHs(s ? sv_2mortal(s) : &sv_undef);
               continue;
@@ -5472,7 +5473,7 @@ Get(ref,...)
             {
               if (image == (Image *) NULL)
                 break;
-              (void) FormatLocaleString(color,MaxTextExtent,"%.20g,%.20g",
+              (void) FormatLocaleString(color,MaxTextExtent,"%.20g,%.15g",
                 image->chromaticity.red_primary.x,
                 image->chromaticity.red_primary.y);
               s=newSVpv(color,0);
@@ -5696,7 +5697,7 @@ Get(ref,...)
             {
               if (image == (Image *) NULL)
                 break;
-              (void) FormatLocaleString(color,MaxTextExtent,"%.20g,%.20g",
+              (void) FormatLocaleString(color,MaxTextExtent,"%.20g,%.15g",
                 image->chromaticity.white_point.x,
                 image->chromaticity.white_point.y);
               s=newSVpv(color,0);
@@ -5806,7 +5807,7 @@ Get(ref,...)
 #
 void *
 GetAuthenticPixels(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     getauthenticpixels = 1
     GetImagePixels = 2
@@ -5961,7 +5962,7 @@ GetAuthenticPixels(ref,...)
 #
 void *
 GetVirtualPixels(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     getvirtualpixels = 1
     AcquireImagePixels = 2
@@ -6116,7 +6117,7 @@ GetVirtualPixels(ref,...)
 #
 void *
 GetAuthenticIndexQueue(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     getauthenticindexqueue = 1
     GetIndexes = 2
@@ -6188,7 +6189,7 @@ GetAuthenticIndexQueue(ref,...)
 #
 void *
 GetVirtualIndexQueue(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     getvirtualindexqueue = 1
   CODE:
@@ -6258,7 +6259,7 @@ GetVirtualIndexQueue(ref,...)
 #
 void
 Histogram(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     HistogramImage = 1
     histogram      = 2
@@ -6372,7 +6373,7 @@ Histogram(ref,...)
 #
 void
 GetPixel(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     getpixel = 1
     getPixel = 2
@@ -6577,7 +6578,7 @@ GetPixel(ref,...)
 #
 void
 GetPixels(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     getpixels = 1
     getPixels = 2
@@ -6825,7 +6826,7 @@ GetPixels(ref,...)
 #
 void
 ImageToBlob(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     ImageToBlob  = 1
     imagetoblob  = 2
@@ -6931,7 +6932,7 @@ ImageToBlob(ref,...)
 #
 void
 Layers(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     Layers                = 1
     layers           = 2
@@ -7236,7 +7237,7 @@ Layers(ref,...)
 #
 SV *
 MagickToMime(ref,name)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   char *name
   ALIAS:
     magicktomime = 1
@@ -7268,7 +7269,7 @@ MagickToMime(ref,name)
 #
 void
 Mogrify(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     Comment            =   1
     CommentImage       =   2
@@ -7556,10 +7557,10 @@ Mogrify(ref,...)
     MeanShiftImage     = 286
     Kuwahara           = 287
     KuwaharaImage      = 288
-    ConnectedComponent = 289
-    ConnectedComponentImage = 290
+    ConnectedComponents= 289
+    ConnectedComponentsImage = 290
     CopyPixels         = 291
-    CopyPixelsImage    = 292
+    CopyImagePixels    = 292
     WaveletDenoise     = 293
     WaveletDenoiseImage= 294
     Colorspace         = 295
@@ -8047,8 +8048,7 @@ Mogrify(ref,...)
           if ((attribute_flag[5] != 0) || (attribute_flag[6] != 0))
             image->matte_color=fill_color;
           if (attribute_flag[7] != 0)
-            image->compose=(CompositeOperator)
-              argument_list[7].integer_reference;
+            image->compose=(CompositeOperator) argument_list[7].integer_reference;
           image=FrameImage(image,&frame_info,exception);
           break;
         }
@@ -9025,7 +9025,7 @@ Mogrify(ref,...)
           if (attribute_flag[0] == 0)
             {
               (void) FormatLocaleString(message,MaxTextExtent,
-                "%.20g,%.20g,%.20g",(double) argument_list[2].real_reference,
+                "%.20g,%.15g,%.15g",(double) argument_list[2].real_reference,
                 (double) argument_list[3].real_reference,
                 (double) argument_list[4].real_reference);
               argument_list[0].string_reference=message;
@@ -9136,7 +9136,7 @@ Mogrify(ref,...)
               geometry_info.rho=argument_list[6].real_reference;
               SetImageArtifact(image,"modulate:colorspace","HWB");
             }
-          (void) FormatLocaleString(modulate,MaxTextExtent,"%.20g,%.20g,%.20g",
+          (void) FormatLocaleString(modulate,MaxTextExtent,"%.20g,%.15g,%.15g",
             geometry_info.rho,geometry_info.sigma,geometry_info.xi);
           (void) ModulateImage(image,modulate);
           break;
@@ -9208,8 +9208,8 @@ Mogrify(ref,...)
             quantize_info->dither=argument_list[3].integer_reference != 0 ?
               MagickTrue : MagickFalse;
           if (attribute_flag[4] != 0)
-            quantize_info->measure_error=argument_list[4].integer_reference !=
-              0 ? MagickTrue : MagickFalse;
+            quantize_info->measure_error=
+              argument_list[4].integer_reference != 0 ? MagickTrue : MagickFalse;
           if (attribute_flag[6] != 0)
             (void) QueryColorDatabase(argument_list[6].string_reference,
               &image->transparent_color,exception);
@@ -9238,8 +9238,8 @@ Mogrify(ref,...)
             geometry.height=argument_list[2].integer_reference;
           if (attribute_flag[3] == 0)
             argument_list[3].integer_reference=1;
-          (void) RaiseImage(image,&geometry,argument_list[3].integer_reference
-            != 0 ? MagickTrue : MagickFalse);
+          (void) RaiseImage(image,&geometry,argument_list[3].integer_reference !=
+            0 ? MagickTrue : MagickFalse);
           break;
         }
         case 50:  /* Segment */
@@ -10040,8 +10040,8 @@ Mogrify(ref,...)
           if (attribute_flag[4] != 0)
             geometry_info.psi=argument_list[4].integer_reference;
           image=ShadowImage(image,geometry_info.rho,geometry_info.sigma,
-            (ssize_t) ceil(geometry_info.xi-0.5),(ssize_t)
-            ceil(geometry_info.psi-0.5),exception);
+            (ssize_t) ceil(geometry_info.xi-0.5),(ssize_t) ceil(geometry_info.psi-
+            0.5),exception);
           break;
         }
         case 90:  /* Identify */
@@ -11084,12 +11084,21 @@ Mogrify(ref,...)
         }
         case 145:  /* ConnectedComponent */
         {
+          MagickBooleanType
+            verbose;
+
           size_t
             connectivity;
 
           connectivity=4;
+          verbose=MagickFalse;
           if (attribute_flag[0] != 0)
             connectivity=argument_list[0].integer_reference;
+          if (attribute_flag[1] != 0)
+            verbose=argument_list[4].integer_reference != 0 ?
+              MagickTrue : MagickFalse;
+          if (verbose != MagickFalse)
+            SetImageArtifact(image,"connected-components","true");
           image=ConnectedComponentsImage(image,connectivity,exception);
           break;
         }
@@ -11153,8 +11162,7 @@ Mogrify(ref,...)
             geometry_info.rho=argument_list[1].real_reference;
           if (attribute_flag[2] != 0)
             geometry_info.sigma=argument_list[2].real_reference;
-          image=WaveletDenoiseImage(image,geometry_info.rho,geometry_info.sigma,
-            exception);
+          image=WaveletDenoiseImage(image,geometry_info.rho,geometry_info.sigma,            exception);
           break;
         }
         case 148:  /* Colorspace */
@@ -11236,7 +11244,7 @@ Mogrify(ref,...)
 #
 void
 Montage(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     MontageImage  = 1
     montage       = 2
@@ -11646,7 +11654,7 @@ Montage(ref,...)
 #
 void
 Morph(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     MorphImage  = 1
     morph       = 2
@@ -11777,7 +11785,7 @@ Morph(ref,...)
 #
 void
 Mosaic(ref)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     MosaicImage   = 1
     mosaic        = 2
@@ -11866,7 +11874,7 @@ Mosaic(ref)
 #
 void
 Ping(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     PingImage  = 1
     ping       = 2
@@ -12075,7 +12083,7 @@ Ping(ref,...)
 #
 void
 Preview(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     PreviewImage = 1
     preview      = 2
@@ -12175,7 +12183,7 @@ Preview(ref,...)
 #
 void
 QueryColor(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     querycolor = 1
   PPCODE:
@@ -12255,7 +12263,7 @@ QueryColor(ref,...)
 #
 void
 QueryColorname(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     querycolorname = 1
   PPCODE:
@@ -12329,7 +12337,7 @@ QueryColorname(ref,...)
 #
 void
 QueryFont(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     queryfont = 1
   PPCODE:
@@ -12449,7 +12457,7 @@ QueryFont(ref,...)
 #
 void
 QueryFontMetrics(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     queryfontmetrics = 1
   PPCODE:
@@ -12814,7 +12822,7 @@ QueryFontMetrics(ref,...)
       {
         draw_info->geometry=AcquireString((char *) NULL);
         (void) FormatLocaleString(draw_info->geometry,MaxTextExtent,
-          "%.20g,%.20g",x,y);
+          "%.20g,%.15g",x,y);
       }
     status=GetTypeMetrics(image,draw_info,&metrics);
     (void) CatchImageException(image);
@@ -12860,7 +12868,7 @@ QueryFontMetrics(ref,...)
 #
 void
 QueryMultilineFontMetrics(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     querymultilinefontmetrics = 1
   PPCODE:
@@ -13187,7 +13195,7 @@ QueryMultilineFontMetrics(ref,...)
       {
         draw_info->geometry=AcquireString((char *) NULL);
         (void) FormatLocaleString(draw_info->geometry,MaxTextExtent,
-          "%.20g,%.20g",x,y);
+          "%.20g,%.15g",x,y);
       }
     status=GetMultilineTypeMetrics(image,draw_info,&metrics);
     (void) CatchImageException(image);
@@ -13233,7 +13241,7 @@ QueryMultilineFontMetrics(ref,...)
 #
 void
 QueryFormat(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     queryformat = 1
   PPCODE:
@@ -13325,7 +13333,7 @@ QueryFormat(ref,...)
 #
 void
 QueryOption(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     queryoption = 1
   PPCODE:
@@ -13385,7 +13393,7 @@ QueryOption(ref,...)
 #
 void
 Read(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     ReadImage  = 1
     read       = 2
@@ -13606,7 +13614,7 @@ Read(ref,...)
 #
 void
 Remote(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     RemoteCommand  = 1
     remote         = 2
@@ -13659,7 +13667,7 @@ Remote(ref,...)
 #
 void
 Set(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     SetAttributes  = 1
     SetAttribute   = 2
@@ -13725,7 +13733,7 @@ Set(ref,...)
 #
 void
 SetPixel(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     setpixel = 1
     setPixel = 2
@@ -13975,7 +13983,7 @@ SetPixel(ref,...)
 #
 void
 Smush(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     SmushImage  = 1
     smush       = 2
@@ -14127,8 +14135,8 @@ Smush(ref,...)
 #
 #
 void
-Statistics(ref,...)
-  Image::Magick ref = NO_INIT
+Statistics(ref)
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     StatisticsImage = 1
     statistics      = 2
@@ -14252,7 +14260,7 @@ Statistics(ref,...)
 #
 void
 SyncAuthenticPixels(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     Syncauthenticpixels = 1
     SyncImagePixels = 2
@@ -14320,7 +14328,7 @@ SyncAuthenticPixels(ref,...)
 #
 void
 Transform(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     TransformImage = 1
     transform      = 2
@@ -14468,7 +14476,7 @@ Transform(ref,...)
 #
 void
 Write(ref,...)
-  Image::Magick ref = NO_INIT
+  Image::Magick::Q16 ref = NO_INIT
   ALIAS:
     WriteImage    = 1
     write         = 2
