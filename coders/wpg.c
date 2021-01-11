@@ -16,7 +16,7 @@
 %                                 June 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -571,7 +571,7 @@ static int UnpackWPG2Raster(Image *image,int bpp)
   int
     RunCount;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -627,7 +627,7 @@ static int UnpackWPG2Raster(Image *image,int bpp)
           RunCount=ReadBlobByte(image);   /* BLK */
           if (RunCount < 0)
             break;
-          for(i=0; i < SampleSize*(RunCount+1); i++)
+          for(i=0; i < ((ssize_t) SampleSize*(RunCount+1)); i++)
             {
               InsertByte6(0);
             }

@@ -1,12 +1,12 @@
 /*
-  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.  You may
   obtain a copy of the License at
-  
+
     https://imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,22 +31,34 @@ static int MagickDLLCall GhostscriptDelegateMessage(void *handle,
   offset=0;
   messages=(char **) handle;
   if (*messages == (char *) NULL)
-    *messages=(char *) AcquireQuantumMemory(length+1,sizeof(char *));
+    *messages=(char *) AcquireQuantumMemory((size_t) length+1,sizeof(char *));
   else
     {
-      offset=strlen(*messages);
-      *messages=(char *) ResizeQuantumMemory(*messages,offset+length+1,
-        sizeof(char *));
+      offset=(ssize_t) strlen(*messages);
+      *messages=(char *) ResizeQuantumMemory(*messages,(size_t) (offset+length+
+        1),sizeof(char *));
     }
   if (*messages == (char *) NULL)
     return(0);
-  (void) memcpy(*messages+offset,message,length);
+  (void) memcpy(*messages+offset,message,(size_t) length);
   (*messages)[length+offset] ='\0';
   return(length);
 }
+
+static double GhostscriptVersion(const GhostInfo *ghost_info)
+{
+  gsapi_revision_t
+    revision;
+
+  if ((ghost_info->revision)(&revision,(int) sizeof(revision)) != 0)
+    return(0.0);
+  if (revision.revision > 1000)
+    return(revision.revision/1000.0);
+  return(revision.revision/100.0);
+}
 #endif
 
-static MagickBooleanType InvokeGhostscriptDelegate(
+static inline MagickBooleanType InvokeGhostscriptDelegate(
   const MagickBooleanType verbose,const char *command,char *message,
   ExceptionInfo *exception)
 {
@@ -93,14 +105,11 @@ static MagickBooleanType InvokeGhostscriptDelegate(
   gs_main_instance
     *interpreter;
 
-  gsapi_revision_t
-    revision;
-
   int
     argc,
     code;
 
-  register ssize_t
+  ssize_t
     i;
 
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
@@ -127,12 +136,10 @@ static MagickBooleanType InvokeGhostscriptDelegate(
 #endif
   if (ghost_info == (GhostInfo *) NULL)
     ExecuteGhostscriptCommand(command,status);
-  if ((ghost_info->revision)(&revision,sizeof(revision)) != 0)
-    revision.revision=0;
   if (verbose != MagickFalse)
     {
-      (void) fprintf(stdout,"[ghostscript library %.2f]",(double)
-        revision.revision/100.0);
+      (void) fprintf(stdout,"[ghostscript library %.2f]",
+        GhostscriptVersion(ghost_info));
       SetArgsStart(command,args_start);
       (void) fputs(args_start,stdout);
     }
@@ -164,14 +171,14 @@ static MagickBooleanType InvokeGhostscriptDelegate(
       SetArgsStart(command,args_start);
       if (status == -101) /* quit */
         (void) FormatLocaleString(message,MaxTextExtent,
-          "[ghostscript library %.2f]%s: %s",(double) revision.revision/100.0,
+          "[ghostscript library %.2f]%s: %s",GhostscriptVersion(ghost_info),
           args_start,errors);
       else
         {
           (void) ThrowMagickException(exception,GetMagickModule(),
             DelegateError,"PostscriptDelegateFailed",
-            "`[ghostscript library %.2f]%s': %s",(double) revision.revision/
-            100.0,args_start,errors);
+            "`[ghostscript library %.2f]%s': %s",GhostscriptVersion(ghost_info),
+            args_start,errors);
           if (errors != (char *) NULL)
             errors=DestroyString(errors);
           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -206,7 +213,7 @@ static MagickBooleanType IsGhostscriptRendered(const char *path)
   return(MagickFalse);
 }
 
-static void ReadGhostScriptXMPProfile(MagickByteBuffer *buffer,
+static inline void ReadGhostScriptXMPProfile(MagickByteBuffer *buffer,
   StringInfo **profile)
 {
 #define BeginXMPPacket  "?xpacket begin="
@@ -219,7 +226,7 @@ static void ReadGhostScriptXMPProfile(MagickByteBuffer *buffer,
     found_end,
     status;
 
-  register char
+  char
     *p;
 
   size_t

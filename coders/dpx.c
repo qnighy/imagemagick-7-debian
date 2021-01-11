@@ -17,7 +17,7 @@
 %                                March 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -46,6 +46,7 @@
 #include "magick/blob-private.h"
 #include "magick/cache.h"
 #include "magick/colorspace.h"
+#include "magick/colorspace-private.h"
 #include "magick/exception.h"
 #include "magick/exception-private.h"
 #include "magick/geometry.h"
@@ -634,7 +635,7 @@ static void TimeCodeToString(const size_t timestamp,char *code)
   unsigned int
     shift;
 
-  register ssize_t
+  ssize_t
     i;
 
   *code='\0';
@@ -675,7 +676,7 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
   QuantumType
     quantum_type;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1117,7 +1118,7 @@ static Image *ReadDPXImage(const ImageInfo *image_info,ExceptionInfo *exception)
           StringInfo
             *profile;
 
-           if (dpx.file.user_size > GetBlobSize(image))
+           if ((MagickSizeType) dpx.file.user_size > GetBlobSize(image))
              ThrowReaderException(CorruptImageError,
                "InsufficientImageDataInFile");
            profile=BlobToStringInfo((const void *) NULL,
@@ -1434,7 +1435,7 @@ static unsigned int StringToTimeCode(const char *key)
   char
     buffer[2];
 
-  register ssize_t
+  ssize_t
     i;
 
   unsigned int
@@ -1500,10 +1501,10 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,
   QuantumType
     quantum_type;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -1514,12 +1515,14 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,
 
   size_t
     channels,
-    extent;
+    extent,
+    samples_per_pixel;
 
   time_t
     seconds;
 
   unsigned char
+    component_type,
     *pixels;
 
   /*
@@ -1551,7 +1554,7 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,
           (vertical_factor != 2) && (vertical_factor != 4))
         ThrowWriterException(CorruptImageError,"UnexpectedSamplingFactor");
     }
-  if ((image->colorspace == YCbCrColorspace) &&
+  if ((IsYCbCrCompatibleColorspace(image->colorspace) != MagickFalse) &&
       ((horizontal_factor == 2) || (vertical_factor == 2)))
     if ((image->columns % 2) != 0)
       image->columns++;
@@ -2007,7 +2010,7 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,
   quantum_type=RGBQuantum;
   if (image->matte != MagickFalse)
     quantum_type=RGBAQuantum;
-  if (image->colorspace == YCbCrColorspace)
+  if (IsYCbCrCompatibleColorspace(image->colorspace) != MagickFalse)
     {
       quantum_type=CbYCrQuantum;
       if (image->matte != MagickFalse)
@@ -2015,16 +2018,42 @@ static MagickBooleanType WriteDPXImage(const ImageInfo *image_info,
       if ((horizontal_factor == 2) || (vertical_factor == 2))
         quantum_type=CbYCrYQuantum;
     }
-  extent=GetBytesPerRow(image->columns,image->matte != MagickFalse ? 4UL : 3UL,
-    image->depth,dpx.image.image_element[0].packing == 0 ? MagickFalse :
-    MagickTrue);
-  if ((image_info->type != TrueColorType) && (image->matte == MagickFalse) &&
-      (SetImageGray(image,&image->exception) != MagickFalse))
+  samples_per_pixel=1;
+  quantum_type=GrayQuantum;
+  component_type=dpx.image.image_element[0].descriptor;
+  switch (component_type)
+  {
+    case CbYCrY422ComponentType:
     {
-      quantum_type=GrayQuantum;
-      extent=GetBytesPerRow(image->columns,1UL,image->depth,
-        dpx.image.image_element[0].packing == 0 ? MagickFalse : MagickTrue);
+      samples_per_pixel=2;
+      quantum_type=CbYCrYQuantum;
+      break;
     }
+    case CbYACrYA4224ComponentType:
+    case CbYCr444ComponentType:
+    {
+      samples_per_pixel=3;
+      quantum_type=CbYCrQuantum;
+      break;
+    }
+    case RGBComponentType:
+    {
+      samples_per_pixel=3;
+      quantum_type=RGBQuantum;
+      break;
+    }
+    case ABGRComponentType:
+    case RGBAComponentType:
+    {
+      samples_per_pixel=4;
+      quantum_type=RGBAQuantum;
+      break;
+    }
+   default:
+      break;
+  }
+  extent=GetBytesPerRow(image->columns,samples_per_pixel,image->depth,
+    dpx.image.image_element[0].packing == 0 ? MagickFalse : MagickTrue);
   pixels=GetQuantumPixels(quantum_info);
   for (y=0; y < (ssize_t) image->rows; y++)
   {

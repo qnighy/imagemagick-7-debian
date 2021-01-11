@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -277,7 +277,7 @@ static Image *ReadTEXTImage(const ImageInfo *image_info,
       draw_info=DestroyDrawInfo(draw_info);
       ThrowReaderException(TypeError,"UnableToGetTypeMetrics");
     }
-  page.y=(ssize_t) ceil((double) page.y+metrics.ascent-0.5);
+  page.y=CastDoubleToLong(ceil((double) page.y+metrics.ascent-0.5));
   (void) FormatLocaleString(geometry,MaxTextExtent,"%gx%g%+g%+g",(double)
     image->columns,(double) image->rows,(double) page.x,(double) page.y);
   (void) CloneString(&draw_info->geometry,geometry);
@@ -410,7 +410,7 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
   QuantumAny
     range;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -465,7 +465,7 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
     image->rows=height;
     if ((max_value == 0.0) || (max_value > 18446744073709551615.0))
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
-    for (depth=1; (GetQuantumRange(depth)+1.0) < max_value; depth++) ;
+    for (depth=1; ((double) GetQuantumRange(depth)+1) < max_value; depth++) ;
     image->depth=depth;
     status=SetImageExtent(image,image->columns,image->rows);
     if (status != MagickFalse)
@@ -583,8 +583,8 @@ static Image *ReadTXTImage(const ImageInfo *image_info,ExceptionInfo *exception)
           MagickMax(index+0.5,0.0),range);
         pixel.opacity=(MagickRealType) ScaleAnyToQuantum((QuantumAny)
           MagickMax(opacity+0.5,0.0),range);
-        q=GetAuthenticPixels(image,(ssize_t) x_offset,(ssize_t) y_offset,1,1,
-          exception);
+        q=GetAuthenticPixels(image,CastDoubleToLong(x_offset),
+          CastDoubleToLong(y_offset),1,1,exception);
         if (q == (PixelPacket *) NULL)
           {
             status=MagickFalse;
@@ -754,13 +754,13 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
   MagickPixelPacket
     pixel;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     x;
 
   size_t
@@ -804,15 +804,10 @@ static MagickBooleanType WriteTXTImage(const ImageInfo *image_info,Image *image)
         MagickFalse,value);
     if (LocaleCompare(image_info->magick,"SPARSE-COLOR") != 0)
       {
-        size_t
-          depth;
-
-        depth=compliance == SVGCompliance ? image->depth :
-          MAGICKCORE_QUANTUM_DEPTH;
         (void) FormatLocaleString(buffer,MaxTextExtent,
           "# ImageMagick pixel enumeration: %.20g,%.20g,%.20g,%s\n",(double)
-          image->columns,(double) image->rows,(double) GetQuantumRange(depth),
-          colorspace);
+          image->columns,(double) image->rows,(double)
+          GetQuantumRange(image->depth),colorspace);
         (void) WriteBlobString(image,buffer);
       }
     GetMagickPixelPacket(image,&pixel);

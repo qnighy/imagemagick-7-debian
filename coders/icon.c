@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -165,7 +165,7 @@ Image *AutoResizeImage(const Image *image,const char *option,
     *resized,
     *images;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -260,14 +260,14 @@ static Image *ReadICONImage(const ImageInfo *image_info,
   register IndexPacket
     *indexes;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
   register PixelPacket
     *q;
 
-  register unsigned char
+  unsigned char
     *p;
 
   size_t
@@ -443,7 +443,7 @@ static Image *ReadICONImage(const ImageInfo *image_info,
         }
       if (image->storage_class == PseudoClass)
         {
-          register ssize_t
+          ssize_t
             i;
 
           unsigned char
@@ -884,17 +884,17 @@ static MagickBooleanType WriteICONImage(const ImageInfo *image_info,
     offset,
     scene;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
-  register unsigned char
+  unsigned char
     *q;
 
   size_t
@@ -1003,7 +1003,7 @@ static MagickBooleanType WriteICONImage(const ImageInfo *image_info,
 
         /* Only write PNG32 formatted PNG (32-bit RGBA), 8 bits per channel */
         (void) SetImageArtifact(write_image,"png:format","png32");
-
+        (void) SetImageArtifact(write_image,"png:color-type","6");
         png=(unsigned char *) ImageToBlob(write_info,write_image,&length,
           &image->exception);
         write_image=DestroyImageList(write_image);
@@ -1217,7 +1217,7 @@ static MagickBooleanType WriteICONImage(const ImageInfo *image_info,
               indexes=GetVirtualIndexQueue(next);
               q=pixels+(next->rows-y-1)*bytes_per_line;
               for (x=0; x < (ssize_t) next->columns; x++)
-                *q++=(unsigned char) GetPixelIndex(indexes+x);
+                *q++=(unsigned char) ((size_t) GetPixelIndex(indexes+x));
               if (next->previous == (Image *) NULL)
                 {
                   status=SetImageProgress(next,SaveImageTag,y,next->rows);

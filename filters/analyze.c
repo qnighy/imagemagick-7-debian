@@ -15,7 +15,7 @@
 %                              December 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -146,10 +146,10 @@ ModuleExport size_t analyzeImage(Image **images,const int argc,
     image_view=AcquireVirtualCacheView(image,exception);
     for (y=0; y < (ssize_t) image->rows; y++)
     {
-      register const PixelPacket
+      const PixelPacket
         *p;
 
-      register ssize_t
+      ssize_t
         x;
 
       if (status == MagickFalse)

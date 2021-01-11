@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -255,7 +255,7 @@ MagickExport MagickBooleanType BlobToFile(char *filename,const void *blob,
   int
     file;
 
-  register size_t
+  size_t
     i;
 
   ssize_t
@@ -276,7 +276,7 @@ MagickExport MagickBooleanType BlobToFile(char *filename,const void *blob,
   for (i=0; i < length; i+=count)
   {
     count=write(file,(const char *) blob+i,MagickMin(length-i,(size_t)
-      SSIZE_MAX));
+      MAGICK_SSIZE_MAX));
     if (count <= 0)
       {
         count=0;
@@ -839,7 +839,7 @@ MagickPrivate void DisassociateBlob(Image *image)
 MagickExport MagickBooleanType DiscardBlobBytes(Image *image,
   const MagickSizeType length)
 {
-  register MagickOffsetType
+  MagickOffsetType
     i;
 
   size_t
@@ -1102,7 +1102,7 @@ MagickExport unsigned char *FileToBlob(const char *filename,const size_t extent,
   MagickOffsetType
     offset;
 
-  register size_t
+  size_t
     i;
 
   ssize_t
@@ -1202,7 +1202,7 @@ MagickExport unsigned char *FileToBlob(const char *filename,const size_t extent,
       return(blob);
     }
   *length=(size_t) MagickMin(offset,(MagickOffsetType)
-    MagickMin(extent,SSIZE_MAX));
+    MagickMin(extent,MAGICK_SSIZE_MAX));
   blob=(unsigned char *) NULL;
   if (~(*length) >= (MaxTextExtent-1))
     blob=(unsigned char *) AcquireQuantumMemory(*length+MaxTextExtent,
@@ -1225,7 +1225,7 @@ MagickExport unsigned char *FileToBlob(const char *filename,const size_t extent,
       (void) lseek(file,0,SEEK_SET);
       for (i=0; i < *length; i+=count)
       {
-        count=read(file,blob+i,MagickMin(*length-i,(size_t) SSIZE_MAX));
+        count=read(file,blob+i,MagickMin(*length-i,(size_t) MAGICK_SSIZE_MAX));
         if (count <= 0)
           {
             count=0;
@@ -1286,7 +1286,7 @@ static inline ssize_t WriteBlobStream(Image *image,const size_t length,
   MagickSizeType
     extent;
 
-  register unsigned char
+  unsigned char
     *magick_restrict q;
 
   assert(image->blob != (BlobInfo *) NULL);
@@ -1843,10 +1843,10 @@ MagickExport MagickBooleanType ImageToFile(Image *image,char *filename,
   int
     file;
 
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register size_t
+  size_t
     i;
 
   size_t
@@ -2123,7 +2123,7 @@ MagickExport MagickBooleanType InjectImageBlob(const ImageInfo *image_info,
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -2483,7 +2483,7 @@ MagickExport void MSBOrderLong(unsigned char *buffer,const size_t length)
   int
     c;
 
-  register unsigned char
+  unsigned char
     *p,
     *q;
 
@@ -2533,7 +2533,7 @@ MagickExport void MSBOrderShort(unsigned char *p,const size_t length)
   int
     c;
 
-  register unsigned char
+  unsigned char
     *q;
 
   assert(p != (unsigned char *) NULL);
@@ -3092,7 +3092,7 @@ MagickExport Image *PingBlob(const ImageInfo *image_info,const void *blob,
 %
 %  ReadBlob() reads data from the blob or image file and returns it.  It
 %  returns the number of bytes read. If length is zero, ReadBlob() returns
-%  zero and has no other results. If length is greater than SSIZE_MAX, the
+%  zero and has no other results. If length is greater than MAGICK_SSIZE_MAX, the
 %  result is unspecified.
 %
 %  The format of the ReadBlob method is:
@@ -3119,7 +3119,7 @@ MagickExport ssize_t ReadBlob(Image *image,const size_t length,
   int
     c;
 
-  register unsigned char
+  unsigned char
     *q;
 
   ssize_t
@@ -3200,7 +3200,7 @@ MagickExport ssize_t ReadBlob(Image *image,const size_t length,
       {
         default:
         {
-          register ssize_t
+          ssize_t
             i;
 
           for (i=0; i < (ssize_t) length; i+=count)
@@ -3257,7 +3257,8 @@ MagickExport ssize_t ReadBlob(Image *image,const size_t length,
       if ((count != (ssize_t) length) && (status != Z_OK))
         ThrowBlobException(blob_info);
       if (blob_info->eof == MagickFalse)
-        blob_info->eof=gzeof(blob_info->file_info.gzfile);
+        blob_info->eof=gzeof(blob_info->file_info.gzfile) != 0 ? MagickTrue :
+          MagickFalse;
 #endif
       break;
     }
@@ -3267,7 +3268,7 @@ MagickExport ssize_t ReadBlob(Image *image,const size_t length,
       int
         status;
 
-     register ssize_t
+     ssize_t
         i;
 
       for (i=0; i < (ssize_t) length; i+=count)
@@ -3293,7 +3294,7 @@ MagickExport ssize_t ReadBlob(Image *image,const size_t length,
       break;
     case BlobStream:
     {
-      register const unsigned char
+      const unsigned char
         *p;
 
       if (blob_info->offset >= (MagickOffsetType) blob_info->length)
@@ -3341,7 +3342,7 @@ MagickExport int ReadBlobByte(Image *image)
   BlobInfo
     *magick_restrict blob_info;
 
-  register const unsigned char
+  const unsigned char
     *p;
 
   unsigned char
@@ -3485,7 +3486,7 @@ MagickExport float ReadBlobFloat(Image *image)
 */
 MagickExport unsigned int ReadBlobLong(Image *image)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
   ssize_t
@@ -3546,7 +3547,7 @@ MagickExport MagickSizeType ReadBlobLongLong(Image *image)
   MagickSizeType
     value;
 
-  register const unsigned char
+  const unsigned char
     *p;
 
   ssize_t
@@ -3609,10 +3610,10 @@ MagickExport MagickSizeType ReadBlobLongLong(Image *image)
 */
 MagickExport unsigned short ReadBlobShort(Image *image)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register unsigned short
+  unsigned short
     value;
 
   ssize_t
@@ -3663,10 +3664,10 @@ MagickExport unsigned short ReadBlobShort(Image *image)
 */
 MagickExport unsigned int ReadBlobLSBLong(Image *image)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register unsigned int
+  unsigned int
     value;
 
   ssize_t
@@ -3751,10 +3752,10 @@ MagickExport signed int ReadBlobLSBSignedLong(Image *image)
 */
 MagickExport unsigned short ReadBlobLSBShort(Image *image)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register unsigned short
+  unsigned short
     value;
 
   ssize_t
@@ -3837,10 +3838,10 @@ MagickExport signed short ReadBlobLSBSignedShort(Image *image)
 */
 MagickExport unsigned int ReadBlobMSBLong(Image *image)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register unsigned int
+  unsigned int
     value;
 
   ssize_t
@@ -3887,10 +3888,10 @@ MagickExport unsigned int ReadBlobMSBLong(Image *image)
 */
 MagickExport MagickSizeType ReadBlobMSBLongLong(Image *image)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register MagickSizeType
+  MagickSizeType
     value;
 
   ssize_t
@@ -3941,10 +3942,10 @@ MagickExport MagickSizeType ReadBlobMSBLongLong(Image *image)
 */
 MagickExport unsigned short ReadBlobMSBShort(Image *image)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register unsigned short
+  unsigned short
     value;
 
   ssize_t
@@ -4131,7 +4132,7 @@ MagickExport signed short ReadBlobSignedShort(Image *image)
 %  returns a pointer to the data buffer you supply or to the image memory
 %  buffer if its supported (zero-copy). If length is zero, ReadBlobStream()
 %  returns a count of zero and has no other results. If length is greater than
-%  SSIZE_MAX, the result is unspecified.
+%  MAGICK_SSIZE_MAX, the result is unspecified.
 %
 %  The format of the ReadBlobStream method is:
 %
@@ -4214,7 +4215,7 @@ MagickExport char *ReadBlobString(Image *image,char *string)
   int
     c;
 
-  register ssize_t
+  ssize_t
     i;
 
   assert(image != (Image *) NULL);
@@ -4364,8 +4365,8 @@ MagickExport MagickOffsetType SeekBlob(Image *image,
         }
         case SEEK_CUR:
         {
-          if (((offset > 0) && (blob_info->offset > (SSIZE_MAX-offset))) ||
-              ((offset < 0) && (blob_info->offset < (-SSIZE_MAX-offset))))
+          if (((offset > 0) && (blob_info->offset > (MAGICK_SSIZE_MAX-offset))) ||
+              ((offset < 0) && (blob_info->offset < (MAGICK_SSIZE_MIN-offset))))
             {
               errno=EOVERFLOW;
               return(-1);
@@ -4801,10 +4802,10 @@ MagickExport ssize_t WriteBlob(Image *image,const size_t length,
   int
     c;
 
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register unsigned char
+  unsigned char
     *q;
 
   ssize_t
@@ -4883,7 +4884,7 @@ MagickExport ssize_t WriteBlob(Image *image,const size_t length,
       {
         default:
         {
-          register ssize_t
+          ssize_t
             i;
 
           for (i=0; i < (ssize_t) length; i+=count)
@@ -4944,7 +4945,7 @@ MagickExport ssize_t WriteBlob(Image *image,const size_t length,
       int
         status;
 
-      register ssize_t
+      ssize_t
         i;
 
       for (i=0; i < (ssize_t) length; i+=count)

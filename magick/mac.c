@@ -17,7 +17,7 @@
 %                                September 1996                               %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1352,7 +1352,7 @@ MagickExport Image *ReadPICTImage(const ImageInfo *image_info,
     register IndexPacket
       *restrict indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket

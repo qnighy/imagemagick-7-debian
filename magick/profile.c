@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -389,7 +389,7 @@ static void cmsDeleteContext(cmsContext magick_unused(ContextID))
 
 static double **DestroyPixelThreadSet(double **pixels)
 {
-  register ssize_t
+  ssize_t
     i;
 
   if (pixels == (double **) NULL)
@@ -407,7 +407,7 @@ static double **AcquirePixelThreadSet(const size_t columns,
   double
     **pixels;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -430,7 +430,7 @@ static double **AcquirePixelThreadSet(const size_t columns,
 
 static cmsHTRANSFORM *DestroyTransformThreadSet(cmsHTRANSFORM *transform)
 {
-  register ssize_t
+  ssize_t
     i;
 
   assert(transform != (cmsHTRANSFORM *) NULL);
@@ -448,7 +448,7 @@ static cmsHTRANSFORM *AcquireTransformThreadSet(const LCMSInfo *source_info,
   cmsHTRANSFORM
     *transform;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1113,13 +1113,13 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
               register IndexPacket
                 *magick_restrict indexes;
 
-              register double
+              double
                 *p;
 
               register PixelPacket
                 *magick_restrict q;
 
-              register ssize_t
+              ssize_t
                 x;
 
               if (status == MagickFalse)
@@ -1411,7 +1411,7 @@ static void WriteTo8BimProfile(Image *image,const char *name,
     *datum,
     *q;
 
-  register const unsigned char
+  const unsigned char
     *p;
 
   size_t
@@ -1519,7 +1519,7 @@ static void GetProfilesFromResourceBlock(Image *image,
   const unsigned char
     *datum;
 
-  register const unsigned char
+  const unsigned char
     *p;
 
   size_t
@@ -1659,7 +1659,8 @@ static void GetProfilesFromResourceBlock(Image *image,
 }
 
 #if defined(MAGICKCORE_XML_DELEGATE)
-static MagickBooleanType ValidateXMPProfile(const StringInfo *profile)
+static MagickBooleanType ValidateXMPProfile(Image *image,
+  const StringInfo *profile)
 {
   xmlDocPtr
     document;
@@ -1671,13 +1672,21 @@ static MagickBooleanType ValidateXMPProfile(const StringInfo *profile)
     GetStringInfoLength(profile),"xmp.xml",NULL,XML_PARSE_NOERROR |
     XML_PARSE_NOWARNING);
   if (document == (xmlDocPtr) NULL)
-    return(MagickFalse);
+    {
+      (void) ThrowMagickException(&image->exception,GetMagickModule(),
+        ImageWarning,"CorruptImageProfile","`%s' (XMP)",image->filename);
+      return(MagickFalse);
+    }
   xmlFreeDoc(document);
   return(MagickTrue);
 }
 #else
-static MagickBooleanType ValidateXMPProfile(const StringInfo *profile)
+static MagickBooleanType ValidateXMPProfile(Image *image,
+  const StringInfo *profile)
 {
+  (void) ThrowMagickException(&image->exception,GetMagickModule(),
+    MissingDelegateError,"DelegateLibrarySupportNotBuiltIn","'%s' (XML)",
+    image->filename);
   return(MagickFalse);
 }
 #endif
@@ -1696,12 +1705,8 @@ static MagickBooleanType SetImageProfileInternal(Image *image,const char *name,
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
   if ((LocaleCompare(name,"xmp") == 0) &&
-      (ValidateXMPProfile(profile) == MagickFalse))
-    {
-      (void) ThrowMagickException(&image->exception,GetMagickModule(),
-        ImageWarning,"CorruptImageProfile","`%s'",name);
-      return(MagickTrue);
-    }
+      (ValidateXMPProfile(image,profile) == MagickFalse))
+    return(MagickTrue);
   if (image->profiles == (SplayTreeInfo *) NULL)
     image->profiles=NewSplayTree(CompareSplayTreeString,RelinquishMagickMemory,
       DestroyProfile);
@@ -2096,7 +2101,7 @@ static MagickBooleanType SyncExifProfile(Image *image, StringInfo *profile)
       int
         components;
 
-      register unsigned char
+      unsigned char
         *p,
         *q;
 

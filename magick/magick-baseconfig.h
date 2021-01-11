@@ -37,7 +37,7 @@
 
 /* Directory where architecture-dependent configuration files live. */
 #ifndef MAGICKCORE_CONFIGURE_PATH
-#define MAGICKCORE_CONFIGURE_PATH "/usr/etc/ImageMagick-6/"
+#define MAGICKCORE_CONFIGURE_PATH "/etc/ImageMagick-6/"
 #endif
 
 /* Subdirectory of lib where architecture-dependent configuration files live.
@@ -347,7 +347,7 @@
 #define MAGICKCORE_HAVE_GMTIME_R 1
 #endif
 
-/* Compile with hugepage support */
+/* [Compile with hugepage support] */
 /* #undef HAVE_HUGEPAGES */
 
 /* Define to 1 if the system has the type `intmax_t'. */
@@ -380,6 +380,9 @@
 #define MAGICKCORE_HAVE_J1 1
 #endif
 
+/* Define if you have jemalloc memory allocation library */
+/* #undef HAVE_JEMALLOC */
+
 /* Define if you have the <lcms2.h> header file. */
 #ifndef MAGICKCORE_HAVE_LCMS2_H
 #define MAGICKCORE_HAVE_LCMS2_H 1
@@ -394,6 +397,11 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #ifndef MAGICKCORE_HAVE_LIMITS_H
 #define MAGICKCORE_HAVE_LIMITS_H 1
+#endif
+
+/* Define if you have Linux-compatible sendfile() */
+#ifndef MAGICKCORE_HAVE_LINUX_SENDFILE
+#define MAGICKCORE_HAVE_LINUX_SENDFILE 1
 #endif
 
 /* Define to 1 if you have the <linux/unistd.h> header file. */
@@ -870,6 +878,11 @@
 #define MAGICKCORE_HAVE_SYS_TYPES_H 1
 #endif
 
+/* Define to 1 if you have the <sys/uio.h> header file. */
+#ifndef MAGICKCORE_HAVE_SYS_UIO_H
+#define MAGICKCORE_HAVE_SYS_UIO_H 1
+#endif
+
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #ifndef MAGICKCORE_HAVE_SYS_WAIT_H
 #define MAGICKCORE_HAVE_SYS_WAIT_H 1
@@ -1038,9 +1051,6 @@
 #define MAGICKCORE_HAVE_WCHAR_H 1
 #endif
 
-/* Define to 1 if you have the <windows.h> header file. */
-/* #undef HAVE_WINDOWS_H */
-
 /* Define to 1 if `fork' works. */
 #ifndef MAGICKCORE_HAVE_WORKING_FORK
 #define MAGICKCORE_HAVE_WORKING_FORK 1
@@ -1052,9 +1062,7 @@
 #endif
 
 /* Define to 1 if you have the <xlocale.h> header file. */
-#ifndef MAGICKCORE_HAVE_XLOCALE_H
-#define MAGICKCORE_HAVE_XLOCALE_H 1
-#endif
+/* #undef HAVE_XLOCALE_H */
 
 /* Define to 1 if you have the `_aligned_malloc' function. */
 /* #undef HAVE__ALIGNED_MALLOC */
@@ -1097,9 +1105,6 @@
 /* Define if you have libheif library */
 /* #undef HEIC_DELEGATE */
 
-/* Define if you have jemalloc memory allocation library */
-/* #undef HasJEMALLOC */
-
 /* Directory where ImageMagick architecture headers live. */
 #ifndef MAGICKCORE_INCLUDEARCH_PATH
 #define MAGICKCORE_INCLUDEARCH_PATH "/usr/include/ImageMagick-6/"
@@ -1132,11 +1137,13 @@
 #endif
 
 /* Define if you have OPENJP2 library */
-/* #undef LIBOPENJP2_DELEGATE */
+#ifndef MAGICKCORE_LIBOPENJP2_DELEGATE
+#define MAGICKCORE_LIBOPENJP2_DELEGATE 1
+#endif
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/usr/lib/ImageMagick-6.9.11/"
+#define MAGICKCORE_LIBRARY_PATH "/usr/lib64/ImageMagick-6.9.11/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
@@ -1212,13 +1219,11 @@
 #endif
 
 /* Name of package */
-#ifndef MAGICKCORE_PACKAGE
-#define MAGICKCORE_PACKAGE "ImageMagick"
-#endif
+/* #undef PACKAGE */
 
 /* Define to the address where bug reports for this package should be sent. */
 #ifndef MAGICKCORE_PACKAGE_BUGREPORT
-#define MAGICKCORE_PACKAGE_BUGREPORT "https://github.com/ImageMagick/ImageMagick6/issues"
+#define MAGICKCORE_PACKAGE_BUGREPORT "https://github.com/ImageMagick/ImageMagick/issues"
 #endif
 
 /* Define to the full name of this package. */
@@ -1228,7 +1233,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.11-24"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.11-57"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1243,7 +1248,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.11-24"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.11-57"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1282,7 +1287,9 @@
 #endif
 
 /* Define if you have LIBRAW library */
-/* #undef RAW_R_DELEGATE */
+#ifndef MAGICKCORE_RAW_R_DELEGATE
+#define MAGICKCORE_RAW_R_DELEGATE 1
+#endif
 
 /* Define if you have RSVG library */
 /* #undef RSVG_DELEGATE */
@@ -1415,12 +1422,12 @@
 
 
 /* Version number of package */
-#ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "6.9.11-24"
-#endif
+/* #undef VERSION */
 
 /* Define if you have WEBPMUX library */
-/* #undef WEBPMUX_DELEGATE */
+#ifndef MAGICKCORE_WEBPMUX_DELEGATE
+#define MAGICKCORE_WEBPMUX_DELEGATE 1
+#endif
 
 /* Define if you have WEBP library */
 #ifndef MAGICKCORE_WEBP_DELEGATE
@@ -1434,9 +1441,7 @@
 /* #undef WITH_DMALLOC */
 
 /* Define if you have WMF library */
-#ifndef MAGICKCORE_WMF_DELEGATE
-#define MAGICKCORE_WMF_DELEGATE 1
-#endif
+/* #undef WMF_DELEGATE */
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
@@ -1498,9 +1503,6 @@
 
 /* Define to 1 if on MINIX. */
 /* #undef _MINIX */
-
-/* Define this for the OpenCL Accelerator */
-/* #undef _OPENCL */
 
 /* Define to 2 if the system does not provide POSIX.1 features except with
    this defined. */

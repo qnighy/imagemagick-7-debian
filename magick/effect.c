@@ -17,7 +17,7 @@
 %                                 October 1996                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -176,7 +176,7 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
   MagickPixelPacket
     bias;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -284,10 +284,10 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
 #endif
   for (y=0; y < (ssize_t) blur_image->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict r;
 
@@ -297,7 +297,7 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -320,17 +320,17 @@ MagickExport Image *AdaptiveBlurImageChannel(const Image *image,
       DoublePixelPacket
         pixel;
 
-      register const double
+      const double
         *magick_restrict k;
 
-      register ssize_t
+      ssize_t
         i,
         u,
         v;
 
       gamma=0.0;
-      i=(ssize_t) ceil((double) width*QuantumScale*
-        GetPixelIntensity(edge_image,r)-0.5);
+      i=CastDoubleToLong(ceil((double) width*QuantumScale*
+        GetPixelIntensity(edge_image,r)-0.5));
       if (i < 0)
         i=0;
       else
@@ -499,7 +499,7 @@ MagickExport Image *AdaptiveSharpenImageChannel(const Image *image,
   MagickPixelPacket
     bias;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -607,10 +607,10 @@ MagickExport Image *AdaptiveSharpenImageChannel(const Image *image,
 #endif
   for (y=0; y < (ssize_t) sharp_image->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict r;
 
@@ -620,7 +620,7 @@ MagickExport Image *AdaptiveSharpenImageChannel(const Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -643,17 +643,17 @@ MagickExport Image *AdaptiveSharpenImageChannel(const Image *image,
       DoublePixelPacket
         pixel;
 
-      register const double
+      const double
         *magick_restrict k;
 
-      register ssize_t
+      ssize_t
         i,
         u,
         v;
 
       gamma=0.0;
-      i=(ssize_t) ceil((double) width*(1.0-QuantumScale*
-        GetPixelIntensity(edge_image,r))-0.5);
+      i=CastDoubleToLong(ceil((double) width*(1.0-QuantumScale*
+        GetPixelIntensity(edge_image,r))-0.5));
       if (i < 0)
         i=0;
       else
@@ -887,7 +887,7 @@ MagickExport Image *ConvolveImageChannel(const Image *image,
   KernelInfo
     *kernel_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   kernel_info=AcquireKernelInfo((const char *) NULL);
@@ -953,7 +953,7 @@ static void Hull(const Image *image,const ssize_t x_offset,
   const ssize_t y_offset,const size_t columns,const size_t rows,
   const int polarity,Quantum *magick_restrict f,Quantum *magick_restrict g)
 {
-  register Quantum
+  Quantum
     *p,
     *q,
     *r,
@@ -973,7 +973,7 @@ static void Hull(const Image *image,const ssize_t x_offset,
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
-    register ssize_t
+    ssize_t
       i,
       x;
 
@@ -1011,7 +1011,7 @@ static void Hull(const Image *image,const ssize_t x_offset,
 #endif
   for (y=0; y < (ssize_t) rows; y++)
   {
-    register ssize_t
+    ssize_t
       i,
       x;
 
@@ -1060,7 +1060,7 @@ MagickExport Image *DespeckleImage(const Image *image,ExceptionInfo *exception)
     *buffer_info,
     *pixel_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   Quantum
@@ -1125,7 +1125,7 @@ MagickExport Image *DespeckleImage(const Image *image,ExceptionInfo *exception)
   despeckle_view=AcquireAuthenticCacheView(despeckle_image,exception);
   for (i=0; i < (ssize_t) number_channels; i++)
   {
-    register ssize_t
+    ssize_t
       k,
       x;
 
@@ -1141,10 +1141,10 @@ MagickExport Image *DespeckleImage(const Image *image,ExceptionInfo *exception)
     j=(ssize_t) image->columns+2;
     for (y=0; y < (ssize_t) image->rows; y++)
     {
-      register const IndexPacket
+      const IndexPacket
         *magick_restrict indexes;
 
-      register const PixelPacket
+      const PixelPacket
         *magick_restrict p;
 
       p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
@@ -1275,7 +1275,7 @@ MagickExport Image *EdgeImage(const Image *image,const double radius,
   KernelInfo
     *kernel_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1365,7 +1365,7 @@ MagickExport Image *EmbossImage(const Image *image,const double radius,
   KernelInfo
     *kernel_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1501,7 +1501,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
   MagickRealType
     *filter_kernel;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -1528,7 +1528,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
         format[MaxTextExtent],
         *message;
 
-      register const double
+      const double
         *k;
 
       ssize_t
@@ -1603,10 +1603,10 @@ MagickExport Image *FilterImageChannel(const Image *image,
     MagickBooleanType
       sync;
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
     register IndexPacket
@@ -1615,7 +1615,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -1637,13 +1637,13 @@ MagickExport Image *FilterImageChannel(const Image *image,
       DoublePixelPacket
         pixel;
 
-      register const MagickRealType
+      const MagickRealType
         *magick_restrict k;
 
-      register const PixelPacket
+      const PixelPacket
         *magick_restrict kernel_pixels;
 
-      register ssize_t
+      ssize_t
         u;
 
       ssize_t
@@ -1693,7 +1693,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
           if (((channel & IndexChannel) != 0) &&
               (image->colorspace == CMYKColorspace))
             {
-              register const IndexPacket
+              const IndexPacket
                 *magick_restrict kernel_indexes;
 
               k=filter_kernel;
@@ -1756,7 +1756,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
           if (((channel & IndexChannel) != 0) &&
               (image->colorspace == CMYKColorspace))
             {
-              register const IndexPacket
+              const IndexPacket
                 *magick_restrict kernel_indexes;
 
               k=filter_kernel;
@@ -1824,7 +1824,7 @@ MagickExport Image *FilterImageChannel(const Image *image,
 %  GaussianBlurImage() blurs an image.  We convolve the image with a
 %  Gaussian operator of the given radius and standard deviation (sigma).
 %  For reasonable results, the radius should be larger than sigma.  Use a
-%  radius of 0 and GaussianBlurImage() selects a suitable radius for you
+%  radius of 0 and GaussianBlurImage() selects a suitable radius for you.
 %
 %  The format of the GaussianBlurImage method is:
 %
@@ -1946,7 +1946,7 @@ static double *GetMotionBlurKernel(const size_t width,const double sigma)
     *kernel,
     normalize;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -2011,7 +2011,7 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
   PointInfo
     point;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -2040,8 +2040,10 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
   point.y=(double) width*cos(DegreesToRadians(angle));
   for (i=0; i < (ssize_t) width; i++)
   {
-    offset[i].x=(ssize_t) ceil((double) (i*point.y)/hypot(point.x,point.y)-0.5);
-    offset[i].y=(ssize_t) ceil((double) (i*point.x)/hypot(point.x,point.y)-0.5);
+    offset[i].x=CastDoubleToLong(ceil((double) (i*point.y)/
+      hypot(point.x,point.y)-0.5));
+    offset[i].y=CastDoubleToLong(ceil((double) (i*point.x)/
+      hypot(point.x,point.y)-0.5));
   }
 
   /*
@@ -2086,7 +2088,7 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -2107,13 +2109,13 @@ MagickExport Image *MotionBlurImageChannel(const Image *image,
       PixelPacket
         pixel;
 
-      register const IndexPacket
+      const IndexPacket
         *magick_restrict indexes;
 
-      register double
+      double
         *magick_restrict k;
 
-      register ssize_t
+      ssize_t
         i;
 
       k=kernel;
@@ -2329,7 +2331,7 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -2354,7 +2356,7 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
         quadrant,
         target;
 
-      register ssize_t
+      ssize_t
         i;
 
       min_variance=MagickMaximumValue;
@@ -2372,10 +2374,10 @@ MagickExport Image *KuwaharaImageChannel(const Image *image,
         MagickPixelPacket
           mean;
 
-        register const PixelPacket
+        const PixelPacket
           *magick_restrict k;
 
-        register ssize_t
+        ssize_t
           n;
 
         quadrant.x=x;
@@ -2610,7 +2612,7 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
         *pix,
         *pixels;
 
-      register ssize_t
+      ssize_t
         y;
 
       ssize_t
@@ -2691,7 +2693,7 @@ MagickExport Image *LocalContrastImage(const Image *image,const double radius,
       register PixelPacket
         *magick_restrict q;
 
-      register ssize_t
+      ssize_t
         x;
 
       ssize_t
@@ -2826,7 +2828,7 @@ MagickExport Image *PreviewImage(const Image *image,const PreviewType preview,
   RectangleInfo
     geometry;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -3353,7 +3355,7 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
   PointInfo
     blur_center;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -3424,7 +3426,7 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
 #endif
   for (y=0; y < (ssize_t) blur_image->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
     register IndexPacket
@@ -3433,7 +3435,7 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -3461,7 +3463,7 @@ MagickExport Image *RotationalBlurImageChannel(const Image *image,
       PointInfo
         center;
 
-      register ssize_t
+      ssize_t
         i;
 
       size_t
@@ -3662,7 +3664,7 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
   MagickPixelPacket
     bias;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -3703,7 +3705,7 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
         format[MaxTextExtent],
         *message;
 
-      register const double
+      const double
         *k;
 
       ssize_t
@@ -3781,10 +3783,10 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
     MagickBooleanType
       sync;
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict l,
       *magick_restrict p;
 
@@ -3794,7 +3796,7 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -3824,10 +3826,10 @@ MagickExport Image *SelectiveBlurImageChannel(const Image *image,
       MagickRealType
         intensity;
 
-      register const double
+      const double
         *magick_restrict k;
 
-      register ssize_t
+      ssize_t
         u;
 
       ssize_t
@@ -4136,7 +4138,7 @@ MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
     PrimaryInfo
       normal;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict s0,
       *magick_restrict s1,
@@ -4145,7 +4147,7 @@ MagickExport Image *ShadeImage(const Image *image,const MagickBooleanType gray,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -4305,7 +4307,7 @@ MagickExport Image *SharpenImageChannel(const Image *image,
   KernelInfo
     *kernel_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -4475,7 +4477,7 @@ MagickExport Image *SpreadImage(const Image *image,const double radius,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -4650,10 +4652,10 @@ MagickExport Image *UnsharpMaskImageChannel(const Image *image,
     DoublePixelPacket
       pixel;
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
     register IndexPacket
@@ -4662,7 +4664,7 @@ MagickExport Image *UnsharpMaskImageChannel(const Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)

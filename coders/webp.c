@@ -17,7 +17,7 @@
 %                                 March 2011                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -148,10 +148,10 @@ static MagickBooleanType IsWEBP(const unsigned char *magick,const size_t length)
 static inline uint32_t ReadWebPLSBWord(
   const unsigned char *magick_restrict data)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register uint32_t
+  uint32_t
     value;
 
   p=data;
@@ -238,7 +238,7 @@ static int ReadSingleWEBPImage(Image *image,const uint8_t *stream,
   int
     webp_status;
 
-  register unsigned char
+  unsigned char
     *p;
 
   size_t
@@ -297,7 +297,7 @@ static int ReadSingleWEBPImage(Image *image,const uint8_t *stream,
     register PixelPacket
       *q;
 
-    register ssize_t
+    ssize_t
       x;
 
     q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
@@ -305,8 +305,8 @@ static int ReadSingleWEBPImage(Image *image,const uint8_t *stream,
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      if ((x >= x_offset && x < x_offset + image_width) &&
-          (y >= y_offset && y < y_offset + image_height))
+      if ((x >= x_offset && x < (ssize_t) (x_offset+image_width)) &&
+          (y >= y_offset && y < (ssize_t) (y_offset+image_height)))
         {
           SetPixelRed(q,ScaleCharToQuantum(*p++));
           SetPixelGreen(q,ScaleCharToQuantum(*p++));
@@ -346,7 +346,8 @@ static int ReadSingleWEBPImage(Image *image,const uint8_t *stream,
       *mux;
 
     /*
-      Extract any profiles.
+      Extract any profiles:
+      https://developers.google.com/speed/webp/docs/container-api.
     */
     content.bytes=stream;
     content.size=length;
@@ -422,6 +423,22 @@ static int ReadAnimatedWEBPImage(const ImageInfo *image_info,Image *image,
   canvas_height=image->rows;
   data.bytes=stream;
   data.size=length;
+  {
+    WebPMux
+      *mux;
+
+    WebPMuxAnimParams
+      params;
+
+    WebPMuxError
+      status;
+
+    mux=WebPMuxCreate(&data,0);
+    status=WebPMuxGetAnimationParams(mux,&params);
+    if (status >= 0)
+      image->iterations=params.loop_count;
+    WebPMuxDelete(mux);
+  }
   demux=WebPDemux(&data);
   if (WebPDemuxGetFrame(demux,1,&iter)) {
     do {
@@ -451,6 +468,7 @@ static int ReadAnimatedWEBPImage(const ImageInfo *image_info,Image *image,
       image->page.height=canvas_height;
       image->ticks_per_second=100;
       image->delay=iter.duration/10;
+      image->dispose=NoneDispose;
       if (iter.dispose_method == WEBP_MUX_DISPOSE_BACKGROUND)
         image->dispose=BackgroundDispose;
       image_count++;
@@ -748,7 +766,7 @@ static MagickBooleanType WriteSingleWEBPImage(const ImageInfo *image_info,
   MagickBooleanType
     status = MagickFalse;
 
-  register uint32_t
+  uint32_t
     *magick_restrict q;
 
   ssize_t
@@ -779,10 +797,10 @@ static MagickBooleanType WriteSingleWEBPImage(const ImageInfo *image_info,
   q=picture->argb;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);

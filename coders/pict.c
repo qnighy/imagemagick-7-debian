@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -330,13 +330,13 @@ static const unsigned char *UnpackScanline(
   const unsigned char *magick_restrict pixels,const unsigned int bits_per_pixel,
     unsigned char *scanline,MagickSizeType *bytes_per_line)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
-  register unsigned char
+  unsigned char
     *q;
 
   p=pixels;
@@ -403,13 +403,13 @@ static unsigned char *DecodeImage(Image *blob,Image *image,
   MagickSizeType
     number_pixels;
 
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
-  register unsigned char
+  unsigned char
     *q;
 
   size_t
@@ -587,13 +587,13 @@ static size_t EncodeImage(Image *image,const unsigned char *scanline,
 #define MaxCount  128
 #define MaxPackbitsRunlength  128
 
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
-  register unsigned char
+  unsigned char
     *q;
 
   size_t
@@ -861,13 +861,13 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
   register IndexPacket
     *indexes;
 
-  register ssize_t
+  ssize_t
     x;
 
   register PixelPacket
     *q;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1016,6 +1016,8 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
               break;
             image->columns=(size_t) (frame.right-frame.left);
             image->rows=(size_t) (frame.bottom-frame.top);
+            if (image_info->ping != MagickFalse)
+              break;
             status=SetImageExtent(image,image->columns,image->rows);
             if (status != MagickFalse)
               status=ResetImagePixels(image,&image->exception);
@@ -1090,18 +1092,21 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
             else
               for (i=0; i < (ssize_t) height; i++)
               {
+                 size_t
+                  scanline_length;
+
                 if (EOFBlob(image) != MagickFalse)
                   break;
                 if (length > 200)
-                  {
-                    for (j=0; j < (ssize_t) ReadBlobMSBShort(image); j++)
-                      if (ReadBlobByte(image) == EOF)
-                        break;
-                  }
+                  scanline_length=ReadBlobMSBShort(image);
                 else
-                  for (j=0; j < (ssize_t) ReadBlobByte(image); j++)
-                    if (ReadBlobByte(image) == EOF)
-                      break;
+                  scanline_length=ReadBlobByte(image);
+                if ((MagickSizeType) scanline_length > GetBlobSize(image))
+                  ThrowPICTException(CorruptImageError,
+                    "InsufficientImageDataInFile");
+                for (j=0; j < (ssize_t) scanline_length; j++)
+                  if (ReadBlobByte(image) == EOF)
+                    break;
               }
             break;
           }
@@ -1153,7 +1158,7 @@ static Image *ReadPICTImage(const ImageInfo *image_info,
               source,
               destination;
 
-            register unsigned char
+            unsigned char
               *p;
 
             size_t
@@ -1693,13 +1698,13 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
     size_rectangle,
     source_rectangle;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -2041,7 +2046,7 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
         break;
       indexes=GetVirtualIndexQueue(image);
       for (x=0; x < (ssize_t) image->columns; x++)
-        scanline[x]=(unsigned char) GetPixelIndex(indexes+x);
+        scanline[x]=(unsigned char) ((size_t) GetPixelIndex(indexes+x));
       count+=EncodeImage(image,scanline,(size_t) (row_bytes & 0x7FFF),
         packed_scanline);
       if (image->previous == (Image *) NULL)
@@ -2062,7 +2067,7 @@ static MagickBooleanType WritePICTImage(const ImageInfo *image_info,
       }
     else
       {
-        register unsigned char
+        unsigned char
           *blue,
           *green,
           *opacity,

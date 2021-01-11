@@ -1,6 +1,6 @@
 package Image::Magick::Q16;
 
-#  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -123,12 +123,11 @@ It was originally developed to be used by CGI scripts for Web pages.
 
 A web page has been set up for this extension. See:
 
-	 file:///usr/share/doc/ImageMagick-6/www/perl-magick.html@EXTRA_DOC_DIR@
 	 https://imagemagick.org/script/perl-magick.php
 
 If you have problems, go to
 
-   https://imagemagick.org/discourse-server/viewforum.php?f=7
+   https://github.com/ImageMagick/ImageMagick6/discussions/categories/development
 
 =head1 AUTHOR
 

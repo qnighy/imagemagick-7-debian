@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -139,7 +139,7 @@
 static MagickPixelPacket **DestroyPixelThreadSet(const Image *images,
   MagickPixelPacket **pixels)
 {
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -163,7 +163,7 @@ static MagickPixelPacket **AcquirePixelThreadSet(const Image *images)
   MagickPixelPacket
     **pixels;
 
-  register ssize_t
+  ssize_t
     i,
     j;
 
@@ -230,7 +230,7 @@ static MagickRealType ApplyEvaluateOperator(RandomInfo *random_info,
   MagickRealType
     result;
 
-  register ssize_t
+  ssize_t
     i;
 
   result=0.0;
@@ -292,6 +292,12 @@ static MagickRealType ApplyEvaluateOperator(RandomInfo *random_info,
     {
       result=(MagickRealType) GenerateDifferentialNoise(random_info,pixel,
         ImpulseNoise,value);
+      break;
+    }
+    case InverseLogEvaluateOperator:
+    {
+      result=(QuantumRange*pow((value+1.0),QuantumScale*pixel)-1.0)*
+        PerceptibleReciprocal(value);
       break;
     }
     case LaplacianNoiseEvaluateOperator:
@@ -573,7 +579,7 @@ MagickExport Image *EvaluateImages(const Image *images,
         register PixelPacket
           *magick_restrict q;
 
-        register ssize_t
+        ssize_t
           x;
 
         if (status == MagickFalse)
@@ -589,7 +595,7 @@ MagickExport Image *EvaluateImages(const Image *images,
         evaluate_pixel=evaluate_pixels[id];
         for (x=0; x < (ssize_t) image->columns; x++)
         {
-          register ssize_t
+          ssize_t
             i;
 
           for (i=0; i < (ssize_t) number_images; i++)
@@ -597,10 +603,10 @@ MagickExport Image *EvaluateImages(const Image *images,
           next=images;
           for (i=0; i < (ssize_t) number_images; i++)
           {
-            register const IndexPacket
+            const IndexPacket
               *indexes;
 
-            register const PixelPacket
+            const PixelPacket
               *p;
 
             image_view=AcquireVirtualCacheView(next,exception);
@@ -675,7 +681,7 @@ MagickExport Image *EvaluateImages(const Image *images,
         register IndexPacket
           *magick_restrict evaluate_indexes;
 
-        register ssize_t
+        ssize_t
           i,
           x;
 
@@ -701,10 +707,10 @@ MagickExport Image *EvaluateImages(const Image *images,
         next=images;
         for (i=0; i < (ssize_t) number_images; i++)
         {
-          register const IndexPacket
+          const IndexPacket
             *indexes;
 
-          register const PixelPacket
+          const PixelPacket
             *p;
 
           image_view=AcquireVirtualCacheView(next,exception);
@@ -765,7 +771,7 @@ MagickExport Image *EvaluateImages(const Image *images,
         if (op == MultiplyEvaluateOperator)
           for (x=0; x < (ssize_t) image->columns; x++)
           {
-            register ssize_t
+            ssize_t
               j;
 
             for (j=0; j < (ssize_t) (number_images-1); j++)
@@ -865,7 +871,7 @@ MagickExport MagickBooleanType EvaluateImageChannel(Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -998,7 +1004,7 @@ static Quantum ApplyFunction(Quantum pixel,const MagickFunction function,
   MagickRealType
     result;
 
-  register ssize_t
+  ssize_t
     i;
 
   (void) exception;
@@ -1133,7 +1139,7 @@ MagickExport MagickBooleanType FunctionImageChannel(Image *image,
     register IndexPacket
       *magick_restrict indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -1424,13 +1430,13 @@ MagickExport MagickBooleanType GetImageChannelKurtosis(const Image *image,
   sum_fourth_power=0.0;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);
@@ -1716,13 +1722,13 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
   GetMagickPixelPacket(image,&pixel);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     /*
@@ -1777,13 +1783,13 @@ MagickExport ChannelMoments *GetImageChannelMoments(const Image *image,
   }
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     /*
@@ -2119,7 +2125,7 @@ MagickExport ChannelPerceptualHash *GetImageChannelPerceptualHash(
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -2238,13 +2244,13 @@ MagickExport MagickBooleanType GetImageChannelRange(const Image *image,
   GetMagickPixelPacket(image,&pixel);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);
@@ -2346,7 +2352,7 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
   QuantumAny
     range;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -2388,13 +2394,13 @@ MagickExport ChannelStatistics *GetImageChannelStatistics(const Image *image,
   (void) memset(&number_bins,0,sizeof(number_bins));
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     /*
@@ -2829,7 +2835,7 @@ MagickExport Image *PolynomialImageChannel(const Image *images,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       i,
       x;
 
@@ -2853,10 +2859,10 @@ MagickExport Image *PolynomialImageChannel(const Image *images,
     number_images=GetImageListLength(images);
     for (i=0; i < (ssize_t) number_images; i++)
     {
-      register const IndexPacket
+      const IndexPacket
         *indexes;
 
-      register const PixelPacket
+      const PixelPacket
         *p;
 
       if (i >= (ssize_t) number_terms)
@@ -3003,7 +3009,7 @@ typedef struct _PixelList
 
 static PixelList *DestroyPixelList(PixelList *pixel_list)
 {
-  register ssize_t
+  ssize_t
     i;
 
   if (pixel_list == (PixelList *) NULL)
@@ -3018,7 +3024,7 @@ static PixelList *DestroyPixelList(PixelList *pixel_list)
 
 static PixelList **DestroyPixelListThreadSet(PixelList **pixel_list)
 {
-  register ssize_t
+  ssize_t
     i;
 
   assert(pixel_list != (PixelList **) NULL);
@@ -3034,7 +3040,7 @@ static PixelList *AcquirePixelList(const size_t width,const size_t height)
   PixelList
     *pixel_list;
 
-  register ssize_t
+  ssize_t
     i;
 
   pixel_list=(PixelList *) AcquireMagickMemory(sizeof(*pixel_list));
@@ -3061,7 +3067,7 @@ static PixelList **AcquirePixelListThreadSet(const size_t width,
   PixelList
     **pixel_list;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -3085,10 +3091,10 @@ static PixelList **AcquirePixelListThreadSet(const size_t width,
 static void AddNodePixelList(PixelList *pixel_list,const ssize_t channel,
   const size_t color)
 {
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     level;
 
   size_t
@@ -3144,10 +3150,10 @@ static void AddNodePixelList(PixelList *pixel_list,const ssize_t channel,
 
 static void GetMaximumPixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
 {
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     channel;
 
   size_t
@@ -3190,10 +3196,10 @@ static void GetMeanPixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
   MagickRealType
     sum;
 
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     channel;
 
   size_t
@@ -3232,10 +3238,10 @@ static void GetMeanPixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
 
 static void GetMedianPixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
 {
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     channel;
 
   size_t
@@ -3272,10 +3278,10 @@ static void GetMedianPixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
 
 static void GetMinimumPixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
 {
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     channel;
 
   size_t
@@ -3315,10 +3321,10 @@ static void GetMinimumPixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
 
 static void GetModePixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
 {
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     channel;
 
   size_t
@@ -3363,10 +3369,10 @@ static void GetModePixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
 
 static void GetNonpeakPixelList(PixelList *pixel_list,MagickPixelPacket *pixel)
 {
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     channel;
 
   size_t
@@ -3416,10 +3422,10 @@ static void GetRootMeanSquarePixelList(PixelList *pixel_list,
   MagickRealType
     sum;
 
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     channel;
 
   size_t
@@ -3463,10 +3469,10 @@ static void GetStandardDeviationPixelList(PixelList *pixel_list,
     sum,
     sum_squared;
 
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     channel;
 
   size_t
@@ -3490,7 +3496,7 @@ static void GetStandardDeviationPixelList(PixelList *pixel_list,
     sum_squared=0.0;
     do
     {
-      register ssize_t
+      ssize_t
         i;
 
       color=list->nodes[color].next[0];
@@ -3560,10 +3566,10 @@ static void ResetPixelList(PixelList *pixel_list)
   register ListNode
     *root;
 
-  register SkipList
+  SkipList
     *list;
 
-  register ssize_t
+  ssize_t
     channel;
 
   /*
@@ -3664,10 +3670,10 @@ MagickExport Image *StatisticImageChannel(const Image *image,
     const int
       id = GetOpenMPThreadId();
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
     register IndexPacket
@@ -3676,7 +3682,7 @@ MagickExport Image *StatisticImageChannel(const Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -3697,13 +3703,13 @@ MagickExport Image *StatisticImageChannel(const Image *image,
       MagickPixelPacket
         pixel;
 
-      register const IndexPacket
+      const IndexPacket
         *magick_restrict s;
 
-      register const PixelPacket
+      const PixelPacket
         *magick_restrict r;
 
-      register ssize_t
+      ssize_t
         u,
         v;
 

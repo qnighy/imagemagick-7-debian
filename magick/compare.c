@@ -17,7 +17,7 @@
 %                               December 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -246,9 +246,7 @@ MagickExport Image *CompareImageChannels(Image *image,
     Generate difference image.
   */
   status=MagickTrue;
-  fuzz=(double) MagickMin(GetNumberChannels(image,channel),
-    GetNumberChannels(reconstruct_image,channel))*
-    GetFuzzyColorDistance(image,reconstruct_image);
+  fuzz=GetFuzzyColorDistance(image,reconstruct_image);
   GetMagickPixelPacket(image,&zero);
   image_view=AcquireVirtualCacheView(image,exception);
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
@@ -266,11 +264,11 @@ MagickExport Image *CompareImageChannels(Image *image,
       pixel,
       reconstruct_pixel;
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes,
       *magick_restrict reconstruct_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict q;
 
@@ -280,7 +278,7 @@ MagickExport Image *CompareImageChannels(Image *image,
     register PixelPacket
       *magick_restrict r;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -301,9 +299,6 @@ MagickExport Image *CompareImageChannels(Image *image,
     reconstruct_pixel=zero;
     for (x=0; x < (ssize_t) columns; x++)
     {
-      double
-        distance;
-
       MagickStatusType
         difference;
 
@@ -311,7 +306,6 @@ MagickExport Image *CompareImageChannels(Image *image,
       SetMagickPixelPacket(reconstruct_image,q,reconstruct_indexes+x,
         &reconstruct_pixel);
       difference=MagickFalse;
-      distance=0.0;
       if (channel == CompositeChannels)
         {
           if (IsMagickColorSimilar(&pixel,&reconstruct_pixel) == MagickFalse)
@@ -321,6 +315,7 @@ MagickExport Image *CompareImageChannels(Image *image,
         {
           double
             Da,
+            distance,
             pixel,
             Sa;
 
@@ -331,21 +326,21 @@ MagickExport Image *CompareImageChannels(Image *image,
           if ((channel & RedChannel) != 0)
             {
               pixel=Sa*GetPixelRed(p)-Da*GetPixelRed(q);
-              distance+=pixel*pixel;
+              distance=pixel*pixel;
               if (distance >= fuzz)
                 difference=MagickTrue;
             }
           if ((channel & GreenChannel) != 0)
             {
               pixel=Sa*GetPixelGreen(p)-Da*GetPixelGreen(q);
-              distance+=pixel*pixel;
+              distance=pixel*pixel;
               if (distance >= fuzz)
                 difference=MagickTrue;
             }
           if ((channel & BlueChannel) != 0)
             {
               pixel=Sa*GetPixelBlue(p)-Da*GetPixelBlue(q);
-              distance+=pixel*pixel;
+              distance=pixel*pixel;
               if (distance >= fuzz)
                 difference=MagickTrue;
             }
@@ -353,7 +348,7 @@ MagickExport Image *CompareImageChannels(Image *image,
               (image->matte != MagickFalse))
             {
               pixel=(double) GetPixelOpacity(p)-GetPixelOpacity(q);
-              distance+=pixel*pixel;
+              distance=pixel*pixel;
               if (distance >= fuzz)
                 difference=MagickTrue;
             }
@@ -361,7 +356,7 @@ MagickExport Image *CompareImageChannels(Image *image,
               (image->colorspace == CMYKColorspace))
             {
               pixel=Sa*indexes[x]-Da*reconstruct_indexes[x];
-              distance+=pixel*pixel;
+              distance=pixel*pixel;
               if (distance >= fuzz)
                 difference=MagickTrue;
             }
@@ -461,9 +456,7 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
     Compute the absolute difference in pixels between two images.
   */
   status=MagickTrue;
-  fuzz=(double) MagickMin(GetNumberChannels(image,channel),
-    GetNumberChannels(reconstruct_image,channel))*
-    GetFuzzyColorDistance(image,reconstruct_image);
+  fuzz=GetFuzzyColorDistance(image,reconstruct_image);
   rows=MagickMax(image->rows,reconstruct_image->rows);
   columns=MagickMax(image->columns,reconstruct_image->columns);
   image_view=AcquireVirtualCacheView(image,exception);
@@ -477,15 +470,15 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
     double
       channel_distortion[CompositeChannels+1];
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes,
       *magick_restrict reconstruct_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       i,
       x;
 
@@ -517,11 +510,10 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
         (QuantumRange-OpaqueOpacity));
       Da=QuantumScale*(image->matte != MagickFalse ? GetPixelAlpha(q) :
         (QuantumRange-OpaqueOpacity));
-      distance=0.0;
       if ((channel & RedChannel) != 0)
         {
           pixel=Sa*GetPixelRed(p)-Da*GetPixelRed(q);
-          distance+=pixel*pixel;
+          distance=pixel*pixel;
           if (distance >= fuzz)
             {
               channel_distortion[RedChannel]++;
@@ -531,7 +523,7 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
       if ((channel & GreenChannel) != 0)
         {
           pixel=Sa*GetPixelGreen(p)-Da*GetPixelGreen(q);
-          distance+=pixel*pixel;
+          distance=pixel*pixel;
           if (distance >= fuzz)
             {
               channel_distortion[GreenChannel]++;
@@ -541,7 +533,7 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
       if ((channel & BlueChannel) != 0)
         {
           pixel=Sa*GetPixelBlue(p)-Da*GetPixelBlue(q);
-          distance+=pixel*pixel;
+          distance=pixel*pixel;
           if (distance >= fuzz)
             {
               channel_distortion[BlueChannel]++;
@@ -552,7 +544,7 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
           (image->matte != MagickFalse))
         {
           pixel=(double) GetPixelOpacity(p)-GetPixelOpacity(q);
-          distance+=pixel*pixel;
+          distance=pixel*pixel;
           if (distance >= fuzz)
             {
               channel_distortion[OpacityChannel]++;
@@ -563,7 +555,7 @@ static MagickBooleanType GetAbsoluteDistortion(const Image *image,
           (image->colorspace == CMYKColorspace))
         {
           pixel=Sa*indexes[x]-Da*reconstruct_indexes[x];
-          distance+=pixel*pixel;
+          distance=pixel*pixel;
           if (distance >= fuzz)
             {
               channel_distortion[BlackChannel]++;
@@ -597,7 +589,7 @@ static MagickBooleanType GetFuzzDistortion(const Image *image,
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -621,15 +613,15 @@ static MagickBooleanType GetFuzzDistortion(const Image *image,
     double
       channel_distortion[CompositeChannels+1];
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes,
       *magick_restrict reconstruct_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       i,
       x;
 
@@ -722,7 +714,7 @@ static MagickBooleanType GetMeanAbsoluteDistortion(const Image *image,
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -746,15 +738,15 @@ static MagickBooleanType GetMeanAbsoluteDistortion(const Image *image,
     double
       channel_distortion[CompositeChannels+1];
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes,
       *magick_restrict reconstruct_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       i,
       x;
 
@@ -866,15 +858,15 @@ static MagickBooleanType GetMeanErrorPerPixel(Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
   for (y=0; y < (ssize_t) rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes,
       *magick_restrict reconstruct_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     p=GetCacheViewVirtualPixels(image_view,0,y,columns,1,exception);
@@ -976,7 +968,7 @@ static MagickBooleanType GetMeanSquaredDistortion(const Image *image,
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1000,15 +992,15 @@ static MagickBooleanType GetMeanSquaredDistortion(const Image *image,
     double
       channel_distortion[CompositeChannels+1];
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes,
       *magick_restrict reconstruct_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       i,
       x;
 
@@ -1110,7 +1102,7 @@ static MagickBooleanType GetNormalizedCrossCorrelationDistortion(
   MagickRealType
     area;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1147,15 +1139,15 @@ static MagickBooleanType GetNormalizedCrossCorrelationDistortion(
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
   for (y=0; y < (ssize_t) rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes,
       *magick_restrict reconstruct_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -1294,15 +1286,15 @@ static MagickBooleanType GetPeakAbsoluteDistortion(const Image *image,
     double
       channel_distortion[CompositeChannels+1];
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes,
       *magick_restrict reconstruct_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       i,
       x;
 
@@ -1466,7 +1458,7 @@ static MagickBooleanType GetPerceptualHashDistortion(const Image *image,
   double
     difference;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -1946,15 +1938,15 @@ MagickExport MagickBooleanType IsImagesEqual(Image *image,
   reconstruct_view=AcquireVirtualCacheView(reconstruct_image,exception);
   for (y=0; y < (ssize_t) rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes,
       *magick_restrict reconstruct_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p,
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     p=GetCacheViewVirtualPixels(image_view,0,y,columns,1,exception);
@@ -2165,7 +2157,7 @@ MagickExport Image *SimilarityMetricImage(Image *image,const Image *reference,
     double
       similarity;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket

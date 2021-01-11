@@ -17,7 +17,7 @@
 %                                January 2014                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -132,6 +132,7 @@ ModuleExport size_t RegisterJSONImage(void)
   entry->description=ConstantString("The image format and characteristics");
   entry->mime_type=ConstantString("application/json");
   entry->magick_module=ConstantString("JSON");
+  entry->endian_support=MagickTrue;
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -192,10 +193,10 @@ static void JSONFormatLocaleFile(FILE *file,const char *format,
   char
     *escaped_json;
 
-  register char
+  char
     *q;
 
-  register const char
+  const char
     *p;
 
   size_t
@@ -333,7 +334,7 @@ static ChannelStatistics *GetLocationStatistics(const Image *image,
   ChannelStatistics
     *channel_statistics;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -372,13 +373,13 @@ static ChannelStatistics *GetLocationStatistics(const Image *image,
   }
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     p=GetVirtualPixels(image,0,y,image->columns,1,exception);
@@ -609,7 +610,7 @@ static ssize_t PrintChannelLocations(FILE *file,const Image *image,
   n=0;
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const PixelPacket
+    const PixelPacket
       *p;
 
     ssize_t
@@ -679,7 +680,7 @@ static ssize_t PrintChannelMoments(FILE *file,const ChannelType channel,
   const char *name,const MagickBooleanType separator,
   const ChannelMoments *channel_moments)
 {
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -718,7 +719,7 @@ static ssize_t PrintChannelPerceptualHash(FILE *file,const ChannelType channel,
   const char *name,const MagickBooleanType separator,
   const ChannelPerceptualHash *channel_phash)
 {
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -800,7 +801,7 @@ static void EncodeIptcProfile(FILE *file,const StringInfo *profile)
     record,
     sentinel;
 
-  register ssize_t
+  ssize_t
     i,
     j,
     k;
@@ -989,7 +990,8 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
 
   double
     elapsed_time,
-    user_time;
+    user_time,
+    version;
 
   ExceptionInfo
     *exception;
@@ -997,7 +999,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
   ImageType
     type;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -1024,17 +1026,29 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
   exception=DestroyExceptionInfo(exception);
   exception=(&image->exception);
   (void) SignatureImage(image);
-  JSONFormatLocaleFile(file,"{\n  \"image\": {\n    \"name\": %s,\n",
-    image->filename);
-  if (*image->magick_filename != '\0')
-    if (LocaleCompare(image->magick_filename,image->filename) != 0)
-      {
-        char
-          filename[MaxTextExtent];
-
-        GetPathComponent(image->magick_filename,TailPath,filename);
-        JSONFormatLocaleFile(file,"    \"baseName\": %s,\n",filename);
-      }
+  (void) FormatLocaleFile(file,"{\n");
+  version=1.0;
+  artifact=GetImageArtifact(image,"json:version");
+  if (artifact != (const char *) NULL)
+    version=StringToDouble(artifact,(char **) NULL);
+  if (version >= 1.0)
+    (void) FormatLocaleFile(file,"  \"version\": \"%.1f\",\n",version);
+  if (*image->magick_filename == '\0')
+    JSONFormatLocaleFile(file,"  \"image\": {\n    \"name\": %s,\n",
+      image->filename);
+  else
+    {
+      JSONFormatLocaleFile(file,"  \"image\": {\n    \"name\": %s,\n",
+        image->magick_filename);
+      if (LocaleCompare(image->magick_filename,image->filename) != 0)
+        {
+          char
+            filename[MaxTextExtent];
+  
+          GetPathComponent(image->magick_filename,TailPath,filename);
+          JSONFormatLocaleFile(file,"    \"baseName\": %s,\n",filename);
+        }
+    }
   magick_info=GetMagickInfo(image->magick,exception);
   JSONFormatLocaleFile(file,"    \"format\": %s,\n",image->magick);
   if ((magick_info != (const MagickInfo *) NULL) &&
@@ -1076,8 +1090,12 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
   if (image->type != UndefinedType)
     JSONFormatLocaleFile(file,"    \"baseType\": %s,\n",
       CommandOptionToMnemonic(MagickTypeOptions,(ssize_t) image->type));
-  JSONFormatLocaleFile(file,"    \"endianness\": %s,\n",
-    CommandOptionToMnemonic(MagickEndianOptions,(ssize_t) image->endian));
+  if (version < 1.0)
+    JSONFormatLocaleFile(file,"    \"endianness\": %s,\n",
+      CommandOptionToMnemonic(MagickEndianOptions,(ssize_t) image->endian));
+  else
+    JSONFormatLocaleFile(file,"    \"endianness\": %s,\n",
+      CommandOptionToMnemonic(MagickEndianOptions,(ssize_t) image->endian));
   locate=GetImageArtifact(image,"identify:locate");
   if (locate == (const char *) NULL)
     locate=GetImageArtifact(image,"json:locate");
@@ -1390,10 +1408,10 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
   x=0;
   if (image->matte != MagickFalse)
     {
-      register const IndexPacket
+      const IndexPacket
         *indexes;
 
-      register const PixelPacket
+      const PixelPacket
         *p;
 
       p=(PixelPacket *) NULL;
@@ -1540,7 +1558,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
       ImageInfo
         *image_info;
 
-      register char
+      char
         *p,
         *q;
 
@@ -1706,7 +1724,7 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
     }
   (void) FormatLocaleFile(file,"    \"tainted\": %s,\n",
     image->taint != MagickFalse ? "true" : "false");
-  (void) FormatMagickSize(GetBlobSize(image),MagickFalse,format);
+  (void) FormatMagickSize(image->extent,MagickFalse,format);
   JSONFormatLocaleFile(file,"    \"filesize\": %s,\n",format);
   (void) FormatMagickSize((MagickSizeType) image->columns*image->rows,
      MagickFalse,format);
@@ -1721,8 +1739,8 @@ static MagickBooleanType EncodeImageAttributes(Image *image,FILE *file)
     (unsigned long) (elapsed_time/60.0),(unsigned long) ceil(fmod(
     elapsed_time,60.0)),(unsigned long) (1000.0*(elapsed_time-floor(
     elapsed_time))));
-  JSONFormatLocaleFile(file,"    \"version\": %s\n",
-    GetMagickVersion((size_t *) NULL));
+  JSONFormatLocaleFile(file,"    \"version\": %s\n",GetMagickVersion(
+    (size_t *) NULL));
   (void) FormatLocaleFile(file,"  }\n}\n");
   (void) fflush(file);
   return(ferror(file) != 0 ? MagickFalse : MagickTrue);
@@ -1738,7 +1756,7 @@ static MagickBooleanType WriteJSONImage(const ImageInfo *image_info,
     scene;
 
   size_t
-    imageListLength;
+    number_scenes;
 
   /*
     Open output image file.
@@ -1753,11 +1771,11 @@ static MagickBooleanType WriteJSONImage(const ImageInfo *image_info,
   if (status == MagickFalse)
     return(status);
   scene=0;
-  imageListLength=GetImageListLength(image);
+  number_scenes=GetImageListLength(image);
   do
   {
     if (scene == 0)
-      (void) WriteBlobString(image,"[\n");
+      (void) WriteBlobString(image,"[");
     (void) CopyMagickString(image->filename,image->magick_filename,
       MaxTextExtent);
     image->magick_columns=image->columns;
@@ -1770,7 +1788,7 @@ static MagickBooleanType WriteJSONImage(const ImageInfo *image_info,
       }
     (void) WriteBlobString(image,",\n");
     image=SyncNextImageInList(image);
-    status=SetImageProgress(image,SaveImagesTag,scene++,imageListLength);
+    status=SetImageProgress(image,SaveImagesTag,scene++,number_scenes);
     if (status == MagickFalse)
       break;
   } while (image_info->adjoin != MagickFalse);

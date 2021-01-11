@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -207,10 +207,10 @@ static void ReadPDFInfo(const ImageInfo *image_info,Image *image,
   MagickByteBuffer
     buffer;
 
-  register char
+  char
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   SegmentInfo
@@ -292,7 +292,7 @@ static void ReadPDFInfo(const ImageInfo *image_info,Image *image,
         SkipMagickByteBuffer(&buffer,strlen(SpotColor)+1);
         for (c=ReadMagickByteBuffer(&buffer); c != EOF; c=ReadMagickByteBuffer(&buffer))
         {
-          if ((isspace(c) != 0) || (c == '/') || ((i+1) == MagickPathExtent))
+          if ((isspace((int) ((unsigned char) c)) != 0) || (c == '/') || ((i+1) == MagickPathExtent))
             break;
           name[i++]=(char) c;
         }
@@ -368,6 +368,36 @@ static inline void CleanupPDFInfo(PDFInfo *pdf_info)
     pdf_info->profile=DestroyStringInfo(pdf_info->profile);
 }
 
+static char *SanitizeDelegateString(const char *source)
+{
+  char
+    *sanitize_source;
+
+  const char
+    *q;
+
+  char
+    *p;
+
+  static char
+#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+    whitelist[] =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 "
+      "$-_.+!;*(),{}|^~[]`\'><#%/?:@&=";
+#else
+    whitelist[] =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 "
+      "$-_.+!;*(),{}|\\^~[]`\"><#%/?:@&=";
+#endif
+
+  sanitize_source=AcquireString(source);
+  p=sanitize_source;
+  q=sanitize_source+strlen(sanitize_source);
+  for (p+=strspn(p,whitelist); p != q; p+=strspn(p,whitelist))
+    *p='_';
+  return(sanitize_source);
+}
+
 static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   char
@@ -417,7 +447,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   RectangleInfo
     page;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -573,28 +603,35 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   options=AcquireString("");
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",image->x_resolution,
     image->y_resolution);
+  if (image_info->ping != MagickFalse)
+    (void) FormatLocaleString(density,MagickPathExtent,"2.0x2.0");
   if ((image_info->page != (char *) NULL) || (fitPage != MagickFalse))
     (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
       page.width,(double) page.height);
   if (fitPage != MagickFalse)
     (void) ConcatenateMagickString(options,"-dPSFitPage ",MaxTextExtent);
-  if (info.cmyk != MagickFalse)
-    (void) ConcatenateMagickString(options,"-dUseCIEColor ",MaxTextExtent);
   if (info.cropbox != MagickFalse)
     (void) ConcatenateMagickString(options,"-dUseCropBox ",MaxTextExtent);
   if (info.trimbox != MagickFalse)
     (void) ConcatenateMagickString(options,"-dUseTrimBox ",MaxTextExtent);
   if (stop_on_error != MagickFalse)
     (void) ConcatenateMagickString(options,"-dPDFSTOPONERROR ",MaxTextExtent);
-  option=GetImageOption(image_info,"authenticate");
-  if (option != (char *) NULL)
+  if (image_info->authenticate != (char *) NULL)
     {
       char
-        passphrase[MaxTextExtent];
+        passphrase[MagickPathExtent],
+        *sanitize_passphrase;
 
-      (void) FormatLocaleString(passphrase,MaxTextExtent,
-        "\"-sPDFPassword=%s\" ",option);
-      (void) ConcatenateMagickString(options,passphrase,MaxTextExtent);
+      sanitize_passphrase=SanitizeDelegateString(image_info->authenticate);
+#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+      (void) FormatLocaleString(passphrase,MagickPathExtent,
+        "\"-sPDFPassword=%s\" ",sanitize_passphrase);
+#else
+      (void) FormatLocaleString(passphrase,MagickPathExtent,
+        "'-sPDFPassword=%s' ",sanitize_passphrase);
+#endif
+      sanitize_passphrase=DestroyString(sanitize_passphrase);
+      (void) ConcatenateMagickString(options,passphrase,MagickPathExtent);
     }
   read_info=CloneImageInfo(image_info);
   *read_info->magick='\0';
@@ -691,7 +728,7 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       Image
         *clone_image;
 
-      register ssize_t
+      ssize_t
         i;
 
       /*
@@ -709,6 +746,13 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     (void) CopyMagickString(pdf_image->filename,filename,MaxTextExtent);
     (void) CopyMagickString(pdf_image->magick,image->magick,MaxTextExtent);
     pdf_image->page=page;
+    if (image_info->ping != MagickFalse)
+      {
+        pdf_image->magick_columns*=image->x_resolution/2.0;
+        pdf_image->magick_rows*=image->y_resolution/2.0;
+        pdf_image->columns*=image->x_resolution/2.0;
+        pdf_image->rows*=image->y_resolution/2.0;
+      }
     (void) CloneImageProfiles(pdf_image,image);
     (void) CloneImageProperties(pdf_image,image);
     next=SyncNextImageInList(pdf_image);
@@ -865,10 +909,10 @@ static char *EscapeParenthesis(const char *source)
   char
     *destination;
 
-  register char
+  char
     *q;
 
-  register const char
+  const char
     *p;
 
   size_t
@@ -906,12 +950,12 @@ static char *EscapeParenthesis(const char *source)
 
 static size_t UTF8ToUTF16(const unsigned char *utf8,wchar_t *utf16)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
   if (utf16 != (wchar_t *) NULL)
     {
-      register wchar_t
+      wchar_t
         *q;
 
       wchar_t
@@ -995,7 +1039,7 @@ static wchar_t *ConvertUTF8ToUTF16(const unsigned char *source,size_t *length)
   *length=UTF8ToUTF16(source,(wchar_t *) NULL);
   if (*length == 0)
     {
-      register ssize_t
+      ssize_t
         i;
 
       /*
@@ -1068,7 +1112,7 @@ static MagickBooleanType WritePOCKETMODImage(const ImageInfo *image_info,
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   assert(image_info != (const ImageInfo *) NULL);
@@ -1092,7 +1136,7 @@ static MagickBooleanType WritePOCKETMODImage(const ImageInfo *image_info,
     if (page == (Image *) NULL)
       break;
     (void) SetImageAlphaChannel(page,RemoveAlphaChannel);
-    page->scene=i++;
+    page->scene=(size_t) i++;
     AppendImageToList(&pages,page);
     if ((i == 8) || (GetNextImageInList(next) == (Image *) NULL))
       {
@@ -1111,8 +1155,8 @@ static MagickBooleanType WritePOCKETMODImage(const ImageInfo *image_info,
           page=CloneImage(pages,0,0,MagickTrue,&image->exception);
           (void) QueryColorCompliance("#FFF",AllCompliance,
             &page->background_color,&image->exception);
-          SetImageBackgroundColor(page);
-          page->scene=i;
+          (void) SetImageBackgroundColor(page);
+          page->scene=(size_t) i;
           AppendImageToList(&pages,page);
         }
         images=CloneImages(pages,PocketPageOrder,&image->exception);
@@ -1248,16 +1292,16 @@ static MagickBooleanType WritePDFImage(const ImageInfo *image_info,Image *image)
     media_info,
     page_info;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register unsigned char
+  unsigned char
     *q;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 

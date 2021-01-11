@@ -17,7 +17,7 @@
 %                                 May 2001                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -81,18 +81,20 @@ static const CoderMapInfo
   CoderMap[] =
   {
     { "3FR", "DNG" },
-    { "3GP", "MPEG" },
-    { "3G2", "MPEG" },
+    { "3GP", "VIDEO" },
+    { "3G2", "VIDEO" },
     { "8BIM", "META" },
     { "8BIMTEXT", "META" },
     { "8BIMWTEXT", "META" },
     { "AFM", "TTF" },
     { "A", "RAW" },
     { "AI", "PDF" },
+    { "APNG", "VIDEO" },
     { "APP1JPEG", "META" },
     { "APP1", "META" },
     { "ARW", "DNG" },
-    { "AVI", "MPEG" },
+    { "AVI", "VIDEO" },
+    { "AVIF", "HEIC" },
     { "BIE", "JBIG" },
     { "BMP2", "BMP" },
     { "BMP3", "BMP" },
@@ -178,14 +180,15 @@ static const CoderMapInfo
     { "KDC", "DNG" },
     { "LOGO", "MAGICK" },
     { "M", "RAW" },
-    { "M2V", "MPEG" },
-    { "M4V", "MPEG" },
+    { "M2V", "VIDEO" },
+    { "M4V", "VIDEO" },
     { "MEF", "DNG" },
-    { "MKV", "MPEG" },
+    { "MKV", "VIDEO" },
     { "MNG", "PNG" },
-    { "MOV", "MPEG" },
-    { "MP4", "MPEG" },
-    { "MPG", "MPEG" },
+    { "MOV", "VIDEO" },
+    { "MP4", "VIDEO" },
+    { "MPEG", "VIDEO" },
+    { "MPG", "VIDEO" },
     { "MPRI", "MPR" },
     { "MEF", "DNG" },
     { "MRW", "DNG" },
@@ -245,11 +248,12 @@ static const CoderMapInfo
     { "UBRL6", "BRAILLE" },
     { "VDA", "TGA" },
     { "VST", "TGA" },
+    { "WEBM", "VIDEO" },
     { "WIZARD", "MAGICK" },
 #if defined(MAGICKCORE_WINGDI32_DELEGATE)
     { "WMF", "EMF" },
 #endif
-    { "WMV", "MPEG" },
+    { "WMV", "VIDEO" },
     { "WMZ", "WMF" },
     { "X3f", "DNG" },
     { "XMP", "META" },
@@ -306,7 +310,7 @@ static MagickBooleanType
 
 static void *DestroyCoderNode(void *coder_info)
 {
-  register CoderInfo
+  CoderInfo
     *p;
 
   p=(CoderInfo *) coder_info;
@@ -328,7 +332,7 @@ static SplayTreeInfo *AcquireCoderCache(const char *filename,
   MagickStatusType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   SplayTreeInfo
@@ -369,7 +373,7 @@ static SplayTreeInfo *AcquireCoderCache(const char *filename,
     CoderInfo
       *coder_info;
 
-    register const CoderMapInfo
+    const CoderMapInfo
       *p;
 
     p=CoderMap+i;
@@ -531,10 +535,10 @@ MagickExport const CoderInfo **GetCoderInfoList(const char *pattern,
   const CoderInfo
     **coder_map;
 
-  register const CoderInfo
+  const CoderInfo
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -601,7 +605,7 @@ MagickExport const CoderInfo **GetCoderInfoList(const char *pattern,
 
 static int CoderCompare(const void *x,const void *y)
 {
-  register const char
+  const char
     **p,
     **q;
 
@@ -616,10 +620,10 @@ MagickExport char **GetCoderList(const char *pattern,
   char
     **coder_map;
 
-  register const CoderInfo
+  const CoderInfo
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -726,7 +730,7 @@ MagickExport MagickBooleanType ListCoderInfo(FILE *file,
   const CoderInfo
     **coder_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t

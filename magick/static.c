@@ -17,7 +17,7 @@
 %                                 March 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -162,7 +162,6 @@ static struct
   { "MIFF", MagickFalse, RegisterMIFFImage, UnregisterMIFFImage },
   { "MONO", MagickFalse, RegisterMONOImage, UnregisterMONOImage },
   { "MPC", MagickFalse, RegisterMPCImage, UnregisterMPCImage },
-  { "MPEG", MagickFalse, RegisterMPEGImage, UnregisterMPEGImage },
   { "MPR", MagickFalse, RegisterMPRImage, UnregisterMPRImage },
   { "MSL", MagickFalse, RegisterMSLImage, UnregisterMSLImage },
   { "MTV", MagickFalse, RegisterMTVImage, UnregisterMTVImage },
@@ -219,6 +218,7 @@ static struct
   { "UYVY", MagickFalse, RegisterUYVYImage, UnregisterUYVYImage },
   { "VICAR", MagickFalse, RegisterVICARImage, UnregisterVICARImage },
   { "VID", MagickFalse, RegisterVIDImage, UnregisterVIDImage },
+  { "VIDEO", MagickFalse, RegisterVIDEOImage, UnregisterVIDEOImage },
   { "VIFF", MagickFalse, RegisterVIFFImage, UnregisterVIFFImage },
   { "VIPS", MagickFalse, RegisterVIPSImage, UnregisterVIPSImage },
   { "WBMP", MagickFalse, RegisterWBMPImage, UnregisterWBMPImage },
@@ -381,7 +381,7 @@ MagickExport MagickBooleanType RegisterStaticModule(const char *module,
   PolicyRights
     rights;
 
-  register const CoderInfo
+  const CoderInfo
     *p;
 
   size_t

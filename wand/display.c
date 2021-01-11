@@ -17,7 +17,7 @@
 %                                July 1992                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -236,7 +236,7 @@ static MagickBooleanType DisplayUsage(void)
   (void) printf("'-' for standard input or output.\n");
   (void) printf("\nButtons: \n");
   (void) puts(buttons);
-  return(MagickFalse);
+  return(MagickTrue);
 }
 
 WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
@@ -303,7 +303,7 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
   QuantizeInfo
     *quantize_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -399,7 +399,10 @@ WandExport MagickBooleanType DisplayImageCommand(ImageInfo *image_info,
       nostdin=MagickTrue;
     if ((LocaleCompare("help",option+1) == 0) ||
         (LocaleCompare("-help",option+1) == 0))
-      return(DisplayUsage());
+      {
+        DestroyDisplay();
+        return(DisplayUsage());
+      }
   }
   /*
     Get user defaults from X resource database.

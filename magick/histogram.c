@@ -18,7 +18,7 @@
 %                                August 2009                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -196,18 +196,18 @@ static CubeInfo *ClassifyImageColors(const Image *image,
   NodeInfo
     *node_info;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register size_t
+  size_t
     id,
     index,
     level;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -345,7 +345,7 @@ static CubeInfo *ClassifyImageColors(const Image *image,
 static void DefineImageHistogram(const Image *image,NodeInfo *node_info,
   ColorPacket **histogram)
 {
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -401,7 +401,7 @@ static void DefineImageHistogram(const Image *image,NodeInfo *node_info,
 */
 static CubeInfo *DestroyCubeInfo(const Image *image,CubeInfo *cube_info)
 {
-  register Nodes
+  Nodes
     *nodes;
 
   /*
@@ -446,7 +446,7 @@ static CubeInfo *DestroyCubeInfo(const Image *image,CubeInfo *cube_info)
 */
 static void DestroyColorCube(const Image *image,NodeInfo *node_info)
 {
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -659,19 +659,19 @@ static MagickBooleanType CheckImageColors(const Image *image,
     pixel,
     target;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     x;
 
-  register NodeInfo
+  NodeInfo
     *node_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -745,7 +745,7 @@ static MagickBooleanType CheckImageColors(const Image *image,
             Add this unique color to the color list.
           */
           if (node_info->number_unique == 0)
-            node_info->list=(ColorPacket *) AcquireMagickMemory(
+            node_info->list=(ColorPacket *) AcquireQuantumMemory(1,
               sizeof(*node_info->list));
           else
             node_info->list=(ColorPacket *) ResizeQuantumMemory(node_info->list,
@@ -828,19 +828,19 @@ MagickExport MagickBooleanType IsHistogramImage(const Image *image,
     pixel,
     target;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     x;
 
-  register NodeInfo
+  NodeInfo
     *node_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -921,7 +921,7 @@ MagickExport MagickBooleanType IsHistogramImage(const Image *image,
             Add this unique color to the color list.
           */
           if (node_info->number_unique == 0)
-            node_info->list=(ColorPacket *) AcquireMagickMemory(
+            node_info->list=(ColorPacket *) AcquireQuantumMemory(1,
               sizeof(*node_info->list));
           else
             node_info->list=(ColorPacket *) ResizeQuantumMemory(node_info->list,
@@ -1192,7 +1192,7 @@ MagickExport size_t GetNumberColors(const Image *image,FILE *file,
   register ColorPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1240,7 +1240,7 @@ MagickExport size_t GetNumberColors(const Image *image,FILE *file,
     (void) ConcatenateMagickString(tuple,")",MaxTextExtent);
     (void) QueryMagickColorname(image,&pixel,SVGCompliance,color,exception);
     GetColorTuple(&pixel,MagickTrue,hex);
-    (void) sprintf(count,"%g:",(double) ((MagickOffsetType) p->count));
+    (void) sprintf(count,"%.20g:",(double) ((MagickOffsetType) p->count));
     (void) FormatLocaleFile(file,"    %s %s %s %s\n",count,tuple,hex,color);
     if (image->progress_monitor != (MagickProgressMonitor) NULL)
       {
@@ -1294,7 +1294,7 @@ static void UniqueColorsToImage(Image *unique_image,CacheView *unique_view,
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t

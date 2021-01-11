@@ -15,7 +15,7 @@
 %                                February 2008                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -185,6 +185,14 @@ ModuleExport void UnregisterBRAILLEImage(void)
 static MagickBooleanType WriteBRAILLEImage(const ImageInfo *image_info,
   Image *image)
 {
+#define do_cell(dx,dy,bit) \
+{ \
+  if (image->storage_class == PseudoClass) \
+    cell|=(GetPixelIndex(indexes+x+dx+dy*image->columns) == polarity) << bit; \
+  else \
+    cell|=(GetPixelGreen(p+x+dx+dy*image->columns) == 0) << bit; \
+}
+
   char
     buffer[MaxTextExtent];
 
@@ -201,13 +209,13 @@ static MagickBooleanType WriteBRAILLEImage(const ImageInfo *image_info,
   MagickBooleanType
     status;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     x;
 
   size_t
@@ -302,12 +310,6 @@ static MagickBooleanType WriteBRAILLEImage(const ImageInfo *image_info,
         cell = 0;
 
       two_columns=(x+1 < (ssize_t) image->columns) ? MagickTrue : MagickFalse;
-#define do_cell(dx,dy,bit) \
-      if (image->storage_class == PseudoClass) \
-        cell |= (GetPixelIndex(indexes+x+dx+dy*image->columns) == polarity) << bit; \
-      else \
-        cell |= (GetPixelGreen(p+x+dx+dy*image->columns) == 0) << bit;
-
       do_cell(0,0,0)
       if (two_columns != MagickFalse)
         do_cell(1,0,3)
