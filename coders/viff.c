@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -227,16 +227,16 @@ static Image *ReadVIFFImage(const ImageInfo *image_info,
   register IndexPacket
     *indexes;
 
-  register ssize_t
+  ssize_t
     x;
 
   register PixelPacket
     *q;
 
-  register ssize_t
+  ssize_t
     i;
 
-  register unsigned char
+  unsigned char
     *p;
 
   size_t
@@ -956,19 +956,19 @@ static MagickBooleanType WriteVIFFImage(const ImageInfo *image_info,
   MemoryInfo
     *pixel_info;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     x;
 
-  register ssize_t
+  ssize_t
     i;
 
-  register unsigned char
+  unsigned char
     *q;
 
   size_t
@@ -1182,7 +1182,7 @@ static MagickBooleanType WriteVIFFImage(const ImageInfo *image_info,
               break;
             indexes=GetVirtualIndexQueue(image);
             for (x=0; x < (ssize_t) image->columns; x++)
-              *q++=(unsigned char) GetPixelIndex(indexes+x);
+              *q++=(unsigned char) ((size_t) GetPixelIndex(indexes+x));
             if (image->previous == (Image *) NULL)
               {
                 status=SetImageProgress(image,SaveImageTag,(MagickOffsetType) y,
@@ -1199,7 +1199,7 @@ static MagickBooleanType WriteVIFFImage(const ImageInfo *image_info,
               x,
               y;
 
-            register unsigned char
+            unsigned char
               bit,
               byte;
 

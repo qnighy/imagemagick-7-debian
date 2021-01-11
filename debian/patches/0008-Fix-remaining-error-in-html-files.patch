@@ -1,30 +1,30 @@
-From d3b6a04b5a264e3c35d8080b02c0e8ce2f2e740b Mon Sep 17 00:00:00 2001
+From e896d553bfac2a2a67eb8f2d3e731f4b9379672d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Sat, 18 Mar 2017 15:47:28 +0100
 Subject: Fix remaining error in html files
 
 ---
- www/changelog.html | 18 +++++++++---------
- www/download.html  | 10 +++++-----
+ www/changelog.html | 16 ++++++++--------
+ www/download.html  |  6 +++---
  www/index.html     |  1 -
- 3 files changed, 14 insertions(+), 15 deletions(-)
+ 3 files changed, 11 insertions(+), 12 deletions(-)
 
 diff --git a/www/changelog.html b/www/changelog.html
-index a7009489eb..4cf118b196 100644
+index e82ed58526..8cfd9b5bb5 100644
 --- a/www/changelog.html
 +++ b/www/changelog.html
-@@ -66,8 +66,8 @@
+@@ -67,8 +67,8 @@
        </li>
      </ul>
      </div>
--    <form class="form-inline my-2 my-lg-0" action="https://www.imagemagick.org/script/https://www.imagemagick.org/script/search.php">
+-    <form class="form-inline my-2 my-md-0" action="https://imagemagick.org/script/search.php">
 -      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
 +    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
 +      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
    </nav>
-@@ -962,10 +962,10 @@
+@@ -1198,10 +1198,10 @@
  <dt>2016-08-27  6.9.5-8 Dirk Lemstra &lt;dirk@lem.....org&gt;</dt>
    <li> Added define 'psd:additional-info' to preserve the additional information    in a PSD file.</li>
  <dt>2016-08-15  6.9.5-8 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
@@ -38,7 +38,7 @@ index a7009489eb..4cf118b196 100644
    <li> Release ImageMagick version 6.9.5-7, GIT revision 10993:7d2fd25:20160814.</li>
  <dt>2016-08-14  6.9.5-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Eliminate compiler warning.</li>
-@@ -4851,7 +4851,7 @@
+@@ -5087,7 +5087,7 @@
    <li> Set AppendImage() matte channel only when image has matte attribute set.</li>
    <li> The -crop with negative offsets do not modify the virtual canvas.</li>
    <li> Caption: Given both the width and height ("-size") of the area to fill,    adjust the fonts "-pointsize" until the text just filles the whole space    without overflowing.</li>
@@ -46,62 +46,49 @@ index a7009489eb..4cf118b196 100644
 +  <li> Generate proper Windows icon image files (patch provided by    Robert M. Jansen).</li></li></dl></div>    </div>
    </main><!-- /.container -->
    <footer class="magick-footer">
-     <p><a href="security-policy.html">Security</a> •
-@@ -4874,8 +4874,8 @@
+     <div class="container">
+@@ -5112,7 +5112,7 @@
    </footer>
  
    <!-- Javascript assets -->
--  <script src="../assets/magick-js.html" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.4.1/jquery.min.js"><\/script>')</script>
-+  <script src="assets/magick.js" crossorigin="anonymous"></script>
-+  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js"&gt;&lt;\/script&gt;')</script>
+-  <script>window.jQuery || document.write('<script src="assets/jquery.slim.min.js"><\/script>')</script><script src="assets/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf" crossorigin="anonymous">
++  <script>window.jQuery || document.write('&lt;script src="assets/jquery.slim.min.js"&gt;&lt;\/script&gt;')</script><script src="assets/bootstrap.bundle.min.js" crossorigin="anonymous">
  </body>
  </html>
--<!-- Magick Cache 19th March 2020 16:22 -->
+-<!-- Magick Cache 1st January 2021 19:38 -->
 \ No newline at end of file
-+<!-- Magick Cache 19th March 2020 16:22 -->
++
 diff --git a/www/download.html b/www/download.html
-index f858abb847..698fdbffd7 100644
+index d56cdb6feb..983593858e 100644
 --- a/www/download.html
 +++ b/www/download.html
-@@ -66,8 +66,8 @@
+@@ -67,8 +67,8 @@
        </li>
      </ul>
      </div>
--    <form class="form-inline my-2 my-lg-0" action="../www/https://www.imagemagick.org/script/search.php">
+-    <form class="form-inline my-2 my-md-0" action="https://imagemagick.org/script/search.php">
 -      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
 +    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
 +      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
    </nav>
-@@ -153,8 +153,8 @@
- 
- <p>ImageMagick RPM's are self-installing.  Simply type the following command and you're ready to start using ImageMagick:</p>
- 
--<pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-6.9.11-19.x86_64.rpm</span></pre>
--<p>You'll need to install the requisite libraries:<?p>
-+<pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-6.9.10-20.x86_64.rpm</span></pre>
-+<p>You'll need to install the requisite libraries:</p>
- 
- <pre class="highlight"><span class="crtprompt">$ </span><span class='crtin'>rpm -Uvh ImageMagick-libs-6.9.11-19.x86_64.rpm</span></pre>
- <p>Note, if there are missing dependencies, install them from the <a href="https://fedoraproject.org/wiki/EPEL">EPEL</a> repo.</p>
-@@ -480,4 +480,4 @@ objShell.Exec("convert ""e:/myimages/image.png"" ""e:/myimages/image.jpg""")</co
-   <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.4.1/jquery.min.js"><\/script>')</script>
+@@ -478,4 +478,4 @@ objShell.Exec("convert ""e:/myimages/image.png"" ""e:/myimages/image.jpg""")</co
+   <script>window.jQuery || document.write('<script src="assets/jquery.slim.min.js"><\/script>')</script><script src="assets/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf" crossorigin="anonymous">
  </body>
  </html>
--<!-- Magick Cache 12th June 2020 18:29 -->
+-<!-- Magick Cache 1st January 2021 19:38 -->
 \ No newline at end of file
-+<!-- Magick Cache 12th June 2020 18:29 -->
++
 diff --git a/www/index.html b/www/index.html
-index eaf41e4c78..c45c62f161 100644
+index baaa9202ab..acbfd0a527 100644
 --- a/www/index.html
 +++ b/www/index.html
-@@ -285,7 +285,6 @@ Use ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&am
-     <br/>
-     <small>© 1999-2020 ImageMagick Studio LLC</small></p>
+@@ -263,7 +263,6 @@ Use ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&am
+     <small>© 1999-2021 ImageMagick Studio LLC</small></p>
+     </div>
    </footer>
 -
    <!-- Javascript assets -->
-   <script src="../assets/magick-js.html" crossorigin="anonymous"></script>
-   <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.4.1/jquery.min.js"><\/script>')</script>
+   <script>window.jQuery || document.write('<script src="assets/jquery.slim.min.js"><\/script>')</script><script src="assets/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf" crossorigin="anonymous">
+ </body>

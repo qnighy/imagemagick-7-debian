@@ -18,7 +18,7 @@
 %                               December 2001                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -207,11 +207,11 @@ static MagickBooleanType DecodeImage(Image *image,const size_t compression,
     byte,
     count;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
-  register unsigned char
+  unsigned char
     *p,
     *q;
 
@@ -384,14 +384,14 @@ static size_t EncodeImage(Image *image,const size_t bytes_per_line,
   MagickBooleanType
     status;
 
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
-  register unsigned char
+  unsigned char
     *q;
 
   ssize_t
@@ -540,11 +540,11 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
   register PixelPacket
     *q;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
-  register unsigned char
+  unsigned char
     *p;
 
   size_t
@@ -1070,7 +1070,7 @@ static Image *ReadBMPImage(const ImageInfo *image_info,ExceptionInfo *exception)
     (void) memset(&quantum_bits,0,sizeof(quantum_bits));
     if ((bmp_info.bits_per_pixel == 16) || (bmp_info.bits_per_pixel == 32))
       {
-        register size_t
+        size_t
           sample;
 
         /*
@@ -1676,17 +1676,17 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image)
   MagickOffsetType
     scene;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
-  register unsigned char
+  unsigned char
     *q;
 
   size_t
@@ -1718,8 +1718,8 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image)
   status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
   if (status == MagickFalse)
     return(status);
-  if (((image->columns << 3) != (int) (image->columns << 3)) ||
-      ((image->rows << 3) != (int) (image->rows << 3)))
+  if (((image->columns << 3) != (size_t) ((int) (image->columns << 3))) ||
+      ((image->rows << 3) != (size_t) ((int) (image->rows << 3))))
     ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
   type=4;
   if (LocaleCompare(image_info->magick,"BMP2") == 0)
@@ -2039,7 +2039,7 @@ static MagickBooleanType WriteBMPImage(const ImageInfo *image_info,Image *image)
           indexes=GetVirtualIndexQueue(image);
           q=pixels+(image->rows-y-1)*bytes_per_line;
           for (x=0; x < (ssize_t) image->columns; x++)
-            *q++=(unsigned char) GetPixelIndex(indexes+x);
+            *q++=(unsigned char) ((size_t) GetPixelIndex(indexes+x));
           for ( ; x < (ssize_t) bytes_per_line; x++)
             *q++=0x00;
           if (image->previous == (Image *) NULL)

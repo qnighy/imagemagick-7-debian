@@ -17,7 +17,7 @@
 %                               September 2002                                %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -69,7 +69,7 @@
 /*
   Define declarations.
 */
-#define MagickPathTemplate "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define MagickPathTemplate "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"  /* min 6 X's */
 #define NumberOfResourceTypes  \
   (sizeof(resource_semaphore)/sizeof(*resource_semaphore))
 
@@ -114,28 +114,28 @@ static RandomInfo
 static ResourceInfo
   resource_info =
   {
-    MagickULLConstant(0),              /* initial width */
-    MagickULLConstant(0),              /* initial height */
-    MagickULLConstant(0),              /* initial list length */
-    MagickULLConstant(0),              /* initial area */
-    MagickULLConstant(0),              /* initial memory */
-    MagickULLConstant(0),              /* initial map */
-    MagickULLConstant(0),              /* initial disk */
-    MagickULLConstant(0),              /* initial file */
-    MagickULLConstant(0),              /* initial thread */
-    MagickULLConstant(0),              /* initial throttle */
-    MagickULLConstant(0),              /* initial time */
-    (INT_MAX/(5*sizeof(Quantum))),     /* width limit */
-    (INT_MAX/(5*sizeof(Quantum))),     /* height limit */
-    MagickResourceInfinity,            /* list length limit */
-    MagickULLConstant(3072)*1024*1024, /* area limit */
-    MagickULLConstant(1536)*1024*1024, /* memory limit */
-    MagickULLConstant(3072)*1024*1024, /* map limit */
-    MagickResourceInfinity,            /* disk limit */
-    MagickULLConstant(768),            /* file limit */
-    MagickULLConstant(1),              /* thread limit */
-    MagickULLConstant(0),              /* throttle limit */
-    MagickResourceInfinity             /* time limit */
+    MagickULLConstant(0),                 /* initial width */
+    MagickULLConstant(0),                 /* initial height */
+    MagickULLConstant(0),                 /* initial list length */
+    MagickULLConstant(0),                 /* initial area */
+    MagickULLConstant(0),                 /* initial memory */
+    MagickULLConstant(0),                 /* initial map */
+    MagickULLConstant(0),                 /* initial disk */
+    MagickULLConstant(0),                 /* initial file */
+    MagickULLConstant(0),                 /* initial thread */
+    MagickULLConstant(0),                 /* initial throttle */
+    MagickULLConstant(0),                 /* initial time */
+    MAGICK_SSIZE_MAX/sizeof(PixelPacket), /* width limit */
+    MAGICK_SSIZE_MAX/sizeof(PixelPacket), /* height limit */
+    MagickResourceInfinity,               /* list length limit */
+    MagickULLConstant(3072)*1024*1024,    /* area limit */
+    MagickULLConstant(1536)*1024*1024,    /* memory limit */
+    MagickULLConstant(3072)*1024*1024,    /* map limit */
+    MagickResourceInfinity,               /* disk limit */
+    MagickULLConstant(768),               /* file limit */
+    MagickULLConstant(1),                 /* thread limit */
+    MagickULLConstant(0),                 /* throttle limit */
+    MagickResourceInfinity                /* time limit */
   };
 
 static SemaphoreInfo
@@ -582,7 +582,7 @@ MagickExport MagickBooleanType GetPathTemplate(char *path)
   directory=DestroyString(directory);
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
   {
-    register char
+    char
       *p;
 
     /*
@@ -610,10 +610,10 @@ MagickExport int AcquireUniqueFileResource(char *path)
     c,
     file;
 
-  register char
+  char
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   static const char
@@ -640,14 +640,14 @@ MagickExport int AcquireUniqueFileResource(char *path)
   file=(-1);
   for (i=0; i < (ssize_t) TMP_MAX; i++)
   {
-    register ssize_t
+    ssize_t
       j;
 
     /*
       Get temporary pathname.
     */
     (void) GetPathTemplate(path);
-    key=GetRandomKey(random_info,strlen(MagickPathTemplate));
+    key=GetRandomKey(random_info,strlen(MagickPathTemplate)-6);
     p=path+strlen(path)-strlen(MagickPathTemplate);
     datum=GetStringInfoDatum(key);
     for (j=0; j < (ssize_t) GetStringInfoLength(key); j++)
@@ -948,7 +948,7 @@ static ssize_t FormatPixelSize(const MagickSizeType size,
     bytes,
     length;
 
-  register ssize_t
+  ssize_t
     i,
     j;
 
@@ -1336,7 +1336,7 @@ MagickExport MagickBooleanType ResourceComponentGenesis(void)
   MagickSizeType
     memory;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -1491,7 +1491,7 @@ MagickExport MagickBooleanType ResourceComponentGenesis(void)
 */
 MagickExport void ResourceComponentTerminus(void)
 {
-  register ssize_t
+  ssize_t
     i;
 
   for (i=0; i < (ssize_t) NumberOfResourceTypes; i++)
@@ -1585,7 +1585,7 @@ MagickExport MagickBooleanType SetMagickResourceLimit(const ResourceType type,
         resource_info.height_limit=MagickMin(limit,StringToSizeType(value,
           100.0));
       resource_info.height_limit=MagickMin(resource_info.height_limit,
-        (MagickSizeType) SSIZE_MAX);
+        (MagickSizeType) MAGICK_SSIZE_MAX);
       break;
     }
     case ListLengthResource:
@@ -1661,7 +1661,7 @@ MagickExport MagickBooleanType SetMagickResourceLimit(const ResourceType type,
         resource_info.width_limit=MagickMin(limit,StringToSizeType(value,
           100.0));
       resource_info.width_limit=MagickMin(resource_info.width_limit,
-        (MagickSizeType) SSIZE_MAX);
+        (MagickSizeType) MAGICK_SSIZE_MAX);
       break;
     }
     default:

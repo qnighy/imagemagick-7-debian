@@ -17,7 +17,7 @@
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -40,12 +40,16 @@
 /*
   Include declarations.
 */
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
-#define WIN32_LEAN_AND_MEAN
-#define VC_EXTRALEAN
-#include <windows.h>
-#endif
 #include "magick/studio.h"
+#if defined(MAGICKCORE_WINGDI32_DELEGATE)
+#  if defined(__CYGWIN__)
+#    include <windows.h>
+#  else
+     /* All MinGW needs ... */
+#    include "magick/nt-base-private.h"
+#    include <wingdi.h>
+#  endif
+#endif
 #include "magick/blob.h"
 #include "magick/blob-private.h"
 #include "magick/cache.h"
@@ -81,6 +85,7 @@
 #include "magick/monitor-private.h"
 #include "magick/morphology.h"
 #include "magick/mutex.h"
+#include "magick/nt-feature.h"
 #include "magick/paint.h"
 #include "magick/pixel.h"
 #include "magick/pixel-accessor.h"
@@ -1080,13 +1085,13 @@ MagickExport MagickBooleanType CloneImageAttributes(Image *image,
 MagickExport void *CloneMemory(void *destination,const void *source,
   const size_t size)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
-  register unsigned char
+  unsigned char
     *q;
 
-  register ssize_t
+  ssize_t
     i;
 
   assert(destination != (void *) NULL);
@@ -1212,7 +1217,7 @@ MagickExport MagickBooleanType ColorFloodfillImage(Image *image,
   PixelPacket
     fill_color;
 
-  register SegmentInfo
+  SegmentInfo
     *s;
 
   SegmentInfo
@@ -1269,10 +1274,10 @@ MagickExport MagickBooleanType ColorFloodfillImage(Image *image,
   PushSegmentStack(y+1,x,x,-1);
   while (s > segment_stack)
   {
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -1389,10 +1394,10 @@ MagickExport MagickBooleanType ColorFloodfillImage(Image *image,
   }
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -1470,7 +1475,7 @@ MagickExport void ConstituteComponentTerminus(void)
 {
 }
 
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(MAGICKCORE_WINGDI32_DELEGATE)
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -1522,10 +1527,10 @@ MagickExport void *CropImageToHBITMAP(Image *image,
   RectangleInfo
     page;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register RGBQUAD
+  RGBQUAD
     *q;
 
   RGBQUAD
@@ -1593,7 +1598,7 @@ MagickExport void *CropImageToHBITMAP(Image *image,
   q=bitmap_bits;
   for (y=0; y < (ssize_t) page.height; y++)
   {
-    register ssize_t
+    ssize_t
       x;
 
     p=GetVirtualPixels(image,page.x,page.y+y,page.width,1,exception);
@@ -1688,7 +1693,7 @@ MagickExport MagickBooleanType DeleteImageAttribute(Image *image,
 */
 MagickExport unsigned int DeleteImageList(Image *images,const ssize_t offset)
 {
-  register ssize_t
+  ssize_t
     i;
 
   if (images->debug != MagickFalse)
@@ -2059,15 +2064,15 @@ static double GetSimilarityMetric(const Image *image,const Image *reference,
   reference_view=AcquireVirtualCacheView(reference,exception);
   for (y=0; y < (ssize_t) reference->rows; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *indexes,
       *reference_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *p,
       *q;
 
-    register ssize_t
+    ssize_t
       x;
 
     p=GetCacheViewVirtualPixels(image_view,x_offset,y_offset+y,
@@ -2145,7 +2150,7 @@ MagickExport Image *ExtractSubimageFromImage(Image *image,
     double
       similarity;
 
-    register ssize_t
+    ssize_t
       x;
 
     for (x=0; x < (ssize_t) (image->columns-reference->columns); x++)
@@ -2437,7 +2442,7 @@ MagickExport unsigned int FuzzyColorMatch(const PixelPacket *p,
   MagickPixelPacket
     pixel;
 
-  register MagickRealType
+  MagickRealType
     distance;
 
   if ((fuzz == 0.0) && (GetPixelRed(p) == GetPixelRed(q)) &&
@@ -2873,7 +2878,7 @@ MagickExport void GetExceptionInfo(ExceptionInfo *exception)
 
 static void *DestroyAttribute(void *attribute)
 {
-  register ImageAttribute
+  ImageAttribute
     *p;
 
   p=(ImageAttribute *) attribute;
@@ -3689,7 +3694,7 @@ MagickExport void IdentityAffine(AffineMatrix *affine)
   affine->sy=1.0;
 }
 
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(MAGICKCORE_WINGDI32_DELEGATE)
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -3723,13 +3728,13 @@ MagickExport void *ImageToHBITMAP(Image *image,ExceptionInfo *exception)
   HBITMAP
     bitmapH;
 
-  register ssize_t
+  ssize_t
     x;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register RGBQUAD
+  RGBQUAD
     *q;
 
   RGBQUAD
@@ -3943,13 +3948,13 @@ MagickExport MagickPixelPacket InterpolatePixelColor(const Image *image,
   MagickPixelPacket
     pixel;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   assert(image != (Image *) NULL);
@@ -4869,7 +4874,7 @@ MagickExport MagickBooleanType MatteFloodfillImage(Image *image,
   MagickBooleanType
     skip;
 
-  register SegmentInfo
+  SegmentInfo
     *s;
 
   SegmentInfo
@@ -4924,10 +4929,10 @@ MagickExport MagickBooleanType MatteFloodfillImage(Image *image,
   PushSegmentStack(y+1,x,x,-1);
   while (s > segment_stack)
   {
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -5044,10 +5049,10 @@ MagickExport MagickBooleanType MatteFloodfillImage(Image *image,
   }
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -5301,7 +5306,7 @@ MagickExport MagickBooleanType OpaqueImage(Image *image,
   MagickBooleanType
     proceed;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -5325,7 +5330,7 @@ MagickExport MagickBooleanType OpaqueImage(Image *image,
       */
       for (y=0; y < (ssize_t) image->rows; y++)
       {
-        register ssize_t
+        ssize_t
           x;
 
         register PixelPacket
@@ -5363,7 +5368,7 @@ MagickExport MagickBooleanType OpaqueImage(Image *image,
         {
           for (y=0; y < (ssize_t) image->rows; y++)
           {
-            register ssize_t
+            ssize_t
               x;
 
             register PixelPacket
@@ -5452,12 +5457,12 @@ MagickExport CacheView *OpenCacheView(const Image *image)
 #if defined(MAGICKCORE_HAVE__WFOPEN)
 static size_t UTF8ToUTF16(const unsigned char *utf8,wchar_t *utf16)
 {
-  register const unsigned char
+  const unsigned char
     *p;
 
   if (utf16 != (wchar_t *) NULL)
     {
-      register wchar_t
+      wchar_t
         *q;
 
       wchar_t
@@ -5544,7 +5549,7 @@ static wchar_t *ConvertUTF8ToUTF16(const unsigned char *source)
   length=UTF8ToUTF16(source,(wchar_t *) NULL);
   if (length == 0)
     {
-      register ssize_t
+      ssize_t
         i;
 
       /*
@@ -6267,7 +6272,7 @@ MagickExport unsigned int RandomChannelThresholdImage(Image *image,
   random_info=AcquireRandomInfo();
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register ssize_t
+    ssize_t
       x;
 
     register IndexPacket
@@ -6726,7 +6731,7 @@ MagickExport void SetImage(Image *image,const Quantum opacity)
         register IndexPacket
           *magick_restrict indexes;
 
-        register ssize_t
+        ssize_t
           x;
 
         register PixelPacket
@@ -6753,7 +6758,7 @@ MagickExport void SetImage(Image *image,const Quantum opacity)
   */
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -6847,7 +6852,7 @@ MagickExport unsigned int SetImageList(Image **images,const Image *image,
   Image
     *clone;
 
-  register ssize_t
+  ssize_t
     i;
 
   (void) LogMagickEvent(DeprecateEvent,GetMagickModule(),"last use: v5.5.2");
@@ -7128,7 +7133,7 @@ MagickExport Image *SpliceImageList(Image *images,const ssize_t offset,
   Image
     *clone;
 
-  register ssize_t
+  ssize_t
     i;
 
   if (images->debug != MagickFalse)
@@ -7200,7 +7205,7 @@ MagickExport MagickRealType sRGBCompandor(const MagickRealType pixel)
 */
 MagickExport void Strip(char *message)
 {
-  register char
+  char
     *p,
     *q;
 
@@ -7463,7 +7468,7 @@ MagickExport unsigned int ThresholdImage(Image *image,const double threshold)
     register IndexPacket
       *magick_restrict indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -7578,7 +7583,7 @@ MagickExport unsigned int ThresholdImageChannel(Image *image,
     register IndexPacket
       *magick_restrict indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -7829,7 +7834,7 @@ MagickExport MagickBooleanType TransparentImage(Image *image,
     (void) SetImageAlphaChannel(image,OpaqueAlphaChannel);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -49,6 +49,7 @@
 #include "magick/color.h"
 #include "magick/color-private.h"
 #include "magick/colormap.h"
+#include "magick/colormap-private.h"
 #include "magick/client.h"
 #include "magick/configure.h"
 #include "magick/exception.h"
@@ -102,7 +103,7 @@
 MagickExport MagickBooleanType AcquireImageColormap(Image *image,
   const size_t colors)
 {
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -206,7 +207,7 @@ MagickExport MagickBooleanType CycleColormapImage(Image *image,
     register IndexPacket
       *magick_restrict indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -299,7 +300,7 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image)
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -345,7 +346,7 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image)
     IndexPacket
       index;
 
-    register ssize_t
+    ssize_t
       x;
 
     register IndexPacket
@@ -363,7 +364,8 @@ MagickExport MagickBooleanType SortColormapByIntensity(Image *image)
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      index=(IndexPacket) pixels[(ssize_t) GetPixelIndex(indexes+x)];
+      i=ConstrainColormapIndex(image,GetPixelIndex(indexes+x));
+      index=(IndexPacket) pixels[i];
       SetPixelIndex(indexes+x,index);
       SetPixelRGBO(q,image->colormap+(ssize_t) index);
       q++;

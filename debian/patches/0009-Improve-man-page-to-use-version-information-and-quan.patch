@@ -1,4 +1,4 @@
-From ee4b473e927b9b09c4711cfa301d3b27ac3e753e Mon Sep 17 00:00:00 2001
+From 6960cda196ff22ad46236b1aa9791ea20410ba36 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Tue, 21 Mar 2017 12:15:08 +0100
 Subject: Improve man page to use version information and quantum
@@ -8,7 +8,7 @@ use ls *.in |sed 's,[.]1.in,,g' |xargs -n1 sh -c 'sed -i "s,fB$1,fB$1-im@MAGICK_
 use  ls *.in |sed 's,[.]1.in,,g' |xargs -n1 sh -c 'sed -i "s,.TH $1,.TH $1-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@,g" *.in' sedtest
 Forwarded: no
 ---
- configure.ac               |  2 ++
+ configure.ac               |  5 ++++-
  utilities/ImageMagick.1.in |  6 +++---
  utilities/animate.1.in     |  8 ++++----
  utilities/compare.1.in     |  8 ++++----
@@ -21,16 +21,19 @@ Forwarded: no
  utilities/mogrify.1.in     | 10 +++++-----
  utilities/montage.1.in     |  8 ++++----
  utilities/stream.1.in      |  8 ++++----
- 13 files changed, 50 insertions(+), 48 deletions(-)
+ 13 files changed, 52 insertions(+), 49 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index abe48a9fbb..5a03b3751e 100644
+index e13703e217..9248b36ce0 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -821,6 +821,8 @@ if test "$enable_hdri" = 'yes'; then
+@@ -826,7 +826,10 @@ MAGICK_ABI_SUFFIX="Q${QUANTUM_DEPTH}"
+ if test "$enable_hdri" = 'yes'; then
    MAGICK_ABI_SUFFIX="Q${QUANTUM_DEPTH}${MAGICK_HDRI}"
  fi
- AC_SUBST(MAGICK_ABI_SUFFIX)
+-AC_SUBST([MAGICK_ABI_SUFFIX])
++
++AC_SUBST(MAGICK_ABI_SUFFIX)
 +MAGICK_ABI_SUFFIX_LC=`echo "$MAGICK_ABI_SUFFIX" | sed 's/./\L&/g'`
 +AC_SUBST(MAGICK_ABI_SUFFIX_LC)
  
@@ -61,7 +64,7 @@ index 20c23b3396..a29ab7bd9d 100644
  .SH COPYRIGHT
  \fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or http://imagemagick.org/script/license.php\fP
 diff --git a/utilities/animate.1.in b/utilities/animate.1.in
-index b0fb3c9534..58742f3e9c 100644
+index 61abca3f56..eaf7609979 100644
 --- a/utilities/animate.1.in
 +++ b/utilities/animate.1.in
 @@ -1,11 +1,11 @@
@@ -173,7 +176,7 @@ index a10c077c86..1416f5545d 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/convert.1.in b/utilities/convert.1.in
-index bb13d1601d..7ee5e7f42b 100644
+index e588c02a47..1eb437ea01 100644
 --- a/utilities/convert.1.in
 +++ b/utilities/convert.1.in
 @@ -1,11 +1,11 @@
@@ -201,7 +204,7 @@ index bb13d1601d..7ee5e7f42b 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/display.1.in b/utilities/display.1.in
-index 7b7f63b241..bc85a9f3be 100644
+index a9bdfa3fbc..8a5aaad708 100644
 --- a/utilities/display.1.in
 +++ b/utilities/display.1.in
 @@ -1,11 +1,11 @@
@@ -257,7 +260,7 @@ index 6ba20ef736..392806fc93 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/import.1.in b/utilities/import.1.in
-index b0e534f533..45634d3878 100644
+index e12586f83d..395db5cb38 100644
 --- a/utilities/import.1.in
 +++ b/utilities/import.1.in
 @@ -1,11 +1,11 @@
@@ -285,7 +288,7 @@ index b0e534f533..45634d3878 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/mogrify.1.in b/utilities/mogrify.1.in
-index fbda2da64c..373e648de8 100644
+index 084765fe20..30c09e328f 100644
 --- a/utilities/mogrify.1.in
 +++ b/utilities/mogrify.1.in
 @@ -1,11 +1,11 @@
@@ -314,7 +317,7 @@ index fbda2da64c..373e648de8 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/montage.1.in b/utilities/montage.1.in
-index cea874d7c7..90fe05e360 100644
+index d3664c5391..0f49b01931 100644
 --- a/utilities/montage.1.in
 +++ b/utilities/montage.1.in
 @@ -1,11 +1,11 @@

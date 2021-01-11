@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.  You may
@@ -91,11 +91,9 @@ extern MagickPrivate double
   NTUserTime(void);
 
 extern MagickPrivate int
-  Exit(int),
 #if !defined(__MINGW32__)
   gettimeofday(struct timeval *,struct timezone *),
 #endif
-  IsWindows95(void),
   NTCloseDirectory(DIR *),
   NTCloseLibrary(void *),
   NTControlHandler(void),

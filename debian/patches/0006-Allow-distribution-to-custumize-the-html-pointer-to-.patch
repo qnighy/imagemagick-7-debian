@@ -1,4 +1,4 @@
-From c2f40d4080700f26687721268bbccc547624334b Mon Sep 17 00:00:00 2001
+From effdfddda15da8a8a1602a89fd958d7a6b7cbac7 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 2 Feb 2018 22:17:26 +0100
 Subject: Allow distribution to custumize the html pointer to documentation
@@ -20,12 +20,12 @@ Bug-debian: https://bugs.debian.org/727739
  9 files changed, 30 insertions(+), 16 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 7c1330c020..abe48a9fbb 100644
+index 57c1273ded..e13703e217 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3039,6 +3039,18 @@ esac
- AC_DEFINE_UNQUOTED(DOCUMENTATION_PATH,"$DEFINE_DOCUMENTATION_PATH",[Directory where ImageMagick documents live.])
- AC_SUBST(DOCUMENTATION_PATH)
+@@ -3079,6 +3079,18 @@ esac
+ AC_DEFINE_UNQUOTED([DOCUMENTATION_PATH],["$DEFINE_DOCUMENTATION_PATH"],[Directory where ImageMagick documents live.])
+ AC_SUBST([DOCUMENTATION_PATH])
  
 +
 +#
@@ -62,7 +62,7 @@ index 93a503451c..a10c077c86 100644
 -\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
 +\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 diff --git a/utilities/convert.1.in b/utilities/convert.1.in
-index 7b711e67c8..bb13d1601d 100644
+index 19b73fecd8..e588c02a47 100644
 --- a/utilities/convert.1.in
 +++ b/utilities/convert.1.in
 @@ -7,7 +7,7 @@ convert \- convert between image formats as well as resize an image, blur, crop,
@@ -82,7 +82,7 @@ index 7b711e67c8..bb13d1601d 100644
 +
 +\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 diff --git a/utilities/display.1.in b/utilities/display.1.in
-index 0cc97aa38d..7b7f63b241 100644
+index c8a9cf04a7..a9bdfa3fbc 100644
 --- a/utilities/display.1.in
 +++ b/utilities/display.1.in
 @@ -7,7 +7,7 @@ display \- displays an image or image sequence on any X server.
@@ -120,7 +120,7 @@ index b553cc42be..6ba20ef736 100644
 -\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
 +\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 diff --git a/utilities/import.1.in b/utilities/import.1.in
-index ef94c13ed0..b0e534f533 100644
+index 3f726f96d4..e12586f83d 100644
 --- a/utilities/import.1.in
 +++ b/utilities/import.1.in
 @@ -7,7 +7,7 @@ import \- saves any visible window on an X server and outputs it as an image fil
@@ -139,7 +139,7 @@ index ef94c13ed0..b0e534f533 100644
 -\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
 +\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 diff --git a/utilities/mogrify.1.in b/utilities/mogrify.1.in
-index 2aa5304024..fbda2da64c 100644
+index c76d312bb8..084765fe20 100644
 --- a/utilities/mogrify.1.in
 +++ b/utilities/mogrify.1.in
 @@ -7,7 +7,7 @@ mogrify \- resize an image, blur, crop, despeckle, dither, draw on, flip, join,
@@ -158,7 +158,7 @@ index 2aa5304024..fbda2da64c 100644
 -\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP
 +\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
 diff --git a/utilities/montage.1.in b/utilities/montage.1.in
-index bf0955539d..cea874d7c7 100644
+index 5ea9a35b6c..d3664c5391 100644
 --- a/utilities/montage.1.in
 +++ b/utilities/montage.1.in
 @@ -7,7 +7,8 @@ montage \- create a composite image by combining several separate images. The im

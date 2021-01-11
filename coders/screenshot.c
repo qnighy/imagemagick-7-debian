@@ -17,7 +17,7 @@
 %                                 April 2014                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -70,6 +70,7 @@
 #include "magick/static.h"
 #include "magick/string_.h"
 #include "magick/token.h"
+#include "magick/transform.h"
 #include "magick/utility.h"
 #include "magick/xwindow.h"
 #include "magick/xwindow-private.h"
@@ -139,7 +140,7 @@ static Image *ReadSCREENSHOTImage(const ImageInfo *image_info,
     register PixelPacket
       *q;
 
-    register ssize_t
+    ssize_t
       x;
 
     RGBQUAD
@@ -248,6 +249,26 @@ static Image *ReadSCREENSHOTImage(const ImageInfo *image_info,
     if (option != (const char *) NULL)
       ximage_info.silent=IsMagickTrue(option);
     image=XImportImage(image_info,&ximage_info);
+    if ((image != (Image *) NULL) && (image_info->extract != (char *) NULL))
+      {
+        Image
+          *crop_image;
+
+        RectangleInfo
+          crop_info;
+
+        /*
+          Crop image as defined by the extract rectangle.
+        */
+        (void) ParsePageGeometry(image,image_info->extract,&crop_info,
+          exception);
+        crop_image=CropImage(image,&crop_info,exception);
+        if (crop_image != (Image *) NULL)
+          {
+            image=DestroyImage(image);
+            image=crop_image;
+          }
+      }
   }
 #endif
   return(image);

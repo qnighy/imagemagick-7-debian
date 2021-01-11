@@ -17,7 +17,7 @@
 %                               December 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -79,7 +79,7 @@
 */
 MagickExport void AppendImageToList(Image **images,const Image *append)
 {
-  register Image
+  Image
     *p,
     *q;
 
@@ -131,7 +131,7 @@ MagickExport Image *CloneImageList(const Image *images,ExceptionInfo *exception)
     *clone,
     *image;
 
-  register Image
+  Image
     *p;
 
   if (images == (Image *) NULL)
@@ -219,7 +219,7 @@ MagickExport Image *CloneImages(const Image *images,const char *scenes,
     *clone_images,
     *image;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -383,7 +383,7 @@ MagickExport void DeleteImages(Image **images,const char *scenes,
   MagickBooleanType
     *delete_list;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -527,7 +527,7 @@ MagickExport Image *DuplicateImages(Image *images,
     *clone_images,
     *duplicate_images;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -573,7 +573,7 @@ MagickExport Image *DuplicateImages(Image *images,
 */
 MagickExport Image *GetFirstImageInList(const Image *images)
 {
-  register const Image
+  const Image
     *p;
 
   if (images == (Image *) NULL)
@@ -617,10 +617,10 @@ MagickExport Image *GetFirstImageInList(const Image *images)
 */
 MagickExport Image *GetImageFromList(const Image *images,const ssize_t index)
 {
-  register const Image
+  const Image
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   if (images == (Image *) NULL)
@@ -669,7 +669,7 @@ MagickExport Image *GetImageFromList(const Image *images,const ssize_t index)
 */
 MagickExport ssize_t GetImageIndexInList(const Image *images)
 {
-  register ssize_t
+  ssize_t
     i;
 
   if (images == (const Image *) NULL)
@@ -708,7 +708,7 @@ MagickExport ssize_t GetImageIndexInList(const Image *images)
 */
 MagickExport size_t GetImageListLength(const Image *images)
 {
-  register ssize_t
+  ssize_t
     i;
 
   if (images == (Image *) NULL)
@@ -749,7 +749,7 @@ MagickExport size_t GetImageListLength(const Image *images)
 */
 MagickExport Image *GetLastImageInList(const Image *images)
 {
-  register const Image
+  const Image
     *p;
 
   if (images == (Image *) NULL)
@@ -860,7 +860,7 @@ MagickExport Image **ImageListToArray(const Image *images,
   Image
     **group;
 
-  register ssize_t
+  ssize_t
     i;
 
   if (images == (Image *) NULL)
@@ -1010,7 +1010,7 @@ MagickExport void PrependImageToList(Image **images,Image *image)
 */
 MagickExport Image *RemoveImageFromList(Image **images)
 {
-  register Image
+  Image
     *p;
 
   assert(images != (Image **) NULL);
@@ -1181,20 +1181,23 @@ MagickExport void ReplaceImageInList(Image **images,Image *replace)
   if ((*images) == (Image *) NULL)
     return;
   assert((*images)->signature == MagickCoreSignature);
-
-  /* link next pointer */
+  /*
+    Link next pointer.
+  */
   replace=GetLastImageInList(replace);
   replace->next=(*images)->next;
   if (replace->next != (Image *) NULL)
     replace->next->previous=replace;
-
-  /* link previous pointer - set images position to first replacement image */
+  /*
+    Link previous pointer - set images position to first replacement image.
+  */
   replace=GetFirstImageInList(replace);
   replace->previous=(*images)->previous;
   if (replace->previous != (Image *) NULL)
     replace->previous->next=replace;
-
-  /* destroy the replaced image that was in images */
+  /*
+    Destroy the replaced image that was in images.
+  */
   (void) DestroyImage(*images);
   (*images)=replace;
 }
@@ -1239,20 +1242,23 @@ MagickExport void ReplaceImageInListReturnLast(Image **images,Image *replace)
   if ((*images) == (Image *) NULL)
     return;
   assert((*images)->signature == MagickCoreSignature);
-
-  /* link previous pointer */
+  /*
+    Link previous pointer.
+  */
   replace=GetFirstImageInList(replace);
   replace->previous=(*images)->previous;
   if (replace->previous != (Image *) NULL)
     replace->previous->next=replace;
-
-  /* link next pointer - set images position to last replacement image */
+  /*
+    Link next pointer - set images position to last replacement image.
+  */
   replace=GetLastImageInList(replace);
   replace->next=(*images)->next;
   if (replace->next != (Image *) NULL)
     replace->next->previous=replace;
-
-  /* destroy the replaced image that was in images */
+  /*
+    Destroy the replaced image that was in images.
+  */
   (void) DestroyImage(*images);
   (*images)=replace;
 }
@@ -1285,7 +1291,7 @@ MagickExport void ReverseImageList(Image **images)
   Image
     *next;
 
-  register Image
+  Image
     *p;
 
   assert(images != (Image **) NULL);
@@ -1340,7 +1346,7 @@ MagickExport Image *SpliceImageIntoList(Image **images,
     *image,
     *split;
 
-  register size_t
+  size_t
     i;
 
   assert(images != (Image **) NULL);
@@ -1418,7 +1424,7 @@ MagickExport Image *SplitImageList(Image *images)
 */
 MagickExport void SyncImageList(Image *images)
 {
-  register Image
+  Image
     *p,
     *q;
 

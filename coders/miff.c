@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -488,7 +488,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
   QuantumType
     quantum_type;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -557,9 +557,9 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
     colors=0;
     image->depth=8UL;
     image->compression=NoCompression;
-    while ((isgraph(c) != MagickFalse) && (c != (int) ':'))
+    while ((isgraph((int) ((unsigned char) c)) != 0) && (c != (int) ':'))
     {
-      register char
+      char
         *p;
 
       if (c == (int) '{')
@@ -603,7 +603,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
           c=ReadBlobByte(image);
         }
       else
-        if (isalnum(c) != MagickFalse)
+        if (isalnum((int) ((unsigned char) c)) != MagickFalse)
           {
             /*
               Get the keyword.
@@ -1127,7 +1127,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
       }
     if (image->montage != (char *) NULL)
       {
-        register char
+        char
           *p;
 
         /*
@@ -1436,7 +1436,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
       register IndexPacket
         *magick_restrict indexes;
 
-      register ssize_t
+      ssize_t
         x;
 
       register PixelPacket
@@ -1707,7 +1707,7 @@ static Image *ReadMIFFImage(const ImageInfo *image_info,
     do
     {
       c=ReadBlobByte(image);
-    } while ((isgraph(c) == MagickFalse) && (c != EOF));
+    } while ((isgraph((int) ((unsigned char) c)) == 0) && (c != EOF));
     if (c != EOF)
       {
         /*
@@ -2037,7 +2037,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
   QuantumType
     quantum_type;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -2440,7 +2440,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
             case 32:
             default:
             {
-              register unsigned int
+              unsigned int
                 pixel;
 
               pixel=ScaleQuantumToLong(image->colormap[i].red);
@@ -2453,7 +2453,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
             }
             case 16:
             {
-              register unsigned short
+              unsigned short
                 pixel;
 
               pixel=ScaleQuantumToShort(image->colormap[i].red);
@@ -2466,7 +2466,7 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
             }
             case 8:
             {
-              register unsigned char
+              unsigned char
                 pixel;
 
               pixel=(unsigned char) ScaleQuantumToChar(image->colormap[i].red);
@@ -2547,13 +2547,13 @@ static MagickBooleanType WriteMIFFImage(const ImageInfo *image_info,
     pixels=GetQuantumPixels(quantum_info);
     for (y=0; y < (ssize_t) image->rows; y++)
     {
-      register const IndexPacket
+      const IndexPacket
         *magick_restrict indexes;
 
-      register const PixelPacket
+      const PixelPacket
         *magick_restrict p;
 
-      register ssize_t
+      ssize_t
         x;
 
       if (status == MagickFalse)

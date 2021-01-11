@@ -21,7 +21,7 @@
 %                                 May 2016                                    %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -1156,7 +1156,7 @@ static MagickBooleanType LaunchHistogramKernel(MagickCLEnv clEnv,
   cl_event
     *events;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1273,7 +1273,7 @@ MagickPrivate MagickBooleanType ComputeContrastStretchImageChannel(Image *image,
   PixelPacket
     *stretch_map;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -2375,7 +2375,7 @@ MagickPrivate MagickBooleanType ComputeEqualizeImage(Image *image,
   PixelPacket
     *equalize_map;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -2858,7 +2858,7 @@ MagickBooleanType ComputeGrayscaleImage(Image *image,
   MagickCLEnv
     clEnv;
 
-  register ssize_t
+  ssize_t
     i;
 
   imageBuffer = NULL;
@@ -3279,7 +3279,7 @@ MagickBooleanType ComputeModulateImage(Image *image,
   MagickCLEnv
     clEnv;
 
-  register ssize_t
+  ssize_t
     i;
 
   unsigned int

@@ -17,7 +17,7 @@
 %                                 July 1999                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -245,7 +245,7 @@ static cl_event *CopyOpenCLEvents(OpenCLCacheInfo *opencl_info,
   cl_event
     *events;
 
-  register size_t
+  size_t
     i;
 
   assert(opencl_info != (OpenCLCacheInfo *) NULL);
@@ -390,8 +390,10 @@ MagickExport Cache AcquirePixelCache(const size_t number_threads)
       cache_info->synchronize=IsStringTrue(value);
       value=DestroyString(value);
     }
-  cache_info->width_limit=GetMagickResourceLimit(WidthResource);
-  cache_info->height_limit=GetMagickResourceLimit(HeightResource);
+  cache_info->width_limit=MagickMin(GetMagickResourceLimit(WidthResource),
+    (MagickSizeType) MAGICK_SSIZE_MAX);
+  cache_info->height_limit=MagickMin(GetMagickResourceLimit(HeightResource),
+    (MagickSizeType) MAGICK_SSIZE_MAX);
   cache_info->semaphore=AllocateSemaphoreInfo();
   cache_info->reference_count=1;
   cache_info->file_semaphore=AllocateSemaphoreInfo();
@@ -427,7 +429,7 @@ MagickExport NexusInfo **AcquirePixelCacheNexus(const size_t number_threads)
   NexusInfo
     **magick_restrict nexus_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   nexus_info=(NexusInfo **) MagickAssumeAligned(AcquireAlignedMemory(2*
@@ -590,7 +592,7 @@ static MagickBooleanType ClipPixelCacheNexus(Image *image,
   NexusInfo
     **magick_restrict clip_nexus;
 
-  register const PixelPacket
+  const PixelPacket
     *magick_restrict r;
 
   register IndexPacket
@@ -627,13 +629,13 @@ static MagickBooleanType ClipPixelCacheNexus(Image *image,
   r=GetVirtualPixelCacheNexus(image->clip_mask,MaskVirtualPixelMethod,
     nexus_info->region.x,nexus_info->region.y,nexus_info->region.width,
     nexus_info->region.height,clip_nexus[0],exception);
-  if ((p == (PixelPacket *) NULL) || (q == (PixelPacket *) NULL) || 
+  if ((p == (PixelPacket *) NULL) || (q == (PixelPacket *) NULL) ||
       (r == (const PixelPacket *) NULL))
     return(MagickFalse);
   n=0;
   for (y=0; y < (ssize_t) nexus_info->region.height; y++)
   {
-    register ssize_t
+    ssize_t
       x;
 
     for (x=0; x < (ssize_t) nexus_info->region.width; x++)
@@ -808,7 +810,21 @@ static MagickBooleanType ClonePixelCacheOnDisk(
     return(MagickFalse);
   quantum=(size_t) MagickMaxBufferExtent;
   if ((fstat(cache_info->file,&file_stats) == 0) && (file_stats.st_size > 0))
-    quantum=(size_t) MagickMin(file_stats.st_size,MagickMaxBufferExtent);
+    {
+#if defined(MAGICKCORE_HAVE_LINUX_SENDFILE)
+      if (cache_info->length < 0x7ffff000)
+        {
+          count=sendfile(clone_info->file,cache_info->file,(off_t *) NULL,
+            (size_t) cache_info->length);
+          if (count == (ssize_t) cache_info->length)
+            return(MagickTrue);
+          if ((lseek(cache_info->file,0,SEEK_SET) < 0) ||
+              (lseek(clone_info->file,0,SEEK_SET) < 0))
+            return(MagickFalse);
+        }
+#endif
+      quantum=(size_t) MagickMin(file_stats.st_size,MagickMaxBufferExtent);
+    }
   buffer=(unsigned char *) AcquireQuantumMemory(quantum,sizeof(*buffer));
   if (buffer == (unsigned char *) NULL)
     ThrowFatalException(ResourceLimitFatalError,"MemoryAllocationFailed");
@@ -1235,7 +1251,7 @@ static inline void RelinquishCacheNexusPixels(NexusInfo *nexus_info)
 MagickExport NexusInfo **DestroyPixelCacheNexus(NexusInfo **nexus_info,
   const size_t number_threads)
 {
-  register ssize_t
+  ssize_t
     i;
 
   assert(nexus_info != (NexusInfo **) NULL);
@@ -2125,10 +2141,10 @@ MagickExport MagickBooleanType GetOneVirtualMagickPixel(const Image *image,
   const int
     id = GetOpenMPThreadId();
 
-  register const IndexPacket
+  const IndexPacket
     *magick_restrict indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *magick_restrict pixels;
 
   assert(image != (const Image *) NULL);
@@ -2965,10 +2981,10 @@ MagickExport const PixelPacket *GetVirtualPixelCacheNexus(const Image *image,
     *magick_restrict pixels,
     virtual_pixel;
 
-  register const IndexPacket
+  const IndexPacket
     *magick_restrict virtual_indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *magick_restrict p;
 
   register IndexPacket
@@ -2977,7 +2993,7 @@ MagickExport const PixelPacket *GetVirtualPixelCacheNexus(const Image *image,
   register PixelPacket
     *magick_restrict q;
 
-  register ssize_t
+  ssize_t
     u,
     v;
 
@@ -3604,7 +3620,7 @@ static MagickBooleanType MaskPixelCacheNexus(Image *image,NexusInfo *nexus_info,
   NexusInfo
     **magick_restrict mask_nexus;
 
-  register const PixelPacket
+  const PixelPacket
     *magick_restrict r;
 
   register IndexPacket
@@ -3639,7 +3655,7 @@ static MagickBooleanType MaskPixelCacheNexus(Image *image,NexusInfo *nexus_info,
   r=GetVirtualPixelCacheNexus(image->mask,MaskVirtualPixelMethod,
     nexus_info->region.x,nexus_info->region.y,nexus_info->region.width,
     nexus_info->region.height,mask_nexus[0],&image->exception);
-  if ((p == (PixelPacket *) NULL) || (q == (PixelPacket *) NULL) || 
+  if ((p == (PixelPacket *) NULL) || (q == (PixelPacket *) NULL) ||
       (r == (const PixelPacket *) NULL))
     return(MagickFalse);
   n=0;
@@ -3647,7 +3663,7 @@ static MagickBooleanType MaskPixelCacheNexus(Image *image,NexusInfo *nexus_info,
   GetMagickPixelPacket(image,&beta);
   for (y=0; y < (ssize_t) nexus_info->region.height; y++)
   {
-    register ssize_t
+    ssize_t
       x;
 
     for (x=0; x < (ssize_t) nexus_info->region.width; x++)
@@ -3756,7 +3772,7 @@ static inline MagickOffsetType WritePixelCacheRegion(
   const CacheInfo *magick_restrict cache_info,const MagickOffsetType offset,
   const MagickSizeType length,const unsigned char *magick_restrict buffer)
 {
-  register MagickOffsetType
+  MagickOffsetType
     i;
 
   ssize_t
@@ -3771,10 +3787,10 @@ static inline MagickOffsetType WritePixelCacheRegion(
   {
 #if !defined(MAGICKCORE_HAVE_PWRITE)
     count=write(cache_info->file,buffer+i,(size_t) MagickMin(length-i,(size_t)
-      SSIZE_MAX));
+      MAGICK_SSIZE_MAX));
 #else
     count=pwrite(cache_info->file,buffer+i,(size_t) MagickMin(length-i,(size_t)
-      SSIZE_MAX),offset+i);
+      MAGICK_SSIZE_MAX),offset+i);
 #endif
     if (count <= 0)
       {
@@ -3896,20 +3912,25 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
       ((MagickSizeType) image->rows > cache_info->height_limit))
     ThrowBinaryException(ImageError,"WidthOrHeightExceedsLimit",
       image->filename);
-  length=GetImageListLength(image);
-  if (AcquireMagickResource(ListLengthResource,length) == MagickFalse)
-    ThrowBinaryException(ResourceLimitError,"ListLengthExceedsLimit",
-      image->filename);
+  if (GetMagickResourceLimit(ListLengthResource) != MagickResourceInfinity)
+    {
+      length=GetImageListLength(image);
+      if (AcquireMagickResource(ListLengthResource,length) == MagickFalse)
+        ThrowBinaryException(ResourceLimitError,"ListLengthExceedsLimit",
+          image->filename);
+    }
   source_info=(*cache_info);
   source_info.file=(-1);
   (void) FormatLocaleString(cache_info->filename,MaxTextExtent,"%s[%.20g]",
     image->filename,(double) image->scene);
-  cache_info->mode=mode;
+  cache_info->storage_class=image->storage_class;
+  cache_info->colorspace=image->colorspace;
   cache_info->rows=image->rows;
   cache_info->columns=image->columns;
   cache_info->channels=image->channels;
   cache_info->active_index_channel=((image->storage_class == PseudoClass) ||
     (image->colorspace == CMYKColorspace)) ? MagickTrue : MagickFalse;
+  cache_info->mode=mode;
   number_pixels=(MagickSizeType) cache_info->columns*cache_info->rows;
   packet_size=sizeof(PixelPacket);
   if (cache_info->active_index_channel != MagickFalse)
@@ -3923,8 +3944,6 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
   cache_info->length=length;
   if (image->ping != MagickFalse)
     {
-      cache_info->storage_class=image->storage_class;
-      cache_info->colorspace=image->colorspace;
       cache_info->type=PingCache;
       return(MagickTrue);
     }
@@ -4105,72 +4124,61 @@ static MagickBooleanType OpenPixelCache(Image *image,const MapMode mode,
     }
   cache_info->storage_class=image->storage_class;
   cache_info->colorspace=image->colorspace;
+  cache_info->type=DiskCache;
   length=number_pixels*(sizeof(PixelPacket)+sizeof(IndexPacket));
-  if (length != (MagickSizeType) ((size_t) length))
-    cache_info->type=DiskCache;
-  else
+  if (length == (MagickSizeType) ((size_t) length))
     {
       status=AcquireMagickResource(MapResource,cache_info->length);
-      if (status == MagickFalse)
-        cache_info->type=DiskCache;
-      else
-        if ((cache_info->type != MapCache) && (cache_info->type != MemoryCache))
-          {
-            cache_info->type=DiskCache;
-            RelinquishMagickResource(MapResource,cache_info->length);
-          }
-        else
-          {
-            cache_info->pixels=(PixelPacket *) MapBlob(cache_info->file,mode,
-              cache_info->offset,(size_t) cache_info->length);
-            if (cache_info->pixels == (PixelPacket *) NULL)
-              {
-                cache_info->type=DiskCache;
-                cache_info->mapped=source_info.mapped;
-                cache_info->pixels=source_info.pixels;
-                RelinquishMagickResource(MapResource,cache_info->length);
-              }
-            else
-              {
-                /*
-                  Create file-backed memory-mapped pixel cache.
-                */
-                (void) ClosePixelCacheOnDisk(cache_info);
-                cache_info->type=MapCache;
-                cache_info->mapped=MagickTrue;
-                cache_info->indexes=(IndexPacket *) NULL;
-                if (cache_info->active_index_channel != MagickFalse)
-                  cache_info->indexes=(IndexPacket *) (cache_info->pixels+
-                    number_pixels);
-                if ((source_info.storage_class != UndefinedClass) &&
-                    (mode != ReadMode))
-                  {
-                    status=ClonePixelCacheRepository(cache_info,&source_info,
-                      exception);
-                    RelinquishPixelCachePixels(&source_info);
-                  }
-                if (image->debug != MagickFalse)
-                  {
-                    (void) FormatMagickSize(cache_info->length,MagickTrue,
-                      format);
-                    type=CommandOptionToMnemonic(MagickCacheOptions,(ssize_t)
-                      cache_info->type);
-                    (void) FormatLocaleString(message,MaxTextExtent,
-                      "open %s (%s[%d], %s, %.20gx%.20g %s)",
-                      cache_info->filename,cache_info->cache_filename,
-                      cache_info->file,type,(double) cache_info->columns,
-                      (double) cache_info->rows,format);
-                    (void) LogMagickEvent(CacheEvent,GetMagickModule(),"%s",
-                      message);
-                  }
-                if (status == 0)
-                  {
-                    cache_info->type=UndefinedCache;
-                    return(MagickFalse);
-                  }
-                return(MagickTrue);
-              }
-          }
+      if (status != MagickFalse)
+        {
+          cache_info->pixels=(PixelPacket *) MapBlob(cache_info->file,mode,
+            cache_info->offset,(size_t) cache_info->length);
+          if (cache_info->pixels == (PixelPacket *) NULL)
+            {
+              cache_info->mapped=source_info.mapped;
+              cache_info->pixels=source_info.pixels;
+              RelinquishMagickResource(MapResource,cache_info->length);
+            }
+          else
+            {
+              /*
+                Create file-backed memory-mapped pixel cache.
+              */
+              (void) ClosePixelCacheOnDisk(cache_info);
+              cache_info->type=MapCache;
+              cache_info->mapped=MagickTrue;
+              cache_info->indexes=(IndexPacket *) NULL;
+              if (cache_info->active_index_channel != MagickFalse)
+                cache_info->indexes=(IndexPacket *) (cache_info->pixels+
+                  number_pixels);
+              if ((source_info.storage_class != UndefinedClass) &&
+                  (mode != ReadMode))
+                {
+                  status=ClonePixelCacheRepository(cache_info,&source_info,
+                    exception);
+                  RelinquishPixelCachePixels(&source_info);
+                }
+              if (image->debug != MagickFalse)
+                {
+                  (void) FormatMagickSize(cache_info->length,MagickTrue,format);
+                  type=CommandOptionToMnemonic(MagickCacheOptions,(ssize_t)
+                    cache_info->type);
+                  (void) FormatLocaleString(message,MaxTextExtent,
+                     "open %s (%s[%d], %s, %.20gx%.20g %s)",
+                     cache_info->filename,cache_info->cache_filename,
+                     cache_info->file,type,(double) cache_info->columns,
+                     (double) cache_info->rows,format);
+                  (void) LogMagickEvent(CacheEvent,GetMagickModule(),"%s",
+                     message);
+                }
+              if (status == 0)
+                {
+                  cache_info->type=UndefinedCache;
+                  return(MagickFalse);
+                }
+              return(MagickTrue);
+            }
+        }
     }
   status=MagickTrue;
   if ((source_info.storage_class != UndefinedClass) && (mode != ReadMode))
@@ -4570,7 +4578,7 @@ static inline MagickOffsetType ReadPixelCacheRegion(
   const CacheInfo *magick_restrict cache_info,const MagickOffsetType offset,
   const MagickSizeType length,unsigned char *magick_restrict buffer)
 {
-  register MagickOffsetType
+  MagickOffsetType
     i;
 
   ssize_t
@@ -4585,10 +4593,10 @@ static inline MagickOffsetType ReadPixelCacheRegion(
   {
 #if !defined(MAGICKCORE_HAVE_PREAD)
     count=read(cache_info->file,buffer+i,(size_t) MagickMin(length-i,(size_t)
-      SSIZE_MAX));
+      MAGICK_SSIZE_MAX));
 #else
     count=pread(cache_info->file,buffer+i,(size_t) MagickMin(length-i,(size_t)
-      SSIZE_MAX),offset+i);
+      MAGICK_SSIZE_MAX),offset+i);
 #endif
     if (count <= 0)
       {
@@ -4615,7 +4623,7 @@ static MagickBooleanType ReadPixelCacheIndexes(
   register IndexPacket
     *magick_restrict q;
 
-  register ssize_t
+  ssize_t
     y;
 
   size_t
@@ -4783,7 +4791,7 @@ static MagickBooleanType ReadPixelCachePixels(
   register PixelPacket
     *magick_restrict q;
 
-  register ssize_t
+  ssize_t
     y;
 
   size_t
@@ -5149,6 +5157,16 @@ static inline void PrefetchPixelCacheNexusPixels(const NexusInfo *nexus_info,
   MagickCachePrefetch((unsigned char *) nexus_info->pixels+CACHE_LINE_SIZE,1,1);
 }
 
+static inline MagickBooleanType ValidatePixelOffset(const ssize_t x,
+  const size_t a)
+{
+  if ((x >= 0) && (x >= ((ssize_t) MAGICK_SSIZE_MAX-(ssize_t) a)))
+    return(MagickFalse);
+  if (x <= ((ssize_t) MAGICK_SSIZE_MIN+(ssize_t) a))
+    return(MagickFalse);
+  return(MagickTrue);
+}
+
 static PixelPacket *SetPixelCacheNexusPixels(
   const CacheInfo *magick_restrict cache_info,const MapMode mode,
   const ssize_t x,const ssize_t y,const size_t width,const size_t height,
@@ -5172,6 +5190,15 @@ static PixelPacket *SetPixelCacheNexusPixels(
     {
       (void) ThrowMagickException(exception,GetMagickModule(),CacheError,
         "NoPixelsDefinedInCache","`%s'",cache_info->filename);
+      return((PixelPacket *) NULL);
+    }
+  if (((MagickSizeType) width > cache_info->width_limit) ||
+      ((MagickSizeType) height > cache_info->height_limit) ||
+      (ValidatePixelOffset(x,width) == MagickFalse) ||
+      (ValidatePixelOffset(y,height) == MagickFalse))
+    {
+      (void) ThrowMagickException(exception,GetMagickModule(),ImageError,
+        "WidthOrHeightExceedsLimit","`%s'",cache_info->filename);
       return((PixelPacket *) NULL);
     }
   if (((cache_info->type == MemoryCache) || (cache_info->type == MapCache)) &&
@@ -5205,13 +5232,6 @@ static PixelPacket *SetPixelCacheNexusPixels(
   /*
     Pixels are stored in a staging region until they are synced to the cache.
   */
-  if (((MagickSizeType) width > cache_info->width_limit) ||
-      ((MagickSizeType) height > cache_info->height_limit))
-    {
-      (void) ThrowMagickException(exception,GetMagickModule(),ImageError,
-        "WidthOrHeightExceedsLimit","`%s'",cache_info->filename);
-      return((PixelPacket *) NULL);
-    }
   number_pixels=(MagickSizeType) width*height;
   length=MagickMax(number_pixels,MagickMax(cache_info->columns,
     cache_info->rows))*sizeof(PixelPacket);
@@ -5307,7 +5327,7 @@ static MagickBooleanType SetCacheAlphaChannel(Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -5713,10 +5733,10 @@ static MagickBooleanType WritePixelCacheIndexes(CacheInfo *cache_info,
     extent,
     length;
 
-  register const IndexPacket
+  const IndexPacket
     *magick_restrict p;
 
-  register ssize_t
+  ssize_t
     y;
 
   size_t
@@ -5881,10 +5901,10 @@ static MagickBooleanType WritePixelCachePixels(CacheInfo *cache_info,
     extent,
     length;
 
-  register const PixelPacket
+  const PixelPacket
     *magick_restrict p;
 
-  register ssize_t
+  ssize_t
     y;
 
   size_t

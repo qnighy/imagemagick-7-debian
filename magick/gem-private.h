@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.  You may
@@ -49,7 +49,7 @@ static inline void ConvertLabToXYZ(const double L,const double a,const double b,
     x=(x*x*x);
   else
     x=(116.0*x-16.0)/CIEK;
-  if ((y*y*y) > CIEEpsilon)
+  if (L > (CIEK*CIEEpsilon))
     y=(y*y*y);
   else
     y=L/CIEK;

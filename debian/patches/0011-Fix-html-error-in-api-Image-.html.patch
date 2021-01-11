@@ -1,4 +1,4 @@
-From ed26b642a646194d72570de2626c51e0cda33950 Mon Sep 17 00:00:00 2001
+From f5b61842dc558e07274260a226cccf0966b0e629 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 11 Aug 2017 10:13:21 +0200
 Subject: Fix html error in api/Image++.html
@@ -9,14 +9,14 @@ Forwarded: Yes
  1 file changed, 6 insertions(+), 8 deletions(-)
 
 diff --git a/www/api/Image++.html b/www/api/Image++.html
-index 2f7308cba3..4a07506ee4 100644
+index 7cd9cb6fef..0c60921e37 100644
 --- a/www/api/Image++.html
 +++ b/www/api/Image++.html
 @@ -66,8 +66,8 @@
        </li>
      </ul>
      </div>
--    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/www/search.html">
+-    <form class="form-inline my-2 my-lg-0" action="../https://legacy.imagemagick.org/www/search.html">
 -      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
 +    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
 +      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
@@ -30,7 +30,7 @@ index 2f7308cba3..4a07506ee4 100644
 -example:
 +example:</p>
  <pre class="code">
- <p><img class="icon" src="https://legacy.imagemagick.org/api/Cache.png" name="Graphic1" width="254" border="0" /></p>
+ <p><img class="icon" src="../../api/Cache.png" name="Graphic1" width="254" border="0" /></p>
  Image image("cow.png"); 
 @@ -3074,7 +3074,6 @@ image.syncPixels();
    // Save updated image to file.

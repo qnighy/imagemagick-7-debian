@@ -17,7 +17,7 @@
 %                               January 2000                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -130,7 +130,7 @@ static Image *ReadWBMPImage(const ImageInfo *image_info,
   register IndexPacket
     *indexes;
 
-  register ssize_t
+  ssize_t
     x;
 
   register PixelPacket
@@ -331,7 +331,7 @@ static void WBMPWriteInteger(Image *image,const size_t value)
     flag,
     n;
 
-  register ssize_t
+  ssize_t
     i;
 
   unsigned char
@@ -361,10 +361,10 @@ static MagickBooleanType WriteWBMPImage(const ImageInfo *image_info,
   MagickBooleanType
     status;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     x;
 
   ssize_t

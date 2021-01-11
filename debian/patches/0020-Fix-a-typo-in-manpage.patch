@@ -1,4 +1,4 @@
-From c82d094637d7f4753fa7ebbc5bd2b642161009bb Mon Sep 17 00:00:00 2001
+From ba859a66f52b0b0cd2323452a2d1b6f5bbe513c6 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 27 Jul 2020 10:44:26 +0200
 Subject: Fix a typo in manpage
@@ -19,7 +19,7 @@ debian-bug: 953279
  11 files changed, 11 insertions(+), 11 deletions(-)
 
 diff --git a/utilities/animate.1.in b/utilities/animate.1.in
-index 58742f3e9c..4057cef1fd 100644
+index eaf7609979..5e5b683584 100644
 --- a/utilities/animate.1.in
 +++ b/utilities/animate.1.in
 @@ -94,7 +94,7 @@ By default, the image format of `file' is determined by its magic number.  To sp
@@ -71,7 +71,7 @@ index 1416f5545d..65e4e0adf6 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/convert.1.in b/utilities/convert.1.in
-index 7ee5e7f42b..abcae7beb6 100644
+index 1eb437ea01..c36255dd8a 100644
 --- a/utilities/convert.1.in
 +++ b/utilities/convert.1.in
 @@ -317,7 +317,7 @@ Use any setting or operator as an \fIoutput-option\fP.  Only a limited number of
@@ -84,7 +84,7 @@ index 7ee5e7f42b..abcae7beb6 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/display.1.in b/utilities/display.1.in
-index bc85a9f3be..e12ee8cc13 100644
+index 8a5aaad708..4b625e7e3f 100644
 --- a/utilities/display.1.in
 +++ b/utilities/display.1.in
 @@ -132,7 +132,7 @@ The display program defaults to the X screen resolution.  To display vector form
@@ -110,7 +110,7 @@ index 392806fc93..300a840321 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/import.1.in b/utilities/import.1.in
-index 45634d3878..d737f11d9c 100644
+index 395db5cb38..936817c637 100644
 --- a/utilities/import.1.in
 +++ b/utilities/import.1.in
 @@ -92,7 +92,7 @@ Miscellaneous Options:
@@ -123,7 +123,7 @@ index 45634d3878..d737f11d9c 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/mogrify.1.in b/utilities/mogrify.1.in
-index 373e648de8..edcfc350fe 100644
+index 30c09e328f..551235e9de 100644
 --- a/utilities/mogrify.1.in
 +++ b/utilities/mogrify.1.in
 @@ -320,7 +320,7 @@ Miscellaneous Options:
@@ -136,7 +136,7 @@ index 373e648de8..edcfc350fe 100644
  .SH COPYRIGHT
  
 diff --git a/utilities/montage.1.in b/utilities/montage.1.in
-index 90fe05e360..6d27744756 100644
+index 0f49b01931..4591096569 100644
 --- a/utilities/montage.1.in
 +++ b/utilities/montage.1.in
 @@ -142,7 +142,7 @@ In addition to those listed above, you can specify these standard X resources as

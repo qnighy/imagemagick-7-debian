@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.  You may
@@ -18,6 +18,7 @@
 #ifndef MAGICKCORE_RESAMPLE_PRIVATE_H
 #define MAGICKCORE_RESAMPLE_PRIVATE_H
 
+#include <string.h>
 #include "magick/thread-private.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -27,7 +28,7 @@ extern "C" {
 static inline ResampleFilter **DestroyResampleFilterThreadSet(
   ResampleFilter **filter)
 {
-  register ssize_t
+  ssize_t
     i;
 
   assert(filter != (ResampleFilter **) NULL);
@@ -42,7 +43,7 @@ static inline ResampleFilter **AcquireResampleFilterThreadSet(
   const Image *image,const VirtualPixelMethod method,
   const MagickBooleanType interpolate,ExceptionInfo *exception)
 {
-  register ssize_t
+  ssize_t
     i;
 
   ResampleFilter

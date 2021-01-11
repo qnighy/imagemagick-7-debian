@@ -1,38 +1,36 @@
-From 7b112a4ee6a7ccaf93733a49bf1604acc5f761ed Mon Sep 17 00:00:00 2001
+From 9adf1bca78ef45b0d3d4604f83ce68708b32cda4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 30 Jul 2018 14:49:54 +0200
 Subject: Fix index.html
 
 Forwarded: yes
 ---
- www/index.html | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ www/index.html | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/www/index.html b/www/index.html
-index c45c62f161..51b94fb48f 100644
+index acbfd0a527..06ae80534e 100644
 --- a/www/index.html
 +++ b/www/index.html
-@@ -66,8 +66,8 @@
+@@ -67,8 +67,8 @@
        </li>
      </ul>
      </div>
--    <form class="form-inline my-2 my-lg-0" action="https://www.imagemagick.org/script/https://www.imagemagick.org/script/search.php">
+-    <form class="form-inline my-2 my-md-0" action="https://imagemagick.org/script/search.php">
 -      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
 +    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
 +      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
    </nav>
-@@ -286,8 +286,8 @@ Use ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&am
-     <small>© 1999-2020 ImageMagick Studio LLC</small></p>
+@@ -264,7 +264,7 @@ Use ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&am
+     </div>
    </footer>
    <!-- Javascript assets -->
--  <script src="../assets/magick-js.html" crossorigin="anonymous"></script>
--  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.4.1/jquery.min.js"><\/script>')</script>
-+  <script src="assets/magick.js" crossorigin="anonymous"></script>
-+  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;/script>')</script>
+-  <script>window.jQuery || document.write('<script src="assets/jquery.slim.min.js"><\/script>')</script><script src="assets/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf" crossorigin="anonymous">
++  <script>window.jQuery || document.write('&lt;script src="assets/jquery.slim.min.js"&gt;&lt;\/script&gt;')</script><script src="assets/bootstrap.bundle.min.js" crossorigin="anonymous">
  </body>
  </html>
--<!-- Magick Cache 19th March 2020 16:57 -->
+-<!-- Magick Cache 1st January 2021 17:21 -->
 \ No newline at end of file
-+<!-- Magick Cache 19th March 2020 16:57 -->
++<!-- Magick Cache 1st January 2021 17:21 -->

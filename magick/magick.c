@@ -18,7 +18,7 @@
 %                             November 1998                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -234,7 +234,7 @@ MagickExport MagickBooleanType GetImageMagick(const unsigned char *magick,
   MagickBooleanType
     status;
 
-  register const MagickInfo
+  const MagickInfo
     *p;
 
   (void) LogMagickEvent(TraceEvent,GetMagickModule(),"...");
@@ -415,7 +415,7 @@ MagickExport MagickBooleanType GetMagickEndianSupport(
 MagickExport const MagickInfo *GetMagickInfo(const char *name,
   ExceptionInfo *exception)
 {
-  register const MagickInfo
+  const MagickInfo
     *magick_info;
 
   /*
@@ -508,10 +508,10 @@ MagickExport const MagickInfo **GetMagickInfoList(const char *pattern,
   const MagickInfo
     **formats;
 
-  register const MagickInfo
+  const MagickInfo
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -582,7 +582,7 @@ extern "C" {
 
 static int MagickCompare(const void *x,const void *y)
 {
-  register const char
+  const char
     **p,
     **q;
 
@@ -601,10 +601,10 @@ MagickExport char **GetMagickList(const char *pattern,
   char
     **formats;
 
-  register const MagickInfo
+  const MagickInfo
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -813,7 +813,7 @@ MagickExport MagickStatusType GetMagickThreadSupport(
 
 static void *DestroyMagickNode(void *magick_info)
 {
-  register MagickInfo
+  MagickInfo
     *p;
 
   p=(MagickInfo *) magick_info;
@@ -937,7 +937,7 @@ MagickExport MagickBooleanType ListMagickInfo(FILE *file,
   const MagickInfo
     **magick_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1151,6 +1151,7 @@ static SignalHandler *SetMagickSignalHandler(int signal_number,
 #if defined(SA_ONSTACK)
   action.sa_flags|=SA_ONSTACK;
 #endif
+  previous_action.sa_handler=SIG_DFL;
   status=sigaction(signal_number,&action,&previous_action);
   if (status < 0)
     return(SIG_ERR);
@@ -1597,7 +1598,7 @@ MagickExport int SetMagickPrecision(const int precision)
 */
 MagickExport MagickBooleanType UnregisterMagickInfo(const char *name)
 {
-  register const MagickInfo
+  const MagickInfo
     *p;
 
   MagickBooleanType

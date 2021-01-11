@@ -1,4 +1,4 @@
-From db20fd3117c1c1d7e73542f99401ea755e322dee Mon Sep 17 00:00:00 2001
+From d9e581868533bc57c7698a94dc148285c92a12ca Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Tue, 22 Nov 2016 12:59:01 +0100
 Subject: Improve policy in order to be safer
@@ -9,16 +9,16 @@ Disable http delegate. You should really use curl
 
 Forwarded: No
 ---
- config/policy.xml | 23 +++++++++++++++++------
- 1 file changed, 17 insertions(+), 6 deletions(-)
+ config/policy.xml | 26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
 
 diff --git a/config/policy.xml b/config/policy.xml
-index 8083d3d055..59d2fc6bb8 100644
+index 2ed14de8a6..54e64782b3 100644
 --- a/config/policy.xml
 +++ b/config/policy.xml
-@@ -57,13 +57,13 @@
-   <!-- <policy domain="system" name="memory-map" value="anonymous"/> -->
-   <!-- <policy domain="system" name="max-memory-request" value="256MiB"/> -->
+@@ -57,26 +57,36 @@
+ -->
+ <policymap>
    <!-- <policy domain="resource" name="temporary-path" value="/tmp"/> -->
 -  <!-- <policy domain="resource" name="memory" value="2GiB"/> -->
 -  <!-- <policy domain="resource" name="map" value="4GiB"/> -->
@@ -31,15 +31,24 @@ index 8083d3d055..59d2fc6bb8 100644
    <!-- <policy domain="resource" name="list-length" value="128"/> -->
 -  <!-- <policy domain="resource" name="area" value="100MP"/> -->
 -  <!-- <policy domain="resource" name="disk" value="16EiB"/> -->
-+  <policy domain="resource" name="area" value="128MB"/>
++  <policy domain="resource" name="area" value="128MP"/>
 +  <policy domain="resource" name="disk" value="1GiB"/>
    <!-- <policy domain="resource" name="file" value="768"/> -->
    <!-- <policy domain="resource" name="thread" value="4"/> -->
    <!-- <policy domain="resource" name="throttle" value="0"/> -->
-@@ -75,4 +75,15 @@
+   <!-- <policy domain="resource" name="time" value="3600"/> -->
+   <!-- <policy domain="coder" rights="none" pattern="MVG" /> -->
+   <!-- <policy domain="module" rights="none" pattern="{PS,PDF,XPS}" /> -->
+-  <!-- <policy domain="delegate" rights="none" pattern="HTTPS" /> -->
+   <!-- <policy domain="path" rights="none" pattern="@*" /> -->
    <!-- <policy domain="cache" name="memory-map" value="anonymous"/> -->
    <!-- <policy domain="cache" name="synchronize" value="True"/> -->
-   <!-- <policy domain="cache" name="shared-secret" value="passphrase" stealth="true"/> -->
+-  <!-- <policy domain="cache" name="shared-secret" value="passphrase" stealth="true"/> -->
++  <!-- <policy domain="cache" name="shared-secret" value="passphrase" stealth="true"/>
+   <!-- <policy domain="system" name="max-memory-request" value="256MiB"/> -->
+   <!-- <policy domain="system" name="shred" value="2"/> -->
+   <!-- <policy domain="system" name="precision" value="6"/> -->
+   <!-- <policy domain="system" name="font" value="/path/to/font.ttf"/> -->
 +  <!-- <policy domain="system" name="pixel-cache-memory" value="anonymous"/> -->
 +  <!-- <policy domain="system" name="shred" value="2"/> -->
 +  <!-- <policy domain="system" name="precision" value="6"/> -->

@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -179,7 +179,7 @@ static MagickOffsetType GetFITSPixelExtrema(Image *image,
   MagickSizeType
     number_pixels;
 
-  register MagickOffsetType
+  MagickOffsetType
     i;
 
   offset=TellBlob(image);
@@ -207,7 +207,7 @@ static inline double GetFITSPixelRange(const size_t depth)
 static void SetFITSUnsignedPixels(const size_t length,
   const size_t bits_per_pixel,const EndianType endian,unsigned char *pixels)
 {
-  register ssize_t
+  ssize_t
     i;
 
   if (endian != MSBEndian)
@@ -270,7 +270,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
   MagickSizeType
     number_pixels;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -321,7 +321,7 @@ static Image *ReadFITSImage(const ImageInfo *image_info,
   {
     for ( ; EOFBlob(image) == MagickFalse; )
     {
-      register char
+      char
         *p;
 
       count=ReadBlob(image,8,(unsigned char *) keyword);
@@ -649,7 +649,7 @@ static MagickBooleanType WriteFITSImage(const ImageInfo *image_info,
   QuantumInfo
     *quantum_info;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
   size_t

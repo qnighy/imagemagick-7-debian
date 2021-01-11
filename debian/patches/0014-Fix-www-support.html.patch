@@ -1,22 +1,21 @@
-From 9e600e6448b7351567e8c75ded3849900fddd4bc Mon Sep 17 00:00:00 2001
+From 7dbab1a0613e3926b28edd0931069e94b43e6352 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 11 Aug 2017 10:20:20 +0200
 Subject: Fix www/support.html
 
 Forwarded: Yes
 ---
- www/support.html | 1 +
- 1 file changed, 1 insertion(+)
+ www/support.html | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/www/support.html b/www/support.html
-index af382a2096..21406f832e 100644
+index 72b58281db..7f51a23062 100644
 --- a/www/support.html
 +++ b/www/support.html
-@@ -138,6 +138,7 @@
- </form>
- </ul>
- 
-+
- <h3>Litecoin</h3>
- <p>Our Litecoin Address is: <kbd>LcZLAmym4EMvUPc9koagkccRLYQbsgGwmj</kbd>.  Or you can reference the below QR code:</p>
- <ul>
+@@ -179,4 +179,4 @@
+   <script>window.jQuery || document.write('<script src="assets/jquery.slim.min.js"><\/script>')</script><script src="assets/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf" crossorigin="anonymous">
+ </body>
+ </html>
+-<!-- Magick Cache 1st January 2021 19:38 -->
+\ No newline at end of file
++<!-- Magick Cache 1st January 2021 19:38 -->

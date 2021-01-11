@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -422,10 +422,10 @@ static boolean ReadComment(j_decompress_ptr jpeg_info)
   Image
     *image;
 
-  register unsigned char
+  unsigned char
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -495,10 +495,10 @@ static boolean ReadICCProfile(j_decompress_ptr jpeg_info)
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
-  register unsigned char
+  unsigned char
     *p;
 
   size_t
@@ -605,10 +605,10 @@ static boolean ReadIPTCProfile(j_decompress_ptr jpeg_info)
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
-  register unsigned char
+  unsigned char
     *p;
 
   size_t
@@ -736,10 +736,10 @@ static boolean ReadProfile(j_decompress_ptr jpeg_info)
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
-  register unsigned char
+  unsigned char
     *p;
 
   size_t
@@ -908,7 +908,7 @@ static void JPEGSetImageQuality(struct jpeg_decompress_struct *jpeg_info,
       qvalue,
       sum;
 
-    register ssize_t
+    ssize_t
       i;
 
     /*
@@ -1122,7 +1122,7 @@ static Image *ReadJPEGImage_(const ImageInfo *image_info,
   MemoryInfo
     *memory_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   struct jpeg_error_mgr
@@ -1131,7 +1131,7 @@ static Image *ReadJPEGImage_(const ImageInfo *image_info,
   struct jpeg_progress_mgr
     jpeg_progress;
 
-  register JSAMPLE
+  JSAMPLE
     *p;
 
   size_t
@@ -1182,8 +1182,7 @@ static Image *ReadJPEGImage_(const ImageInfo *image_info,
       if (error_manager.profile != (StringInfo *) NULL)
         error_manager.profile=DestroyStringInfo(error_manager.profile);
       (void) CloseBlob(image);
-      number_pixels=(MagickSizeType) image->columns*image->rows;
-      if (number_pixels != 0)
+      if (exception->severity < ErrorException)
         return(GetFirstImageInList(image));
       InheritException(exception,&image->exception);
       return(DestroyImage(image));
@@ -1206,9 +1205,7 @@ static Image *ReadJPEGImage_(const ImageInfo *image_info,
       if (IsOptionMember("APP",option) == MagickFalse)
         jpeg_set_marker_processor(jpeg_info,(int) (JPEG_APP0+i),ReadProfile);
   i=(ssize_t) jpeg_read_header(jpeg_info,TRUE);
-  if ((image_info->colorspace == YCbCrColorspace) ||
-      (image_info->colorspace == Rec601YCbCrColorspace) ||
-      (image_info->colorspace == Rec709YCbCrColorspace))
+  if (IsYCbCrCompatibleColorspace(image_info->colorspace) != MagickFalse)
     jpeg_info->out_color_space=JCS_YCbCr;
   /*
     Set image resolution.
@@ -1471,7 +1468,7 @@ static Image *ReadJPEGImage_(const ImageInfo *image_info,
     register IndexPacket
       *magick_restrict indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -1840,7 +1837,7 @@ static QuantizationTable *GetQuantizationTable(const char *filename,
   double
     value;
 
-  register ssize_t
+  ssize_t
     i;
 
   QuantizationTable
@@ -2065,7 +2062,7 @@ static void WriteProfile(j_compress_ptr jpeg_info,Image *image)
   MagickBooleanType
     iptc;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -2083,7 +2080,7 @@ static void WriteProfile(j_compress_ptr jpeg_info,Image *image)
   ResetImageProfileIterator(image);
   for (name=GetNextImageProfile(image); name != (const char *) NULL; )
   {
-    register unsigned char
+    unsigned char
       *p;
 
     profile=GetImageProfile(image,name);
@@ -2114,7 +2111,7 @@ static void WriteProfile(j_compress_ptr jpeg_info,Image *image)
       }
     if (LocaleCompare(name,"ICC") == 0)
       {
-        register unsigned char
+        unsigned char
           *p;
 
         tag_length=strlen(ICC_PROFILE);
@@ -2164,7 +2161,7 @@ static void WriteProfile(j_compress_ptr jpeg_info,Image *image)
         }
       }
     if ((LocaleCompare(name,"XMP") == 0) &&
-        (GetStringInfoLength(profile) <= 65502))
+       (GetStringInfoLength(profile) < (65533 - sizeof(xmp_namespace))))
       {
         StringInfo
           *xmp_profile;
@@ -2175,15 +2172,11 @@ static void WriteProfile(j_compress_ptr jpeg_info,Image *image)
         xmp_profile=StringToStringInfo(xmp_namespace);
         if (xmp_profile != (StringInfo *) NULL)
           {
-            if (profile != (StringInfo *) NULL)
-              ConcatenateStringInfo(xmp_profile,profile);
+            ConcatenateStringInfo(xmp_profile,profile);
             GetStringInfoDatum(xmp_profile)[XmpNamespaceExtent]='\0';
-            for (i=0; i < (ssize_t) GetStringInfoLength(xmp_profile); i+=65533L)
-            {
-              length=MagickMin(GetStringInfoLength(xmp_profile)-i,65533L);
-              jpeg_write_marker(jpeg_info,XML_MARKER,
-                GetStringInfoDatum(xmp_profile)+i,(unsigned int) length);
-            }
+            length=GetStringInfoLength(xmp_profile);
+            jpeg_write_marker(jpeg_info,XML_MARKER,
+              GetStringInfoDatum(xmp_profile),(unsigned int) length);
             xmp_profile=DestroyStringInfo(xmp_profile);
           }
       }
@@ -2213,13 +2206,13 @@ static char **SamplingFactorToList(const char *text)
   char
     **textlist;
 
-  register char
+  char
     *q;
 
-  register const char
+  const char
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   if (text == (char *) NULL)
@@ -2287,10 +2280,10 @@ static MagickBooleanType WriteJPEGImage_(const ImageInfo *image_info,
   MemoryInfo
     *memory_info;
 
-  register JSAMPLE
+  JSAMPLE
     *q;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -2873,10 +2866,10 @@ static MagickBooleanType WriteJPEGImage_(const ImageInfo *image_info,
           (jpeg_info->in_color_space == JCS_YCbCr))
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const PixelPacket
+          const PixelPacket
             *p;
 
-          register ssize_t
+          ssize_t
             x;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -2900,10 +2893,10 @@ static MagickBooleanType WriteJPEGImage_(const ImageInfo *image_info,
         if (jpeg_info->in_color_space == JCS_GRAYSCALE)
           for (y=0; y < (ssize_t) image->rows; y++)
           {
-            register const PixelPacket
+            const PixelPacket
               *p;
 
-            register ssize_t
+            ssize_t
               x;
 
             p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -2925,13 +2918,13 @@ static MagickBooleanType WriteJPEGImage_(const ImageInfo *image_info,
         else
           for (y=0; y < (ssize_t) image->rows; y++)
           {
-            register const IndexPacket
+            const IndexPacket
               *indexes;
 
-            register const PixelPacket
+            const PixelPacket
               *p;
 
-            register ssize_t
+            ssize_t
               x;
 
             p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -2965,10 +2958,10 @@ static MagickBooleanType WriteJPEGImage_(const ImageInfo *image_info,
     if (jpeg_info->in_color_space == JCS_GRAYSCALE)
       for (y=0; y < (ssize_t) image->rows; y++)
       {
-        register const PixelPacket
+        const PixelPacket
           *p;
 
-        register ssize_t
+        ssize_t
           x;
 
         p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -2992,10 +2985,10 @@ static MagickBooleanType WriteJPEGImage_(const ImageInfo *image_info,
           (jpeg_info->in_color_space == JCS_YCbCr))
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const PixelPacket
+          const PixelPacket
             *p;
 
-          register ssize_t
+          ssize_t
             x;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -3018,13 +3011,13 @@ static MagickBooleanType WriteJPEGImage_(const ImageInfo *image_info,
       else
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const IndexPacket
+          const IndexPacket
             *indexes;
 
-          register const PixelPacket
+          const PixelPacket
             *p;
 
-          register ssize_t
+          ssize_t
             x;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);

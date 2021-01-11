@@ -1,4 +1,4 @@
-From 1e349921ab523679113530bdd40f017bb9492644 Mon Sep 17 00:00:00 2001
+From 278fd63bf3f924fa6ae50dfa5519ee7e93b9d6df Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 30 Jul 2018 14:50:23 +0200
 Subject: Fix end tags
@@ -9,10 +9,10 @@ Forwarded: yes
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/www/advanced-windows-installation.html b/www/advanced-windows-installation.html
-index 9e7f177cf9..abac34920b 100644
+index f976ea0c38..50571726e1 100644
 --- a/www/advanced-windows-installation.html
 +++ b/www/advanced-windows-installation.html
-@@ -97,7 +97,7 @@
+@@ -98,7 +98,7 @@
  </ul>
  
  <h2>Install Visual Studio dependencies</h2>
