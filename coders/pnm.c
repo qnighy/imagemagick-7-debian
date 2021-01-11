@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -154,7 +154,7 @@ static int PNMComment(Image *image,CommentInfo *comment_info)
   int
     c;
 
-  register char
+  char
     *p;
 
   /*
@@ -209,7 +209,7 @@ static unsigned int PNMInteger(Image *image,CommentInfo *comment_info,
     Evaluate number.
   */
   value=0;
-  while (isdigit(c) != 0)
+  while (isdigit((int) ((unsigned char) c)) != 0)
   {
     if (value <= (unsigned int) (INT_MAX/10))
       {
@@ -341,7 +341,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         int
           c;
 
-        register char
+        char
           *p;
 
         /*
@@ -349,7 +349,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         */
         for (c=ReadBlobByte(image); c != EOF; c=ReadBlobByte(image))
         {
-          while (isspace(c) != 0)
+          while (isspace((int) ((unsigned char) c)) != 0)
             c=ReadBlobByte(image);
           if (c == '#')
             {
@@ -358,7 +358,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
               */
               c=PNMComment(image,&comment_info);
               c=ReadBlobByte(image);
-              while (isspace(c) != 0)
+              while (isspace((int) ((unsigned char) c)) != 0)
                 c=ReadBlobByte(image);
             }
           p=keyword;
@@ -367,14 +367,14 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
             if ((size_t) (p-keyword) < (MaxTextExtent-1))
               *p++=c;
             c=ReadBlobByte(image);
-          } while (isalnum(c));
+          } while (isalnum((int) ((unsigned char) c)));
           *p='\0';
           if (LocaleCompare(keyword,"endhdr") == 0)
             break;
-          while (isspace(c) != 0)
+          while (isspace((int) ((unsigned char) c)) != 0)
             c=ReadBlobByte(image);
           p=value;
-          while (isalnum(c) || (c == '_'))
+          while (isalnum((int) ((unsigned char) c)) || (c == '_'))
           {
             if ((size_t) (p-value) < (MaxTextExtent-1))
               *p++=c;
@@ -471,7 +471,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         (void) SetImageColorspace(image,GRAYColorspace);
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register ssize_t
+          ssize_t
             x;
 
           register PixelPacket
@@ -516,7 +516,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         (void) SetImageColorspace(image,GRAYColorspace);
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register ssize_t
+          ssize_t
             x;
 
           register PixelPacket
@@ -558,7 +558,7 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
         */
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register ssize_t
+          ssize_t
             x;
 
           register PixelPacket
@@ -677,13 +677,13 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           MagickBooleanType
             sync;
 
-          register const unsigned char
+          const unsigned char
             *magick_restrict p;
 
           register PixelPacket
             *magick_restrict q;
 
-          register ssize_t
+          ssize_t
             x;
 
           ssize_t
@@ -791,13 +791,13 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           MagickBooleanType
             sync;
 
-          register const unsigned char
+          const unsigned char
             *magick_restrict p;
 
           register PixelPacket
             *magick_restrict q;
 
-          register ssize_t
+          ssize_t
             x;
 
           ssize_t
@@ -980,10 +980,10 @@ static Image *ReadPNMImage(const ImageInfo *image_info,ExceptionInfo *exception)
           MagickBooleanType
             sync;
 
-          register const unsigned char
+          const unsigned char
             *magick_restrict p;
 
-          register ssize_t
+          ssize_t
             x;
 
           register PixelPacket
@@ -1419,7 +1419,7 @@ ModuleExport size_t RegisterPNMImage(void)
   entry->decoder=(DecodeImageHandler *) ReadPNMImage;
   entry->encoder=(EncodeImageHandler *) WritePNMImage;
   entry->description=ConstantString("Common 2-dimensional bitmap format");
-  entry->mime_type=ConstantString("image/x-portable-pixmap");
+  entry->mime_type=ConstantString("image/x-portable-anymap");
   entry->magick_module=ConstantString("PNM");
   entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
@@ -1443,7 +1443,7 @@ ModuleExport size_t RegisterPNMImage(void)
   entry->decoder=(DecodeImageHandler *) ReadPNMImage;
   entry->encoder=(EncodeImageHandler *) WritePNMImage;
   entry->description=ConstantString("Portable graymap format (gray scale)");
-  entry->mime_type=ConstantString("image/x-portable-greymap");
+  entry->mime_type=ConstantString("image/x-portable-graymap");
   entry->magick_module=ConstantString("PNM");
   entry->seekable_stream=MagickTrue;
   (void) RegisterMagickInfo(entry);
@@ -1547,7 +1547,7 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
   QuantumType
     quantum_type;
 
-  register unsigned char
+  unsigned char
     *pixels,
     *q;
 
@@ -1650,7 +1650,7 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
     value=GetImageProperty(image,"comment");
     if (value != (const char *) NULL)
       {
-        register const char
+        const char
           *p;
 
         /*
@@ -1744,10 +1744,10 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         q=pixels;
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const PixelPacket
+          const PixelPacket
             *magick_restrict p;
 
-          register ssize_t
+          ssize_t
             x;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -1802,10 +1802,10 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         q=pixels;
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const PixelPacket
+          const PixelPacket
             *magick_restrict p;
 
-          register ssize_t
+          ssize_t
             x;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -1872,10 +1872,10 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         q=pixels;
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const PixelPacket
+          const PixelPacket
             *magick_restrict p;
 
-          register ssize_t
+          ssize_t
             x;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -1943,7 +1943,7 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         pixels=GetQuantumPixels(quantum_info);
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const PixelPacket
+          const PixelPacket
             *magick_restrict p;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -1983,10 +1983,10 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         extent=GetQuantumExtent(image,quantum_info,GrayQuantum);
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const PixelPacket
+          const PixelPacket
             *magick_restrict p;
 
-          register ssize_t
+          ssize_t
             x;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -2098,10 +2098,10 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         extent=GetQuantumExtent(image,quantum_info,quantum_type);
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const PixelPacket
+          const PixelPacket
             *magick_restrict p;
 
-          register ssize_t
+          ssize_t
             x;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -2192,13 +2192,13 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         pixels=GetQuantumPixels(quantum_info);
         for (y=0; y < (ssize_t) image->rows; y++)
         {
-          register const IndexPacket
+          const IndexPacket
             *magick_restrict indexes;
 
-          register const PixelPacket
+          const PixelPacket
             *magick_restrict p;
 
-          register ssize_t
+          ssize_t
             x;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
@@ -2436,7 +2436,7 @@ static MagickBooleanType WritePNMImage(const ImageInfo *image_info,Image *image)
         pixels=GetQuantumPixels(quantum_info);
         for (y=(ssize_t) image->rows-1; y >= 0; y--)
         {
-          register const PixelPacket
+          const PixelPacket
             *magick_restrict p;
 
           p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);

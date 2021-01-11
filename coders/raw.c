@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -208,13 +208,13 @@ static Image *ReadRAWImage(const ImageInfo *image_info,ExceptionInfo *exception)
       }
     for (y=0; y < (ssize_t) image->extract_info.height; y++)
     {
-      register const PixelPacket
+      const PixelPacket
         *magick_restrict p;
 
       register PixelPacket
         *magick_restrict q;
 
-      register ssize_t
+      ssize_t
         x;
 
       if (count != (ssize_t) length)
@@ -479,7 +479,7 @@ static MagickBooleanType WriteRAWImage(const ImageInfo *image_info,Image *image)
   MagickBooleanType
     status;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
   size_t

@@ -23,7 +23,7 @@
 %                                 August 2003                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -599,7 +599,7 @@ WandExport char **MagickGetImageArtifacts(MagickWand *wand,
   const char
     *artifact;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -751,7 +751,7 @@ WandExport char **MagickGetImageProfiles(MagickWand *wand,const char *pattern,
   const char
     *property;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -888,7 +888,7 @@ WandExport char **MagickGetImageProperties(MagickWand *wand,
   const char
     *property;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1090,7 +1090,7 @@ WandExport char **MagickGetOptions(MagickWand *wand,const char *pattern,
   const char
     *option;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1496,10 +1496,10 @@ WandExport double *MagickGetSamplingFactors(MagickWand *wand,
   double
     *sampling_factors;
 
-  register const char
+  const char
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   assert(wand != (MagickWand *) NULL);
@@ -2220,7 +2220,11 @@ WandExport MagickBooleanType MagickSetGravity(MagickWand *wand,
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%  MagickSetImageArtifact() associates a artifact with an image.
+%  MagickSetImageArtifact() sets a key-value pair in the image artifact
+%  namespace.  Artifacts differ from properties.  Properties are public and are
+%  generally exported to an external image format if the format supports it.
+%  Artifacts are private and are utilized by the internal ImageMagick API to
+%  modify the behavior of certain algorithms.
 %
 %  The format of the MagickSetImageArtifact method is:
 %
@@ -2789,7 +2793,7 @@ WandExport MagickBooleanType MagickSetSamplingFactors(MagickWand *wand,
   char
     sampling_factor[MaxTextExtent];
 
-  register ssize_t
+  ssize_t
     i;
 
   assert(wand != (MagickWand *) NULL);

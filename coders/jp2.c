@@ -17,7 +17,7 @@
 %                                 June 2001                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -277,7 +277,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   opj_stream_t
     *jp2_stream;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -398,8 +398,9 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
   opj_stream_destroy(jp2_stream);
   for (i=0; i < (ssize_t) jp2_image->numcomps; i++)
   {
-    if ((jp2_image->comps[0].dx == 0) || (jp2_image->comps[0].dy == 0) ||
+    if ((jp2_image->comps[i].dx == 0) || (jp2_image->comps[i].dy == 0) ||
         (jp2_image->comps[0].prec != jp2_image->comps[i].prec) ||
+        (jp2_image->comps[0].prec > 64) ||
         (jp2_image->comps[0].sgnd != jp2_image->comps[i].sgnd) ||
         ((image->ping == MagickFalse) && (jp2_image->comps[i].data == NULL)))
       {
@@ -461,7 +462,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     q=GetAuthenticPixels(image,0,y,image->columns,1,exception);
@@ -469,7 +470,7 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      register ssize_t
+      ssize_t
         i;
 
       for (i=0; i < (ssize_t) jp2_image->numcomps; i++)
@@ -478,21 +479,24 @@ static Image *ReadJP2Image(const ImageInfo *image_info,ExceptionInfo *exception)
           pixel,
           scale;
 
-        ssize_t data_index = y/jp2_image->comps[i].dy*
-                             image->columns/jp2_image->comps[i].dx+
-                             x/jp2_image->comps[i].dx;
-        if(data_index < 0 ||
-           data_index >= (jp2_image->comps[i].h * jp2_image->comps[i].w))
-        {
-          opj_destroy_codec(jp2_codec);
-          opj_image_destroy(jp2_image);
-          ThrowReaderException(CoderError,
-                               "IrregularChannelGeometryNotSupported")
-        }
+        ssize_t
+          index,
+          pad;
+
+        pad=image->columns % jp2_image->comps[i].dx;
+        index=y/jp2_image->comps[i].dy*(image->columns+pad)/
+          jp2_image->comps[i].dx+x/jp2_image->comps[i].dx;
+        if ((index < 0) ||
+            (index >= (jp2_image->comps[i].h * jp2_image->comps[i].w)))
+          {
+            opj_destroy_codec(jp2_codec);
+            opj_image_destroy(jp2_image);
+            ThrowReaderException(CoderError,
+              "IrregularChannelGeometryNotSupported")
+          }
         scale=QuantumRange/(double) ((1UL << jp2_image->comps[i].prec)-1);
-        pixel=scale*(jp2_image->comps[i].data[data_index] +
-              (jp2_image->comps[i].sgnd ?
-               1UL << (jp2_image->comps[i].prec-1) : 0));
+        pixel=scale*(jp2_image->comps[i].data[index]+
+          (jp2_image->comps[i].sgnd ? 1UL << (jp2_image->comps[i].prec-1) : 0));
         switch (i)
         {
            case 0:
@@ -840,7 +844,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   opj_stream_t
     *jp2_stream;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -911,7 +915,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   option=GetImageOption(image_info,"jp2:quality");
   if (option != (const char *) NULL)
     {
-      register const char
+      const char
         *p;
 
       /*
@@ -949,7 +953,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   option=GetImageOption(image_info,"jp2:rate");
   if (option != (const char *) NULL)
     {
-      register const char
+      const char
         *p;
 
       /*
@@ -1039,7 +1043,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
   */
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const PixelPacket
+    const PixelPacket
       *p;
 
     ssize_t
@@ -1055,7 +1059,7 @@ static MagickBooleanType WriteJP2Image(const ImageInfo *image_info,Image *image)
         double
           scale;
 
-        register int
+        int
           *q;
 
         scale=(double) (((size_t) 1UL << jp2_image->comps[i].prec)-1)/

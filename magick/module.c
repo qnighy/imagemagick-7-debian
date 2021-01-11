@@ -17,7 +17,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -291,10 +291,10 @@ MagickExport const ModuleInfo **GetModuleInfoList(const char *pattern,
   const ModuleInfo
     **modules;
 
-  register const ModuleInfo
+  const ModuleInfo
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -369,7 +369,7 @@ extern "C" {
 
 static int ModuleCompare(const void *x,const void *y)
 {
-  register const char
+  const char
     **p,
     **q;
 
@@ -399,7 +399,7 @@ MagickExport char **GetModuleList(const char *pattern,
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -566,7 +566,7 @@ static MagickBooleanType GetMagickModulePath(const char *filename,
   }
   if (module_path != (char *) NULL)
     {
-      register char
+      char
         *p,
         *q;
 
@@ -862,7 +862,7 @@ static void *DestroyModuleNode(void *module_info)
   ExceptionInfo
     *exception;
 
-  register ModuleInfo
+  ModuleInfo
     *p;
 
   exception=AcquireExceptionInfo();
@@ -1096,7 +1096,7 @@ MagickExport MagickBooleanType ListModuleInfo(FILE *file,
     **modules,
     path[MaxTextExtent];
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -1266,7 +1266,7 @@ MagickExport MagickBooleanType OpenModule(const char *module,
   PolicyRights
     rights;
 
-  register const CoderInfo
+  const CoderInfo
     *p;
 
   size_t
@@ -1389,7 +1389,7 @@ MagickExport MagickBooleanType OpenModules(ExceptionInfo *exception)
   char
     **modules;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t

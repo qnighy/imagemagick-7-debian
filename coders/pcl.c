@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -182,7 +182,7 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
     bounding_box,
     page;
 
-  register char
+  char
     *p;
 
   SegmentInfo
@@ -331,6 +331,8 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
   options=AcquireString("");
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",
     image->x_resolution,image->y_resolution);
+  if (image_info->ping != MagickFalse)
+    (void) FormatLocaleString(density,MagickPathExtent,"2.0x2.0");
   page.width=(size_t) floor((double) page.width*image->x_resolution/delta.x+
     0.5);
   page.height=(size_t) floor((double) page.height*image->y_resolution/delta.y+
@@ -386,6 +388,13 @@ static Image *ReadPCLImage(const ImageInfo *image_info,ExceptionInfo *exception)
   {
     (void) CopyMagickString(image->filename,filename,MaxTextExtent);
     image->page=page;
+    if (image_info->ping != MagickFalse)
+      {
+        image->magick_columns*=image->x_resolution/2.0;
+        image->magick_rows*=image->y_resolution/2.0;
+        image->columns*=image->x_resolution/2.0;
+        image->rows*=image->y_resolution/2.0;
+      }
     next_image=SyncNextImageInList(image);
     if (next_image != (Image *) NULL)
       image=next_image;
@@ -493,11 +502,11 @@ static size_t PCLDeltaCompressImage(const size_t length,
     j,
     replacement;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
-  register unsigned char
+  unsigned char
     *q;
 
   q=compress_pixels;
@@ -561,10 +570,10 @@ static size_t PCLPackbitsCompressImage(const size_t length,
   int
     count;
 
-  register ssize_t
+  ssize_t
     x;
 
-  register unsigned char
+  unsigned char
     *q;
 
   ssize_t
@@ -673,17 +682,17 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image)
   MagickOffsetType
     scene;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
-  register unsigned char
+  unsigned char
     *q;
 
   size_t
@@ -871,7 +880,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image)
       {
         case 1:
         {
-          register unsigned char
+          unsigned char
             bit,
             byte;
 
@@ -904,7 +913,7 @@ static MagickBooleanType WritePCLImage(const ImageInfo *image_info,Image *image)
             Colormapped image.
           */
           for (x=0; x < (ssize_t) image->columns; x++)
-            *q++=(unsigned char) GetPixelIndex(indexes+x);
+            *q++=(unsigned char) ((size_t) GetPixelIndex(indexes+x));
           break;
         }
         case 24:

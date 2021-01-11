@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -269,19 +269,23 @@ MagickExport Image *AcquireImage(const ImageInfo *image_info)
       flags=ParseGeometry(option,&geometry_info);
       if ((flags & GreaterValue) != 0)
         {
-          if (image->delay > (size_t) floor(geometry_info.rho+0.5))
-            image->delay=(size_t) floor(geometry_info.rho+0.5);
+          if ((double) image->delay > floor(geometry_info.rho+0.5))
+            image->delay=(size_t) CastDoubleToLong(floor(
+              geometry_info.rho+0.5));
         }
       else
         if ((flags & LessValue) != 0)
           {
-            if (image->delay < (size_t) floor(geometry_info.rho+0.5))
-              image->ticks_per_second=(ssize_t) floor(geometry_info.sigma+0.5);
+            if ((double) image->delay < floor(geometry_info.rho+0.5))
+              image->ticks_per_second=CastDoubleToLong(floor(
+                geometry_info.sigma+0.5));
           }
         else
-          image->delay=(size_t) floor(geometry_info.rho+0.5);
+          image->delay=(size_t) CastDoubleToLong(floor(
+            geometry_info.rho+0.5));
       if ((flags & SigmaValue) != 0)
-        image->ticks_per_second=(ssize_t) floor(geometry_info.sigma+0.5);
+        image->ticks_per_second=CastDoubleToLong(floor(
+          geometry_info.sigma+0.5));
     }
   option=GetImageOption(image_info,"dispose");
   if (option != (const char *) NULL)
@@ -426,7 +430,7 @@ MagickExport Image *AppendImages(const Image *images,
   RectangleInfo
     geometry;
 
-  register const Image
+  const Image
     *next;
 
   size_t
@@ -523,10 +527,10 @@ MagickExport Image *AppendImages(const Image *images,
       MagickBooleanType
         sync;
 
-      register const IndexPacket
+      const IndexPacket
         *magick_restrict indexes;
 
-      register const PixelPacket
+      const PixelPacket
         *magick_restrict p;
 
       register IndexPacket
@@ -535,7 +539,7 @@ MagickExport Image *AppendImages(const Image *images,
       register PixelPacket
         *magick_restrict q;
 
-      register ssize_t
+      ssize_t
         x;
 
       if (status == MagickFalse)
@@ -878,15 +882,19 @@ MagickExport Image *CloneImage(const Image *image,const size_t columns,
   scale=1.0;
   if (image->columns != 0)
     scale=(double) columns/(double) image->columns;
-  clone_image->page.width=(size_t) floor(scale*image->page.width+0.5);
-  clone_image->page.x=(ssize_t) ceil(scale*image->page.x-0.5);
-  clone_image->tile_offset.x=(ssize_t) ceil(scale*image->tile_offset.x-0.5);
+  clone_image->page.width=(size_t) CastDoubleToLong(floor(scale*
+    image->page.width+0.5));
+  clone_image->page.x=CastDoubleToLong(ceil(scale*image->page.x-0.5));
+  clone_image->tile_offset.x=CastDoubleToLong(ceil(scale*
+    image->tile_offset.x-0.5));
   scale=1.0;
   if (image->rows != 0)
     scale=(double) rows/(double) image->rows;
-  clone_image->page.height=(size_t) floor(scale*image->page.height+0.5);
-  clone_image->page.y=(ssize_t) ceil(scale*image->page.y-0.5);
-  clone_image->tile_offset.y=(ssize_t) ceil(scale*image->tile_offset.y-0.5);
+  clone_image->page.height=(size_t) CastDoubleToLong(floor(scale*
+    image->page.height+0.5));
+  clone_image->page.y=CastDoubleToLong(ceil(scale*image->page.y-0.5));
+  clone_image->tile_offset.y=CastDoubleToLong(ceil(scale*
+    image->tile_offset.y-0.5));
   clone_image->cache=ClonePixelCache(image->cache);
   if (SetImageExtent(clone_image,columns,rows) == MagickFalse)
     {
@@ -1083,10 +1091,10 @@ MagickExport MagickBooleanType CopyImagePixels(Image *image,
 #endif
   for (y=0; y < (ssize_t) geometry->height; y++)
   {
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict source_indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
     register IndexPacket
@@ -1095,7 +1103,7 @@ MagickExport MagickBooleanType CopyImagePixels(Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -1373,7 +1381,7 @@ MagickExport Image *GetImageClipMask(const Image *image,
 */
 MagickExport void GetImageException(Image *image,ExceptionInfo *exception)
 {
-  register Image
+  Image
     *next;
 
   assert(image != (Image *) NULL);
@@ -1659,7 +1667,7 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
   MagickBooleanType
     canonical;
 
-  register const char
+  const char
     *p;
 
   ssize_t
@@ -1708,10 +1716,10 @@ MagickExport size_t InterpretImageFilename(const ImageInfo *image_info,
         const char
           *value;
 
-        register char
+        char
           *r;
 
-        register ssize_t
+        ssize_t
           i;
 
         ssize_t
@@ -1838,13 +1846,13 @@ MagickExport MagickBooleanType IsHighDynamicRangeImage(const Image *image,
     MagickPixelPacket
       pixel;
 
-    register const IndexPacket
+    const IndexPacket
       *indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *p;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -1916,7 +1924,7 @@ MagickExport MagickBooleanType IsHighDynamicRangeImage(const Image *image,
 */
 MagickExport MagickBooleanType IsImageObject(const Image *image)
 {
-  register const Image
+  const Image
     *p;
 
   assert(image != (Image *) NULL);
@@ -1957,7 +1965,7 @@ MagickExport MagickBooleanType IsTaintImage(const Image *image)
     magick[MaxTextExtent],
     filename[MaxTextExtent];
 
-  register const Image
+  const Image
     *p;
 
   assert(image != (Image *) NULL);
@@ -2100,7 +2108,7 @@ MagickExport Image *NewMagickImage(const ImageInfo *image_info,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -2304,7 +2312,7 @@ MagickExport MagickBooleanType ResetImagePixels(Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -2409,7 +2417,7 @@ MagickExport MagickBooleanType SetImageBackgroundColor(Image *image)
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -2534,7 +2542,7 @@ MagickExport MagickBooleanType SetImageColor(Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -2755,7 +2763,7 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
   MagickBooleanType
     status;
 
-  register const char
+  const char
     *p;
 
   ssize_t
@@ -2854,7 +2862,7 @@ MagickExport MagickBooleanType SetImageInfo(ImageInfo *image_info,
       MagickFormatType
         format_type;
 
-      register ssize_t
+      ssize_t
         i;
 
       static const char
@@ -3226,7 +3234,7 @@ MagickExport MagickBooleanType SetImageOpacity(Image *image,
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -3336,10 +3344,10 @@ static ssize_t SmushXGap(const Image *smush_image,const Image *images,
     left_geometry,
     right_geometry;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     y;
 
@@ -3407,10 +3415,10 @@ static ssize_t SmushYGap(const Image *smush_image,const Image *images,
     bottom_geometry,
     top_geometry;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -3488,7 +3496,7 @@ MagickExport Image *SmushImages(const Image *images,
   RectangleInfo
     geometry;
 
-  register const Image
+  const Image
     *next;
 
   size_t
@@ -3710,7 +3718,7 @@ MagickExport MagickBooleanType SyncImage(Image *image)
     register PixelPacket
       *magick_restrict q;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)

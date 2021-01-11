@@ -17,7 +17,7 @@
 %                                October 2002                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -217,7 +217,7 @@ WandExport PixelView *ClonePixelView(const PixelView *pixel_view)
   PixelView
     *clone_view;
 
-  register ssize_t
+  ssize_t
     i;
 
   assert(pixel_view != (PixelView *) NULL);
@@ -278,7 +278,7 @@ WandExport PixelView *ClonePixelView(const PixelView *pixel_view)
 static PixelWand ***DestroyPixelsThreadSet(PixelWand ***pixel_wands,
   const size_t number_wands,const size_t number_threads)
 {
-  register ssize_t
+  ssize_t
     i;
 
   assert(pixel_wands != (PixelWand ***) NULL);
@@ -394,18 +394,18 @@ WandExport MagickBooleanType DuplexTransferPixelViewIterator(
     MagickBooleanType
       sync;
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict duplex_indexes,
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict duplex_pixels,
       *magick_restrict pixels;
 
     register IndexPacket
       *magick_restrict destination_indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -661,13 +661,13 @@ WandExport MagickBooleanType GetPixelViewIterator(PixelView *source,
     const int
       id = GetOpenMPThreadId();
 
-    register const IndexPacket
+    const IndexPacket
       *indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *pixels;
 
-    register ssize_t
+    ssize_t
       x;
 
     if (status == MagickFalse)
@@ -2542,7 +2542,7 @@ static PixelWand ***AcquirePixelsThreadSet(const size_t number_wands,
   PixelWand
     ***pixel_wands;
 
-  register ssize_t
+  ssize_t
     i;
 
   pixel_wands=(PixelWand ***) AcquireQuantumMemory(number_threads,
@@ -2802,7 +2802,7 @@ WandExport MagickBooleanType SetPixelViewIterator(PixelView *destination,
     register IndexPacket
       *magick_restrict indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -2938,16 +2938,16 @@ WandExport MagickBooleanType TransferPixelViewIterator(PixelView *source,
     MagickBooleanType
       sync;
 
-    register const IndexPacket
+    const IndexPacket
       *magick_restrict indexes;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict pixels;
 
     register IndexPacket
       *magick_restrict destination_indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -3104,7 +3104,7 @@ WandExport MagickBooleanType UpdatePixelViewIterator(PixelView *source,
     register IndexPacket
       *magick_restrict indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket

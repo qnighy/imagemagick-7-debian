@@ -17,7 +17,7 @@
 %                                April 1993                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -253,11 +253,11 @@ static MagickBooleanType Classify(Image *image,short **extrema,
     next_cluster=cluster->next; \
     cluster=(Cluster *) RelinquishMagickMemory(cluster); \
   } \
-  if (squares != (double *) NULL) \
+  if (squares != (MagickRealType *) NULL) \
     { \
       squares-=255; \
       free_squares=squares; \
-      free_squares=(double *) RelinquishMagickMemory(free_squares); \
+      free_squares=(MagickRealType *) RelinquishMagickMemory(free_squares); \
     } \
   ThrowBinaryException(severity,tag,label); \
 }
@@ -288,10 +288,10 @@ static MagickBooleanType Classify(Image *image,short **extrema,
   MagickStatusType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
-  register MagickRealType
+  MagickRealType
     *squares;
 
   size_t
@@ -306,7 +306,7 @@ static MagickBooleanType Classify(Image *image,short **extrema,
   */
   cluster=(Cluster *) NULL;
   head=(Cluster *) NULL;
-  squares=(double *) NULL;
+  squares=(MagickRealType *) NULL;
   (void) memset(&red,0,sizeof(red));
   (void) memset(&green,0,sizeof(green));
   (void) memset(&blue,0,sizeof(blue));
@@ -324,13 +324,13 @@ static MagickBooleanType Classify(Image *image,short **extrema,
         */
         if (head != (Cluster *) NULL)
           {
-            cluster->next=(Cluster *) AcquireMagickMemory(
+            cluster->next=(Cluster *) AcquireQuantumMemory(1,
               sizeof(*cluster->next));
             cluster=cluster->next;
           }
         else
           {
-            cluster=(Cluster *) AcquireMagickMemory(sizeof(*cluster));
+            cluster=(Cluster *) AcquireQuantumMemory(1,sizeof(*cluster));
             head=cluster;
           }
         if (cluster == (Cluster *) NULL)
@@ -339,11 +339,10 @@ static MagickBooleanType Classify(Image *image,short **extrema,
         /*
           Initialize a new class.
         */
-        cluster->count=0;
+        (void) memset(cluster,0,sizeof(*cluster));
         cluster->red=red;
         cluster->green=green;
         cluster->blue=blue;
-        cluster->next=(Cluster *) NULL;
       }
     }
   }
@@ -352,18 +351,17 @@ static MagickBooleanType Classify(Image *image,short **extrema,
       /*
         No classes were identified-- create one.
       */
-      cluster=(Cluster *) AcquireMagickMemory(sizeof(*cluster));
+      cluster=(Cluster *) AcquireQuantumMemory(1,sizeof(*cluster));
       if (cluster == (Cluster *) NULL)
         ThrowClassifyException(ResourceLimitError,"MemoryAllocationFailed",
           image->filename);
       /*
         Initialize a new class.
       */
-      cluster->count=0;
+      (void) memset(cluster,0,sizeof(*cluster));
       cluster->red=red;
       cluster->green=green;
       cluster->blue=blue;
-      cluster->next=(Cluster *) NULL;
       head=cluster;
     }
   /*
@@ -375,10 +373,10 @@ static MagickBooleanType Classify(Image *image,short **extrema,
   image_view=AcquireVirtualCacheView(image,exception);
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register const PixelPacket
+    const PixelPacket
       *p;
 
-    register ssize_t
+    ssize_t
       x;
 
     p=GetCacheViewVirtualPixels(image_view,0,y,image->columns,1,exception);
@@ -386,28 +384,27 @@ static MagickBooleanType Classify(Image *image,short **extrema,
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
+      MagickPixelPacket
+        pixel;
+
+      pixel.red=(double) ScaleQuantumToChar(p->red);
+      pixel.green=(double) ScaleQuantumToChar(p->green);
+      pixel.blue=(double) ScaleQuantumToChar(p->blue);
       for (cluster=head; cluster != (Cluster *) NULL; cluster=cluster->next)
-        if (((ssize_t) ScaleQuantumToChar(GetPixelRed(p)) >=
-             (cluster->red.left-SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelRed(p)) <=
-             (cluster->red.right+SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelGreen(p)) >=
-             (cluster->green.left-SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelGreen(p)) <=
-             (cluster->green.right+SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelBlue(p)) >=
-             (cluster->blue.left-SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelBlue(p)) <=
-             (cluster->blue.right+SafeMargin)))
+        if ((pixel.red >= (double) (cluster->red.left-SafeMargin)) &&
+            (pixel.red <= (double) (cluster->red.right+SafeMargin)) &&
+            (pixel.green >= (double) (cluster->green.left-SafeMargin)) &&
+            (pixel.green <= (double) (cluster->green.right+SafeMargin)) &&
+            (pixel.blue >= (double) (cluster->blue.left-SafeMargin)) &&
+            (pixel.blue <= (double) (cluster->blue.right+SafeMargin)))
           {
             /*
               Count this pixel.
             */
             count++;
-            cluster->red.center+=(MagickRealType) ScaleQuantumToChar(GetPixelRed(p));
-            cluster->green.center+=(MagickRealType)
-              ScaleQuantumToChar(GetPixelGreen(p));
-            cluster->blue.center+=(MagickRealType) ScaleQuantumToChar(GetPixelBlue(p));
+            cluster->red.center+=pixel.red;
+            cluster->green.center+=pixel.green;
+            cluster->blue.center+=pixel.blue;
             cluster->count++;
             break;
           }
@@ -557,13 +554,13 @@ static MagickBooleanType Classify(Image *image,short **extrema,
     Cluster
       *cluster;
 
-    register const PixelPacket
+    const PixelPacket
       *magick_restrict p;
 
     register IndexPacket
       *magick_restrict indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -580,21 +577,21 @@ static MagickBooleanType Classify(Image *image,short **extrema,
     indexes=GetCacheViewAuthenticIndexQueue(image_view);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
+      MagickPixelPacket
+        pixel;
+
       SetPixelIndex(indexes+x,0);
+      pixel.red=(double) ScaleQuantumToChar(q->red);
+      pixel.green=(double) ScaleQuantumToChar(q->green);
+      pixel.blue=(double) ScaleQuantumToChar(q->blue);
       for (cluster=head; cluster != (Cluster *) NULL; cluster=cluster->next)
       {
-        if (((ssize_t) ScaleQuantumToChar(q->red) >=
-             (cluster->red.left-SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(q->red) <=
-             (cluster->red.right+SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(q->green) >=
-             (cluster->green.left-SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(q->green) <=
-             (cluster->green.right+SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(q->blue) >=
-             (cluster->blue.left-SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(q->blue) <=
-             (cluster->blue.right+SafeMargin)))
+        if ((pixel.red >= (double) (cluster->red.left-SafeMargin)) &&
+            (pixel.red <= (double) (cluster->red.right+SafeMargin)) &&
+            (pixel.green >= (double) (cluster->green.left-SafeMargin)) &&
+            (pixel.green <= (double) (cluster->green.right+SafeMargin)) &&
+            (pixel.blue >= (double) (cluster->blue.left-SafeMargin)) &&
+            (pixel.blue <= (double) (cluster->blue.right+SafeMargin)))
           {
             /*
               Classify this pixel.
@@ -612,7 +609,7 @@ static MagickBooleanType Classify(Image *image,short **extrema,
             ratio,
             sum;
 
-          register ssize_t
+          ssize_t
             j,
             k;
 
@@ -624,22 +621,18 @@ static MagickBooleanType Classify(Image *image,short **extrema,
           {
             sum=0.0;
             p=image->colormap+j;
-            distance_squared=squares[(ssize_t) ScaleQuantumToChar(q->red)-
-              (ssize_t) ScaleQuantumToChar(GetPixelRed(p))]+
-              squares[(ssize_t) ScaleQuantumToChar(q->green)-
-              (ssize_t) ScaleQuantumToChar(GetPixelGreen(p))]+
-              squares[(ssize_t) ScaleQuantumToChar(q->blue)-
-              (ssize_t) ScaleQuantumToChar(GetPixelBlue(p))];
+            distance_squared=
+              squares[(ssize_t) (pixel.red-ScaleQuantumToChar(p->red))]+
+              squares[(ssize_t) (pixel.green-ScaleQuantumToChar(p->green))]+
+              squares[(ssize_t) (pixel.blue-ScaleQuantumToChar(p->blue))];
             numerator=distance_squared;
             for (k=0; k < (ssize_t) image->colors; k++)
             {
               p=image->colormap+k;
-              distance_squared=squares[(ssize_t) ScaleQuantumToChar(q->red)-
-                (ssize_t) ScaleQuantumToChar(GetPixelRed(p))]+
-                squares[(ssize_t) ScaleQuantumToChar(q->green)-
-                (ssize_t) ScaleQuantumToChar(GetPixelGreen(p))]+
-                squares[(ssize_t) ScaleQuantumToChar(q->blue)-
-                (ssize_t) ScaleQuantumToChar(GetPixelBlue(p))];
+              distance_squared=
+                squares[(ssize_t) (pixel.red-ScaleQuantumToChar(p->red))]+
+                squares[(ssize_t) (pixel.green-ScaleQuantumToChar(p->green))]+
+                squares[(ssize_t) (pixel.blue-ScaleQuantumToChar(p->blue))];
               ratio=numerator/distance_squared;
               sum+=SegmentPower(ratio);
             }
@@ -717,7 +710,7 @@ static MagickBooleanType Classify(Image *image,short **extrema,
 static void ConsolidateCrossings(ZeroCrossing *zero_crossing,
   const size_t number_crossings)
 {
-  register ssize_t
+  ssize_t
     i,
     j,
     k,
@@ -890,7 +883,7 @@ static ssize_t DefineRegion(const short *extrema,ExtentPacket *extents)
 static void DerivativeHistogram(const MagickRealType *histogram,
   MagickRealType *derivative)
 {
-  register ssize_t
+  ssize_t
     i,
     n;
 
@@ -967,10 +960,10 @@ MagickExport MagickBooleanType GetImageDynamicThreshold(const Image *image,
   MagickRealType
     threshold;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -1037,13 +1030,13 @@ MagickExport MagickBooleanType GetImageDynamicThreshold(const Image *image,
         */
         if (head != (Cluster *) NULL)
           {
-            cluster->next=(Cluster *) AcquireMagickMemory(
+            cluster->next=(Cluster *) AcquireQuantumMemory(1,
               sizeof(*cluster->next));
             cluster=cluster->next;
           }
         else
           {
-            cluster=(Cluster *) AcquireMagickMemory(sizeof(*cluster));
+            cluster=(Cluster *) AcquireQuantumMemory(1,sizeof(*cluster));
             head=cluster;
           }
         if (cluster == (Cluster *) NULL)
@@ -1069,7 +1062,7 @@ MagickExport MagickBooleanType GetImageDynamicThreshold(const Image *image,
       /*
         No classes were identified-- create one.
       */
-      cluster=(Cluster *) AcquireMagickMemory(sizeof(*cluster));
+      cluster=(Cluster *) AcquireQuantumMemory(1,sizeof(*cluster));
       if (cluster == (Cluster *) NULL)
         {
           (void) ThrowMagickException(exception,GetMagickModule(),
@@ -1097,30 +1090,27 @@ MagickExport MagickBooleanType GetImageDynamicThreshold(const Image *image,
       break;
     for (x=0; x < (ssize_t) image->columns; x++)
     {
+      MagickPixelPacket
+        pixel;
+
+      pixel.red=(double) ScaleQuantumToChar(p->red);
+      pixel.green=(double) ScaleQuantumToChar(p->green);
+      pixel.blue=(double) ScaleQuantumToChar(p->blue);
       for (cluster=head; cluster != (Cluster *) NULL; cluster=cluster->next)
-        if (((ssize_t) ScaleQuantumToChar(GetPixelRed(p)) >=
-             (cluster->red.left-SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelRed(p)) <=
-             (cluster->red.right+SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelGreen(p)) >=
-             (cluster->green.left-SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelGreen(p)) <=
-             (cluster->green.right+SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelBlue(p)) >=
-             (cluster->blue.left-SafeMargin)) &&
-            ((ssize_t) ScaleQuantumToChar(GetPixelBlue(p)) <=
-             (cluster->blue.right+SafeMargin)))
+        if ((pixel.red >= (double) (cluster->red.left-SafeMargin)) &&
+            (pixel.red <= (double) (cluster->red.right+SafeMargin)) &&
+            (pixel.green >= (double) (cluster->green.left-SafeMargin)) &&
+            (pixel.green <= (double) (cluster->green.right+SafeMargin)) &&
+            (pixel.blue >= (double) (cluster->blue.left-SafeMargin)) &&
+            (pixel.blue <= (double) (cluster->blue.right+SafeMargin)))
           {
             /*
               Count this pixel.
             */
             count++;
-            cluster->red.center+=(MagickRealType)
-              ScaleQuantumToChar(GetPixelRed(p));
-            cluster->green.center+=(MagickRealType)
-              ScaleQuantumToChar(GetPixelGreen(p));
-            cluster->blue.center+=(MagickRealType)
-              ScaleQuantumToChar(GetPixelBlue(p));
+            cluster->red.center+=pixel.red;
+            cluster->green.center+=pixel.green;
+            cluster->blue.center+=pixel.blue;
             cluster->count++;
             break;
           }
@@ -1239,10 +1229,10 @@ MagickExport MagickBooleanType GetImageDynamicThreshold(const Image *image,
 static void InitializeHistogram(const Image *image,ssize_t **histogram,
   ExceptionInfo *exception)
 {
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -1314,7 +1304,7 @@ static void InitializeList(IntervalTree **list,ssize_t *number_nodes,
 
 static void MeanStability(IntervalTree *node)
 {
-  register IntervalTree
+  IntervalTree
     *child;
 
   if (node == (IntervalTree *) NULL)
@@ -1323,10 +1313,10 @@ static void MeanStability(IntervalTree *node)
   child=node->child;
   if (child != (IntervalTree *) NULL)
     {
-      register ssize_t
+      ssize_t
         count;
 
-      register MagickRealType
+      MagickRealType
         sum;
 
       sum=0.0;
@@ -1363,7 +1353,7 @@ static IntervalTree *InitializeIntervalTree(const ZeroCrossing *zero_crossing,
     *node,
     *root;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -1412,13 +1402,13 @@ static IntervalTree *InitializeIntervalTree(const ZeroCrossing *zero_crossing,
           {
             if (node == head)
               {
-                node->child=(IntervalTree *) AcquireMagickMemory(
+                node->child=(IntervalTree *) AcquireQuantumMemory(1,
                   sizeof(*node->child));
                 node=node->child;
               }
             else
               {
-                node->sibling=(IntervalTree *) AcquireMagickMemory(
+                node->sibling=(IntervalTree *) AcquireQuantumMemory(1,
                   sizeof(*node->sibling));
                 node=node->sibling;
               }
@@ -1438,7 +1428,7 @@ static IntervalTree *InitializeIntervalTree(const ZeroCrossing *zero_crossing,
         }
       if (left != head->left)
         {
-          node->sibling=(IntervalTree *) AcquireMagickMemory(
+          node->sibling=(IntervalTree *) AcquireQuantumMemory(1,
             sizeof(*node->sibling));
           node=node->sibling;
           if (node == (IntervalTree *) NULL)
@@ -1539,7 +1529,7 @@ static MagickRealType OptimalTau(const ssize_t *histogram,const double max_tau,
     tau,
     value;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
@@ -1636,7 +1626,7 @@ static MagickRealType OptimalTau(const ssize_t *histogram,const double max_tau,
       return(0.0);
     }
   /*
-    Find active nodes:  stability is greater (or equal) to the mean stability of
+    Find active nodes: stability is greater (or equal) to the mean stability of
     its children.
   */
   number_nodes=0;
@@ -1730,7 +1720,6 @@ static MagickRealType OptimalTau(const ssize_t *histogram,const double max_tau,
 %      of pixels for each intensity of a particular color component.
 %
 */
-
 static void ScaleSpace(const ssize_t *histogram,const MagickRealType tau,
   MagickRealType *scale_histogram)
 {
@@ -1740,7 +1729,7 @@ static void ScaleSpace(const ssize_t *histogram,const MagickRealType tau,
     *gamma,
     sum;
 
-  register ssize_t
+  ssize_t
     u,
     x;
 
@@ -1816,7 +1805,7 @@ MagickExport MagickBooleanType SegmentImage(Image *image,
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   short
@@ -1853,12 +1842,12 @@ MagickExport MagickBooleanType SegmentImage(Image *image,
   previous_colorspace=image->colorspace;
   (void) TransformImageColorspace(image,colorspace);
   InitializeHistogram(image,histogram,&image->exception);
-  (void) OptimalTau(histogram[Red],Tau,0.2,DeltaTau,
-    smooth_threshold == 0.0 ? 1.0 : smooth_threshold,extrema[Red]);
-  (void) OptimalTau(histogram[Green],Tau,0.2,DeltaTau,
-    smooth_threshold == 0.0 ? 1.0 : smooth_threshold,extrema[Green]);
-  (void) OptimalTau(histogram[Blue],Tau,0.2,DeltaTau,
-    smooth_threshold == 0.0 ? 1.0 : smooth_threshold,extrema[Blue]);
+  (void) OptimalTau(histogram[Red],Tau,0.2,DeltaTau,smooth_threshold == 0.0 ?
+    1.0 : smooth_threshold,extrema[Red]);
+  (void) OptimalTau(histogram[Green],Tau,0.2,DeltaTau,smooth_threshold == 0.0 ?
+    1.0 : smooth_threshold,extrema[Green]);
+  (void) OptimalTau(histogram[Blue],Tau,0.2,DeltaTau,smooth_threshold == 0.0 ?
+    1.0 : smooth_threshold,extrema[Blue]);
   /*
     Classify using the fuzzy c-Means technique.
   */
@@ -1908,7 +1897,7 @@ MagickExport MagickBooleanType SegmentImage(Image *image,
 static void ZeroCrossHistogram(MagickRealType *second_derivative,
   const MagickRealType smooth_threshold,short *crossings)
 {
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t

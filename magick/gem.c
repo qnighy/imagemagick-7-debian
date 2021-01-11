@@ -17,7 +17,7 @@
 %                                 August 1996                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -685,7 +685,7 @@ MagickExport void ConvertHWBToRGB(const double hue,const double whiteness,
     r,
     v;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -702,7 +702,7 @@ MagickExport void ConvertHWBToRGB(const double hue,const double whiteness,
       *blue=ClampToQuantum(QuantumRange*v);
       return;
     }
-  i=(ssize_t) floor(6.0*hue);
+  i=CastDoubleToLong(floor(6.0*hue));
   f=6.0*hue-i;
   if ((i & 0x01) != 0)
     f=1.0-f;
@@ -1571,7 +1571,7 @@ MagickExport double GenerateDifferentialNoise(RandomInfo *random_info,
       double
         poisson;
 
-      register ssize_t
+      ssize_t
         i;
 
       poisson=exp(-SigmaPoisson*QuantumScale*pixel);
@@ -1580,7 +1580,7 @@ MagickExport double GenerateDifferentialNoise(RandomInfo *random_info,
         beta=GetPseudoRandomValue(random_info);
         alpha*=beta;
       }
-      noise=(double) (QuantumRange*i/SigmaPoisson);
+      noise=(double) (QuantumRange*i*PerceptibleReciprocal(SigmaPoisson));
       break;
     }
     case RandomNoise:
@@ -1629,7 +1629,7 @@ MagickExport size_t GetOptimalKernelWidth1D(const double radius,
     normalize,
     value;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t

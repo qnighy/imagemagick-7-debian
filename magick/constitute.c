@@ -17,7 +17,7 @@
 %                               October 1998                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -136,7 +136,7 @@ MagickExport Image *ConstituteImage(const size_t columns,
   MagickBooleanType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -153,6 +153,15 @@ MagickExport Image *ConstituteImage(const size_t columns,
   image=AcquireImage((ImageInfo *) NULL);
   if (image == (Image *) NULL)
     return((Image *) NULL);
+  switch (storage)
+  {
+    case CharPixel: image->depth=8*sizeof(unsigned char); break;
+    case DoublePixel: image->depth=8*sizeof(double); break;
+    case FloatPixel: image->depth=8*sizeof(float); break;
+    case LongPixel: image->depth=8*sizeof(unsigned long); break;
+    case ShortPixel: image->depth=8*sizeof(unsigned short); break;
+    default: break;
+  }
   length=strlen(map);
   for (i=0; i < (ssize_t) length; i++)
   {
@@ -476,13 +485,13 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
   if (sans_exception->severity == PolicyError)
     magick_info=GetMagickInfo(read_info->magick,exception);
   sans_exception=DestroyExceptionInfo(sans_exception);
-  if (magick_info != (const MagickInfo *) NULL)
+  if ((magick_info != (const MagickInfo *) NULL) &&
+      (GetMagickRawSupport(magick_info) != MagickFalse))
     {
       if (GetMagickEndianSupport(magick_info) == MagickFalse)
         read_info->endian=UndefinedEndian;
       else
-        if ((image_info->endian == UndefinedEndian) &&
-            (GetMagickRawSupport(magick_info) != MagickFalse))
+        if (image_info->endian == UndefinedEndian)
           {
             unsigned long
               lsb_first;
@@ -675,7 +684,7 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
 
     next->taint=MagickFalse;
     GetPathComponent(magick_filename,MagickPath,magick_path);
-    if (*magick_path == '\0' && *next->magick == '\0')
+    if ((*magick_path == '\0') && (*next->magick == '\0'))
       (void) CopyMagickString(next->magick,magick,MaxTextExtent);
     (void) CopyMagickString(next->magick_filename,magick_filename,
       MaxTextExtent);
@@ -842,12 +851,14 @@ MagickExport Image *ReadImage(const ImageInfo *image_info,
           if ((flags & LessValue) != 0)
             {
               if (next->delay < (size_t) floor(geometry_info.rho+0.5))
-                next->ticks_per_second=(ssize_t) floor(geometry_info.sigma+0.5);
+                next->ticks_per_second=CastDoubleToLong(floor(
+                  geometry_info.sigma+0.5));
             }
           else
             next->delay=(size_t) floor(geometry_info.rho+0.5);
         if ((flags & SigmaValue) != 0)
-          next->ticks_per_second=(ssize_t) floor(geometry_info.sigma+0.5);
+          next->ticks_per_second=CastDoubleToLong(floor(
+            geometry_info.sigma+0.5));
       }
     option=GetImageOption(image_info,"dispose");
     if (option != (const char *) NULL)
@@ -1002,7 +1013,7 @@ MagickExport Image *ReadInlineImage(const ImageInfo *image_info,
   size_t
     length;
 
-  register const char
+  const char
     *p;
 
   /*
@@ -1012,9 +1023,7 @@ MagickExport Image *ReadInlineImage(const ImageInfo *image_info,
   for (p=content; (*p != ',') && (*p != '\0'); p++) ;
   if (*p == '\0')
     ThrowReaderException(CorruptImageError,"CorruptImage");
-  p++;
-  length=0;
-  blob=Base64Decode(p,&length);
+  blob=Base64Decode(++p,&length);
   if (length == 0)
     {
       blob=(unsigned char *) RelinquishMagickMemory(blob);
@@ -1025,6 +1034,26 @@ MagickExport Image *ReadInlineImage(const ImageInfo *image_info,
     (void *) NULL);
   *read_info->filename='\0';
   *read_info->magick='\0';
+  for (p=content; (*p != '/') && (*p != '\0'); p++) ;
+  if (*p != '\0')
+    {
+      char
+        *q;
+
+      ssize_t
+        i;
+
+      /*
+        Extract media type.
+      */
+      if (LocaleNCompare(++p,"x-",2) == 0)
+        p+=2;
+      (void) strcpy(read_info->filename,"data.");
+      q=read_info->filename+5;
+      for (i=0; (*p != ';') && (*p != '\0') && (i < (MagickPathExtent-6)); i++)
+        *q++=(*p++);
+      *q++='\0';
+    }
   image=BlobToImage(read_info,blob,length,exception);
   blob=(unsigned char *) RelinquishMagickMemory(blob);
   read_info=DestroyImageInfo(read_info);
@@ -1375,7 +1404,7 @@ MagickExport MagickBooleanType WriteImages(const ImageInfo *image_info,
   MagickStatusType
     status;
 
-  register Image
+  Image
     *p;
 
   assert(image_info != (const ImageInfo *) NULL);
@@ -1401,7 +1430,7 @@ MagickExport MagickBooleanType WriteImages(const ImageInfo *image_info,
   p=images;
   for ( ; GetNextImageInList(p) != (Image *) NULL; p=GetNextImageInList(p))
   {
-    register Image
+    Image
       *next;
 
     next=GetNextImageInList(p);
@@ -1409,7 +1438,7 @@ MagickExport MagickBooleanType WriteImages(const ImageInfo *image_info,
       break;
     if (p->scene >= next->scene)
       {
-        register ssize_t
+        ssize_t
           i;
 
         /*

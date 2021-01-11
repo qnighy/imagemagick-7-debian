@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -180,7 +180,7 @@ static inline int ProfileInteger(MagickByteBuffer *buffer,short int *hex_digits)
     l,
     value;
 
-  register ssize_t
+  ssize_t
     i;
 
   l=0;
@@ -236,10 +236,10 @@ static void ReadPSInfo(const ImageInfo *image_info,Image *image,
   MagickByteBuffer
     buffer;
 
-  register char
+  char
     *p;
 
-  register ssize_t
+  ssize_t
     i;
 
   SegmentInfo
@@ -386,7 +386,7 @@ static void ReadPSInfo(const ImageInfo *image_info,Image *image,
         i=0;
         for (c=ReadMagickByteBuffer(&buffer); c != EOF; c=ReadMagickByteBuffer(&buffer))
         {
-          if ((isspace(c) != 0) || ((i+1) == sizeof(name)))
+          if ((isspace((int) ((unsigned char) c)) != 0) || ((i+1) == sizeof(name)))
             break;
           name[i++]=(char) c;
         }
@@ -409,7 +409,7 @@ static void ReadPSInfo(const ImageInfo *image_info,Image *image,
         /*
           Read ICC profile.
         */
-        if (SkipMagickByteBufferUntil(&buffer,'\n') != MagickFalse)
+        if (SkipMagickByteBufferUntilNewline(&buffer) != MagickFalse)
           {
             ps_info->icc_profile=AcquireStringInfo(MagickPathExtent);
             datum=GetStringInfoDatum(ps_info->icc_profile);
@@ -429,11 +429,11 @@ static void ReadPSInfo(const ImageInfo *image_info,Image *image,
     if ((ps_info->photoshop_profile == (StringInfo *) NULL) &&
         (CompareMagickByteBuffer(&buffer,PhotoshopProfile,strlen(PhotoshopProfile)) != MagickFalse))
       {
+        size_t
+          extent;
+
         unsigned char
           *q;
-
-        unsigned long
-          extent;
 
         /*
           Read Photoshop profile.
@@ -446,7 +446,7 @@ static void ReadPSInfo(const ImageInfo *image_info,Image *image,
         if ((MagickSizeType) extent > GetBlobSize(image))
           continue;
         length=(size_t) extent;
-        if (SkipMagickByteBufferUntil(&buffer,'\n') != MagickFalse)
+        if (SkipMagickByteBufferUntilNewline(&buffer) != MagickFalse)
           {
             ps_info->photoshop_profile=AcquireStringInfo(length+1U);
             q=GetStringInfoDatum(ps_info->photoshop_profile);
@@ -456,7 +456,7 @@ static void ReadPSInfo(const ImageInfo *image_info,Image *image,
               if (c == EOF)
                 break;
               *q++=(unsigned char) c;
-              extent-=MagickMin(extent,2);
+              extent-=MagickMin(extent,1);
             }
             SetStringInfoLength(ps_info->photoshop_profile,length);
             continue;
@@ -576,7 +576,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   RectangleInfo
     page;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -703,8 +703,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       return((Image *) NULL);
     }
   (void) CopyMagickString(command,"/setpagedevice {pop} bind 1 index where {"
-    "dup wcheck {3 1 roll put} {pop def} ifelse} {def} ifelse\n"
-    "<</UseCIEColor true>>setpagedevice\n",MaxTextExtent);
+    "dup wcheck {3 1 roll put} {pop def} ifelse} {def} ifelse\n",
+    MaxTextExtent);
   count=write(file,command,(unsigned int) strlen(command));
   if (image_info->page == (char *) NULL)
     {
@@ -739,6 +739,8 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
   options=AcquireString("");
   (void) FormatLocaleString(density,MaxTextExtent,"%gx%g",resolution.x,
     resolution.y);
+  if (image_info->ping != MagickFalse)
+    (void) FormatLocaleString(density,MagickPathExtent,"2.0x2.0");
   (void) FormatLocaleString(options,MaxTextExtent,"-g%.20gx%.20g ",(double)
     page.width,(double) page.height);
   read_info=CloneImageInfo(image_info);
@@ -849,7 +851,7 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
       Image
         *clone_image;
 
-      register ssize_t
+      ssize_t
         i;
 
       /*
@@ -872,6 +874,13 @@ static Image *ReadPSImage(const ImageInfo *image_info,ExceptionInfo *exception)
     if (info.rows != 0)
       postscript_image->magick_rows=info.rows;
     postscript_image->page=page;
+    if (image_info->ping != MagickFalse)
+      {
+        postscript_image->magick_columns*=image->x_resolution/2.0;
+        postscript_image->magick_rows*=image->y_resolution/2.0;
+        postscript_image->columns*=image->x_resolution/2.0;
+        postscript_image->rows*=image->y_resolution/2.0;
+      }
     (void) CloneImageProfiles(postscript_image,image);
     (void) CloneImageProperties(postscript_image,image);
     next=SyncNextImageInList(postscript_image);
@@ -1039,7 +1048,7 @@ ModuleExport void UnregisterPSImage(void)
 static inline unsigned char *PopHexPixel(const char hex_digits[][3],
   const size_t pixel,unsigned char *pixels)
 {
-  register const char
+  const char
     *hex;
 
   hex=hex_digits[pixel];
@@ -1390,17 +1399,17 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
     media_info,
     page_info;
 
-  register const IndexPacket
+  const IndexPacket
     *indexes;
 
-  register const PixelPacket
+  const PixelPacket
     *p;
 
-  register ssize_t
+  ssize_t
     i,
     x;
 
-  register unsigned char
+  unsigned char
     *q;
 
   SegmentInfo
@@ -1603,7 +1612,7 @@ static MagickBooleanType WritePSImage(const ImageInfo *image_info,Image *image)
             Quantum
               pixel;
 
-            register ssize_t
+            ssize_t
               x;
 
             ssize_t

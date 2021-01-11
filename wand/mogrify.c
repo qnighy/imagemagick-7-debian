@@ -17,7 +17,7 @@
 %                                March 2000                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -130,7 +130,7 @@ WandExport MagickBooleanType MagickCommandGenesis(ImageInfo *image_info,
     regard_warnings,
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   size_t
@@ -393,7 +393,7 @@ static MagickBooleanType MonitorProgress(const char *text,
   const char
     *locale_message;
 
-  register char
+  char
     *p;
 
   wand_unreferenced(client_data);
@@ -449,7 +449,7 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
   MagickPixelPacket
     color;
 
-  register size_t
+  size_t
     x;
 
   size_t
@@ -497,8 +497,8 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
   while( *p != '\0' )
   {
     (void) GetNextToken(p,&p,MaxTextExtent,token);
-    if ( token[0] == ',' ) continue;
-    if ( isalpha((int) token[0]) || token[0] == '#' ) {
+    if ( *token == ',' ) continue;
+    if ( isalpha((int) ((unsigned char) *token)) || *token == '#' ) {
       if ( color_from_image ) {
         (void) ThrowMagickException(exception,GetMagickModule(),
             OptionError, "InvalidArgument", "`%s': %s", "sparse-color",
@@ -543,11 +543,11 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
   x=0;
   while( *p != '\0' && x < number_arguments ) {
     /* X coordinate */
-    token[0]=',';
-    while ( token[0] == ',' )
+    *token=',';
+    while ( *token == ',' )
       (void) GetNextToken(p,&p,MaxTextExtent,token);
-    if ( token[0] == '\0' ) break;
-    if ( isalpha((int) token[0]) || token[0] == '#' ) {
+    if ( *token == '\0' ) break;
+    if ( isalpha((int) ((unsigned char) *token)) || *token == '#' ) {
       (void) ThrowMagickException(exception,GetMagickModule(),
             OptionError, "InvalidArgument", "`%s': %s", "sparse-color",
             "Color found, instead of X-coord");
@@ -556,9 +556,9 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
     }
     sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
     /* Y coordinate */
-    token[0]=','; while ( token[0] == ',' ) GetNextToken(p,&p,MaxTextExtent,token);
-    if ( token[0] == '\0' ) break;
-    if ( isalpha((int) token[0]) || token[0] == '#' ) {
+    *token=','; while ( *token == ',' ) GetNextToken(p,&p,MaxTextExtent,token);
+    if ( *token == '\0' ) break;
+    if ( isalpha((int) ((unsigned char) *token)) || *token == '#' ) {
       (void) ThrowMagickException(exception,GetMagickModule(),
             OptionError, "InvalidArgument", "`%s': %s", "sparse-color",
             "Color found, instead of Y-coord");
@@ -576,11 +576,11 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
 #endif
     {
       /* color name or function given in string argument */
-      token[0]=',';
-      while ( token[0] == ',' )
+      *token=',';
+      while ( *token == ',' )
         (void) GetNextToken(p,&p,MaxTextExtent,token);
-      if ( token[0] == '\0' ) break;
-      if ( isalpha((int) token[0]) || token[0] == '#' ) {
+      if ( *token == '\0' ) break;
+      if ( isalpha((int) ((unsigned char) *token)) || *token == '#' ) {
         /* Color string given */
         (void) QueryMagickColor(token,&color,exception);
         if ( channels & RedChannel )
@@ -598,44 +598,44 @@ static Image *SparseColorOption(const Image *image,const ChannelType channel,
         /* Colors given as a set of floating point values - experimental */
         /* NB: token contains the first floating point value to use! */
         if ( channels & RedChannel ) {
-          while ( token[0] == ',' )
+          while ( *token == ',' )
             (void) GetNextToken(p,&p,MaxTextExtent,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          if ( *token == '\0' || isalpha((int) ((unsigned char) *token)) || *token == '#' )
             break;
           sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
+          *token = ','; /* used this token - get another */
         }
         if ( channels & GreenChannel ) {
-          while ( token[0] == ',' )
+          while ( *token == ',' )
             (void) GetNextToken(p,&p,MaxTextExtent,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          if ( *token == '\0' || isalpha((int) ((unsigned char) *token)) || *token == '#' )
             break;
           sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
+          *token = ','; /* used this token - get another */
         }
         if ( channels & BlueChannel ) {
-          while ( token[0] == ',' )
+          while ( *token == ',' )
             (void) GetNextToken(p,&p,MaxTextExtent,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          if ( *token == '\0' || isalpha((int) ((unsigned char) *token)) || *token == '#' )
             break;
           sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
+          *token = ','; /* used this token - get another */
         }
         if ( channels & IndexChannel ) {
-          while ( token[0] == ',' )
+          while ( *token == ',' )
             (void) GetNextToken(p,&p,MaxTextExtent,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          if ( *token == '\0' || isalpha((int) ((unsigned char) *token)) || *token == '#' )
             break;
           sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
+          *token = ','; /* used this token - get another */
         }
         if ( channels & OpacityChannel ) {
-          while ( token[0] == ',' )
+          while ( *token == ',' )
             (void) GetNextToken(p,&p,MaxTextExtent,token);
-          if ( token[0] == '\0' || isalpha((int)token[0]) || token[0] == '#' )
+          if ( *token == '\0' || isalpha((int) ((unsigned char) *token)) || *token == '#' )
             break;
           sparse_arguments[x++]=StringToDouble(token,(char **) NULL);
-          token[0] = ','; /* used this token - get another */
+          *token = ','; /* used this token - get another */
         }
       }
     }
@@ -694,7 +694,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
     geometry,
     region_geometry;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -1074,7 +1074,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             register PixelPacket
               *magick_restrict q;
 
-            register ssize_t
+            ssize_t
               x;
 
             ssize_t
@@ -1244,7 +1244,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             KernelInfo
               *kernel_info;
 
-            register ssize_t
+            ssize_t
               j;
 
             size_t
@@ -1384,7 +1384,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             double
               *arguments;
 
-            register ssize_t
+            ssize_t
               x;
 
             size_t
@@ -1704,7 +1704,7 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
             MagickFunction
               function;
 
-            register ssize_t
+            ssize_t
               x;
 
             size_t
@@ -2014,19 +2014,19 @@ WandExport MagickBooleanType MogrifyImage(ImageInfo *image_info,const int argc,
 
             p=(const char *) argv[i+1];
             (void) GetNextToken(p,&p,MaxTextExtent,token);  /* get black point color */
-            if ((isalpha((int) *token) != 0) || ((*token == '#') != 0))
+            if ((isalpha((int) ((unsigned char) *token)) != 0) || ((*token == '#') != 0))
               (void) QueryMagickColor(token,&black_point,exception);
             else
               (void) QueryMagickColor("#000000",&black_point,exception);
-            if (isalpha((int) token[0]) || (token[0] == '#'))
+            if (isalpha((int) ((unsigned char) *token)) || (*token == '#'))
               (void) GetNextToken(p,&p,MaxTextExtent,token);
             if (*token == '\0')
               white_point=black_point; /* set everything to that color */
             else
               {
-                if ((isalpha((int) *token) == 0) && ((*token == '#') == 0))
+                if ((isalpha((int) ((unsigned char) *token)) == 0) && ((*token == '#') == 0))
                   (void) GetNextToken(p,&p,MaxTextExtent,token); /* Get white point color. */
-                if ((isalpha((int) *token) != 0) || ((*token == '#') != 0))
+                if ((isalpha((int) ((unsigned char) *token)) != 0) || ((*token == '#') != 0))
                   (void) QueryMagickColor(token,&white_point,exception);
                 else
                   (void) QueryMagickColor("#ffffff",&white_point,exception);
@@ -3763,7 +3763,7 @@ static MagickBooleanType MogrifyUsage(void)
   (void) printf(
     "image type as the filename suffix (i.e. image.ps).  Specify 'file' as\n");
   (void) printf("'-' for standard input or output.\n");
-  return(MagickFalse);
+  return(MagickTrue);
 }
 
 WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
@@ -3817,7 +3817,7 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
   MagickStatusType
     status;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -3949,7 +3949,7 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
         if ((LocaleCompare(image->filename,"-") != 0) &&
             (IsPathWritable(image->filename) != MagickFalse))
           {
-            register ssize_t
+            ssize_t
               i;
 
             /*
@@ -5074,7 +5074,10 @@ WandExport MagickBooleanType MogrifyImageCommand(ImageInfo *image_info,
           }
         if ((LocaleCompare("help",option+1) == 0) ||
             (LocaleCompare("-help",option+1) == 0))
-          return(MogrifyUsage());
+          {
+            DestroyMogrify();
+            return(MogrifyUsage());
+          }
         ThrowMogrifyException(OptionError,"UnrecognizedOption",option)
       }
       case 'i':
@@ -6562,7 +6565,7 @@ WandExport MagickBooleanType MogrifyImageInfo(ImageInfo *image_info,
   ssize_t
     count;
 
-  register ssize_t
+  ssize_t
     i;
 
   /*
@@ -6974,12 +6977,6 @@ WandExport MagickBooleanType MogrifyImageInfo(ImageInfo *image_info,
           }
         if (LocaleCompare("format",option+1) == 0)
           {
-            register const char
-              *q;
-
-            for (q=strchr(argv[i+1],'%'); q != (char *) NULL; q=strchr(q+1,'%'))
-              if (strchr("Agkrz@[#",*(q+1)) != (char *) NULL)
-                image_info->ping=MagickFalse;
             (void) SetImageOption(image_info,option+1,argv[i+1]);
             break;
           }
@@ -7748,7 +7745,7 @@ WandExport MagickBooleanType MogrifyImageList(ImageInfo *image_info,
   QuantizeInfo
     *quantize_info;
 
-  register ssize_t
+  ssize_t
     i;
 
   ssize_t
@@ -8588,7 +8585,7 @@ WandExport MagickBooleanType MogrifyImageList(ImageInfo *image_info,
             Image
               *polynomial_image;
 
-            register ssize_t
+            ssize_t
               x;
 
             size_t
@@ -8900,7 +8897,7 @@ WandExport MagickBooleanType MogrifyImages(ImageInfo *image_info,
   size_t
     n;
 
-  register ssize_t
+  ssize_t
     i;
 
   assert(image_info != (ImageInfo *) NULL);

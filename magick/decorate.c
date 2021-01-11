@@ -17,7 +17,7 @@
 %                                   July 1992                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2020 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -188,7 +188,7 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
     shadow,
     trough;
 
-  register ssize_t
+  ssize_t
     x;
 
   size_t
@@ -296,7 +296,7 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
       register IndexPacket
         *magick_restrict frame_indexes;
 
-      register ssize_t
+      ssize_t
         x;
 
       register PixelPacket
@@ -413,7 +413,7 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
     register IndexPacket
       *magick_restrict frame_indexes;
 
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -501,7 +501,7 @@ MagickExport Image *FrameImage(const Image *image,const FrameInfo *frame_info,
       register IndexPacket
         *magick_restrict frame_indexes;
 
-      register ssize_t
+      ssize_t
         x;
 
       register PixelPacket
@@ -708,7 +708,7 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
 #endif
   for (y=0; y < (ssize_t) raise_info->height; y++)
   {
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -783,7 +783,7 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
 #endif
   for (y=(ssize_t) raise_info->height; y < (ssize_t) (image->rows-raise_info->height); y++)
   {
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
@@ -847,7 +847,7 @@ MagickExport MagickBooleanType RaiseImage(Image *image,
 #endif
   for (y=(ssize_t) (image->rows-raise_info->height); y < (ssize_t) image->rows; y++)
   {
-    register ssize_t
+    ssize_t
       x;
 
     register PixelPacket
