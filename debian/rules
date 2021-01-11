@@ -719,7 +719,7 @@ override_dh_install-indep:
 	# remaining package
 	dh_install --indep --remaining-packages --sourcedir=debian/tmp-indep --autodest
 	# fix doxygen problem
-	./debian/scripts/dh_doxygen --indep --package=imagemagick-$(IMVERSION)-doc
+	dh_doxygen --indep --package=imagemagick-$(IMVERSION)-doc
 	# remove spurious php file
 	find debian/imagemagick-$(IMVERSION)-doc/usr/share/doc/imagemagick-$(IMVERSION)-common/html -name '*.php' -delete
 	# fix duplicate files

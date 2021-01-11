@@ -11,6 +11,7 @@ imagemagick (8:6.9.11.57+dfsg-1) unstable; urgency=medium
     - Bug fix: "CVE-2020-27560: Division by Zero in function
       OptimizeLayerFrames", thanks to Salvatore Bonaccorso
       (Closes: #972797).
+  * Fix dh_doxygen FTBFS (Closes: #971216)
 
  -- Bastien Roucariès <rouca@debian.org>  Mon, 11 Jan 2021 22:14:26 +0000
 
