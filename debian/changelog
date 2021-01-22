@@ -1,3 +1,12 @@
+imagemagick (8:6.9.11.58+dfsg-1) unstable; urgency=medium
+
+  * New upstream version:
+    - Fix error on i386 with php
+  * Bug fix (workarround): "Many doubled www/www; broken links on
+    index.html", thanks to 積丹尼 Dan Jacobson (Closes: #978138).
+
+ -- Bastien Roucariès <rouca@debian.org>  Fri, 22 Jan 2021 21:59:16 +0000
+
 imagemagick (8:6.9.11.57+dfsg-1) unstable; urgency=medium
 
   * New upstream version:
