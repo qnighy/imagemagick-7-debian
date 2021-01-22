@@ -1218,9 +1218,6 @@
 #define MAGICKCORE_OPENEXR_DELEGATE 1
 #endif
 
-/* Name of package */
-/* #undef PACKAGE */
-
 /* Define to the address where bug reports for this package should be sent. */
 #ifndef MAGICKCORE_PACKAGE_BUGREPORT
 #define MAGICKCORE_PACKAGE_BUGREPORT "https://github.com/ImageMagick/ImageMagick/issues"
@@ -1233,7 +1230,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.11-57"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 6.9.11-58"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1248,7 +1245,7 @@
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "6.9.11-57"
+#define MAGICKCORE_PACKAGE_VERSION "6.9.11-58"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1420,9 +1417,6 @@
 # define __EXTENSIONS__ 1
 #endif
 
-
-/* Version number of package */
-/* #undef VERSION */
 
 /* Define if you have WEBPMUX library */
 #ifndef MAGICKCORE_WEBPMUX_DELEGATE

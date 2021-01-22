@@ -22,35 +22,27 @@
 AC_PREREQ(2.69)
 
 # ==============================================================================
-# ImageMagick versioning
+# Initalize Automake
 # ==============================================================================
-m4_define([magick_name], [ImageMagick])
-m4_define([magick_major_version], [6])
-m4_define([magick_minor_version], [9])
-m4_define([magick_micro_version], [11])
-m4_define([magick_patchlevel_version], [57])
+m4_include([m4/version.m4])
 m4_define([magick_base_version],
           [magick_major_version.magick_minor_version.magick_micro_version])
 m4_define([magick_version],
-          [magick_base_version-magick_patchlevel_version])
-m4_define([magick_bugreport], 
-          [https://github.com/ImageMagick/ImageMagick/issues])
-m4_define([magick_url], [https://imagemagick.org])
-m4_define([magick_lib_version],[0x69B])
-m4_define([magick_lib_version_number],
+          [magick_base_version-magick_patchlevel_version])m4_define([magick_lib_version_number],
           [magick_major_version,magick_minor_version,magick_micro_version,magick_patchlevel_version])
 m4_define([magick_git_revision],
-          esyscmd([
+          m4_esyscmd([
             c=$(git log --full-history --format=tformat:. HEAD | wc -l)
             h=$(git rev-parse --short HEAD)
             d=$(date +%Y%m%d)
             printf %s "$c:$h:$d"
           ]))
-m4_define([magick_tarname],[ImageMagick])
+m4_define([magick_release_date],
+          m4_esyscmd([
+            d=$(date +%F -r ./ChangeLog)
+            printf %s "$d"
+          ]))
 
-# ==============================================================================
-# Initalize Automake
-# ==============================================================================
 AC_INIT([magick_name],
         [magick_version],
         [magick_bugreport],
@@ -65,8 +57,11 @@ AC_CONFIG_HEADERS([config/config.h])
 AX_PREFIX_CONFIG_H([magick/magick-baseconfig.h],[MagickCore])
 AC_CANONICAL_SYSTEM
 AC_CANONICAL_TARGET
+
 AM_INIT_AUTOMAKE([foreign no-define color-tests parallel-tests -Wall -Wno-portability subdir-objects dist-bzip2 dist-lzip dist-xz dist-zip tar-ustar])
+
 AM_SILENT_RULES([yes])
+AC_SUBST([CONFIGURE_DEPENDENCIES],["$CONFIGURE_DEPENDENCIES \$(top_srcdir)/ChangeLog \$(top_srcdir)/m4/version.m4"])
 
 #
 # Save initial user-tunable values
@@ -83,15 +78,6 @@ AC_SUBST([DISTCHECK_CONFIG_FLAGS])
 
 CONFIGURE_ARGS="$0 ${ac_configure_args}"
 AC_SUBST([CONFIGURE_ARGS])
-
-AC_ARG_ENABLE([reproducible-build],
-    [AC_HELP_STRING([--enable-reproducible-build],
-                    [enable reproducible build])],
-    [enable_reproducible_build=$enableval],
-    [enable_reproducible_build='no'])
-
-# Source file containing package/library versioning information.
-. ${srcdir}/version.sh
 
 echo "Configuring ${PACKAGE_NAME} ${PACKAGE_VERSION}"
 
@@ -117,17 +103,17 @@ AC_SUBST([MAGICK_VERSION],[magick_version])
 AC_SUBST([MAGICK_GIT_REVISION],[magick_git_revision])
 
 # Substitute library versioning
-AC_SUBST([MAGICK_LIBRARY_CURRENT])dnl
-AC_SUBST([MAGICK_LIBRARY_REVISION])dnl
-AC_SUBST([MAGICK_LIBRARY_AGE])dnl
+AC_SUBST([MAGICK_LIBRARY_CURRENT],[magick_library_current])dnl
+AC_SUBST([MAGICK_LIBRARY_REVISION],[magick_library_revision])dnl
+AC_SUBST([MAGICK_LIBRARY_AGE],[magick_library_age])dnl
 AC_SUBST([MAGICK_LIBRARY_CURRENT_MIN],
          [`expr $MAGICK_LIBRARY_CURRENT - $MAGICK_LIBRARY_AGE`])
 AC_SUBST([MAGICK_LIBRARY_VERSION_INFO],
          [$MAGICK_LIBRARY_CURRENT:$MAGICK_LIBRARY_REVISION:$MAGICK_LIBRARY_AGE])
 
-AC_SUBST([MAGICKPP_LIBRARY_CURRENT])dnl
-AC_SUBST([MAGICKPP_LIBRARY_REVISION])dnl
-AC_SUBST([MAGICKPP_LIBRARY_AGE])dnl
+AC_SUBST([MAGICKPP_LIBRARY_CURRENT],[magickpp_library_current])dnl
+AC_SUBST([MAGICKPP_LIBRARY_REVISION],[magickpp_library_revision])dnl
+AC_SUBST([MAGICKPP_LIBRARY_AGE],[magickpp_library_age])dnl
 AC_SUBST([MAGICKPP_LIBRARY_CURRENT_MIN],
          [`expr $MAGICKPP_LIBRARY_CURRENT - $MAGICKPP_LIBRARY_AGE`])
 AC_SUBST([MAGICKPP_LIBRARY_VERSION_INFO],
@@ -138,11 +124,7 @@ AC_SUBST([PACKAGE_PATCHLEVEL_VERSION],[magick_patchlevel_version])
 AC_SUBST([PACKAGE_VERSION_ADDENDUM],[-magick_patchlevel_version])
 AC_SUBST([PACKAGE_LIB_VERSION],[magick_lib_version])
 AC_SUBST([PACKAGE_LIB_VERSION_NUMBER],[magick_lib_version_number])
-AS_IF([test X$enable_reproducible_build = Xyes],
- [PACKAGE_RELEASE_DATE=$PACKAGE_RELEASE_DATE_REPRODUCIBLE],
- [PACKAGE_RELEASE_DATE=$PACKAGE_RELEASE_DATE_RAW],
-)
-AC_SUBST([PACKAGE_RELEASE_DATE])dnl
+AC_SUBST([PACKAGE_RELEASE_DATE],[magick_release_date])
 
 # Ensure that make can run correctly
 AM_SANITY_CHECK
@@ -193,9 +175,6 @@ AC_SUBST([MAGICKPP_LIB_VERSION_TEXT])
 # Definition used to define MagickLibVersionNumber in version.h
 MAGICK_LIB_VERSION_NUMBER="${MAGICK_LIBRARY_CURRENT},${MAGICK_LIBRARY_AGE},${MAGICK_LIBRARY_REVISION}"
 AC_SUBST([MAGICK_LIB_VERSION_NUMBER])
-
-# Regenerate config.status if ChangeLog or version.sh is updated.
-AC_SUBST([CONFIG_STATUS_DEPENDENCIES],['$(top_srcdir)/version.sh'])
 
 PERLMAINCC=$CC
 

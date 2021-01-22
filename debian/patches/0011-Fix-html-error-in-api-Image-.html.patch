@@ -1,4 +1,4 @@
-From f5b61842dc558e07274260a226cccf0966b0e629 Mon Sep 17 00:00:00 2001
+From 0c6cfba74031cefa1bbfa361cb1c72d2825eaa17 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 11 Aug 2017 10:13:21 +0200
 Subject: Fix html error in api/Image++.html

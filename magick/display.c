@@ -5251,10 +5251,12 @@ static MagickBooleanType XCropImage(Display *display,
   scale_factor=(MagickRealType) width/windows->image.ximage->width;
   crop_info.x+=x;
   crop_info.x=(ssize_t) (scale_factor*crop_info.x+0.5);
+  crop_info.x+=image->page.x;
   crop_info.width=(unsigned int) (scale_factor*crop_info.width+0.5);
   scale_factor=(MagickRealType) height/windows->image.ximage->height;
   crop_info.y+=y;
   crop_info.y=(ssize_t) (scale_factor*crop_info.y+0.5);
+  crop_info.y+=image->page.y;
   crop_info.height=(unsigned int) (scale_factor*crop_info.height+0.5);
   crop_image=CropImage(image,&crop_info,&image->exception);
   XSetCursorState(display,windows,MagickFalse);
@@ -9147,16 +9149,13 @@ static Image *XMagickCommand(Display *display,XResourceInfo *resource_info,
       if (mozilla_window != (Window) NULL)
         {
           char
-            command[MaxTextExtent],
-            *url;
+            command[MaxTextExtent];
 
           /*
             Display documentation using Netscape remote control.
           */
-          url=GetMagickHomeURL();
           (void) FormatLocaleString(command,MaxTextExtent,
-            "openurl(%s,new-tab)",url);
-          url=DestroyString(url);
+            "openurl(%s,new-tab)",MagickAuthoritativeURL);
           mozilla_atom=XInternAtom(display,"_MOZILLA_COMMAND",MagickFalse);
           (void) XChangeProperty(display,mozilla_window,mozilla_atom,XA_STRING,
             8,PropModeReplace,(unsigned char *) command,(int) strlen(command));
@@ -15994,10 +15993,7 @@ MagickExport Image *XDisplayImage(Display *display,XResourceInfo *resource_info,
         Free X resources.
       */
       if (resource_info->copy_image != (Image *) NULL)
-        {
-          resource_info->copy_image=DestroyImage(resource_info->copy_image);
-          resource_info->copy_image=NewImageList();
-        }
+        resource_info->copy_image=DestroyImage(resource_info->copy_image);
       DestroyXResources();
     }
   (void) XSync(display,MagickFalse);

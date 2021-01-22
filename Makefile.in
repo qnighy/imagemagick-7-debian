@@ -284,7 +284,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ac_func_fseeko.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
 	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/version.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -3015,8 +3015,8 @@ CFLAGS = @CFLAGS@
 CODER_DIRNAME = @CODER_DIRNAME@
 CODER_PATH = @CODER_PATH@
 CONFIGURE_ARGS = @CONFIGURE_ARGS@
+CONFIGURE_DEPENDENCIES = @CONFIGURE_DEPENDENCIES@
 CONFIGURE_PATH = @CONFIGURE_PATH@
-CONFIG_STATUS_DEPENDENCIES = @CONFIG_STATUS_DEPENDENCIES@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -3452,7 +3452,6 @@ TOP_EXTRA_DIST = \
   NEWS.txt \
   README.txt \
   index.html \
-  version.sh \
   winpath.sh
 
 
@@ -3497,7 +3496,8 @@ M4_EXTRA_DIST = \
 	ltsugar.m4  \
 	ltversion.m4  \
 	magick_check_pthread_lib.m4  \
-	pkg.m4  
+	pkg.m4  \
+	version.m4  
 
 
 # Where architecture-independent configuration files get installed
@@ -13010,7 +13010,7 @@ magick-version: magick/version.h
 	fi ; \
 	touch magick-version
 
-magick/version.h:	$(top_srcdir)/ChangeLog $(top_srcdir)/version.sh
+magick/version.h:	$(top_srcdir)/ChangeLog $(top_srcdir)/m4/version.m4
 libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck
 

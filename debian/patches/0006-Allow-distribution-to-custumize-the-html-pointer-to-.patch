@@ -1,4 +1,4 @@
-From effdfddda15da8a8a1602a89fd958d7a6b7cbac7 Mon Sep 17 00:00:00 2001
+From 0009d19c48e3a7a232445895cb6bebeee7e19a3a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 2 Feb 2018 22:17:26 +0100
 Subject: Allow distribution to custumize the html pointer to documentation
@@ -20,10 +20,10 @@ Bug-debian: https://bugs.debian.org/727739
  9 files changed, 30 insertions(+), 16 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 57c1273ded..e13703e217 100644
+index 37ed00c988..ea0bb94f1b 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -3079,6 +3079,18 @@ esac
+@@ -3058,6 +3058,18 @@ esac
  AC_DEFINE_UNQUOTED([DOCUMENTATION_PATH],["$DEFINE_DOCUMENTATION_PATH"],[Directory where ImageMagick documents live.])
  AC_SUBST([DOCUMENTATION_PATH])
  
