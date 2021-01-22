@@ -93,6 +93,7 @@
 #include "magick/string-private.h"
 #include "magick/thread-private.h"
 #include "magick/threshold.h"
+#include "magick/token.h"
 #include "magick/transform.h"
 #include "magick/utility.h"
 
@@ -2292,6 +2293,9 @@ static double FxEvaluateSubexpression(FxInfo *fx_info,const ChannelType channel,
           size_t
             length;
 
+          /*
+            Parse if(condition test, true-expression, false-expression).
+          */
           length=CopyMagickString(subexpression,expression+3,
             MagickPathExtent-1);
           if (length != 0)
@@ -2831,7 +2835,8 @@ MagickExport Image *FxImageChannel(const Image *image,const ChannelType channel,
   fx_view=AcquireAuthenticCacheView(fx_image,exception);
 #if defined(MAGICKCORE_OPENMP_SUPPORT)
   #pragma omp parallel for schedule(dynamic) shared(progress,status) \
-    magick_number_threads(image,fx_image,fx_image->rows,1)
+    magick_number_threads(image,fx_image,fx_image->rows, \
+      GlobExpression(fx_info[0]->expression,"debug(",MagickTrue) == 0 ? 1 : 0)
 #endif
   for (y=0; y < (ssize_t) fx_image->rows; y++)
   {
