@@ -127,10 +127,7 @@ WandExport WandView *CloneWandView(const WandView *wand_view)
   assert(wand_view->signature == WandSignature);
   if (wand_view->debug != MagickFalse)
     (void) LogMagickEvent(WandEvent,GetMagickModule(),"%s",wand_view->name);
-  clone_view=(WandView *) AcquireMagickMemory(sizeof(*clone_view));
-  if (clone_view == (WandView *) NULL)
-    ThrowWandFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",
-      wand_view->name);
+  clone_view=(WandView *) AcquireCriticalMemory(sizeof(*clone_view));
   (void) memset(clone_view,0,sizeof(*clone_view));
   clone_view->id=AcquireWandId();
   (void) FormatLocaleString(clone_view->name,MaxTextExtent,"%s-%.20g",
@@ -312,13 +309,13 @@ WandExport MagickBooleanType DuplexTransferWandViewIterator(WandView *source,
       *magick_restrict duplex_pixels,
       *magick_restrict pixels;
 
-    register IndexPacket
+    IndexPacket
       *magick_restrict destination_indexes;
 
     ssize_t
       x;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict destination_pixels;
 
     if (status == MagickFalse)
@@ -782,10 +779,7 @@ WandExport WandView *NewWandView(MagickWand *wand)
 
   assert(wand != (MagickWand *) NULL);
   assert(wand->signature == WandSignature);
-  wand_view=(WandView *) AcquireMagickMemory(sizeof(*wand_view));
-  if (wand_view == (WandView *) NULL)
-    ThrowWandFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",
-      GetExceptionMessage(errno));
+  wand_view=(WandView *) AcquireCriticalMemory(sizeof(*wand_view));
   (void) memset(wand_view,0,sizeof(*wand_view));
   wand_view->id=AcquireWandId();
   (void) FormatLocaleString(wand_view->name,MaxTextExtent,"%s-%.20g",
@@ -843,10 +837,7 @@ WandExport WandView *NewWandViewExtent(MagickWand *wand,const ssize_t x,
 
   assert(wand != (MagickWand *) NULL);
   assert(wand->signature == WandSignature);
-  wand_view=(WandView *) AcquireMagickMemory(sizeof(*wand_view));
-  if (wand_view == (WandView *) NULL)
-    ThrowWandFatalException(ResourceLimitFatalError,"MemoryAllocationFailed",
-      GetExceptionMessage(errno));
+  wand_view=(WandView *) AcquireCriticalMemory(sizeof(*wand_view));
   (void) memset(wand_view,0,sizeof(*wand_view));
   wand_view->id=AcquireWandId();
   (void) FormatLocaleString(wand_view->name,MaxTextExtent,"%s-%.20g",
@@ -993,13 +984,13 @@ WandExport MagickBooleanType SetWandViewIterator(WandView *destination,
     MagickBooleanType
       sync;
 
-    register IndexPacket
+    IndexPacket
       *magick_restrict indexes;
 
     ssize_t
       x;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict pixels;
 
     if (status == MagickFalse)
@@ -1184,13 +1175,13 @@ WandExport MagickBooleanType TransferWandViewIterator(WandView *source,
     const PixelPacket
       *magick_restrict pixels;
 
-    register IndexPacket
+    IndexPacket
       *magick_restrict destination_indexes;
 
     ssize_t
       x;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict destination_pixels;
 
     if (status == MagickFalse)
@@ -1351,13 +1342,13 @@ WandExport MagickBooleanType UpdateWandViewIterator(WandView *source,
     const int
       id = GetOpenMPThreadId();
 
-    register IndexPacket
+    IndexPacket
       *magick_restrict indexes;
 
     ssize_t
       x;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict pixels;
 
     if (status == MagickFalse)

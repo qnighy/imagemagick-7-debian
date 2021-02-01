@@ -1,4 +1,4 @@
-From 628145557871c717dd1eae69b26a26e90dea2b2e Mon Sep 17 00:00:00 2001
+From 0696eea1ce57371b52a4b4151bc3de399a19041d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Fri, 11 Aug 2017 10:15:37 +0200
 Subject: Fix www/magick-script.html
@@ -9,7 +9,7 @@ Forwarded: Yes
  1 file changed, 1 insertion(+)
 
 diff --git a/www/magick-script.html b/www/magick-script.html
-index d0aae5cd41..6f0208e4b7 100644
+index e82fbe3cb4..2aa6484258 100644
 --- a/www/magick-script.html
 +++ b/www/magick-script.html
 @@ -91,6 +91,7 @@

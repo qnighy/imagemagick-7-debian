@@ -1,4 +1,4 @@
-From ac4457aa141205bd94c57cfd8f8f6e46f3ad64a4 Mon Sep 17 00:00:00 2001
+From 516cfd4725b3b6851d410d47fb7168a0151e7b1a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Tue, 21 Mar 2017 12:15:08 +0100
 Subject: Improve man page to use version information and quantum

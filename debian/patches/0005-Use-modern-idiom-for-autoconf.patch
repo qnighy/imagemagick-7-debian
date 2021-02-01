@@ -1,4 +1,4 @@
-From c1d3a8bc9cc39414c8755a3e8411692e8c8c0b84 Mon Sep 17 00:00:00 2001
+From 1012523f76edd9c46ea5a9dff6062fefffb51a40 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Tue, 15 Sep 2015 22:01:13 +0200
 Subject: Use modern idiom for autoconf

@@ -1,16 +1,16 @@
-From e6923bc6cc2a083905b4bb5f8faca0e68af34508 Mon Sep 17 00:00:00 2001
+From 644457efe4a513b60d0f3085315426c5b4737a3b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Sat, 18 Mar 2017 15:47:28 +0100
 Subject: Fix remaining error in html files
 
 ---
- www/changelog.html | 16 ++++++++--------
- www/download.html  |  6 +++---
+ www/changelog.html | 15 ++++++++-------
+ www/download.html  |  5 +++--
  www/index.html     |  1 -
- 3 files changed, 11 insertions(+), 12 deletions(-)
+ 3 files changed, 11 insertions(+), 10 deletions(-)
 
 diff --git a/www/changelog.html b/www/changelog.html
-index e82ed58526..8cfd9b5bb5 100644
+index 284960b90f..5d9c77bd4f 100644
 --- a/www/changelog.html
 +++ b/www/changelog.html
 @@ -67,8 +67,8 @@
@@ -24,7 +24,7 @@ index e82ed58526..8cfd9b5bb5 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
    </nav>
-@@ -1198,10 +1198,10 @@
+@@ -1224,10 +1224,10 @@
  <dt>2016-08-27  6.9.5-8 Dirk Lemstra &lt;dirk@lem.....org&gt;</dt>
    <li> Added define 'psd:additional-info' to preserve the additional information    in a PSD file.</li>
  <dt>2016-08-15  6.9.5-8 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
@@ -38,7 +38,7 @@ index e82ed58526..8cfd9b5bb5 100644
    <li> Release ImageMagick version 6.9.5-7, GIT revision 10993:7d2fd25:20160814.</li>
  <dt>2016-08-14  6.9.5-7 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Eliminate compiler warning.</li>
-@@ -5087,7 +5087,7 @@
+@@ -5113,7 +5113,7 @@
    <li> Set AppendImage() matte channel only when image has matte attribute set.</li>
    <li> The -crop with negative offsets do not modify the virtual canvas.</li>
    <li> Caption: Given both the width and height ("-size") of the area to fill,    adjust the fonts "-pointsize" until the text just filles the whole space    without overflowing.</li>
@@ -47,7 +47,7 @@ index e82ed58526..8cfd9b5bb5 100644
    </main><!-- /.container -->
    <footer class="magick-footer">
      <div class="container">
-@@ -5112,7 +5112,7 @@
+@@ -5138,6 +5138,7 @@
    </footer>
  
    <!-- Javascript assets -->
@@ -55,11 +55,9 @@ index e82ed58526..8cfd9b5bb5 100644
 +  <script>window.jQuery || document.write('&lt;script src="assets/jquery.slim.min.js"&gt;&lt;\/script&gt;')</script><script src="assets/bootstrap.bundle.min.js" crossorigin="anonymous">
  </body>
  </html>
--<!-- Magick Cache 1st January 2021 19:38 -->
-\ No newline at end of file
 +
 diff --git a/www/download.html b/www/download.html
-index d56cdb6feb..983593858e 100644
+index bfd4fa0ffa..d467cd9242 100644
 --- a/www/download.html
 +++ b/www/download.html
 @@ -67,8 +67,8 @@
@@ -73,15 +71,13 @@ index d56cdb6feb..983593858e 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
    </nav>
-@@ -478,4 +478,4 @@ objShell.Exec("convert ""e:/myimages/image.png"" ""e:/myimages/image.jpg""")</co
+@@ -478,3 +478,4 @@ objShell.Exec("convert ""e:/myimages/image.png"" ""e:/myimages/image.jpg""")</co
    <script>window.jQuery || document.write('<script src="assets/jquery.slim.min.js"><\/script>')</script><script src="assets/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf" crossorigin="anonymous">
  </body>
  </html>
--<!-- Magick Cache 1st January 2021 19:38 -->
-\ No newline at end of file
 +
 diff --git a/www/index.html b/www/index.html
-index baaa9202ab..acbfd0a527 100644
+index 24709fc4f7..5bff3905e8 100644
 --- a/www/index.html
 +++ b/www/index.html
 @@ -263,7 +263,6 @@ Use ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&am

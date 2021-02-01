@@ -1,4 +1,4 @@
-From 489a5f0f891273848b1bd5ef705c752ddd22ff74 Mon Sep 17 00:00:00 2001
+From df76b8f6d8230390e7c8ecf5dbe6dab132b79fb2 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 30 Jul 2018 14:50:23 +0200
 Subject: Fix end tags

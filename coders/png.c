@@ -2081,14 +2081,14 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
   unsigned char
     *p;
 
-  register IndexPacket
+  IndexPacket
     *indexes;
 
   ssize_t
     i,
     x;
 
-  register PixelPacket
+  PixelPacket
     *q;
 
   size_t
@@ -2925,16 +2925,12 @@ static Image *ReadOnePNGImage(MngInfo *mng_info,
         ping_background->blue *= bkgd_scale;
 
         if (logging != MagickFalse)
-          {
-            if (logging != MagickFalse)
-              (void) LogMagickEvent(CoderEvent,GetMagickModule(),
-                 "    Reading PNG bKGD chunk, raw ping_background=(%d,%d,%d).\n"
-                 "    bkgd_scale=%d.  ping_background=(%d,%d,%d).",
-                 ping_background->red,ping_background->green,
-                 ping_background->blue,
-                 bkgd_scale,ping_background->red,
-                 ping_background->green,ping_background->blue);
-          }
+          (void) LogMagickEvent(CoderEvent,GetMagickModule(),
+              "    Reading PNG bKGD chunk, raw ping_background=(%d,%d,%d).\n"
+              "    bkgd_scale=%d.  ping_background=(%d,%d,%d).",
+              ping_background->red,ping_background->green,
+              ping_background->blue,bkgd_scale,ping_background->red,
+              ping_background->green,ping_background->blue);
 
         image->background_color.red=
             ScaleShortToQuantum(ping_background->red);
@@ -4296,7 +4292,7 @@ static Image *ReadOneJNGImage(MngInfo *mng_info,
     i,
     x;
 
-  register PixelPacket
+  PixelPacket
     *q;
 
   unsigned char
@@ -6732,7 +6728,7 @@ static Image *ReadOneMNGImage(MngInfo* mng_info, const ImageInfo *image_info,
                 ssize_t
                   x;
 
-                register PixelPacket
+                PixelPacket
                   *n,
                   *q;
 
@@ -6875,7 +6871,7 @@ static Image *ReadOneMNGImage(MngInfo* mng_info, const ImageInfo *image_info,
 
                   for (i=0; i < m; i++, yy++)
                   {
-                    register PixelPacket
+                    PixelPacket
                       *pixels;
 
                     assert(yy < (ssize_t) large_image->rows);
@@ -7008,7 +7004,7 @@ static Image *ReadOneMNGImage(MngInfo* mng_info, const ImageInfo *image_info,
 
                 for (y=0; y < (ssize_t) image->rows; y++)
                 {
-                  register PixelPacket
+                  PixelPacket
                     *pixels;
 
                   q=GetAuthenticPixels(image,0,y,image->columns,1,exception);
@@ -8574,7 +8570,7 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
   /* Respect the -depth option */
   if (image->depth < 4)
     {
-       register PixelPacket
+       PixelPacket
          *r;
 
        ExceptionInfo
@@ -8780,14 +8776,14 @@ static MagickBooleanType WriteOnePNGImage(MngInfo *mng_info,
      semitransparent[260],
      transparent[260];
 
-   register IndexPacket
+   IndexPacket
      *indexes;
 
    const PixelPacket
      *s,
      *q;
 
-   register PixelPacket
+   PixelPacket
      *r;
 
    if (logging != MagickFalse)

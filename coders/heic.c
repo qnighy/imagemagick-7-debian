@@ -535,8 +535,7 @@ ModuleExport void UnregisterHEICImage(void)
   (void) UnregisterMagickInfo("AVIF");
   (void) UnregisterMagickInfo("HEIC");
 }
-
-
+
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %

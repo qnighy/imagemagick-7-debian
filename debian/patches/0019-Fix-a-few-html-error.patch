@@ -1,17 +1,17 @@
-From 0b71c0503dafec39940c02bcad3bda7c70b823a5 Mon Sep 17 00:00:00 2001
+From 55e03da869a70f9bf07a34d9adb8270e0693f914 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Sun, 26 Jul 2020 22:26:36 +0200
 Subject: Fix a few html error
 
 Forwarded: yes
 ---
- www/binary-releases.html |   1 -
- www/changelog.html       |  12 +++--
- www/defines.html         | 107 +++++++++++++++++++++++++++++++++++++--
- www/index.html           |  10 ++++
- www/search.html          |   1 +
- www/security-policy.html |   1 +
- 6 files changed, 123 insertions(+), 9 deletions(-)
+ www/binary-releases.html |  1 -
+ www/changelog.html       | 12 ++---
+ www/defines.html         | 96 ++++++++++++++++++++++++++++++++++++++--
+ www/index.html           | 10 +++++
+ www/search.html          |  1 +
+ www/security-policy.html |  1 +
+ 6 files changed, 112 insertions(+), 9 deletions(-)
 
 diff --git a/www/binary-releases.html b/www/binary-releases.html
 index b6e959a7ea..49a8f2aac9 100644
@@ -26,10 +26,10 @@ index b6e959a7ea..49a8f2aac9 100644
    <div class="container">
     <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
 diff --git a/www/changelog.html b/www/changelog.html
-index 26dd44d3a7..f43e18ef92 100644
+index fe5bca9fec..5887ee8d3a 100644
 --- a/www/changelog.html
 +++ b/www/changelog.html
-@@ -392,13 +392,14 @@
+@@ -418,13 +418,14 @@
  <dt>2020-01-07  6.9.10-85 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Support Fx do() iterator.</li>
    <li> `magick -size 100x100 xc:black black.pnm` no longer creates a white image    (reference https://github.com/ImageMagick/ImageMagick/issues/1817).</li>
@@ -47,7 +47,7 @@ index 26dd44d3a7..f43e18ef92 100644
    <li>	* Ensure circle.rb renders the same for IMv6 and IMv7 (reference    https://github.com/rmagick/rmagick/issues/905).</li>
  <dt>2019-12-30  6.9.10-83 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Release ImageMagick version 6.9.10-83, GIT revision 15184:9f64323:20191230.</li>
-@@ -466,7 +467,8 @@
+@@ -492,7 +493,8 @@
  <dt>2019-10-27  6.9.10-70 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Release ImageMagick version 6.9.10-70, GIT revision 14970:4200095:20191027.</li>
  <dt>2019-10-27  6.9.10-70 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
@@ -57,7 +57,7 @@ index 26dd44d3a7..f43e18ef92 100644
    <li> Release ImageMagick version 6.9.10-70, GIT revision 14970:4200095:20191027.</li>
  <dt>2019-10-27  6.9.10-70 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Fixed numerous issues  posted to GitHub (reference    https://github.com/ImageMagick/ImageMagick/issues).</li>
-@@ -768,7 +770,7 @@
+@@ -794,7 +796,7 @@
    <li> Release ImageMagick version 6.9.10-1, GIT revision 13595:dafb03062:20180616.</li>
  <dt>2018-06-16  6.9.10-1 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
    <li> Fixed numerous use of uninitialized values, integer overflow, memory    exceeded, and timeouts (credit to OSS Fuzz).</li>
@@ -67,7 +67,7 @@ index 26dd44d3a7..f43e18ef92 100644
    <li> Release ImageMagick version 6.9.10-0, GIT revision 13585:82d7dbe0b:20180612.</li>
  <dt>2018-06-11  6.9.10-0 Cristy  &lt;quetzlzacatenango@image...&gt;</dt>
 diff --git a/www/defines.html b/www/defines.html
-index 4dee35879f..08a08240ab 100644
+index bfd619f4b4..405196a69a 100644
 --- a/www/defines.html
 +++ b/www/defines.html
 @@ -67,8 +67,8 @@
@@ -81,13 +81,11 @@ index 4dee35879f..08a08240ab 100644
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
      </form>
    </nav>
-@@ -1438,7 +1438,100 @@ use:</p>
+@@ -1438,7 +1438,96 @@ use:</p>
  
  </table>
  
-+<<<<<<< HEAD
- </div>
-+=======
+-</div>
 +<p>Select <var>dataset</var> and <var>record</var> from the following:</p>
 +
 +<pre class="pre-scrollable:">
@@ -178,30 +176,16 @@ index 4dee35879f..08a08240ab 100644
 +Post ObjectData Descriptor Record
 +  9:10   Confirmed ObjectData Size
 +</code></pre>
-+>>>>>>> f37c4e635d (Fix a few html error)
  </div>
      </div>
    </main><!-- /.container -->
-@@ -1465,7 +1558,15 @@ use:</p>
-   </footer>
- 
-   <!-- Javascript assets -->
-+<<<<<<< HEAD
+@@ -1468,3 +1557,4 @@ use:</p>
    <script>window.jQuery || document.write('<script src="assets/jquery.slim.min.js"><\/script>')</script><script src="assets/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf" crossorigin="anonymous">
  </body>
  </html>
--<!-- Magick Cache 1st January 2021 19:38 -->
-\ No newline at end of file
 +<!-- Magick Cache 1st January 2021 19:38 -->
-+=======
-+  <script src="assets/magick.js" crossorigin="anonymous"></script>
-+  <script>window.jQuery || document.write('&lt;script src="assets/jquery.min.js">&lt;\/script>')</script>
-+</body>
-+</html>
-+<!-- Magick Cache 19th March 2020 16:27 -->
-+>>>>>>> f37c4e635d (Fix a few html error)
 diff --git a/www/index.html b/www/index.html
-index 06ae80534e..a0e1b1702b 100644
+index 51355732f9..abff1f327b 100644
 --- a/www/index.html
 +++ b/www/index.html
 @@ -237,7 +237,17 @@ Use ImageMagick<sup><a href="http://tarr.uspto.gov/servlet/tarr?regser=serial&am
@@ -235,7 +219,7 @@ index fd224dd29d..985d9c1dcf 100644
        <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
        <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
 diff --git a/www/security-policy.html b/www/security-policy.html
-index 75b06d5ddd..2499263771 100644
+index 9ccc4b496a..593d71af45 100644
 --- a/www/security-policy.html
 +++ b/www/security-policy.html
 @@ -66,6 +66,7 @@
