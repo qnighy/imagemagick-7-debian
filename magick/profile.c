@@ -420,8 +420,7 @@ static double **AcquirePixelThreadSet(const size_t columns,
   (void) memset(pixels,0,number_threads*sizeof(*pixels));
   for (i=0; i < (ssize_t) number_threads; i++)
   {
-    pixels[i]=(double *) AcquireQuantumMemory(columns,channels*
-      sizeof(**pixels));
+    pixels[i]=(double *) AcquireQuantumMemory(columns,channels*sizeof(**pixels));
     if (pixels[i] == (double *) NULL)
       return(DestroyPixelThreadSet(pixels));
   }
@@ -1110,13 +1109,13 @@ MagickExport MagickBooleanType ProfileImage(Image *image,const char *name,
               MagickBooleanType
                 sync;
 
-              register IndexPacket
+              IndexPacket
                 *magick_restrict indexes;
 
               double
                 *p;
 
-              register PixelPacket
+              PixelPacket
                 *magick_restrict q;
 
               ssize_t
@@ -1685,7 +1684,7 @@ static MagickBooleanType ValidateXMPProfile(Image *image,
   const StringInfo *profile)
 {
   (void) ThrowMagickException(&image->exception,GetMagickModule(),
-    MissingDelegateError,"DelegateLibrarySupportNotBuiltIn","'%s' (XML)",
+    MissingDelegateWarning,"DelegateLibrarySupportNotBuiltIn","'%s' (XML)",
     image->filename);
   return(MagickFalse);
 }

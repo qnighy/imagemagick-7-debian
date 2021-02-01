@@ -1722,10 +1722,10 @@ MagickExport Image *InterpolativeResizeImage(const Image *image,
     PointInfo
       offset;
 
-    register IndexPacket
+    IndexPacket
       *magick_restrict resize_indexes;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict q;
 
     ssize_t
@@ -1914,10 +1914,10 @@ MagickExport Image *LiquidRescaleImage(const Image *image,const size_t columns,
   rescale_view=AcquireAuthenticCacheView(rescale_image,exception);
   while (lqr_carver_scan(carver,&x,&y,&packet) != 0)
   {
-    register IndexPacket
+    IndexPacket
       *magick_restrict rescale_indexes;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict q;
 
     q=QueueCacheViewAuthenticPixels(rescale_view,x,y,1,1,exception);
@@ -2039,10 +2039,10 @@ MagickExport Image *MagnifyImage(const Image *image,ExceptionInfo *exception)
 #endif
   for (y=0; y < (ssize_t) image->rows; y++)
   {
-    register IndexPacket
+    IndexPacket
       *magick_restrict magnify_indexes;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict q;
 
     ssize_t
@@ -2060,16 +2060,16 @@ MagickExport Image *MagnifyImage(const Image *image,ExceptionInfo *exception)
     magnify_indexes=GetCacheViewAuthenticIndexQueue(magnify_view);
     for (x=0; x < (ssize_t) image->columns; x++)
     {
-      MagickRealType
-        intensity[9];
-
       const IndexPacket
         *magick_restrict indexes;
 
       const PixelPacket
         *magick_restrict p;
 
-      register PixelPacket
+      MagickRealType
+        intensity[9];
+
+      PixelPacket
         *magick_restrict r;
 
       ssize_t
@@ -2088,8 +2088,8 @@ MagickExport Image *MagnifyImage(const Image *image,ExceptionInfo *exception)
       for (i=0; i < 9; i++)
         intensity[i]=GetPixelIntensity(image,p+i);
       r=q;
-      if ((fabs(intensity[1]-intensity[7]) < MagickEpsilon) ||
-          (fabs(intensity[3]-intensity[5]) < MagickEpsilon))
+      if ((fabs((double) (intensity[1]-intensity[7])) < MagickEpsilon) ||
+          (fabs((double) (intensity[3]-intensity[5])) < MagickEpsilon))
         {
           /*
             Clone center pixel.
@@ -2107,37 +2107,37 @@ MagickExport Image *MagnifyImage(const Image *image,ExceptionInfo *exception)
           /*
             Selectively clone pixel.
           */
-          if (fabs(intensity[1]-intensity[3]) < MagickEpsilon)
+          if (fabs((double) (intensity[1]-intensity[3])) < MagickEpsilon)
             *r=p[3];
           else
             *r=p[4];
           r++;
-          if (fabs(intensity[1]-intensity[5]) < MagickEpsilon)
+          if (fabs((double) (intensity[1]-intensity[5])) < MagickEpsilon)
             *r=p[5];
           else
             *r=p[4];
           r+=(magnify_image->columns-1);
-          if (fabs(intensity[3]-intensity[7]) < MagickEpsilon)
+          if (fabs((double) (intensity[3]-intensity[7])) < MagickEpsilon)
             *r=p[3];
           else
             *r=p[4];
           r++;
-          if (fabs(intensity[5]-intensity[7]) < MagickEpsilon)
+          if (fabs((double) (intensity[5]-intensity[7])) < MagickEpsilon)
             *r=p[5];
           else
             *r=p[4];
         }
       if (indexes != (const IndexPacket *) NULL)
         {
-          register IndexPacket
+          IndexPacket
             *r;
 
           /*
             Magnify the colormap indexes.
           */
           r=magnify_indexes;
-          if ((fabs(intensity[1]-intensity[7]) < MagickEpsilon) ||
-              (fabs(intensity[3]-intensity[5]) < MagickEpsilon))
+          if ((fabs((double) (intensity[1]-intensity[7])) < MagickEpsilon) ||
+              (fabs((double) (intensity[3]-intensity[5])) < MagickEpsilon))
             {
               /*
                 Clone center pixel.
@@ -2155,22 +2155,22 @@ MagickExport Image *MagnifyImage(const Image *image,ExceptionInfo *exception)
               /*
                 Selectively clone pixel.
               */
-              if (fabs(intensity[1]-intensity[3]) < MagickEpsilon)
+              if (fabs((double) (intensity[1]-intensity[3])) < MagickEpsilon)
                 *r=indexes[3];
               else
                 *r=indexes[4];
               r++;
-              if (fabs(intensity[1]-intensity[5]) < MagickEpsilon)
+              if (fabs((double) (intensity[1]-intensity[5])) < MagickEpsilon)
                 *r=indexes[5];
               else
                 *r=indexes[4];
               r+=(magnify_image->columns-1);
-              if (fabs(intensity[3]-intensity[7]) < MagickEpsilon)
+              if (fabs((double) (intensity[3]-intensity[7])) < MagickEpsilon)
                 *r=indexes[3];
               else
                 *r=indexes[4];
               r++;
-              if (fabs(intensity[5]-intensity[7]) < MagickEpsilon)
+              if (fabs((double) (intensity[5]-intensity[7])) < MagickEpsilon)
                 *r=indexes[5];
               else
                 *r=indexes[4];
@@ -2491,10 +2491,10 @@ static MagickBooleanType HorizontalFilter(
     ContributionInfo
       *magick_restrict contribution;
 
-    register IndexPacket
+    IndexPacket
       *magick_restrict resize_indexes;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict q;
 
     ssize_t
@@ -2739,10 +2739,10 @@ static MagickBooleanType VerticalFilter(
     ContributionInfo
       *magick_restrict contribution;
 
-    register IndexPacket
+    IndexPacket
       *magick_restrict resize_indexes;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict q;
 
     ssize_t
@@ -3154,10 +3154,10 @@ MagickExport Image *SampleImage(const Image *image,const size_t columns,
     const PixelPacket
       *magick_restrict p;
 
-    register IndexPacket
+    IndexPacket
       *magick_restrict sample_indexes;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict q;
 
     ssize_t
@@ -3360,14 +3360,14 @@ MagickExport Image *ScaleImage(const Image *image,const size_t columns,
     const PixelPacket
       *magick_restrict p;
 
-    register IndexPacket
+    IndexPacket
       *magick_restrict scale_indexes;
 
-    register MagickPixelPacket
+    MagickPixelPacket
       *magick_restrict s,
       *magick_restrict t;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict q;
 
     ssize_t

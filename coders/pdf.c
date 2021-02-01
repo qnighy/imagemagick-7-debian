@@ -368,36 +368,6 @@ static inline void CleanupPDFInfo(PDFInfo *pdf_info)
     pdf_info->profile=DestroyStringInfo(pdf_info->profile);
 }
 
-static char *SanitizeDelegateString(const char *source)
-{
-  char
-    *sanitize_source;
-
-  const char
-    *q;
-
-  char
-    *p;
-
-  static char
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
-    whitelist[] =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 "
-      "$-_.+!;*(),{}|^~[]`\'><#%/?:@&=";
-#else
-    whitelist[] =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 "
-      "$-_.+!;*(),{}|\\^~[]`\"><#%/?:@&=";
-#endif
-
-  sanitize_source=AcquireString(source);
-  p=sanitize_source;
-  q=sanitize_source+strlen(sanitize_source);
-  for (p+=strspn(p,whitelist); p != q; p+=strspn(p,whitelist))
-    *p='_';
-  return(sanitize_source);
-}
-
 static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   char
@@ -625,10 +595,10 @@ static Image *ReadPDFImage(const ImageInfo *image_info,ExceptionInfo *exception)
       sanitize_passphrase=SanitizeDelegateString(image_info->authenticate);
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
       (void) FormatLocaleString(passphrase,MagickPathExtent,
-        "\"-sPDFPassword=%s\" ",sanitize_passphrase);
+        "-sPDFPassword=\"%s\" ",sanitize_passphrase);
 #else
       (void) FormatLocaleString(passphrase,MagickPathExtent,
-        "'-sPDFPassword=%s' ",sanitize_passphrase);
+        "-sPDFPassword='%s' ",sanitize_passphrase);
 #endif
       sanitize_passphrase=DestroyString(sanitize_passphrase);
       (void) ConcatenateMagickString(options,passphrase,MagickPathExtent);

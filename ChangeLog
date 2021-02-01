@@ -1,3 +1,22 @@
+2021-01-25  6.9.11-60  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-60 GIT revision 16407:584cabd8b:20210125
+
+2021-01-24  6.9.11-60  <quetzlzacatenango@image...>
+  * nothing new, lockstep with IMv7 release.
+
+2021-01-24  6.9.11-59  <quetzlzacatenango@image...>
+  * Release ImageMagick version 6.9.11-59 GIT revision 16399:3614d5e0a:20210124
+
+2021-01-20  6.9.11-59  <quetzlzacatenango@image...>
+  * strip EXIF marker from profile (reference
+    https://github.com/ImageMagick/ImageMagick/issues/3140).
+  * add --enable-opencl to the configure command-line to enable OpenCL
+    support.
+  * generate histograms by comparing pixel components rather than color
+    (reference https://github.com/ImageMagick/ImageMagick/discussions/3142).
+  * revert annotation performance optimization (reference
+    https://github.com/ImageMagick/ImageMagick6/issues/130).
+
 2021-01-16  6.9.11-58  <quetzlzacatenango@image...>
   * Release ImageMagick version 6.9.11-58 GIT revision 16343:f38ca0d37:20210116
 
