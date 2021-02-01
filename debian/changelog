@@ -1,3 +1,11 @@
+imagemagick (8:6.9.11.60+dfsg-1) unstable; urgency=high
+
+  * New upstream version
+    - Bug fix: "gscan2pdf tests fail", thanks to Sergio Durigan Junior
+      (Closes: #980202).
+
+ -- Bastien Roucariès <rouca@debian.org>  Mon, 01 Feb 2021 16:22:02 +0000
+
 imagemagick (8:6.9.11.58+dfsg-1) unstable; urgency=medium
 
   * New upstream version:
