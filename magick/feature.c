@@ -166,7 +166,7 @@ static MagickBooleanType TraceEdges(Image *edge_image,CacheView *edge_view,
   MagickBooleanType
     status;
 
-  register PixelPacket
+  PixelPacket
     *q;
 
   ssize_t
@@ -433,7 +433,7 @@ MagickExport Image *CannyEdgeImage(const Image *image,const double radius,
 #endif
   for (y=0; y < (ssize_t) edge_image->rows; y++)
   {
-    register PixelPacket
+    PixelPacket
       *magick_restrict q;
 
     ssize_t
@@ -794,12 +794,12 @@ MagickExport ChannelFeatures *GetImageChannelFeatures(const Image *image,
       number_grays=gray.opacity;
   cooccurrence=(ChannelStatistics **) AcquireQuantumMemory(number_grays,
     sizeof(*cooccurrence));
-  density_x=(ChannelStatistics *) AcquireQuantumMemory(2*(number_grays+1),
-    sizeof(*density_x));
-  density_xy=(ChannelStatistics *) AcquireQuantumMemory(2*(number_grays+1),
-    sizeof(*density_xy));
-  density_y=(ChannelStatistics *) AcquireQuantumMemory(2*(number_grays+1),
-    sizeof(*density_y));
+  density_x=(ChannelStatistics *) AcquireQuantumMemory(number_grays+1,
+    2*sizeof(*density_x));
+  density_xy=(ChannelStatistics *) AcquireQuantumMemory(number_grays+1,
+    2*sizeof(*density_xy));
+  density_y=(ChannelStatistics *) AcquireQuantumMemory(number_grays+1,
+    2*sizeof(*density_y));
   Q=(ChannelStatistics **) AcquireQuantumMemory(number_grays,sizeof(*Q));
   sum=(ChannelStatistics *) AcquireQuantumMemory(number_grays,sizeof(*sum));
   if ((cooccurrence == (ChannelStatistics **) NULL) ||
@@ -2236,7 +2236,7 @@ MagickExport Image *MeanShiftImage(const Image *image,const size_t width,
     const PixelPacket
       *magick_restrict p;
 
-    register PixelPacket
+    PixelPacket
       *magick_restrict q;
 
     ssize_t

@@ -910,7 +910,7 @@ MagickExport MagickBooleanType GetTypeMetrics(Image *image,
 static MagickBooleanType RenderType(Image *image,const DrawInfo *draw_info,
   const PointInfo *offset,TypeMetric *metrics)
 {
-  const char
+  char
     *font;
 
   const TypeInfo
@@ -987,17 +987,21 @@ static MagickBooleanType RenderType(Image *image,const DrawInfo *draw_info,
         }
     }
   font=GetPolicyValue("system:font");
-  if ((font != (const char *) NULL) && (IsPathAccessible(font) != MagickFalse))
+  if (font != (char *) NULL)
     {
-      /*
-        Render with default system font.
-      */
-      annotate_info=CloneDrawInfo((ImageInfo *) NULL,draw_info);
-      annotate_info->font=ConstantString(font);
-      status=RenderFreetype(image,annotate_info,annotate_info->encoding,offset,
-        metrics);
-      annotate_info=DestroyDrawInfo(annotate_info);
-      return(status);
+      if (IsPathAccessible(font) != MagickFalse)
+        {
+          /*
+            Render with default system font.
+          */
+          annotate_info=CloneDrawInfo((ImageInfo *) NULL,draw_info);
+          annotate_info->font=font;
+          status=RenderFreetype(image,annotate_info,annotate_info->encoding,
+            offset,metrics);
+          annotate_info=DestroyDrawInfo(annotate_info);
+          return(status);
+        }
+      font=DestroyString(font);
     }
   sans_exception=AcquireExceptionInfo();
   if (type_info == (const TypeInfo *) NULL)
@@ -1083,6 +1087,7 @@ static size_t ComplexTextLayout(const Image *image,const DrawInfo *draw_info,
   size_t
     extent;
 
+  magick_unreferenced(flags);
   extent=0;
   rq=raqm_create();
   if (rq == (raqm_t *) NULL)
@@ -1576,8 +1581,14 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
   last_character=(ssize_t) length-1;
   for (i=0; i < (ssize_t) length; i++)
   {
+    FT_BitmapGlyph
+      bitmap;
+
     FT_Outline
       outline;
+
+    PointInfo
+      point;
 
     /*
       Render UTF-8 sequence.
@@ -1635,16 +1646,19 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
       }
     FT_Vector_Transform(&glyph.origin,&affine);
     (void) FT_Glyph_Transform(glyph.image,&affine,&glyph.origin);
+    ft_status=FT_Glyph_To_Bitmap(&glyph.image,FT_RENDER_MODE_NORMAL,
+      (FT_Vector *) NULL,MagickTrue);
+    if (ft_status != 0)
+      continue;
+    bitmap=(FT_BitmapGlyph) glyph.image;
+    point.x=offset->x+bitmap->left;
+    if (bitmap->bitmap.pixel_mode == ft_pixel_mode_mono)
+      point.x+=(origin.x/64.0);
+    point.y=offset->y-bitmap->top;
     if (draw_info->render != MagickFalse)
       {
         CacheView
           *image_view;
-
-        FT_BitmapGlyph
-          bitmap;
-
-        PointInfo
-          point;
 
         unsigned char
           *p;
@@ -1655,15 +1669,6 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
         /*
           Rasterize the glyph.
         */
-        ft_status=FT_Glyph_To_Bitmap(&glyph.image,FT_RENDER_MODE_NORMAL,
-          (FT_Vector *) NULL,MagickTrue);
-        if (ft_status != 0)
-          continue;
-        bitmap=(FT_BitmapGlyph) glyph.image;
-        point.x=offset->x+bitmap->left;
-        if (bitmap->bitmap.pixel_mode == ft_pixel_mode_mono)
-          point.x+=(origin.x/64.0);
-        point.y=offset->y-bitmap->top;
         transparent_fill=((draw_info->fill.opacity == TransparentOpacity) &&
           (draw_info->fill_pattern == (Image *) NULL) &&
           (draw_info->stroke.opacity == TransparentOpacity) &&
@@ -1681,9 +1686,7 @@ static MagickBooleanType RenderFreetype(Image *image,const DrawInfo *draw_info,
             fill_opacity;
 
           PixelPacket
-            fill_color;
-
-          register PixelPacket
+            fill_color,
             *magick_restrict q;
 
           ssize_t
@@ -2114,11 +2117,11 @@ static MagickBooleanType RenderPostscript(Image *image,
       annotate_view=AcquireAuthenticCacheView(annotate_image,exception);
       for (y=0; y < (ssize_t) annotate_image->rows; y++)
       {
+        PixelPacket
+          *magick_restrict q;
+
         ssize_t
           x;
-
-        register PixelPacket
-          *magick_restrict q;
 
         q=GetCacheViewAuthenticPixels(annotate_view,0,y,annotate_image->columns,
           1,exception);
