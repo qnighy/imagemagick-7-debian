@@ -208,9 +208,9 @@ AC_SUBST([SBIN_DIR])
 eval "eval LIBEXEC_DIR=$libexecdir"
 AC_SUBST([LIBEXEC_DIR])
 eval "eval DATA_DIR=$datadir"
-AC_SUBST(DATA_DIR)
-eval "eval DOC_DIR=$docdir"
-AC_SUBST(DOC_DIR)
+AC_SUBST([DATA_DIR])
+eval "eval DOC_DIR=$datadir/doc"
+AC_SUBST([DOC_DIR])
 eval "eval SYSCONF_DIR=$sysconfdir"
 AC_SUBST([SYSCONF_DIR])
 eval "eval SHAREDSTATE_DIR=$sharedstatedir"
@@ -805,10 +805,7 @@ MAGICK_ABI_SUFFIX="Q${QUANTUM_DEPTH}"
 if test "$enable_hdri" = 'yes'; then
   MAGICK_ABI_SUFFIX="Q${QUANTUM_DEPTH}${MAGICK_HDRI}"
 fi
-
-AC_SUBST(MAGICK_ABI_SUFFIX)
-MAGICK_ABI_SUFFIX_LC=`echo "$MAGICK_ABI_SUFFIX" | sed 's/./\L&/g'`
-AC_SUBST(MAGICK_ABI_SUFFIX_LC)
+AC_SUBST([MAGICK_ABI_SUFFIX])
 
 # Set pixel cache threshold
 AC_ARG_WITH([cache],
@@ -3051,8 +3048,9 @@ AC_SUBST([FILTER_PATH])
 
 #
 # Path to ImageMagick documentation files
-DOCUMENTATION_PATH="${DOC_DIR}"
-DEFINE_DOCUMENTATION_PATH="${DOC_DIR}"
+DOCUMENTATION_RELATIVE_PATH="${PACKAGE_NAME}-${MAGICK_MAJOR_VERSION}"
+DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}"
+DEFINE_DOCUMENTATION_PATH="${DOC_DIR}/${DOCUMENTATION_RELATIVE_PATH}/"
 case "${build_os}" in
   mingw* )
     DEFINE_DOCUMENTATION_PATH=`$WinPathScript "$DEFINE_DOCUMENTATION_PATH" 1`
@@ -3060,18 +3058,6 @@ case "${build_os}" in
 esac
 AC_DEFINE_UNQUOTED([DOCUMENTATION_PATH],["$DEFINE_DOCUMENTATION_PATH"],[Directory where ImageMagick documents live.])
 AC_SUBST([DOCUMENTATION_PATH])
-
-
-#
-# Add distribution specific string for documentation
-AC_ARG_WITH([extra-doc-dir],
-    [AC_HELP_STRING([--with-extra-doc-dir=""],
-       [extra documentation dir could be overriden by distribution, for instance by " (you may install the imagemagick-doc package)"])],
-    [extra_doc_dir="$withval"],
-    [extra_doc_dir=""])
-AC_DEFINE_UNQUOTED(EXTRA_DOC_DIR,"$EXTRA_DOC_DIR",[Extra documentation dir could be overriden by distribution, for instance by " (you may install th imagemagick-doc package)"])
-AC_SUBST(EXTRA_DOC_DIR,$extra_doc_dir)
-
 
 #
 # Enable/Disable documentation

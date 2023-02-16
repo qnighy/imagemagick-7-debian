@@ -1,11 +1,11 @@
-.TH composite-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
+.TH composite 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
 .SH NAME
 composite \-  overlaps one image over another.
 .SH SYNOPSIS
 .TP
-\fBcomposite-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP \fB[\fP \fIoptions\fP \fB... ]\fP \fIchange-file base-file\fP \fB[\fP \fImask-file\fP \fB]\fP \fIoutput-image\fP
+\fBcomposite\fP \fB[\fP \fIoptions\fP \fB... ]\fP \fIchange-file base-file\fP \fB[\fP \fImask-file\fP \fB]\fP \fIoutput-image\fP
 .SH OVERVIEW
-The \fBcomposite-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP program is a member of the ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) suite of tools.  Use it to overlap one image over another.
+The \fBcomposite\fP program is a member of the ImageMagick(1) suite of tools.  Use it to overlap one image over another.
 
 For more information about the composite command, point your browser to file://@DOCUMENTATION_PATH@/www/composite.html@EXTRA_DOC_DIR@ or http://imagemagick.org/script/composite.php.
 .SH DESCRIPTION
@@ -109,7 +109,7 @@ Miscellaneous Options:
 
 By default, the image format of `file' is determined by its magic number.  To specify a particular image format, precede the filename with an image format name and a colon (i.e. ps:image) or specify the image type as the filename suffix (i.e. image.ps).  Specify 'file' as '-' for standard input or output.
 .SH SEE ALSO
-ImageMagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
+ImageMagick(1)
 
 .SH COPYRIGHT
 

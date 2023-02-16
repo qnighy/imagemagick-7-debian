@@ -66,8 +66,8 @@
       </li>
     </ul>
     </div>
-    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+    <form class="form-inline my-2 my-md-0" action="https://legacy.imagemagick.org/www/https://imagemagick.org/script/search.php">
+      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
     </form>
   </nav>
@@ -91,7 +91,6 @@
 <p>Here is an example script:</p>
 
 <pre class="code">
-<code>
     #!/bin/env magick-script
     -size 100x100 xc:red ( rose: -rotate -90 ) +append  -write show:
 </code></pre>
@@ -1318,6 +1317,7 @@ transparent, extract, background, or shape the alpha channel</td>
   </footer>
 
   <!-- Javascript assets -->
-  <script>window.jQuery || document.write('&lt;script src="assets/jquery.slim.min.js"&gt;&lt;\/script&gt;')</script><script src="assets/bootstrap.bundle.min.js" crossorigin="anonymous" />
+  <script src="assets/magick.js" crossorigin="anonymous"></script>
+  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.4.1/jquery.min.js"><\/script>')</script>
 </body>
 </html>

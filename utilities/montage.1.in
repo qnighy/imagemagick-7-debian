@@ -1,14 +1,13 @@
-.TH montage-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
+.TH montage 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
 .SH NAME
 montage \- create a composite image by combining several separate images. The images are tiled on the composite image optionally adorned with a border, frame, image name, and more.
 .SH SYNOPSIS
 .TP
-\fBmontage-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP \fIinput-file[s]\fP [\fIoptions\fP] \fIoutput-file\fP
+\fBmontage\fP \fIinput-file[s]\fP [\fIoptions\fP] \fIoutput-file\fP
 .SH OVERVIEW
-The \fBmontage-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP program is a member of the ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) suite of tools.  Use it to create a composite image by combining several separate images. The images are tiled on the composite image optionally adorned with a border, frame, image name, and more.
+The \fBmontage\fP program is a member of the ImageMagick(1) suite of tools.  Use it to create a composite image by combining several separate images. The images are tiled on the composite image optionally adorned with a border, frame, image name, and more.
 
-
-For more information about the montage command, point your browser to file://@DOCUMENTATION_PATH@/www/montage.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/montage.php.
+For more information about the montage command, point your browser to file://@DOCUMENTATION_PATH@/www/montage.html or http://imagemagick.org/script/montage.php.
 .SH DESCRIPTION
 Image Settings:
   \-adjoin              join images into a single multi-image file
@@ -142,8 +141,8 @@ In addition to those listed above, you can specify these standard X resources as
 
 By default, the image format of `file' is determined by its magic number.  To specify a particular image format, precede the filename with an image format name and a colon (i.e. ps:image) or specify the image type as the filename suffix (i.e. image.ps).  Specify 'file' as '-' for standard input or output.
 .SH SEE ALSO
-ImageMagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
+ImageMagick(1)
 
 .SH COPYRIGHT
 
-\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html@EXTRA_DOC_DIR@ or https://www.imagemagick.org/script/license.php\fP
+\fBCopyright (C) 1999-2020 ImageMagick Studio LLC. Additional copyrights and licenses apply to this software, see file://@DOCUMENTATION_PATH@/www/license.html or http://imagemagick.org/script/license.php\fP

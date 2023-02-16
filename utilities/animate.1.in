@@ -1,11 +1,11 @@
-.TH animate-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@ 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
+.TH animate 1 "Date: 2009/01/10 01:00:00" "ImageMagick"
 .SH NAME
 animate \- animates an image or image sequence on any X server.
 .SH SYNOPSIS
 .TP
-\fBanimate-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP [\fIoptions\fP] \fIinput-file\fP
+\fBanimate\fP [\fIoptions\fP] \fIinput-file\fP
 .SH OVERVIEW
-The \fBanimate-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@\fP program is a member of the ImageMagick-ims@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1) suite of tools.  Use it to animate an image or image sequence on any X server.
+The \fBanimate\fP program is a member of the ImageMagick(1) suite of tools.  Use it to animate an image or image sequence on any X server.
 
 For more information about the animate command, point your browser to file://@DOCUMENTATION_PATH@/www/animate.html@EXTRA_DOC_DIR@ or http://imagemagick.org/script/animate.php.
 .SH DESCRIPTION
@@ -94,7 +94,7 @@ By default, the image format of `file' is determined by its magic number.  To sp
 Buttons: 
   1    press to map or unmap the Command widget
 .SH SEE ALSO
-ImageMagick-im@MAGICK_MAJOR_VERSION@.@MAGICK_ABI_SUFFIX_LC@(1)
+ImageMagick(1)
 
 .SH COPYRIGHT
 

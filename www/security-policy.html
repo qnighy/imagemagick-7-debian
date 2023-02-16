@@ -67,8 +67,8 @@
       </li>
     </ul>
     </div>
-    <form class="form-inline my-2 my-lg-0" action="https://legacy.imagemagick.org/script/search.php">
-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search" />
+    <form class="form-inline my-2 my-md-0" action="https://imagemagick.org/script/search.php">
+      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
     </form>
   </nav>
@@ -225,7 +225,7 @@ Path: [built-in]
 
 <h2><a class="anchor" id="synchronize"></a>Pixel Cache Synchronize Policy</h2>
 
-<p>When writing image pixels to disk, ImageMagick firsts preallocates the disk file, which is much faster than fully populating the file with zeros.  To further increase performance, we memory-map the file on disk.  With memory-mapping, we get an increase in performance (up to 5x), however, there remains a possibility that as the disk file is populated, it may run out of free space.  The OS then throws a SIGBUS signal which prevents ImageMagick from continuing.  To prevent a SIGBUS, use this security policy:</p>
+<p>When writing image pixels to disk, ImageMagick firsts preallocates the disk file, which is much faster than fully populating the file with zeros.  To further increase performance, we memory-map the file on disk.  With memory-mapping, we get an increase in performance (up to 5x), however, there remains a possibility that as the disk file is populated, it may run out of free space.  The OS then throws a SIGBUS signal which prevents ImageMagick from continuing.  To prevent a SIGBUS, use this security policy:
 
 <pre class="highlight">
 &lt;policy domain="cache" name="synchronize" value="True"/>
@@ -285,7 +285,6 @@ ion files.  To define your security policy, you must instead edit the <code>magi
   </footer>
 
   <!-- Javascript assets -->
-  <script>window.jQuery || document.write('&lt;script src="assets/jquery.slim.min.js"&gt;&lt;\/script&gt;')</script><script src="assets/bootstrap.bundle.min.js" crossorigin="anonymous" />
+  <script>window.jQuery || document.write('<script src="assets/jquery.slim.min.js"><\/script>')</script><script src="assets/bootstrap.bundle.min.js" integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf" crossorigin="anonymous">
 </body>
 </html>
-<!-- Magick Cache 1st January 2021 19:38 -->

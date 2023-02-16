@@ -96,7 +96,9 @@ STATIC_CONFIGURE_OPTIONS := \
 	--without-rsvg
 CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS) \
 			    $(CONFIGURE_OPTIONS_CACHE) \
-			    $(CONFIGURE_ARCH_FLAGS)
+			    $(CONFIGURE_ARCH_FLAGS) \
+			    MVDelegate=/bin/mv \
+			    RMDelegate=/bin/rm
 
 # export for alternatives
 export MAGICK_PROGRAMS := compare animate convert composite conjure import identify stream display montage mogrify
