@@ -1,0 +1,27 @@
+From: Cristy <mikayla-grace@urban-warrior.org>
+Date: Mon, 26 Jul 2021 13:26:21 -0400
+Subject: heap-based buffer overflow in TIFF coder (alert from Hunter
+ Mitchell)
+
+origin:  https://github.com/ImageMagick/ImageMagick6/commit/35b88c9166bc1b3ce8893f52217bae00d8e2c532
+bug: https://github.com/ImageMagick/ImageMagick6/issues/245
+---
+ coders/tiff.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/coders/tiff.c b/coders/tiff.c
+index 8d552fc..38badad 100644
+--- a/coders/tiff.c
++++ b/coders/tiff.c
+@@ -1974,9 +1974,9 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
+           ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
+         extent=TIFFTileSize(tiff);
+ #if defined(TIFF_VERSION_BIG)
+-        extent+=columns*sizeof(uint64);
++        extent=MagickMax(rows*columns*sizeof(uint64),extent);
+ #else
+-        extent+=columns*sizeof(uint32);
++        extent=MagickMax(rows*columns*sizeof(uint32),extent);
+ #endif
+         tile_pixels=(unsigned char *) AcquireQuantumMemory(extent,
+           sizeof(*tile_pixels));

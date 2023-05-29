@@ -38,3 +38,8 @@ CVE-2022-28463.patch
 CVE-2022-32545.patch
 CVE-2022-32546.patch
 CVE-2022-32547.patch
+0041-1-2-CVE-2021-3610-eliminate-heap-buffer-overflow-vul.patch
+0042-2-2-CVE-2021-3610-eliminate-heap-buffer-overflow-vul.patch
+0043-heap-based-buffer-overflow-in-TIFF-coder-alert-from-.patch
+0044-heap-based-buffer-overflow-in-TIFF-coder-alert-from-.patch
+0045-heap-based-buffer-overflow-in-TIFF-coder-alert-from-.patch
