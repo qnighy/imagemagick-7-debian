@@ -49,4 +49,7 @@ CVE-2022-32547.patch
 0049-early-exit-on-exception.patch
 0050-Fix-buffer-overrun-in-TIFF-coder.patch
 0051-Fix-buffer-overrun-in-TIFF-coder.patch
-0052-Fix-unintialised-value.patch
+0052-Fix-buffer-overrun-in-TIFF-coder.patch
+0053-Fix-unintialised-value.patch
+0054-Raise-exception-when-image-could-not-be-read-but-no-.patch
+0055-CVE-2022-1115-heap-based-overflow-with-a-specially-c.patch

@@ -8,6 +8,9 @@ imagemagick (8:6.9.11.60+dfsg-2) unstable; urgency=medium
   * Early exit in case of malformed TIFF file
   * Fix buffer overrun in TIFF coder
   * Fix unitialised value in TIFF coder
+  * Fix CVE-2022-1115: Heap based overflow in
+    TIFF coder (Closes: #1013282)
+  * Fix uninitialised value in TIFF coders
   * Use salsa-ci
 
  -- Bastien Roucariès <rouca@debian.org>  Mon, 29 May 2023 07:55:37 +0000
