@@ -46,3 +46,7 @@ CVE-2022-32547.patch
 0046-Fix-a-non-initialized-value-passed-to-TIFFGetField.patch
 0047-initialize-buffer-before-calling-TIFFGetField.patch
 0048-Fix-stack-overflow-when-parsing-malicious-tiff-image.patch
+0049-early-exit-on-exception.patch
+0050-Fix-buffer-overrun-in-TIFF-coder.patch
+0051-Fix-buffer-overrun-in-TIFF-coder.patch
+0052-Fix-unintialised-value.patch
