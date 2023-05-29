@@ -1,0 +1,83 @@
+From: Cristy <mikayla-grace@urban-warrior.org>
+Date: Sat, 4 Sep 2021 07:45:17 -0400
+Subject: initialize buffer before calling TIFFGetField()
+
+bug-oss-fuzz: https://oss-fuzz.com/testcase-detail/6502669439598592
+bug: https://github.com/ImageMagick/ImageMagick6/issues/246
+origin: https://github.com/ImageMagick/ImageMagick6/commit/995de330310dd35531165d9471fe4d31e0fa79ae
+---
+ coders/tiff.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+
+diff --git a/coders/tiff.c b/coders/tiff.c
+index fd0169f..ee250d9 100644
+--- a/coders/tiff.c
++++ b/coders/tiff.c
+@@ -685,7 +685,7 @@ static MagickBooleanType TIFFGetProperties(TIFF *tiff,Image *image)
+ {
+   char
+     message[MaxTextExtent],
+-    *text;
++    *text = (char *) NULL;
+ 
+   MagickBooleanType
+     status;
+@@ -694,7 +694,6 @@ static MagickBooleanType TIFFGetProperties(TIFF *tiff,Image *image)
+     count,
+     type;
+ 
+-  text=(char *) NULL;
+   status=MagickTrue;
+   if ((TIFFGetField(tiff,TIFFTAG_ARTIST,&text) == 1) &&
+       (text != (char *) NULL))
+@@ -1013,10 +1012,11 @@ static TIFFMethodType GetJPEGMethod(Image* image,TIFF *tiff,uint16 photometric,
+ 
+ #if defined(TIFF_VERSION_BIG)
+   uint64
++    *value = (uint64 *) NULL;
+ #else
+   uint32
++    *value = (uint32 *) NULL;
+ #endif
+-    *value;
+ 
+   unsigned char
+     buffer[BUFFER_SIZE+32];
+@@ -1033,7 +1033,6 @@ static TIFFMethodType GetJPEGMethod(Image* image,TIFF *tiff,uint16 photometric,
+   /*
+     Search for Adobe APP14 JPEG marker.
+   */
+-  value=NULL;
+   if (!TIFFGetField(tiff,TIFFTAG_STRIPOFFSETS,&value) || (value == NULL))
+     return(ReadStripMethod);
+   position=TellBlob(image);
+@@ -1175,7 +1174,7 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
+     *option;
+ 
+   float
+-    *chromaticity,
++    *chromaticity = (float *) NULL,
+     x_position,
+     y_position,
+     x_resolution,
+@@ -1485,7 +1484,6 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
+       }
+     if (TIFFGetFieldDefaulted(tiff,TIFFTAG_ORIENTATION,&orientation,sans) == 1)
+       image->orientation=(OrientationType) orientation;
+-    chromaticity=(float *) NULL;
+     if (TIFFGetField(tiff,TIFFTAG_WHITEPOINT,&chromaticity) == 1)
+       {
+         if ((chromaticity != (float *) NULL) && (*chromaticity != 0.0))
+@@ -1589,9 +1587,9 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
+           range;
+ 
+         uint16
+-          *blue_colormap,
+-          *green_colormap,
+-          *red_colormap;
++          *blue_colormap = (uint16 *) NULL,
++          *green_colormap = (uint16 *) NULL,
++          *red_colormap = (uint16 *) NULL;
+ 
+         /*
+           Initialize colormap.

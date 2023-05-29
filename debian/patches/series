@@ -43,3 +43,5 @@ CVE-2022-32547.patch
 0043-heap-based-buffer-overflow-in-TIFF-coder-alert-from-.patch
 0044-heap-based-buffer-overflow-in-TIFF-coder-alert-from-.patch
 0045-heap-based-buffer-overflow-in-TIFF-coder-alert-from-.patch
+0046-Fix-a-non-initialized-value-passed-to-TIFFGetField.patch
+0047-initialize-buffer-before-calling-TIFFGetField.patch

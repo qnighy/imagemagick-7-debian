@@ -3,6 +3,7 @@ imagemagick (8:6.9.11.60+dfsg-2) unstable; urgency=medium
   * Acknowledge NMU
   * Fix CVE-2021-3610 heap buffer overflow vulnerability in TIFF coder
   * Fix an heap buffer overflow in TIFF coder
+  * Fix uninitialised value passing in TIFFGetField
 
  -- Bastien Roucariès <rouca@debian.org>  Mon, 29 May 2023 07:55:37 +0000
 
