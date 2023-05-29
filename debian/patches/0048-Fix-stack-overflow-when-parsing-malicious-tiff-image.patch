@@ -1,0 +1,26 @@
+From: Cristy <mikayla-grace@urban-warrior.org>
+Date: Tue, 19 Oct 2021 14:53:41 -0400
+Subject: Fix stack overflow when parsing malicious tiff image
+
+(cherry picked from commit 85a370c79afeb45a97842b0959366af5236e9023)
+origin: https://github.com/ImageMagick/ImageMagick6/commit/85a370c79afeb45a97842b0959366af5236e9023
+---
+ coders/tiff.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/coders/tiff.c b/coders/tiff.c
+index ee250d9..e650f23 100644
+--- a/coders/tiff.c
++++ b/coders/tiff.c
+@@ -1972,6 +1972,11 @@ static Image *ReadTIFFImage(const ImageInfo *image_info,
+         if (HeapOverflowSanityCheck(rows,sizeof(*tile_pixels)) != MagickFalse)
+           ThrowTIFFException(ResourceLimitError,"MemoryAllocationFailed");
+         extent=MagickMax(rows*TIFFTileRowSize(tiff),TIFFTileSize(tiff));
++#if defined(TIFF_VERSION_BIG)
++        extent+=image->columns*sizeof(uint64);
++#else
++        extent+=image->columns*sizeof(uint32);
++#endif
+         tile_pixels=(unsigned char *) AcquireQuantumMemory(extent,
+           sizeof(*tile_pixels));
+         if (tile_pixels == (unsigned char *) NULL)
