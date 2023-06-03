@@ -45,7 +45,7 @@ export DEFAULTQUANTUMDEPTH := $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
 export NOQUANTUMDEPTH := $(shell echo $(QUANTUMDEPTH) | cut -f 1 -d ' ')
 
 # convert used for icons
-export CONVERT ?= ./magick.sh convert
+export CONVERT ?= ./magick.sh magick convert
 VALGRIND_CONVERT ?= ./libtool --mode=execute valgrind $(CONVERT)
 CONVERT_FLAGS ?= -background none -define filter:blur=0.75 -filter Gaussian
 
