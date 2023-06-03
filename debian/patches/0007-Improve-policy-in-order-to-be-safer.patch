@@ -1,4 +1,4 @@
-From 6d99f963f4817a07e9a7f9ad65711693814f4ed8 Mon Sep 17 00:00:00 2001
+From 20c9be39375d6c357843074827222319d2f1c02b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20ROUCARI=C3=88S?= <roucaries.bastien@gmail.com>
 Date: Tue, 22 Nov 2016 12:59:01 +0100
 Subject: Improve policy in order to be safer
@@ -13,10 +13,10 @@ Forwarded: No
  1 file changed, 18 insertions(+), 8 deletions(-)
 
 diff --git a/config/policy.xml b/config/policy.xml
-index 2ed14de8a6..54e64782b3 100644
+index afc9c6939c..20d58b966f 100644
 --- a/config/policy.xml
 +++ b/config/policy.xml
-@@ -57,26 +57,36 @@
+@@ -57,27 +57,37 @@
  -->
  <policymap>
    <!-- <policy domain="resource" name="temporary-path" value="/tmp"/> -->
@@ -46,9 +46,10 @@ index 2ed14de8a6..54e64782b3 100644
 -  <!-- <policy domain="cache" name="shared-secret" value="passphrase" stealth="true"/> -->
 +  <!-- <policy domain="cache" name="shared-secret" value="passphrase" stealth="true"/>
    <!-- <policy domain="system" name="max-memory-request" value="256MiB"/> -->
-   <!-- <policy domain="system" name="shred" value="2"/> -->
-   <!-- <policy domain="system" name="precision" value="6"/> -->
-   <!-- <policy domain="system" name="font" value="/path/to/font.ttf"/> -->
+   <!-- <policy domain="cache" name="synchronize" value="true"/> -->
+   <!-- <policy domain="system" name="shred" value="1"/> -->
+   <!-- <policy domain="system" name="font" value="/path/to/unicode-font.ttf"/> -->
+   <policy domain="Undefined" rights="none"/>
 +  <!-- <policy domain="system" name="pixel-cache-memory" value="anonymous"/> -->
 +  <!-- <policy domain="system" name="shred" value="2"/> -->
 +  <!-- <policy domain="system" name="precision" value="6"/> -->

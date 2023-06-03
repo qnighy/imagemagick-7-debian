@@ -1,0 +1,22 @@
+From 318afb95ecb55dbc2f1d6623f6ddbaca9e3f8afb Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
+Date: Mon, 1 Feb 2021 16:19:56 +0000
+Subject: FIx error in new upstream html
+
+Forwarded: yes
+---
+ www/defines.html | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/www/defines.html b/www/defines.html
+index 84a51fe4fe..12ab095431 100644
+--- a/www/defines.html
++++ b/www/defines.html
+@@ -1758,6 +1758,7 @@ Post ObjectData Descriptor Record
+   9:10   Confirmed ObjectData Size
+ </code></pre>
+ </div>
++    </div>
+   </div>
+   </main><!-- /.container -->
+   <footer class="magick-footer">
