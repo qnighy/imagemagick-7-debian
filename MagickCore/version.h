@@ -25,26 +25,26 @@ extern "C" {
 /*
   Define declarations.
 */
-#define MagickPackageName "@PACKAGE_NAME@"
+#define MagickPackageName "ImageMagick"
 #define MagickCopyright  "(C) 1999 ImageMagick Studio LLC"
-#define MagickLibVersion  @PACKAGE_LIB_VERSION@
-#define MagickLibVersionText  "@MAGICK_LIB_VERSION_TEXT@"
-#define MagickLibVersionNumber  @MAGICK_LIB_VERSION_NUMBER@
-#define MagickLibAddendum  "@PACKAGE_VERSION_ADDENDUM@"
-#define MagickLibInterface  @MAGICK_LIBRARY_CURRENT@
-#define MagickLibMinInterface  @MAGICK_LIBRARY_CURRENT_MIN@
-#define MagickPlatform  "@MAGICK_TARGET_CPU@"
-#define MagickppLibVersionText  "@MAGICKPP_LIB_VERSION_TEXT@"
-#define MagickppLibVersionNumber  @MAGICKPP_LIBRARY_VERSION_INFO@
-#define MagickppLibAddendum  "@PACKAGE_VERSION_ADDENDUM@"
-#define MagickppLibInterface  @MAGICKPP_LIBRARY_CURRENT@
-#define MagickppLibMinInterface  @MAGICKPP_LIBRARY_CURRENT_MIN@
+#define MagickLibVersion  0x711
+#define MagickLibVersionText  "7.1.1"
+#define MagickLibVersionNumber  10,0,1
+#define MagickLibAddendum  "-11"
+#define MagickLibInterface  10
+#define MagickLibMinInterface  10
+#define MagickPlatform  "x86_64"
+#define MagickppLibVersionText  "7.1.1"
+#define MagickppLibVersionNumber  5:0:0
+#define MagickppLibAddendum  "-11"
+#define MagickppLibInterface  5
+#define MagickppLibMinInterface  5
 #define MagickGitRevision  "21206"
-#define MagickReleaseDate  "@PACKAGE_RELEASE_DATE@"
+#define MagickReleaseDate  "2023-05-29"
 #define MagickAuthoritativeLicense  \
   "https://imagemagick.org/script/license.php"
 #define MagickAuthoritativeURL  "https://imagemagick.org"
-#define MagickHomeURL  "file://@DOCUMENTATION_PATH@/index.html"
+#define MagickHomeURL  "file:///usr/share/doc/ImageMagick-7/index.html"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
 #define MagickQuantumDepth  "Q8"
 #define MagickQuantumRange  "255"
