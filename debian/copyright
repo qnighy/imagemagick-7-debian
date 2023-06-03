@@ -349,7 +349,7 @@ Files: debian/scripts/changelog.pl
 Copyright: 1998-2013, ImageMagick Studio LLC
 License: ImageMagick
 
-Files: debian/display-im6.svg
+Files: debian/display-im7.svg
 Copyright: 1999-2013, ImageMagick Studio LLC
 License: ImageMagick
 

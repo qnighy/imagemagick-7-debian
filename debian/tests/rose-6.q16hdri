@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CONVERT=convert-im6.q16hdri
+CONVERT=convert-im7.q16hdri
 
 set -e
 $CONVERT rose: png:/dev/null

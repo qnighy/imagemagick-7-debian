@@ -11,8 +11,8 @@ Otherwise, please provide a test-case that can reproduce the bug:
  1. Install debugging packages.
  2. Repeat the command line that led to the bug. To ensure you are using
     the imagemagick versions, replace convert, display, identify, or
-    mogrify with convert-im6.q16, display-im6.q16, identify-im6.q16,
-    or mogrify-im6.q16 in your test-case.
+    mogrify with convert-im7.q16, display-im7.q16, identify-im7.q16,
+    or mogrify-im7.q16 in your test-case.
 
  3. If imagemagick dumps core, please attach a backtrace - see
      "http://wiki.debian.org/HowToGetABacktrace".
