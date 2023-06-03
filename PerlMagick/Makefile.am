@@ -1,4 +1,4 @@
-#  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization
+#  Copyright 1999 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -17,7 +17,7 @@
 #  Makefile for building PerlMagick.
 
 # If source files missing, see if they can be obtained via VPATH
-
+#
 $(PERLMAGICK)/quantum/@MAGICK_ABI_SUFFIX@.xs: $(PERLMAGICK)/quantum/quantum.xs
 	$(AM_V_GEN) $(LN_S) quantum.xs $@
 
@@ -110,7 +110,7 @@ check-perl: $(PERLMAGICK)/$(PERLSTATICNAME)
 perl-build: $(PERLMAGICK)/$(PERLSTATICNAME)
 
 endif # WITH_PERL_STATIC
-endif # WTIH_PERL_DYNAMIC
+endif # WITH_PERL_DYNAMIC
 
 
 clean-perl:

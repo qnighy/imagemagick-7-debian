@@ -24,13 +24,13 @@
 %                                March 2002                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999 ImageMagick Studio LLC, a non-profit organization           %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -46,7 +46,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <wand/MagickWand.h>
+#include <MagickWand/MagickWand.h>
 
 #define ThrowWandException(wand) \
 { \
@@ -409,7 +409,7 @@ static MagickBooleanType ScribbleImage(MagickWand *canvas)
 int main(int argc,char **argv)
 {
   char
-    filename[MaxTextExtent];
+    filename[MagickPathExtent];
 
   MagickBooleanType
     status;
@@ -422,7 +422,7 @@ int main(int argc,char **argv)
       (void) printf ("Usage: %s filename\n",argv[0]);
       exit(1);
     }
-  (void) CopyMagickString(filename,argv[1],MaxTextExtent);
+  (void) CopyMagickString(filename,argv[1],MagickPathExtent);
   /*
     Create canvas image.
   */
@@ -447,7 +447,7 @@ int main(int argc,char **argv)
   if (status == MagickFalse)
     ThrowWandException(canvas);
   /*
-    Set RLE compression.
+    Set output as RLE compressed.
   */
   status=MagickSetImageCompression(canvas,RLECompression);
   if (status == MagickFalse)

@@ -2,6 +2,9 @@
 // Magick++ demo to generate a simple text button
 //
 // Copyright Bob Friesenhahn, 1999, 2000, 2001, 2003
+//
+// Copyright @ 2013 ImageMagick Studio LLC, a non-profit organization
+// dedicated to making software imaging solutions freely available.
 // 
 
 #include <Magick++.h>
@@ -45,8 +48,10 @@ int main( int /*argc*/, char ** argv)
     // Button text color
     string textColor = "red";
 
+#if MAGICKCORE_FREETYPE_DELEGATE
     // Font point size
     int fontPointSize = 16;
+#endif
 
     //
     // Magick++ operations
@@ -64,12 +69,14 @@ int main( int /*argc*/, char ** argv)
     Image backgroundTexture( buttonTexture );
     button.texture( backgroundTexture );
 
+#if MAGICKCORE_FREETYPE_DELEGATE
     // Add some text
     button.fillColor( textColor );
     button.fontPointsize( fontPointSize );
     if (getenv("MAGICK_FONT") != 0)
       button.font(string(getenv("MAGICK_FONT")));
     button.annotate( text, CenterGravity );
+#endif
 
     // Add a decorative frame
     button.borderColor( border );

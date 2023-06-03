@@ -2,102 +2,183 @@
 
 
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8"  />
-  <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1,shrink-to-fit=no"  />
-  <title>ImageMagick - MagickWand, C API: Property Methods</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"  />
+  <title>ImageMagick – MagickWand, C API: Property Methods</title>
   <meta name="application-name" content="ImageMagick" />
-  <meta name="description" content="Use ImageMagick® to create, edit, compose, and convert bitmap images. Resize an image, crop it, change its shades and colors, add captions, and more." />
+  <meta name="description" content="" />
   <meta name="application-url" content="https://imagemagick.org" />
   <meta name="generator" content="PHP" />
-  <meta name="keywords" content="magickwc, api:, property, methods, image converter, image resizer, image editor, photo editor, jpg converter, png converter, tiff converter, vector images, online, free, swiss army" />
+  <meta name="keywords" content="magickwc, api:, property, methods, image processing software" />
   <meta name="rating" content="GENERAL" />
   <meta name="robots" content="INDEX, FOLLOW" />
   <meta name="generator" content="ImageMagick Studio LLC" />
   <meta name="author" content="ImageMagick Studio LLC" />
   <meta name="revisit-after" content="2 DAYS" />
   <meta name="resource-type" content="document" />
-  <meta name="copyright" content="Copyright (c) 1999-2020 ImageMagick Studio LLC" />
+  <meta name="copyright" content="Copyright (c) 1999 ImageMagick Studio LLC" />
   <meta name="distribution" content="Global" />
   <meta name="magick-serial" content="P131-S030410-R485315270133-P82224-A6668-G1245-1" />
   <meta property='og:url' content='../../' />
   <meta property='og:title' content='ImageMagick' />
-  <meta property='og:image' content='../../../../../images/logo.png' />
+  <meta property='og:image' content='../../../images/logo.png' />
   <meta property='og:type' content='website' />
   <meta property='og:site_name' content='ImageMagick' />
-  <meta property='og:description' content="Create, Edit, Compose, or Convert Bitmap Images" />
+  <meta property='og:description' content="Create, Edit, Compose, or Convert Digital Images" />
   <meta name="google-site-verification" content="_bMOCDpkx9ZAzBwb2kF3PRHbfUUdFj2uO8Jd1AXArz4" />
-  <link href="../../www/api/magick-property.html" rel="canonical" />
-  <link href="../../../../images/wand.png" rel="icon" />
-  <link href="../../../../images/wand.ico" rel="shortcut icon" />
-  <link href="../www/assets/magick.css" rel="stylesheet" />
+  <link href="magick-property.html" rel="canonical" />
+  <link href="../../images/wand.png" rel="icon" />
+  <link href="../../images/wand.ico" rel="shortcut icon" />
+  <link href="../assets/magick.css" rel="stylesheet" />
 </head>
 <body>
-  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-    <a class="navbar-brand" href="../index.html"><img class="d-block" id="wand" alt="ImageMagick" width="32" height="32" src="../../../../images/wand.ico"/></a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsMagick" aria-controls="navbarsMagick" aria-expanded="false" aria-label="Toggle navigation">
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="../index.html"><img class="d-block" id="icon" alt="ImageMagick" width="32" height="32" src="../../images/wand.ico"/></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#magick-navbars" aria-controls="magick-navbars" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="navbar-collapse collapse" id="navbarsMagick" style="">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item ">
-        <a class="nav-link" href="../www/index.html">Home <span class="sr-only">(current)</span></a>
-      </li>
-      <li class="nav-item ">
-        <a class="nav-link" href="../www/download.html">Download</a>
-      </li>
-      <li class="nav-item ">
-        <a class="nav-link" href="../www/command-line-tools.html">Tools</a>
-      </li>
-      <li class="nav-item ">
-        <a class="nav-link" href="../www/command-line-processing.html">Command-line</a>
-      </li>
-      <li class="nav-item ">
-        <a class="nav-link" href="../www/develop.html">Develop</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" target="_blank" href="https://github.com/ImageMagick/ImageMagick6/discussions">Community</a>
-      </li>
-      <li class="nav-item">
-        <iframe src="https://github.com/sponsors/ImageMagick/button" title="Sponsor ImageMagick" height="35" width="107" style="border: 0;"></iframe>
-      </li>
-    </ul>
+    <div class="collapse navbar-collapse" id="magick-navbars">
+      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        <li class="nav-item">
+          <a class="nav-link " href="../www/download.html">Download</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link " href="../www/command-line-tools.html">Tools</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link " href="../www/command-line-processing.html">CLI</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link " href="../www/develop.html">Develop</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" target="_blank" href="https://github.com/ImageMagick/ImageMagick/discussions">Community</a>
+        </li>
+        <li class="nav-item">
+          <iframe src="https://github.com/sponsors/ImageMagick/button" title="Sponsor ImageMagick" height="35" width="107" style="border: 0;"></iframe>
+        </li>
+      </ul>
+      <form class="d-flex form-inline" action="https://imagemagick.org/script/search.php">
+        <input class="form-control me-2" type="text" name="q" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit" name="sa">Search</button>
+      </form>
     </div>
-    <form class="form-inline my-2 my-md-0" action="https://legacy.imagemagick.org/www/www/search.html">
-      <input class="form-control mr-sm-2" type="text" name="q" placeholder="Search" aria-label="Search">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit" name="sa">Search</button>
-    </form>
+  </div>
   </nav>
-  <div role="main" class="container">
-   <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-3129977114552745"
-         data-ad-slot="6345125851"
-         data-full-width-responsive="true"
-         data-ad-format="horizontal"></ins>
+
+  <div class="container">
+    <script async="async" src="https://localhost/pagead/js/adsbygoogle.js"></script>
+    <ins class="adsbygoogle"
+      style="display:block"
+      data-ad-client="ca-pub-3129977114552745"
+      data-ad-slot="6345125851"
+      data-full-width-responsive="true"
+      data-ad-format="horizontal"></ins>
     <script>
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
+
   </div>
 
   <main class="container">
-    <div class="magick-template">
+  <div class="magick-template">
+<br/>
+<div class="btn-group">
+<button class="btn btn-secondary dropdown-toggle" type="button" id="defaultDropdown" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
+  Select API Method
+</button>
+<ul class="dropdown-menu pre-scrollable" aria-labelledby="defaultDropdown">
+  <li><a href="magick-property.html#MagickDeleteImageArtifact">MagickDeleteImageArtifact</a></li>
+  <li><a href="magick-property.html#MagickDeleteImageProperty">MagickDeleteImageProperty</a></li>
+  <li><a href="magick-property.html#MagickDeleteOption">MagickDeleteOption</a></li>
+  <li><a href="magick-property.html#MagickGetAntialias">MagickGetAntialias</a></li>
+  <li><a href="magick-property.html#MagickGetBackgroundColor">MagickGetBackgroundColor</a></li>
+  <li><a href="magick-property.html#MagickGetColorspace">MagickGetColorspace</a></li>
+  <li><a href="magick-property.html#MagickGetCompression">MagickGetCompression</a></li>
+  <li><a href="magick-property.html#MagickGetCompressionQuality">MagickGetCompressionQuality</a></li>
+  <li><a href="magick-property.html#MagickGetCopyright">MagickGetCopyright</a></li>
+  <li><a href="magick-property.html#MagickGetFilename">MagickGetFilename</a></li>
+  <li><a href="magick-property.html#MagickGetFont">MagickGetFont</a></li>
+  <li><a href="magick-property.html#MagickGetFormat">MagickGetFormat</a></li>
+  <li><a href="magick-property.html#MagickGetFilter">MagickGetFilter</a></li>
+  <li><a href="magick-property.html#MagickGetGravity">MagickGetGravity</a></li>
+  <li><a href="magick-property.html#MagickGetHomeURL">MagickGetHomeURL</a></li>
+  <li><a href="magick-property.html#MagickGetImageArtifact">MagickGetImageArtifact</a></li>
+  <li><a href="magick-property.html#MagickGetImageArtifacts">MagickGetImageArtifacts</a></li>
+  <li><a href="magick-property.html#MagickGetImageProfile">MagickGetImageProfile</a></li>
+  <li><a href="magick-property.html#MagickGetImageProfiles">MagickGetImageProfiles</a></li>
+  <li><a href="magick-property.html#MagickGetImageProperty">MagickGetImageProperty</a></li>
+  <li><a href="magick-property.html#MagickGetImageProperties">MagickGetImageProperties</a></li>
+  <li><a href="magick-property.html#MagickGetInterlaceScheme">MagickGetInterlaceScheme</a></li>
+  <li><a href="magick-property.html#MagickGetInterpolateMethod">MagickGetInterpolateMethod</a></li>
+  <li><a href="magick-property.html#MagickGetOption">MagickGetOption</a></li>
+  <li><a href="magick-property.html#MagickGetOptions">MagickGetOptions</a></li>
+  <li><a href="magick-property.html#MagickGetOrientation">MagickGetOrientation</a></li>
+  <li><a href="magick-property.html#MagickGetPackageName">MagickGetPackageName</a></li>
+  <li><a href="magick-property.html#MagickGetPage">MagickGetPage</a></li>
+  <li><a href="magick-property.html#MagickGetPointsize">MagickGetPointsize</a></li>
+  <li><a href="magick-property.html#MagickGetQuantumDepth">MagickGetQuantumDepth</a></li>
+  <li><a href="magick-property.html#MagickGetQuantumRange">MagickGetQuantumRange</a></li>
+  <li><a href="magick-property.html#MagickGetReleaseDate">MagickGetReleaseDate</a></li>
+  <li><a href="magick-property.html#MagickGetResolution">MagickGetResolution</a></li>
+  <li><a href="magick-property.html#MagickGetResource">MagickGetResource</a></li>
+  <li><a href="magick-property.html#MagickGetResourceLimit">MagickGetResourceLimit</a></li>
+  <li><a href="magick-property.html#MagickGetSamplingFactors">MagickGetSamplingFactors</a></li>
+  <li><a href="magick-property.html#MagickGetSize">MagickGetSize</a></li>
+  <li><a href="magick-property.html#MagickGetSizeOffset">MagickGetSizeOffset</a></li>
+  <li><a href="magick-property.html#MagickGetType">MagickGetType</a></li>
+  <li><a href="magick-property.html#MagickGetVersion">MagickGetVersion</a></li>
+  <li><a href="magick-property.html#MagickProfileImage">MagickProfileImage</a></li>
+  <li><a href="magick-property.html#MagickRemoveImageProfile">MagickRemoveImageProfile</a></li>
+  <li><a href="magick-property.html#MagickSetAntialias">MagickSetAntialias</a></li>
+  <li><a href="magick-property.html#MagickSetBackgroundColor">MagickSetBackgroundColor</a></li>
+  <li><a href="magick-property.html#MagickSetColorspace">MagickSetColorspace</a></li>
+  <li><a href="magick-property.html#MagickSetCompression">MagickSetCompression</a></li>
+  <li><a href="magick-property.html#MagickSetCompressionQuality">MagickSetCompressionQuality</a></li>
+  <li><a href="magick-property.html#MagickSetDepth">MagickSetDepth</a></li>
+  <li><a href="magick-property.html#MagickSetExtract">MagickSetExtract</a></li>
+  <li><a href="magick-property.html#MagickSetFilename">MagickSetFilename</a></li>
+  <li><a href="magick-property.html#MagickSetFont">MagickSetFont</a></li>
+  <li><a href="magick-property.html#MagickSetFormat">MagickSetFormat</a></li>
+  <li><a href="magick-property.html#MagickSetFilter">MagickSetFilter</a></li>
+  <li><a href="magick-property.html#MagickSetGravity">MagickSetGravity</a></li>
+  <li><a href="magick-property.html#MagickSetImageArtifact">MagickSetImageArtifact</a></li>
+  <li><a href="magick-property.html#MagickSetImageProfile">MagickSetImageProfile</a></li>
+  <li><a href="magick-property.html#MagickSetImageProperty">MagickSetImageProperty</a></li>
+  <li><a href="magick-property.html#MagickSetInterlaceScheme">MagickSetInterlaceScheme</a></li>
+  <li><a href="magick-property.html#MagickSetInterpolateMethod">MagickSetInterpolateMethod</a></li>
+  <li><a href="magick-property.html#MagickSetOption">MagickSetOption</a></li>
+  <li><a href="magick-property.html#MagickSetOrientation">MagickSetOrientation</a></li>
+  <li><a href="magick-property.html#MagickSetPage">MagickSetPage</a></li>
+  <li><a href="magick-property.html#MagickSetPassphrase">MagickSetPassphrase</a></li>
+  <li><a href="magick-property.html#MagickSetPointsize">MagickSetPointsize</a></li>
+  <li><a href="magick-property.html#MagickSetProgressMonitor">MagickSetProgressMonitor</a></li>
+  <li><a href="magick-property.html#MagickSetResourceLimit">MagickSetResourceLimit</a></li>
+  <li><a href="magick-property.html#MagickSetResolution">MagickSetResolution</a></li>
+  <li><a href="magick-property.html#MagickSetSamplingFactors">MagickSetSamplingFactors</a></li>
+  <li><a href="magick-property.html#MagickSetSeed">MagickSetSeed</a></li>
+  <li><a href="magick-property.html#MagickSetSecurityPolicy">MagickSetSecurityPolicy</a></li>
+  <li><a href="magick-property.html#MagickSetSize">MagickSetSize</a></li>
+  <li><a href="magick-property.html#MagickSetSizeOffset">MagickSetSizeOffset</a></li>
+</ul>
+</div>
+<br/>
+<br/>
 <div class="magick-header">
-<p class="text-center"><a href="magick-property.html#MagickDeleteImageArtifact">MagickDeleteImageArtifact</a> &#8226; <a href="magick-property.html#MagickDeleteImageProperty">MagickDeleteImageProperty</a> &#8226; <a href="magick-property.html#MagickDeleteOption">MagickDeleteOption</a> &#8226; <a href="magick-property.html#MagickGetAntialias">MagickGetAntialias</a> &#8226; <a href="magick-property.html#MagickGetBackgroundColor">MagickGetBackgroundColor</a> &#8226; <a href="magick-property.html#MagickGetColorspace">MagickGetColorspace</a> &#8226; <a href="magick-property.html#MagickGetCompression">MagickGetCompression</a> &#8226; <a href="magick-property.html#MagickGetCompressionQuality">MagickGetCompressionQuality</a> &#8226; <a href="magick-property.html#MagickGetCopyright">MagickGetCopyright</a> &#8226; <a href="magick-property.html#MagickGetFilename">MagickGetFilename</a> &#8226; <a href="magick-property.html#MagickGetFont">MagickGetFont</a> &#8226; <a href="magick-property.html#MagickGetFormat">MagickGetFormat</a> &#8226; <a href="magick-property.html#MagickGetGravity">MagickGetGravity</a> &#8226; <a href="magick-property.html#MagickGetHomeURL">MagickGetHomeURL</a> &#8226; <a href="magick-property.html#MagickGetImageArtifact">MagickGetImageArtifact</a> &#8226; <a href="magick-property.html#MagickGetImageArtifacts">MagickGetImageArtifacts</a> &#8226; <a href="magick-property.html#MagickGetImageProfile">MagickGetImageProfile</a> &#8226; <a href="magick-property.html#MagickGetImageProfiles">MagickGetImageProfiles</a> &#8226; <a href="magick-property.html#MagickGetImageProperty">MagickGetImageProperty</a> &#8226; <a href="magick-property.html#MagickGetImageProperties">MagickGetImageProperties</a> &#8226; <a href="magick-property.html#MagickGetInterlaceScheme">MagickGetInterlaceScheme</a> &#8226; <a href="magick-property.html#MagickGetInterpolateMethod">MagickGetInterpolateMethod</a> &#8226; <a href="magick-property.html#MagickGetOption">MagickGetOption</a> &#8226; <a href="magick-property.html#MagickGetOptions">MagickGetOptions</a> &#8226; <a href="magick-property.html#MagickGetOrientation">MagickGetOrientation</a> &#8226; <a href="magick-property.html#MagickGetPackageName">MagickGetPackageName</a> &#8226; <a href="magick-property.html#MagickGetPage">MagickGetPage</a> &#8226; <a href="magick-property.html#MagickGetPointsize">MagickGetPointsize</a> &#8226; <a href="magick-property.html#MagickGetQuantumDepth">MagickGetQuantumDepth</a> &#8226; <a href="magick-property.html#MagickGetQuantumRange">MagickGetQuantumRange</a> &#8226; <a href="magick-property.html#MagickGetReleaseDate">MagickGetReleaseDate</a> &#8226; <a href="magick-property.html#MagickGetResolution">MagickGetResolution</a> &#8226; <a href="magick-property.html#MagickGetResource">MagickGetResource</a> &#8226; <a href="magick-property.html#MagickGetResourceLimit">MagickGetResourceLimit</a> &#8226; <a href="magick-property.html#MagickGetSamplingFactors">MagickGetSamplingFactors</a> &#8226; <a href="magick-property.html#MagickGetSize">MagickGetSize</a> &#8226; <a href="magick-property.html#MagickGetSizeOffset">MagickGetSizeOffset</a> &#8226; <a href="magick-property.html#MagickGetType">MagickGetType</a> &#8226; <a href="magick-property.html#MagickGetVersion">MagickGetVersion</a> &#8226; <a href="magick-property.html#MagickProfileImage">MagickProfileImage</a> &#8226; <a href="magick-property.html#MagickRemoveImageProfile">MagickRemoveImageProfile</a> &#8226; <a href="magick-property.html#MagickSetAntialias">MagickSetAntialias</a> &#8226; <a href="magick-property.html#MagickSetBackgroundColor">MagickSetBackgroundColor</a> &#8226; <a href="magick-property.html#MagickSetColorspace">MagickSetColorspace</a> &#8226; <a href="magick-property.html#MagickSetCompression">MagickSetCompression</a> &#8226; <a href="magick-property.html#MagickSetCompressionQuality">MagickSetCompressionQuality</a> &#8226; <a href="magick-property.html#MagickSetDepth">MagickSetDepth</a> &#8226; <a href="magick-property.html#MagickSetExtract">MagickSetExtract</a> &#8226; <a href="magick-property.html#MagickSetFilename">MagickSetFilename</a> &#8226; <a href="magick-property.html#MagickSetFont">MagickSetFont</a> &#8226; <a href="magick-property.html#MagickSetFormat">MagickSetFormat</a> &#8226; <a href="magick-property.html#MagickSetGravity">MagickSetGravity</a> &#8226; <a href="magick-property.html#MagickSetImageArtifact">MagickSetImageArtifact</a> &#8226; <a href="magick-property.html#MagickSetImageProfile">MagickSetImageProfile</a> &#8226; <a href="magick-property.html#MagickSetImageProperty">MagickSetImageProperty</a> &#8226; <a href="magick-property.html#MagickSetInterlaceScheme">MagickSetInterlaceScheme</a> &#8226; <a href="magick-property.html#MagickSetInterpolateMethod">MagickSetInterpolateMethod</a> &#8226; <a href="magick-property.html#MagickSetOption">MagickSetOption</a> &#8226; <a href="magick-property.html#MagickSetOrientation">MagickSetOrientation</a> &#8226; <a href="magick-property.html#MagickSetPage">MagickSetPage</a> &#8226; <a href="magick-property.html#MagickSetPassphrase">MagickSetPassphrase</a> &#8226; <a href="magick-property.html#MagickSetPointsize">MagickSetPointsize</a> &#8226; <a href="magick-property.html#MagickSetProgressMonitor">MagickSetProgressMonitor</a> &#8226; <a href="magick-property.html#MagickSetResourceLimit">MagickSetResourceLimit</a> &#8226; <a href="magick-property.html#MagickSetResolution">MagickSetResolution</a> &#8226; <a href="magick-property.html#MagickSetSamplingFactors">MagickSetSamplingFactors</a> &#8226; <a href="magick-property.html#MagickSetSecurityPolicy">MagickSetSecurityPolicy</a> &#8226; <a href="magick-property.html#MagickSetSize">MagickSetSize</a> &#8226; <a href="magick-property.html#MagickSetSizeOffset">MagickSetSizeOffset</a> &#8226; <a href="magick-property.html#MagickSetType">MagickSetType</a></p>
-
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickDeleteImageArtifact">MagickDeleteImageArtifact</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickDeleteImageArtifact">MagickDeleteImageArtifact</a></h2>
 
 <p>MagickDeleteImageArtifact() deletes a wand artifact.</p>
 
 <p>The format of the MagickDeleteImageArtifact method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickDeleteImageArtifact(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickDeleteImageArtifact(MagickWand *wand,
   const char *artifact)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -115,16 +196,15 @@ MagickBooleanType MagickDeleteImageArtifact(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickDeleteImageProperty">MagickDeleteImageProperty</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickDeleteImageProperty">MagickDeleteImageProperty</a></h2>
 
 <p>MagickDeleteImageProperty() deletes a wand property.</p>
 
 <p>The format of the MagickDeleteImageProperty method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickDeleteImageProperty(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickDeleteImageProperty(MagickWand *wand,
   const char *property)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -142,16 +222,15 @@ MagickBooleanType MagickDeleteImageProperty(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickDeleteOption">MagickDeleteOption</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickDeleteOption">MagickDeleteOption</a></h2>
 
 <p>MagickDeleteOption() deletes a wand option.</p>
 
 <p>The format of the MagickDeleteOption method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickDeleteOption(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickDeleteOption(MagickWand *wand,
   const char *option)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -169,15 +248,14 @@ MagickBooleanType MagickDeleteOption(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetAntialias">MagickGetAntialias</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetAntialias">MagickGetAntialias</a></h2>
 
 <p>MagickGetAntialias() returns the antialias property associated with the wand.</p>
 
 <p>The format of the MagickGetAntialias method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickGetAntialias(const MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickGetAntialias(const MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -191,15 +269,14 @@ MagickBooleanType MagickGetAntialias(const MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetBackgroundColor">MagickGetBackgroundColor</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetBackgroundColor">MagickGetBackgroundColor</a></h2>
 
 <p>MagickGetBackgroundColor() returns the wand background color.</p>
 
 <p>The format of the MagickGetBackgroundColor method is:</p>
 
-<pre class="text">
-PixelWand *MagickGetBackgroundColor(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>PixelWand *MagickGetBackgroundColor(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -213,15 +290,14 @@ PixelWand *MagickGetBackgroundColor(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetColorspace">MagickGetColorspace</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetColorspace">MagickGetColorspace</a></h2>
 
 <p>MagickGetColorspace() gets the wand colorspace type.</p>
 
 <p>The format of the MagickGetColorspace method is:</p>
 
-<pre class="text">
-ColorspaceType MagickGetColorspace(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>ColorspaceType MagickGetColorspace(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -235,15 +311,14 @@ ColorspaceType MagickGetColorspace(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetCompression">MagickGetCompression</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetCompression">MagickGetCompression</a></h2>
 
 <p>MagickGetCompression() gets the wand compression type.</p>
 
 <p>The format of the MagickGetCompression method is:</p>
 
-<pre class="text">
-CompressionType MagickGetCompression(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>CompressionType MagickGetCompression(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -257,15 +332,14 @@ CompressionType MagickGetCompression(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetCompressionQuality">MagickGetCompressionQuality</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetCompressionQuality">MagickGetCompressionQuality</a></h2>
 
 <p>MagickGetCompressionQuality() gets the wand compression quality.</p>
 
 <p>The format of the MagickGetCompressionQuality method is:</p>
 
-<pre class="text">
-size_t MagickGetCompressionQuality(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>size_t MagickGetCompressionQuality(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -279,25 +353,23 @@ size_t MagickGetCompressionQuality(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetCopyright">MagickGetCopyright</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetCopyright">MagickGetCopyright</a></h2>
 
 <p>MagickGetCopyright() returns the ImageMagick API copyright as a string constant.</p>
 
 <p>The format of the MagickGetCopyright method is:</p>
 
-<pre class="text">
-const char *MagickGetCopyright(void)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>const char *MagickGetCopyright(void)
+</samp></pre>
 
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetFilename">MagickGetFilename</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetFilename">MagickGetFilename</a></h2>
 
 <p>MagickGetFilename() returns the filename associated with an image sequence.</p>
 
 <p>The format of the MagickGetFilename method is:</p>
 
-<pre class="text">
-const char *MagickGetFilename(const MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>const char *MagickGetFilename(const MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -311,15 +383,14 @@ const char *MagickGetFilename(const MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetFont">MagickGetFont</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetFont">MagickGetFont</a></h2>
 
 <p>MagickGetFont() returns the font associated with the MagickWand.</p>
 
 <p>The format of the MagickGetFont method is:</p>
 
-<pre class="text">
-char *MagickGetFont(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>char *MagickGetFont(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -333,15 +404,14 @@ char *MagickGetFont(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetFormat">MagickGetFormat</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetFormat">MagickGetFormat</a></h2>
 
 <p>MagickGetFormat() returns the format of the magick wand.</p>
 
 <p>The format of the MagickGetFormat method is:</p>
 
-<pre class="text">
-const char MagickGetFormat(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>const char MagickGetFormat(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -355,15 +425,35 @@ const char MagickGetFormat(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetGravity">MagickGetGravity</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetFilter">MagickGetFilter</a></h2>
+
+<p>MagickGetFilter() gets the wand filter.</p>
+
+<p>The format of the MagickGetFilter method is:</p>
+
+<pre class="bg-light text-dark mx-4"><samp>FilterType MagickGetFilter(MagickWand *wand)
+</samp></pre>
+
+<p>A description of each parameter follows:</p>
+
+<dd>
+</dd>
+
+<dd> </dd>
+<dl class="dl-horizontal">
+<dt>wand</dt>
+<dd>the magick wand. </dd>
+
+<dd>  </dd>
+</dl>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetGravity">MagickGetGravity</a></h2>
 
 <p>MagickGetGravity() gets the wand gravity.</p>
 
 <p>The format of the MagickGetGravity method is:</p>
 
-<pre class="text">
-GravityType MagickGetGravity(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>GravityType MagickGetGravity(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -377,25 +467,23 @@ GravityType MagickGetGravity(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetHomeURL">MagickGetHomeURL</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetHomeURL">MagickGetHomeURL</a></h2>
 
 <p>MagickGetHomeURL() returns the ImageMagick home URL.</p>
 
 <p>The format of the MagickGetHomeURL method is:</p>
 
-<pre class="text">
-char *MagickGetHomeURL(void)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>char *MagickGetHomeURL(void)
+</samp></pre>
 
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetImageArtifact">MagickGetImageArtifact</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetImageArtifact">MagickGetImageArtifact</a></h2>
 
 <p>MagickGetImageArtifact() returns a value associated with the specified artifact.  Use MagickRelinquishMemory() to free the value when you are finished with it.</p>
 
 <p>The format of the MagickGetImageArtifact method is:</p>
 
-<pre class="text">
-char *MagickGetImageArtifact(MagickWand *wand,const char *artifact)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>char *MagickGetImageArtifact(MagickWand *wand,const char *artifact)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -413,16 +501,15 @@ char *MagickGetImageArtifact(MagickWand *wand,const char *artifact)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetImageArtifacts">MagickGetImageArtifacts</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetImageArtifacts">MagickGetImageArtifacts</a></h2>
 
 <p>MagickGetImageArtifacts() returns all the artifact names that match the specified pattern associated with a wand.  Use MagickGetImageProperty() to return the value of a particular artifact.  Use MagickRelinquishMemory() to free the value when you are finished with it.</p>
 
 <p>The format of the MagickGetImageArtifacts method is:</p>
 
-<pre class="text">
-char *MagickGetImageArtifacts(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>char *MagickGetImageArtifacts(MagickWand *wand,
   const char *pattern,size_t *number_artifacts)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -444,16 +531,15 @@ char *MagickGetImageArtifacts(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetImageProfile">MagickGetImageProfile</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetImageProfile">MagickGetImageProfile</a></h2>
 
 <p>MagickGetImageProfile() returns the named image profile.</p>
 
 <p>The format of the MagickGetImageProfile method is:</p>
 
-<pre class="text">
-unsigned char *MagickGetImageProfile(MagickWand *wand,const char *name,
+<pre class="bg-light text-dark mx-4"><samp>unsigned char *MagickGetImageProfile(MagickWand *wand,const char *name,
   size_t *length)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -475,16 +561,15 @@ unsigned char *MagickGetImageProfile(MagickWand *wand,const char *name,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetImageProfiles">MagickGetImageProfiles</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetImageProfiles">MagickGetImageProfiles</a></h2>
 
 <p>MagickGetImageProfiles() returns all the profile names that match the specified pattern associated with a wand.  Use MagickGetImageProfile() to return the value of a particular property.  Use MagickRelinquishMemory() to free the value when you are finished with it.</p>
 
 <p>The format of the MagickGetImageProfiles method is:</p>
 
-<pre class="text">
-char *MagickGetImageProfiles(MagickWand *wand,const char *pattern,
+<pre class="bg-light text-dark mx-4"><samp>char *MagickGetImageProfiles(MagickWand *wand,const char *pattern,
   size_t *number_profiles)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -506,15 +591,14 @@ char *MagickGetImageProfiles(MagickWand *wand,const char *pattern,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetImageProperty">MagickGetImageProperty</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetImageProperty">MagickGetImageProperty</a></h2>
 
 <p>MagickGetImageProperty() returns a value associated with the specified property.  Use MagickRelinquishMemory() to free the value when you are finished with it.</p>
 
 <p>The format of the MagickGetImageProperty method is:</p>
 
-<pre class="text">
-char *MagickGetImageProperty(MagickWand *wand,const char *property)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>char *MagickGetImageProperty(MagickWand *wand,const char *property)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -532,16 +616,15 @@ char *MagickGetImageProperty(MagickWand *wand,const char *property)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetImageProperties">MagickGetImageProperties</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetImageProperties">MagickGetImageProperties</a></h2>
 
 <p>MagickGetImageProperties() returns all the property names that match the specified pattern associated with a wand.  Use MagickGetImageProperty() to return the value of a particular property.  Use MagickRelinquishMemory() to free the value when you are finished with it.</p>
 
 <p>The format of the MagickGetImageProperties method is:</p>
 
-<pre class="text">
-char *MagickGetImageProperties(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>char *MagickGetImageProperties(MagickWand *wand,
   const char *pattern,size_t *number_properties)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -563,15 +646,14 @@ char *MagickGetImageProperties(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetInterlaceScheme">MagickGetInterlaceScheme</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetInterlaceScheme">MagickGetInterlaceScheme</a></h2>
 
 <p>MagickGetInterlaceScheme() gets the wand interlace scheme.</p>
 
 <p>The format of the MagickGetInterlaceScheme method is:</p>
 
-<pre class="text">
-InterlaceType MagickGetInterlaceScheme(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>InterlaceType MagickGetInterlaceScheme(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -585,15 +667,14 @@ InterlaceType MagickGetInterlaceScheme(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetInterpolateMethod">MagickGetInterpolateMethod</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetInterpolateMethod">MagickGetInterpolateMethod</a></h2>
 
 <p>MagickGetInterpolateMethod() gets the wand compression.</p>
 
 <p>The format of the MagickGetInterpolateMethod method is:</p>
 
-<pre class="text">
-InterpolatePixelMethod MagickGetInterpolateMethod(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>PixelInterpolateMethod MagickGetInterpolateMethod(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -607,15 +688,14 @@ InterpolatePixelMethod MagickGetInterpolateMethod(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetOption">MagickGetOption</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetOption">MagickGetOption</a></h2>
 
 <p>MagickGetOption() returns a value associated with a wand and the specified key.  Use MagickRelinquishMemory() to free the value when you are finished with it.</p>
 
 <p>The format of the MagickGetOption method is:</p>
 
-<pre class="text">
-char *MagickGetOption(MagickWand *wand,const char *key)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>char *MagickGetOption(MagickWand *wand,const char *key)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -633,16 +713,15 @@ char *MagickGetOption(MagickWand *wand,const char *key)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetOptions">MagickGetOptions</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetOptions">MagickGetOptions</a></h2>
 
 <p>MagickGetOptions() returns all the option names that match the specified pattern associated with a wand.  Use MagickGetOption() to return the value of a particular option.  Use MagickRelinquishMemory() to free the value when you are finished with it.</p>
 
 <p>The format of the MagickGetOptions method is:</p>
 
-<pre class="text">
-char *MagickGetOptions(MagickWand *wand,const char *pattern,,
+<pre class="bg-light text-dark mx-4"><samp>char *MagickGetOptions(MagickWand *wand,const char *pattern,
   size_t *number_options)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -664,15 +743,14 @@ char *MagickGetOptions(MagickWand *wand,const char *pattern,,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetOrientation">MagickGetOrientation</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetOrientation">MagickGetOrientation</a></h2>
 
 <p>MagickGetOrientation() gets the wand orientation type.</p>
 
 <p>The format of the MagickGetOrientation method is:</p>
 
-<pre class="text">
-OrientationType MagickGetOrientation(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>OrientationType MagickGetOrientation(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -686,27 +764,25 @@ OrientationType MagickGetOrientation(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetPackageName">MagickGetPackageName</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetPackageName">MagickGetPackageName</a></h2>
 
 <p>MagickGetPackageName() returns the ImageMagick package name as a string constant.</p>
 
 <p>The format of the MagickGetPackageName method is:</p>
 
-<pre class="text">
-const char *MagickGetPackageName(void)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>const char *MagickGetPackageName(void)
+</samp></pre>
 
 
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetPage">MagickGetPage</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetPage">MagickGetPage</a></h2>
 
 <p>MagickGetPage() returns the page geometry associated with the magick wand.</p>
 
 <p>The format of the MagickGetPage method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickGetPage(const MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickGetPage(const MagickWand *wand,
   size_t *width,size_t *height,ssize_t *x,ssize_t *y)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -736,15 +812,14 @@ MagickBooleanType MagickGetPage(const MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetPointsize">MagickGetPointsize</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetPointsize">MagickGetPointsize</a></h2>
 
 <p>MagickGetPointsize() returns the font pointsize associated with the MagickWand.</p>
 
 <p>The format of the MagickGetPointsize method is:</p>
 
-<pre class="text">
-double MagickGetPointsize(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>double MagickGetPointsize(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -758,15 +833,14 @@ double MagickGetPointsize(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetQuantumDepth">MagickGetQuantumDepth</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetQuantumDepth">MagickGetQuantumDepth</a></h2>
 
 <p>MagickGetQuantumDepth() returns the ImageMagick quantum depth as a string constant.</p>
 
 <p>The format of the MagickGetQuantumDepth method is:</p>
 
-<pre class="text">
-const char *MagickGetQuantumDepth(size_t *depth)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>const char *MagickGetQuantumDepth(size_t *depth)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -780,15 +854,14 @@ const char *MagickGetQuantumDepth(size_t *depth)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetQuantumRange">MagickGetQuantumRange</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetQuantumRange">MagickGetQuantumRange</a></h2>
 
 <p>MagickGetQuantumRange() returns the ImageMagick quantum range as a string constant.</p>
 
 <p>The format of the MagickGetQuantumRange method is:</p>
 
-<pre class="text">
-const char *MagickGetQuantumRange(size_t *range)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>const char *MagickGetQuantumRange(size_t *range)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -802,26 +875,24 @@ const char *MagickGetQuantumRange(size_t *range)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetReleaseDate">MagickGetReleaseDate</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetReleaseDate">MagickGetReleaseDate</a></h2>
 
 <p>MagickGetReleaseDate() returns the ImageMagick release date as a string constant.</p>
 
 <p>The format of the MagickGetReleaseDate method is:</p>
 
-<pre class="text">
-const char *MagickGetReleaseDate(void)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>const char *MagickGetReleaseDate(void)
+</samp></pre>
 
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetResolution">MagickGetResolution</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetResolution">MagickGetResolution</a></h2>
 
 <p>MagickGetResolution() gets the image X and Y resolution.</p>
 
 <p>The format of the MagickGetResolution method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickGetResolution(const MagickWand *wand,double *x,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickGetResolution(const MagickWand *wand,double *x,
   double *y)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -843,15 +914,14 @@ MagickBooleanType MagickGetResolution(const MagickWand *wand,double *x,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetResource">MagickGetResource</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetResource">MagickGetResource</a></h2>
 
 <p>MagickGetResource() returns the specified resource in megabytes.</p>
 
 <p>The format of the MagickGetResource method is:</p>
 
-<pre class="text">
-MagickSizeType MagickGetResource(const ResourceType type)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>MagickSizeType MagickGetResource(const ResourceType type)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -865,15 +935,14 @@ MagickSizeType MagickGetResource(const ResourceType type)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetResourceLimit">MagickGetResourceLimit</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetResourceLimit">MagickGetResourceLimit</a></h2>
 
 <p>MagickGetResourceLimit() returns the specified resource limit in megabytes.</p>
 
 <p>The format of the MagickGetResourceLimit method is:</p>
 
-<pre class="text">
-MagickSizeType MagickGetResourceLimit(const ResourceType type)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>MagickSizeType MagickGetResourceLimit(const ResourceType type)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -887,16 +956,15 @@ MagickSizeType MagickGetResourceLimit(const ResourceType type)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetSamplingFactors">MagickGetSamplingFactors</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetSamplingFactors">MagickGetSamplingFactors</a></h2>
 
 <p>MagickGetSamplingFactors() gets the horizontal and vertical sampling factor.</p>
 
 <p>The format of the MagickGetSamplingFactors method is:</p>
 
-<pre class="text">
-double *MagickGetSamplingFactor(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>double *MagickGetSamplingFactor(MagickWand *wand,
   size_t *number_factors)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -914,16 +982,15 @@ double *MagickGetSamplingFactor(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetSize">MagickGetSize</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetSize">MagickGetSize</a></h2>
 
 <p>MagickGetSize() returns the size associated with the magick wand.</p>
 
 <p>The format of the MagickGetSize method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickGetSize(const MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickGetSize(const MagickWand *wand,
   size_t *columns,size_t *rows)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -945,16 +1012,15 @@ MagickBooleanType MagickGetSize(const MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetSizeOffset">MagickGetSizeOffset</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetSizeOffset">MagickGetSizeOffset</a></h2>
 
 <p>MagickGetSizeOffset() returns the size offset associated with the magick wand.</p>
 
 <p>The format of the MagickGetSizeOffset method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickGetSizeOffset(const MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickGetSizeOffset(const MagickWand *wand,
   ssize_t *offset)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -972,15 +1038,14 @@ MagickBooleanType MagickGetSizeOffset(const MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetType">MagickGetType</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetType">MagickGetType</a></h2>
 
 <p>MagickGetType() returns the wand type.</p>
 
 <p>The format of the MagickGetType method is:</p>
 
-<pre class="text">
-ImageType MagickGetType(MagickWand *wand)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>ImageType MagickGetType(MagickWand *wand)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -994,15 +1059,14 @@ ImageType MagickGetType(MagickWand *wand)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickGetVersion">MagickGetVersion</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickGetVersion">MagickGetVersion</a></h2>
 
 <p>MagickGetVersion() returns the ImageMagick API version as a string constant and as a number.</p>
 
 <p>The format of the MagickGetVersion method is:</p>
 
-<pre class="text">
-const char *MagickGetVersion(size_t *version)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>const char *MagickGetVersion(size_t *version)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1016,16 +1080,15 @@ const char *MagickGetVersion(size_t *version)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickProfileImage">MagickProfileImage</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickProfileImage">MagickProfileImage</a></h2>
 
 <p>MagickProfileImage() adds or removes a ICC, IPTC, or generic profile from an image.  If the profile is NULL, it is removed from the image otherwise added.  Use a name of '*' and a profile of NULL to remove all profiles from the image.</p>
 
 <p>The format of the MagickProfileImage method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickProfileImage(MagickWand *wand,const char *name,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickProfileImage(MagickWand *wand,const char *name,
   const void *profile,const size_t length)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1051,16 +1114,15 @@ MagickBooleanType MagickProfileImage(MagickWand *wand,const char *name,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickRemoveImageProfile">MagickRemoveImageProfile</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickRemoveImageProfile">MagickRemoveImageProfile</a></h2>
 
 <p>MagickRemoveImageProfile() removes the named image profile and returns it.</p>
 
 <p>The format of the MagickRemoveImageProfile method is:</p>
 
-<pre class="text">
-unsigned char *MagickRemoveImageProfile(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>unsigned char *MagickRemoveImageProfile(MagickWand *wand,
   const char *name,size_t *length)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1082,16 +1144,15 @@ unsigned char *MagickRemoveImageProfile(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetAntialias">MagickSetAntialias</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetAntialias">MagickSetAntialias</a></h2>
 
-<p>MagickSetAntialias() sets the antialias propery of the wand.</p>
+<p>MagickSetAntialias() sets the antialias property of the wand.</p>
 
 <p>The format of the MagickSetAntialias method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetAntialias(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetAntialias(MagickWand *wand,
   const MagickBooleanType antialias)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1109,16 +1170,15 @@ MagickBooleanType MagickSetAntialias(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetBackgroundColor">MagickSetBackgroundColor</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetBackgroundColor">MagickSetBackgroundColor</a></h2>
 
 <p>MagickSetBackgroundColor() sets the wand background color.</p>
 
 <p>The format of the MagickSetBackgroundColor method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetBackgroundColor(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetBackgroundColor(MagickWand *wand,
   const PixelWand *background)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1136,16 +1196,15 @@ MagickBooleanType MagickSetBackgroundColor(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetColorspace">MagickSetColorspace</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetColorspace">MagickSetColorspace</a></h2>
 
 <p>MagickSetColorspace() sets the wand colorspace type.</p>
 
 <p>The format of the MagickSetColorspace method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetColorspace(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetColorspace(MagickWand *wand,
   const ColorspaceType colorspace)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1163,16 +1222,15 @@ MagickBooleanType MagickSetColorspace(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetCompression">MagickSetCompression</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetCompression">MagickSetCompression</a></h2>
 
 <p>MagickSetCompression() sets the wand compression type.</p>
 
 <p>The format of the MagickSetCompression method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetCompression(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetCompression(MagickWand *wand,
   const CompressionType compression)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1190,16 +1248,15 @@ MagickBooleanType MagickSetCompression(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetCompressionQuality">MagickSetCompressionQuality</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetCompressionQuality">MagickSetCompressionQuality</a></h2>
 
 <p>MagickSetCompressionQuality() sets the wand compression quality.</p>
 
 <p>The format of the MagickSetCompressionQuality method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetCompressionQuality(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetCompressionQuality(MagickWand *wand,
   const size_t quality)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1217,16 +1274,15 @@ MagickBooleanType MagickSetCompressionQuality(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetDepth">MagickSetDepth</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetDepth">MagickSetDepth</a></h2>
 
 <p>MagickSetDepth() sets the wand pixel depth.</p>
 
 <p>The format of the MagickSetDepth method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetDepth(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetDepth(MagickWand *wand,
   const size_t depth)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1244,16 +1300,15 @@ MagickBooleanType MagickSetDepth(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetExtract">MagickSetExtract</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetExtract">MagickSetExtract</a></h2>
 
 <p>MagickSetExtract() sets the extract geometry before you read or write an image file.  Use it for inline cropping (e.g. 200x200+0+0) or resizing (e.g.200x200).</p>
 
 <p>The format of the MagickSetExtract method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetExtract(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetExtract(MagickWand *wand,
   const char *geometry)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1271,16 +1326,15 @@ MagickBooleanType MagickSetExtract(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetFilename">MagickSetFilename</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetFilename">MagickSetFilename</a></h2>
 
 <p>MagickSetFilename() sets the filename before you read or write an image file.</p>
 
 <p>The format of the MagickSetFilename method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetFilename(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetFilename(MagickWand *wand,
   const char *filename)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1298,15 +1352,14 @@ MagickBooleanType MagickSetFilename(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetFont">MagickSetFont</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetFont">MagickSetFont</a></h2>
 
 <p>MagickSetFont() sets the font associated with the MagickWand.</p>
 
 <p>The format of the MagickSetFont method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetFont(MagickWand *wand, const char *font)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetFont(MagickWand *wand, const char *font)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1324,15 +1377,14 @@ MagickBooleanType MagickSetFont(MagickWand *wand, const char *font)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetFormat">MagickSetFormat</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetFormat">MagickSetFormat</a></h2>
 
 <p>MagickSetFormat() sets the format of the magick wand.</p>
 
 <p>The format of the MagickSetFormat method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetFormat(MagickWand *wand,const char *format)
-</pre>
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetFormat(MagickWand *wand,const char *format)
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1350,16 +1402,41 @@ MagickBooleanType MagickSetFormat(MagickWand *wand,const char *format)
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetGravity">MagickSetGravity</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetFilter">MagickSetFilter</a></h2>
+
+<p>MagickSetFilter() sets the filter type.</p>
+
+<p>The format of the MagickSetFilter type is:</p>
+
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetFilter(MagickWand *wand,
+  const FilterType type)
+</samp></pre>
+
+<p>A description of each parameter follows:</p>
+
+<dd>
+</dd>
+
+<dd> </dd>
+<dl class="dl-horizontal">
+<dt>wand</dt>
+<dd>the magick wand. </dd>
+
+<dd> </dd>
+<dt>type</dt>
+<dd>the filter type. </dd>
+
+<dd>  </dd>
+</dl>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetGravity">MagickSetGravity</a></h2>
 
 <p>MagickSetGravity() sets the gravity type.</p>
 
 <p>The format of the MagickSetGravity type is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetGravity(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetGravity(MagickWand *wand,
   const GravityType type)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1377,16 +1454,15 @@ MagickBooleanType MagickSetGravity(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetImageArtifact">MagickSetImageArtifact</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetImageArtifact">MagickSetImageArtifact</a></h2>
 
-<p>MagickSetImageArtifact() associates a artifact with an image.</p>
+<p>MagickSetImageArtifact() sets a key-value pair in the image artifact namespace.  Artifacts differ from properties.  Properties are public and are generally exported to an external image format if the format supports it. Artifacts are private and are utilized by the internal ImageMagick API to modify the behavior of certain algorithms.</p>
 
 <p>The format of the MagickSetImageArtifact method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetImageArtifact(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetImageArtifact(MagickWand *wand,
   const char *artifact,const char *value)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1408,16 +1484,15 @@ MagickBooleanType MagickSetImageArtifact(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetImageProfile">MagickSetImageProfile</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetImageProfile">MagickSetImageProfile</a></h2>
 
 <p>MagickSetImageProfile() adds a named profile to the magick wand.  If a profile with the same name already exists, it is replaced.  This method differs from the MagickProfileImage() method in that it does not apply any CMS color profiles.</p>
 
 <p>The format of the MagickSetImageProfile method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetImageProfile(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetImageProfile(MagickWand *wand,
   const char *name,const void *profile,const size_t length)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1443,16 +1518,15 @@ MagickBooleanType MagickSetImageProfile(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetImageProperty">MagickSetImageProperty</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetImageProperty">MagickSetImageProperty</a></h2>
 
 <p>MagickSetImageProperty() associates a property with an image.</p>
 
 <p>The format of the MagickSetImageProperty method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetImageProperty(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetImageProperty(MagickWand *wand,
   const char *property,const char *value)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1474,16 +1548,15 @@ MagickBooleanType MagickSetImageProperty(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetInterlaceScheme">MagickSetInterlaceScheme</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetInterlaceScheme">MagickSetInterlaceScheme</a></h2>
 
 <p>MagickSetInterlaceScheme() sets the image compression.</p>
 
 <p>The format of the MagickSetInterlaceScheme method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetInterlaceScheme(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetInterlaceScheme(MagickWand *wand,
   const InterlaceType interlace_scheme)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1501,16 +1574,15 @@ MagickBooleanType MagickSetInterlaceScheme(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetInterpolateMethod">MagickSetInterpolateMethod</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetInterpolateMethod">MagickSetInterpolateMethod</a></h2>
 
 <p>MagickSetInterpolateMethod() sets the interpolate pixel method.</p>
 
 <p>The format of the MagickSetInterpolateMethod method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetInterpolateMethod(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetInterpolateMethod(MagickWand *wand,
   const InterpolateMethodPixel method)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1528,16 +1600,15 @@ MagickBooleanType MagickSetInterpolateMethod(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetOption">MagickSetOption</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetOption">MagickSetOption</a></h2>
 
-<p>MagickSetOption() associates one or options with the wand (.e.g MagickSetOption(wand,"jpeg:perserve","yes")).</p>
+<p>MagickSetOption() associates one or options with the wand (.e.g MagickSetOption(wand,"jpeg:preserve","yes")).</p>
 
 <p>The format of the MagickSetOption method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetOption(MagickWand *wand,const char *key,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetOption(MagickWand *wand,const char *key,
   const char *value)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1559,16 +1630,15 @@ MagickBooleanType MagickSetOption(MagickWand *wand,const char *key,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetOrientation">MagickSetOrientation</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetOrientation">MagickSetOrientation</a></h2>
 
 <p>MagickSetOrientation() sets the wand orientation type.</p>
 
 <p>The format of the MagickSetOrientation method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetOrientation(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetOrientation(MagickWand *wand,
   const OrientationType orientation)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1586,17 +1656,16 @@ MagickBooleanType MagickSetOrientation(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetPage">MagickSetPage</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetPage">MagickSetPage</a></h2>
 
 <p>MagickSetPage() sets the page geometry of the magick wand.</p>
 
 <p>The format of the MagickSetPage method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetPage(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetPage(MagickWand *wand,
   const size_t width,const size_t height,const ssize_t x,
   const ssize_t y)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1626,16 +1695,15 @@ MagickBooleanType MagickSetPage(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetPassphrase">MagickSetPassphrase</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetPassphrase">MagickSetPassphrase</a></h2>
 
 <p>MagickSetPassphrase() sets the passphrase.</p>
 
 <p>The format of the MagickSetPassphrase method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetPassphrase(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetPassphrase(MagickWand *wand,
   const char *passphrase)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1653,16 +1721,15 @@ MagickBooleanType MagickSetPassphrase(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetPointsize">MagickSetPointsize</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetPointsize">MagickSetPointsize</a></h2>
 
 <p>MagickSetPointsize() sets the font pointsize associated with the MagickWand.</p>
 
 <p>The format of the MagickSetPointsize method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetPointsize(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetPointsize(MagickWand *wand,
   const double pointsize)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1680,24 +1747,22 @@ MagickBooleanType MagickSetPointsize(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetProgressMonitor">MagickSetProgressMonitor</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetProgressMonitor">MagickSetProgressMonitor</a></h2>
 
 <p>MagickSetProgressMonitor() sets the wand progress monitor to the specified method and returns the previous progress monitor if any.  The progress monitor method looks like this:</p>
 
-<pre class="text">
-    MagickBooleanType MagickProgressMonitor(const char *text,
+<pre class="bg-light text-dark mx-4"><samp>    MagickBooleanType MagickProgressMonitor(const char *text,
 const MagickOffsetType offset,const MagickSizeType span,
 void *client_data)
-</pre>
+</samp></pre>
 
 <p>If the progress monitor returns MagickFalse, the current operation is interrupted.</p>
 
 <p>The format of the MagickSetProgressMonitor method is:</p>
 
-<pre class="text">
-MagickProgressMonitor MagickSetProgressMonitor(MagickWand *wand
+<pre class="bg-light text-dark mx-4"><samp>MagickProgressMonitor MagickSetProgressMonitor(MagickWand *wand
   const MagickProgressMonitor progress_monitor,void *client_data)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1719,16 +1784,15 @@ MagickProgressMonitor MagickSetProgressMonitor(MagickWand *wand
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetResourceLimit">MagickSetResourceLimit</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetResourceLimit">MagickSetResourceLimit</a></h2>
 
 <p>MagickSetResourceLimit() sets the limit for a particular resource in megabytes.</p>
 
 <p>The format of the MagickSetResourceLimit method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetResourceLimit(const ResourceType type,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetResourceLimit(const ResourceType type,
   const MagickSizeType limit)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1744,16 +1808,15 @@ MagickBooleanType MagickSetResourceLimit(const ResourceType type,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetResolution">MagickSetResolution</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetResolution">MagickSetResolution</a></h2>
 
 <p>MagickSetResolution() sets the image resolution.</p>
 
 <p>The format of the MagickSetResolution method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetResolution(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetResolution(MagickWand *wand,
   const double x_resolution,const double y_resolution)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1775,16 +1838,15 @@ MagickBooleanType MagickSetResolution(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetSamplingFactors">MagickSetSamplingFactors</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetSamplingFactors">MagickSetSamplingFactors</a></h2>
 
 <p>MagickSetSamplingFactors() sets the image sampling factors.</p>
 
 <p>The format of the MagickSetSamplingFactors method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetSamplingFactors(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetSamplingFactors(MagickWand *wand,
   const size_t number_factors,const double *sampling_factors)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1797,7 +1859,7 @@ MagickBooleanType MagickSetSamplingFactors(MagickWand *wand,
 <dd>the magick wand. </dd>
 
 <dd> </dd>
-<dt>number_factoes</dt>
+<dt>number_factors</dt>
 <dd>the number of factors. </dd>
 
 <dd> </dd>
@@ -1806,16 +1868,36 @@ MagickBooleanType MagickSetSamplingFactors(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetSecurityPolicy">MagickSetSecurityPolicy</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetSeed">MagickSetSeed</a></h2>
+
+<p>MagickSetSeed() sets the pseudo-random number generator seed.  Use it to generate a predictable sequence of random numbers.</p>
+
+<p>The format of the MagickSetSeed method is:</p>
+
+<pre class="bg-light text-dark mx-4"><samp>void MagickSetSeed(const unsigned long seed)
+</samp></pre>
+
+<p>A description of each parameter follows:</p>
+
+<dd>
+</dd>
+
+<dd> </dd>
+<dl class="dl-horizontal">
+<dt>seed</dt>
+<dd>the seed. </dd>
+
+<dd>  </dd>
+</dl>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetSecurityPolicy">MagickSetSecurityPolicy</a></h2>
 
 <p>MagickSetSecurityPolicy() sets the ImageMagick security policy.  It returns MagickFalse if the policy is already set or if the policy does not parse.</p>
 
 <p>The format of the MagickSetAntialias method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetAntialias(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetAntialias(MagickWand *wand,
   const char *policy)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1833,16 +1915,15 @@ MagickBooleanType MagickSetAntialias(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetSize">MagickSetSize</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetSize">MagickSetSize</a></h2>
 
 <p>MagickSetSize() sets the size of the magick wand.  Set it before you read a raw image format such as RGB, GRAY, or CMYK.</p>
 
 <p>The format of the MagickSetSize method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetSize(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetSize(MagickWand *wand,
   const size_t columns,const size_t rows)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1864,17 +1945,16 @@ MagickBooleanType MagickSetSize(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetSizeOffset">MagickSetSizeOffset</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetSizeOffset">MagickSetSizeOffset</a></h2>
 
 <p>MagickSetSizeOffset() sets the size and offset of the magick wand.  Set it before you read a raw image format such as RGB, GRAY, or CMYK.</p>
 
 <p>The format of the MagickSetSizeOffset method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetSizeOffset(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetSizeOffset(MagickWand *wand,
   const size_t columns,const size_t rows,
   const ssize_t offset)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1900,16 +1980,15 @@ MagickBooleanType MagickSetSizeOffset(MagickWand *wand,
 
 <dd>  </dd>
 </dl>
-<h2><a href="https://legacy.imagemagick.org/api/MagickWand/magick-property_8c.html" id="MagickSetType">MagickSetType</a></h2>
+<h2><a href="../../api/MagickWand/magick-property_8c.html" id="MagickSetType">MagickSetType</a></h2>
 
 <p>MagickSetType() sets the image type attribute.</p>
 
 <p>The format of the MagickSetType method is:</p>
 
-<pre class="text">
-MagickBooleanType MagickSetType(MagickWand *wand,
+<pre class="bg-light text-dark mx-4"><samp>MagickBooleanType MagickSetType(MagickWand *wand,
   const ImageType image_type)
-</pre>
+</samp></pre>
 
 <p>A description of each parameter follows:</p>
 
@@ -1923,38 +2002,36 @@ MagickBooleanType MagickSetType(MagickWand *wand,
 
 <dd> </dd>
 <dt>image_type</dt>
-<dd>the image type:   UndefinedType, BilevelType, GrayscaleType, GrayscaleMatteType, PaletteType, PaletteMatteType, TrueColorType, TrueColorMatteType, ColorSeparationType, ColorSeparationMatteType, or OptimizeType. </dd>
+<dd>the image type:   UndefinedType, BilevelType, GrayscaleType, GrayscaleAlphaType, PaletteType, PaletteAlphaType, TrueColorType, TrueColorAlphaType, ColorSeparationType, ColorSeparationAlphaType, or OptimizeType. </dd>
 
 <dd>  </dd>
 </dl>
 </div>
-    </div>
+  </div>
   </main><!-- /.container -->
   <footer class="magick-footer">
-    <div class="container">
-    <p><a href="../www/security-policy.html">Security</a> •
-    <a href="https://legacy.imagemagick.org/www/www/resources.html">Resources</a>
+    <div class="container-fluid">
+      <a href="../www/security-policy.html">Security</a> •
+      <a href="../www/news.html">News</a>
      
-    <a href="magick-property.html#"><img class="d-inline" id="wand" alt="And Now a Touch of Magick" width="16" height="16" src="../../../../images/wand.ico"/></a>
+      <a href="magick-property.html#"><img class="d-inline" id="wand" alt="And Now a Touch of Magick" width="16" height="16" src="../../images/wand.ico"/></a>
      
-    <a href="https://legacy.imagemagick.org/www/www/links.html">Related</a> •
-     <a href="https://legacy.imagemagick.org/www/www/sitemap.html">Sitemap</a>
+      <a href="../www/links.html">Related</a> •
+      <a href="../www/sitemap.html">Sitemap</a>
+   <br/>
+     <a href="../www/support.html">Sponsor</a> •
+     <a href="../www/cite.html">Cite</a> •
+     <a href="http://pgp.mit.edu/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
+     <a href="../www/contact.html">Contact Us</a>
+   <br/>
+     <a href="https://github.com/imagemagick/imagemagick" target="_blank" rel="noopener" aria-label="GitHub"><svg xmlns="http://www.w3.org/2000/svg" class="navbar-nav-svg" viewBox="0 0 512 499.36" width="2%" height="2%" role="img" focusable="false"><title>GitHub</title><path fill="currentColor" fill-rule="evenodd" d="M256 0C114.64 0 0 114.61 0 256c0 113.09 73.34 209 175.08 242.9 12.8 2.35 17.47-5.56 17.47-12.34 0-6.08-.22-22.18-.35-43.54-71.2 15.49-86.2-34.34-86.2-34.34-11.64-29.57-28.42-37.45-28.42-37.45-23.27-15.84 1.73-15.55 1.73-15.55 25.69 1.81 39.21 26.38 39.21 26.38 22.84 39.12 59.92 27.82 74.5 21.27 2.33-16.54 8.94-27.82 16.25-34.22-56.84-6.43-116.6-28.43-116.6-126.49 0-27.95 10-50.8 26.35-68.69-2.63-6.48-11.42-32.5 2.51-67.75 0 0 21.49-6.88 70.4 26.24a242.65 242.65 0 0 1 128.18 0c48.87-33.13 70.33-26.24 70.33-26.24 14 35.25 5.18 61.27 2.55 67.75 16.41 17.9 26.31 40.75 26.31 68.69 0 98.35-59.85 120-116.88 126.32 9.19 7.9 17.38 23.53 17.38 47.41 0 34.22-.31 61.83-.31 70.23 0 6.85 4.61 14.81 17.6 12.31C438.72 464.97 512 369.08 512 256.02 512 114.62 397.37 0 256 0z"/></svg></a> •
+     <a href="https://twitter.com/imagemagick" target="_blank" rel="noopener" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="navbar-nav-svg" viewBox="0 0 512 416.32" width="2%" height="2%" role="img" focusable="false"><title>Twitter</title><path fill="currentColor" d="M160.83 416.32c193.2 0 298.92-160.22 298.92-298.92 0-4.51 0-9-.2-13.52A214 214 0 0 0 512 49.38a212.93 212.93 0 0 1-60.44 16.6 105.7 105.7 0 0 0 46.3-58.19 209 209 0 0 1-66.79 25.37 105.09 105.09 0 0 0-181.73 71.91 116.12 116.12 0 0 0 2.66 24c-87.28-4.3-164.73-46.3-216.56-109.82A105.48 105.48 0 0 0 68 159.6a106.27 106.27 0 0 1-47.53-13.11v1.43a105.28 105.28 0 0 0 84.21 103.06 105.67 105.67 0 0 1-47.33 1.84 105.06 105.06 0 0 0 98.14 72.94A210.72 210.72 0 0 1 25 370.84a202.17 202.17 0 0 1-25-1.43 298.85 298.85 0 0 0 160.83 46.92"/></svg></a>
     <br/>
-       
-    <a href="https://legacy.imagemagick.org/www/www/support.html">Sponsor</a> •
-    <a href="http://pgp.mit.edu/pks/lookup?op=get&amp;search=0x89AB63D48277377A">Public Key</a> •
-    <a href="https://legacy.imagemagick.org/www/www/contact.html">Contact Us</a> 
-    <br/>
-    <a href="https://github.com/imagemagick/imagemagick6" target="_blank" rel="noopener" aria-label="GitHub"><svg xmlns="http://www.w3.org/2000/svg" class="navbar-nav-svg" viewBox="0 0 512 499.36" width="2%" height="2%" role="img" focusable="false"><title>GitHub</title><path fill="currentColor" fill-rule="evenodd" d="M256 0C114.64 0 0 114.61 0 256c0 113.09 73.34 209 175.08 242.9 12.8 2.35 17.47-5.56 17.47-12.34 0-6.08-.22-22.18-.35-43.54-71.2 15.49-86.2-34.34-86.2-34.34-11.64-29.57-28.42-37.45-28.42-37.45-23.27-15.84 1.73-15.55 1.73-15.55 25.69 1.81 39.21 26.38 39.21 26.38 22.84 39.12 59.92 27.82 74.5 21.27 2.33-16.54 8.94-27.82 16.25-34.22-56.84-6.43-116.6-28.43-116.6-126.49 0-27.95 10-50.8 26.35-68.69-2.63-6.48-11.42-32.5 2.51-67.75 0 0 21.49-6.88 70.4 26.24a242.65 242.65 0 0 1 128.18 0c48.87-33.13 70.33-26.24 70.33-26.24 14 35.25 5.18 61.27 2.55 67.75 16.41 17.9 26.31 40.75 26.31 68.69 0 98.35-59.85 120-116.88 126.32 9.19 7.9 17.38 23.53 17.38 47.41 0 34.22-.31 61.83-.31 70.23 0 6.85 4.61 14.81 17.6 12.31C438.72 464.97 512 369.08 512 256.02 512 114.62 397.37 0 256 0z"/></svg></a> •
-        <a href="https://twitter.com/imagemagick" target="_blank" rel="noopener" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="navbar-nav-svg" viewBox="0 0 512 416.32" width="2%" height="2%" role="img" focusable="false"><title>Twitter</title><path fill="currentColor" d="M160.83 416.32c193.2 0 298.92-160.22 298.92-298.92 0-4.51 0-9-.2-13.52A214 214 0 0 0 512 49.38a212.93 212.93 0 0 1-60.44 16.6 105.7 105.7 0 0 0 46.3-58.19 209 209 0 0 1-66.79 25.37 105.09 105.09 0 0 0-181.73 71.91 116.12 116.12 0 0 0 2.66 24c-87.28-4.3-164.73-46.3-216.56-109.82A105.48 105.48 0 0 0 68 159.6a106.27 106.27 0 0 1-47.53-13.11v1.43a105.28 105.28 0 0 0 84.21 103.06 105.67 105.67 0 0 1-47.33 1.84 105.06 105.06 0 0 0 98.14 72.94A210.72 210.72 0 0 1 25 370.84a202.17 202.17 0 0 1-25-1.43 298.85 298.85 0 0 0 160.83 46.92"/></svg></a>
-    <br/>
-    <small>© 1999-2020 ImageMagick Studio LLC</small></p>
+    <small>Copyright © 1999 ImageMagick Studio LLC</small>
     </div>
   </footer>
 
   <!-- Javascript assets -->
-  <script src="https://legacy.imagemagick.org/www/assets/magick.js" crossorigin="anonymous"></script>
-  <script>window.jQuery || document.write('<script src="https://localhost/ajax/libs/jquery/3.4.1/jquery.min.js"><\/script>')</script>
-</body>
+  <script src="../assets/magick.js" ></script>
+  </body>
 </html>
-<!-- Magick Cache 29th July 2020 20:01 -->

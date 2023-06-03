@@ -17,7 +17,7 @@
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright @ 1999 ImageMagick Studio LLC, a non-profit organization         %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -39,34 +39,35 @@
 /*
   Include declarations.
 */
-#include "magick/studio.h"
-#include "magick/attribute.h"
-#include "magick/blob.h"
-#include "magick/blob-private.h"
-#include "magick/cache.h"
-#include "magick/color.h"
-#include "magick/color-private.h"
-#include "magick/colormap.h"
-#include "magick/colorspace.h"
-#include "magick/colorspace-private.h"
-#include "magick/exception.h"
-#include "magick/exception-private.h"
-#include "magick/image.h"
-#include "magick/image-private.h"
-#include "magick/list.h"
-#include "magick/magick.h"
-#include "magick/memory_.h"
-#include "magick/monitor.h"
-#include "magick/monitor-private.h"
-#include "magick/pixel-accessor.h"
-#include "magick/property.h"
-#include "magick/quantum-private.h"
-#include "magick/static.h"
-#include "magick/string_.h"
-#include "magick/module.h"
+#include "MagickCore/studio.h"
+#include "MagickCore/attribute.h"
+#include "MagickCore/blob.h"
+#include "MagickCore/blob-private.h"
+#include "MagickCore/cache.h"
+#include "MagickCore/color.h"
+#include "MagickCore/color-private.h"
+#include "MagickCore/colormap.h"
+#include "MagickCore/colorspace.h"
+#include "MagickCore/colorspace-private.h"
+#include "MagickCore/exception.h"
+#include "MagickCore/exception-private.h"
+#include "MagickCore/image.h"
+#include "MagickCore/image-private.h"
+#include "MagickCore/list.h"
+#include "MagickCore/magick.h"
+#include "MagickCore/memory_.h"
+#include "MagickCore/module.h"
+#include "MagickCore/monitor.h"
+#include "MagickCore/monitor-private.h"
+#include "MagickCore/pixel-accessor.h"
+#include "MagickCore/property.h"
+#include "MagickCore/quantum-private.h"
+#include "MagickCore/static.h"
+#include "MagickCore/string_.h"
+#include "coders/coders-private.h"
 
 /*
-  Typedef declaractions.
+  Typedef declarations.
 */
 typedef struct _SGIInfo
 {
@@ -102,7 +103,7 @@ typedef struct _SGIInfo
   Forward declarations.
 */
 static MagickBooleanType
-  WriteSGIImage(const ImageInfo *,Image *);
+  WriteSGIImage(const ImageInfo *,Image *,ExceptionInfo *);
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
@@ -268,10 +269,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
   MemoryInfo
     *pixel_info;
 
-  IndexPacket
-    *indexes;
-
-  PixelPacket
+  Quantum
     *q;
 
   ssize_t
@@ -301,12 +299,12 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   assert(image_info != (const ImageInfo *) NULL);
   assert(image_info->signature == MagickCoreSignature);
-  if (image_info->debug != MagickFalse)
-    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
-      image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickCoreSignature);
-  image=AcquireImage(image_info);
+  if (IsEventLogging() != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
+      image_info->filename);
+  image=AcquireImage(image_info,exception);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -353,7 +351,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     iris_info.name[sizeof(iris_info.name)-1]='\0';
     if (*iris_info.name != '\0')
-      (void) SetImageProperty(image,"label",iris_info.name);
+      (void) SetImageProperty(image,"label",iris_info.name,exception);
     iris_info.pixel_format=ReadBlobMSBLong(image);
     if (iris_info.pixel_format != 0)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
@@ -362,7 +360,8 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
       ThrowReaderException(CorruptImageError,"ImproperImageHeader");
     image->columns=iris_info.columns;
     image->rows=iris_info.rows;
-    image->matte=iris_info.depth == 4 ? MagickTrue : MagickFalse;
+    image->alpha_trait=iris_info.depth == 4 ? BlendPixelTrait :
+      UndefinedPixelTrait;
     image->depth=(size_t) MagickMin(iris_info.depth,MAGICKCORE_QUANTUM_DEPTH);
     if (iris_info.pixel_format == 0)
       image->depth=(size_t) MagickMin((size_t) 8*iris_info.bytes_per_pixel,
@@ -377,14 +376,11 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
         break;
     if ((MagickSizeType) (image->columns*image->rows/255) > GetBlobSize(image))
       ThrowReaderException(CorruptImageError,"InsufficientImageDataInFile");
-    status=SetImageExtent(image,image->columns,image->rows);
+    status=SetImageExtent(image,image->columns,image->rows,exception);
     if (status != MagickFalse)
-      status=ResetImagePixels(image,&image->exception);
+      status=ResetImagePixels(image,exception);
     if (status == MagickFalse)
-      {
-        InheritException(exception,&image->exception);
-        return(DestroyImageList(image));
-      }
+      return(DestroyImageList(image));
     /*
       Allocate SGI pixels.
     */
@@ -469,8 +465,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
           iris_info.depth*sizeof(*runlength));
         packet_info=AcquireVirtualMemory((size_t) iris_info.columns+10UL,4UL*
           sizeof(*packets));
-        if ((offsets == (ssize_t *) NULL) ||
-            (runlength == (size_t *) NULL) ||
+        if ((offsets == (ssize_t *) NULL) || (runlength == (size_t *) NULL) ||
             (packet_info == (MemoryInfo *) NULL))
           {
             offsets=(ssize_t *) RelinquishMagickMemory(offsets);
@@ -488,9 +483,9 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
           runlength[i]=ReadBlobMSBLong(image);
           if (runlength[i] > (4*(size_t) iris_info.columns+10))
             {
-              offsets=(ssize_t *) RelinquishMagickMemory(offsets);
-              runlength=(size_t *) RelinquishMagickMemory(runlength);
               packet_info=RelinquishVirtualMemory(packet_info);
+              runlength=(size_t *) RelinquishMagickMemory(runlength);
+              offsets=(ssize_t *) RelinquishMagickMemory(offsets);
               pixel_info=RelinquishVirtualMemory(pixel_info);
               ThrowReaderException(CorruptImageError,"ImproperImageHeader");
             }
@@ -531,9 +526,9 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
                   (ssize_t) iris_info.columns,p+bytes_per_pixel*z);
                 if (status == MagickFalse)
                   {
-                    offsets=(ssize_t *) RelinquishMagickMemory(offsets);
-                    runlength=(size_t *) RelinquishMagickMemory(runlength);
                     packet_info=RelinquishVirtualMemory(packet_info);
+                    runlength=(size_t *) RelinquishMagickMemory(runlength);
+                    offsets=(ssize_t *) RelinquishMagickMemory(offsets);
                     pixel_info=RelinquishVirtualMemory(pixel_info);
                     ThrowReaderException(CorruptImageError,
                       "ImproperImageHeader");
@@ -571,9 +566,9 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
                   (ssize_t) iris_info.columns,p+bytes_per_pixel*z);
                 if (status == MagickFalse)
                   {
-                    offsets=(ssize_t *) RelinquishMagickMemory(offsets);
-                    runlength=(size_t *) RelinquishMagickMemory(runlength);
                     packet_info=RelinquishVirtualMemory(packet_info);
+                    runlength=(size_t *) RelinquishMagickMemory(runlength);
+                    offsets=(ssize_t *) RelinquishMagickMemory(offsets);
                     pixel_info=RelinquishVirtualMemory(pixel_info);
                     ThrowReaderException(CorruptImageError,
                       "ImproperImageHeader");
@@ -603,22 +598,22 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
             {
               p=pixels+(image->rows-y-1)*8*image->columns;
               q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-              if (q == (PixelPacket *) NULL)
+              if (q == (Quantum *) NULL)
                 break;
               for (x=0; x < (ssize_t) image->columns; x++)
               {
-                SetPixelRed(q,ScaleShortToQuantum((unsigned short)
-                  ((*(p+0) << 8) | (*(p+1)))));
-                SetPixelGreen(q,ScaleShortToQuantum((unsigned short)
-                  ((*(p+2) << 8) | (*(p+3)))));
-                SetPixelBlue(q,ScaleShortToQuantum((unsigned short)
-                  ((*(p+4) << 8) | (*(p+5)))));
-                SetPixelOpacity(q,OpaqueOpacity);
-                if (image->matte != MagickFalse)
-                  SetPixelAlpha(q,ScaleShortToQuantum((unsigned short)
-                    ((*(p+6) << 8) | (*(p+7)))));
+                SetPixelRed(image,ScaleShortToQuantum((unsigned short)
+                  ((*(p+0) << 8) | (*(p+1)))),q);
+                SetPixelGreen(image,ScaleShortToQuantum((unsigned short)
+                  ((*(p+2) << 8) | (*(p+3)))),q);
+                SetPixelBlue(image,ScaleShortToQuantum((unsigned short)
+                  ((*(p+4) << 8) | (*(p+5)))),q);
+                SetPixelAlpha(image,OpaqueAlpha,q);
+                if (image->alpha_trait != UndefinedPixelTrait)
+                  SetPixelAlpha(image,ScaleShortToQuantum((unsigned short)
+                    ((*(p+6) << 8) | (*(p+7)))),q);
                 p+=8;
-                q++;
+                q+=GetPixelChannels(image);
               }
               if (SyncAuthenticPixels(image,exception) == MagickFalse)
                 break;
@@ -636,25 +631,25 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
           {
             p=pixels+(image->rows-y-1)*4*image->columns;
             q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-            if (q == (PixelPacket *) NULL)
+            if (q == (Quantum *) NULL)
               break;
             for (x=0; x < (ssize_t) image->columns; x++)
             {
-              SetPixelRed(q,ScaleCharToQuantum(*p));
-              q->green=ScaleCharToQuantum(*(p+1));
-              q->blue=ScaleCharToQuantum(*(p+2));
-              SetPixelOpacity(q,OpaqueOpacity);
-              if (image->matte != MagickFalse)
-                SetPixelAlpha(q,ScaleCharToQuantum(*(p+3)));
+              SetPixelRed(image,ScaleCharToQuantum(*p),q);
+              SetPixelGreen(image,ScaleCharToQuantum(*(p+1)),q);
+              SetPixelBlue(image,ScaleCharToQuantum(*(p+2)),q);
+              SetPixelAlpha(image,OpaqueAlpha,q);
+              if (image->alpha_trait != UndefinedPixelTrait)
+                SetPixelAlpha(image,ScaleCharToQuantum(*(p+3)),q);
               p+=4;
-              q++;
+              q+=GetPixelChannels(image);
             }
             if (SyncAuthenticPixels(image,exception) == MagickFalse)
               break;
             if (image->previous == (Image *) NULL)
               {
                 status=SetImageProgress(image,LoadImageTag,(MagickOffsetType) y,
-                image->rows);
+                  image->rows);
                 if (status == MagickFalse)
                   break;
               }
@@ -665,7 +660,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Create grayscale map.
         */
-        if (AcquireImageColormap(image,image->colors) == MagickFalse)
+        if (AcquireImageColormap(image,image->colors,exception) == MagickFalse)
           {
             pixel_info=RelinquishVirtualMemory(pixel_info);
             ThrowReaderException(ResourceLimitError,"MemoryAllocationFailed");
@@ -679,16 +674,15 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
             {
               p=pixels+(image->rows-y-1)*8*image->columns;
               q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-              if (q == (PixelPacket *) NULL)
+              if (q == (Quantum *) NULL)
                 break;
-              indexes=GetAuthenticIndexQueue(image);
               for (x=0; x < (ssize_t) image->columns; x++)
               {
                 quantum=(*p << 8);
                 quantum|=(*(p+1));
-                SetPixelIndex(indexes+x,quantum);
+                SetPixelIndex(image,(Quantum) quantum,q);
                 p+=8;
-                q++;
+                q+=GetPixelChannels(image);
               }
               if (SyncAuthenticPixels(image,exception) == MagickFalse)
                 break;
@@ -706,14 +700,13 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
           {
             p=pixels+(image->rows-y-1)*4*image->columns;
             q=QueueAuthenticPixels(image,0,y,image->columns,1,exception);
-            if (q == (PixelPacket *) NULL)
+            if (q == (Quantum *) NULL)
               break;
-            indexes=GetAuthenticIndexQueue(image);
             for (x=0; x < (ssize_t) image->columns; x++)
             {
-              SetPixelIndex(indexes+x,*p);
+              SetPixelIndex(image,*p,q);
               p+=4;
-              q++;
+              q+=GetPixelChannels(image);
             }
             if (SyncAuthenticPixels(image,exception) == MagickFalse)
               break;
@@ -725,7 +718,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
                   break;
               }
           }
-        (void) SyncImage(image);
+        (void) SyncImage(image,exception);
       }
     pixel_info=RelinquishVirtualMemory(pixel_info);
     if (EOFBlob(image) != MagickFalse)
@@ -746,7 +739,7 @@ static Image *ReadSGIImage(const ImageInfo *image_info,ExceptionInfo *exception)
         /*
           Allocate next image structure.
         */
-        AcquireNextImage(image_info,image);
+        AcquireNextImage(image_info,image,exception);
         if (GetNextImageInList(image) == (Image *) NULL)
           {
             status=MagickFalse;
@@ -793,13 +786,11 @@ ModuleExport size_t RegisterSGIImage(void)
   MagickInfo
     *entry;
 
-  entry=SetMagickInfo("SGI");
+  entry=AcquireMagickInfo("SGI","SGI","Irix RGB image");
   entry->decoder=(DecodeImageHandler *) ReadSGIImage;
   entry->encoder=(EncodeImageHandler *) WriteSGIImage;
   entry->magick=(IsImageFormatHandler *) IsSGI;
-  entry->description=ConstantString("Irix RGB image");
-  entry->magick_module=ConstantString("SGI");
-  entry->seekable_stream=MagickTrue;
+  entry->flags|=CoderDecoderSeekableStreamFlag;
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -843,13 +834,16 @@ ModuleExport void UnregisterSGIImage(void)
 %
 %  The format of the WriteSGIImage method is:
 %
-%      MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
+%      MagickBooleanType WriteSGIImage(const ImageInfo *image_info,
+%        Image *image,ExceptionInfo *exception)
 %
 %  A description of each parameter follows.
 %
 %    o image_info: the image info.
 %
 %    o image:  The image.
+%
+%    o exception: return any errors or warnings in this structure.
 %
 */
 
@@ -906,13 +900,17 @@ static size_t SGIEncode(unsigned char *pixels,size_t length,
   return((size_t) (q-packets));
 }
 
-static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
+static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image,
+  ExceptionInfo *exception)
 {
   CompressionType
     compression;
 
   const char
     *value;
+
+  const Quantum
+    *p;
 
   MagickBooleanType
     status;
@@ -929,20 +927,12 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
   SGIInfo
     iris_info;
 
-  const PixelPacket
-    *p;
+  size_t
+    number_scenes;
 
   ssize_t
     i,
-    x;
-
-  unsigned char
-    *q;
-
-  size_t
-    imageListLength;
-
-  ssize_t
+    x,
     y,
     z;
 
@@ -957,13 +947,15 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
   assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
   assert(image->signature == MagickCoreSignature);
-  if (image->debug != MagickFalse)
+  assert(exception != (ExceptionInfo *) NULL);
+  assert(exception->signature == MagickCoreSignature);
+  if (IsEventLogging() != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,&image->exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
   if (status == MagickFalse)
     return(status);
   scene=0;
-  imageListLength=GetImageListLength(image);
+  number_scenes=GetImageListLength(image);
   do
   {
     /*
@@ -971,7 +963,8 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
     */
     if ((image->columns > 65535UL) || (image->rows > 65535UL))
       ThrowWriterException(ImageError,"WidthOrHeightExceedsLimit");
-    (void) TransformImageColorspace(image,sRGBColorspace);
+    if (IssRGBCompatibleColorspace(image->colorspace) == MagickFalse)
+      (void) TransformImageColorspace(image,sRGBColorspace,exception);
     (void) memset(&iris_info,0,sizeof(iris_info));
     iris_info.magic=0x01DA;
     compression=image->compression;
@@ -987,12 +980,12 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
     iris_info.dimension=3;
     iris_info.columns=(unsigned short) image->columns;
     iris_info.rows=(unsigned short) image->rows;
-    if (image->matte != MagickFalse)
+    if (image->alpha_trait != UndefinedPixelTrait)
       iris_info.depth=4;
     else
       {
         if ((image_info->type != TrueColorType) &&
-            (SetImageGray(image,&image->exception) != MagickFalse))
+            (IdentifyImageCoderGray(image,exception) != MagickFalse))
           {
             iris_info.dimension=2;
             iris_info.depth=1;
@@ -1017,7 +1010,7 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
     (void) WriteBlobMSBLong(image,(unsigned int) iris_info.minimum_value);
     (void) WriteBlobMSBLong(image,(unsigned int) iris_info.maximum_value);
     (void) WriteBlobMSBLong(image,(unsigned int) iris_info.sans);
-    value=GetImageProperty(image,"label");
+    value=GetImageProperty(image,"label",exception);
     if (value != (const char *) NULL)
       (void) CopyMagickString(iris_info.name,value,sizeof(iris_info.name));
     (void) WriteBlob(image,sizeof(iris_info.name),(unsigned char *)
@@ -1041,8 +1034,8 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
     */
     for (y=0; y < (ssize_t) image->rows; y++)
     {
-      p=GetVirtualPixels(image,0,y,image->columns,1,&image->exception);
-      if (p == (const PixelPacket *) NULL)
+      p=GetVirtualPixels(image,0,y,image->columns,1,exception);
+      if (p == (const Quantum *) NULL)
         break;
       if (image->depth <= 8)
         for (x=0; x < (ssize_t) image->columns; x++)
@@ -1052,11 +1045,11 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
 
           q=(unsigned char *) pixels;
           q+=((iris_info.rows-1)-y)*(4*iris_info.columns)+4*x;
-          *q++=ScaleQuantumToChar(GetPixelRed(p));
-          *q++=ScaleQuantumToChar(GetPixelGreen(p));
-          *q++=ScaleQuantumToChar(GetPixelBlue(p));
-          *q++=ScaleQuantumToChar(GetPixelAlpha(p));
-          p++;
+          *q++=ScaleQuantumToChar(GetPixelRed(image,p));
+          *q++=ScaleQuantumToChar(GetPixelGreen(image,p));
+          *q++=ScaleQuantumToChar(GetPixelBlue(image,p));
+          *q++=ScaleQuantumToChar(GetPixelAlpha(image,p));
+          p+=GetPixelChannels(image);
         }
       else
         for (x=0; x < (ssize_t) image->columns; x++)
@@ -1066,11 +1059,11 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
 
           q=(unsigned short *) pixels;
           q+=((iris_info.rows-1)-y)*(4*iris_info.columns)+4*x;
-          *q++=ScaleQuantumToShort(GetPixelRed(p));
-          *q++=ScaleQuantumToShort(GetPixelGreen(p));
-          *q++=ScaleQuantumToShort(GetPixelBlue(p));
-          *q++=ScaleQuantumToShort(GetPixelAlpha(p));
-          p++;
+          *q++=ScaleQuantumToShort(GetPixelRed(image,p));
+          *q++=ScaleQuantumToShort(GetPixelGreen(image,p));
+          *q++=ScaleQuantumToShort(GetPixelBlue(image,p));
+          *q++=ScaleQuantumToShort(GetPixelAlpha(image,p));
+          p+=GetPixelChannels(image);
         }
       if (image->previous == (Image *) NULL)
         {
@@ -1128,6 +1121,9 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
         ssize_t
           offset,
           *offsets;
+
+        unsigned char
+          *q;
 
         /*
           Convert SGI uncompressed pixels.
@@ -1189,7 +1185,7 @@ static MagickBooleanType WriteSGIImage(const ImageInfo *image_info,Image *image)
     if (GetNextImageInList(image) == (Image *) NULL)
       break;
     image=SyncNextImageInList(image);
-    status=SetImageProgress(image,SaveImagesTag,scene++,imageListLength);
+    status=SetImageProgress(image,SaveImagesTag,scene++,number_scenes);
     if (status == MagickFalse)
       break;
   } while (image_info->adjoin != MagickFalse);

@@ -23,13 +23,13 @@
 %                                 March 2003                                  %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2007 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright 1999 ImageMagick Studio LLC, a non-profit organization           %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
 %  obtain a copy of the License at                                            %
 %                                                                             %
-%    https://imagemagick.org/script/license.php                           %
+%    https://imagemagick.org/script/license.php                               %
 %                                                                             %
 %  Unless required by applicable law or agreed to in writing, software        %
 %  distributed under the License is distributed on an "AS IS" BASIS,          %
@@ -47,7 +47,7 @@
   Include declarations.
 */
 #if !defined(_VISUALC_)
-#include <magick/magick-config.h>
+#include <MagickCore/magick-config.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,7 +58,7 @@
 #include <sys\types.h>
 #endif
 #include <time.h>
-#include <wand/MagickWand.h>
+#include <MagickWand/MagickWand.h>
 
 #define WandDelay   3
 
@@ -5164,14 +5164,11 @@ int main(int argc,char **argv)
 
   char
     *description,
-    **options,
     *option,
+    **options,
     **profiles,
     **properties,
     *property;
-
-  DrawingWand
-    *drawing_wand;
 
   ExceptionType
     severity;
@@ -5186,7 +5183,6 @@ int main(int argc,char **argv)
   PixelWand
     *background,
     *border,
-    *fill,
     **pixels;
 
   ssize_t
@@ -5223,15 +5219,15 @@ int main(int argc,char **argv)
   {
     char
       *p,
-      path[MaxTextExtent];
+      path[MagickPathExtent];
 
     path[0]=0;
     p=getenv("SRCDIR");
     if (p != (char *) NULL)
       {
-        (void) strcpy(path,p);
+        (void) CopyMagickString(path,p,MagickPathExtent);
         if (path[strlen(path)-1] != '/')
-          (void) strcat(path,"/");
+          (void) ConcatenateMagickString(path,"/",MagickPathExtent);
       }
     (void) strcat(path,"sequence.miff");
     status=MagickReadImage(magick_wand,path);
@@ -5299,29 +5295,37 @@ int main(int argc,char **argv)
   border=NewPixelWand();
   (void) PixelSetColor(background,"green");
   (void) PixelSetColor(border,"black");
-  status=MagickFloodfillPaintImage(magick_wand,CompositeChannels,background,
-    0.01*QuantumRange,border,0,0,MagickFalse);
+  status=MagickFloodfillPaintImage(magick_wand,background,0.01*QuantumRange,
+    border,0,0,MagickFalse);
   if (status == MagickFalse)
     ThrowAPIException(magick_wand);
   background=DestroyPixelWand(background);
   border=DestroyPixelWand(border);
-  drawing_wand=NewDrawingWand();
-  (void) PushDrawingWand(drawing_wand);
-  (void) DrawRotate(drawing_wand,45);
-  if (getenv("MAGICK_FONT") != 0)
-    (void) DrawSetFont(drawing_wand,getenv("MAGICK_FONT"));
-  (void) DrawSetFontSize(drawing_wand,18);
-  fill=NewPixelWand();
-  (void) PixelSetColor(fill,"green");
-  (void) DrawSetFillColor(drawing_wand,fill);
-  fill=DestroyPixelWand(fill);
-  (void) DrawAnnotation(drawing_wand,15,5,(const unsigned char *) "Magick");
-  (void) PopDrawingWand(drawing_wand);
-  (void) MagickSetIteratorIndex(magick_wand,1);
-  status=MagickDrawImage(magick_wand,drawing_wand);
-  if (status == MagickFalse)
-    ThrowAPIException(magick_wand);
-  drawing_wand=DestroyDrawingWand(drawing_wand);
+#if MAGICKCORE_FREETYPE_DELEGATE
+  {
+    DrawingWand
+      *const drawing_wand = NewDrawingWand();
+
+    PixelWand
+      *const fill = NewPixelWand();
+
+    (void) PushDrawingWand(drawing_wand);
+    (void) DrawRotate(drawing_wand,45);
+    if (getenv("MAGICK_FONT") != 0)
+      (void) DrawSetFont(drawing_wand,getenv("MAGICK_FONT"));
+    (void) DrawSetFontSize(drawing_wand,18);
+    (void) PixelSetColor(fill,"green");
+    (void) DrawSetFillColor(drawing_wand,fill);
+    (void) DestroyPixelWand(fill);
+    (void) DrawAnnotation(drawing_wand,15,5,(const unsigned char *) "Magick");
+    (void) PopDrawingWand(drawing_wand);
+    (void) MagickSetIteratorIndex(magick_wand,1);
+    status=MagickDrawImage(magick_wand,drawing_wand);
+    if (status == MagickFalse)
+      ThrowAPIException(magick_wand);
+    (void) DestroyDrawingWand(drawing_wand);
+  }
+#endif
   {
     unsigned char
       pixels[27],
@@ -5357,7 +5361,7 @@ int main(int argc,char **argv)
         }
   }
   (void) MagickSetIteratorIndex(magick_wand,3);
-  status=MagickResizeImage(magick_wand,50,50,UndefinedFilter,1.0);
+  status=MagickResizeImage(magick_wand,50,50,UndefinedFilter);
   if (status == MagickFalse)
     ThrowAPIException(magick_wand);
   MagickResetIterator(magick_wand);
@@ -5369,7 +5373,7 @@ int main(int argc,char **argv)
   MagickResetIterator(magick_wand);
   (void) MagickSetIteratorIndex(magick_wand,4);
   (void) FormatLocaleFile(stdout,
-    "Utilitize pixel iterator to draw diagonal...\n");
+    "Utilize pixel iterator to draw diagonal...\n");
   iterator=NewPixelIterator(magick_wand);
   if (iterator == (PixelIterator *) NULL)
     ThrowAPIException(magick_wand);

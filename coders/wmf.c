@@ -17,7 +17,7 @@
 %                               December 2000                                 %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright @ 2000 ImageMagick Studio LLC, a non-profit organization         %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -37,33 +37,32 @@
 /*
   Include declarations.
 */
-#include "magick/studio.h"
-#include "magick/property.h"
-#include "magick/blob.h"
-#include "magick/blob-private.h"
-#include "magick/color.h"
-#include "magick/color-private.h"
-#include "magick/constitute.h"
-#include "magick/exception.h"
-#include "magick/exception-private.h"
-#include "magick/image.h"
-#include "magick/image-private.h"
-#include "magick/list.h"
-#include "magick/log.h"
-#include "magick/magick.h"
-#include "magick/memory_.h"
-#include "magick/monitor.h"
-#include "magick/monitor-private.h"
-#include "magick/paint.h"
-#include "magick/pixel-accessor.h"
-#include "magick/quantum-private.h"
-#include "magick/static.h"
-#include "magick/string_.h"
-#include "magick/module.h"
-#include "magick/type.h"
-#include "magick/module.h"
+#include "MagickCore/studio.h"
+#include "MagickCore/property.h"
+#include "MagickCore/blob.h"
+#include "MagickCore/blob-private.h"
+#include "MagickCore/color.h"
+#include "MagickCore/color-private.h"
+#include "MagickCore/constitute.h"
+#include "MagickCore/exception.h"
+#include "MagickCore/exception-private.h"
+#include "MagickCore/image.h"
+#include "MagickCore/image-private.h"
+#include "MagickCore/list.h"
+#include "MagickCore/log.h"
+#include "MagickCore/magick.h"
+#include "MagickCore/memory_.h"
+#include "MagickCore/monitor.h"
+#include "MagickCore/monitor-private.h"
+#include "MagickCore/paint.h"
+#include "MagickCore/quantum-private.h"
+#include "MagickCore/static.h"
+#include "MagickCore/string_.h"
+#include "MagickCore/module.h"
+#include "MagickCore/type.h"
+#include "MagickCore/module.h"
 #if defined(MAGICKCORE_WMF_DELEGATE)
-#include "wand/MagickWand.h"
+#include "MagickWand/MagickWand.h"
 #endif
 
 #if defined(__CYGWIN__)
@@ -119,7 +118,7 @@ static long WMFTellBlob(void *image)
 static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 {
   char
-    filename[MaxTextExtent];
+    filename[MagickPathExtent];
 
   int
     unique_file;
@@ -157,7 +156,7 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   /*
     Read WMF image.
   */
-  image=AcquireImage(image_info);
+  image=AcquireImage(image_info,exception);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -223,17 +222,17 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   */
   read_info=CloneImageInfo(image_info);
   SetImageInfoBlob(read_info,(void *) NULL,0);
-  (void) FormatLocaleString(read_info->filename,MaxTextExtent,"eps:%s",
+  (void) FormatLocaleString(read_info->filename,MagickPathExtent,"eps:%s",
     filename);
   image=ReadImage(read_info,exception);
   read_info=DestroyImageInfo(read_info);
   if (image != (Image *) NULL)
     {
       (void) CopyMagickString(image->filename,image_info->filename,
-        MaxTextExtent);
+        MagickPathExtent);
       (void) CopyMagickString(image->magick_filename,image_info->filename,
-        MaxTextExtent);
-      (void) CopyMagickString(image->magick,"WMF",MaxTextExtent);
+        MagickPathExtent);
+      (void) CopyMagickString(image->magick,"WMF",MagickPathExtent);
     }
   (void) RelinquishUniqueFileResource(filename);
   return(GetFirstImageInList(image));
@@ -271,7 +270,7 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 #undef BLACKNESS
 #undef WHITENESS
 
-/* The following additinal undefs were required for MinGW */
+/* The following additional undefs were required for MinGW */
 #undef BS_HOLLOW
 #undef PS_STYLE_MASK
 #undef PS_ENDCAP_ROUND
@@ -338,6 +337,9 @@ struct _wmf_magick_t
   /* Vector output */
   DrawingWand
     *draw_wand;
+
+  ExceptionInfo
+    *exception;
 
   /* ImageMagick image */
   Image
@@ -439,7 +441,7 @@ static void         ipa_udata_init(wmfAPI * API, wmfUserData_t * userdata);
 static void         ipa_udata_set(wmfAPI * API, wmfUserData_t * userdata);
 static int          magick_progress_callback(void* wand,float quantum);
 static void         util_draw_arc(wmfAPI * API, wmfDrawArc_t * draw_arc,magick_arc_t finish);
-static double       util_pointsize( wmfAPI* API, wmfFont* font, char* str, double font_height);
+static double       util_pointsize( wmfAPI* API, wmfFont* font, char* str, double font_height, ExceptionInfo *);
 static void         util_set_brush(wmfAPI * API, wmfDC * dc, const BrushApply brush_apply);
 static void         util_set_pen(wmfAPI * API, wmfDC * dc);
 
@@ -452,6 +454,7 @@ int magick_progress_callback(void *context,float quantum)
   MagickBooleanType
     status;
 
+  (void) quantum;
   image=(Image *) context;
   assert(image->signature == MagickCoreSignature);
   status=SetImageProgress(image,LoadImagesTag,TellBlob(image),
@@ -479,7 +482,7 @@ static void draw_fill_color_rgb( wmfAPI* API, const wmfRGB* rgb )
   PixelSetRedQuantum(fill_color,ScaleCharToQuantum(rgb->r));
   PixelSetGreenQuantum(fill_color,ScaleCharToQuantum(rgb->g));
   PixelSetBlueQuantum(fill_color,ScaleCharToQuantum(rgb->b));
-  PixelSetOpacityQuantum(fill_color,OpaqueOpacity);
+  PixelSetAlphaQuantum(fill_color,OpaqueAlpha);
   DrawSetFillColor(WmfDrawingWand,fill_color);
   fill_color=DestroyPixelWand(fill_color);
 }
@@ -505,7 +508,7 @@ static void draw_stroke_color_rgb( wmfAPI* API, const wmfRGB* rgb )
   PixelSetRedQuantum(stroke_color,ScaleCharToQuantum(rgb->r));
   PixelSetGreenQuantum(stroke_color,ScaleCharToQuantum(rgb->g));
   PixelSetBlueQuantum(stroke_color,ScaleCharToQuantum(rgb->b));
-  PixelSetOpacityQuantum(stroke_color,OpaqueOpacity);
+  PixelSetAlphaQuantum(stroke_color,OpaqueAlpha);
   DrawSetStrokeColor(WmfDrawingWand,stroke_color);
   stroke_color=DestroyPixelWand(stroke_color);
 }
@@ -528,9 +531,9 @@ static void draw_pattern_push( wmfAPI* API,
                                unsigned long rows )
 {
   char
-    pattern_id[MaxTextExtent];
+    pattern_id[MagickPathExtent];
 
-  (void) FormatLocaleString(pattern_id,MaxTextExtent,"brush_%lu",id);
+  (void) FormatLocaleString(pattern_id,MagickPathExtent,"brush_%lu",id);
   (void) DrawPushPattern(WmfDrawingWand,pattern_id,0,0,columns,rows);
 }
 
@@ -649,25 +652,21 @@ static void ipa_bmp_draw(wmfAPI *API, wmfBMP_Draw_t *bmp_draw)
   MagickWand
     *magick_wand;
 
-  MagickRealType
+  double
     height,
     width;
 
-  PixelPacket
+  PixelInfo
     white;
 
   if (bmp_draw->bmp.data == 0)
     return;
 
-  exception=AcquireExceptionInfo();
   image = (Image*)bmp_draw->bmp.data;
   if (!image)
-    {
-       InheritException(&ddata->image->exception,exception);
-       (void) DestroyExceptionInfo(exception);
-       return;
-    }
+     return;
 
+  exception=ddata->exception;
   if (bmp_draw->crop.x || bmp_draw->crop.y ||
      (bmp_draw->crop.w != bmp_draw->bmp.width) ||
      (bmp_draw->crop.h != bmp_draw->bmp.height))
@@ -691,27 +690,21 @@ static void ipa_bmp_draw(wmfAPI *API, wmfBMP_Draw_t *bmp_draw)
           image = crop_image;
           bmp_draw->bmp.data = (void*)image;
         }
-      else
-        InheritException(&ddata->image->exception,exception);
     }
 
-  QueryColorDatabase( "white", &white, exception );
+  QueryColorCompliance( "white", AllCompliance, &white, exception );
 
   if ( ddata->image_info->texture ||
-       !(IsColorEqual(&ddata->image_info->background_color,&white)) ||
-       ddata->image_info->background_color.opacity != OpaqueOpacity )
+       !(IsPixelInfoEquivalent(&ddata->image_info->background_color,&white)) ||
+       ddata->image_info->background_color.alpha != OpaqueAlpha )
   {
-    MagickPixelPacket
-      white;
-
     /*
       Set image white background to transparent so that it may be
       overlaid over non-white backgrounds.
     */
-    QueryMagickColor( "white", &white, exception );
-    TransparentPaintImage( image, &white, QuantumRange, MagickFalse );
+    QueryColorCompliance( "white", AllCompliance, &white, exception );
+    TransparentPaintImage( image, &white, QuantumRange, MagickFalse, exception );
   }
-  (void) DestroyExceptionInfo(exception);
 
   width = fabs(bmp_draw->pixel_width * (double) bmp_draw->crop.w);
   height = fabs(bmp_draw->pixel_height * (double) bmp_draw->crop.h);
@@ -748,16 +741,15 @@ static void ipa_bmp_read(wmfAPI * API, wmfBMP_Read_t * bmp_read) {
 
   bmp_read->bmp.data = 0;
 
-  exception=AcquireExceptionInfo();
-
-  image_info=CloneImageInfo((ImageInfo *) 0);
-  (void) CopyMagickString(image_info->magick,"DIB",MaxTextExtent);
+  image_info=CloneImageInfo(ddata->image_info);
+  exception=ddata->exception;
+  (void) CopyMagickString(image_info->magick,"DIB",MagickPathExtent);
   if (bmp_read->width || bmp_read->height)
     {
       char
-        size[MaxTextExtent];
+        size[MagickPathExtent];
 
-      (void) FormatLocaleString(size,MaxTextExtent,"%ux%u",bmp_read->width,
+      (void) FormatLocaleString(size,MagickPathExtent,"%ux%u",bmp_read->width,
         bmp_read->height);
       CloneString(&image_info->size,size);
     }
@@ -769,17 +761,7 @@ static void ipa_bmp_read(wmfAPI * API, wmfBMP_Read_t * bmp_read) {
   image=BlobToImage(image_info, (const void *) bmp_read->buffer,
     bmp_read->length, exception);
   image_info=DestroyImageInfo(image_info);
-  if (image == (Image *) NULL)
-    {
-      char
-        description[MaxTextExtent];
-
-      (void) FormatLocaleString(description,MaxTextExtent,
-        "packed DIB at offset %ld",bmp_read->offset);
-      (void) ThrowMagickException(&ddata->image->exception,GetMagickModule(),
-        CorruptImageError,exception->reason,"`%s'",exception->description);
-    }
-  else
+  if (image != (Image *) NULL)
     {
 #if 0
       printf("ipa_bmp_read: rows=%ld,columns=%ld\n\n", image->rows, image->columns);
@@ -789,7 +771,6 @@ static void ipa_bmp_read(wmfAPI * API, wmfBMP_Read_t * bmp_read) {
       bmp_read->bmp.width  = (U16)image->columns;
       bmp_read->bmp.height = (U16)image->rows;
     }
-  (void) DestroyExceptionInfo(exception);
 }
 
 static void ipa_bmp_free(wmfAPI * API, wmfBMP * bmp)
@@ -847,7 +828,7 @@ static void ipa_device_close(wmfAPI * API)
 static void ipa_device_begin(wmfAPI * API)
 {
   char
-    comment[MaxTextExtent];
+    comment[MagickPathExtent];
 
   wmf_magick_t
     *ddata = WMF_MAGICK_GetData(API);
@@ -855,7 +836,7 @@ static void ipa_device_begin(wmfAPI * API)
   /* Make SVG output happy */
   (void) PushDrawingWand(WmfDrawingWand);
 
-  DrawSetViewbox(WmfDrawingWand, 0, 0, ddata->image->columns, ddata->image->rows );
+  DrawSetViewbox(WmfDrawingWand,0,0,ddata->image->columns,ddata->image->rows);
 
   (void) FormatLocaleString(comment,MagickPathExtent,"Created by %s",
     GetMagickVersion((size_t *) NULL));
@@ -877,7 +858,7 @@ static void ipa_device_begin(wmfAPI * API)
 
       /* Draw rectangle in background color */
       background_color=NewPixelWand();
-      PixelSetQuantumColor(background_color,&ddata->image->background_color);
+      PixelSetPixelColor(background_color,&ddata->image->background_color);
       DrawSetFillColor(WmfDrawingWand,background_color);
       background_color=DestroyPixelWand(background_color);
       DrawRectangle(WmfDrawingWand,
@@ -900,21 +881,22 @@ static void ipa_device_begin(wmfAPI * API)
 
       image_info = CloneImageInfo((ImageInfo *) 0);
       (void) CopyMagickString(image_info->filename,ddata->image_info->texture,
-        MaxTextExtent);
+        MagickPathExtent);
       if ( ddata->image_info->size )
         CloneString(&image_info->size,ddata->image_info->size);
 
       image = ReadImage(image_info,exception);
+      (void) DestroyExceptionInfo(exception);
       image_info=DestroyImageInfo(image_info);
       if (image)
         {
           char
-            pattern_id[MaxTextExtent];
+            pattern_id[MagickPathExtent];
 
           MagickWand
             *magick_wand;
 
-          (void) CopyMagickString(image->magick,"MIFF",MaxTextExtent);
+          (void) CopyMagickString(image->magick,"MIFF",MagickPathExtent);
           DrawPushDefs(WmfDrawingWand);
           draw_pattern_push(API,ddata->pattern_id,image->columns,image->rows);
           magick_wand=NewMagickWandFromImage(image);
@@ -923,23 +905,20 @@ static void ipa_device_begin(wmfAPI * API)
           magick_wand=DestroyMagickWand(magick_wand);
           (void) DrawPopPattern(WmfDrawingWand);
           DrawPopDefs(WmfDrawingWand);
-          (void) FormatLocaleString(pattern_id,MaxTextExtent,"#brush_%lu",
+          (void) FormatLocaleString(pattern_id,MagickPathExtent,"#brush_%lu",
             ddata->pattern_id);
           (void) DrawSetFillPatternURL(WmfDrawingWand,pattern_id);
           ++ddata->pattern_id;
-
           DrawRectangle(WmfDrawingWand,
-                         XC(ddata->bbox.TL.x),YC(ddata->bbox.TL.y),
-                         XC(ddata->bbox.BR.x),YC(ddata->bbox.BR.y));
+            XC(ddata->bbox.TL.x),YC(ddata->bbox.TL.y),
+            XC(ddata->bbox.BR.x),YC(ddata->bbox.BR.y));
           image=DestroyImageList(image);
         }
       else
         {
           LogMagickEvent(CoderEvent,GetMagickModule(),
             "reading texture image failed!");
-          InheritException(&ddata->image->exception,exception);
         }
-      (void) DestroyExceptionInfo(exception);
     }
 
   DrawSetClipRule(WmfDrawingWand,EvenOddRule); /* Default for WMF is ALTERNATE polygon fill mode */
@@ -1244,24 +1223,27 @@ static void ipa_draw_polypolygon(wmfAPI * API, wmfPolyPoly_t* polypolygon)
       util_set_brush(API, polypolygon->dc, BrushApplyFill);
 
       DrawPathStart(WmfDrawingWand);
-      for (polygon = 0; polygon < polypolygon->npoly; polygon++)
+      if (polypolygon->pt && polypolygon->count)
         {
-          polyline.dc = polypolygon->dc;
-          polyline.pt = polypolygon->pt[polygon];
-          polyline.count = polypolygon->count[polygon];
-          if ((polyline.count > 2) && polyline.pt)
-            {
-              DrawPathMoveToAbsolute(WmfDrawingWand,
-                                     XC(polyline.pt[0].x),
-                                     YC(polyline.pt[0].y));
-              for (point = 1; point < polyline.count; point++)
-                {
-                  DrawPathLineToAbsolute(WmfDrawingWand,
-                                         XC(polyline.pt[point].x),
-                                         YC(polyline.pt[point].y));
-                }
-              DrawPathClose(WmfDrawingWand);
-            }
+        for (polygon = 0; polygon < polypolygon->npoly; polygon++)
+          {
+            polyline.dc = polypolygon->dc;
+            polyline.pt = polypolygon->pt[polygon];
+            polyline.count = polypolygon->count[polygon];
+            if ((polyline.count > 2) && polyline.pt)
+              {
+                DrawPathMoveToAbsolute(WmfDrawingWand,
+                                       XC(polyline.pt[0].x),
+                                       YC(polyline.pt[0].y));
+                for (point = 1; point < polyline.count; point++)
+                  {
+                    DrawPathLineToAbsolute(WmfDrawingWand,
+                                           XC(polyline.pt[point].x),
+                                           YC(polyline.pt[point].y));
+                  }
+                DrawPathClose(WmfDrawingWand);
+              }
+          }
         }
       DrawPathFinish(WmfDrawingWand);
 
@@ -1367,12 +1349,12 @@ static void ipa_region_clip(wmfAPI *API, wmfPolyRectangle_t *poly_rect)
   if (poly_rect->count > 0)
     {
       char
-        clip_mask_id[MaxTextExtent];
+        clip_mask_id[MagickPathExtent];
 
       /* Define clip path */
       ddata->clip_mask_id++;
       DrawPushDefs(WmfDrawingWand);
-      (void) FormatLocaleString(clip_mask_id,MaxTextExtent,"clip_%lu",
+      (void) FormatLocaleString(clip_mask_id,MagickPathExtent,"clip_%lu",
         ddata->clip_mask_id);
       DrawPushClipPath(WmfDrawingWand,clip_mask_id);
       (void) PushDrawingWand(WmfDrawingWand);
@@ -1457,6 +1439,9 @@ static void ipa_draw_text(wmfAPI * API, wmfDrawText_t * draw_text)
     angle = 0,      /* text rotation angle */
     pointsize = 0;    /* pointsize to output font with desired height */
 
+  ExceptionInfo
+    *exception;
+
   TypeMetric
     metrics;
 
@@ -1517,7 +1502,8 @@ static void ipa_draw_text(wmfAPI * API, wmfDrawText_t * draw_text)
   font = WMF_DC_FONT(draw_text->dc);
 
   /* Convert font_height to equivalent pointsize */
-  pointsize = util_pointsize( API, font, draw_text->str, draw_text->font_height);
+  exception=ddata->exception;
+  pointsize = util_pointsize( API, font, draw_text->str, draw_text->font_height, exception);
 
   /* Save graphic wand */
   (void) PushDrawingWand(WmfDrawingWand);
@@ -1553,7 +1539,7 @@ static void ipa_draw_text(wmfAPI * API, wmfDrawText_t * draw_text)
       draw_info->pointsize = pointsize;
       draw_info->text=draw_text->str;
 
-      if (GetTypeMetrics(image, draw_info, &metrics) != MagickFalse)
+      if (GetTypeMetrics(image, draw_info, &metrics, exception) != MagickFalse)
         {
           /* Center the text if it is not yet centered and should be */
           if ((WMF_DC_TEXTALIGN(draw_text->dc) & TA_CENTER))
@@ -1598,7 +1584,7 @@ static void ipa_draw_text(wmfAPI * API, wmfDrawText_t * draw_text)
           PixelSetRedQuantum(under_color,ScaleCharToQuantum(box->r));
           PixelSetGreenQuantum(under_color,ScaleCharToQuantum(box->g));
           PixelSetBlueQuantum(under_color,ScaleCharToQuantum(box->b));
-          PixelSetOpacityQuantum(under_color,OpaqueOpacity);
+          PixelSetAlphaQuantum(under_color,OpaqueAlpha);
           DrawSetTextUnderColor(WmfDrawingWand,under_color);
           under_color=DestroyPixelWand(under_color);
         }
@@ -1632,7 +1618,7 @@ static void ipa_draw_text(wmfAPI * API, wmfDrawText_t * draw_text)
   /* Apply rotation */
   /* ImageMagick's drawing rotation is clockwise from horizontal
      while WMF drawing rotation is counterclockwise from horizontal */
-  angle = fabs(RadiansToDegrees(2 * MagickPI - WMF_TEXT_ANGLE(font)));
+  angle=fabs(RadiansToDegrees(2.0*MagickPI-WMF_TEXT_ANGLE(font)));
   if (angle == 360)
     angle = 0;
   if (angle != 0)
@@ -1644,7 +1630,7 @@ static void ipa_draw_text(wmfAPI * API, wmfDrawText_t * draw_text)
    */
 
   /* Output string */
-  DrawAnnotation(WmfDrawingWand, 0, 0, (unsigned char*)draw_text->str);
+  DrawAnnotation(WmfDrawingWand,0,0,(unsigned char *) draw_text->str);
 
   /* Underline text the Windows way (at the bottom) */
   if (WMF_TEXT_UNDERLINE(font))
@@ -1851,9 +1837,9 @@ static void util_set_brush(wmfAPI *API, wmfDC *dc,const BrushApply brush_apply)
         DrawPopDefs(WmfDrawingWand);
         {
           char
-            pattern_id[MaxTextExtent];
+            pattern_id[MagickPathExtent];
 
-          (void) FormatLocaleString(pattern_id,MaxTextExtent,"#brush_%lu",
+          (void) FormatLocaleString(pattern_id,MagickPathExtent,"#brush_%lu",
             ddata->pattern_id);
           if (brush_apply == BrushApplyStroke )
             (void) DrawSetStrokePatternURL(WmfDrawingWand,pattern_id);
@@ -1964,11 +1950,10 @@ static void util_set_brush(wmfAPI *API, wmfDC *dc,const BrushApply brush_apply)
 
             {
               char
-                pattern_id[MaxTextExtent];
+                pattern_id[MagickPathExtent];
 
-              (void) FormatLocaleString(pattern_id,MaxTextExtent,"#brush_%lu",
+              (void) FormatLocaleString(pattern_id,MagickPathExtent,"#brush_%lu",
                 ddata->pattern_id);
-
               if ( brush_apply == BrushApplyStroke )
                 (void) DrawSetStrokePatternURL(WmfDrawingWand,pattern_id);
               else
@@ -2028,7 +2013,7 @@ static void util_set_pen(wmfAPI * API, wmfDC * dc)
                  ((double) 1 / (ddata->scale_y))) / 2;
 
   /* Don't allow pen_width to be much less than pixel_width in order
-     to avoid dissapearing or spider-web lines */
+     to avoid disappearing or spider-web lines */
   pen_width = MagickMax(pen_width, pixel_width*0.8);
 
   pen_style = (unsigned int) WMF_PEN_STYLE(pen);
@@ -2041,7 +2026,7 @@ static void util_set_pen(wmfAPI * API, wmfDC * dc)
     }
 
   DrawSetStrokeAntialias(WmfDrawingWand, MagickTrue );
-  DrawSetStrokeWidth(WmfDrawingWand, (unsigned long) MagickMax(0.0, pen_width));
+  DrawSetStrokeWidth(WmfDrawingWand,MagickMax(0.0, pen_width));
 
   {
     LineCap
@@ -2154,7 +2139,7 @@ static void util_set_pen(wmfAPI * API, wmfDC * dc)
 }
 
 /* Estimate font pointsize based on Windows font parameters */
-static double util_pointsize( wmfAPI* API, wmfFont* font, char* str, double font_height)
+static double util_pointsize( wmfAPI* API, wmfFont* font, char* str, double font_height, ExceptionInfo *exception)
 {
   wmf_magick_t
     *ddata = WMF_MAGICK_GetData(API);
@@ -2179,7 +2164,7 @@ static double util_pointsize( wmfAPI* API, wmfFont* font, char* str, double font
   draw_info->pointsize=font_height;
   draw_info->text=str;
 
-  if (GetTypeMetrics(image, draw_info, &metrics) != MagickFalse)
+  if (GetTypeMetrics(image, draw_info, &metrics, exception) != MagickFalse)
     {
 
       if (strlen(str) == 1)
@@ -2187,20 +2172,20 @@ static double util_pointsize( wmfAPI* API, wmfFont* font, char* str, double font
           pointsize = (font_height *
                        ( font_height * PerceptibleReciprocal(metrics.ascent + fabs(metrics.descent))));
           draw_info->pointsize = pointsize;
-          if (GetTypeMetrics(image, draw_info, &metrics) != MagickFalse)
+          if (GetTypeMetrics(image, draw_info, &metrics, exception) != MagickFalse)
             pointsize *= (font_height * PerceptibleReciprocal( metrics.ascent + fabs(metrics.descent)));
         }
       else
         {
-          pointsize = (font_height * (font_height / (metrics.height)));
+          pointsize = (font_height * (font_height * PerceptibleReciprocal(metrics.height)));
           draw_info->pointsize = pointsize;
-          if (GetTypeMetrics(image, draw_info, &metrics) != MagickFalse)
+          if (GetTypeMetrics(image, draw_info, &metrics, exception) != MagickFalse)
             pointsize *= (font_height * PerceptibleReciprocal((double) metrics.height));
 
         }
 #if 0
       draw_info.pointsize = pointsize;
-      if (GetTypeMetrics(image, &draw_info, &metrics) != MagickFalse)
+      if (GetTypeMetrics(image, &draw_info, &metrics, exception) != MagickFalse)
         pointsize *= (font_height / (metrics.ascent + fabs(metrics.descent)));
       pointsize *= 1.114286; /* Magic number computed through trial and error */
 #endif
@@ -2244,6 +2229,9 @@ static float lite_font_stringwidth( wmfAPI* API, wmfFont* font, char* str)
   DrawInfo
     *draw_info;
 
+  ExceptionInfo
+    *exception;
+
   TypeMetric
     metrics;
 
@@ -2257,8 +2245,8 @@ static float lite_font_stringwidth( wmfAPI* API, wmfFont* font, char* str)
   ResolutionType
     orig_resolution_units;
 
-  orig_x_resolution = image->x_resolution;
-  orig_y_resolution = image->y_resolution;
+  orig_x_resolution = image->resolution.x;
+  orig_y_resolution = image->resolution.y;
   orig_resolution_units = image->units;
 
   draw_info=ddata->draw_info;
@@ -2269,12 +2257,13 @@ static float lite_font_stringwidth( wmfAPI* API, wmfFont* font, char* str)
   draw_info->pointsize=12;
   draw_info->text=str;
 
-  image->x_resolution = 72;
-  image->y_resolution = 72;
+  image->resolution.x = 72;
+  image->resolution.y = 72;
   image->units = PixelsPerInchResolution;
 
-  if (GetTypeMetrics(image, draw_info, &metrics) != MagickFalse)
-    stringwidth = ((metrics.width * 72)/(image->x_resolution * draw_info->pointsize)); /* *0.916348; */
+  exception=ddata->exception;
+  if (GetTypeMetrics(image, draw_info, &metrics, exception) != MagickFalse)
+    stringwidth = ((metrics.width * 72)/(image->resolution.x * draw_info->pointsize)); /* *0.916348; */
 
   draw_info->font=NULL;
   draw_info->text=NULL;
@@ -2290,8 +2279,8 @@ static float lite_font_stringwidth( wmfAPI* API, wmfFont* font, char* str)
   fflush(stdout);
 #endif
 
-  image->x_resolution = orig_x_resolution;
-  image->y_resolution = orig_y_resolution;
+  image->resolution.x = orig_x_resolution;
+  image->resolution.y = orig_y_resolution;
   image->units = orig_resolution_units;
 
   return stringwidth;
@@ -2385,14 +2374,10 @@ static void lite_font_map( wmfAPI* API, wmfFont* font)
   if (magick_font->ps_name != (char *) NULL)
     magick_font->ps_name=DestroyString(magick_font->ps_name);
 
-  exception=AcquireExceptionInfo();
+  exception=ddata->exception;
   type_info_base=GetTypeInfo("*",exception);
   if (type_info_base == 0)
-    {
-      InheritException(&ddata->image->exception,exception);
-      (void) DestroyExceptionInfo(exception);
-      return;
-    }
+    return;
 
   /* Certain short-hand font names are not the proper Windows names
      and should be promoted to the proper names */
@@ -2407,14 +2392,14 @@ static void lite_font_map( wmfAPI* API, wmfFont* font)
       int
         target_weight;
 
-      StyleType
+      StyleType 
         style = AnyStyle;
 
       if (WMF_FONT_WEIGHT(font) == 0)
         target_weight = 400;
       else
         target_weight = WMF_FONT_WEIGHT(font);
-      if (WMF_FONT_ITALIC(font))
+      if (WMF_FONT_ITALIC(font)) 
         style=ItalicStyle;
       type_info=GetTypeInfoByFamily(wmf_font_name,style,AnyStretch,
         target_weight,exception);
@@ -2424,7 +2409,6 @@ static void lite_font_map( wmfAPI* API, wmfFont* font)
       if (type_info != (const TypeInfo *) NULL)
         CloneString(&magick_font->ps_name,type_info->name);
     }
-  (void) DestroyExceptionInfo(exception);
 
   /* Look for exact full match */
   if(!magick_font->ps_name)
@@ -2438,7 +2422,7 @@ static void lite_font_map( wmfAPI* API, wmfFont* font)
   if (!magick_font->ps_name)
     {
       char
-        target[MaxTextExtent];
+        target[MagickPathExtent];
 
       int
         target_weight = 400,
@@ -2458,13 +2442,13 @@ static void lite_font_map( wmfAPI* API, wmfFont* font)
                                        strstr(wmf_font_name,"Oblique"))) )
         want_italic = MagickTrue;
 
-      (void) CopyMagickString(target,"Times",MaxTextExtent);
+      (void) CopyMagickString(target,"Times",MagickPathExtent);
       for( i=0; SubFontMap[i].name != NULL; i++ )
         {
           if (LocaleCompare(wmf_font_name, SubFontMap[i].name) == 0)
             {
               (void) CopyMagickString(target,SubFontMap[i].mapping,
-                MaxTextExtent);
+                MagickPathExtent);
               break;
             }
         }
@@ -2586,7 +2570,7 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   wmfD_Rect
     bbox;
 
-  image=AcquireImage(image_info);
+  image=AcquireImage(image_info,exception);
   if (OpenBlob(image_info,image,ReadBinaryBlobMode,exception) == MagickFalse)
     {
       if (image->debug != MagickFalse)
@@ -2635,13 +2619,14 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
   ddata->image=image;
   ddata->image_info=image_info;
   ddata->draw_info=CloneDrawInfo(image_info,(const DrawInfo *) NULL);
+  ddata->exception=exception;
   ddata->draw_info->font=(char *)
     RelinquishMagickMemory(ddata->draw_info->font);
   ddata->draw_info->text=(char *)
     RelinquishMagickMemory(ddata->draw_info->text);
 
 #if defined(MAGICKCORE_WMF_DELEGATE)
-  /* Must initialize font subystem for WMFlite interface */
+  /* Must initialize font subsystem for WMFlite interface */
   lite_font_init (API,&wmf_api_options); /* similar to wmf_ipa_font_init in src/font.c */
   /* wmf_arg_fontdirs (API,options); */ /* similar to wmf_arg_fontdirs in src/wmf.c */
 
@@ -2655,11 +2640,6 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
     ipa_blob_tell,(void*)image);
   if (wmf_error != wmf_E_None)
     {
-      if (ddata->draw_info != (DrawInfo *) NULL)
-        {
-          DestroyDrawInfo(ddata->draw_info);
-          ddata->draw_info=(DrawInfo *)NULL;
-        }
       if (image->debug != MagickFalse)
         {
           (void) LogMagickEvent(CoderEvent,GetMagickModule(),
@@ -2705,16 +2685,16 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
 
   /* User specified resolution */
   resolution_y=DefaultResolution;
-  if (image->y_resolution != 0.0)
+  if (image->resolution.y != 0.0)
     {
-      resolution_y = image->y_resolution;
+      resolution_y = image->resolution.y;
       if (image->units == PixelsPerCentimeterResolution)
         resolution_y *= CENTIMETERS_PER_INCH;
     }
   resolution_x=DefaultResolution;
-  if (image->x_resolution != 0.0)
+  if (image->resolution.x != 0.0)
     {
-      resolution_x = image->x_resolution;
+      resolution_x = image->resolution.x;
       if (image->units == PixelsPerCentimeterResolution)
         resolution_x *= CENTIMETERS_PER_INCH;
     }
@@ -2872,12 +2852,9 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
           "leave ReadWMFImage()");
       return(GetFirstImageInList(image));
     }
-  status=SetImageExtent(image,image->columns,image->rows);
+  status=SetImageExtent(image,image->columns,image->rows,exception);
   if (status == MagickFalse)
-    {
-      InheritException(exception,&image->exception);
-      return(DestroyImageList(image));
-    }
+    return(DestroyImageList(image));
   if (image->debug != MagickFalse)
     (void) LogMagickEvent(CoderEvent,GetMagickModule(),
        "  Creating canvas image with size %lux%lu",(unsigned long) image->rows,
@@ -2888,9 +2865,9 @@ static Image *ReadWMFImage(const ImageInfo *image_info,ExceptionInfo *exception)
    */
   {
     image->background_color = image_info->background_color;
-    if (image->background_color.opacity != OpaqueOpacity)
-      image->matte = MagickTrue;
-    (void) SetImageBackgroundColor(image);
+    if (image->background_color.alpha != OpaqueAlpha)
+      image->alpha_trait=BlendPixelTrait;
+    (void) SetImageBackgroundColor(image,exception);
   }
   /*
    * Play file to generate Vector drawing commands
@@ -2966,20 +2943,16 @@ ModuleExport size_t RegisterWMFImage(void)
   MagickInfo
     *entry;
 
-  entry=SetMagickInfo("WMZ");
+  entry=AcquireMagickInfo("WMF","WMZ","Compressed Windows Meta File");
 #if defined(MAGICKCORE_SANS_DELEGATE) || defined(MAGICKCORE_WMF_DELEGATE)
   entry->decoder=ReadWMFImage;
 #endif
-  entry->description=ConstantString("Compressed Windows Meta File");
-  entry->magick_module=ConstantString("WMF");
-  entry->seekable_stream=MagickTrue;
+  entry->flags|=CoderDecoderSeekableStreamFlag;
   (void) RegisterMagickInfo(entry);
-  entry=SetMagickInfo("WMF");
+  entry=AcquireMagickInfo("WMF","WMF","Windows Meta File");
 #if defined(MAGICKCORE_SANS_DELEGATE) || defined(MAGICKCORE_WMF_DELEGATE)
   entry->decoder=ReadWMFImage;
 #endif
-  entry->description=ConstantString("Windows Meta File");
-  entry->magick_module=ConstantString("WMF");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }

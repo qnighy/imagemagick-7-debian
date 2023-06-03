@@ -1,4 +1,4 @@
-These active developers and have made source code contributions to the
+These active developers have made source code contributions to the
 ImageMagick project in the last few years:
 
 Cristy
@@ -7,7 +7,7 @@ Cristy
 
 Dirk Lemstra
      Contributor to and maintainer of Magick++, OpenCL acceleration, and
-     the Windows build (configure, ImageMagickObject, etc.).
+     the Windows build.
 
 Bastien ROUCARIÈS
      Various patches from Debian downstream.
@@ -81,7 +81,7 @@ Chantal Racette, Laurentian University
 
 William Radcliffe
      Author of the VisualMagick project configure facility for Visual C++.
-     Author of FlashPix module. Author of the EMF, XTRN, and META coders.
+     Author of FlashPix module. Author of the EMF, and META coders.
      Significant contributions to the MSL, JPEG, TIFF, SVG, and URL coders.
      Authored "process" module support. Wrote the micro-timer facility used
      by 'identify'. Ported module loader support to Windows. Significantly
@@ -119,13 +119,13 @@ Milan Votava
 
 We acknowledge these non-developer contributors to the ImageMagick project:
 
-Rod Bogart and John W. Peterson, University of Utah
-     Image compositing is loosely based on rlecomp of the Utah Raster Toolkit.
-
 Hanno Böck
      Contributed numerous fuzzed-images that revealed program flaws in
      ImageMagick.  Additional checks were added to guard against nefarious
      image files.
+
+Rod Bogart and John W. Peterson, University of Utah
+     Image compositing is loosely based on rlecomp of the Utah Raster Toolkit.
 
 Thomas R Crimmins
      Inventor of the eight hull algorithm used for speckle reduction.

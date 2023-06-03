@@ -10,14 +10,14 @@
 %                  IIIII  N   N  LLLLL  IIIII  N   N  EEEEE                   %
 %                                                                             %
 %                                                                             %
-%                        Read/Write Inline Images                             %
+%                            Read Inline Images                               %
 %                                                                             %
 %                              Software Design                                %
 %                                   Cristy                                    %
 %                                 July 1992                                   %
 %                                                                             %
 %                                                                             %
-%  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization      %
+%  Copyright @ 1999 ImageMagick Studio LLC, a non-profit organization         %
 %  dedicated to making software imaging solutions freely available.           %
 %                                                                             %
 %  You may not use this file except in compliance with the License.  You may  %
@@ -39,33 +39,33 @@
 /*
   Include declarations.
 */
-#include "magick/studio.h"
-#include "magick/blob.h"
-#include "magick/blob-private.h"
-#include "magick/client.h"
-#include "magick/display.h"
-#include "magick/exception.h"
-#include "magick/exception-private.h"
-#include "magick/image.h"
-#include "magick/image-private.h"
-#include "magick/list.h"
-#include "magick/magick.h"
-#include "magick/memory_.h"
-#include "magick/option.h"
-#include "magick/pixel-accessor.h"
-#include "magick/quantum-private.h"
-#include "magick/static.h"
-#include "magick/string_.h"
-#include "magick/module.h"
-#include "magick/utility.h"
-#include "magick/xwindow.h"
-#include "magick/xwindow-private.h"
+#include "MagickCore/studio.h"
+#include "MagickCore/blob.h"
+#include "MagickCore/blob-private.h"
+#include "MagickCore/client.h"
+#include "MagickCore/constitute.h"
+#include "MagickCore/display.h"
+#include "MagickCore/exception.h"
+#include "MagickCore/exception-private.h"
+#include "MagickCore/image.h"
+#include "MagickCore/image-private.h"
+#include "MagickCore/list.h"
+#include "MagickCore/magick.h"
+#include "MagickCore/memory_.h"
+#include "MagickCore/option.h"
+#include "MagickCore/quantum-private.h"
+#include "MagickCore/static.h"
+#include "MagickCore/string_.h"
+#include "MagickCore/module.h"
+#include "MagickCore/utility.h"
+#include "MagickCore/xwindow.h"
+#include "MagickCore/xwindow-private.h"
 
 /*
   Forward declarations.
 */
 static MagickBooleanType
-  WriteINLINEImage(const ImageInfo *,Image *);
+  WriteINLINEImage(const ImageInfo *,Image *,ExceptionInfo *);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -118,11 +118,11 @@ static Image *ReadINLINEImage(const ImageInfo *image_info,
   */
   assert(image_info != (const ImageInfo *) NULL);
   assert(image_info->signature == MagickCoreSignature);
-  if (image_info->debug != MagickFalse)
-    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
-      image_info->filename);
   assert(exception != (ExceptionInfo *) NULL);
   assert(exception->signature == MagickCoreSignature);
+  if (IsEventLogging() != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",
+      image_info->filename);
   if (LocaleNCompare(image_info->filename,"data:",5) == 0)
     {
       char
@@ -138,7 +138,7 @@ static Image *ReadINLINEImage(const ImageInfo *image_info,
       filename=DestroyString(filename);
       return(data_image);
     }
-  image=AcquireImage(image_info);
+  image=AcquireImage(image_info,exception);
   status=OpenBlob(image_info,image,ReadBinaryBlobMode,exception);
   if (status == MagickFalse)
     {
@@ -209,19 +209,15 @@ ModuleExport size_t RegisterINLINEImage(void)
   MagickInfo
     *entry;
 
-  entry=SetMagickInfo("DATA");
+  entry=AcquireMagickInfo("INLINE","DATA","Base64-encoded inline images");
   entry->decoder=(DecodeImageHandler *) ReadINLINEImage;
   entry->encoder=(EncodeImageHandler *) WriteINLINEImage;
   entry->format_type=ImplicitFormatType;
-  entry->description=ConstantString("Base64-encoded inline images");
-  entry->magick_module=ConstantString("INLINE");
   (void) RegisterMagickInfo(entry);
-  entry=SetMagickInfo("INLINE");
+  entry=AcquireMagickInfo("INLINE","INLINE","Base64-encoded inline images");
   entry->decoder=(DecodeImageHandler *) ReadINLINEImage;
   entry->encoder=(EncodeImageHandler *) WriteINLINEImage;
   entry->format_type=ImplicitFormatType;
-  entry->description=ConstantString("Base64-encoded inline images");
-  entry->magick_module=ConstantString("INLINE");
   (void) RegisterMagickInfo(entry);
   return(MagickImageCoderSignature);
 }
@@ -267,7 +263,7 @@ ModuleExport void UnregisterINLINEImage(void)
 %  The format of the WriteINLINEImage method is:
 %
 %      MagickBooleanType WriteINLINEImage(const ImageInfo *image_info,
-%        Image *image)
+%        Image *image,ExceptionInfo *exception)
 %
 %  A description of each parameter follows.
 %
@@ -275,19 +271,18 @@ ModuleExport void UnregisterINLINEImage(void)
 %
 %    o image:  The image.
 %
+%    o exception: return any errors or warnings in this structure.
+%
 */
 static MagickBooleanType WriteINLINEImage(const ImageInfo *image_info,
-  Image *image)
+  Image *image,ExceptionInfo *exception)
 {
   char
     *base64,
-    message[MaxTextExtent];
+    message[MagickPathExtent];
 
   const MagickInfo
     *magick_info;
-
-  ExceptionInfo
-    *exception;
 
   Image
     *write_image;
@@ -312,13 +307,15 @@ static MagickBooleanType WriteINLINEImage(const ImageInfo *image_info,
   assert(image_info->signature == MagickCoreSignature);
   assert(image != (Image *) NULL);
   assert(image->signature == MagickCoreSignature);
-  if (image->debug != MagickFalse)
+  if (IsEventLogging() != MagickFalse)
     (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
-  exception=(&image->exception);
+  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
+  if (status == MagickFalse)
+    return(status);
   write_info=CloneImageInfo(image_info);
   (void) SetImageInfo(write_info,1,exception);
   if (LocaleCompare(write_info->magick,"INLINE") == 0)
-    (void) CopyMagickString(write_info->magick,image->magick,MaxTextExtent);
+    (void) CopyMagickString(write_info->magick,image->magick,MagickPathExtent);
   magick_info=GetMagickInfo(write_info->magick,exception);
   if ((magick_info == (const MagickInfo *) NULL) ||
       (GetMagickMimeType(magick_info) == (const char *) NULL))
@@ -326,12 +323,14 @@ static MagickBooleanType WriteINLINEImage(const ImageInfo *image_info,
       write_info=DestroyImageInfo(write_info);
       ThrowWriterException(CorruptImageError,"ImageTypeNotSupported");
     }
-  (void) CopyMagickString(image->filename,write_info->filename,MaxTextExtent);
+  (void) CopyMagickString(image->filename,write_info->filename,
+    MagickPathExtent);
   blob_length=2048;
   write_image=CloneImage(image,0,0,MagickTrue,exception);
   if (write_image == (Image *) NULL)
     {
       write_info=DestroyImageInfo(write_info);
+      (void) CloseBlob(image);
       return(MagickTrue);
     }
   blob=(unsigned char *) ImageToBlob(write_info,write_image,&blob_length,
@@ -348,16 +347,11 @@ static MagickBooleanType WriteINLINEImage(const ImageInfo *image_info,
   /*
     Write base64-encoded image.
   */
-  status=OpenBlob(image_info,image,WriteBinaryBlobMode,exception);
-  if (status == MagickFalse)
-    {
-      base64=DestroyString(base64);
-      return(status);
-    }
-  (void) FormatLocaleString(message,MaxTextExtent,"data:%s;base64,",
+  (void) FormatLocaleString(message,MagickPathExtent,"data:%s;base64,",
     GetMagickMimeType(magick_info));
   (void) WriteBlobString(image,message);
   (void) WriteBlobString(image,base64);
   base64=DestroyString(base64);
+  (void) CloseBlob(image);
   return(MagickTrue);
 }

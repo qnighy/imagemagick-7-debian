@@ -1,4 +1,4 @@
-#  Copyright 1999-2021 ImageMagick Studio LLC, a non-profit organization
+#  Copyright © 1999 ImageMagick Studio LLC, a non-profit organization
 #  dedicated to making software imaging solutions freely available.
 #
 #  You may not use this file except in compliance with the License.  You may
@@ -17,7 +17,7 @@
 #  Top-Level Makefile for building ImageMagick.
 #
 
-topincludedir = @includedir@/magick
+topincludedir = @includedir@/MagickCore
 
 AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
 
@@ -32,11 +32,11 @@ MODULECOMMONCPPFLAGS = $(AM_CPPFLAGS)
 # compiler, headers, and libraries are used as for a normal build.
 DISTCHECK_CONFIGURE_FLAGS=$(DISTCHECK_CONFIG_FLAGS)
 
-DISTCLEANFILES = _configs.sed magick/magick-baseconfig.h
+DISTCLEANFILES = _configs.sed MagickCore/magick-baseconfig.h
 
 ## Make sure these will be cleaned even when they're not built by default.
 CLEANFILES = \
-  $(WAND_CLEANFILES) \
+  $(MAGICKWAND_CLEANFILES) \
   $(MAGICKPP_CLEANFILES) \
   $(UTILITIES_CLEANFILES) \
   $(TESTS_CLEANFILES)
@@ -46,15 +46,17 @@ bin_PROGRAMS = \
 
 # Binary scripts
 bin_SCRIPTS = \
-  $(MAGICK_BIN_SCRPTS) \
-  $(WAND_BIN_SCRPTS) \
+  $(MAGICKCORE_BIN_SCRPTS) \
+  $(MAGICKWAND_BIN_SCRPTS) \
   $(MAGICKPP_SCRPTS)
 
 include_HEADERS =
 
 # Headers which are not installed but which are distributed
 noinst_HEADERS = \
-  $(MAGICK_NOINST_HDRS)
+  $(MAGICKCORE_NOINST_HDRS) \
+  $(MAGICKWAND_NOINST_HDRS) \
+  $(CODERS_NOINST_HDRS)
 
 if WIN32_NATIVE_BUILD
 SRCDIR='$(shell @WinPathScript@ $(srcdir)/)'
@@ -84,7 +86,7 @@ TESTS_ENVIRONMENT = \
 TESTS = \
   $(TESTS_TESTS) \
   $(MAGICKPP_TESTS) \
-  $(WAND_TESTS) \
+  $(MAGICKWAND_TESTS) \
   $(UTILITIES_TESTS)
 
 # Tests which are expected to fail
@@ -94,7 +96,6 @@ XFAIL_TESTS = \
 
 TOP_EXTRA_DIST = \
   AUTHORS.txt \
-  ChangeLog \
   LICENSE \
   QuickStart.txt \
   NOTICE \
@@ -113,8 +114,8 @@ TOP_EXTRA_DIST = \
 EXTRA_DIST = \
   $(TOP_EXTRA_DIST) \
   $(CONFIG_EXTRA_DIST) \
-  $(MAGICK_EXTRA_DIST) \
-  $(WAND_EXTRA_DIST) \
+  $(MAGICKCORE_EXTRA_DIST) \
+  $(MAGICKWAND_EXTRA_DIST) \
   $(MAGICKPP_EXTRA_DIST) \
   $(UTILITIES_EXTRA_DIST) \
   $(TESTS_EXTRA_DIST)
@@ -129,15 +130,15 @@ MOSTLYCLEANFILES =
 check_PROGRAMS = \
   $(TESTS_CHECK_PGRMS) \
   $(MAGICKPP_CHECK_PGRMS) \
-  $(WAND_CHECK_PGRMS)
+  $(MAGICKWAND_CHECK_PGRMS)
 
 include m4/Makefile.am
 include config/Makefile.am
 include coders/Makefile.am
-include magick/Makefile.am
-include filters/Makefile.am
-include wand/Makefile.am
+include MagickCore/Makefile.am
+include MagickWand/Makefile.am
 include Magick++/Makefile.am
+include filters/Makefile.am
 include utilities/Makefile.am
 include tests/Makefile.am
 include PerlMagick/Makefile.am
@@ -147,8 +148,8 @@ pkgconfigdir = $(libdir)/pkgconfig
 
 # Files to install in Pkgconfig directory
 pkgconfig_DATA = \
-  $(MAGICK_PKGCONFIG) \
-  $(WAND_PKGCONFIG) \
+  $(MAGICKCORE_PKGCONFIG) \
+  $(MAGICKWAND_PKGCONFIG) \
   $(MAGICKPP_PKGCONFIG)
 
 # create a copy for pc file (ideally the non abi should be symlinked)
@@ -159,16 +160,15 @@ pkgconfig_DATA = \
 docdir = $(DOCUMENTATION_PATH)
 
 # Manual pages to install
-if INSTALL_DOC
+if INSTALL_DOC#
 man_MANS = \
-  $(MAGICK_MANS) \
-  $(WAND_MANS) \
+  $(MAGICKCORE_MANS) \
+  $(MAGICKWAND_MANS) \
   $(MAGICKPP_MANS) \
   $(UTILITIES_MANS)
 
 doc_DATA = \
   LICENSE \
-  ChangeLog \
   NEWS.txt
 endif
 
@@ -181,11 +181,12 @@ endif
 
 all-local: $(MAGICKPP_LOCAL_TARGETS) $(PERLMAGICK_ALL_LOCAL_TARGETS) $(MAINTAINER_TARGETS)
 
-install-exec-local: $(PERLMAGICK_INSTALL_EXEC_LOCAL_TARGETS)
+install-exec-local: $(PERLMAGICK_INSTALL_EXEC_LOCAL_TARGETS) \
+	$(UTILITIES_INSTALL_EXEC_LOCAL_TARGETS)
 
 install-data-local: $(PERLMAGICK_INSTALL_DATA_LOCAL_TARGETS) $(HTML_INSTALL_DATA_TARGETS)
 
-uninstall-local: $(PERLMAGICK_UNINSTALL_LOCAL_TARGETS) $(HTML_UNINSTALL_DATA_TARGETS)
+uninstall-local: $(PERLMAGICK_UNINSTALL_LOCAL_TARGETS) $(HTML_UNINSTALL_DATA_TARGETS) $(UTILITIES_UNINSTALL_LOCAL_TARGETS)
 
 clean-local: $(PERLMAGICK_CLEAN_LOCAL_TARGETS)
 
@@ -235,9 +236,7 @@ dist-hook:
 
 # Install HTML files
 pkgdocdir = $(DOCUMENTATION_PATH)
-DOCDIRSDOXYGEN = www/api/MagickCore www/api/MagickWand
-DOCDIRSMANUAL = images images/patterns www www/assets www/api www/source www/Magick++
-DOCDIRS= $(DOCDIRSMANUAL) $(DOCDIRSDOXYGEN)
+DOCDIRS = images images/patterns www www/assets www/api www/source www/Magick++
 
 if INSTALL_DOC
 HTML_INSTALL_DATA_TARGETS = install-data-html
@@ -246,19 +245,17 @@ endif
 install-data-html:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdocdir)
 	$(INSTALL_DATA) $(srcdir)/index.html $(DESTDIR)$(pkgdocdir)
-	for dir in $(DOCDIRS) ; do \
+	@for dir in $(DOCDIRS) ; do \
 	  $(mkinstalldirs) $(DESTDIR)$(pkgdocdir)/$$dir && \
 	  if test -d $(builddir)/$$dir ; then \
-  		docsrcdir=$(builddir)/$$dir; \
+	    docsrcdir=$(builddir)/$$dir; \
 	  else \
-  		docsrcdir=$(srcdir)/$$dir; \
+	    docsrcdir=$(srcdir)/$$dir; \
 	  fi; \
-	  if test -d $$docsrcdir; then \
-	    for file in $$docsrcdir/*.* ; do \
-		echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdocdir)/$$dir" ; \
-		$(INSTALL_DATA) "$$file" $(DESTDIR)$(pkgdocdir)/$$dir ; \
-	    done ; \
-	  fi; \
+	  for file in $$docsrcdir/*.* ; do \
+	    echo "$(INSTALL_DATA) $$file $(DESTDIR)$(pkgdocdir)/$$dir" ; \
+	    $(INSTALL_DATA) "$$file" $(DESTDIR)$(pkgdocdir)/$$dir ; \
+	  done ; \
 	done
 
 # Uninstall HTML files
@@ -269,21 +266,21 @@ uninstall-data-html:
 	  rm -f -r $(DESTDIR)$(pkgdocdir)/$$dir ; \
 	done
 
-# Ensure that version.h at $(srcdir)/magick/version.h is kept up to date.
-magick-version: magick/version.h
+# Ensure that version.h at $(srcdir)/MagickCore/version.h is kept up to date.
+magick-version: MagickCore/version.h
 	@if test -f "$(srcdir)/VisualMagick/installer/inc/version.isx.in" ; then \
 	  ./config.status --file="$(srcdir)/../VisualMagick/installer/inc/version.isx" 2> /dev/null ; \
 	fi
 	@if test -n "$(VPATH)" ; then \
-	  cmp magick/version.h $(srcdir)/magick/version.h > /dev/null ; \
-          if test $$? -eq 1 ; then \
-	    echo "Updating $(srcdir)/magick/version.h ..."; \
-	    cp magick/version.h $(srcdir)/magick/version.h ; \
+	  cmp MagickCore/version.h $(srcdir)/MagickCore/version.h > /dev/null ; \
+	        if test $$? -eq 1 ; then \
+	    echo "Updating $(srcdir)/MagickCore/version.h ..."; \
+	    cp MagickCore/version.h $(srcdir)/MagickCore/version.h ; \
 	  fi ; \
 	fi ; \
 	touch magick-version
 
-magick/version.h:	$(top_srcdir)/ChangeLog $(top_srcdir)/m4/version.m4
+MagickCore/version.h:	$(top_srcdir)/m4/version.m4
 
 # Automagically reconfigure libtool
 LIBTOOL_DEPS = @LIBTOOL_DEPS@
@@ -329,7 +326,7 @@ $(DIST_WINDOWS_SRC_ZIP) $(DIST_WINDOWS_SRC_7ZIP) windows-dist:
 	  chmod -R u+w $(PACKAGE_NAME)-$(PACKAGE_VERSION) ; \
 	  rm -rf $(PACKAGE_NAME)-$(PACKAGE_VERSION) ; \
 	fi
-	git clone -b main https://github.com/ImageMagick/ImageMagick6.git $(PACKAGE_NAME)-$(PACKAGE_VERSION)
+	git clone -b main https://github.com/ImageMagick/ImageMagick.git $(PACKAGE_NAME)-$(PACKAGE_VERSION)
 if ZIP_DELEGATE
 	rm -f $(DIST_WINDOWS_SRC_ZIP)
 	$(ZIP) -r -9 -q  $(DIST_WINDOWS_SRC_ZIP) $(PACKAGE_NAME)-$(PACKAGE_VERSION)
