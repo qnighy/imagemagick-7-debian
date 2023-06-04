@@ -40,6 +40,7 @@ Build-Depends: debhelper (>= 11),
 Build-Depends-Indep: doxygen, doxygen-latex, graphviz,
 		     libxml2-utils,
 		     xsltproc,
+		     tidy,
 		     jdupes
 Vcs-Browser: https://salsa.debian.org/debian/imagemagick
 Vcs-Git: https://salsa.debian.org/debian/imagemagick.git

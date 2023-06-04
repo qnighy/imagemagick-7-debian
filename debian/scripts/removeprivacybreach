@@ -14,5 +14,12 @@ temporary_dir=$(mktemp -d "$TMPDIR/xslt-XXXXXXXXXXXXXXXXXXXXXXXXXXXXX") || { ech
 umask "$save_mask"
 temporary_file=$temporary_dir/htmlprivacy
 
-xsltproc --novalid --nonet --stringparam filename "$2" "$1" "$2" > $temporary_file
+tidy() {
+  # Ignore exit code if tidy returns 1 (i.e. warnings only)
+  command tidy --show-info no "$@" || [ $? -eq 1 ]
+}
+
+tidy -asxml "$2" \
+  | xsltproc --novalid --nonet --stringparam filename "$2" "$1" - \
+  | tidy -ashtml > $temporary_file
 mv $temporary_file "$2"
