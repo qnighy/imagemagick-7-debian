@@ -625,7 +625,7 @@ override_dh_auto_install-indep:
 			--destdir="$(CURDIR)/debian/tmp-indep" \
 			--  install-configlibDATA install-configshareDATA \
 			    install-data-html \
-			    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
+			    install-MagickCoreincHEADERS install-MagickCoreincarchHEADERS install-MagickWandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
 			    V=1;\
 	else \
@@ -633,7 +633,7 @@ override_dh_auto_install-indep:
 		make  DESTDIR=$(CURDIR)/debian/tmp-indep \
 			    install-configlibDATA install-configshareDATA \
 			    install-data-html \
-			    install-magickincHEADERS  install-wandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
+			    install-MagickCoreincHEADERS install-MagickCoreincarchHEADERS install-MagickWandincHEADERS install-magickppincHEADERS install-magickpptopincHEADERS \
 			    install-man1 \
 			    V=1 ;\
 	fi;
