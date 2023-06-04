@@ -1,4 +1,4 @@
-libMagick++-6.Q16.so.8 libmagick++-7.q16-8 #MINVER#
+libMagick++-7.Q16.so.8 libmagick++-7.q16-8 #MINVER#
  (c++)"Magick::adaptiveBlurImage::adaptiveBlurImage(double, double)@Base" 8:6.9.9.6
  (c++)"Magick::adaptiveBlurImage::operator()(Magick::Image&) const@Base" 8:6.9.9.6
  (c++|subst)"Magick::adaptiveThresholdImage::adaptiveThresholdImage({c++:size_t}, {c++:size_t}, {c++:ssize_t})@Base" 8:6.9.9.6
