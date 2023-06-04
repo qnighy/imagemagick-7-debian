@@ -1,4 +1,4 @@
-From 733e500473e7dc25f3a222e5e41e673bace56752 Mon Sep 17 00:00:00 2001
+From bf3278bb9cb5b2686b0793b116db872c273a928c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Sun, 26 Jul 2020 22:26:36 +0200
 Subject: Fix a few html error

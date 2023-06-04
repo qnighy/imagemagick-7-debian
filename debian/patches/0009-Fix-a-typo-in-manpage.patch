@@ -1,4 +1,4 @@
-From 790b77fb7c23347838e095d2d21ea961ab678b06 Mon Sep 17 00:00:00 2001
+From 26ee177ec194012470c46bd26faeb8255a041d4a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bastien=20Roucari=C3=A8s?= <rouca@debian.org>
 Date: Mon, 27 Jul 2020 10:44:26 +0200
 Subject: Fix a typo in manpage
