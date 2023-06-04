@@ -1,0 +1,36 @@
+From 38bde392af4190ec1cfc3ac174ff66bdc960423c Mon Sep 17 00:00:00 2001
+From: Masaki Hara <ackie.h.gmai@gmail.com>
+Date: Sun, 4 Jun 2023 20:46:43 +0900
+Subject: Fix regression in document installation
+
+---
+ Makefile.am | 2 +-
+ Makefile.in | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 9e44fadbaa..c8a4417dff 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -290,7 +290,7 @@ libtool: $(LIBTOOL_DEPS)
+ # Format C API documentation
+ html-local:
+ # copy static file
+-	for dir in $(DOCDIRSMANUAL) ; do \
++	for dir in $(DOCDIRS) ; do \
+ 		$(mkinstalldirs) $(top_builddir)/$$dir ;\
+ 		for file in $$dir/*.* ; do \
+ 			if ! test -f $(top_builddir)/$$file; then \
+diff --git a/Makefile.in b/Makefile.in
+index 76052aba58..90f5c0f050 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -14074,7 +14074,7 @@ libtool: $(LIBTOOL_DEPS)
+ # Format C API documentation
+ html-local:
+ # copy static file
+-	for dir in $(DOCDIRSMANUAL) ; do \
++	for dir in $(DOCDIRS) ; do \
+ 		$(mkinstalldirs) $(top_builddir)/$$dir ;\
+ 		for file in $$dir/*.* ; do \
+ 			if ! test -f $(top_builddir)/$$file; then \
