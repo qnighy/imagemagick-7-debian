@@ -8,3 +8,4 @@
 0008-Fix-a-few-html-error.patch
 0009-Fix-a-typo-in-manpage.patch
 0010-Fix-regression-in-document-installation.patch
+0011-Ensure-doxygen-artifact-is-installed.patch

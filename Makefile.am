@@ -236,6 +236,7 @@ dist-hook:
 
 # Install HTML files
 pkgdocdir = $(DOCUMENTATION_PATH)
+DOCDIRSDOXYGEN = www/api/MagickCore www/api/MagickWand www/api/Magick++
 DOCDIRS = images images/patterns www www/assets www/api www/source www/Magick++
 
 if INSTALL_DOC
@@ -245,7 +246,7 @@ endif
 install-data-html:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdocdir)
 	$(INSTALL_DATA) $(srcdir)/index.html $(DESTDIR)$(pkgdocdir)
-	@for dir in $(DOCDIRS) ; do \
+	@for dir in $(DOCDIRS) $(DOCDIRSDOXYGEN) ; do \
 	  $(mkinstalldirs) $(DESTDIR)$(pkgdocdir)/$$dir && \
 	  if test -d $(builddir)/$$dir ; then \
 	    docsrcdir=$(builddir)/$$dir; \
@@ -262,7 +263,7 @@ install-data-html:
 HTML_UNINSTALL_DATA_TARGETS = uninstall-data-html
 uninstall-data-html:
 	rm -f $(DESTDIR)$(pkgdocdir)/index.html
-	for dir in $(DOCDIRS) ; do \
+	for dir in $(DOCDIRS) $(DOCDIRSDOXYGEN) ; do \
 	  rm -f -r $(DESTDIR)$(pkgdocdir)/$$dir ; \
 	done
 

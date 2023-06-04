@@ -1,0 +1,70 @@
+From f4dca9344f0af2e91957c5e9dda07098cee7bf95 Mon Sep 17 00:00:00 2001
+From: Masaki Hara <ackie.h.gmai@gmail.com>
+Date: Sun, 4 Jun 2023 23:32:10 +0900
+Subject: Ensure doxygen artifact is installed
+
+---
+ Makefile.am | 5 +++--
+ Makefile.in | 5 +++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index c8a4417dff..461317f8dd 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -236,6 +236,7 @@ dist-hook:
+ 
+ # Install HTML files
+ pkgdocdir = $(DOCUMENTATION_PATH)
++DOCDIRSDOXYGEN = www/api/MagickCore www/api/MagickWand www/api/Magick++
+ DOCDIRS = images images/patterns www www/assets www/api www/source www/Magick++
+ 
+ if INSTALL_DOC
+@@ -245,7 +246,7 @@ endif
+ install-data-html:
+ 	$(mkinstalldirs) $(DESTDIR)$(pkgdocdir)
+ 	$(INSTALL_DATA) $(srcdir)/index.html $(DESTDIR)$(pkgdocdir)
+-	@for dir in $(DOCDIRS) ; do \
++	@for dir in $(DOCDIRS) $(DOCDIRSDOXYGEN) ; do \
+ 	  $(mkinstalldirs) $(DESTDIR)$(pkgdocdir)/$$dir && \
+ 	  if test -d $(builddir)/$$dir ; then \
+ 	    docsrcdir=$(builddir)/$$dir; \
+@@ -262,7 +263,7 @@ install-data-html:
+ HTML_UNINSTALL_DATA_TARGETS = uninstall-data-html
+ uninstall-data-html:
+ 	rm -f $(DESTDIR)$(pkgdocdir)/index.html
+-	for dir in $(DOCDIRS) ; do \
++	for dir in $(DOCDIRS) $(DOCDIRSDOXYGEN) ; do \
+ 	  rm -f -r $(DESTDIR)$(pkgdocdir)/$$dir ; \
+ 	done
+ 
+diff --git a/Makefile.in b/Makefile.in
+index 90f5c0f050..44efa99d5e 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -6204,6 +6204,7 @@ DISTDIRS = images scripts www PerlMagick
+ 
+ # Install HTML files
+ pkgdocdir = $(DOCUMENTATION_PATH)
++DOCDIRSDOXYGEN = www/api/MagickCore www/api/MagickWand www/api/Magick++
+ DOCDIRS = images images/patterns www www/assets www/api www/source www/Magick++
+ @INSTALL_DOC_TRUE@HTML_INSTALL_DATA_TARGETS = install-data-html
+ 
+@@ -14035,7 +14036,7 @@ dist-hook:
+ install-data-html:
+ 	$(mkinstalldirs) $(DESTDIR)$(pkgdocdir)
+ 	$(INSTALL_DATA) $(srcdir)/index.html $(DESTDIR)$(pkgdocdir)
+-	@for dir in $(DOCDIRS) ; do \
++	@for dir in $(DOCDIRS) $(DOCDIRSDOXYGEN) ; do \
+ 	  $(mkinstalldirs) $(DESTDIR)$(pkgdocdir)/$$dir && \
+ 	  if test -d $(builddir)/$$dir ; then \
+ 	    docsrcdir=$(builddir)/$$dir; \
+@@ -14049,7 +14050,7 @@ install-data-html:
+ 	done
+ uninstall-data-html:
+ 	rm -f $(DESTDIR)$(pkgdocdir)/index.html
+-	for dir in $(DOCDIRS) ; do \
++	for dir in $(DOCDIRS) $(DOCDIRSDOXYGEN) ; do \
+ 	  rm -f -r $(DESTDIR)$(pkgdocdir)/$$dir ; \
+ 	done
+ 
