@@ -518,7 +518,7 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 	# move config script to arch directory
 	# TODO: remove after jessie +1
 	mkdir -p "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$*/"; \
-	set -e; for SCRIPT in Magick-config MagickCore-config MagickWand-config Wand-config Magick++-config; do \
+	set -e; for SCRIPT in MagickCore-config MagickWand-config Magick++-config; do \
 		cp -f "debian/tmp-$*/usr/bin/$$SCRIPT" \
 		      "debian/tmp-$*/usr/lib/$(DEB_HOST_MULTIARCH)/ImageMagick-$(DEB_UPSTREAM_VERSION_DROPREVISION)/bin-$*/"; \
 	done;
