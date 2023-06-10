@@ -1,42 +1,42 @@
-image/avs; display-im${IMVERSION}.${QUANTUMDEPTH}. 'avs:%s'; test=test -n "$DISPLAY"; priority=2
-image/bie; display-im${IMVERSION}.${QUANTUMDEPTH} 'jbig:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-ms-bmp; display-im${IMVERSION}.${QUANTUMDEPTH} 'bmp:%s'; test=test -n "$DISPLAY"; priority=2
-image/cmyk; display-im${IMVERSION}.${QUANTUMDEPTH} 'cmyk:%s'; test=test -n "$DISPLAY"; priority=2
-image/dcx; display-im${IMVERSION}.${QUANTUMDEPTH} 'dcx:%s'; test=test -n "$DISPLAY"; priority=2
-image/eps; display-im${IMVERSION}.${QUANTUMDEPTH} 'eps:%s'; test=test -n "$DISPLAY"; priority=2
-image/fax; display-im${IMVERSION}.${QUANTUMDEPTH} 'fax:%s'; test=test -n "$DISPLAY"; priority=2
-image/fits; display-im${IMVERSION}.${QUANTUMDEPTH} 'fits:%s'; test=test -n "$DISPLAY"; priority=2
-image/gif; display-im${IMVERSION}.${QUANTUMDEPTH} 'gif:%s'; test=test -n "$DISPLAY"; priority=2
-image/gray; display-im${IMVERSION}.${QUANTUMDEPTH} 'gray:%s'; test=test -n "$DISPLAY"; priority=2
-image/jpeg; display-im${IMVERSION}.${QUANTUMDEPTH} 'jpeg:%s'; test=test -n "$DISPLAY"; priority=2
-image/pjpeg; display-im${IMVERSION}.${QUANTUMDEPTH} 'jpeg:%s'; test=test -n "$DISPLAY"; priority=2
-image/miff; display-im${IMVERSION}.${QUANTUMDEPTH} 'miff:%s'; test=test -n "$DISPLAY"; priority=2
-image/mono; display-im${IMVERSION}.${QUANTUMDEPTH} 'mono:%s'; test=test -n "$DISPLAY"; priority=2
-image/mtv; display-im${IMVERSION}.${QUANTUMDEPTH} 'mtv:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-portable-bitmap; display-im${IMVERSION}.${QUANTUMDEPTH} 'pbm:%s'; test=test -n "$DISPLAY"; priority=2
-image/pcd; display-im${IMVERSION}.${QUANTUMDEPTH} 'pcd:%s'; test=test -n "$DISPLAY"; priority=2
-image/pcx; display-im${IMVERSION}.${QUANTUMDEPTH} 'pcx:%s'; test=test -n "$DISPLAY"; priority=2
-image/pdf; display-im${IMVERSION}.${QUANTUMDEPTH} 'pdf:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-portable-graymap; display-im${IMVERSION}.${QUANTUMDEPTH} 'pgm:%s'; test=test -n "$DISPLAY"; priority=2
-image/pict; display-im${IMVERSION}.${QUANTUMDEPTH} 'pict:%s'; test=test -n "$DISPLAY"; priority=2
-image/png; display-im${IMVERSION}.${QUANTUMDEPTH} 'png:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-portable-anymap; display-im${IMVERSION}.${QUANTUMDEPTH} 'pnm:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-portable-pixmap; display-im${IMVERSION}.${QUANTUMDEPTH} 'ppm:%s'; test=test -n "$DISPLAY"; priority=2
-image/ps; display-im${IMVERSION}.${QUANTUMDEPTH} 'ps:%s'; test=test -n "$DISPLAY"; priority=2
-image/rad; display-im${IMVERSION}.${QUANTUMDEPTH} 'rad:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-rgb; display-im${IMVERSION}.${QUANTUMDEPTH} 'rgb:%s'; test=test -n "$DISPLAY"; priority=2
-image/rgba; display-im${IMVERSION}.${QUANTUMDEPTH} 'rgba:%s'; test=test -n "$DISPLAY"; priority=2
-image/rla; display-im${IMVERSION}.${QUANTUMDEPTH} 'rla:%s'; test=test -n "$DISPLAY"; priority=2
-image/rle; display-im${IMVERSION}.${QUANTUMDEPTH} 'rle:%s'; test=test -n "$DISPLAY"; priority=2
-image/sgi; display-im${IMVERSION}.${QUANTUMDEPTH} 'sgi:%s'; test=test -n "$DISPLAY"; priority=2
-image/sun-raster; display-im${IMVERSION}.${QUANTUMDEPTH} 'sun:%s'; test=test -n "$DISPLAY"; priority=2
-image/targa; display-im${IMVERSION}.${QUANTUMDEPTH} 'tga:%s'; test=test -n "$DISPLAY"; priority=2
-image/tiff; display-im${IMVERSION}.${QUANTUMDEPTH} 'tiff:%s'; test=test -n "$DISPLAY"; priority=2
-image/uyvy; display-im${IMVERSION}.${QUANTUMDEPTH} 'uyvy:%s'; test=test -n "$DISPLAY"; priority=2
-image/vid; display-im${IMVERSION}.${QUANTUMDEPTH} 'vid:%s'; test=test -n "$DISPLAY"; priority=2
-image/viff; display-im${IMVERSION}.${QUANTUMDEPTH} 'viff:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-xbitmap; display-im${IMVERSION}.${QUANTUMDEPTH} 'xbm:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-xpixmap; display-im${IMVERSION}.${QUANTUMDEPTH} 'xpm:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-xwindowdump; display-im${IMVERSION}.${QUANTUMDEPTH} 'xwd:%s'; test=test -n "$DISPLAY"; priority=2
-image/x-icon; display-im${IMVERSION}.${QUANTUMDEPTH} 'icon:%s'; test=test -n "$DISPLAY"; priority=2
-image/yuv; display-im${IMVERSION}.${QUANTUMDEPTH} 'yuv:%s'; test=test -n "$DISPLAY"; priority=2
+image/avs; magick-im${IMVERSION}.${QUANTUMDEPTH}. display 'avs:%s'; test=test -n "$DISPLAY"; priority=2
+image/bie; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'jbig:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-ms-bmp; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'bmp:%s'; test=test -n "$DISPLAY"; priority=2
+image/cmyk; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'cmyk:%s'; test=test -n "$DISPLAY"; priority=2
+image/dcx; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'dcx:%s'; test=test -n "$DISPLAY"; priority=2
+image/eps; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'eps:%s'; test=test -n "$DISPLAY"; priority=2
+image/fax; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'fax:%s'; test=test -n "$DISPLAY"; priority=2
+image/fits; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'fits:%s'; test=test -n "$DISPLAY"; priority=2
+image/gif; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'gif:%s'; test=test -n "$DISPLAY"; priority=2
+image/gray; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'gray:%s'; test=test -n "$DISPLAY"; priority=2
+image/jpeg; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'jpeg:%s'; test=test -n "$DISPLAY"; priority=2
+image/pjpeg; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'jpeg:%s'; test=test -n "$DISPLAY"; priority=2
+image/miff; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'miff:%s'; test=test -n "$DISPLAY"; priority=2
+image/mono; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'mono:%s'; test=test -n "$DISPLAY"; priority=2
+image/mtv; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'mtv:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-portable-bitmap; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'pbm:%s'; test=test -n "$DISPLAY"; priority=2
+image/pcd; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'pcd:%s'; test=test -n "$DISPLAY"; priority=2
+image/pcx; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'pcx:%s'; test=test -n "$DISPLAY"; priority=2
+image/pdf; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'pdf:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-portable-graymap; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'pgm:%s'; test=test -n "$DISPLAY"; priority=2
+image/pict; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'pict:%s'; test=test -n "$DISPLAY"; priority=2
+image/png; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'png:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-portable-anymap; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'pnm:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-portable-pixmap; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'ppm:%s'; test=test -n "$DISPLAY"; priority=2
+image/ps; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'ps:%s'; test=test -n "$DISPLAY"; priority=2
+image/rad; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'rad:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-rgb; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'rgb:%s'; test=test -n "$DISPLAY"; priority=2
+image/rgba; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'rgba:%s'; test=test -n "$DISPLAY"; priority=2
+image/rla; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'rla:%s'; test=test -n "$DISPLAY"; priority=2
+image/rle; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'rle:%s'; test=test -n "$DISPLAY"; priority=2
+image/sgi; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'sgi:%s'; test=test -n "$DISPLAY"; priority=2
+image/sun-raster; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'sun:%s'; test=test -n "$DISPLAY"; priority=2
+image/targa; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'tga:%s'; test=test -n "$DISPLAY"; priority=2
+image/tiff; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'tiff:%s'; test=test -n "$DISPLAY"; priority=2
+image/uyvy; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'uyvy:%s'; test=test -n "$DISPLAY"; priority=2
+image/vid; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'vid:%s'; test=test -n "$DISPLAY"; priority=2
+image/viff; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'viff:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-xbitmap; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'xbm:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-xpixmap; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'xpm:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-xwindowdump; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'xwd:%s'; test=test -n "$DISPLAY"; priority=2
+image/x-icon; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'icon:%s'; test=test -n "$DISPLAY"; priority=2
+image/yuv; magick-im${IMVERSION}.${QUANTUMDEPTH} display 'yuv:%s'; test=test -n "$DISPLAY"; priority=2

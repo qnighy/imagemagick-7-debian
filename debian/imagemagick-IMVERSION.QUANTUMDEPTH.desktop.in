@@ -4,7 +4,7 @@ Name=ImageMagick (color depth=${QUANTUMDEPTH})
 Comment=Display and edit image files
 Comment[fr]=Affiche et édite des fichiers images
 Comment[pt]=Exiba e edite arquivos de imagem
-Exec=/usr/bin/display-im${IMVERSION}.${QUANTUMDEPTH} -nostdin %F
+Exec=/usr/bin/magick-im${IMVERSION}.${QUANTUMDEPTH} display -nostdin %F
 Terminal=false
 Icon=display-im${IMVERSION}.${QUANTUMDEPTH}
 Type=Application

@@ -2,7 +2,7 @@ Debugging imagemagick can be difficult, so you can help by following
 these guidelines.
 
 First you should verify that the problem is in imagemagick and not the
-graphicksmagick compatibility package. Run "convert -version" in a
+graphicksmagick compatibility package. Run "magick -version" in a
 terminal; if you see "GraphicsMagick" in the first line of output, please
 make your report against the graphicsmagick package.
 
@@ -10,9 +10,8 @@ Otherwise, please provide a test-case that can reproduce the bug:
 
  1. Install debugging packages.
  2. Repeat the command line that led to the bug. To ensure you are using
-    the imagemagick versions, replace convert, display, identify, or
-    mogrify with convert-im7.q16, display-im7.q16, identify-im7.q16,
-    or mogrify-im7.q16 in your test-case.
+    the imagemagick versions, replace magick with magick-im7.q16 in your
+    test-case.
 
  3. If imagemagick dumps core, please attach a backtrace - see
      "http://wiki.debian.org/HowToGetABacktrace".

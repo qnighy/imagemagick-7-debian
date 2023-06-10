@@ -20,14 +20,4 @@ versioncheck() {
 exec >&3
 
 pecho "ImageMagick program version"
-versioncheck animate
-versioncheck compare
-versioncheck convert
-versioncheck composite
-versioncheck conjure
-versioncheck display
-versioncheck identify
-versioncheck import
-versioncheck mogrify
-versioncheck montage
-versioncheck stream
+versioncheck magick

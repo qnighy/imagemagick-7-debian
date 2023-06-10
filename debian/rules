@@ -101,7 +101,7 @@ CONFIGURE_OPTIONS ?= $(STATIC_CONFIGURE_OPTIONS) \
 			    RMDelegate=/bin/rm
 
 # export for alternatives
-export MAGICK_PROGRAMS := compare animate convert composite conjure import identify stream display montage mogrify
+export MAGICK_LEGACY_PROGRAMS := compare animate convert composite conjure import identify stream display montage mogrify
 
 MAGICK_ANY_QUANTUM_PACKAGES :=  imagemagick-$(IMVERSION).$$QUANTUM \
 				libmagickcore-${IMVERSION}.$$QUANTUM-${CORESOVERSION} \
@@ -300,6 +300,25 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	HDRI=$(call HDRI_PART,$*) \
 	QUANTUMDEPTH=$* \
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.prerm.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.prerm
+
+	# imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH.manpages.in > $(CURDIR)/debian/imagemagick-$(IMVERSION)-legacy-support.$*.manpages
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH.install.in > $(CURDIR)/debian/imagemagick-$(IMVERSION)-legacy-support.$*.install
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	QUANTUM_PRIO=$(call PRIO_COMPUTATION,$*) \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH.postinst.in > $(CURDIR)/debian/imagemagick-$(IMVERSION)-legacy-support.$*.postinst
+	QUANTUM=$(call QUANTUM_PART,$*) \
+	HDRI=$(call HDRI_PART,$*) \
+	QUANTUMDEPTH=$* \
+	$(DH_EXEC_SUBST) $(CURDIR)/debian/imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH.prerm.in > $(CURDIR)/debian/imagemagick-$(IMVERSION)-legacy-support.$*.prerm
 
 	# libimage-magick-QUANTUM-perl
 	QUANTUM=$(call QUANTUM_PART,$*) \
@@ -505,9 +524,13 @@ override_dh_auto_install-arch_quantum.%: override_dh_auto_install-arch_iconcache
 		chrpath -d {} \;
 
 	# move binaries to /usr/bin/*quantum
-	set -e; for basename in $(MAGICK_PROGRAMS); do \
-		mv "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename" \
-		   "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename-im$(IMVERSION).$*"; \
+	mv "$(CURDIR)/debian/tmp-$*/usr/bin/magick" \
+	   "$(CURDIR)/debian/tmp-$*/usr/bin/magick-im$(IMVERSION).$*"
+	set -e; for basename in magick-script $(MAGICK_LEGACY_PROGRAMS); do \
+		rm -f "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename"; \
+		ln -s magick "$(CURDIR)/debian/tmp-$*/usr/bin/$$basename-im$(IMVERSION).$*"; \
+	done
+	set -e; for basename in magick magick-script $(MAGICK_LEGACY_PROGRAMS); do \
 		mv "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename.1" \
 		   "$(CURDIR)/debian/tmp-$*/usr/share/man/man1/$$basename-im$(IMVERSION).$*.1" ;\
 	done
@@ -720,6 +743,11 @@ endif
 override_dh_install-indep:
 	# special source imagemagick-*-common
 	dh_install --package=imagemagick-$(IMVERSION)-common
+	# special source imagemagick-*-legacy-support.q*
+	for Q in $(QUANTUMDEPTH); do \
+		dh_install --package=imagemagick-$(IMVERSION)-legacy-support.$$Q \
+			   --sourcedir=debian/tmp-$$Q; \
+	done
 	# remaining package
 	dh_install --indep --remaining-packages --sourcedir=debian/tmp-indep --autodest
 	# fix doxygen problem
