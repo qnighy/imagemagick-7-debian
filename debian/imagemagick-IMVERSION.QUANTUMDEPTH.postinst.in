@@ -18,7 +18,7 @@ then
 	fi
     done
 
-    for prog in magick magick-script; do
+    for prog in magick magick-script ${MAGICK_LEGACY_PROGRAMS}; do
 	update-alternatives --install /usr/bin/$prog \
 	                    $prog /usr/bin/$prog-im${IMVERSION}.${QUANTUMDEPTH} ${QUANTUM_PRIO} \
 	                    --slave /usr/share/man/man1/$prog.1.gz \

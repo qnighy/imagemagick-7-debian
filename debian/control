@@ -203,8 +203,9 @@ Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  libwmf-bin, mplayer,
  povray, radiance, sane-utils, texlive-base-bin, transfig,
  ufraw-batch, xdg-utils
+Replaces: imagemagick (<< 8:6.9.2.10+dfsg-2~)
 Breaks: libmagickcore-dev (<< 8:6.9.2.10+dfsg-2~)
-Provides: imagemagick-7.defaultquantum
+Provides: imagemagick, imagemagick-7.defaultquantum
 Description: image manipulation programs -- quantum depth Q16
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)
@@ -220,17 +221,6 @@ Description: image manipulation programs -- quantum depth Q16
  .
  This version of imagemagick is compiled for a channel
  depth of 16 bits (Q16).
-
-Package: imagemagick-7-legacy-support.q16
-Architecture: all
-Multi-Arch: foreign
-Depends: ${misc:Depends}, imagemagick-7.q16
-Replaces: imagemagick (<< 8:6.9.2.10+dfsg-2~)
-Provides: imagemagick, imagemagick-7-legacy-support, imagemagick-7-legacy-support.defaultquantum
-Description: image manipulation programs -- legacy command line tools (quantum depth Q16)
- imagemagick-7-legacy-support.q16 contains legacy aliases to the legacy
- command line tools, namely animate, compare, composite, conjure, convert,
- display, identify, import, mogrify, montage, and stream.
 
 # predepend on dpkg (>= 1.17.6) for libgomp symbols remove after jeesie +2
 # normally depends on imagemagick-7-common >= ${source:version} except
@@ -446,17 +436,6 @@ Description: image manipulation programs -- quantum depth Q16HDRI
  .
  This version of imagemagick is compiled for a channel
  depth of 16 bits with high dynamic range (Q16HDRI).
-
-Package: imagemagick-7-legacy-support.q16hdri
-Architecture: all
-Multi-Arch: foreign
-Depends: ${misc:Depends}, imagemagick-7.q16hdri
-Replaces: imagemagick (<< 8:6.9.2.10+dfsg-2~)
-Provides: imagemagick, imagemagick-7-legacy-support, imagemagick-7-legacy-support.defaultquantum
-Description: image manipulation programs -- legacy command line tools (quantum depth Q16HDRI)
- imagemagick-7-legacy-support.q16 contains legacy aliases to the legacy
- command line tools, namely animate, compare, composite, conjure, convert,
- display, identify, import, mogrify, montage, and stream.
 
 # predepend on dpkg (>= 1.17.6) for libgomp symbols remove after jeesie +2
 # normally depends on imagemagick-7-common >= ${source:version} except
@@ -754,7 +733,7 @@ Architecture: any
 Multi-Arch: foreign
 Section: oldlibs
 Depends: ${misc:Depends},
- imagemagick-7-legacy-support.q16 (>= 8:6.9.2.10+dfsg-2~)
+ imagemagick-7.q16 (>= 8:6.9.2.10+dfsg-2~)
 Description: image manipulation programs -- binaries
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)

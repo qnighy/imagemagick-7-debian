@@ -301,25 +301,6 @@ override_dh_auto_configure-arch_generatefile_quantum.%:
 	QUANTUMDEPTH=$* \
 	$(DH_EXEC_SUBST) $(CURDIR)/debian/imagemagick-IMVERSION.QUANTUMDEPTH.prerm.in > $(CURDIR)/debian/imagemagick-$(IMVERSION).$*.prerm
 
-	# imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH
-	QUANTUM=$(call QUANTUM_PART,$*) \
-	HDRI=$(call HDRI_PART,$*) \
-	QUANTUMDEPTH=$* \
-	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH.manpages.in > $(CURDIR)/debian/imagemagick-$(IMVERSION)-legacy-support.$*.manpages
-	QUANTUM=$(call QUANTUM_PART,$*) \
-	HDRI=$(call HDRI_PART,$*) \
-	QUANTUMDEPTH=$* \
-	dh-exec $(CURDIR)/debian/imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH.install.in > $(CURDIR)/debian/imagemagick-$(IMVERSION)-legacy-support.$*.install
-	QUANTUM=$(call QUANTUM_PART,$*) \
-	HDRI=$(call HDRI_PART,$*) \
-	QUANTUMDEPTH=$* \
-	QUANTUM_PRIO=$(call PRIO_COMPUTATION,$*) \
-	$(DH_EXEC_SUBST) $(CURDIR)/debian/imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH.postinst.in > $(CURDIR)/debian/imagemagick-$(IMVERSION)-legacy-support.$*.postinst
-	QUANTUM=$(call QUANTUM_PART,$*) \
-	HDRI=$(call HDRI_PART,$*) \
-	QUANTUMDEPTH=$* \
-	$(DH_EXEC_SUBST) $(CURDIR)/debian/imagemagick-IMVERSION-legacy-support.QUANTUMDEPTH.prerm.in > $(CURDIR)/debian/imagemagick-$(IMVERSION)-legacy-support.$*.prerm
-
 	# libimage-magick-QUANTUM-perl
 	QUANTUM=$(call QUANTUM_PART,$*) \
 	HDRI=$(call HDRI_PART,$*) \
@@ -743,11 +724,6 @@ endif
 override_dh_install-indep:
 	# special source imagemagick-*-common
 	dh_install --package=imagemagick-$(IMVERSION)-common
-	# special source imagemagick-*-legacy-support.q*
-	for Q in $(QUANTUMDEPTH); do \
-		dh_install --package=imagemagick-$(IMVERSION)-legacy-support.$$Q \
-			   --sourcedir=debian/tmp-$$Q; \
-	done
 	# remaining package
 	dh_install --indep --remaining-packages --sourcedir=debian/tmp-indep --autodest
 	# fix doxygen problem
