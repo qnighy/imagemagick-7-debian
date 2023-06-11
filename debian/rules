@@ -7,7 +7,7 @@ export DH_VERBOSE=1
 
 
 # quantum depth is channel depth
-export QUANTUMDEPTH ?= q16 q16hdri
+export QUANTUMDEPTH ?= q16hdri q16
 # lib version, run make -f debian/rules update_pkg in order to upgrade
 export CORESOVERSION ?= 6
 export WANDSOVERSION ?= 6

@@ -155,7 +155,7 @@ Multi-Arch: allowed
 Section: perl
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends},
-	 libimage-magick-q16-perl
+	 libimage-magick-q16hdri-perl
 Provides: perlmagick
 # remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
@@ -205,7 +205,6 @@ Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  ufraw-batch, xdg-utils
 Replaces: imagemagick (<< 8:6.9.2.10+dfsg-2~)
 Breaks: libmagickcore-dev (<< 8:6.9.2.10+dfsg-2~)
-Provides: imagemagick, imagemagick-7.defaultquantum
 Description: image manipulation programs -- quantum depth Q16
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)
@@ -287,7 +286,6 @@ Depends:
 # remove breaks/replaces after jessie +2
 Replaces: libmagickcore-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickcore-dev (<< 8:6.8.3.10-1~)
-Provides: libmagickcore-7.defaultquantum-dev, libmagickcore-dev (=${binary:Version}),
 Description: low-level image manipulation library - development files (Q16)
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -332,7 +330,6 @@ Depends: libmagickwand-7-headers (= ${source:Version}),
  libmagickcore-7.q16-dev (= ${binary:Version}),
  pkg-config,
  ${misc:Depends}
-Provides: libmagickwand-7.defaultquantum-dev, libmagickwand-dev (=${binary:Version}),
 Replaces: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Description: image manipulation library - development files (Q16)
@@ -376,7 +373,6 @@ Depends: libmagick++-7-headers (= ${source:Version}),
  ${misc:Depends}
 Replaces: libmagick++-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagick++-dev (<< 8:6.8.3.10-1~)
-Provides: libmagick++-7.defaultquantum-dev, libmagick++-dev (=${binary:Version})
 Description: C++ interface to ImageMagick - development files (Q16)
  The Magick++ library is a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
@@ -394,7 +390,6 @@ Section: perl
 Pre-Depends: dpkg (>= 1.17.11)
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: imagemagick-doc
-Provides: libimage-magick-defaultquantum-perl, perlmagick (=${binary:Version})
 # remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
 Breaks: perlmagick (<< 8:6.8.3.10-1~)
@@ -421,6 +416,7 @@ Suggests: imagemagick-doc, autotrace, cups-bsd | lpr | lprng, curl, enscript,
  ufraw-batch, xdg-utils
 Replaces: imagemagick (<< 8:6.9.2.10+dfsg-2~)
 Breaks: libmagickcore-dev (<< 8:6.9.2.10+dfsg-2~)
+Provides: imagemagick, imagemagick-7.defaultquantum
 Description: image manipulation programs -- quantum depth Q16HDRI
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)
@@ -502,6 +498,7 @@ Depends:
 # remove breaks/replaces after jessie +2
 Replaces: libmagickcore-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickcore-dev (<< 8:6.8.3.10-1~)
+Provides: libmagickcore-7.defaultquantum-dev, libmagickcore-dev (=${binary:Version}),
 Description: low-level image manipulation library - development files (Q16HDRI)
  The MagickCore API is a low-level interface between the C programming language
  and the ImageMagick image processing libraries and is recommended for
@@ -548,6 +545,7 @@ Depends: libmagickwand-7-headers (= ${source:Version}),
  ${misc:Depends}
 Replaces: libmagickwand-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagickwand-dev (<< 8:6.8.3.10-1~)
+Provides: libmagickwand-7.defaultquantum-dev, libmagickwand-dev (=${binary:Version}),
 Description: image manipulation library - development files (Q16HDRI)
  The MagickWand API is the recommended interface between the C programming
  language and the ImageMagick image processing libraries. Unlike the
@@ -589,6 +587,7 @@ Depends: libmagick++-7-headers (= ${source:Version}),
  ${misc:Depends}
 Replaces: libmagick++-dev (<< 8:6.8.3.10-1~)
 Breaks: libmagick++-dev (<< 8:6.8.3.10-1~)
+Provides: libmagick++-7.defaultquantum-dev, libmagick++-dev (=${binary:Version})
 Description: C++ interface to ImageMagick - development files (Q16HDRI)
  The Magick++ library is a set of C++ wrapper classes that provides access
  to the ImageMagick package functionality from within a C++ application.
@@ -606,6 +605,7 @@ Section: perl
 Pre-Depends: dpkg (>= 1.17.11)
 Depends: ${perl:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: imagemagick-doc
+Provides: libimage-magick-defaultquantum-perl, perlmagick (=${binary:Version})
 # remove breaks/replaces after jessie +2
 Replaces: perlmagick (<< 8:6.8.3.10-1~)
 Breaks: perlmagick (<< 8:6.8.3.10-1~)
@@ -681,7 +681,7 @@ Architecture: all
 Section: oldlibs
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
- libmagickcore-7.q16-dev,
+ libmagickcore-7.q16hdri-dev,
  imagemagick-7-common
 Description: low-level image manipulation library -- dummy package
  This package included header files and static libraries needed to compile
@@ -698,7 +698,7 @@ Architecture: all
 Section: oldlibs
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
- libmagickwand-7.q16-dev,
+ libmagickwand-7.q16hdri-dev,
  imagemagick-7-common
 Description: image manipulation library -- dummy package
  This package included the static libraries needed to compile
@@ -715,7 +715,7 @@ Architecture: all
 Section: oldlibs
 Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${misc:Depends},
- libmagick++-7.q16-dev,
+ libmagick++-7.q16hdri-dev,
  imagemagick-7-common
 Description: object-oriented C++ interface to ImageMagick -- dummy package
  The Magick++ library was a set of C++ wrapper classes that provides access
@@ -733,7 +733,7 @@ Architecture: any
 Multi-Arch: foreign
 Section: oldlibs
 Depends: ${misc:Depends},
- imagemagick-7.q16 (>= 8:6.9.2.10+dfsg-2~)
+ imagemagick-7.q16hdri (>= 8:6.9.2.10+dfsg-2~)
 Description: image manipulation programs -- binaries
  ImageMagick is a software suite to create, edit, and compose bitmap images.
  It can read, convert and write images in a variety of formats (over 100)
