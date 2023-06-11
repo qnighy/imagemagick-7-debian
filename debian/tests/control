@@ -1,12 +1,12 @@
-Tests: rose-6.q16
+Tests: rose-7.q16
 Depends: imagemagick-7.q16, libmagickcore-7.q16-6-extra, netpbm
 
-Tests: perlmagick-6.q16
+Tests: perlmagick-7.q16
 Depends: libimage-magick-q16-perl, libmagickcore-7.q16-6-extra, libaliased-perl, gsfonts
 
-Tests: rose-6.q16hdri
+Tests: rose-7.q16hdri
 Depends: imagemagick-7.q16hdri, libmagickcore-7.q16hdri-6-extra, netpbm
 
-Tests: perlmagick-6.q16hdri
+Tests: perlmagick-7.q16hdri
 Depends: libimage-magick-q16hdri-perl, libmagickcore-7.q16hdri-6-extra, libaliased-perl, gsfonts
 
