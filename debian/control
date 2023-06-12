@@ -52,16 +52,16 @@ Package: imagemagick-7-common
 Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}
-Breaks: libmagickcore-7.q16-4 (<< 8:6.9.8.9+dfsg-1~),
-	libmagickcore-7.q16hdri-4 (<< 8:6.9.8.9+dfsg-1~),
-        libmagickcore-7.q16-3 (<< 8:6.9.6.8+dfsg-1~),
-	libmagickcore-7.q16-2 (<< 8:6.9.6.2+dfsg-3~),
+Breaks: libmagickcore-6.q16-4 (<< 8:6.9.8.9+dfsg-1~),
+	libmagickcore-6.q16hdri-4 (<< 8:6.9.8.9+dfsg-1~),
+        libmagickcore-6.q16-3 (<< 8:6.9.6.8+dfsg-1~),
+	libmagickcore-6.q16-2 (<< 8:6.9.6.2+dfsg-3~),
 	imagemagick-common (<< 8:6.9.2.10+dfsg-1~)
 Provides: imagemagick-common
 # remove breaks/replaces after strech + 2 for imagemagick-common
-# remove breaks/replace after strech + 2 for libmagickcore-7.q16 (<< 8:6.9.6.2+dfsg-3)
+# remove breaks/replace after strech + 2 for libmagickcore-6.q16 (<< 8:6.9.6.2+dfsg-3)
 Replaces: imagemagick-common (<< 8:6.9.2.10+dfsg-1~),
- libmagickcore-7.q16 (<< 8:6.9.6.2+dfsg-3~)
+ libmagickcore-6.q16 (<< 8:6.9.6.2+dfsg-3~)
 Description: image manipulation programs -- infrastructure
  imagemagick-common contains the filesystem infrastructure required for
  further installation of imagemagick in any configuration; it does not provide
